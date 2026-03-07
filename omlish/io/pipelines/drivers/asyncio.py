@@ -24,6 +24,7 @@ from ...streams.utils import ByteStreamBuffers
 from ..asyncs import AsyncChannelPipelineMessages
 from ..core import ChannelPipelineHandlerRef
 from ..core import ChannelPipelineMessages
+from ..core import ChannelPipelineServices
 from ..core import PipelineChannel
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
@@ -96,7 +97,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     async def _init(self) -> None:
         self._sched = self._Scheduling(self)
 
-        services = PipelineChannel.Services.of(self._spec.services)
+        services = ChannelPipelineServices.of(self._spec.services)
         self._flow = services.find(ChannelPipelineFlow)
 
         self._command_handlers = self._build_command_handlers()

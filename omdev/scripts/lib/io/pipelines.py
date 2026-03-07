@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='4b70b7713c88e494c275d6e63a372ed324e0e87b'),
+            dict(path='core.py', sha1='f3ae25272693b15605c945b5610288e0d4822b2a'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -70,7 +70,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='389bffc6c02d68825e440725023bef62d4cf1d01'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='dc64d414d370e0413e4cf5c32e3570b3405f35e4'),
+            dict(path='drivers/asyncio.py', sha1='3475d55ed74ffb010c3cf48f8b6344b85ca113b4'),
             dict(path='_amalg.py', sha1='ffee68f3cc7810f0c9e8c7659c8347a622443bea'),
         ],
     )
@@ -1645,7 +1645,7 @@ class ChannelPipelineHandlerContext:
         return self._pipeline._channel  # noqa
 
     @property
-    def services(self) -> 'PipelineChannel.Services':  # noqa
+    def services(self) -> 'ChannelPipelineServices':  # noqa
         return self._pipeline._channel._services  # noqa
 
     @property
@@ -2422,11 +2422,291 @@ class ChannelPipelineService(Abstract):
         pass
 
 
+#
+
+
+@ta.final
+class ChannelPipelineServices:
+    def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
+        self._lst = lst
+
+        self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
+        self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
+
+        self._handles_handler_update = handles_handler_update = []
+        self._handles_channel_enter = handles_channel_enter = []
+        self._handles_channel_exit = handles_channel_exit = []
+
+        for svc in lst:
+            sty = type(svc)
+            if sty.handler_update is not ChannelPipelineService.handler_update:
+                handles_handler_update.append(sty)
+            if sty.channel_enter is not ChannelPipelineService.channel_enter:
+                handles_channel_enter.append(sty)
+            if sty.channel_exit is not ChannelPipelineService.channel_exit:
+                handles_channel_exit.append(sty)
+
+    _handles_handler_update: ta.Sequence[ChannelPipelineService]
+    _handles_channel_enter: ta.Sequence[ChannelPipelineService]
+    _handles_channel_exit: ta.Sequence[ChannelPipelineService]
+
+    @classmethod
+    def of(cls, obj: ta.Union['ChannelPipelineServices', ta.Sequence[ChannelPipelineService]]) -> 'ChannelPipelineServices':  # noqa
+        if isinstance(obj, cls):
+            return obj
+        else:
+            return cls(list(obj))
+
+    def __len__(self) -> int:
+        return len(self._lst)
+
+    def __iter__(self) -> ta.Iterator[ChannelPipelineService]:
+        return iter(self._lst)
+
+    def __contains__(self, item: ChannelPipelineService) -> bool:
+        return item in self._lst
+
+    @dc.dataclass(frozen=True)
+    class ServiceType(ta.Generic[T]):
+        """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+        ty: ta.Type[T]
+
+    def find_all(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
+        if isinstance(ty, self.ServiceType):
+            ty = ty.ty
+
+        try:
+            return self._by_type_cache[ty]
+        except KeyError:
+            pass
+
+        self._by_type_cache[ty] = ret = [svc for svc in self._lst if isinstance(svc, ty)]
+        return ret
+
+    def find(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
+        if isinstance(ty, self.ServiceType):
+            ty = ty.ty
+
+        try:
+            return self._single_by_type_cache[ty]
+        except KeyError:
+            pass
+
+        self._single_by_type_cache[ty] = ret = check.opt_single(self.find_all(ty))
+        return ret
+
+    def __getitem__(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> T:
+        if (svc := self.find(ty)) is None:
+            raise KeyError(ty)
+        return svc
+
+
 ##
 
 
 class PipelineChannelMetadata(Abstract):
     pass
+
+
+@ta.final
+class PipelineChannelMetadatas:
+    def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
+        dct: ta.Dict[type, ta.Any] = {}
+        for md in lst:
+            ty = type(md)
+            check.not_in(ty, dct)
+            dct[ty] = md
+        self._dct = dct
+
+    @classmethod
+    def of(cls, obj: ta.Union['PipelineChannelMetadatas', ta.Sequence[PipelineChannelMetadata]]) -> 'PipelineChannelMetadatas':  # noqa
+        if isinstance(obj, cls):
+            return obj
+        else:
+            return cls(list(obj))
+
+    def __len__(self) -> int:
+        return len(self._dct)
+
+    def __contains__(self, ty: ta.Type[PipelineChannelMetadata]) -> bool:
+        return ty in self._dct
+
+    def __iter__(self) -> ta.Iterator[PipelineChannelMetadata]:
+        return iter(self._dct.values())
+
+    @dc.dataclass(frozen=True)
+    class MetadataType(ta.Generic[PipelineChannelMetadataT]):
+        """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+        ty: ta.Type[PipelineChannelMetadataT]
+
+    def __getitem__(
+            self,
+            ty: ta.Union[
+                MetadataType[PipelineChannelMetadataT],
+                ta.Type[PipelineChannelMetadataT],
+            ],
+    ) -> PipelineChannelMetadataT:
+        if isinstance(ty, self.MetadataType):
+            ty = ty.ty
+
+        return self._dct[ty]
+
+    @ta.overload
+    def get(
+            self,
+            ty: ta.Union[
+                MetadataType[PipelineChannelMetadataT],
+                ta.Type[PipelineChannelMetadataT],
+            ],
+            default: PipelineChannelMetadataT,
+            /,
+    ) -> PipelineChannelMetadataT:
+        ...
+
+    @ta.overload
+    def get(
+            self,
+            ty: ta.Union[
+                MetadataType[PipelineChannelMetadataT],
+                ta.Type[PipelineChannelMetadataT],
+            ],
+            default: ta.Optional[PipelineChannelMetadataT] = None,
+            /,
+    ) -> ta.Optional[PipelineChannelMetadataT]:
+        ...
+
+    def get(self, ty, default=None, /):
+        if isinstance(ty, self.MetadataType):
+            ty = ty.ty
+
+        return self._dct.get(ty, default)
+
+##
+
+
+@ta.final
+class _PipelineChannelPropagation:
+    @dc.dataclass()
+    class _PendingMustEntry:
+        msg: ta.Any
+        direction: ChannelPipelineDirection
+        last_seen: ChannelPipelineHandlerContext
+        pinned_by: ta.Optional[ChannelPipelineMessages.Pinning] = None
+
+    def __init__(self, ch: 'PipelineChannel') -> None:
+        self._ch = ch
+
+        if not self._ch._config.disable_propagation_checking:  # noqa
+            self._pending_must: ta.Final[ta.Dict[int, _PipelineChannelPropagation._PendingMustEntry]] = {}
+
+    def add_must(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            direction: ChannelPipelineDirection,
+            msg: ChannelPipelineMessages.MustPropagate,
+    ) -> None:
+        if self._ch._config.disable_propagation_checking:  # noqa
+            return
+
+        i = id(msg)
+        try:
+            x = self._pending_must[i]
+        except KeyError:
+            self._pending_must[i] = _PipelineChannelPropagation._PendingMustEntry(  # noqa
+                msg,
+                direction,
+                ctx,
+            )
+            return
+
+        check.is_(msg, x.msg)
+        check.equal(direction, x.direction)
+        check.state(x.pinned_by is None)
+        x.last_seen = ctx
+
+    def pin_musts(
+            self,
+            pinning: ChannelPipelineMessages.Pinning,
+    ) -> None:
+        if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+            return
+
+        for msg in lst:
+            x = self._pending_must[id(msg)]
+            check.none(x.pinned_by)
+            x.pinned_by = pinning
+
+    def unpin_musts(
+            self,
+            pinning: ChannelPipelineMessages.Pinning,
+    ) -> None:
+        if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+            return
+
+        for msg in lst:
+            x = self._pending_must[id(msg)]
+            check.is_(x.pinned_by, pinning)
+            x.pinned_by = None
+
+    def remove_must(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            direction: ChannelPipelineDirection,
+            msg: ChannelPipelineMessages.MustPropagate,
+    ) -> None:
+        if self._ch._config.disable_propagation_checking:  # noqa
+            return
+
+        i = id(msg)
+        try:
+            x = self._pending_must.pop(i)
+        except KeyError:
+            raise MessageNotPropagatedChannelPipelineError.new_single(
+                direction,
+                msg,
+                last_seen=ctx._ref,  # noqa
+            ) from None
+
+        if (
+                x.msg is not msg or
+                x.direction != direction or
+                x.pinned_by is not None
+        ):
+            raise MessageNotPropagatedChannelPipelineError.new_single(
+                direction,
+                msg,
+                last_seen=ctx._ref,  # noqa
+            )
+
+    def check_and_clear(self) -> None:
+        if self._ch._config.disable_propagation_checking:  # noqa
+            return
+
+        if not self._pending_must:
+            return
+
+        il: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
+        ol: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
+
+        for x in self._pending_must.values():
+            if x.pinned_by is None:
+                (il if x.direction == 'inbound' else ol).append((x.msg, x.last_seen._ref))  # noqa
+
+        if not (il or ol):
+            return
+
+        e = MessageNotPropagatedChannelPipelineError.new(
+            inbound_with_last_seen=il,
+            outbound_with_last_seen=ol,
+        )
+
+        for lst in (il, ol):
+            for msg, _ in lst:
+                del self._pending_must[id(msg)]
+
+        raise e
 
 
 ##
@@ -2471,10 +2751,10 @@ class PipelineChannel:
 
         # _: dc.KW_ONLY
 
-        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], 'PipelineChannel.Metadata'] = ()
+        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = ()
 
         # Services are fixed for the lifetime of the channel.
-        services: ta.Union[ta.Sequence[ChannelPipelineService], 'PipelineChannel.Services'] = ()
+        services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = ()
 
         #
 
@@ -2490,8 +2770,8 @@ class PipelineChannel:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: 'PipelineChannel.Config' = Config.DEFAULT,
             *,
-            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], 'PipelineChannel.Metadata'] = (),
-            services: ta.Union[ta.Sequence[ChannelPipelineService], 'PipelineChannel.Services'] = (),
+            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = (),
+            services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = (),
     ) -> 'PipelineChannel':
         return cls(PipelineChannel.Spec(
             handlers=handlers,
@@ -2513,8 +2793,8 @@ class PipelineChannel:
         self._config: ta.Final[PipelineChannel.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._metadata: ta.Final[PipelineChannel.Metadata] = PipelineChannel.Metadata.of(spec.metadata)
-        self._services: ta.Final[PipelineChannel.Services] = PipelineChannel.Services.of(spec.services)
+        self._metadata: ta.Final[PipelineChannelMetadatas] = PipelineChannelMetadatas.of(spec.metadata)
+        self._services: ta.Final[ChannelPipelineServices] = ChannelPipelineServices.of(spec.services)
 
         self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
@@ -2530,7 +2810,7 @@ class PipelineChannel:
 
         self._execution_depth = 0
 
-        self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
+        self._propagation: _PipelineChannelPropagation = _PipelineChannelPropagation(self)
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
             _channel=self,
@@ -2597,164 +2877,14 @@ class PipelineChannel:
 
     #
 
-    @ta.final
-    class Metadata:
-        def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
-            dct: ta.Dict[type, ta.Any] = {}
-            for md in lst:
-                ty = type(md)
-                check.not_in(ty, dct)
-                dct[ty] = md
-            self._dct = dct
-
-        @classmethod
-        def of(cls, obj: ta.Union['PipelineChannel.Metadata', ta.Sequence[PipelineChannelMetadata]]) -> 'PipelineChannel.Metadata':  # noqa
-            if isinstance(obj, cls):
-                return obj
-            else:
-                return cls(list(obj))
-
-        def __len__(self) -> int:
-            return len(self._dct)
-
-        def __contains__(self, ty: ta.Type[PipelineChannelMetadata]) -> bool:
-            return ty in self._dct
-
-        def __iter__(self) -> ta.Iterator[PipelineChannelMetadata]:
-            return iter(self._dct.values())
-
-        @dc.dataclass(frozen=True)
-        class MetadataType(ta.Generic[PipelineChannelMetadataT]):
-            """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
-
-            ty: ta.Type[PipelineChannelMetadataT]
-
-        def __getitem__(
-                self,
-                ty: ta.Union[
-                    MetadataType[PipelineChannelMetadataT],
-                    ta.Type[PipelineChannelMetadataT],
-                ],
-        ) -> PipelineChannelMetadataT:
-            if isinstance(ty, self.MetadataType):
-                ty = ty.ty
-
-            return self._dct[ty]
-
-        @ta.overload
-        def get(
-                self,
-                ty: ta.Union[
-                    MetadataType[PipelineChannelMetadataT],
-                    ta.Type[PipelineChannelMetadataT],
-                ],
-                default: PipelineChannelMetadataT,
-                /,
-        ) -> PipelineChannelMetadataT:
-            ...
-
-        @ta.overload
-        def get(
-                self,
-                ty: ta.Union[
-                    MetadataType[PipelineChannelMetadataT],
-                    ta.Type[PipelineChannelMetadataT],
-                ],
-                default: ta.Optional[PipelineChannelMetadataT] = None,
-                /,
-        ) -> ta.Optional[PipelineChannelMetadataT]:
-            ...
-
-        def get(self, ty, default=None, /):
-            if isinstance(ty, self.MetadataType):
-                ty = ty.ty
-
-            return self._dct.get(ty, default)
-
     @property
-    def metadata(self) -> Metadata:
+    def metadata(self) -> PipelineChannelMetadatas:
         return self._metadata
 
     #
 
-    @ta.final
-    class Services:
-        def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
-            self._lst = lst
-
-            self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
-            self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
-
-            self._handles_handler_update = handles_handler_update = []
-            self._handles_channel_enter = handles_channel_enter = []
-            self._handles_channel_exit = handles_channel_exit = []
-
-            for svc in lst:
-                sty = type(svc)
-                if sty.handler_update is not ChannelPipelineService.handler_update:
-                    handles_handler_update.append(sty)
-                if sty.channel_enter is not ChannelPipelineService.channel_enter:
-                    handles_channel_enter.append(sty)
-                if sty.channel_exit is not ChannelPipelineService.channel_exit:
-                    handles_channel_exit.append(sty)
-
-        _handles_handler_update: ta.Sequence[ChannelPipelineService]
-        _handles_channel_enter: ta.Sequence[ChannelPipelineService]
-        _handles_channel_exit: ta.Sequence[ChannelPipelineService]
-
-        @classmethod
-        def of(cls, obj: ta.Union['PipelineChannel.Services', ta.Sequence[ChannelPipelineService]]) -> 'PipelineChannel.Services':  # noqa
-            if isinstance(obj, cls):
-                return obj
-            else:
-                return cls(list(obj))
-
-        def __len__(self) -> int:
-            return len(self._lst)
-
-        def __iter__(self) -> ta.Iterator[ChannelPipelineService]:
-            return iter(self._lst)
-
-        def __contains__(self, item: ChannelPipelineService) -> bool:
-            return item in self._lst
-
-        @dc.dataclass(frozen=True)
-        class ServiceType(ta.Generic[T]):
-            """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
-
-            ty: ta.Type[T]
-
-        def find_all(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
-            if isinstance(ty, self.ServiceType):
-                ty = ty.ty
-
-            try:
-                return self._by_type_cache[ty]
-            except KeyError:
-                pass
-
-            self._by_type_cache[ty] = ret = [svc for svc in self._lst if isinstance(svc, ty)]
-            return ret
-
-        def find(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
-            if isinstance(ty, self.ServiceType):
-                ty = ty.ty
-
-            try:
-                return self._single_by_type_cache[ty]
-            except KeyError:
-                pass
-
-            self._single_by_type_cache[ty] = ret = check.opt_single(self.find_all(ty))
-            return ret
-
-        def __getitem__(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> T:
-            if (svc := self.find(ty)) is None:
-                raise KeyError(ty)
-            return svc
-
     @property
-    def services(self) -> Services:
+    def services(self) -> ChannelPipelineServices:
         return self._services
 
     #
@@ -2946,130 +3076,6 @@ class PipelineChannel:
     @property
     def output(self) -> _Output:
         return self._output
-
-    #
-
-    @ta.final
-    class _Propagation:
-        @dc.dataclass()
-        class _PendingMustEntry:
-            msg: ta.Any
-            direction: ChannelPipelineDirection
-            last_seen: ChannelPipelineHandlerContext
-            pinned_by: ta.Optional[ChannelPipelineMessages.Pinning] = None
-
-        def __init__(self, ch: 'PipelineChannel') -> None:
-            self._ch = ch
-
-            if not self._ch._config.disable_propagation_checking:  # noqa
-                self._pending_must: ta.Final[ta.Dict[int, PipelineChannel._Propagation._PendingMustEntry]] = {}
-
-        def add_must(
-                self,
-                ctx: ChannelPipelineHandlerContext,
-                direction: ChannelPipelineDirection,
-                msg: ChannelPipelineMessages.MustPropagate,
-        ) -> None:
-            if self._ch._config.disable_propagation_checking:  # noqa
-                return
-
-            i = id(msg)
-            try:
-                x = self._pending_must[i]
-            except KeyError:
-                self._pending_must[i] = PipelineChannel._Propagation._PendingMustEntry(  # noqa
-                    msg,
-                    direction,
-                    ctx,
-                )
-                return
-
-            check.is_(msg, x.msg)
-            check.equal(direction, x.direction)
-            check.state(x.pinned_by is None)
-            x.last_seen = ctx
-
-        def pin_musts(
-                self,
-                pinning: ChannelPipelineMessages.Pinning,
-        ) -> None:
-            if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
-                return
-
-            for msg in lst:
-                x = self._pending_must[id(msg)]
-                check.none(x.pinned_by)
-                x.pinned_by = pinning
-
-        def unpin_musts(
-                self,
-                pinning: ChannelPipelineMessages.Pinning,
-        ) -> None:
-            if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
-                return
-
-            for msg in lst:
-                x = self._pending_must[id(msg)]
-                check.is_(x.pinned_by, pinning)
-                x.pinned_by = None
-
-        def remove_must(
-                self,
-                ctx: ChannelPipelineHandlerContext,
-                direction: ChannelPipelineDirection,
-                msg: ChannelPipelineMessages.MustPropagate,
-        ) -> None:
-            if self._ch._config.disable_propagation_checking:  # noqa
-                return
-
-            i = id(msg)
-            try:
-                x = self._pending_must.pop(i)
-            except KeyError:
-                raise MessageNotPropagatedChannelPipelineError.new_single(
-                    direction,
-                    msg,
-                    last_seen=ctx._ref,  # noqa
-                ) from None
-
-            if (
-                    x.msg is not msg or
-                    x.direction != direction or
-                    x.pinned_by is not None
-            ):
-                raise MessageNotPropagatedChannelPipelineError.new_single(
-                    direction,
-                    msg,
-                    last_seen=ctx._ref,  # noqa
-                )
-
-        def check_and_clear(self) -> None:
-            if self._ch._config.disable_propagation_checking:  # noqa
-                return
-
-            if not self._pending_must:
-                return
-
-            il: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
-            ol: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
-
-            for x in self._pending_must.values():
-                if x.pinned_by is None:
-                    (il if x.direction == 'inbound' else ol).append((x.msg, x.last_seen._ref))  # noqa
-
-            if not (il or ol):
-                return
-
-            e = MessageNotPropagatedChannelPipelineError.new(
-                inbound_with_last_seen=il,
-                outbound_with_last_seen=ol,
-            )
-
-            for lst in (il, ol):
-                for msg, _ in lst:
-                    del self._pending_must[id(msg)]
-
-            raise e
 
     #
 
@@ -8032,7 +8038,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     async def _init(self) -> None:
         self._sched = self._Scheduling(self)
 
-        services = PipelineChannel.Services.of(self._spec.services)
+        services = ChannelPipelineServices.of(self._spec.services)
         self._flow = services.find(ChannelPipelineFlow)
 
         self._command_handlers = self._build_command_handlers()
