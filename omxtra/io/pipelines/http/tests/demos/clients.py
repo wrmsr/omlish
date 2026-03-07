@@ -196,6 +196,7 @@ def _prepare_url_fetch(
         parsed_url.path,
         headers={
             'User-Agent': 'omlish-http-client/0.1',
+            # 'Connection': 'close',
         },
     )
 

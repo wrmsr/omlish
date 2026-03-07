@@ -423,10 +423,10 @@ class SslChannelPipelineHandler(
     def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # noqa
         self._ensure_state()
 
-        if self._state == self.State.ESTABLISHED:
-            # Mark that downstream wants data
-            self._read_requested = True
+        # Mark that downstream wants data
+        self._read_requested = True
 
+        if self._state == self.State.ESTABLISHED:
             # Check if we actually satisfied the request
             if self._pump_plaintext_in(ctx):
                 if not self._is_auto_read(ctx):
