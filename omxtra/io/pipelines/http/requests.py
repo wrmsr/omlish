@@ -1,4 +1,4 @@
-# ruff: noqa: UP045
+# ruff: noqa: UP007 UP045
 # @omlish-lite
 import dataclasses as dc
 import typing as ta
@@ -111,7 +111,7 @@ class PipelineHttpRequestAborted(PipelineHttpMessageAborted, PipelineHttpRequest
 
 
 class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
-    _head_type: ta.Final[ta.Type[PipelineHttpRequestHead]] = PipelineHttpRequestHead
+    _head_type: ta.Final = PipelineHttpRequestHead
 
     def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
         request = check.not_none(parsed.request_line)
@@ -126,28 +126,28 @@ class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
 
     #
 
-    _full_type: ta.Final[ta.Type[FullPipelineHttpRequest]] = FullPipelineHttpRequest
+    _full_type: ta.Final = FullPipelineHttpRequest
 
     def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpRequest:
         return FullPipelineHttpRequest(check.isinstance(head, PipelineHttpRequestHead), body)
 
     #
 
-    _content_chunk_data_type: ta.Final[ta.Type[PipelineHttpRequestContentChunkData]] = PipelineHttpRequestContentChunkData  # noqa
+    _content_chunk_data_type: ta.Final = PipelineHttpRequestContentChunkData
 
     def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpRequestContentChunkData:
         return PipelineHttpRequestContentChunkData(data)
 
     #
 
-    _end_type: ta.Final[ta.Type[PipelineHttpRequestEnd]] = PipelineHttpRequestEnd
+    _end_type: ta.Final = PipelineHttpRequestEnd
 
     def _make_end(self) -> PipelineHttpRequestEnd:
         return PipelineHttpRequestEnd()
 
     #
 
-    _aborted_type: ta.Final[ta.Type[PipelineHttpRequestAborted]] = PipelineHttpRequestAborted
+    _aborted_type: ta.Final = PipelineHttpRequestAborted
 
     def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpRequestAborted:
         return PipelineHttpRequestAborted(reason)

@@ -192,7 +192,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     async def feed_in(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
-        fut = asyncio.Future()
+        fut: asyncio.Future[None] = asyncio.Future()
         self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs, fut=fut))
         await fut
 
@@ -585,7 +585,7 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
 
         try:
             if not self._shutdown_event.is_set():
-                await self._handle_command(AsyncioStreamPipelineChannelDriver._FeedInCommand([
+                await self._handle_command(AsyncioStreamPipelineChannelDriver._FeedInCommand([  # noqa
                     ChannelPipelineMessages.InitialInput(),
                 ]))
 

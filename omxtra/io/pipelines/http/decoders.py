@@ -618,7 +618,7 @@ class PipelineHttpObjectDecoder(
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             if not len(data):
-                return
+                return None
 
             raise NotImplementedError
 

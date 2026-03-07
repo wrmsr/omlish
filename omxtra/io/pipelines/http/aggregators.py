@@ -117,7 +117,7 @@ class PipelineHttpObjectAggregator(
                 msg: ta.Optional[ta.Any] = None,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
             nxt_state = self._a._AbortedState(self._a)  # noqa
-            out: ta.List[ta.Any] = [self._a._make_aborted(reason)]
+            out: ta.List[ta.Any] = [self._a._make_aborted(reason)]  # noqa
             if msg is not None:
                 out.append(msg)
             return (nxt_state, out)
@@ -138,7 +138,7 @@ class PipelineHttpObjectAggregator(
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
-            if isinstance(msg, self._a._head_type):
+            if isinstance(msg, self._a._head_type):  # noqa
                 try:
                     te = PipelineHttpTransferEncoding.select(
                         msg.headers,
@@ -152,14 +152,14 @@ class PipelineHttpObjectAggregator(
 
                 if (
                         te.length is not None and
-                        (max_body := self._a._config.body_buffer.max_size) is not None and
+                        (max_body := self._a._config.body_buffer.max_size) is not None and  # noqa
                         te.length > max_body
                 ):
                     return self._abort(FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
 
                 return (self._a._BodyState(self._a, msg), [])  # noqa
 
-            elif isinstance(msg, self._a._final_type):
+            elif isinstance(msg, self._a._final_type):  # noqa
                 return (self, [msg])
 
             else:
@@ -188,7 +188,7 @@ class PipelineHttpObjectAggregator(
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
-            if isinstance(msg, self._a._content_chunk_data_type):
+            if isinstance(msg, self._a._content_chunk_data_type):  # noqa
                 if (buf := self._buf) is None:
                     buf = self._buf = SegmentedByteStreamBuffer(
                         max_size=self._a._config.body_buffer.max_size,  # noqa
@@ -200,17 +200,17 @@ class PipelineHttpObjectAggregator(
 
                 return (self, [])
 
-            elif isinstance(msg, self._a._end_type):
+            elif isinstance(msg, self._a._end_type):  # noqa
                 body: CanByteStreamBuffer
                 if (buf := self._buf) is not None:
                     body = buf.coalesce(len(buf))
                 else:
                     body = b''
 
-                full = self._a._make_full(self._head, body)
-                return (self._a._HeadState(self._a), [full])
+                full = self._a._make_full(self._head, body)  # noqa
+                return (self._a._HeadState(self._a), [full])  # noqa
 
-            elif isinstance(msg, self._a._final_type):
+            elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort('incomplete message body', msg)
 
             else:
@@ -235,11 +235,11 @@ class PipelineHttpObjectAggregator(
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
-            if isinstance(msg, self._a._end_type):
-                full = self._a._make_full(self._head, self._body)
-                return (self._a._HeadState(self._a), [full])
+            if isinstance(msg, self._a._end_type):  # noqa
+                full = self._a._make_full(self._head, self._body)  # noqa
+                return (self._a._HeadState(self._a), [full])  # noqa
 
-            elif isinstance(msg, self._a._final_type):
+            elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort('incomplete message sequence', msg)
 
             else:

@@ -16,7 +16,7 @@ from ..requests import PipelineHttpRequestAggregatorDecoder
 from ..requests import PipelineHttpRequestDecoder
 
 
-class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
+class TestPipelineHttpRequestDecoder(unittest.TestCase):
     def test_basic_request_head(self) -> None:
         """Test basic HTTP request head parsing."""
 

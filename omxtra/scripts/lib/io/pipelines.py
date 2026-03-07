@@ -67,7 +67,7 @@ def __omlish_amalg__():  # noqa
             dict(path='flow/types.py', sha1='58a5934eedf84f2ef6c0fe509f2874828c72d391'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='7e6aa42c2989ef6643363210a64aaaca20c256a2'),
-            dict(path='http/objects.py', sha1='c34805b7133cacd136bd1a595be36bce09d86162'),
+            dict(path='http/objects.py', sha1='c24f99ae1e8a8d72c01363063ac7fc43494ea4c2'),
             dict(path='http/transferencoding.py', sha1='6eb8c84a1aa69bed60e33b9a2b0b6c8a7bce4de0'),
             dict(path='sched/types.py', sha1='a443beb7866e5e019d57093225cd44b9ea5fa58e'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
@@ -78,8 +78,8 @@ def __omlish_amalg__():  # noqa
             dict(path='handlers/flatmap.py', sha1='3e5fae70e01ee2694719dd200b366536c930c858'),
             dict(path='http/decompressors.py', sha1='4ded11442969486e7619b4eae3f0fe73766c7221'),
             dict(path='http/encoders.py', sha1='eb0b41f9aa971bb32080c326f4e3b3094f6d05d2'),
-            dict(path='http/requests.py', sha1='a07795d0a425482871d5e357c1afaec9c9250574'),
-            dict(path='http/responses.py', sha1='365b819f2cd7137d948ad89efa749067af19179a'),
+            dict(path='http/requests.py', sha1='cc771f014973f16cf04aed5d7423a86166dec1ef'),
+            dict(path='http/responses.py', sha1='eebf1bdd464bccd24eee88c172fde5cb1444e46a'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='f388312774f1d7f8f80e91c4e07c0e10d9b54522'),
             dict(path='../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
@@ -87,12 +87,12 @@ def __omlish_amalg__():  # noqa
             dict(path='http/server/responses.py', sha1='4ec57def38b996880f6802d5766cd726f708cc73'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='f5a1a1180e6cb0ad4fbef816aeec2b8a1b7050ff'),
-            dict(path='http/aggregators.py', sha1='6c1cae367e825da4b4720ab2364b6518e1df2e7f'),
-            dict(path='drivers/asyncio.py', sha1='f926d631b48758b819747e50204c081969a03dbc'),
-            dict(path='http/decoders.py', sha1='5092f353c3ad1022be5549799dcb5478f824ab61'),
-            dict(path='http/client/responses.py', sha1='1f31e4fe1ffe245cfd5c2e447ce448e5904cbb2b'),
-            dict(path='http/server/requests.py', sha1='52f2fd9592027bf554c10162bcef24a6efb1395c'),
-            dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
+            dict(path='http/aggregators.py', sha1='ad014d9532242a3d04eb36a3231e236cb9f3e33e'),
+            dict(path='drivers/asyncio.py', sha1='66826328050325183b68ce60f36a834011821b2a'),
+            dict(path='http/decoders.py', sha1='7714493031c87ba220458ec273c47247a323716c'),
+            dict(path='http/client/responses.py', sha1='66febe38032fd5ff9ee4711faa47e1fa5f66d774'),
+            dict(path='http/server/requests.py', sha1='bbf9bfaba4193f69782eb83edf6a0370cc975e89'),
+            dict(path='_amalg.py', sha1='12299c57406515b545b21f8c5ec96d672f9209b4'),
         ],
     )
 
@@ -7585,7 +7585,7 @@ class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
     @property
     def reason_str(self) -> str:
         if isinstance(r := self.reason, str):
-            return self.reason
+            return r
         elif isinstance(r, BaseException):
             return repr(r)
         else:
@@ -9951,7 +9951,7 @@ class PipelineHttpRequestAborted(PipelineHttpMessageAborted, PipelineHttpRequest
 
 
 class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
-    _head_type: ta.Final[ta.Type[PipelineHttpRequestHead]] = PipelineHttpRequestHead
+    _head_type: ta.Final = PipelineHttpRequestHead
 
     def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
         request = check.not_none(parsed.request_line)
@@ -9966,28 +9966,28 @@ class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
 
     #
 
-    _full_type: ta.Final[ta.Type[FullPipelineHttpRequest]] = FullPipelineHttpRequest
+    _full_type: ta.Final = FullPipelineHttpRequest
 
     def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpRequest:
         return FullPipelineHttpRequest(check.isinstance(head, PipelineHttpRequestHead), body)
 
     #
 
-    _content_chunk_data_type: ta.Final[ta.Type[PipelineHttpRequestContentChunkData]] = PipelineHttpRequestContentChunkData  # noqa
+    _content_chunk_data_type: ta.Final = PipelineHttpRequestContentChunkData
 
     def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpRequestContentChunkData:
         return PipelineHttpRequestContentChunkData(data)
 
     #
 
-    _end_type: ta.Final[ta.Type[PipelineHttpRequestEnd]] = PipelineHttpRequestEnd
+    _end_type: ta.Final = PipelineHttpRequestEnd
 
     def _make_end(self) -> PipelineHttpRequestEnd:
         return PipelineHttpRequestEnd()
 
     #
 
-    _aborted_type: ta.Final[ta.Type[PipelineHttpRequestAborted]] = PipelineHttpRequestAborted
+    _aborted_type: ta.Final = PipelineHttpRequestAborted
 
     def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpRequestAborted:
         return PipelineHttpRequestAborted(reason)
@@ -10092,7 +10092,7 @@ class PipelineHttpResponseAborted(PipelineHttpMessageAborted, PipelineHttpRespon
 
 
 class PipelineHttpResponseObjects(PipelineHttpMessageObjects):
-    _head_type: ta.Final[ta.Type[PipelineHttpResponseHead]] = PipelineHttpResponseHead
+    _head_type: ta.Final = PipelineHttpResponseHead
 
     def _make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
         status = check.not_none(parsed.status_line)
@@ -10107,28 +10107,28 @@ class PipelineHttpResponseObjects(PipelineHttpMessageObjects):
 
     #
 
-    _full_type: ta.Final[ta.Type[FullPipelineHttpResponse]] = FullPipelineHttpResponse
+    _full_type: ta.Final = FullPipelineHttpResponse
 
     def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpResponse:
         return FullPipelineHttpResponse(check.isinstance(head, PipelineHttpResponseHead), body)
 
     #
 
-    _content_chunk_data_type: ta.Final[ta.Type[PipelineHttpResponseContentChunkData]] = PipelineHttpResponseContentChunkData  # noqa
+    _content_chunk_data_type: ta.Final = PipelineHttpResponseContentChunkData
 
     def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpResponseContentChunkData:
         return PipelineHttpResponseContentChunkData(data)
 
     #
 
-    _end_type: ta.Final[ta.Type[PipelineHttpResponseEnd]] = PipelineHttpResponseEnd
+    _end_type: ta.Final = PipelineHttpResponseEnd
 
     def _make_end(self) -> PipelineHttpResponseEnd:
         return PipelineHttpResponseEnd()
 
     #
 
-    _aborted_type: ta.Final[ta.Type[PipelineHttpResponseAborted]] = PipelineHttpResponseAborted
+    _aborted_type: ta.Final = PipelineHttpResponseAborted
 
     def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpResponseAborted:
         return PipelineHttpResponseAborted(reason)
@@ -11435,7 +11435,7 @@ class PipelineHttpObjectAggregator(
                 msg: ta.Optional[ta.Any] = None,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
             nxt_state = self._a._AbortedState(self._a)  # noqa
-            out: ta.List[ta.Any] = [self._a._make_aborted(reason)]
+            out: ta.List[ta.Any] = [self._a._make_aborted(reason)]  # noqa
             if msg is not None:
                 out.append(msg)
             return (nxt_state, out)
@@ -11456,7 +11456,7 @@ class PipelineHttpObjectAggregator(
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
-            if isinstance(msg, self._a._head_type):
+            if isinstance(msg, self._a._head_type):  # noqa
                 try:
                     te = PipelineHttpTransferEncoding.select(
                         msg.headers,
@@ -11470,14 +11470,14 @@ class PipelineHttpObjectAggregator(
 
                 if (
                         te.length is not None and
-                        (max_body := self._a._config.body_buffer.max_size) is not None and
+                        (max_body := self._a._config.body_buffer.max_size) is not None and  # noqa
                         te.length > max_body
                 ):
                     return self._abort(FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
 
                 return (self._a._BodyState(self._a, msg), [])  # noqa
 
-            elif isinstance(msg, self._a._final_type):
+            elif isinstance(msg, self._a._final_type):  # noqa
                 return (self, [msg])
 
             else:
@@ -11506,7 +11506,7 @@ class PipelineHttpObjectAggregator(
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
-            if isinstance(msg, self._a._content_chunk_data_type):
+            if isinstance(msg, self._a._content_chunk_data_type):  # noqa
                 if (buf := self._buf) is None:
                     buf = self._buf = SegmentedByteStreamBuffer(
                         max_size=self._a._config.body_buffer.max_size,  # noqa
@@ -11518,17 +11518,17 @@ class PipelineHttpObjectAggregator(
 
                 return (self, [])
 
-            elif isinstance(msg, self._a._end_type):
+            elif isinstance(msg, self._a._end_type):  # noqa
                 body: CanByteStreamBuffer
                 if (buf := self._buf) is not None:
                     body = buf.coalesce(len(buf))
                 else:
                     body = b''
 
-                full = self._a._make_full(self._head, body)
-                return (self._a._HeadState(self._a), [full])
+                full = self._a._make_full(self._head, body)  # noqa
+                return (self._a._HeadState(self._a), [full])  # noqa
 
-            elif isinstance(msg, self._a._final_type):
+            elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort('incomplete message body', msg)
 
             else:
@@ -11553,11 +11553,11 @@ class PipelineHttpObjectAggregator(
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
-            if isinstance(msg, self._a._end_type):
-                full = self._a._make_full(self._head, self._body)
-                return (self._a._HeadState(self._a), [full])
+            if isinstance(msg, self._a._end_type):  # noqa
+                full = self._a._make_full(self._head, self._body)  # noqa
+                return (self._a._HeadState(self._a), [full])  # noqa
 
-            elif isinstance(msg, self._a._final_type):
+            elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort('incomplete message sequence', msg)
 
             else:
@@ -11749,7 +11749,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     async def feed_in(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
-        fut = asyncio.Future()
+        fut: asyncio.Future[None] = asyncio.Future()
         self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs, fut=fut))
         await fut
 
@@ -12142,7 +12142,7 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
 
         try:
             if not self._shutdown_event.is_set():
-                await self._handle_command(AsyncioStreamPipelineChannelDriver._FeedInCommand([
+                await self._handle_command(AsyncioStreamPipelineChannelDriver._FeedInCommand([  # noqa
                     ChannelPipelineMessages.InitialInput(),
                 ]))
 
@@ -12779,7 +12779,7 @@ class PipelineHttpObjectDecoder(
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             if not len(data):
-                return
+                return None
 
             raise NotImplementedError
 
@@ -12806,7 +12806,7 @@ class PipelineHttpObjectDecoder(
 
 class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjectDecoder):
     _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.RESPONSE
-    _if_content_length_missing: ta.Final[ta.Literal['eof']] = 'eof'
+    _if_content_length_missing: ta.Final = 'eof'
 
 
 ##
@@ -12817,7 +12817,7 @@ class PipelineHttpResponseAggregatorDecoder(
     InboundBytesBufferingChannelPipelineHandler,
     PipelineHttpObjectAggregator,
 ):
-    _if_content_length_missing: ta.Final[ta.Literal['eof']] = 'eof'
+    _if_content_length_missing: ta.Final = 'eof'
     _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
 
     #
@@ -12847,7 +12847,7 @@ class PipelineHttpResponseDecompressor(PipelineHttpResponseObjects, PipelineHttp
 
 class PipelineHttpRequestDecoder(PipelineHttpRequestObjects, PipelineHttpObjectDecoder):
     _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.REQUEST
-    _if_content_length_missing: ta.Final[ta.Literal['none']] = 'none'
+    _if_content_length_missing: ta.Final = 'none'
 
 
 ##
@@ -12858,7 +12858,7 @@ class PipelineHttpRequestAggregatorDecoder(
     InboundBytesBufferingChannelPipelineHandler,
     PipelineHttpObjectAggregator,
 ):
-    _if_content_length_missing: ta.Final[ta.Literal['none']] = 'none'
+    _if_content_length_missing: ta.Final = 'none'
     _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
 
     #

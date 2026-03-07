@@ -18,7 +18,7 @@ from ..responses import PipelineHttpResponseObjects
 
 class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjectDecoder):
     _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.RESPONSE
-    _if_content_length_missing: ta.Final[ta.Literal['eof']] = 'eof'
+    _if_content_length_missing: ta.Final = 'eof'
 
 
 ##
@@ -29,7 +29,7 @@ class PipelineHttpResponseAggregatorDecoder(
     InboundBytesBufferingChannelPipelineHandler,
     PipelineHttpObjectAggregator,
 ):
-    _if_content_length_missing: ta.Final[ta.Literal['eof']] = 'eof'
+    _if_content_length_missing: ta.Final = 'eof'
     _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
 
     #

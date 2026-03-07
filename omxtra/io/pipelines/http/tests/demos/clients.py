@@ -66,7 +66,7 @@ def build_http_client(
                 (ffn := FlatMapChannelPipelineHandlerFns).filter_type(
                     FullPipelineHttpRequest,
                     ffn.compose(
-                        *([ffn.inject(after=[ChannelPipelineFlowMessages.ReadyForInput()])] if with_flow and not flow_auto_read else []),  # noqa,
+                        *([ffn.inject(after=[ChannelPipelineFlowMessages.ReadyForInput()])] if with_flow and not flow_auto_read else []),  # noqa
                         ffn.feed_out(),
                         ffn.drop(),
                     ),
@@ -208,7 +208,7 @@ def _prepare_url_fetch(
 
         with_aggregator=True,
 
-        **(dict(
+        **(dict(  # type: ignore[arg-type]
             with_ssl=True,
             ssl_kwargs=dict(
                 server_side=False,

@@ -1,4 +1,4 @@
-# ruff: noqa: UP045
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import abc
 import dataclasses as dc
@@ -83,7 +83,7 @@ class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
     @property
     def reason_str(self) -> str:
         if isinstance(r := self.reason, str):
-            return self.reason
+            return r
         elif isinstance(r, BaseException):
             return repr(r)
         else:
