@@ -91,8 +91,8 @@ def __omlish_amalg__():  # noqa
             dict(path='http/aggregators.py', sha1='d5868c8dbd1b10e05b0eee87e482505b71e99788'),
             dict(path='drivers/asyncio.py', sha1='4d9119d7069832880ddfb8d614a4af475c0848c7'),
             dict(path='http/decoders.py', sha1='7714493031c87ba220458ec273c47247a323716c'),
-            dict(path='http/client/responses.py', sha1='3e77973e7fd51e67da2e2c30a5f02a59010386a1'),
-            dict(path='http/server/requests.py', sha1='d7d4f2bcd0b5a6bb669c15d737b97bbfa6fb0c6c'),
+            dict(path='http/client/responses.py', sha1='39f1a97dbeabf728aa9ef63cb9f6b8c5711f3d21'),
+            dict(path='http/server/requests.py', sha1='822428f98e8d4023a65eeedea9532f0e42eba963'),
             dict(path='_amalg.py', sha1='12299c57406515b545b21f8c5ec96d672f9209b4'),
         ],
     )
@@ -12996,7 +12996,7 @@ class PipelineHttpObjectDecoder(
 
 
 class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjectDecoder):
-    _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.RESPONSE
+    _parse_mode: ta.Final = HttpParser.Mode.RESPONSE
     _if_content_length_missing: ta.Final = 'eof'
 
 
@@ -13025,7 +13025,7 @@ class PipelineHttpResponseDecompressor(PipelineHttpResponseObjects, PipelineHttp
 
 
 class PipelineHttpRequestDecoder(PipelineHttpRequestObjects, PipelineHttpObjectDecoder):
-    _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.REQUEST
+    _parse_mode: ta.Final = HttpParser.Mode.REQUEST
     _if_content_length_missing: ta.Final = 'none'
 
 

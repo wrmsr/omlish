@@ -14,7 +14,7 @@ from ..responses import PipelineHttpResponseObjects
 
 
 class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjectDecoder):
-    _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.RESPONSE
+    _parse_mode: ta.Final = HttpParser.Mode.RESPONSE
     _if_content_length_missing: ta.Final = 'eof'
 
 

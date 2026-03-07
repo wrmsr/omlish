@@ -14,7 +14,7 @@ from ..requests import PipelineHttpRequestObjects
 
 
 class PipelineHttpRequestDecoder(PipelineHttpRequestObjects, PipelineHttpObjectDecoder):
-    _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.REQUEST
+    _parse_mode: ta.Final = HttpParser.Mode.REQUEST
     _if_content_length_missing: ta.Final = 'none'
 
 
