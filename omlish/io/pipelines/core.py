@@ -274,10 +274,6 @@ class ChannelPipelineHandlerRef(ta.Generic[T]):
         return self._context._pipeline  # noqa
 
     @property
-    def channel(self) -> 'PipelineChannel':
-        return self._context._pipeline._channel  # noqa
-
-    @property
     def handler(self) -> T:
         return self._context._handler  # type: ignore[return-value]  # noqa
 
@@ -356,12 +352,8 @@ class ChannelPipelineHandlerContext:
         return self._pipeline
 
     @property
-    def channel(self) -> 'PipelineChannel':
-        return self._pipeline._channel  # noqa
-
-    @property
     def services(self) -> 'ChannelPipelineServices':  # noqa
-        return self._pipeline._channel._services  # noqa
+        return self._pipeline._services  # noqa
 
     @property
     def handler(self) -> 'ChannelPipelineHandler':
@@ -379,7 +371,7 @@ class ChannelPipelineHandlerContext:
             *,
             pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
     ) -> ChannelPipelineMessages.Defer[T]:
-        return self._pipeline._channel._defer(self, fn, pin=pin)  # noqa
+        return self._pipeline._defer(self, fn, pin=pin)  # noqa
 
     def defer_no_context(
             self,
@@ -387,7 +379,7 @@ class ChannelPipelineHandlerContext:
             *,
             pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
     ) -> ChannelPipelineMessages.Defer[T]:
-        return self._pipeline._channel._defer(self, fn, no_context=True, pin=pin)  # noqa
+        return self._pipeline._defer(self, fn, no_context=True, pin=pin)  # noqa
 
     #
 
@@ -470,7 +462,7 @@ class ChannelPipelineHandlerContext:
 
     def _notify(self, no: ChannelPipelineHandlerNotification) -> None:
         check.isinstance(no, ChannelPipelineHandlerNotification)
-        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
+        check.state(self._pipeline._execution_depth > 0)  # noqa
 
         self._handler.notify(self, no)
 
@@ -487,17 +479,17 @@ class ChannelPipelineHandlerContext:
 
     def _inbound(self, msg: ta.Any) -> None:
         check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY and self._pipeline._channel._execution_depth > 0)  # noqa
+        check.state(self._pipeline._state == ChannelPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._propagation.add_must(self, 'inbound', msg)  # noqa
+            self._pipeline._propagation.add_must(self, 'inbound', msg)  # noqa
 
         try:
             self._handler.inbound(self, msg)
 
-        except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+        except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
 
         except BaseException as e:
@@ -514,17 +506,17 @@ class ChannelPipelineHandlerContext:
 
     def _outbound(self, msg: ta.Any) -> None:
         check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY and self._pipeline._channel._execution_depth > 0)  # noqa
+        check.state(self._pipeline._state == ChannelPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._propagation.add_must(self, 'outbound', msg)  # noqa
+            self._pipeline._propagation.add_must(self, 'outbound', msg)  # noqa
 
         try:
             self._handler.outbound(self, msg)
 
-        except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+        except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
 
         except BaseException as e:
@@ -536,7 +528,7 @@ class ChannelPipelineHandlerContext:
 
     def _run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
         check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY and self._pipeline._channel._execution_depth > 0)  # noqa
+        check.state(self._pipeline._state == ChannelPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.state(dfl._ctx is self)  # noqa
 
@@ -546,7 +538,7 @@ class ChannelPipelineHandlerContext:
             else:
                 res = dfl.fn(self)  # type: ignore[call-arg]
 
-        except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+        except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
 
         except BaseException as e:  # noqa
@@ -571,7 +563,7 @@ class ChannelPipelineHandlerContext:
             try:
                 self.feed_in(ChannelPipelineMessages.Error(e, direction, self._ref))
 
-            except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+            except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
                 raise
 
             except BaseException as e2:  # noqa
@@ -641,7 +633,7 @@ class ChannelPipelineHandlerContext:
             direction: 'ChannelPipelineDirection',
             msg: ChannelPipelineMessages.MustPropagate,
     ) -> None:
-        self._pipeline._channel._propagation.remove_must(self, direction, msg)  # noqa
+        self._pipeline._propagation.remove_must(self, direction, msg)  # noqa
 
 
 ##
@@ -701,10 +693,10 @@ class ChannelPipelineService(Abstract):
     def handler_update(self, handler_ref: ChannelPipelineHandlerRef, kind: ChannelPipelineHandlerUpdate) -> None:
         pass
 
-    def channel_enter(self, channel: 'PipelineChannel') -> None:
+    def channel_enter(self, channel: 'ChannelPipeline') -> None:
         pass
 
-    def channel_exit(self, channel: 'PipelineChannel') -> None:
+    def channel_exit(self, channel: 'ChannelPipeline') -> None:
         pass
 
 
@@ -881,7 +873,7 @@ class _PipelineChannelPropagation:
         last_seen: ChannelPipelineHandlerContext
         pinned_by: ta.Optional[ChannelPipelineMessages.Pinning] = None
 
-    def __init__(self, ch: 'PipelineChannel') -> None:
+    def __init__(self, ch: 'ChannelPipeline') -> None:
         self._ch = ch
 
         if not self._ch._config.disable_propagation_checking:  # noqa
@@ -1003,7 +995,15 @@ class ChannelPipeline:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
+        # TODO: 'close'? 'deadletter'? combination? composition? ...
+        inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
+
+        disable_propagation_checking: bool = False
+
         raise_immediately: bool = False
+
+        def __post_init__(self) -> None:
+            check.in_(self.inbound_terminal, ('drop', 'raise'))
 
         #
 
@@ -1016,18 +1016,77 @@ class ChannelPipeline:
 
     #
 
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Spec:
+        # Initial handlers are optional - handlers may be freely added and removed later.
+        handlers: ta.Sequence[ChannelPipelineHandler] = ()
+
+        config: 'ChannelPipeline.Config' = dc.field(default_factory=lambda: ChannelPipeline.Config.DEFAULT)
+
+        # _: dc.KW_ONLY
+
+        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = ()
+
+        # Services are fixed for the lifetime of the channel.
+        services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = ()
+
+        #
+
+        def update_config(self, **kwargs: ta.Any) -> 'ChannelPipeline.Spec':
+            return dc.replace(self, config=self.config.update(**kwargs))
+
+    @classmethod
+    def new(
+            cls,
+            handlers: ta.Sequence[ChannelPipelineHandler] = (),
+            config: 'ChannelPipeline.Config' = Config.DEFAULT,
+            *,
+            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = (),
+            services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = (),
+    ) -> 'ChannelPipeline':
+        return cls(ChannelPipeline.Spec(
+            handlers=handlers,
+            config=config,
+            metadata=metadata,
+            services=services,
+        ))
+
+    #
+
     def __init__(
             self,
+            spec: Spec,
             *,
-            _channel: 'PipelineChannel',
-            _config: ta.Optional[Config] = None,
+            never_handle_exceptions: ta.Tuple[type, ...] = (),
     ) -> None:
         super().__init__()
 
-        self._channel: ta.Final[PipelineChannel] = _channel
-        if _config is None:
-            _config = ChannelPipeline.Config.DEFAULT
-        self._config: ta.Final[ChannelPipeline.Config] = _config
+        self._config: ta.Final[ChannelPipeline.Config] = spec.config
+        self._never_handle_exceptions = never_handle_exceptions
+
+        self._metadata: ta.Final[PipelineChannelMetadatas] = PipelineChannelMetadatas.of(spec.metadata)
+        self._services: ta.Final[ChannelPipelineServices] = ChannelPipelineServices.of(spec.services)
+
+        #
+
+        self._output: ta.Final[ChannelPipeline._Output] = ChannelPipeline._Output()
+
+        self._saw_any_input = False
+        self._saw_initial_input = False
+        self._saw_final_input = False
+        self._saw_final_output = False
+
+        self._all_never_handle_exceptions: ta.Tuple[type, ...] = (
+            UnhandleableChannelPipelineError,
+            *never_handle_exceptions,
+        )
+
+        self._execution_depth = 0
+
+        self._propagation: _PipelineChannelPropagation = _PipelineChannelPropagation(self)
+
+        #
 
         self._outermost = outermost = ChannelPipelineHandlerContext(
             _pipeline=self,
@@ -1048,8 +1107,22 @@ class ChannelPipeline:
 
         self._contexts_by_name: ta.Final[ta.Dict[str, ChannelPipelineHandlerContext]] = {}
 
-    _outermost: ta.Final[ChannelPipelineHandlerContext]
-    _innermost: ta.Final[ChannelPipelineHandlerContext]
+        #
+
+        self._state = ChannelPipeline.State.READY
+
+        #
+
+        try:
+            for h in spec.handlers:
+                self.add_innermost(h)
+
+        except self._all_never_handle_exceptions:  # type: ignore[misc]
+            raise
+
+        except BaseException:  # noqa
+            self.destroy()
+            raise
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -1060,13 +1133,267 @@ class ChannelPipeline:
 
     #
 
+    class State(enum.Enum):
+        NEW = 'new'
+        READY = 'ready'
+        DESTROYING = 'destroying'
+        DESTROYED = 'destroyed'
+
+    _state: State = State.NEW
+
+    @property
+    def state(self) -> State:
+        return self._state
+
+    #
+
+    @property
+    def saw_any_input(self) -> bool:
+        return self._saw_any_input
+
+    @property
+    def saw_initial_input(self) -> bool:
+        return self._saw_initial_input
+
+    @property
+    def saw_final_input(self) -> bool:
+        return self._saw_final_input  # Note: only 'channel-level'
+
+    @property
+    def saw_final_output(self) -> bool:
+        return self._saw_final_output
+
+    #
+
+    @property
+    def metadata(self) -> PipelineChannelMetadatas:
+        return self._metadata
+
+    #
+
+    @property
+    def services(self) -> ChannelPipelineServices:
+        return self._services
+
+    #
+
+    def _handler_update(self, ctx: ChannelPipelineHandlerContext, kind: ChannelPipelineHandlerUpdate) -> None:
+        for svc in self._services._handles_handler_update:  # noqa
+            svc.handler_update(ctx._ref, kind)  # noqa
+
+    #
+
+    def _step_in(self) -> None:
+        self._execution_depth += 1
+
+        if self._execution_depth == 1:
+            for svc in self._services._handles_channel_enter:  # noqa
+                svc.channel_enter(self)
+
+    def _step_out(self) -> None:
+        check.state(self._execution_depth > 0)
+
+        self._execution_depth -= 1
+
+        if not self._execution_depth:
+            for svc in self._services._handles_channel_exit:  # noqa
+                svc.channel_exit(self)
+
+            self._propagation.check_and_clear()
+
+    @ta.final
+    class _EnterContextManager:
+        def __init__(self, ch: 'ChannelPipeline') -> None:
+            self._ch = ch
+
+        def __enter__(self) -> None:
+            self._ch._step_in()  # noqa
+
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+            self._ch._step_out()  # noqa
+
+    def enter(self) -> ta.ContextManager[None]:
+        return self._EnterContextManager(self)
+
+    #
+
+    def _notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
+        self._step_in()
+        try:
+            ctx._notify(no)  # noqa
+
+        finally:
+            self._step_out()
+
+    def notify(self, handler_ref: ChannelPipelineHandlerRef, no: ChannelPipelineHandlerNotification) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+        self._notify(ctx, no)
+
+    #
+
+    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+        self._step_in()
+        try:
+            for msg in msgs:
+                if self._saw_final_input:
+                    raise SawFinalInputChannelPipelineError
+                elif isinstance(msg, ChannelPipelineMessages.FinalInput):
+                    self._saw_final_input = True
+
+                if isinstance(msg, ChannelPipelineMessages.InitialInput):
+                    if self._saw_any_input:
+                        raise SawInitialInputChannelPipelineError
+                    check.state(not self._saw_initial_input)
+                    self._saw_initial_input = True
+                self._saw_any_input = True
+
+                ctx._inbound(msg)  # noqa
+
+        finally:
+            self._step_out()
+
+    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
+        # TODO: remove? internal only? used by replace-self pattern
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+        self._feed_in_to(ctx, msgs)
+
+    def feed_in(self, *msgs: ta.Any) -> None:
+        self._feed_in_to(self._outermost, msgs)  # noqa
+
+    def feed_initial_input(self) -> None:
+        self._feed_in_to(self._outermost, (ChannelPipelineMessages.InitialInput(),))  # noqa
+
+    def feed_final_input(self) -> None:
+        self._feed_in_to(self._outermost, (ChannelPipelineMessages.FinalInput(),))  # noqa
+
+    #
+
+    def _defer(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            fn: ta.Union[
+                ta.Callable[[ChannelPipelineHandlerContext], T],
+                ta.Callable[[], T],
+            ],
+            *,
+            no_context: bool = False,
+            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
+    ) -> ChannelPipelineMessages.Defer[T]:
+        check.is_(ctx._pipeline, self)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        dfl = ChannelPipelineMessages.Defer(
+            fn,
+            no_context,
+            _ctx=ctx,
+            _pinned=pin,
+        )
+
+        if pin:
+            self._propagation.pin_musts(dfl)
+
+        ctx.feed_out(dfl)
+
+        return dfl
+
+    def run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
+        ctx = check.not_none(dfl._ctx)  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        self._step_in()
+        try:
+            if dfl._pinned:  # noqa
+                self._propagation.unpin_musts(dfl)
+
+            ctx._run_deferred(dfl)  # noqa
+
+        finally:
+            self._step_out()
+
+    #
+
+    def _terminal_inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if (tm := self._config.inbound_terminal) == 'drop':
+            pass
+
+        elif tm == 'raise':
+            if not isinstance(msg, ChannelPipelineMessages.MayPropagate):
+                raise MessageReachedTerminalChannelPipelineError.new_single('inbound', msg)
+
+        else:
+            raise RuntimeError(f'unknown inbound terminal mode {tm}')
+
+    def _terminal_outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+            self._saw_final_output = True
+        elif self._saw_final_output:
+            raise SawFinalOutputChannelPipelineError
+
+        self._output._q.append(msg)  # noqa
+
+    #
+
+    @ta.final
+    class _Output:
+        def __init__(self) -> None:
+            self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+
+        def peek(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
+
+            return self._q[0]
+
+        def poll(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
+
+            return self._q.popleft()
+
+        def drain(self) -> ta.List[ta.Any]:
+            out: ta.List[ta.Any] = []
+
+            while self._q:
+                out.append(self._q.popleft())
+
+            return out
+
+    @property
+    def output(self) -> _Output:
+        return self._output
+
+    #
+
+    def destroy(self) -> None:
+        check.state(self._state == ChannelPipeline.State.READY)
+        self._state = ChannelPipeline.State.DESTROYING
+
+        self._step_in()
+        try:
+            im_ctx = self._innermost  # noqa
+            om_ctx = self._outermost  # noqa
+            while (ctx := im_ctx._next_out) is not om_ctx:  # noqa
+                self.remove(ctx._ref)  # noqa
+
+        finally:
+            self._step_out()
+
+        self._state = ChannelPipeline.State.DESTROYED
+    #
+
+    _outermost: ta.Final[ChannelPipelineHandlerContext]
+    _innermost: ta.Final[ChannelPipelineHandlerContext]
+
     def _check_can_add(
             self,
             handler: ChannelPipelineHandler,
             *,
             name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandler:
-        check.state(self._channel._state == PipelineChannel.State.READY)  # noqa
+        check.state(self._state == ChannelPipeline.State.READY)  # noqa
 
         if not isinstance(handler, ShareableChannelPipelineHandler):
             check.not_in(handler, self._unique_contexts)
@@ -1111,7 +1438,7 @@ class ChannelPipeline:
             name=name,
         )
 
-        self._channel._handler_update(ctx, 'adding')  # noqa
+        self._handler_update(ctx, 'adding')  # noqa
 
         if isinstance(handler, ShareableChannelPipelineHandler):
             self._shareable_contexts.setdefault(handler, set()).add(ctx)
@@ -1138,10 +1465,10 @@ class ChannelPipeline:
 
         self._clear_caches()
 
-        self._channel._handler_update(ctx, 'added')  # noqa
+        self._handler_update(ctx, 'added')  # noqa
 
         # FIXME: exceptions?
-        self._channel._notify(ctx, ChannelPipelineHandlerNotifications.Added())  # noqa
+        self._notify(ctx, ChannelPipelineHandlerNotifications.Added())  # noqa
 
         return ctx._ref  # noqa
 
@@ -1187,7 +1514,7 @@ class ChannelPipeline:
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self)  # noqa
 
-        check.state(self._channel._state in (PipelineChannel.State.READY, PipelineChannel.State.DESTROYING))  # noqa
+        check.state(self._state in (ChannelPipeline.State.READY, ChannelPipeline.State.DESTROYING))  # noqa
 
         check.state(not ctx._invalidated)  # noqa
 
@@ -1208,7 +1535,7 @@ class ChannelPipeline:
         ctx = handler_ref._context  # noqa
         handler = ctx._handler  # noqa
 
-        self._channel._handler_update(ctx, 'removing')  # noqa
+        self._handler_update(ctx, 'removing')  # noqa
 
         if ctx._name is not None:  # noqa
             del self._contexts_by_name[ctx._name]  # noqa
@@ -1230,10 +1557,10 @@ class ChannelPipeline:
 
         self._clear_caches()
 
-        self._channel._handler_update(ctx, 'removed')  # noqa
+        self._handler_update(ctx, 'removed')  # noqa
 
         # FIXME: exceptions? defer?
-        self._channel._notify(ctx, ChannelPipelineHandlerNotifications.Removed())  # noqa
+        self._notify(ctx, ChannelPipelineHandlerNotifications.Removed())  # noqa
 
     def remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
         self._remove(handler_ref)
@@ -1265,9 +1592,9 @@ class ChannelPipeline:
 
         def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._propagation.remove_must(ctx, 'outbound', msg)  # noqa
+                ctx._pipeline._propagation.remove_must(ctx, 'outbound', msg)  # noqa
 
-            ctx._pipeline._channel._terminal_outbound(ctx, msg)  # noqa
+            ctx._pipeline._terminal_outbound(ctx, msg)  # noqa
 
     @ta.final
     class _Innermost(ChannelPipelineHandler):
@@ -1278,9 +1605,9 @@ class ChannelPipeline:
 
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._propagation.remove_must(ctx, 'inbound', msg)  # noqa
+                ctx._pipeline._propagation.remove_must(ctx, 'inbound', msg)  # noqa
 
-            ctx._pipeline._channel._terminal_inbound(ctx, msg)  # noqa
+            ctx._pipeline._terminal_inbound(ctx, msg)  # noqa
 
     #
 
@@ -1425,387 +1752,3 @@ class ChannelPipeline:
                 if handler == ctx._handler:  # noqa
                     return ctx._ref  # noqa
             return None
-
-
-@ta.final
-class PipelineChannel:
-    @ta.final
-    @dc.dataclass(frozen=True)
-    class Config:
-        # TODO: 'close'? 'deadletter'? combination? composition? ...
-        inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
-
-        disable_propagation_checking: bool = False
-
-        pipeline: ChannelPipeline.Config = ChannelPipeline.Config.DEFAULT
-
-        def __post_init__(self) -> None:
-            check.in_(self.inbound_terminal, ('drop', 'raise'))
-
-        #
-
-        DEFAULT: ta.ClassVar['PipelineChannel.Config']
-
-        def update(self, **kwargs: ta.Any) -> 'PipelineChannel.Config':
-            return dc.replace(self, **kwargs)
-
-        def update_pipeline(self, **kwargs: ta.Any) -> 'PipelineChannel.Config':
-            return self.update(pipeline=self.pipeline.update(**kwargs))
-
-    Config.DEFAULT = Config()
-
-    #
-
-    @ta.final
-    @dc.dataclass(frozen=True)
-    class Spec:
-        # Initial handlers are optional - handlers may be freely added and removed later.
-        handlers: ta.Sequence[ChannelPipelineHandler] = ()
-
-        config: 'PipelineChannel.Config' = dc.field(default_factory=lambda: PipelineChannel.Config.DEFAULT)
-
-        # _: dc.KW_ONLY
-
-        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = ()
-
-        # Services are fixed for the lifetime of the channel.
-        services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = ()
-
-        #
-
-        def update_config(self, **kwargs: ta.Any) -> 'PipelineChannel.Spec':
-            return dc.replace(self, config=self.config.update(**kwargs))
-
-        def update_pipeline_config(self, **kwargs: ta.Any) -> 'PipelineChannel.Spec':
-            return dc.replace(self, config=self.config.update_pipeline(**kwargs))
-
-    @classmethod
-    def new(
-            cls,
-            handlers: ta.Sequence[ChannelPipelineHandler] = (),
-            config: 'PipelineChannel.Config' = Config.DEFAULT,
-            *,
-            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = (),
-            services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = (),
-    ) -> 'PipelineChannel':
-        return cls(PipelineChannel.Spec(
-            handlers=handlers,
-            config=config,
-            metadata=metadata,
-            services=services,
-        ))
-
-    #
-
-    def __init__(
-            self,
-            spec: Spec,
-            *,
-            never_handle_exceptions: ta.Tuple[type, ...] = (),
-    ) -> None:
-        super().__init__()
-
-        self._config: ta.Final[PipelineChannel.Config] = spec.config
-        self._never_handle_exceptions = never_handle_exceptions
-
-        self._metadata: ta.Final[PipelineChannelMetadatas] = PipelineChannelMetadatas.of(spec.metadata)
-        self._services: ta.Final[ChannelPipelineServices] = ChannelPipelineServices.of(spec.services)
-
-        self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
-
-        self._saw_any_input = False
-        self._saw_initial_input = False
-        self._saw_final_input = False
-        self._saw_final_output = False
-
-        self._all_never_handle_exceptions: ta.Tuple[type, ...] = (
-            UnhandleableChannelPipelineError,
-            *never_handle_exceptions,
-        )
-
-        self._execution_depth = 0
-
-        self._propagation: _PipelineChannelPropagation = _PipelineChannelPropagation(self)
-
-        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
-            _channel=self,
-            _config=spec.config.pipeline,
-        )
-
-        self._state = PipelineChannel.State.READY
-
-        #
-
-        try:
-            for h in spec.handlers:
-                self._pipeline.add_innermost(h)
-
-        except self._all_never_handle_exceptions:  # type: ignore[misc]
-            raise
-
-        except BaseException:  # noqa
-            self.destroy()
-            raise
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}'
-
-    @property
-    def config(self) -> Config:
-        return self._config
-
-    @property
-    def pipeline(self) -> ChannelPipeline:
-        return self._pipeline
-
-    #
-
-    class State(enum.Enum):
-        NEW = 'new'
-        READY = 'ready'
-        DESTROYING = 'destroying'
-        DESTROYED = 'destroyed'
-
-    _state: State = State.NEW
-
-    @property
-    def state(self) -> State:
-        return self._state
-
-    #
-
-    @property
-    def saw_any_input(self) -> bool:
-        return self._saw_any_input
-
-    @property
-    def saw_initial_input(self) -> bool:
-        return self._saw_initial_input
-
-    @property
-    def saw_final_input(self) -> bool:
-        return self._saw_final_input  # Note: only 'channel-level'
-
-    @property
-    def saw_final_output(self) -> bool:
-        return self._saw_final_output
-
-    #
-
-    @property
-    def metadata(self) -> PipelineChannelMetadatas:
-        return self._metadata
-
-    #
-
-    @property
-    def services(self) -> ChannelPipelineServices:
-        return self._services
-
-    #
-
-    def _handler_update(self, ctx: ChannelPipelineHandlerContext, kind: ChannelPipelineHandlerUpdate) -> None:
-        for svc in self._services._handles_handler_update:  # noqa
-            svc.handler_update(ctx._ref, kind)  # noqa
-
-    #
-
-    def _step_in(self) -> None:
-        self._execution_depth += 1
-
-        if self._execution_depth == 1:
-            for svc in self._services._handles_channel_enter:  # noqa
-                svc.channel_enter(self)
-
-    def _step_out(self) -> None:
-        check.state(self._execution_depth > 0)
-
-        self._execution_depth -= 1
-
-        if not self._execution_depth:
-            for svc in self._services._handles_channel_exit:  # noqa
-                svc.channel_exit(self)
-
-            self._propagation.check_and_clear()
-
-    @ta.final
-    class _EnterContextManager:
-        def __init__(self, ch: 'PipelineChannel') -> None:
-            self._ch = ch
-
-        def __enter__(self) -> None:
-            self._ch._step_in()  # noqa
-
-        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-            self._ch._step_out()  # noqa
-
-    def enter(self) -> ta.ContextManager[None]:
-        return self._EnterContextManager(self)
-
-    #
-
-    def _notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
-        self._step_in()
-        try:
-            ctx._notify(no)  # noqa
-
-        finally:
-            self._step_out()
-
-    def notify(self, handler_ref: ChannelPipelineHandlerRef, no: ChannelPipelineHandlerNotification) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self._pipeline)  # noqa
-        self._notify(ctx, no)
-
-    #
-
-    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
-        self._step_in()
-        try:
-            for msg in msgs:
-                if self._saw_final_input:
-                    raise SawFinalInputChannelPipelineError
-                elif isinstance(msg, ChannelPipelineMessages.FinalInput):
-                    self._saw_final_input = True
-
-                if isinstance(msg, ChannelPipelineMessages.InitialInput):
-                    if self._saw_any_input:
-                        raise SawInitialInputChannelPipelineError
-                    check.state(not self._saw_initial_input)
-                    self._saw_initial_input = True
-                self._saw_any_input = True
-
-                ctx._inbound(msg)  # noqa
-
-        finally:
-            self._step_out()
-
-    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
-        # TODO: remove? internal only? used by replace-self pattern
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self._pipeline)  # noqa
-        self._feed_in_to(ctx, msgs)
-
-    def feed_in(self, *msgs: ta.Any) -> None:
-        self._feed_in_to(self._pipeline._outermost, msgs)  # noqa
-
-    def feed_initial_input(self) -> None:
-        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.InitialInput(),))  # noqa
-
-    def feed_final_input(self) -> None:
-        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.FinalInput(),))  # noqa
-
-    #
-
-    def _defer(
-            self,
-            ctx: ChannelPipelineHandlerContext,
-            fn: ta.Union[
-                ta.Callable[[ChannelPipelineHandlerContext], T],
-                ta.Callable[[], T],
-            ],
-            *,
-            no_context: bool = False,
-            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
-    ) -> ChannelPipelineMessages.Defer[T]:
-        check.is_(ctx._pipeline, self._pipeline)  # noqa
-        check.state(not ctx._invalidated)  # noqa
-
-        dfl = ChannelPipelineMessages.Defer(
-            fn,
-            no_context,
-            _ctx=ctx,
-            _pinned=pin,
-        )
-
-        if pin:
-            self._propagation.pin_musts(dfl)
-
-        ctx.feed_out(dfl)
-
-        return dfl
-
-    def run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
-        ctx = check.not_none(dfl._ctx)  # noqa
-        check.is_(ctx._pipeline, self._pipeline)  # noqa
-        check.state(not ctx._invalidated)  # noqa
-
-        self._step_in()
-        try:
-            if dfl._pinned:  # noqa
-                self._propagation.unpin_musts(dfl)
-
-            ctx._run_deferred(dfl)  # noqa
-
-        finally:
-            self._step_out()
-
-    #
-
-    def _terminal_inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
-        if (tm := self._config.inbound_terminal) == 'drop':
-            pass
-
-        elif tm == 'raise':
-            if not isinstance(msg, ChannelPipelineMessages.MayPropagate):
-                raise MessageReachedTerminalChannelPipelineError.new_single('inbound', msg)
-
-        else:
-            raise RuntimeError(f'unknown inbound terminal mode {tm}')
-
-    def _terminal_outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
-        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
-            self._saw_final_output = True
-        elif self._saw_final_output:
-            raise SawFinalOutputChannelPipelineError
-
-        self._output._q.append(msg)  # noqa
-
-    #
-
-    @ta.final
-    class _Output:
-        def __init__(self) -> None:
-            self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
-
-        def peek(self) -> ta.Optional[ta.Any]:
-            if not self._q:
-                return None
-
-            return self._q[0]
-
-        def poll(self) -> ta.Optional[ta.Any]:
-            if not self._q:
-                return None
-
-            return self._q.popleft()
-
-        def drain(self) -> ta.List[ta.Any]:
-            out: ta.List[ta.Any] = []
-
-            while self._q:
-                out.append(self._q.popleft())
-
-            return out
-
-    @property
-    def output(self) -> _Output:
-        return self._output
-
-    #
-
-    def destroy(self) -> None:
-        check.state(self._state == PipelineChannel.State.READY)
-        self._state = PipelineChannel.State.DESTROYING
-
-        self._step_in()
-        try:
-            im_ctx = self._pipeline._innermost  # noqa
-            om_ctx = self._pipeline._outermost  # noqa
-            while (ctx := im_ctx._next_out) is not om_ctx:  # noqa
-                self._pipeline.remove(ctx._ref)  # noqa
-
-        finally:
-            self._step_out()
-
-        self._state = PipelineChannel.State.DESTROYED
