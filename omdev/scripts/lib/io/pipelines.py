@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='96dd7292e1ba181754bce6cbb240d8f6fd527b58'),
+            dict(path='core.py', sha1='6b2d4622c3a0dfbab3b8c6ae542af730c7d23e78'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -1583,6 +1583,9 @@ class IoPipelineHandlerRef(ta.Generic[T]):
 IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
+##
+
+
 @ta.final
 class IoPipelineHandlerContext:
     """
@@ -1613,8 +1616,9 @@ class IoPipelineHandlerContext:
 
         self._ref: IoPipelineHandlerRef_ = IoPipelineHandlerRef(_context=self)
 
-        self._handles_inbound = type(_handler).inbound is not IoPipelineHandler.inbound
-        self._handles_outbound = type(_handler).outbound is not IoPipelineHandler.outbound
+        hty = type(_handler)
+        self._handles_inbound = hty.inbound is not IoPipelineHandler.inbound
+        self._handles_outbound = hty.outbound is not IoPipelineHandler.outbound
 
     _next_in: 'IoPipelineHandlerContext'  # 'next'
     _next_out: 'IoPipelineHandlerContext'  # 'prev'
@@ -1985,9 +1989,6 @@ class IoPipelineService(Abstract):
         pass
 
 
-#
-
-
 @ta.final
 class IoPipelineServices:
     def __init__(self, lst: ta.Sequence[IoPipelineService]) -> None:
@@ -2077,9 +2078,9 @@ class IoPipelineMetadatas:
     def __init__(self, lst: ta.Sequence[IoPipelineMetadata]) -> None:
         dct: ta.Dict[type, ta.Any] = {}
         for md in lst:
-            ty = type(md)
-            check.not_in(ty, dct)
-            dct[ty] = md
+            mty = type(md)
+            check.not_in(mty, dct)
+            dct[mty] = md
         self._dct = dct
 
     @classmethod
@@ -2145,6 +2146,7 @@ class IoPipelineMetadatas:
             ty = ty.ty
 
         return self._dct.get(ty, default)
+
 
 ##
 
@@ -2416,7 +2418,8 @@ class IoPipeline:
     def config(self) -> Config:
         return self._config
 
-    #
+    ##
+    # state
 
     class State(enum.Enum):
         NEW = 'new'
@@ -2448,25 +2451,19 @@ class IoPipeline:
     def saw_final_output(self) -> bool:
         return self._saw_final_output
 
-    #
+    ##
+    # sub-collections
 
     @property
     def metadata(self) -> IoPipelineMetadatas:
         return self._metadata
 
-    #
-
     @property
     def services(self) -> IoPipelineServices:
         return self._services
 
-    #
-
-    def _handler_update(self, ctx: IoPipelineHandlerContext, kind: IoPipelineHandlerUpdate) -> None:
-        for svc in self._services._handles_handler_update:  # noqa
-            svc.handler_update(ctx._ref, kind)  # noqa
-
-    #
+    ##
+    # execution
 
     def _step_in(self) -> None:
         self._execution_depth += 1
@@ -2598,33 +2595,20 @@ class IoPipeline:
         finally:
             self._step_out()
 
-    #
-
-    def _terminal_inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
-        if (tm := self._config.inbound_terminal) == 'drop':
-            pass
-
-        elif tm == 'raise':
-            if not isinstance(msg, IoPipelineMessages.MayPropagate):
-                raise MessageReachedTerminalIoPipelineError.new_single('inbound', msg)
-
-        else:
-            raise RuntimeError(f'unknown inbound terminal mode {tm}')
-
-    def _terminal_outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
-        if isinstance(msg, IoPipelineMessages.FinalOutput):
-            self._saw_final_output = True
-        elif self._saw_final_output:
-            raise SawFinalOutputIoPipelineError
-
-        self._output._q.append(msg)  # noqa
-
-    #
+    ##
+    # output
 
     @ta.final
     class _Output:
         def __init__(self) -> None:
             self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+
+        def __repr__(self) -> str:
+            return (
+                f'{type(self).__qualname__}@{id(self):x}'
+                f'<len={len(self._q)}>'
+                '()'
+            )
 
         def peek(self) -> ta.Optional[ta.Any]:
             if not self._q:
@@ -2650,23 +2634,34 @@ class IoPipeline:
     def output(self) -> _Output:
         return self._output
 
+    ##
+    # handlers
+
+    def _handler_update(self, ctx: IoPipelineHandlerContext, kind: IoPipelineHandlerUpdate) -> None:
+        for svc in self._services._handles_handler_update:  # noqa
+            svc.handler_update(ctx._ref, kind)  # noqa
+
     #
 
-    def destroy(self) -> None:
-        check.state(self._state == IoPipeline.State.READY)
-        self._state = IoPipeline.State.DESTROYING
+    def _terminal_inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if (tm := self._config.inbound_terminal) == 'drop':
+            pass
 
-        self._step_in()
-        try:
-            im_ctx = self._innermost  # noqa
-            om_ctx = self._outermost  # noqa
-            while (ctx := im_ctx._next_out) is not om_ctx:  # noqa
-                self.remove(ctx._ref)  # noqa
+        elif tm == 'raise':
+            if not isinstance(msg, IoPipelineMessages.MayPropagate):
+                raise MessageReachedTerminalIoPipelineError.new_single('inbound', msg)
 
-        finally:
-            self._step_out()
+        else:
+            raise RuntimeError(f'unknown inbound terminal mode {tm}')
 
-        self._state = IoPipeline.State.DESTROYED
+    def _terminal_outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if isinstance(msg, IoPipelineMessages.FinalOutput):
+            self._saw_final_output = True
+        elif self._saw_final_output:
+            raise SawFinalOutputIoPipelineError
+
+        self._output._q.append(msg)  # noqa
+
     #
 
     _outermost: ta.Final[IoPipelineHandlerContext]
@@ -2894,7 +2889,8 @@ class IoPipeline:
 
             ctx._pipeline._terminal_inbound(ctx, msg)  # noqa
 
-    #
+    ##
+    # caches
 
     @ta.final
     class _Caches:
@@ -3037,6 +3033,31 @@ class IoPipeline:
                 if handler == ctx._handler:  # noqa
                     return ctx._ref  # noqa
             return None
+
+    ##
+    # destroy
+
+    def __enter__(self) -> 'IoPipeline':
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.destroy()
+
+    def destroy(self) -> None:
+        check.state(self._state == IoPipeline.State.READY)
+        self._state = IoPipeline.State.DESTROYING
+
+        self._step_in()
+        try:
+            im_ctx = self._innermost  # noqa
+            om_ctx = self._outermost  # noqa
+            while (ctx := im_ctx._next_out) is not om_ctx:  # noqa
+                self.remove(ctx._ref)  # noqa
+
+        finally:
+            self._step_out()
+
+        self._state = IoPipeline.State.DESTROYED
 
 
 ########################################
