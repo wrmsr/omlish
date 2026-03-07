@@ -11,7 +11,6 @@ from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
-from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestHead
 from ...requests import PipelineHttpRequestObject
 from ...server.requests import PipelineHttpRequestDecoder
@@ -77,21 +76,9 @@ def build_http_ping_channel(
 ) -> PipelineChannel.Spec:
     return PipelineChannel.Spec(
         [
-
-            # BytesFlowControlChannelPipelineHandler(
-            #     BytesFlowControlChannelPipelineHandler.Config(
-            #         outbound_capacity=outbound_capacity,
-            #         outbound_overflow_policy=outbound_overflow_policy,
-            #     ),
-            # ),
-
             PipelineHttpRequestDecoder(),
-
             PingHandler(),
-
-            FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
         ],
-
         services=[
             StubChannelPipelineFlow(auto_read=False),
         ],

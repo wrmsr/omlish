@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='e505bd9d87c40517b0cbfc3db1712121543424b3'),
+            dict(path='core.py', sha1='cc243034756fe1ff3760243fb9ce6928649db4be'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
@@ -64,7 +64,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='asyncs.py', sha1='3c5834fe4879ebdc63d44951798ad9110ae83ad4'),
             dict(path='bytes/buffering.py', sha1='363d3209a49ddfc5a6bc41b4f3fd4629ddd6dbbf'),
-            dict(path='flow/types.py', sha1='7dd906f5b1ef406472bbbf700bbec54d4ccb2cef'),
+            dict(path='flow/types.py', sha1='1bb90972a39e44c074b5d1bd0e1297f99a2c4b38'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='7e6aa42c2989ef6643363210a64aaaca20c256a2'),
             dict(path='http/objects.py', sha1='440e131d0f6d2768b915421c93d1d28586eb0a79'),
@@ -4628,12 +4628,21 @@ class ChannelPipelineMessages(NamespaceClass):
 
     #
 
-    class MustPropagate(Abstract):
+    class MayPropagate(Abstract):
         """
-        These must be propagated all the way through the pipeline when sent in either direction. This is enforced via
+        These *may* be propagated all the way through the pipeline without being an error. These will be silently
+        dropped when fed inbound and reaching the innermost pipeline position, but will still be emitted as channel
+        output when fed outbound.
+        """
+
+    class MustPropagate(MayPropagate, Abstract):
+        """
+        These *must* be propagated all the way through the pipeline when sent in either direction. This is enforced via
         object identity - the same *instance* of the message must be seen at the end of the pipeline to be considered
         caught. This is intentional.
         """
+
+    #
 
     class Pinning(Abstract):
         @property
@@ -6191,7 +6200,7 @@ class PipelineChannel:
             pass
 
         elif tm == 'raise':
-            if not isinstance(msg, ChannelPipelineMessages.MustPropagate):
+            if not isinstance(msg, ChannelPipelineMessages.MayPropagate):
                 raise MessageReachedTerminalChannelPipelineError.new_single('inbound', msg)
 
         else:
@@ -7226,19 +7235,28 @@ class ChannelPipelineFlowMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
+    class FlushInput(  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
+        ChannelPipelineMessages.MayPropagate,
+        ChannelPipelineMessages.NeverOutbound,
+    ):
         pass
 
     #
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FlushOutput(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker::flush'
+    class FlushOutput(  # ~ Netty 'ChannelOutboundInvoker::flush'
+        ChannelPipelineMessages.MayPropagate,
+        ChannelPipelineMessages.NeverInbound,
+    ):
         pass
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker::read`
+    class ReadyForInput(  # ~ Netty `ChannelOutboundInvoker::read`
+        ChannelPipelineMessages.MayPropagate,
+        ChannelPipelineMessages.NeverInbound,
+    ):
         pass
 
     #
@@ -7246,13 +7264,19 @@ class ChannelPipelineFlowMessages(NamespaceClass):
     # # TODO:
     # @ta.final
     # @dc.dataclass(frozen=True)
-    # class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    # class ReadyForOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     ChannelPipelineMessages.MayPropagate,
+    #     ChannelPipelineMessages.NeverOutbound,
+    # ):
     #     pass
 
     # # TODO:
     # @ta.final
     # @dc.dataclass(frozen=True)
-    # class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    # class PauseOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     ChannelPipelineMessages.MayPropagate,
+    #     ChannelPipelineMessages.NeverOutbound,
+    # ):
     #     pass
 
 

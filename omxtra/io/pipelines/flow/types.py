@@ -24,19 +24,28 @@ class ChannelPipelineFlowMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
+    class FlushInput(  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
+        ChannelPipelineMessages.MayPropagate,
+        ChannelPipelineMessages.NeverOutbound,
+    ):
         pass
 
     #
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FlushOutput(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker::flush'
+    class FlushOutput(  # ~ Netty 'ChannelOutboundInvoker::flush'
+        ChannelPipelineMessages.MayPropagate,
+        ChannelPipelineMessages.NeverInbound,
+    ):
         pass
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker::read`
+    class ReadyForInput(  # ~ Netty `ChannelOutboundInvoker::read`
+        ChannelPipelineMessages.MayPropagate,
+        ChannelPipelineMessages.NeverInbound,
+    ):
         pass
 
     #
@@ -44,13 +53,19 @@ class ChannelPipelineFlowMessages(NamespaceClass):
     # # TODO:
     # @ta.final
     # @dc.dataclass(frozen=True)
-    # class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    # class ReadyForOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     ChannelPipelineMessages.MayPropagate,
+    #     ChannelPipelineMessages.NeverOutbound,
+    # ):
     #     pass
 
     # # TODO:
     # @ta.final
     # @dc.dataclass(frozen=True)
-    # class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    # class PauseOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     ChannelPipelineMessages.MayPropagate,
+    #     ChannelPipelineMessages.NeverOutbound,
+    # ):
     #     pass
 
 

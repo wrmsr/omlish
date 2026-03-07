@@ -46,12 +46,21 @@ class ChannelPipelineMessages(NamespaceClass):
 
     #
 
-    class MustPropagate(Abstract):
+    class MayPropagate(Abstract):
         """
-        These must be propagated all the way through the pipeline when sent in either direction. This is enforced via
+        These *may* be propagated all the way through the pipeline without being an error. These will be silently
+        dropped when fed inbound and reaching the innermost pipeline position, but will still be emitted as channel
+        output when fed outbound.
+        """
+
+    class MustPropagate(MayPropagate, Abstract):
+        """
+        These *must* be propagated all the way through the pipeline when sent in either direction. This is enforced via
         object identity - the same *instance* of the message must be seen at the end of the pipeline to be considered
         caught. This is intentional.
         """
+
+    #
 
     class Pinning(Abstract):
         @property
@@ -1609,7 +1618,7 @@ class PipelineChannel:
             pass
 
         elif tm == 'raise':
-            if not isinstance(msg, ChannelPipelineMessages.MustPropagate):
+            if not isinstance(msg, ChannelPipelineMessages.MayPropagate):
                 raise MessageReachedTerminalChannelPipelineError.new_single('inbound', msg)
 
         else:

@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
+import collections
 import dataclasses as dc
 import typing as ta
 
@@ -7,17 +8,15 @@ from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
 from ....core import ChannelPipelineHandler
+from ....core import ChannelPipelineHandlerContext
+from ....core import ChannelPipelineHandlerFn
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....drivers.sync import SyncSocketPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
-from ....handlers.flatmap import FlatMapChannelPipelineHandlerFns
-from ....handlers.flatmap import FlatMapChannelPipelineHandlers
-from ....handlers.flatmap import InboundFlatMapChannelPipelineHandler
 from ....handlers.logs import LoggingChannelPipelineHandler
-from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseAggregatorDecoder
@@ -30,8 +29,35 @@ from ...responses import FullPipelineHttpResponse
 ##
 
 
+class HttpClientHandler(ChannelPipelineHandler):
+    def __init__(
+            self,
+            on_response: ChannelPipelineHandlerFn[FullPipelineHttpResponse, None],
+    ) -> None:
+        super().__init__()
+
+        self._on_response = on_response
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, FullPipelineHttpRequest):
+            ctx.feed_out(msg)
+            if not StubChannelPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            return
+
+        if isinstance(msg, FullPipelineHttpResponse):
+            self._on_response(ctx, msg)
+            ctx.feed_out(ChannelPipelineMessages.FinalOutput())
+            return
+
+        ctx.feed_in(msg)
+
+
 def build_http_client(
+        on_response: ChannelPipelineHandlerFn[FullPipelineHttpResponse, None],
+
         *,
+
         outermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
         innermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
 
@@ -62,32 +88,8 @@ def build_http_client(
             *([PipelineHttpResponseAggregatorDecoder()] if with_aggregator else []),
 
             PipelineHttpRequestEncoder(),
-            InboundFlatMapChannelPipelineHandler(
-                (ffn := FlatMapChannelPipelineHandlerFns).filter_type(
-                    FullPipelineHttpRequest,
-                    ffn.compose(
-                        *([ffn.inject(after=[ChannelPipelineFlowMessages.ReadyForInput()])] if with_flow and not flow_auto_read else []),  # noqa
-                        ffn.feed_out(),
-                        ffn.drop(),
-                    ),
-                ),
-            ),
 
-            InboundFlatMapChannelPipelineHandler(
-                ffn.filter_type(
-                    FullPipelineHttpResponse,
-                    ffn.concat(
-                        ffn.compose(
-                            lambda _ctx, _msg: [ChannelPipelineMessages.FinalOutput()],
-                            ffn.feed_out(),
-                            ffn.drop(),
-                        ),
-                        ffn.nop(),
-                    ),
-                ),
-            ),
-
-            *([FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput)] if with_flow else []),  # noqa
+            HttpClientHandler(on_response),
 
             *(innermost_handlers or []),
         ],
@@ -200,12 +202,10 @@ def _prepare_url_fetch(
         },
     )
 
-    response_queue = InboundQueueChannelPipelineHandler(
-        filter_type=FullPipelineHttpResponse,
-    )
+    responses: collections.deque[ta.Any] = collections.deque()
 
     pipeline_spec = build_http_client(
-        innermost_handlers=[response_queue],
+        lambda ctx, resp: responses.append(resp),
 
         with_aggregator=True,
 
@@ -221,7 +221,11 @@ def _prepare_url_fetch(
     )
 
     def get_response() -> FullPipelineHttpResponse:
-        out = check.single(response_queue.drain())
+        lst = []
+        while responses:
+            lst.append(responses.popleft())
+
+        out = check.single(lst)
         return check.isinstance(out, FullPipelineHttpResponse)
 
     return _PreparedUrlFetch(

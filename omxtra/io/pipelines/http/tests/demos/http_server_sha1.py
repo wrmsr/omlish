@@ -13,8 +13,6 @@ from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
-from ....flow.types import ChannelPipelineFlowMessages
-from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunkData
 from ...requests import PipelineHttpRequestEnd
@@ -97,15 +95,9 @@ class Sha1Handler(ChannelPipelineHandler):
 def build_http_sha1_channel() -> PipelineChannel.Spec:
     return PipelineChannel.Spec(
         [
-
             PipelineHttpRequestDecoder(),
-
             PipelineHttpResponseEncoder(),
-
             Sha1Handler(),
-
-            FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
-
         ],
 
         services=[

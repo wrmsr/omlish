@@ -7,11 +7,8 @@ from omlish.http.headers import HttpHeaders  # noqa
 from omlish.lite.check import check  # noqa
 
 from ....asyncs import AsyncChannelPipelineMessages  # noqa
-from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
-from ....flow.types import ChannelPipelineFlowMessages
-from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...responses import FullPipelineHttpResponse  # noqa
 from ...responses import PipelineHttpResponseHead  # noqa
 from ...server.apps.asgi import AsgiHandler
@@ -31,13 +28,6 @@ def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
             PipelineHttpRequestAggregatorDecoder(),
             PipelineHttpResponseEncoder(),
             AsgiHandler(app),
-            FlatMapChannelPipelineHandlers.drop(
-                'inbound',
-                filter_type=(
-                    ChannelPipelineMessages.FinalInput,
-                    ChannelPipelineFlowMessages.FlushInput,
-                ),
-            ),
         ],
     ).update_pipeline_config(
         # raise_immediately=True,
