@@ -1,0 +1,100 @@
+# ruff: noqa: UP045
+# @omlish-lite
+import asyncio
+import typing as ta
+
+from .....io.pipelines.core import ChannelPipelineHandler
+from .....io.pipelines.core import ChannelPipelineHandlerContext
+from .....io.pipelines.core import PipelineChannel
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
+from .....io.pipelines.flow.stub import StubChannelPipelineFlow
+from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
+from .....io.pipelines.sched.types import ChannelPipelineScheduling
+from ....headers import HttpHeaders
+from ....versions import HttpVersions
+from ...requests import PipelineHttpRequestHead
+from ...responses import FullPipelineHttpResponse
+from ...responses import PipelineHttpResponseHead
+from ...server.requests import PipelineHttpRequestDecoder
+from ...server.responses import PipelineHttpResponseEncoder
+
+
+##
+
+
+class PingHandler(ChannelPipelineHandler):
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if not isinstance(msg, PipelineHttpRequestHead):
+            ctx.feed_in(msg)
+            return
+
+        if msg.method == 'GET' and msg.target == '/ping':
+            ctx.feed_out(PipelineHttpResponseHead(
+                status=200,
+                reason='OK',
+                version=HttpVersions.HTTP_1_1,
+                headers=HttpHeaders([
+                    ('Content-Type', 'text/plain; charset=utf-8'),
+                    ('Content-Length', '4'),
+                    ('Connection', 'close'),
+                ]),
+            ))
+            ctx.feed_out(ChannelPipelineFlowMessages.FlushOutput())
+
+            def write_pong(n: int) -> None:
+                ctx.feed_out(b'pong'[n:n + 1])
+                ctx.feed_out(ChannelPipelineFlowMessages.FlushOutput())
+
+                if n < 4:
+                    ctx.services[ChannelPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(n + 1))
+                else:
+                    ctx.feed_final_output()
+
+            ctx.services[ChannelPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(0))
+
+        else:
+            ctx.feed_out(FullPipelineHttpResponse.simple(
+                status=404,
+                body=b'not found',
+            ))
+            ctx.feed_final_output()
+
+
+def build_http_ping_channel() -> PipelineChannel.Spec:
+    return PipelineChannel.Spec(
+        [
+            PipelineHttpRequestDecoder(),
+            PipelineHttpResponseEncoder(),
+            PingHandler(),
+        ],
+        services=[
+            StubChannelPipelineFlow(auto_read=True),
+        ],
+    )
+
+
+async def serve_ping(
+        *,
+        host: str = '127.0.0.1',
+        port: int = 8087,
+) -> None:
+    async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        drv = SimpleAsyncioStreamPipelineChannelDriver(
+            build_http_ping_channel(),
+            reader,
+            writer,
+        )
+
+        await drv.run()
+
+    srv = await asyncio.start_server(_handle_client, host, port)
+    async with srv:
+        await srv.serve_forever()
+
+
+def main() -> None:
+    asyncio.run(serve_ping())
+
+
+if __name__ == '__main__':
+    main()
