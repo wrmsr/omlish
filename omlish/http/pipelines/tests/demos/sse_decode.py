@@ -14,7 +14,7 @@ from ...sse import IoPipelineSseDecoder
 ##
 
 
-def build_http_sse_channel() -> IoPipeline:
+def build_http_sse_spec() -> IoPipeline:
     """Example: raw bytes -> HTTP response head -> conditional gzip -> longest-match line framing -> Sse events."""
 
     return IoPipeline.new([
@@ -38,7 +38,7 @@ def demo_sync_http_sse() -> ta.List[ta.Any]:
       - deliver channel.poll_app()/drain_app() to application logic
     """
 
-    ch = build_http_sse_channel()
+    ch = build_http_sse_spec()
 
     raw = (
         b'HTTP/1.1 200 OK\r\n'

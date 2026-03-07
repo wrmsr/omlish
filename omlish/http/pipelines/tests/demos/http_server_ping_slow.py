@@ -60,7 +60,7 @@ class PingHandler(IoPipelineHandler):
             ctx.feed_final_output()
 
 
-def build_http_ping_channel() -> IoPipeline.Spec:
+def build_http_ping_spec() -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
             IoPipelineHttpRequestDecoder(),
@@ -80,7 +80,7 @@ async def serve_ping(
 ) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = SimpleAsyncioStreamIoPipelineDriver(
-            build_http_ping_channel(),
+            build_http_ping_spec(),
             reader,
             writer,
         )

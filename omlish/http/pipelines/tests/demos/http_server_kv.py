@@ -136,7 +136,7 @@ class KvStoreHandler(IoPipelineHandler):
         ctx.feed_out(resp)
 
 
-def build_http_kv_channel(
+def build_http_kv_spec(
         items: ta.MutableMapping[str, str],
 ) -> IoPipeline.Spec:
     return IoPipeline.Spec(
@@ -170,7 +170,7 @@ async def serve_kv(
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = SimpleAsyncioStreamIoPipelineDriver(
-            build_http_kv_channel(items),
+            build_http_kv_spec(items),
             reader,
             writer,
             # backpressure_sleep=0.001,

@@ -18,7 +18,7 @@ from ...server.responses import IoPipelineHttpResponseEncoder
 ##
 
 
-def build_wsgi_channel(app: ta.Any) -> IoPipeline.Spec:
+def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
     return IoPipeline.Spec([
         IoPipelineHttpRequestDecoder(),
         IoPipelineHttpRequestAggregatorDecoder(),
@@ -37,7 +37,7 @@ def build_wsgi_channel(app: ta.Any) -> IoPipeline.Spec:
 async def a_serve_wsgi_pipeline(spec: WsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = SimpleAsyncioStreamIoPipelineDriver(
-            build_wsgi_channel(spec.app),
+            build_wsgi_spec(spec.app),
             reader,
             writer,
         )

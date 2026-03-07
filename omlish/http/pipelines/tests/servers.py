@@ -22,12 +22,12 @@ class HttpServerRunner:
 
     def __init__(
             self,
-            channel_builder: ta.Callable[[], IoPipeline.Spec],
+            spec_builder: ta.Callable[[], IoPipeline.Spec],
             preferred_port: int = 0,
             *,
             use_flow_control: bool = False,
     ) -> None:
-        self._channel_builder = channel_builder
+        self._spec_builder = spec_builder
         self._preferred_port = preferred_port
         self._use_flow_control = use_flow_control
         self._port: ta.Optional[int] = None
@@ -92,7 +92,7 @@ class HttpServerRunner:
             drv: AsyncioStreamIoPipelineDriver
 
             drv = SimpleAsyncioStreamIoPipelineDriver(
-                self._channel_builder(),
+                self._spec_builder(),
                 reader,
                 writer,
             )

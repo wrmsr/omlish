@@ -6,7 +6,7 @@ import unittest
 import urllib.error
 import urllib.request
 
-from .demos.http_server_kv import build_http_kv_channel
+from .demos.http_server_kv import build_http_kv_spec
 from .servers import HttpServerRunner
 
 
@@ -18,7 +18,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             # POST a value
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/mykey',
@@ -39,7 +39,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             # POST initial value
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/key',
@@ -67,7 +67,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             try:
                 urllib.request.urlopen(f'http://127.0.0.1:{port}/noexist')
                 self.fail('Expected HTTPError')
@@ -80,7 +80,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             # POST a value
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/deleteme',
@@ -110,7 +110,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/noexist',
                 method='DELETE',
@@ -126,7 +126,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/foo/bar',
                 data=b'value',
@@ -144,7 +144,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             try:
                 urllib.request.urlopen(f'http://127.0.0.1:{port}/')
                 self.fail('Expected HTTPError')
@@ -156,7 +156,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/key',
                 method='PATCH',
@@ -173,7 +173,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             # Store multiple keys
             for key, value in [('key1', 'value1'), ('key2', 'value2'), ('key3', 'value3')]:
                 req = urllib.request.Request(
@@ -193,7 +193,7 @@ class TestHttpServerKv(unittest.TestCase):
 
         items: ta.Dict[str, str] = {}
 
-        with HttpServerRunner(lambda: build_http_kv_channel(items), 8088, use_flow_control=True) as port:
+        with HttpServerRunner(lambda: build_http_kv_spec(items), 8088, use_flow_control=True) as port:
             utf8_value = 'Hello 世界 🌍'.encode()
 
             req = urllib.request.Request(

@@ -5,7 +5,7 @@ import unittest
 import urllib.error
 import urllib.request
 
-from .demos.http_server_sha1 import build_http_sha1_channel
+from .demos.http_server_sha1 import build_http_sha1_spec
 from .servers import HttpServerRunner
 
 
@@ -19,7 +19,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_sha1_small_body(self) -> None:
         """Test SHA1 computation with small body."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             data = b'hello world'
             expected_hash = hashlib.sha1(data).hexdigest().encode('ascii')
 
@@ -36,7 +36,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_sha1_empty_body(self) -> None:
         """Test SHA1 computation with empty body."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             data = b''
             expected_hash = hashlib.sha1(data).hexdigest().encode('ascii')
 
@@ -53,7 +53,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_sha1_large_body(self) -> None:
         """Test SHA1 computation with larger body (streaming)."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             # 1MB of data
             data = b'x' * (1024 * 1024)
             expected_hash = hashlib.sha1(data).hexdigest().encode('ascii')
@@ -71,7 +71,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_sha1_binary_data(self) -> None:
         """Test SHA1 computation with binary data."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             # Binary data with all byte values
             data = bytes(range(256)) * 100
             expected_hash = hashlib.sha1(data).hexdigest().encode('ascii')
@@ -89,7 +89,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_not_found_for_non_sha1_endpoint(self) -> None:
         """Test that non-/sha1 paths return 404."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/other',
                 data=b'data',
@@ -105,7 +105,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_not_found_for_get_request(self) -> None:
         """Test that GET requests return 404."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             try:
                 urllib.request.urlopen(f'http://127.0.0.1:{port}/sha1')
                 self.fail('Expected HTTPError')
@@ -115,7 +115,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_multiple_requests(self) -> None:
         """Test multiple sequential SHA1 requests."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             test_data = [
                 b'first',
                 b'second',
@@ -138,7 +138,7 @@ class TestHttpServerSha1(unittest.TestCase):
     def test_connection_closes_after_response(self) -> None:
         """Test that connection closes after response."""
 
-        with HttpServerRunner(build_http_sha1_channel, 8090, use_flow_control=True) as port:
+        with HttpServerRunner(build_http_sha1_spec, 8090, use_flow_control=True) as port:
             req = urllib.request.Request(
                 f'http://127.0.0.1:{port}/sha1',
                 data=b'test',

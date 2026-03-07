@@ -92,7 +92,7 @@ class Sha1Handler(IoPipelineHandler):
         ctx.feed_in(msg)
 
 
-def build_http_sha1_channel() -> IoPipeline.Spec:
+def build_http_sha1_spec() -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
             IoPipelineHttpRequestDecoder(),
@@ -128,7 +128,7 @@ async def serve_sha1(
             writer: asyncio.StreamWriter,
     ) -> None:
         drv = SimpleAsyncioStreamIoPipelineDriver(
-            build_http_sha1_channel(),
+            build_http_sha1_spec(),
             reader,
             writer,
         )

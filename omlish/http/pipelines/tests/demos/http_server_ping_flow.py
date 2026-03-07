@@ -69,7 +69,7 @@ class PingHandler(IoPipelineHandler):
         ctx.feed_final_output()
 
 
-def build_http_ping_channel(
+def build_http_ping_spec(
         # *,
         # outbound_capacity: ta.Optional[int] = 1 << 22,
         # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
@@ -100,7 +100,7 @@ async def serve_ping(
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = SimpleAsyncioStreamIoPipelineDriver(
-            build_http_ping_channel(),
+            build_http_ping_spec(),
             reader,
             writer,
             # backpressure_sleep=0.0,

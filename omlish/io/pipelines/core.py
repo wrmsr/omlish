@@ -33,7 +33,7 @@ IoPipelineMetadataT = ta.TypeVar('IoPipelineMetadataT', bound='IoPipelineMetadat
 
 
 class IoPipelineMessages(NamespaceClass):
-    """Standard messages sent through a channel pipeline."""
+    """Standard messages sent through a pipeline."""
 
     #
 
@@ -48,7 +48,7 @@ class IoPipelineMessages(NamespaceClass):
     class MayPropagate(Abstract):
         """
         These *may* be propagated all the way through the pipeline without being an error. These will be silently
-        dropped when fed inbound and reaching the innermost pipeline position, but will still be emitted as channel
+        dropped when fed inbound and reaching the innermost pipeline position, but will still be emitted as pipeline
         output when fed outbound.
         """
 
@@ -302,9 +302,9 @@ IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlia
 class IoPipelineHandlerContext:
     """
     The embodiment of an instance of a handler at a position in a pipeline. Passed to IoPipelineHandler methods,
-    providing handler-specific access to the pipeline and channel. As instances of `ShareableIoPipelineHandler` may
-    validly be simultaneously present at multiple positions in a pipeline, a single handler may have multiple active
-    context instances associated with it in any given pipeline.
+    providing handler-specific access to the pipeline and. As instances of `ShareableIoPipelineHandler` may validly be
+    simultaneously present at multiple positions in a pipeline, a single handler may have multiple active context
+    instances associated with it in any given pipeline.
 
     Instances of this class are considered private to a handler instance and are not to be cached or shared in any way.
     The method names reflect this: they are operations available to the handler in the context of a pipeline processing
@@ -693,10 +693,10 @@ class IoPipelineService(Abstract):
     def handler_update(self, handler_ref: IoPipelineHandlerRef, kind: IoPipelineHandlerUpdate) -> None:
         pass
 
-    def channel_enter(self, channel: 'IoPipeline') -> None:
+    def pipeline_enter(self, pipeline: 'IoPipeline') -> None:
         pass
 
-    def channel_exit(self, channel: 'IoPipeline') -> None:
+    def pipeline_exit(self, pipeline: 'IoPipeline') -> None:
         pass
 
 
@@ -712,21 +712,21 @@ class IoPipelineServices:
         self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
 
         self._handles_handler_update = handles_handler_update = []
-        self._handles_channel_enter = handles_channel_enter = []
-        self._handles_channel_exit = handles_channel_exit = []
+        self._handles_pipeline_enter = handles_pipeline_enter = []
+        self._handles_pipeline_exit = handles_pipeline_exit = []
 
         for svc in lst:
             sty = type(svc)
             if sty.handler_update is not IoPipelineService.handler_update:
                 handles_handler_update.append(sty)
-            if sty.channel_enter is not IoPipelineService.channel_enter:
-                handles_channel_enter.append(sty)
-            if sty.channel_exit is not IoPipelineService.channel_exit:
-                handles_channel_exit.append(sty)
+            if sty.pipeline_enter is not IoPipelineService.pipeline_enter:
+                handles_pipeline_enter.append(sty)
+            if sty.pipeline_exit is not IoPipelineService.pipeline_exit:
+                handles_pipeline_exit.append(sty)
 
     _handles_handler_update: ta.Sequence[IoPipelineService]
-    _handles_channel_enter: ta.Sequence[IoPipelineService]
-    _handles_channel_exit: ta.Sequence[IoPipelineService]
+    _handles_pipeline_enter: ta.Sequence[IoPipelineService]
+    _handles_pipeline_exit: ta.Sequence[IoPipelineService]
 
     @classmethod
     def of(cls, obj: ta.Union['IoPipelineServices', ta.Sequence[IoPipelineService]]) -> 'IoPipelineServices':  # noqa
@@ -1028,7 +1028,7 @@ class IoPipeline:
 
         metadata: ta.Union[ta.Sequence[IoPipelineMetadata], IoPipelineMetadatas] = ()
 
-        # Services are fixed for the lifetime of the channel.
+        # Services are fixed for the lifetime of the pipeline.
         services: ta.Union[ta.Sequence[IoPipelineService], IoPipelineServices] = ()
 
         #
@@ -1157,7 +1157,7 @@ class IoPipeline:
 
     @property
     def saw_final_input(self) -> bool:
-        return self._saw_final_input  # Note: only 'channel-level'
+        return self._saw_final_input  # Note: only 'pipeline-level'
 
     @property
     def saw_final_output(self) -> bool:
@@ -1187,8 +1187,8 @@ class IoPipeline:
         self._execution_depth += 1
 
         if self._execution_depth == 1:
-            for svc in self._services._handles_channel_enter:  # noqa
-                svc.channel_enter(self)
+            for svc in self._services._handles_pipeline_enter:  # noqa
+                svc.pipeline_enter(self)
 
     def _step_out(self) -> None:
         check.state(self._execution_depth > 0)
@@ -1196,8 +1196,8 @@ class IoPipeline:
         self._execution_depth -= 1
 
         if not self._execution_depth:
-            for svc in self._services._handles_channel_exit:  # noqa
-                svc.channel_exit(self)
+            for svc in self._services._handles_pipeline_exit:  # noqa
+                svc.pipeline_exit(self)
 
             self._propagation.check_and_clear()
 

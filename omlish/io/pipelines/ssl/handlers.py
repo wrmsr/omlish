@@ -190,7 +190,7 @@ class SslIoPipelineHandler(
                 b = b''
 
             except ssl.SSLError as e:  # noqa
-                # Robustness: fatal SSL errors should propagate to blow up the channel.
+                # Robustness: fatal SSL errors should propagate to blow up the pipeline.
                 raise
 
             if not b:
