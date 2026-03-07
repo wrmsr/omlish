@@ -52,7 +52,7 @@ class SyncSocketIoPipelineDriver:
     def config(self) -> Config:
         return self._config
 
-    _channel: IoPipeline
+    _pipeline: IoPipeline
 
     def _handle_output(self, msg: ta.Any) -> bool:
         """Returns whether or not to continue running."""
@@ -66,7 +66,7 @@ class SyncSocketIoPipelineDriver:
             return False
 
         elif isinstance(msg, IoPipelineMessages.Defer):
-            self._channel.run_deferred(msg)
+            self._pipeline.run_deferred(msg)
             return True
 
         else:
@@ -74,27 +74,27 @@ class SyncSocketIoPipelineDriver:
 
     def _run(self, in_msgs: ta.List[ta.Any]) -> None:
         try:
-            self._channel  # noqa
+            self._pipeline  # noqa
         except AttributeError:
             pass
         else:
             raise RuntimeError('Already running')
 
-        self._channel = IoPipeline(self._spec)
+        self._pipeline = IoPipeline(self._spec)
 
         try:
-            self._channel.feed_initial_input()
+            self._pipeline.feed_initial_input()
 
             while True:
                 if in_msgs:
-                    self._channel.feed_in(*in_msgs)
+                    self._pipeline.feed_in(*in_msgs)
                     in_msgs.clear()
 
-                while (msg := self._channel.output.poll()) is not None:
+                while (msg := self._pipeline.output.poll()) is not None:
                     if not self._handle_output(msg):
                         return
 
-                if not self._channel.saw_final_input:
+                if not self._pipeline.saw_final_input:
                     b = self._sock.recv(self._config.read_chunk_size)
                     if not b:
                         in_msgs.append(IoPipelineMessages.FinalInput())
@@ -102,7 +102,7 @@ class SyncSocketIoPipelineDriver:
                         in_msgs.append(b)
 
         finally:
-            self._channel.destroy()
+            self._pipeline.destroy()
 
     def run(self, *in_msgs: ta.Any) -> None:
         self._run(list(in_msgs))

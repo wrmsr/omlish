@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='d7442dca7b01b436f82f8f2973cdeaab687ea23a'),
+            dict(path='core.py', sha1='96dd7292e1ba181754bce6cbb240d8f6fd527b58'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -70,7 +70,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='886a3e471a6c8f35fa45f63d5f9c878b3c17c4a4'),
+            dict(path='drivers/asyncio.py', sha1='f48bd74d34b70b1f9da20ac67e0cc92bc0d7f19c'),
             dict(path='_amalg.py', sha1='14b67747b1e3b3c1483050a7948a29888d732ed9'),
         ],
     )
@@ -2158,10 +2158,10 @@ class _IoPipelinePropagation:
         last_seen: IoPipelineHandlerContext
         pinned_by: ta.Optional[IoPipelineMessages.Pinning] = None
 
-    def __init__(self, ch: 'IoPipeline') -> None:
-        self._ch = ch
+    def __init__(self, p: 'IoPipeline') -> None:
+        self._p = p
 
-        if not self._ch._config.disable_propagation_checking:  # noqa
+        if not self._p._config.disable_propagation_checking:  # noqa
             self._pending_must: ta.Final[ta.Dict[int, _IoPipelinePropagation._PendingMustEntry]] = {}
 
     def add_must(
@@ -2170,7 +2170,7 @@ class _IoPipelinePropagation:
             direction: IoPipelineDirection,
             msg: IoPipelineMessages.MustPropagate,
     ) -> None:
-        if self._ch._config.disable_propagation_checking:  # noqa
+        if self._p._config.disable_propagation_checking:  # noqa
             return
 
         i = id(msg)
@@ -2193,7 +2193,7 @@ class _IoPipelinePropagation:
             self,
             pinning: IoPipelineMessages.Pinning,
     ) -> None:
-        if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+        if self._p._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
             return
 
         for msg in lst:
@@ -2205,7 +2205,7 @@ class _IoPipelinePropagation:
             self,
             pinning: IoPipelineMessages.Pinning,
     ) -> None:
-        if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+        if self._p._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
             return
 
         for msg in lst:
@@ -2219,7 +2219,7 @@ class _IoPipelinePropagation:
             direction: IoPipelineDirection,
             msg: IoPipelineMessages.MustPropagate,
     ) -> None:
-        if self._ch._config.disable_propagation_checking:  # noqa
+        if self._p._config.disable_propagation_checking:  # noqa
             return
 
         i = id(msg)
@@ -2244,7 +2244,7 @@ class _IoPipelinePropagation:
             )
 
     def check_and_clear(self) -> None:
-        if self._ch._config.disable_propagation_checking:  # noqa
+        if self._p._config.disable_propagation_checking:  # noqa
             return
 
         if not self._pending_must:
@@ -2488,14 +2488,14 @@ class IoPipeline:
 
     @ta.final
     class _EnterContextManager:
-        def __init__(self, ch: 'IoPipeline') -> None:
-            self._ch = ch
+        def __init__(self, p: 'IoPipeline') -> None:
+            self._p = p
 
         def __enter__(self) -> None:
-            self._ch._step_in()  # noqa
+            self._p._step_in()  # noqa
 
         def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-            self._ch._step_out()  # noqa
+            self._p._step_out()  # noqa
 
     def enter(self) -> ta.ContextManager[None]:
         return self._EnterContextManager(self)
@@ -7963,15 +7963,15 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         return self._config
 
     @property
-    def channel(self) -> IoPipeline:
-        return self._channel
+    def pipeline(self) -> IoPipeline:
+        return self._pipeline
 
     ##
     # init
 
     _sched: 'AsyncioStreamIoPipelineDriver._Scheduling'
 
-    _channel: IoPipeline
+    _pipeline: IoPipeline
 
     _flow: ta.Optional[IoPipelineFlow]
 
@@ -7989,7 +7989,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
         #
 
-        self._channel = IoPipeline(dc.replace(
+        self._pipeline = IoPipeline(dc.replace(
             self._spec,
             services=(*self._spec.services, self._sched),
         ))
@@ -8061,14 +8061,14 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
     async def _handle_command_feed_in(self, cmd: _FeedInCommand) -> None:
         async def _inner() -> None:
-            self._channel.feed_in(*cmd.msgs)  # noqa
+            self._pipeline.feed_in(*cmd.msgs)  # noqa
 
         if (fut := cmd.fut) is None:
-            await self._do_with_channel(_inner)
+            await self._do_with_pipeline(_inner)
             return
 
         try:
-            await self._do_with_channel(_inner)
+            await self._do_with_pipeline(_inner)
             fut.set_result(None)
         except BaseException as e:  # noqa
             fut.set_exception(e)
@@ -8144,9 +8144,9 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         #
 
         async def _inner() -> None:
-            self._channel.feed_in(*in_msgs)
+            self._pipeline.feed_in(*in_msgs)
 
-        await self._do_with_channel(_inner)
+        await self._do_with_pipeline(_inner)
 
         #
 
@@ -8256,10 +8256,10 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
     async def _handle_scheduled_command(self, cmd: _ScheduledCommand) -> None:
         async def _inner() -> None:
-            with self._channel.enter():
+            with self._pipeline.enter():
                 cmd.fn()
 
-        await self._do_with_channel(_inner)
+        await self._do_with_pipeline(_inner)
 
     # handlers
 
@@ -8294,7 +8294,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     # defer
 
     async def _handle_output_defer(self, msg: IoPipelineMessages.Defer) -> None:
-        self._channel.run_deferred(msg)
+        self._pipeline.run_deferred(msg)
 
     # data (special cased)
 
@@ -8319,11 +8319,11 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             result = await msg.obj
 
         except Exception as e:  # noqa
-            with self._channel.enter():
+            with self._pipeline.enter():
                 msg.set_failed(e)
 
         else:
-            with self._channel.enter():
+            with self._pipeline.enter():
                 msg.set_succeeded(result)
 
     # handlers
@@ -8353,7 +8353,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
     # execution helpers
 
-    async def _do_with_channel(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
+    async def _do_with_pipeline(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
         prev_want_read = self._want_read
         if not self._is_auto_read():
             self._want_read = False
@@ -8362,7 +8362,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         try:
             await fn()
 
-            await self._drain_channel_output()
+            await self._drain_pipeline_output()
 
         finally:
             self._delay_sending_update_want_read_command = False
@@ -8377,8 +8377,8 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
         self._maybe_ensure_read_task()
 
-    async def _drain_channel_output(self) -> None:
-        while (msg := self._channel.output.poll()) is not None:
+    async def _drain_pipeline_output(self) -> None:
+        while (msg := self._pipeline.output.poll()) is not None:
             await self._handle_output(msg)
 
     ##
@@ -8414,7 +8414,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
                 await self._run()
 
             finally:
-                self._channel.destroy()
+                self._pipeline.destroy()
 
         finally:
             await self._cancel_tasks(self._shutdown_task, check_running=True)

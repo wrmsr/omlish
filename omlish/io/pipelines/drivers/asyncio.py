@@ -79,15 +79,15 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         return self._config
 
     @property
-    def channel(self) -> IoPipeline:
-        return self._channel
+    def pipeline(self) -> IoPipeline:
+        return self._pipeline
 
     ##
     # init
 
     _sched: 'AsyncioStreamIoPipelineDriver._Scheduling'
 
-    _channel: IoPipeline
+    _pipeline: IoPipeline
 
     _flow: ta.Optional[IoPipelineFlow]
 
@@ -105,7 +105,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
         #
 
-        self._channel = IoPipeline(dc.replace(
+        self._pipeline = IoPipeline(dc.replace(
             self._spec,
             services=(*self._spec.services, self._sched),
         ))
@@ -177,14 +177,14 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
     async def _handle_command_feed_in(self, cmd: _FeedInCommand) -> None:
         async def _inner() -> None:
-            self._channel.feed_in(*cmd.msgs)  # noqa
+            self._pipeline.feed_in(*cmd.msgs)  # noqa
 
         if (fut := cmd.fut) is None:
-            await self._do_with_channel(_inner)
+            await self._do_with_pipeline(_inner)
             return
 
         try:
-            await self._do_with_channel(_inner)
+            await self._do_with_pipeline(_inner)
             fut.set_result(None)
         except BaseException as e:  # noqa
             fut.set_exception(e)
@@ -260,9 +260,9 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         #
 
         async def _inner() -> None:
-            self._channel.feed_in(*in_msgs)
+            self._pipeline.feed_in(*in_msgs)
 
-        await self._do_with_channel(_inner)
+        await self._do_with_pipeline(_inner)
 
         #
 
@@ -372,10 +372,10 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
     async def _handle_scheduled_command(self, cmd: _ScheduledCommand) -> None:
         async def _inner() -> None:
-            with self._channel.enter():
+            with self._pipeline.enter():
                 cmd.fn()
 
-        await self._do_with_channel(_inner)
+        await self._do_with_pipeline(_inner)
 
     # handlers
 
@@ -410,7 +410,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     # defer
 
     async def _handle_output_defer(self, msg: IoPipelineMessages.Defer) -> None:
-        self._channel.run_deferred(msg)
+        self._pipeline.run_deferred(msg)
 
     # data (special cased)
 
@@ -435,11 +435,11 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             result = await msg.obj
 
         except Exception as e:  # noqa
-            with self._channel.enter():
+            with self._pipeline.enter():
                 msg.set_failed(e)
 
         else:
-            with self._channel.enter():
+            with self._pipeline.enter():
                 msg.set_succeeded(result)
 
     # handlers
@@ -469,7 +469,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
     # execution helpers
 
-    async def _do_with_channel(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
+    async def _do_with_pipeline(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
         prev_want_read = self._want_read
         if not self._is_auto_read():
             self._want_read = False
@@ -478,7 +478,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         try:
             await fn()
 
-            await self._drain_channel_output()
+            await self._drain_pipeline_output()
 
         finally:
             self._delay_sending_update_want_read_command = False
@@ -493,8 +493,8 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
         self._maybe_ensure_read_task()
 
-    async def _drain_channel_output(self) -> None:
-        while (msg := self._channel.output.poll()) is not None:
+    async def _drain_pipeline_output(self) -> None:
+        while (msg := self._pipeline.output.poll()) is not None:
             await self._handle_output(msg)
 
     ##
@@ -530,7 +530,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
                 await self._run()
 
             finally:
-                self._channel.destroy()
+                self._pipeline.destroy()
 
         finally:
             await self._cancel_tasks(self._shutdown_task, check_running=True)

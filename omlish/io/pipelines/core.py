@@ -873,10 +873,10 @@ class _IoPipelinePropagation:
         last_seen: IoPipelineHandlerContext
         pinned_by: ta.Optional[IoPipelineMessages.Pinning] = None
 
-    def __init__(self, ch: 'IoPipeline') -> None:
-        self._ch = ch
+    def __init__(self, p: 'IoPipeline') -> None:
+        self._p = p
 
-        if not self._ch._config.disable_propagation_checking:  # noqa
+        if not self._p._config.disable_propagation_checking:  # noqa
             self._pending_must: ta.Final[ta.Dict[int, _IoPipelinePropagation._PendingMustEntry]] = {}
 
     def add_must(
@@ -885,7 +885,7 @@ class _IoPipelinePropagation:
             direction: IoPipelineDirection,
             msg: IoPipelineMessages.MustPropagate,
     ) -> None:
-        if self._ch._config.disable_propagation_checking:  # noqa
+        if self._p._config.disable_propagation_checking:  # noqa
             return
 
         i = id(msg)
@@ -908,7 +908,7 @@ class _IoPipelinePropagation:
             self,
             pinning: IoPipelineMessages.Pinning,
     ) -> None:
-        if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+        if self._p._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
             return
 
         for msg in lst:
@@ -920,7 +920,7 @@ class _IoPipelinePropagation:
             self,
             pinning: IoPipelineMessages.Pinning,
     ) -> None:
-        if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+        if self._p._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
             return
 
         for msg in lst:
@@ -934,7 +934,7 @@ class _IoPipelinePropagation:
             direction: IoPipelineDirection,
             msg: IoPipelineMessages.MustPropagate,
     ) -> None:
-        if self._ch._config.disable_propagation_checking:  # noqa
+        if self._p._config.disable_propagation_checking:  # noqa
             return
 
         i = id(msg)
@@ -959,7 +959,7 @@ class _IoPipelinePropagation:
             )
 
     def check_and_clear(self) -> None:
-        if self._ch._config.disable_propagation_checking:  # noqa
+        if self._p._config.disable_propagation_checking:  # noqa
             return
 
         if not self._pending_must:
@@ -1203,14 +1203,14 @@ class IoPipeline:
 
     @ta.final
     class _EnterContextManager:
-        def __init__(self, ch: 'IoPipeline') -> None:
-            self._ch = ch
+        def __init__(self, p: 'IoPipeline') -> None:
+            self._p = p
 
         def __enter__(self) -> None:
-            self._ch._step_in()  # noqa
+            self._p._step_in()  # noqa
 
         def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-            self._ch._step_out()  # noqa
+            self._p._step_out()  # noqa
 
     def enter(self) -> ta.ContextManager[None]:
         return self._EnterContextManager(self)
