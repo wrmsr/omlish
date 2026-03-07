@@ -27,16 +27,6 @@ class ChannelPipelineFlowMessages(NamespaceClass):
     class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
         pass
 
-    @ta.final
-    @dc.dataclass(frozen=True)
-    class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-        pass
-
-    @ta.final
-    @dc.dataclass(frozen=True)
-    class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-        pass
-
     #
 
     @ta.final
@@ -48,6 +38,20 @@ class ChannelPipelineFlowMessages(NamespaceClass):
     @dc.dataclass(frozen=True)
     class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker::read`
         pass
+
+    #
+
+    # # TODO:
+    # @ta.final
+    # @dc.dataclass(frozen=True)
+    # class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     pass
+
+    # # TODO:
+    # @ta.final
+    # @dc.dataclass(frozen=True)
+    # class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     pass
 
 
 ##

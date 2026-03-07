@@ -157,7 +157,7 @@ def print_full_response(response: FullPipelineHttpResponse) -> None:
     """Print the accumulated response."""
 
     head = response.head
-    body = ByteStreamBuffers.any_to_bytes(response.body)
+    body = ByteStreamBuffers.to_bytes(response.body)
 
     print(f'HTTP/{head.version.major}.{head.version.minor} {head.status} {head.reason}')
     print()

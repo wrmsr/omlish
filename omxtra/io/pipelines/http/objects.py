@@ -7,7 +7,7 @@ import typing as ta
 from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
-from omlish.io.streams.types import BytesLikeOrMemoryview
+from omlish.io.streams.types import BytesLike
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
@@ -50,7 +50,7 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
 
     @property
     @abc.abstractmethod
-    def body(self) -> BytesLikeOrMemoryview:
+    def body(self) -> BytesLike:
         raise NotImplementedError
 
 
@@ -59,7 +59,7 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
 
 @dc.dataclass(frozen=True)
 class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
-    data: BytesLikeOrMemoryview
+    data: BytesLike
 
     def __post_init__(self) -> None:
         check.arg(len(self.data) > 0)
@@ -128,7 +128,7 @@ class PipelineHttpMessageObjects(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpMessage:
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpMessage:
         raise NotImplementedError
 
     #
@@ -139,7 +139,7 @@ class PipelineHttpMessageObjects(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpMessageContentChunkData:
+    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpMessageContentChunkData:
         raise NotImplementedError
 
     #

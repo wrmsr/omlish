@@ -46,7 +46,7 @@ class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if ByteStreamBuffers.can_bytes(msg):
-            b = ByteStreamBuffers.any_to_bytes(msg)
+            b = ByteStreamBuffers.to_bytes(msg)
 
             msg = b.decode(self._encoding, errors=self._errors)
 

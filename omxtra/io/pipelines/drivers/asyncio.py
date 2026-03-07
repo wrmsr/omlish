@@ -8,6 +8,7 @@ TODO:
    - dedicated read_task, flush_task, sched_task
      - read_task toggles back and forth between reading and waiting
    - main task only reads from command queue
+ - asynclite?
 """
 import abc
 import asyncio
@@ -169,7 +170,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     class _FeedInCommand(_Command):
         msgs: ta.Sequence[ta.Any]
 
-        fut: ta.Optional[asyncio.Future[None]] = None
+        fut: ta.Optional['asyncio.Future[None]'] = None
 
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}([{", ".join(map(repr, self.msgs))}])'

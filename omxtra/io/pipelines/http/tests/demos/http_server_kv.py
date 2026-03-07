@@ -82,7 +82,7 @@ class KvStoreHandler(ChannelPipelineHandler):
             return
 
         if method in ('POST', 'PUT'):
-            b = ByteStreamBuffers.any_to_bytes(msg.body)
+            b = ByteStreamBuffers.to_bytes(msg.body)
             s = b.decode('utf-8', errors='replace')
             self._items[key] = s
             code = 201 if method == 'POST' else 200

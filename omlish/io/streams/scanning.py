@@ -3,7 +3,7 @@
 import typing as ta
 
 from .base import BaseByteStreamBufferLike
-from .types import BytesLikeOrMemoryview
+from .types import BytesLike
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 
@@ -91,7 +91,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
     #
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         self._buf.write(data)
 
     def reserve(self, n: int, /) -> memoryview:

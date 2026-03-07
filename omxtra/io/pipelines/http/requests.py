@@ -7,7 +7,7 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
-from omlish.io.streams.types import BytesLikeOrMemoryview
+from omlish.io.streams.types import BytesLike
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.dataclasses import install_dataclass_kw_only_init
@@ -49,7 +49,7 @@ class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject
 @dc.dataclass(frozen=True)
 class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject):
     head: PipelineHttpRequestHead
-    body: BytesLikeOrMemoryview
+    body: BytesLike
 
     @classmethod
     def simple(
@@ -128,14 +128,14 @@ class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
 
     _full_type: ta.Final = FullPipelineHttpRequest
 
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpRequest:
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpRequest:
         return FullPipelineHttpRequest(check.isinstance(head, PipelineHttpRequestHead), body)
 
     #
 
     _content_chunk_data_type: ta.Final = PipelineHttpRequestContentChunkData
 
-    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpRequestContentChunkData:
+    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpRequestContentChunkData:
         return PipelineHttpRequestContentChunkData(data)
 
     #

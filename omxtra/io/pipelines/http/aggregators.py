@@ -6,6 +6,7 @@ import typing as ta
 
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streams.types import BytesLike
 from omlish.io.streams.types import MutableByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.io.streams.utils import CanByteStreamBuffer
@@ -223,7 +224,7 @@ class PipelineHttpObjectAggregator(
                 self,
                 a: 'PipelineHttpObjectAggregator',
                 head: PipelineHttpMessageHead,
-                body: CanByteStreamBuffer,
+                body: BytesLike,
         ) -> None:
             super().__init__(a)
 

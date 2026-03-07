@@ -81,7 +81,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
             dict(path='../../../../omlish/configs/formats.py', sha1='ec9db26634c07a50067ff4bfdafa576f4fe7d4b4'),
-            dict(path='../../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
+            dict(path='../../../../omlish/io/streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
@@ -89,16 +89,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='b3b7ed67bff8b7f2b60d821eda9afa93ffb2ba1f'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='../../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
+            dict(path='../../../../omlish/io/streams/direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
+            dict(path='../../../../omlish/io/streams/scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='f388312774f1d7f8f80e91c4e07c0e10d9b54522'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -152,7 +152,7 @@ LogLevel = int  # ta.TypeAlias
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 
 # ../../../../omlish/io/streams/types.py
-BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # ../../../../omlish/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
@@ -162,7 +162,7 @@ LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 LoggingContextInfo = ta.Any  # ta.TypeAlias
 
 # ../../../../omlish/io/streams/utils.py
-CanByteStreamBuffer = ta.Union[BytesLikeOrMemoryview, 'ByteStreamBufferLike']  # ta.TypeAlias
+CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # ../../../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
@@ -4091,7 +4091,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         """
         Append `data` to the end of the readable region (after any existing unread bytes).
 
@@ -5714,21 +5714,22 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 
 
 class ByteStreamBuffers(NamespaceClass):
-    @staticmethod
-    def memoryview_to_bytes(mv: memoryview, /) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
-
-    ##
-
-    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+    _BYTES_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,
+    )
+
+    _BYTES_LIKE_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_TYPES,
         memoryview,
+    )
+
+    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_LIKE_TYPES,
         ByteStreamBufferLike,
     )
+
+    #
 
     @classmethod
     def can_bytes(cls, obj: ta.Any, /) -> bool:
@@ -5738,20 +5739,79 @@ class ByteStreamBuffers(NamespaceClass):
 
     @classmethod
     @ta.overload
-    def buffer_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[True],
+    ) -> ta.Optional[bytes]:
         ...
 
     @classmethod
     @ta.overload
-    def buffer_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[False] = False,
+    ) -> bytes:
         ...
 
     @classmethod
-    def buffer_to_bytes(cls, obj, or_none=False, /):
-        if type(obj) is memoryview or isinstance(obj, memoryview):
-            return cls.memoryview_to_bytes(obj)
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[True],
+    ) -> ta.Union[bytes, bytearray, None]:
+        ...
 
-        elif isinstance(obj, ByteStreamBufferView):
+    @classmethod
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[False] = False,
+    ) -> ta.Union[bytes, bytearray]:
+        ...
+
+    @classmethod
+    def to_bytes(
+            cls,
+            obj,
+            /, *,
+            strict=False,
+            or_none=False,
+    ):
+        """
+        Returns a non-shared version of the given object. If a possibly shared memoryview is acceptable, use
+        `iter_segments`.
+        """
+
+        if strict:
+            if (ot := type(obj)) is bytes or isinstance(obj, bytes):
+                return obj
+
+            elif ot is bytearray:
+                return bytes(obj)
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes_strict(obj)
+
+        else:
+            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES):
+                return obj
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes(obj)
+
+        if isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
 
         elif isinstance(obj, ByteStreamBufferLike):
@@ -5762,53 +5822,6 @@ class ByteStreamBuffers(NamespaceClass):
 
         else:
             raise TypeError(obj)
-
-    #
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
-        ...
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
-        ...
-
-    @classmethod
-    def any_to_bytes(cls, obj, or_none=False, /):
-        if (ot := type(obj)) is bytes:
-            return obj
-        elif ot is bytearray:
-            return bytes(obj)
-
-        elif isinstance(obj, bytes):
-            return obj
-        elif isinstance(obj, bytearray):
-            return bytes(obj)
-
-        else:
-            return cls.buffer_to_bytes(obj, or_none)  # noqa
-
-    #
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Union[bytes, bytearray, None]:
-        ...
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> ta.Union[bytes, bytearray]:  # noqa
-        ...
-
-    @classmethod
-    def any_to_bytes_or_bytearray(cls, obj, or_none=False, /):
-        if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
-            return obj
-
-        else:
-            return cls.buffer_to_bytes(obj, or_none)  # noqa
 
     #
 
@@ -5833,7 +5846,7 @@ class ByteStreamBuffers(NamespaceClass):
         else:
             raise TypeError(obj)
 
-    ##
+    #
 
     @staticmethod
     def iter_segments(obj: ta.Any, /) -> ta.Iterator[memoryview]:
@@ -5853,6 +5866,8 @@ class ByteStreamBuffers(NamespaceClass):
         else:
             raise TypeError(obj)
 
+    #
+
     @staticmethod
     def split(buf: ByteStreamBuffer, sep: bytes, /, *, final: bool = False) -> ta.List[ByteStreamBufferView]:
         out: ta.List[ByteStreamBufferView] = []
@@ -5861,6 +5876,22 @@ class ByteStreamBuffers(NamespaceClass):
         if final and len(buf):
             out.append(buf.split_to(len(buf)))
         return out
+
+    #
+
+    @classmethod
+    def memoryview_to_bytes(cls, mv: memoryview, /) -> ta.Union[bytes, bytearray]:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    @staticmethod
+    def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
 
 
 ########################################
@@ -6218,7 +6249,7 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
-    def __init__(self, data: BytesLikeOrMemoryview) -> None:
+    def __init__(self, data: BytesLike) -> None:
         super().__init__()
 
         self._data = data
@@ -6298,7 +6329,7 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
         b'GET /path HTTP/1.1\\r\\nHost: example.com'
     """
 
-    def __init__(self, data: BytesLikeOrMemoryview) -> None:
+    def __init__(self, data: BytesLike) -> None:
         super().__init__(data)
 
         self._rpos = 0
@@ -6464,7 +6495,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
     #
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         self._buf.write(data)
 
     def reserve(self, n: int, /) -> memoryview:
@@ -7692,7 +7723,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active = None
         self._active_used = 0
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):

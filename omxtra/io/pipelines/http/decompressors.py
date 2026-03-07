@@ -6,7 +6,7 @@ import dataclasses as dc
 import typing as ta
 import zlib
 
-from omlish.io.streams.types import BytesLikeOrMemoryview
+from omlish.io.streams.types import BytesLike
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 
@@ -68,9 +68,9 @@ class PipelineHttpObjectDecompressor(
         self._out_total_bytes = 0
 
         # Internal buffering
-        self._in_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._in_pending: collections.deque[BytesLike] = collections.deque()
         self._in_pending_bytes = 0
-        self._out_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._out_pending: collections.deque[BytesLike] = collections.deque()
         self._out_pending_bytes = 0
 
         # Flow Control and Deferral State
@@ -88,18 +88,18 @@ class PipelineHttpObjectDecompressor(
         @abc.abstractmethod
         def decompress(
                 self,
-                data: BytesLikeOrMemoryview,
+                data: BytesLike,
                 max_bytes: ta.Optional[int] = None,
                 /,
-        ) -> ta.Optional[BytesLikeOrMemoryview]:
+        ) -> ta.Optional[BytesLike]:
             raise NotImplementedError
 
         @abc.abstractmethod
-        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def unconsumed_tail(self) -> ta.Optional[BytesLike]:
             raise NotImplementedError
 
         @abc.abstractmethod
-        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def flush(self) -> ta.Optional[BytesLike]:
             raise NotImplementedError
 
     #
@@ -110,16 +110,16 @@ class PipelineHttpObjectDecompressor(
 
         def decompress(
                 self,
-                data: BytesLikeOrMemoryview,
+                data: BytesLike,
                 max_bytes: ta.Optional[int] = None,
                 /,
-        ) -> ta.Optional[BytesLikeOrMemoryview]:
+        ) -> ta.Optional[BytesLike]:
             return self._z.decompress(data, max_bytes or 0)
 
-        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def unconsumed_tail(self) -> ta.Optional[BytesLike]:
             return self._z.unconsumed_tail
 
-        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def flush(self) -> ta.Optional[BytesLike]:
             return self._z.flush()
 
     #

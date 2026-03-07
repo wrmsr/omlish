@@ -53,7 +53,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # Second: body bytes
         self.assertIsInstance(body, PipelineHttpResponseContentChunkData)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(body.data), b'hello')
+        self.assertEqual(ByteStreamBuffers.to_bytes(body.data), b'hello')
 
         self.assertIsInstance(end, PipelineHttpResponseEnd)
 

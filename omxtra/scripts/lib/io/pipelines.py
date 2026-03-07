@@ -52,43 +52,43 @@ def __omlish_amalg__():  # noqa
             dict(path='errors.py', sha1='7e5d3eef07f298a7ec7d23ca0d3f32df70c879b3'),
             dict(path='../../../omlish/http/headers.py', sha1='a8204e05f535f04891ff4967f17332f4fad04f23'),
             dict(path='../../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
-            dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
+            dict(path='../../../omlish/io/streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='core.py', sha1='e505bd9d87c40517b0cbfc3db1712121543424b3'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../../../omlish/io/streams/utils.py', sha1='b3b7ed67bff8b7f2b60d821eda9afa93ffb2ba1f'),
+            dict(path='../../../omlish/io/streams/utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
             dict(path='../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='asyncs.py', sha1='3c5834fe4879ebdc63d44951798ad9110ae83ad4'),
             dict(path='bytes/buffering.py', sha1='363d3209a49ddfc5a6bc41b4f3fd4629ddd6dbbf'),
-            dict(path='flow/types.py', sha1='58a5934eedf84f2ef6c0fe509f2874828c72d391'),
+            dict(path='flow/types.py', sha1='7dd906f5b1ef406472bbbf700bbec54d4ccb2cef'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='7e6aa42c2989ef6643363210a64aaaca20c256a2'),
-            dict(path='http/objects.py', sha1='c24f99ae1e8a8d72c01363063ac7fc43494ea4c2'),
+            dict(path='http/objects.py', sha1='440e131d0f6d2768b915421c93d1d28586eb0a79'),
             dict(path='http/transferencoding.py', sha1='6eb8c84a1aa69bed60e33b9a2b0b6c8a7bce4de0'),
             dict(path='sched/types.py', sha1='a443beb7866e5e019d57093225cd44b9ea5fa58e'),
-            dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
+            dict(path='../../../omlish/io/streams/direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
+            dict(path='../../../omlish/io/streams/scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
             dict(path='../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='handlers/flatmap.py', sha1='3e5fae70e01ee2694719dd200b366536c930c858'),
-            dict(path='http/decompressors.py', sha1='4ded11442969486e7619b4eae3f0fe73766c7221'),
+            dict(path='http/decompressors.py', sha1='18e8b058d6c65c728d78afc8adbee2cf3adb7df4'),
             dict(path='http/encoders.py', sha1='eb0b41f9aa971bb32080c326f4e3b3094f6d05d2'),
-            dict(path='http/requests.py', sha1='cc771f014973f16cf04aed5d7423a86166dec1ef'),
-            dict(path='http/responses.py', sha1='eebf1bdd464bccd24eee88c172fde5cb1444e46a'),
-            dict(path='../../../omlish/io/streams/segmented.py', sha1='f388312774f1d7f8f80e91c4e07c0e10d9b54522'),
+            dict(path='http/requests.py', sha1='4f09ec21db9a699b1734c0c6bcd20bd2caebd62c'),
+            dict(path='http/responses.py', sha1='7aac63649e92e380daa699f08c56e8c5f4cc7451'),
+            dict(path='../../../omlish/io/streams/segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
             dict(path='../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='http/client/requests.py', sha1='6b5bbc68f2dc8b19589e7f8721bc8960ac773609'),
             dict(path='http/server/responses.py', sha1='4ec57def38b996880f6802d5766cd726f708cc73'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='bytes/decoders.py', sha1='f5a1a1180e6cb0ad4fbef816aeec2b8a1b7050ff'),
-            dict(path='http/aggregators.py', sha1='ad014d9532242a3d04eb36a3231e236cb9f3e33e'),
-            dict(path='drivers/asyncio.py', sha1='66826328050325183b68ce60f36a834011821b2a'),
+            dict(path='bytes/decoders.py', sha1='5d4f809ccc0261f5906714b7aae561a28cc7c3b4'),
+            dict(path='http/aggregators.py', sha1='b3489d749d6b319149aff261f3fb7dfa420000f7'),
+            dict(path='drivers/asyncio.py', sha1='4d9119d7069832880ddfb8d614a4af475c0848c7'),
             dict(path='http/decoders.py', sha1='7714493031c87ba220458ec273c47247a323716c'),
             dict(path='http/client/responses.py', sha1='66febe38032fd5ff9ee4711faa47e1fa5f66d774'),
             dict(path='http/server/requests.py', sha1='bbf9bfaba4193f69782eb83edf6a0370cc975e89'),
@@ -118,7 +118,7 @@ LogLevel = int  # ta.TypeAlias
 StrOrBytes = ta.Union[str, bytes]  # ta.TypeAlias
 
 # ../../../omlish/io/streams/types.py
-BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # ../../../omlish/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
@@ -135,7 +135,7 @@ ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT'
 PipelineChannelMetadataT = ta.TypeVar('PipelineChannelMetadataT', bound='PipelineChannelMetadata')
 
 # ../../../omlish/io/streams/utils.py
-CanByteStreamBuffer = ta.Union[BytesLikeOrMemoryview, 'ByteStreamBufferLike']  # ta.TypeAlias
+CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # ../../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
@@ -3994,7 +3994,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         """
         Append `data` to the end of the readable region (after any existing unread bytes).
 
@@ -6734,21 +6734,22 @@ class LengthFieldByteStreamFrameDecoder:
 
 
 class ByteStreamBuffers(NamespaceClass):
-    @staticmethod
-    def memoryview_to_bytes(mv: memoryview, /) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
-
-    ##
-
-    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+    _BYTES_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,
+    )
+
+    _BYTES_LIKE_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_TYPES,
         memoryview,
+    )
+
+    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_LIKE_TYPES,
         ByteStreamBufferLike,
     )
+
+    #
 
     @classmethod
     def can_bytes(cls, obj: ta.Any, /) -> bool:
@@ -6758,20 +6759,79 @@ class ByteStreamBuffers(NamespaceClass):
 
     @classmethod
     @ta.overload
-    def buffer_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[True],
+    ) -> ta.Optional[bytes]:
         ...
 
     @classmethod
     @ta.overload
-    def buffer_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[False] = False,
+    ) -> bytes:
         ...
 
     @classmethod
-    def buffer_to_bytes(cls, obj, or_none=False, /):
-        if type(obj) is memoryview or isinstance(obj, memoryview):
-            return cls.memoryview_to_bytes(obj)
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[True],
+    ) -> ta.Union[bytes, bytearray, None]:
+        ...
 
-        elif isinstance(obj, ByteStreamBufferView):
+    @classmethod
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[False] = False,
+    ) -> ta.Union[bytes, bytearray]:
+        ...
+
+    @classmethod
+    def to_bytes(
+            cls,
+            obj,
+            /, *,
+            strict=False,
+            or_none=False,
+    ):
+        """
+        Returns a non-shared version of the given object. If a possibly shared memoryview is acceptable, use
+        `iter_segments`.
+        """
+
+        if strict:
+            if (ot := type(obj)) is bytes or isinstance(obj, bytes):
+                return obj
+
+            elif ot is bytearray:
+                return bytes(obj)
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes_strict(obj)
+
+        else:
+            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES):
+                return obj
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes(obj)
+
+        if isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
 
         elif isinstance(obj, ByteStreamBufferLike):
@@ -6782,53 +6842,6 @@ class ByteStreamBuffers(NamespaceClass):
 
         else:
             raise TypeError(obj)
-
-    #
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
-        ...
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
-        ...
-
-    @classmethod
-    def any_to_bytes(cls, obj, or_none=False, /):
-        if (ot := type(obj)) is bytes:
-            return obj
-        elif ot is bytearray:
-            return bytes(obj)
-
-        elif isinstance(obj, bytes):
-            return obj
-        elif isinstance(obj, bytearray):
-            return bytes(obj)
-
-        else:
-            return cls.buffer_to_bytes(obj, or_none)  # noqa
-
-    #
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Union[bytes, bytearray, None]:
-        ...
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> ta.Union[bytes, bytearray]:  # noqa
-        ...
-
-    @classmethod
-    def any_to_bytes_or_bytearray(cls, obj, or_none=False, /):
-        if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
-            return obj
-
-        else:
-            return cls.buffer_to_bytes(obj, or_none)  # noqa
 
     #
 
@@ -6853,7 +6866,7 @@ class ByteStreamBuffers(NamespaceClass):
         else:
             raise TypeError(obj)
 
-    ##
+    #
 
     @staticmethod
     def iter_segments(obj: ta.Any, /) -> ta.Iterator[memoryview]:
@@ -6873,6 +6886,8 @@ class ByteStreamBuffers(NamespaceClass):
         else:
             raise TypeError(obj)
 
+    #
+
     @staticmethod
     def split(buf: ByteStreamBuffer, sep: bytes, /, *, final: bool = False) -> ta.List[ByteStreamBufferView]:
         out: ta.List[ByteStreamBufferView] = []
@@ -6881,6 +6896,22 @@ class ByteStreamBuffers(NamespaceClass):
         if final and len(buf):
             out.append(buf.split_to(len(buf)))
         return out
+
+    #
+
+    @classmethod
+    def memoryview_to_bytes(cls, mv: memoryview, /) -> ta.Union[bytes, bytearray]:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    @staticmethod
+    def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
 
 
 ########################################
@@ -7197,16 +7228,6 @@ class ChannelPipelineFlowMessages(NamespaceClass):
     class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
         pass
 
-    @ta.final
-    @dc.dataclass(frozen=True)
-    class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-        pass
-
-    @ta.final
-    @dc.dataclass(frozen=True)
-    class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
-        pass
-
     #
 
     @ta.final
@@ -7218,6 +7239,20 @@ class ChannelPipelineFlowMessages(NamespaceClass):
     @dc.dataclass(frozen=True)
     class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker::read`
         pass
+
+    #
+
+    # # TODO:
+    # @ta.final
+    # @dc.dataclass(frozen=True)
+    # class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     pass
+
+    # # TODO:
+    # @ta.final
+    # @dc.dataclass(frozen=True)
+    # class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     pass
 
 
 ##
@@ -7552,7 +7587,7 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
 
     @property
     @abc.abstractmethod
-    def body(self) -> BytesLikeOrMemoryview:
+    def body(self) -> BytesLike:
         raise NotImplementedError
 
 
@@ -7561,7 +7596,7 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
 
 @dc.dataclass(frozen=True)
 class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
-    data: BytesLikeOrMemoryview
+    data: BytesLike
 
     def __post_init__(self) -> None:
         check.arg(len(self.data) > 0)
@@ -7630,7 +7665,7 @@ class PipelineHttpMessageObjects(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpMessage:
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpMessage:
         raise NotImplementedError
 
     #
@@ -7641,7 +7676,7 @@ class PipelineHttpMessageObjects(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpMessageContentChunkData:
+    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpMessageContentChunkData:
         raise NotImplementedError
 
     #
@@ -7748,7 +7783,7 @@ class ChannelPipelineScheduling(ChannelPipelineService, Abstract):
 
 
 class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
-    def __init__(self, data: BytesLikeOrMemoryview) -> None:
+    def __init__(self, data: BytesLike) -> None:
         super().__init__()
 
         self._data = data
@@ -7828,7 +7863,7 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
         b'GET /path HTTP/1.1\\r\\nHost: example.com'
     """
 
-    def __init__(self, data: BytesLikeOrMemoryview) -> None:
+    def __init__(self, data: BytesLike) -> None:
         super().__init__(data)
 
         self._rpos = 0
@@ -7994,7 +8029,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
     #
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         self._buf.write(data)
 
     def reserve(self, n: int, /) -> memoryview:
@@ -9439,9 +9474,9 @@ class PipelineHttpObjectDecompressor(
         self._out_total_bytes = 0
 
         # Internal buffering
-        self._in_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._in_pending: collections.deque[BytesLike] = collections.deque()
         self._in_pending_bytes = 0
-        self._out_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._out_pending: collections.deque[BytesLike] = collections.deque()
         self._out_pending_bytes = 0
 
         # Flow Control and Deferral State
@@ -9459,18 +9494,18 @@ class PipelineHttpObjectDecompressor(
         @abc.abstractmethod
         def decompress(
                 self,
-                data: BytesLikeOrMemoryview,
+                data: BytesLike,
                 max_bytes: ta.Optional[int] = None,
                 /,
-        ) -> ta.Optional[BytesLikeOrMemoryview]:
+        ) -> ta.Optional[BytesLike]:
             raise NotImplementedError
 
         @abc.abstractmethod
-        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def unconsumed_tail(self) -> ta.Optional[BytesLike]:
             raise NotImplementedError
 
         @abc.abstractmethod
-        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def flush(self) -> ta.Optional[BytesLike]:
             raise NotImplementedError
 
     #
@@ -9481,16 +9516,16 @@ class PipelineHttpObjectDecompressor(
 
         def decompress(
                 self,
-                data: BytesLikeOrMemoryview,
+                data: BytesLike,
                 max_bytes: ta.Optional[int] = None,
                 /,
-        ) -> ta.Optional[BytesLikeOrMemoryview]:
+        ) -> ta.Optional[BytesLike]:
             return self._z.decompress(data, max_bytes or 0)
 
-        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def unconsumed_tail(self) -> ta.Optional[BytesLike]:
             return self._z.unconsumed_tail
 
-        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+        def flush(self) -> ta.Optional[BytesLike]:
             return self._z.flush()
 
     #
@@ -9889,7 +9924,7 @@ class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject
 @dc.dataclass(frozen=True)
 class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject):
     head: PipelineHttpRequestHead
-    body: BytesLikeOrMemoryview
+    body: BytesLike
 
     @classmethod
     def simple(
@@ -9968,14 +10003,14 @@ class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
 
     _full_type: ta.Final = FullPipelineHttpRequest
 
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpRequest:
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpRequest:
         return FullPipelineHttpRequest(check.isinstance(head, PipelineHttpRequestHead), body)
 
     #
 
     _content_chunk_data_type: ta.Final = PipelineHttpRequestContentChunkData
 
-    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpRequestContentChunkData:
+    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpRequestContentChunkData:
         return PipelineHttpRequestContentChunkData(data)
 
     #
@@ -10032,7 +10067,7 @@ class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObje
 @dc.dataclass(frozen=True)
 class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObject):
     head: PipelineHttpResponseHead
-    body: BytesLikeOrMemoryview
+    body: BytesLike
 
     @classmethod
     def simple(
@@ -10109,14 +10144,14 @@ class PipelineHttpResponseObjects(PipelineHttpMessageObjects):
 
     _full_type: ta.Final = FullPipelineHttpResponse
 
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpResponse:
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpResponse:
         return FullPipelineHttpResponse(check.isinstance(head, PipelineHttpResponseHead), body)
 
     #
 
     _content_chunk_data_type: ta.Final = PipelineHttpResponseContentChunkData
 
-    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpResponseContentChunkData:
+    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpResponseContentChunkData:
         return PipelineHttpResponseContentChunkData(data)
 
     #
@@ -10367,7 +10402,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active = None
         self._active_used = 0
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):
@@ -11055,7 +11090,7 @@ class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if ByteStreamBuffers.can_bytes(msg):
-            b = ByteStreamBuffers.any_to_bytes(msg)
+            b = ByteStreamBuffers.to_bytes(msg)
 
             msg = b.decode(self._encoding, errors=self._errors)
 
@@ -11541,7 +11576,7 @@ class PipelineHttpObjectAggregator(
                 self,
                 a: 'PipelineHttpObjectAggregator',
                 head: PipelineHttpMessageHead,
-                body: CanByteStreamBuffer,
+                body: BytesLike,
         ) -> None:
             super().__init__(a)
 
@@ -11584,6 +11619,7 @@ TODO:
    - dedicated read_task, flush_task, sched_task
      - read_task toggles back and forth between reading and waiting
    - main task only reads from command queue
+ - asynclite?
 """
 
 
@@ -11726,7 +11762,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     class _FeedInCommand(_Command):
         msgs: ta.Sequence[ta.Any]
 
-        fut: ta.Optional[asyncio.Future[None]] = None
+        fut: ta.Optional['asyncio.Future[None]'] = None
 
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}([{", ".join(map(repr, self.msgs))}])'

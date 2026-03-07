@@ -56,7 +56,7 @@ class TestPipelineHttpRequestDecoder(unittest.TestCase):
 
         # Second: body bytes (forwarded)
         self.assertIsInstance(body, PipelineHttpRequestContentChunkData)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(body.data), b'test')
+        self.assertEqual(ByteStreamBuffers.to_bytes(body.data), b'test')
 
         self.assertIsInstance(end, PipelineHttpRequestEnd)
 
@@ -215,7 +215,7 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
 
         # Second: body bytes (forwarded)
         self.assertIsInstance(body, PipelineHttpRequestContentChunkData)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(body.data), b'test')
+        self.assertEqual(ByteStreamBuffers.to_bytes(body.data), b'test')
 
         # Second: body bytes (forwarded)
         self.assertIsInstance(end, PipelineHttpRequestEnd)

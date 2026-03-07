@@ -26,16 +26,16 @@ def __omlish_amalg__():  # noqa
             dict(path='errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
+            dict(path='types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='b3b7ed67bff8b7f2b60d821eda9afa93ffb2ba1f'),
-            dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
-            dict(path='adapters.py', sha1='f434206c6d8a0fd3961b1a44077ee69668e8bd0c'),
-            dict(path='linear.py', sha1='a6cebf552cc4d3277809eb0c63b99981e74d3731'),
-            dict(path='segmented.py', sha1='f388312774f1d7f8f80e91c4e07c0e10d9b54522'),
+            dict(path='utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
+            dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
+            dict(path='scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
+            dict(path='adapters.py', sha1='f38f33ef312c68ecda06ddee928e679fc86bd49e'),
+            dict(path='linear.py', sha1='82d8d806abd708e8d471f32cb49813be150bcf6a'),
+            dict(path='segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -48,10 +48,10 @@ def __omlish_amalg__():  # noqa
 T = ta.TypeVar('T')
 
 # types.py
-BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # utils.py
-CanByteStreamBuffer = ta.Union[BytesLikeOrMemoryview, 'ByteStreamBufferLike']  # ta.TypeAlias
+CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 
 ########################################
@@ -501,7 +501,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         """
         Append `data` to the end of the readable region (after any existing unread bytes).
 
@@ -1045,21 +1045,22 @@ class ByteStreamBufferReader:
 
 
 class ByteStreamBuffers(NamespaceClass):
-    @staticmethod
-    def memoryview_to_bytes(mv: memoryview, /) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
-
-    ##
-
-    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+    _BYTES_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,
+    )
+
+    _BYTES_LIKE_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_TYPES,
         memoryview,
+    )
+
+    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_LIKE_TYPES,
         ByteStreamBufferLike,
     )
+
+    #
 
     @classmethod
     def can_bytes(cls, obj: ta.Any, /) -> bool:
@@ -1069,20 +1070,79 @@ class ByteStreamBuffers(NamespaceClass):
 
     @classmethod
     @ta.overload
-    def buffer_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[True],
+    ) -> ta.Optional[bytes]:
         ...
 
     @classmethod
     @ta.overload
-    def buffer_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[False] = False,
+    ) -> bytes:
         ...
 
     @classmethod
-    def buffer_to_bytes(cls, obj, or_none=False, /):
-        if type(obj) is memoryview or isinstance(obj, memoryview):
-            return cls.memoryview_to_bytes(obj)
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[True],
+    ) -> ta.Union[bytes, bytearray, None]:
+        ...
 
-        elif isinstance(obj, ByteStreamBufferView):
+    @classmethod
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[False] = False,
+    ) -> ta.Union[bytes, bytearray]:
+        ...
+
+    @classmethod
+    def to_bytes(
+            cls,
+            obj,
+            /, *,
+            strict=False,
+            or_none=False,
+    ):
+        """
+        Returns a non-shared version of the given object. If a possibly shared memoryview is acceptable, use
+        `iter_segments`.
+        """
+
+        if strict:
+            if (ot := type(obj)) is bytes or isinstance(obj, bytes):
+                return obj
+
+            elif ot is bytearray:
+                return bytes(obj)
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes_strict(obj)
+
+        else:
+            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES):
+                return obj
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes(obj)
+
+        if isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
 
         elif isinstance(obj, ByteStreamBufferLike):
@@ -1093,53 +1153,6 @@ class ByteStreamBuffers(NamespaceClass):
 
         else:
             raise TypeError(obj)
-
-    #
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
-        ...
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
-        ...
-
-    @classmethod
-    def any_to_bytes(cls, obj, or_none=False, /):
-        if (ot := type(obj)) is bytes:
-            return obj
-        elif ot is bytearray:
-            return bytes(obj)
-
-        elif isinstance(obj, bytes):
-            return obj
-        elif isinstance(obj, bytearray):
-            return bytes(obj)
-
-        else:
-            return cls.buffer_to_bytes(obj, or_none)  # noqa
-
-    #
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Union[bytes, bytearray, None]:
-        ...
-
-    @classmethod
-    @ta.overload
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> ta.Union[bytes, bytearray]:  # noqa
-        ...
-
-    @classmethod
-    def any_to_bytes_or_bytearray(cls, obj, or_none=False, /):
-        if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
-            return obj
-
-        else:
-            return cls.buffer_to_bytes(obj, or_none)  # noqa
 
     #
 
@@ -1164,7 +1177,7 @@ class ByteStreamBuffers(NamespaceClass):
         else:
             raise TypeError(obj)
 
-    ##
+    #
 
     @staticmethod
     def iter_segments(obj: ta.Any, /) -> ta.Iterator[memoryview]:
@@ -1184,6 +1197,8 @@ class ByteStreamBuffers(NamespaceClass):
         else:
             raise TypeError(obj)
 
+    #
+
     @staticmethod
     def split(buf: ByteStreamBuffer, sep: bytes, /, *, final: bool = False) -> ta.List[ByteStreamBufferView]:
         out: ta.List[ByteStreamBufferView] = []
@@ -1192,6 +1207,22 @@ class ByteStreamBuffers(NamespaceClass):
         if final and len(buf):
             out.append(buf.split_to(len(buf)))
         return out
+
+    #
+
+    @classmethod
+    def memoryview_to_bytes(cls, mv: memoryview, /) -> ta.Union[bytes, bytearray]:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    @staticmethod
+    def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
 
 
 ########################################
@@ -1202,7 +1233,7 @@ class ByteStreamBuffers(NamespaceClass):
 
 
 class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
-    def __init__(self, data: BytesLikeOrMemoryview) -> None:
+    def __init__(self, data: BytesLike) -> None:
         super().__init__()
 
         self._data = data
@@ -1282,7 +1313,7 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
         b'GET /path HTTP/1.1\\r\\nHost: example.com'
     """
 
-    def __init__(self, data: BytesLikeOrMemoryview) -> None:
+    def __init__(self, data: BytesLike) -> None:
         super().__init__(data)
 
         self._rpos = 0
@@ -1448,7 +1479,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
     #
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         self._buf.write(data)
 
     def reserve(self, n: int, /) -> memoryview:
@@ -1701,7 +1732,7 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
         self._rpos += n
         return DirectByteStreamBufferView(out)
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):
@@ -1854,7 +1885,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if self._resv_start is not None:
             raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         self._check_no_reserve()
         if not data:
             return
@@ -2292,7 +2323,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active = None
         self._active_used = 0
 
-    def write(self, data: BytesLikeOrMemoryview, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):

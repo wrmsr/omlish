@@ -18,7 +18,7 @@ T_co = ta.TypeVar('T_co', covariant=True)
 T_contra = ta.TypeVar('T_contra', contravariant=True)
 
 # FIXME: remove? ducktyped by mypy (with memoryview)
-BytesLike: ta.TypeAlias = bytes | bytearray
+BytesLike: ta.TypeAlias = bytes | bytearray | memoryview
 
 
 ##
