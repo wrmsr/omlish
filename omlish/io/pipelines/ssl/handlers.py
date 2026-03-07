@@ -6,20 +6,20 @@ import ssl
 import typing as ta
 
 from ...streams.utils import ByteStreamBuffers
-from ..bytes.buffering import InboundBytesBufferingChannelPipelineHandler
-from ..bytes.buffering import OutboundBytesBufferingChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineMessages
-from ..flow.types import ChannelPipelineFlow
-from ..flow.types import ChannelPipelineFlowMessages
+from ..bytes.buffering import InboundBytesBufferingIoPipelineHandler
+from ..bytes.buffering import OutboundBytesBufferingIoPipelineHandler
+from ..core import IoPipelineHandlerContext
+from ..core import IoPipelineMessages
+from ..flow.types import IoPipelineFlow
+from ..flow.types import IoPipelineFlowMessages
 
 
 ##
 
 
-class SslChannelPipelineHandler(
-    InboundBytesBufferingChannelPipelineHandler,
-    OutboundBytesBufferingChannelPipelineHandler,
+class SslIoPipelineHandler(
+    InboundBytesBufferingIoPipelineHandler,
+    OutboundBytesBufferingIoPipelineHandler,
 ):
     """
     TLS via ssl.MemoryBIO + SSLObject.
@@ -39,7 +39,7 @@ class SslChannelPipelineHandler(
 
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['SslChannelPipelineHandler.Config']
+        DEFAULT: ta.ClassVar['SslIoPipelineHandler.Config']
 
         read_chunk_size: int = 64 * 1024
 
@@ -63,7 +63,7 @@ class SslChannelPipelineHandler(
         self._server_hostname = server_hostname
         self._ssl_session = ssl_session
         if config is None:
-            config = SslChannelPipelineHandler.Config.DEFAULT
+            config = SslIoPipelineHandler.Config.DEFAULT
         self._config = config
 
     #
@@ -130,17 +130,17 @@ class SslChannelPipelineHandler(
 
     #
 
-    def _fc(self, ctx: ChannelPipelineHandlerContext) -> ta.Optional[ChannelPipelineFlow]:
-        return ctx.services.find(ChannelPipelineFlow)
+    def _fc(self, ctx: IoPipelineHandlerContext) -> ta.Optional[IoPipelineFlow]:
+        return ctx.services.find(IoPipelineFlow)
 
-    def _is_auto_read(self, ctx: ChannelPipelineHandlerContext) -> bool:
-        if (flow := ctx.services.find(ChannelPipelineFlow)) is None:
+    def _is_auto_read(self, ctx: IoPipelineHandlerContext) -> bool:
+        if (flow := ctx.services.find(IoPipelineFlow)) is None:
             return True
         return flow.is_auto_read()
 
     #
 
-    def _maybe_send_ready_for_input(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def _maybe_send_ready_for_input(self, ctx: IoPipelineHandlerContext) -> None:
         fc = self._fc(ctx)
         if fc is None or fc.is_auto_read():
             return
@@ -149,7 +149,7 @@ class SslChannelPipelineHandler(
         # for data yet.
         if self._state in (self.State.NEW, self.State.HANDSHAKE) and self._is_ready_for_input:
             self._is_ready_for_input = False
-            ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
             return
 
         # REASON 2: Downstream asked for data (_read_requested), but our internal BIO and SSL buffers are dry
@@ -160,9 +160,9 @@ class SslChannelPipelineHandler(
                 self._is_ready_for_input = False
                 # We don't reset _read_requested here! We keep it True so that when the bytes eventually arrive,
                 # inbound() knows to pump them.
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
-    def _pump_plaintext_in(self, ctx: ChannelPipelineHandlerContext) -> bool:
+    def _pump_plaintext_in(self, ctx: IoPipelineHandlerContext) -> bool:
         """Read decrypted data from SSLObject -> inbound plaintext."""
 
         # We pump if we have a reason to:
@@ -201,7 +201,7 @@ class SslChannelPipelineHandler(
                 # 2. Emit the synthetic FinalInput EXACTLY ONCE
                 if not self._inbound_eof_sent:
                     self._inbound_eof_sent = True
-                    ctx.feed_in(ChannelPipelineMessages.FinalInput())
+                    ctx.feed_in(IoPipelineMessages.FinalInput())
                     # A FinalInput satisfies the read, but we DO NOT want to trigger a FlushInput in outbound().
                     return False
 
@@ -223,7 +223,7 @@ class SslChannelPipelineHandler(
 
         return produced
 
-    def _pump_tls_out(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def _pump_tls_out(self, ctx: IoPipelineHandlerContext) -> None:
         """Drain out_bio -> outbound TLS records."""
 
         fo: ta.List[ta.Any] = []
@@ -247,7 +247,7 @@ class SslChannelPipelineHandler(
                 n and
                 self._fc(ctx) is not None
         ):
-            fo.append(ChannelPipelineFlowMessages.FlushOutput())
+            fo.append(IoPipelineFlowMessages.FlushOutput())
 
         if self._state == self.State.CLOSED and self._pending_final_output is not None:
             fo.append(self._pending_final_output)
@@ -256,7 +256,7 @@ class SslChannelPipelineHandler(
         for msg in fo:
             ctx.feed_out(msg)
 
-    def _handshake_step(self, ctx: ChannelPipelineHandlerContext) -> bool:
+    def _handshake_step(self, ctx: IoPipelineHandlerContext) -> bool:
         """Try to advance handshake. Returns True if established. Always pumps TLS output after attempting handshake."""
 
         if self._state == self.State.CLOSED:
@@ -287,7 +287,7 @@ class SslChannelPipelineHandler(
 
         return self._state == self.State.ESTABLISHED
 
-    def _write_plaintext(self, ctx: ChannelPipelineHandlerContext, data: ta.Any) -> bool:
+    def _write_plaintext(self, ctx: IoPipelineHandlerContext, data: ta.Any) -> bool:
         """
         Write plaintext into SSLObject (encrypt). Returns True if fully accepted.
         On WANT_READ, caller should wait for inbound TLS.
@@ -311,7 +311,7 @@ class SslChannelPipelineHandler(
 
         return True
 
-    def _drain_pending_plaintext_out(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def _drain_pending_plaintext_out(self, ctx: IoPipelineHandlerContext) -> None:
         if not self._pending_plaintext_out:
             return
         if self._state != self.State.ESTABLISHED:
@@ -333,7 +333,7 @@ class SslChannelPipelineHandler(
 
     _pending_final_output: ta.Any = None
 
-    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
+    def _on_inbound_flush_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushInput) -> None:  # noqa
         self._ensure_state()
 
         self._maybe_send_ready_for_input(ctx)
@@ -343,7 +343,7 @@ class SslChannelPipelineHandler(
 
         ctx.feed_in(msg)
 
-    def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
+    def _on_inbound_final_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalInput) -> None:  # noqa
         self._ensure_state()
 
         # Signal EOF to the incoming BIO; this is the correct way to tell SSLObject there will be no more peer
@@ -371,12 +371,12 @@ class SslChannelPipelineHandler(
         # If an abrupt disconnect happened, ensure downstream gets an EOF
         if not self._inbound_eof_sent:
             self._inbound_eof_sent = True
-            ctx.feed_in(ChannelPipelineMessages.FinalInput())
+            ctx.feed_in(IoPipelineMessages.FinalInput())
 
         # CONSUME the transport's FinalInput to prevent duplicate EOFs downstream
         ctx.mark_propagated('inbound', msg)
 
-    def _on_inbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def _on_inbound_bytes(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._ensure_state()
 
         # Feed ciphertext into in_bio.
@@ -403,13 +403,13 @@ class SslChannelPipelineHandler(
         self._pump_plaintext_in(ctx)
         self._pump_tls_out(ctx)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.FlushInput):
             self._on_inbound_flush_input(ctx, msg)
             return
 
         # Underlying transport EOF.
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+        if isinstance(msg, IoPipelineMessages.FinalInput):
             self._on_inbound_final_input(ctx, msg)
             return
 
@@ -421,7 +421,7 @@ class SslChannelPipelineHandler(
 
     #
 
-    def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # noqa
+    def _on_outbound_ready_for_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.ReadyForInput) -> None:  # noqa
         self._ensure_state()
 
         # Mark that downstream wants data
@@ -431,7 +431,7 @@ class SslChannelPipelineHandler(
             # Check if we actually satisfied the request
             if self._pump_plaintext_in(ctx):
                 if not self._is_auto_read(ctx):
-                    ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+                    ctx.feed_in(IoPipelineFlowMessages.FlushInput())
                 return  # Swallow
 
         if self._state == self.State.CLOSED:
@@ -440,10 +440,10 @@ class SslChannelPipelineHandler(
         # If we couldn't satisfy it (or we are handshaking), pass it up.
         ctx.feed_out(msg)
 
-    def _on_outbound_flush_output(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushOutput) -> None:  # noqa
+    def _on_outbound_flush_output(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushOutput) -> None:  # noqa
         ctx.feed_out(msg)
 
-    def _on_outbound_final_output(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalOutput) -> None:  # noqa
+    def _on_outbound_final_output(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalOutput) -> None:  # noqa
         self._ensure_state()
 
         if self._state in (self.State.ESTABLISHED, self.State.HANDSHAKE):
@@ -456,7 +456,7 @@ class SslChannelPipelineHandler(
                 self._state = self.State.SHUTTING_DOWN
                 if isinstance(se, ssl.SSLWantReadError):
                     self._is_ready_for_input = False
-                    ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+                    ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
                 # Save the FinalOutput; we'll feed it once unwrap completes.
                 self._pending_final_output = msg
                 ctx.mark_propagated('outbound', msg)
@@ -470,7 +470,7 @@ class SslChannelPipelineHandler(
 
         ctx.feed_out(msg)
 
-    def _on_outbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def _on_outbound_bytes(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._ensure_state()
 
         if self._state == self.State.CLOSED:
@@ -495,16 +495,16 @@ class SslChannelPipelineHandler(
             self._pending_plaintext_out.append(msg)
             self._pending_outbound_bytes += len(msg)
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.ReadyForInput):
             self._on_outbound_ready_for_input(ctx, msg)
             return
 
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushOutput):
+        if isinstance(msg, IoPipelineFlowMessages.FlushOutput):
             self._on_outbound_flush_output(ctx, msg)
             return
 
-        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+        if isinstance(msg, IoPipelineMessages.FinalOutput):
             self._on_outbound_final_output(ctx, msg)
             return
 

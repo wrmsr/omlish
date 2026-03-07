@@ -1,17 +1,17 @@
 # @omlish-lite
 import unittest
 
-from ...core import ChannelPipeline
-from ...handlers.fns import FnChannelPipelineHandler
-from ...handlers.queues import InboundQueueChannelPipelineHandler
-from ..queues import InboundBytesBufferingQueueChannelPipelineHandler
+from ...core import IoPipeline
+from ...handlers.fns import FnIoPipelineHandler
+from ...handlers.queues import InboundQueueIoPipelineHandler
+from ..queues import InboundBytesBufferingQueueIoPipelineHandler
 
 
 class TestQueues(unittest.TestCase):
     def test_inbound_queue(self):
-        ch = ChannelPipeline.new([
-            FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!')),
-            h := InboundBytesBufferingQueueChannelPipelineHandler(),
+        ch = IoPipeline.new([
+            FnIoPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!')),
+            h := InboundBytesBufferingQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(b'abc')
@@ -21,11 +21,11 @@ class TestQueues(unittest.TestCase):
         assert h.inbound_buffered_bytes() == 0
 
     def test_inbound_queue_filter(self):
-        ch = ChannelPipeline.new([
-            FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!' if isinstance(msg, bytes) else msg)),  # noqa
-            h := InboundBytesBufferingQueueChannelPipelineHandler(filter=True),
-            ibq := InboundQueueChannelPipelineHandler(),
-        ], config=ChannelPipeline.Config.DEFAULT.update(raise_immediately=True))
+        ch = IoPipeline.new([
+            FnIoPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!' if isinstance(msg, bytes) else msg)),  # noqa
+            h := InboundBytesBufferingQueueIoPipelineHandler(filter=True),
+            ibq := InboundQueueIoPipelineHandler(),
+        ], config=IoPipeline.Config.DEFAULT.update(raise_immediately=True))
 
         ch.feed_in(b'abc')
         assert not ch.output.poll()

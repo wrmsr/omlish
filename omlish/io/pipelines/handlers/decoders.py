@@ -4,26 +4,26 @@ import abc
 import typing as ta
 
 from ....lite.abstract import Abstract
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineHandlerFn
-from ..core import ShareableChannelPipelineHandler
-from ..flow.types import ChannelPipelineFlow
-from ..flow.types import ChannelPipelineFlowMessages
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
+from ..core import IoPipelineHandlerFn
+from ..core import ShareableIoPipelineHandler
+from ..flow.types import IoPipelineFlow
+from ..flow.types import IoPipelineFlowMessages
 
 
 ##
 
 
-class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class MessageToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
     @abc.abstractmethod
-    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
         raise NotImplementedError
 
     @abc.abstractmethod
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:
@@ -32,21 +32,21 @@ class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abst
     _called_decode = False
     _produced_messages = False
 
-    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
-        if not isinstance(self, ShareableChannelPipelineHandler):
+    def _on_inbound_flush_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushInput) -> None:  # noqa
+        if not isinstance(self, ShareableIoPipelineHandler):
             if (
                     self._called_decode and
                     not self._produced_messages and
-                    not ctx.services[ChannelPipelineFlow].is_auto_read()
+                    not ctx.services[IoPipelineFlow].is_auto_read()
             ):
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             self._called_decode = False
             self._produced_messages = False
 
         ctx.feed_in(msg)
 
-    def _on_inbound_should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def _on_inbound_should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._called_decode = True
 
         out: ta.List[ta.Any] = []
@@ -61,8 +61,8 @@ class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abst
         for out_msg in out:
             ctx.feed_in(out_msg)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.FlushInput):
             self._on_inbound_flush_input(ctx, msg)
 
         elif self._should_decode(ctx, msg):
@@ -75,23 +75,23 @@ class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abst
 ##
 
 
-class FnMessageToMessageDecoderChannelPipelineHandler(MessageToMessageDecoderChannelPipelineHandler):
+class FnMessageToMessageDecoderIoPipelineHandler(MessageToMessageDecoderIoPipelineHandler):
     def __init__(
             self,
-            filter_fn: ChannelPipelineHandlerFn[ta.Any, bool],  # noqa
-            decode_fn: ChannelPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]],
+            filter_fn: IoPipelineHandlerFn[ta.Any, bool],  # noqa
+            decode_fn: IoPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]],
     ) -> None:
         super().__init__()
 
         self._filter_fn = filter_fn
         self._decode_fn = decode_fn
 
-    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
         return self._filter_fn(ctx, msg)
 
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:

@@ -10,9 +10,9 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from ...io.pipelines.bytes.buffering import InboundBytesBufferingChannelPipelineHandler
-from ...io.pipelines.bytes.decoders import BytesToMessageDecoderChannelPipelineHandler
-from ...io.pipelines.core import ChannelPipelineHandlerContext
+from ...io.pipelines.bytes.buffering import InboundBytesBufferingIoPipelineHandler
+from ...io.pipelines.bytes.decoders import BytesToMessageDecoderIoPipelineHandler
+from ...io.pipelines.core import IoPipelineHandlerContext
 from ...io.streams.scanning import ScanningByteStreamBuffer
 from ...io.streams.segmented import SegmentedByteStreamBuffer
 from ...io.streams.segmented import SegmentedByteStreamBufferView
@@ -57,8 +57,8 @@ PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
 
 class PipelineHttpObjectDecoder(
     PipelineHttpMessageObjects,
-    InboundBytesBufferingChannelPipelineHandler,
-    BytesToMessageDecoderChannelPipelineHandler,
+    InboundBytesBufferingIoPipelineHandler,
+    BytesToMessageDecoderIoPipelineHandler,
     Abstract,
 ):
     def __init__(
@@ -95,7 +95,7 @@ class PipelineHttpObjectDecoder(
 
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             data: CanByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
@@ -136,7 +136,7 @@ class PipelineHttpObjectDecoder(
         @abc.abstractmethod
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -155,7 +155,7 @@ class PipelineHttpObjectDecoder(
 
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -240,7 +240,7 @@ class PipelineHttpObjectDecoder(
 
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -287,7 +287,7 @@ class PipelineHttpObjectDecoder(
     class _UntilEofContentState(_ContentState):
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -320,7 +320,7 @@ class PipelineHttpObjectDecoder(
 
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -380,7 +380,7 @@ class PipelineHttpObjectDecoder(
 
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -475,7 +475,7 @@ class PipelineHttpObjectDecoder(
 
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -547,7 +547,7 @@ class PipelineHttpObjectDecoder(
 
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -610,7 +610,7 @@ class PipelineHttpObjectDecoder(
 
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -626,7 +626,7 @@ class PipelineHttpObjectDecoder(
     class _AbortedState(_State):
         def decode(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,

@@ -9,30 +9,30 @@ import typing as ta
 from ...lite.abstract import Abstract
 from ...lite.check import check
 from ...lite.namespaces import NamespaceClass
-from .errors import ContextInvalidatedChannelPipelineError
-from .errors import MessageNotPropagatedChannelPipelineError
-from .errors import MessageReachedTerminalChannelPipelineError
-from .errors import SawFinalInputChannelPipelineError
-from .errors import SawFinalOutputChannelPipelineError
-from .errors import SawInitialInputChannelPipelineError
-from .errors import UnhandleableChannelPipelineError
+from .errors import ContextInvalidatedIoPipelineError
+from .errors import MessageNotPropagatedIoPipelineError
+from .errors import MessageReachedTerminalIoPipelineError
+from .errors import SawFinalInputIoPipelineError
+from .errors import SawFinalOutputIoPipelineError
+from .errors import SawInitialInputIoPipelineError
+from .errors import UnhandleableIoPipelineError
 
 
 F = ta.TypeVar('F')
 T = ta.TypeVar('T')
 
-ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T]  # ta.TypeAlias
+IoPipelineHandlerFn = ta.Callable[['IoPipelineHandlerContext', F], T]  # ta.TypeAlias
 
-ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
-ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
+IoPipelineHandlerT = ta.TypeVar('IoPipelineHandlerT', bound='IoPipelineHandler')
+ShareableIoPipelineHandlerT = ta.TypeVar('ShareableIoPipelineHandlerT', bound='ShareableIoPipelineHandler')  # noqa
 
-ChannelPipelineMetadataT = ta.TypeVar('ChannelPipelineMetadataT', bound='ChannelPipelineMetadata')
+IoPipelineMetadataT = ta.TypeVar('IoPipelineMetadataT', bound='IoPipelineMetadata')
 
 
 ##
 
 
-class ChannelPipelineMessages(NamespaceClass):
+class IoPipelineMessages(NamespaceClass):
     """Standard messages sent through a channel pipeline."""
 
     #
@@ -64,7 +64,7 @@ class ChannelPipelineMessages(NamespaceClass):
     class Pinning(Abstract):
         @property
         @abc.abstractmethod
-        def pinned(self) -> ta.Optional[ta.Sequence['ChannelPipelineMessages.MustPropagate']]:
+        def pinned(self) -> ta.Optional[ta.Sequence['IoPipelineMessages.MustPropagate']]:
             raise NotImplementedError
 
     #
@@ -102,8 +102,8 @@ class ChannelPipelineMessages(NamespaceClass):
 
         exc: BaseException
 
-        direction: ta.Optional['ChannelPipelineDirection'] = None
-        handler: ta.Optional['ChannelPipelineHandlerRef'] = None
+        direction: ta.Optional['IoPipelineDirection'] = None
+        handler: ta.Optional['IoPipelineHandlerRef'] = None
 
     #
 
@@ -157,11 +157,11 @@ class ChannelPipelineMessages(NamespaceClass):
             except AttributeError:
                 pass
 
-            cpl = ChannelPipelineMessages.Completable._Completion()  # noqa
+            cpl = IoPipelineMessages.Completable._Completion()  # noqa
             object.__setattr__(self, '_completion_', cpl)
             return cpl
 
-        def add_listener(self, fn: ta.Callable[['ChannelPipelineMessages.Completable[T]'], None]) -> None:
+        def add_listener(self, fn: ta.Callable[['IoPipelineMessages.Completable[T]'], None]) -> None:
             check.state(not self.is_done())
 
             cpl = self._completion()
@@ -209,7 +209,7 @@ class ChannelPipelineMessages(NamespaceClass):
     @dc.dataclass(frozen=True)
     class Defer(NeverInbound, Pinning, Completable[T], ta.Generic[T]):
         fn: ta.Union[
-            ta.Callable[['ChannelPipelineHandlerContext'], T],
+            ta.Callable[['IoPipelineHandlerContext'], T],
             ta.Callable[[], T],
         ]
 
@@ -220,34 +220,34 @@ class ChannelPipelineMessages(NamespaceClass):
 
         # _: dc.KW_ONLY
 
-        _ctx: ta.Optional['ChannelPipelineHandlerContext'] = dc.field(default=None, repr=False)
+        _ctx: ta.Optional['IoPipelineHandlerContext'] = dc.field(default=None, repr=False)
 
-        _pinned: ta.Optional[ta.Sequence['ChannelPipelineMessages.MustPropagate']] = dc.field(default=None, repr=False)
+        _pinned: ta.Optional[ta.Sequence['IoPipelineMessages.MustPropagate']] = dc.field(default=None, repr=False)
 
         @property
-        def pinned(self) -> ta.Optional[ta.Sequence['ChannelPipelineMessages.MustPropagate']]:
+        def pinned(self) -> ta.Optional[ta.Sequence['IoPipelineMessages.MustPropagate']]:
             return self._pinned
 
 
 ##
 
 
-class ChannelPipelineHandlerNotification(Abstract):  # ~ Netty `ChannelHandler` methods
+class IoPipelineHandlerNotification(Abstract):  # ~ Netty `ChannelHandler` methods
     """
     Directionless, private events sent to a specific handler that are not to be forwarded to any other handler in either
     direction.
     """
 
 
-class ChannelPipelineHandlerNotifications(NamespaceClass):
+class IoPipelineHandlerNotifications(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
-    class Added(ChannelPipelineHandlerNotification):
+    class Added(IoPipelineHandlerNotification):
         pass
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Removed(ChannelPipelineHandlerNotification):
+    class Removed(IoPipelineHandlerNotification):
         pass
 
 
@@ -255,7 +255,7 @@ class ChannelPipelineHandlerNotifications(NamespaceClass):
 
 
 @ta.final
-class ChannelPipelineHandlerRef(ta.Generic[T]):
+class IoPipelineHandlerRef(ta.Generic[T]):
     """
     Encapsulates a reference to a unique position of a handler instance in a pipeline, used at public api boundaries.
 
@@ -266,11 +266,11 @@ class ChannelPipelineHandlerRef(ta.Generic[T]):
     re-adding the same handler instance to the same effective position in a pipeline results in a different ref.
     """
 
-    def __init__(self, *, _context: 'ChannelPipelineHandlerContext') -> None:
+    def __init__(self, *, _context: 'IoPipelineHandlerContext') -> None:
         self._context = _context
 
     @property
-    def pipeline(self) -> 'ChannelPipeline':
+    def pipeline(self) -> 'IoPipeline':
         return self._context._pipeline  # noqa
 
     @property
@@ -295,14 +295,14 @@ class ChannelPipelineHandlerRef(ta.Generic[T]):
         )
 
 
-ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef['ChannelPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
 @ta.final
-class ChannelPipelineHandlerContext:
+class IoPipelineHandlerContext:
     """
-    The embodiment of an instance of a handler at a position in a pipeline. Passed to ChannelPipelineHandler methods,
-    providing handler-specific access to the pipeline and channel. As instances of `ShareableChannelPipelineHandler` may
+    The embodiment of an instance of a handler at a position in a pipeline. Passed to IoPipelineHandler methods,
+    providing handler-specific access to the pipeline and channel. As instances of `ShareableIoPipelineHandler` may
     validly be simultaneously present at multiple positions in a pipeline, a single handler may have multiple active
     context instances associated with it in any given pipeline.
 
@@ -314,25 +314,25 @@ class ChannelPipelineHandlerContext:
     def __init__(
             self,
             *,
-            _pipeline: 'ChannelPipeline',
-            _handler: 'ChannelPipelineHandler',
+            _pipeline: 'IoPipeline',
+            _handler: 'IoPipelineHandler',
 
             name: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
-        self._pipeline: ta.Final[ChannelPipeline] = _pipeline
-        self._handler: ta.Final[ChannelPipelineHandler] = _handler
+        self._pipeline: ta.Final[IoPipeline] = _pipeline
+        self._handler: ta.Final[IoPipelineHandler] = _handler
 
         self._name: ta.Final[ta.Optional[str]] = name
 
-        self._ref: ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef(_context=self)
+        self._ref: IoPipelineHandlerRef_ = IoPipelineHandlerRef(_context=self)
 
-        self._handles_inbound = type(_handler).inbound is not ChannelPipelineHandler.inbound
-        self._handles_outbound = type(_handler).outbound is not ChannelPipelineHandler.outbound
+        self._handles_inbound = type(_handler).inbound is not IoPipelineHandler.inbound
+        self._handles_outbound = type(_handler).outbound is not IoPipelineHandler.outbound
 
-    _next_in: 'ChannelPipelineHandlerContext'  # 'next'
-    _next_out: 'ChannelPipelineHandlerContext'  # 'prev'
+    _next_in: 'IoPipelineHandlerContext'  # 'next'
+    _next_out: 'IoPipelineHandlerContext'  # 'prev'
 
     def __repr__(self) -> str:
         return (
@@ -344,19 +344,19 @@ class ChannelPipelineHandlerContext:
         )
 
     @property
-    def ref(self) -> ChannelPipelineHandlerRef_:
+    def ref(self) -> IoPipelineHandlerRef_:
         return self._ref
 
     @property
-    def pipeline(self) -> 'ChannelPipeline':
+    def pipeline(self) -> 'IoPipeline':
         return self._pipeline
 
     @property
-    def services(self) -> 'ChannelPipelineServices':  # noqa
+    def services(self) -> 'IoPipelineServices':  # noqa
         return self._pipeline._services  # noqa
 
     @property
-    def handler(self) -> 'ChannelPipelineHandler':
+    def handler(self) -> 'IoPipelineHandler':
         return self._handler
 
     @property
@@ -367,18 +367,18 @@ class ChannelPipelineHandlerContext:
 
     def defer(
             self,
-            fn: ta.Callable[['ChannelPipelineHandlerContext'], T],
+            fn: ta.Callable[['IoPipelineHandlerContext'], T],
             *,
-            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
-    ) -> ChannelPipelineMessages.Defer[T]:
+            pin: ta.Optional[ta.Sequence[IoPipelineMessages.MustPropagate]] = None,
+    ) -> IoPipelineMessages.Defer[T]:
         return self._pipeline._defer(self, fn, pin=pin)  # noqa
 
     def defer_no_context(
             self,
             fn: ta.Callable[[], T],
             *,
-            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
-    ) -> ChannelPipelineMessages.Defer[T]:
+            pin: ta.Optional[ta.Sequence[IoPipelineMessages.MustPropagate]] = None,
+    ) -> IoPipelineMessages.Defer[T]:
         return self._pipeline._defer(self, fn, no_context=True, pin=pin)  # noqa
 
     #
@@ -399,19 +399,19 @@ class ChannelPipelineHandlerContext:
     @ta.final
     class Storage:
         def __init__(self) -> None:
-            self.__dict: ta.Dict[ChannelPipelineHandlerContext.StorageKey, ta.Any] = {}
+            self.__dict: ta.Dict[IoPipelineHandlerContext.StorageKey, ta.Any] = {}
 
         @property
-        def dict(self) -> ta.Dict['ChannelPipelineHandlerContext.StorageKey', ta.Any]:
+        def dict(self) -> ta.Dict['IoPipelineHandlerContext.StorageKey', ta.Any]:
             return self.__dict
 
-        def __getitem__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]') -> T:
+        def __getitem__(self, key: 'IoPipelineHandlerContext.StorageKey[T]') -> T:
             return self.__dict[key]
 
         @ta.overload
         def get(
                 self,
-                key: 'ChannelPipelineHandlerContext.StorageKey[T]',
+                key: 'IoPipelineHandlerContext.StorageKey[T]',
                 default: T,
                 /,
         ) -> T:
@@ -420,7 +420,7 @@ class ChannelPipelineHandlerContext:
         @ta.overload
         def get(
                 self,
-                key: 'ChannelPipelineHandlerContext.StorageKey[T]',
+                key: 'IoPipelineHandlerContext.StorageKey[T]',
                 default: ta.Optional[T] = None,
                 /,
         ) -> ta.Optional[T]:
@@ -429,22 +429,22 @@ class ChannelPipelineHandlerContext:
         def get(self, key, default=None, /):
             return self.__dict.get(key, default)
 
-        def __setitem__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]', value: T) -> None:
+        def __setitem__(self, key: 'IoPipelineHandlerContext.StorageKey[T]', value: T) -> None:
             self.__dict[key] = value
 
-        def __delitem__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]') -> None:
+        def __delitem__(self, key: 'IoPipelineHandlerContext.StorageKey[T]') -> None:
             del self.__dict[key]
 
         def __len__(self) -> int:
             return len(self.__dict)
 
-        def __contains__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]') -> bool:
+        def __contains__(self, key: 'IoPipelineHandlerContext.StorageKey[T]') -> bool:
             return key in self.__dict
 
-        def __iter__(self) -> ta.Iterator['ChannelPipelineHandlerContext.StorageKey[T]']:
+        def __iter__(self) -> ta.Iterator['IoPipelineHandlerContext.StorageKey[T]']:
             return iter(self.__dict)
 
-        def items(self) -> ta.Iterator[ta.Tuple['ChannelPipelineHandlerContext.StorageKey[T]', T]]:
+        def items(self) -> ta.Iterator[ta.Tuple['IoPipelineHandlerContext.StorageKey[T]', T]]:
             return iter(self.__dict.items())
 
     _storage_: Storage
@@ -455,13 +455,13 @@ class ChannelPipelineHandlerContext:
             return self._storage_
         except AttributeError:
             pass
-        self._storage_ = ret = ChannelPipelineHandlerContext.Storage()
+        self._storage_ = ret = IoPipelineHandlerContext.Storage()
         return ret
 
     #
 
-    def _notify(self, no: ChannelPipelineHandlerNotification) -> None:
-        check.isinstance(no, ChannelPipelineHandlerNotification)
+    def _notify(self, no: IoPipelineHandlerNotification) -> None:
+        check.isinstance(no, IoPipelineHandlerNotification)
         check.state(self._pipeline._execution_depth > 0)  # noqa
 
         self._handler.notify(self, no)
@@ -471,19 +471,19 @@ class ChannelPipelineHandlerContext:
     # marker dataclass)
 
     _FORBIDDEN_INBOUND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        ChannelPipelineMessages.NeverInbound,
-        ChannelPipelineHandlerNotification,
+        IoPipelineMessages.NeverInbound,
+        IoPipelineHandlerNotification,
         type,
         type(None),
     )
 
     def _inbound(self, msg: ta.Any) -> None:
-        check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
-        check.state(self._pipeline._state == ChannelPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
+        check.state(not self._invalidated, ContextInvalidatedIoPipelineError)
+        check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
 
-        if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+        if isinstance(msg, IoPipelineMessages.MustPropagate):
             self._pipeline._propagation.add_must(self, 'inbound', msg)  # noqa
 
         try:
@@ -498,19 +498,19 @@ class ChannelPipelineHandlerContext:
             self._handle_error(e, 'inbound')
 
     _FORBIDDEN_OUTBOUND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        ChannelPipelineMessages.NeverOutbound,
-        ChannelPipelineHandlerNotification,
+        IoPipelineMessages.NeverOutbound,
+        IoPipelineHandlerNotification,
         type,
         type(None),
     )
 
     def _outbound(self, msg: ta.Any) -> None:
-        check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
-        check.state(self._pipeline._state == ChannelPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
+        check.state(not self._invalidated, ContextInvalidatedIoPipelineError)
+        check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
 
-        if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+        if isinstance(msg, IoPipelineMessages.MustPropagate):
             self._pipeline._propagation.add_must(self, 'outbound', msg)  # noqa
 
         try:
@@ -526,9 +526,9 @@ class ChannelPipelineHandlerContext:
 
     #
 
-    def _run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
-        check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
-        check.state(self._pipeline._state == ChannelPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
+    def _run_deferred(self, dfl: IoPipelineMessages.Defer) -> None:
+        check.state(not self._invalidated, ContextInvalidatedIoPipelineError)
+        check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.state(dfl._ctx is self)  # noqa
 
@@ -555,13 +555,13 @@ class ChannelPipelineHandlerContext:
 
     _handling_error: bool = False
 
-    def _handle_error(self, e: BaseException, direction: 'ChannelPipelineDirection') -> None:
+    def _handle_error(self, e: BaseException, direction: 'IoPipelineDirection') -> None:
         check.state(not self._handling_error)
         self._handling_error = True
 
         try:
             try:
-                self.feed_in(ChannelPipelineMessages.Error(e, direction, self._ref))
+                self.feed_in(IoPipelineMessages.Error(e, direction, self._ref))
 
             except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
                 raise
@@ -581,8 +581,8 @@ class ChannelPipelineHandlerContext:
     def feed_in(
             self,
             msg: ta.Union[
-                ChannelPipelineMessages.NeverInbound,
-                ChannelPipelineHandlerNotification,
+                IoPipelineMessages.NeverInbound,
+                IoPipelineHandlerNotification,
                 type,
                 None,
             ],
@@ -603,8 +603,8 @@ class ChannelPipelineHandlerContext:
     def feed_out(
             self,
             msg: ta.Union[
-                ChannelPipelineMessages.NeverOutbound,
-                ChannelPipelineHandlerNotification,
+                IoPipelineMessages.NeverOutbound,
+                IoPipelineHandlerNotification,
                 type,
                 None,
             ],
@@ -624,14 +624,14 @@ class ChannelPipelineHandlerContext:
     #
 
     def feed_final_output(self) -> None:
-        self.feed_out(ChannelPipelineMessages.FinalOutput())
+        self.feed_out(IoPipelineMessages.FinalOutput())
 
     #
 
     def mark_propagated(
             self,
-            direction: 'ChannelPipelineDirection',
-            msg: ChannelPipelineMessages.MustPropagate,
+            direction: 'IoPipelineDirection',
+            msg: IoPipelineMessages.MustPropagate,
     ) -> None:
         self._pipeline._propagation.remove_must(self, direction, msg)  # noqa
 
@@ -639,7 +639,7 @@ class ChannelPipelineHandlerContext:
 ##
 
 
-class ChannelPipelineHandler(Abstract):
+class IoPipelineHandler(Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -649,36 +649,36 @@ class ChannelPipelineHandler(Abstract):
             cls.__ne__ is object.__ne__
         ):
             raise TypeError(
-                f'ChannelPipelineHandler subclass {cls.__name__} must not override __hash__, __eq__ or __ne__',
+                f'IoPipelineHandler subclass {cls.__name__} must not override __hash__, __eq__ or __ne__',
             )
 
     #
 
-    def notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
+    def notify(self, ctx: IoPipelineHandlerContext, no: IoPipelineHandlerNotification) -> None:
         pass
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         ctx.feed_in(msg)
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         ctx.feed_out(msg)
 
 
-class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class ShareableIoPipelineHandler(IoPipelineHandler, Abstract):
     pass
 
 
 ##
 
 
-ChannelPipelineDirection = ta.Literal['inbound', 'outbound']  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineDirection = ta.Literal['inbound', 'outbound']  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
-ChannelPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
-    ChannelPipelineDirection,
+IoPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    IoPipelineDirection,
     'duplex',
 ]
 
-ChannelPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
     'adding',
     'added',
     'removing',
@@ -689,14 +689,14 @@ ChannelPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typin
 ##
 
 
-class ChannelPipelineService(Abstract):
-    def handler_update(self, handler_ref: ChannelPipelineHandlerRef, kind: ChannelPipelineHandlerUpdate) -> None:
+class IoPipelineService(Abstract):
+    def handler_update(self, handler_ref: IoPipelineHandlerRef, kind: IoPipelineHandlerUpdate) -> None:
         pass
 
-    def channel_enter(self, channel: 'ChannelPipeline') -> None:
+    def channel_enter(self, channel: 'IoPipeline') -> None:
         pass
 
-    def channel_exit(self, channel: 'ChannelPipeline') -> None:
+    def channel_exit(self, channel: 'IoPipeline') -> None:
         pass
 
 
@@ -704,8 +704,8 @@ class ChannelPipelineService(Abstract):
 
 
 @ta.final
-class ChannelPipelineServices:
-    def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
+class IoPipelineServices:
+    def __init__(self, lst: ta.Sequence[IoPipelineService]) -> None:
         self._lst = lst
 
         self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
@@ -717,19 +717,19 @@ class ChannelPipelineServices:
 
         for svc in lst:
             sty = type(svc)
-            if sty.handler_update is not ChannelPipelineService.handler_update:
+            if sty.handler_update is not IoPipelineService.handler_update:
                 handles_handler_update.append(sty)
-            if sty.channel_enter is not ChannelPipelineService.channel_enter:
+            if sty.channel_enter is not IoPipelineService.channel_enter:
                 handles_channel_enter.append(sty)
-            if sty.channel_exit is not ChannelPipelineService.channel_exit:
+            if sty.channel_exit is not IoPipelineService.channel_exit:
                 handles_channel_exit.append(sty)
 
-    _handles_handler_update: ta.Sequence[ChannelPipelineService]
-    _handles_channel_enter: ta.Sequence[ChannelPipelineService]
-    _handles_channel_exit: ta.Sequence[ChannelPipelineService]
+    _handles_handler_update: ta.Sequence[IoPipelineService]
+    _handles_channel_enter: ta.Sequence[IoPipelineService]
+    _handles_channel_exit: ta.Sequence[IoPipelineService]
 
     @classmethod
-    def of(cls, obj: ta.Union['ChannelPipelineServices', ta.Sequence[ChannelPipelineService]]) -> 'ChannelPipelineServices':  # noqa
+    def of(cls, obj: ta.Union['IoPipelineServices', ta.Sequence[IoPipelineService]]) -> 'IoPipelineServices':  # noqa
         if isinstance(obj, cls):
             return obj
         else:
@@ -738,10 +738,10 @@ class ChannelPipelineServices:
     def __len__(self) -> int:
         return len(self._lst)
 
-    def __iter__(self) -> ta.Iterator[ChannelPipelineService]:
+    def __iter__(self) -> ta.Iterator[IoPipelineService]:
         return iter(self._lst)
 
-    def __contains__(self, item: ChannelPipelineService) -> bool:
+    def __contains__(self, item: IoPipelineService) -> bool:
         return item in self._lst
 
     @dc.dataclass(frozen=True)
@@ -783,13 +783,13 @@ class ChannelPipelineServices:
 ##
 
 
-class ChannelPipelineMetadata(Abstract):
+class IoPipelineMetadata(Abstract):
     pass
 
 
 @ta.final
-class ChannelPipelineMetadatas:
-    def __init__(self, lst: ta.Sequence[ChannelPipelineMetadata]) -> None:
+class IoPipelineMetadatas:
+    def __init__(self, lst: ta.Sequence[IoPipelineMetadata]) -> None:
         dct: ta.Dict[type, ta.Any] = {}
         for md in lst:
             ty = type(md)
@@ -798,7 +798,7 @@ class ChannelPipelineMetadatas:
         self._dct = dct
 
     @classmethod
-    def of(cls, obj: ta.Union['ChannelPipelineMetadatas', ta.Sequence[ChannelPipelineMetadata]]) -> 'ChannelPipelineMetadatas':  # noqa
+    def of(cls, obj: ta.Union['IoPipelineMetadatas', ta.Sequence[IoPipelineMetadata]]) -> 'IoPipelineMetadatas':  # noqa
         if isinstance(obj, cls):
             return obj
         else:
@@ -807,25 +807,25 @@ class ChannelPipelineMetadatas:
     def __len__(self) -> int:
         return len(self._dct)
 
-    def __contains__(self, ty: ta.Type[ChannelPipelineMetadata]) -> bool:
+    def __contains__(self, ty: ta.Type[IoPipelineMetadata]) -> bool:
         return ty in self._dct
 
-    def __iter__(self) -> ta.Iterator[ChannelPipelineMetadata]:
+    def __iter__(self) -> ta.Iterator[IoPipelineMetadata]:
         return iter(self._dct.values())
 
     @dc.dataclass(frozen=True)
-    class MetadataType(ta.Generic[ChannelPipelineMetadataT]):
+    class MetadataType(ta.Generic[IoPipelineMetadataT]):
         """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
 
-        ty: ta.Type[ChannelPipelineMetadataT]
+        ty: ta.Type[IoPipelineMetadataT]
 
     def __getitem__(
             self,
             ty: ta.Union[
-                MetadataType[ChannelPipelineMetadataT],
-                ta.Type[ChannelPipelineMetadataT],
+                MetadataType[IoPipelineMetadataT],
+                ta.Type[IoPipelineMetadataT],
             ],
-    ) -> ChannelPipelineMetadataT:
+    ) -> IoPipelineMetadataT:
         if isinstance(ty, self.MetadataType):
             ty = ty.ty
 
@@ -835,24 +835,24 @@ class ChannelPipelineMetadatas:
     def get(
             self,
             ty: ta.Union[
-                MetadataType[ChannelPipelineMetadataT],
-                ta.Type[ChannelPipelineMetadataT],
+                MetadataType[IoPipelineMetadataT],
+                ta.Type[IoPipelineMetadataT],
             ],
-            default: ChannelPipelineMetadataT,
+            default: IoPipelineMetadataT,
             /,
-    ) -> ChannelPipelineMetadataT:
+    ) -> IoPipelineMetadataT:
         ...
 
     @ta.overload
     def get(
             self,
             ty: ta.Union[
-                MetadataType[ChannelPipelineMetadataT],
-                ta.Type[ChannelPipelineMetadataT],
+                MetadataType[IoPipelineMetadataT],
+                ta.Type[IoPipelineMetadataT],
             ],
-            default: ta.Optional[ChannelPipelineMetadataT] = None,
+            default: ta.Optional[IoPipelineMetadataT] = None,
             /,
-    ) -> ta.Optional[ChannelPipelineMetadataT]:
+    ) -> ta.Optional[IoPipelineMetadataT]:
         ...
 
     def get(self, ty, default=None, /):
@@ -865,25 +865,25 @@ class ChannelPipelineMetadatas:
 
 
 @ta.final
-class _ChannelPipelinePropagation:
+class _IoPipelinePropagation:
     @dc.dataclass()
     class _PendingMustEntry:
         msg: ta.Any
-        direction: ChannelPipelineDirection
-        last_seen: ChannelPipelineHandlerContext
-        pinned_by: ta.Optional[ChannelPipelineMessages.Pinning] = None
+        direction: IoPipelineDirection
+        last_seen: IoPipelineHandlerContext
+        pinned_by: ta.Optional[IoPipelineMessages.Pinning] = None
 
-    def __init__(self, ch: 'ChannelPipeline') -> None:
+    def __init__(self, ch: 'IoPipeline') -> None:
         self._ch = ch
 
         if not self._ch._config.disable_propagation_checking:  # noqa
-            self._pending_must: ta.Final[ta.Dict[int, _ChannelPipelinePropagation._PendingMustEntry]] = {}
+            self._pending_must: ta.Final[ta.Dict[int, _IoPipelinePropagation._PendingMustEntry]] = {}
 
     def add_must(
             self,
-            ctx: ChannelPipelineHandlerContext,
-            direction: ChannelPipelineDirection,
-            msg: ChannelPipelineMessages.MustPropagate,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
+            msg: IoPipelineMessages.MustPropagate,
     ) -> None:
         if self._ch._config.disable_propagation_checking:  # noqa
             return
@@ -892,7 +892,7 @@ class _ChannelPipelinePropagation:
         try:
             x = self._pending_must[i]
         except KeyError:
-            self._pending_must[i] = _ChannelPipelinePropagation._PendingMustEntry(  # noqa
+            self._pending_must[i] = _IoPipelinePropagation._PendingMustEntry(  # noqa
                 msg,
                 direction,
                 ctx,
@@ -906,7 +906,7 @@ class _ChannelPipelinePropagation:
 
     def pin_musts(
             self,
-            pinning: ChannelPipelineMessages.Pinning,
+            pinning: IoPipelineMessages.Pinning,
     ) -> None:
         if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
             return
@@ -918,7 +918,7 @@ class _ChannelPipelinePropagation:
 
     def unpin_musts(
             self,
-            pinning: ChannelPipelineMessages.Pinning,
+            pinning: IoPipelineMessages.Pinning,
     ) -> None:
         if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
             return
@@ -930,9 +930,9 @@ class _ChannelPipelinePropagation:
 
     def remove_must(
             self,
-            ctx: ChannelPipelineHandlerContext,
-            direction: ChannelPipelineDirection,
-            msg: ChannelPipelineMessages.MustPropagate,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
+            msg: IoPipelineMessages.MustPropagate,
     ) -> None:
         if self._ch._config.disable_propagation_checking:  # noqa
             return
@@ -941,7 +941,7 @@ class _ChannelPipelinePropagation:
         try:
             x = self._pending_must.pop(i)
         except KeyError:
-            raise MessageNotPropagatedChannelPipelineError.new_single(
+            raise MessageNotPropagatedIoPipelineError.new_single(
                 direction,
                 msg,
                 last_seen=ctx._ref,  # noqa
@@ -952,7 +952,7 @@ class _ChannelPipelinePropagation:
                 x.direction != direction or
                 x.pinned_by is not None
         ):
-            raise MessageNotPropagatedChannelPipelineError.new_single(
+            raise MessageNotPropagatedIoPipelineError.new_single(
                 direction,
                 msg,
                 last_seen=ctx._ref,  # noqa
@@ -975,7 +975,7 @@ class _ChannelPipelinePropagation:
         if not (il or ol):
             return
 
-        e = MessageNotPropagatedChannelPipelineError.new(
+        e = MessageNotPropagatedIoPipelineError.new(
             inbound_with_last_seen=il,
             outbound_with_last_seen=ol,
         )
@@ -991,7 +991,7 @@ class _ChannelPipelinePropagation:
 
 
 @ta.final
-class ChannelPipeline:
+class IoPipeline:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
@@ -1007,10 +1007,10 @@ class ChannelPipeline:
 
         #
 
-        def update(self, **kwargs: ta.Any) -> 'ChannelPipeline.Config':
+        def update(self, **kwargs: ta.Any) -> 'IoPipeline.Config':
             return dc.replace(self, **kwargs)
 
-        DEFAULT: ta.ClassVar['ChannelPipeline.Config']
+        DEFAULT: ta.ClassVar['IoPipeline.Config']
 
     Config.DEFAULT = Config()
 
@@ -1020,32 +1020,32 @@ class ChannelPipeline:
     @dc.dataclass(frozen=True)
     class Spec:
         # Initial handlers are optional - handlers may be freely added and removed later.
-        handlers: ta.Sequence[ChannelPipelineHandler] = ()
+        handlers: ta.Sequence[IoPipelineHandler] = ()
 
-        config: 'ChannelPipeline.Config' = dc.field(default_factory=lambda: ChannelPipeline.Config.DEFAULT)
+        config: 'IoPipeline.Config' = dc.field(default_factory=lambda: IoPipeline.Config.DEFAULT)
 
         # _: dc.KW_ONLY
 
-        metadata: ta.Union[ta.Sequence[ChannelPipelineMetadata], ChannelPipelineMetadatas] = ()
+        metadata: ta.Union[ta.Sequence[IoPipelineMetadata], IoPipelineMetadatas] = ()
 
         # Services are fixed for the lifetime of the channel.
-        services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = ()
+        services: ta.Union[ta.Sequence[IoPipelineService], IoPipelineServices] = ()
 
         #
 
-        def update_config(self, **kwargs: ta.Any) -> 'ChannelPipeline.Spec':
+        def update_config(self, **kwargs: ta.Any) -> 'IoPipeline.Spec':
             return dc.replace(self, config=self.config.update(**kwargs))
 
     @classmethod
     def new(
             cls,
-            handlers: ta.Sequence[ChannelPipelineHandler] = (),
-            config: 'ChannelPipeline.Config' = Config.DEFAULT,
+            handlers: ta.Sequence[IoPipelineHandler] = (),
+            config: 'IoPipeline.Config' = Config.DEFAULT,
             *,
-            metadata: ta.Union[ta.Sequence[ChannelPipelineMetadata], ChannelPipelineMetadatas] = (),
-            services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = (),
-    ) -> 'ChannelPipeline':
-        return cls(ChannelPipeline.Spec(
+            metadata: ta.Union[ta.Sequence[IoPipelineMetadata], IoPipelineMetadatas] = (),
+            services: ta.Union[ta.Sequence[IoPipelineService], IoPipelineServices] = (),
+    ) -> 'IoPipeline':
+        return cls(IoPipeline.Spec(
             handlers=handlers,
             config=config,
             metadata=metadata,
@@ -1062,15 +1062,15 @@ class ChannelPipeline:
     ) -> None:
         super().__init__()
 
-        self._config: ta.Final[ChannelPipeline.Config] = spec.config
+        self._config: ta.Final[IoPipeline.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._metadata: ta.Final[ChannelPipelineMetadatas] = ChannelPipelineMetadatas.of(spec.metadata)
-        self._services: ta.Final[ChannelPipelineServices] = ChannelPipelineServices.of(spec.services)
+        self._metadata: ta.Final[IoPipelineMetadatas] = IoPipelineMetadatas.of(spec.metadata)
+        self._services: ta.Final[IoPipelineServices] = IoPipelineServices.of(spec.services)
 
         #
 
-        self._output: ta.Final[ChannelPipeline._Output] = ChannelPipeline._Output()
+        self._output: ta.Final[IoPipeline._Output] = IoPipeline._Output()
 
         self._saw_any_input = False
         self._saw_initial_input = False
@@ -1078,23 +1078,23 @@ class ChannelPipeline:
         self._saw_final_output = False
 
         self._all_never_handle_exceptions: ta.Tuple[type, ...] = (
-            UnhandleableChannelPipelineError,
+            UnhandleableIoPipelineError,
             *never_handle_exceptions,
         )
 
         self._execution_depth = 0
 
-        self._propagation: _ChannelPipelinePropagation = _ChannelPipelinePropagation(self)
+        self._propagation: _IoPipelinePropagation = _IoPipelinePropagation(self)
 
         #
 
-        self._outermost = outermost = ChannelPipelineHandlerContext(
+        self._outermost = outermost = IoPipelineHandlerContext(
             _pipeline=self,
-            _handler=ChannelPipeline._Outermost(),
+            _handler=IoPipeline._Outermost(),
         )
-        self._innermost = innermost = ChannelPipelineHandlerContext(
+        self._innermost = innermost = IoPipelineHandlerContext(
             _pipeline=self,
-            _handler=ChannelPipeline._Innermost(),
+            _handler=IoPipeline._Innermost(),
         )
 
         # Explicitly does not form a ring, iteration past the outermost/innermost is always an error and will
@@ -1102,14 +1102,14 @@ class ChannelPipeline:
         outermost._next_in = innermost  # noqa
         innermost._next_out = outermost  # noqa
 
-        self._unique_contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
-        self._shareable_contexts: ta.Final[ta.Dict[ShareableChannelPipelineHandler, ta.Set[ChannelPipelineHandlerContext]]] = {}  # noqa
+        self._unique_contexts: ta.Final[ta.Dict[IoPipelineHandler, IoPipelineHandlerContext]] = {}
+        self._shareable_contexts: ta.Final[ta.Dict[ShareableIoPipelineHandler, ta.Set[IoPipelineHandlerContext]]] = {}  # noqa
 
-        self._contexts_by_name: ta.Final[ta.Dict[str, ChannelPipelineHandlerContext]] = {}
+        self._contexts_by_name: ta.Final[ta.Dict[str, IoPipelineHandlerContext]] = {}
 
         #
 
-        self._state = ChannelPipeline.State.READY
+        self._state = IoPipeline.State.READY
 
         #
 
@@ -1166,18 +1166,18 @@ class ChannelPipeline:
     #
 
     @property
-    def metadata(self) -> ChannelPipelineMetadatas:
+    def metadata(self) -> IoPipelineMetadatas:
         return self._metadata
 
     #
 
     @property
-    def services(self) -> ChannelPipelineServices:
+    def services(self) -> IoPipelineServices:
         return self._services
 
     #
 
-    def _handler_update(self, ctx: ChannelPipelineHandlerContext, kind: ChannelPipelineHandlerUpdate) -> None:
+    def _handler_update(self, ctx: IoPipelineHandlerContext, kind: IoPipelineHandlerUpdate) -> None:
         for svc in self._services._handles_handler_update:  # noqa
             svc.handler_update(ctx._ref, kind)  # noqa
 
@@ -1203,7 +1203,7 @@ class ChannelPipeline:
 
     @ta.final
     class _EnterContextManager:
-        def __init__(self, ch: 'ChannelPipeline') -> None:
+        def __init__(self, ch: 'IoPipeline') -> None:
             self._ch = ch
 
         def __enter__(self) -> None:
@@ -1217,7 +1217,7 @@ class ChannelPipeline:
 
     #
 
-    def _notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
+    def _notify(self, ctx: IoPipelineHandlerContext, no: IoPipelineHandlerNotification) -> None:
         self._step_in()
         try:
             ctx._notify(no)  # noqa
@@ -1225,25 +1225,25 @@ class ChannelPipeline:
         finally:
             self._step_out()
 
-    def notify(self, handler_ref: ChannelPipelineHandlerRef, no: ChannelPipelineHandlerNotification) -> None:
+    def notify(self, handler_ref: IoPipelineHandlerRef, no: IoPipelineHandlerNotification) -> None:
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self)  # noqa
         self._notify(ctx, no)
 
     #
 
-    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+    def _feed_in_to(self, ctx: IoPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
         self._step_in()
         try:
             for msg in msgs:
                 if self._saw_final_input:
-                    raise SawFinalInputChannelPipelineError
-                elif isinstance(msg, ChannelPipelineMessages.FinalInput):
+                    raise SawFinalInputIoPipelineError
+                elif isinstance(msg, IoPipelineMessages.FinalInput):
                     self._saw_final_input = True
 
-                if isinstance(msg, ChannelPipelineMessages.InitialInput):
+                if isinstance(msg, IoPipelineMessages.InitialInput):
                     if self._saw_any_input:
-                        raise SawInitialInputChannelPipelineError
+                        raise SawInitialInputIoPipelineError
                     check.state(not self._saw_initial_input)
                     self._saw_initial_input = True
                 self._saw_any_input = True
@@ -1253,7 +1253,7 @@ class ChannelPipeline:
         finally:
             self._step_out()
 
-    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
+    def feed_in_to(self, handler_ref: IoPipelineHandlerRef, *msgs: ta.Any) -> None:
         # TODO: remove? internal only? used by replace-self pattern
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self)  # noqa
@@ -1263,28 +1263,28 @@ class ChannelPipeline:
         self._feed_in_to(self._outermost, msgs)  # noqa
 
     def feed_initial_input(self) -> None:
-        self._feed_in_to(self._outermost, (ChannelPipelineMessages.InitialInput(),))  # noqa
+        self._feed_in_to(self._outermost, (IoPipelineMessages.InitialInput(),))  # noqa
 
     def feed_final_input(self) -> None:
-        self._feed_in_to(self._outermost, (ChannelPipelineMessages.FinalInput(),))  # noqa
+        self._feed_in_to(self._outermost, (IoPipelineMessages.FinalInput(),))  # noqa
 
     #
 
     def _defer(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             fn: ta.Union[
-                ta.Callable[[ChannelPipelineHandlerContext], T],
+                ta.Callable[[IoPipelineHandlerContext], T],
                 ta.Callable[[], T],
             ],
             *,
             no_context: bool = False,
-            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
-    ) -> ChannelPipelineMessages.Defer[T]:
+            pin: ta.Optional[ta.Sequence[IoPipelineMessages.MustPropagate]] = None,
+    ) -> IoPipelineMessages.Defer[T]:
         check.is_(ctx._pipeline, self)  # noqa
         check.state(not ctx._invalidated)  # noqa
 
-        dfl = ChannelPipelineMessages.Defer(
+        dfl = IoPipelineMessages.Defer(
             fn,
             no_context,
             _ctx=ctx,
@@ -1298,7 +1298,7 @@ class ChannelPipeline:
 
         return dfl
 
-    def run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
+    def run_deferred(self, dfl: IoPipelineMessages.Defer) -> None:
         ctx = check.not_none(dfl._ctx)  # noqa
         check.is_(ctx._pipeline, self)  # noqa
         check.state(not ctx._invalidated)  # noqa
@@ -1315,22 +1315,22 @@ class ChannelPipeline:
 
     #
 
-    def _terminal_inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+    def _terminal_inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
         if (tm := self._config.inbound_terminal) == 'drop':
             pass
 
         elif tm == 'raise':
-            if not isinstance(msg, ChannelPipelineMessages.MayPropagate):
-                raise MessageReachedTerminalChannelPipelineError.new_single('inbound', msg)
+            if not isinstance(msg, IoPipelineMessages.MayPropagate):
+                raise MessageReachedTerminalIoPipelineError.new_single('inbound', msg)
 
         else:
             raise RuntimeError(f'unknown inbound terminal mode {tm}')
 
-    def _terminal_outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
-        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+    def _terminal_outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if isinstance(msg, IoPipelineMessages.FinalOutput):
             self._saw_final_output = True
         elif self._saw_final_output:
-            raise SawFinalOutputChannelPipelineError
+            raise SawFinalOutputIoPipelineError
 
         self._output._q.append(msg)  # noqa
 
@@ -1368,8 +1368,8 @@ class ChannelPipeline:
     #
 
     def destroy(self) -> None:
-        check.state(self._state == ChannelPipeline.State.READY)
-        self._state = ChannelPipeline.State.DESTROYING
+        check.state(self._state == IoPipeline.State.READY)
+        self._state = IoPipeline.State.DESTROYING
 
         self._step_in()
         try:
@@ -1381,21 +1381,21 @@ class ChannelPipeline:
         finally:
             self._step_out()
 
-        self._state = ChannelPipeline.State.DESTROYED
+        self._state = IoPipeline.State.DESTROYED
     #
 
-    _outermost: ta.Final[ChannelPipelineHandlerContext]
-    _innermost: ta.Final[ChannelPipelineHandlerContext]
+    _outermost: ta.Final[IoPipelineHandlerContext]
+    _innermost: ta.Final[IoPipelineHandlerContext]
 
     def _check_can_add(
             self,
-            handler: ChannelPipelineHandler,
+            handler: IoPipelineHandler,
             *,
             name: ta.Optional[str] = None,
-    ) -> ChannelPipelineHandler:
-        check.state(self._state == ChannelPipeline.State.READY)  # noqa
+    ) -> IoPipelineHandler:
+        check.state(self._state == IoPipeline.State.READY)  # noqa
 
-        if not isinstance(handler, ShareableChannelPipelineHandler):
+        if not isinstance(handler, ShareableIoPipelineHandler):
             check.not_in(handler, self._unique_contexts)
 
         if name is not None:
@@ -1403,7 +1403,7 @@ class ChannelPipeline:
 
         return handler
 
-    def _check_can_add_relative_to(self, ctx: ChannelPipelineHandlerContext) -> ChannelPipelineHandlerContext:
+    def _check_can_add_relative_to(self, ctx: IoPipelineHandlerContext) -> IoPipelineHandlerContext:
         check.is_(ctx._pipeline, self)  # noqa
         check.state(not ctx._invalidated)  # noqa
 
@@ -1411,13 +1411,13 @@ class ChannelPipeline:
 
     def _add(
             self,
-            handler: ChannelPipelineHandler,
+            handler: IoPipelineHandler,
             *,
-            inner_to: ta.Optional[ChannelPipelineHandlerContext] = None,
-            outer_to: ta.Optional[ChannelPipelineHandlerContext] = None,
+            inner_to: ta.Optional[IoPipelineHandlerContext] = None,
+            outer_to: ta.Optional[IoPipelineHandlerContext] = None,
 
             name: ta.Optional[str] = None,
-    ) -> ChannelPipelineHandlerRef:
+    ) -> IoPipelineHandlerRef:
         self._check_can_add(handler, name=name)
 
         if inner_to is not None:
@@ -1431,7 +1431,7 @@ class ChannelPipeline:
         else:
             raise ValueError('Must specify exactly one of inner_to or outer_to')
 
-        ctx = ChannelPipelineHandlerContext(
+        ctx = IoPipelineHandlerContext(
             _pipeline=self,
             _handler=handler,
 
@@ -1440,7 +1440,7 @@ class ChannelPipeline:
 
         self._handler_update(ctx, 'adding')  # noqa
 
-        if isinstance(handler, ShareableChannelPipelineHandler):
+        if isinstance(handler, ShareableIoPipelineHandler):
             self._shareable_contexts.setdefault(handler, set()).add(ctx)
         else:
             check.not_in(handler, self._unique_contexts)  # also pre-checked by _check_can_add
@@ -1468,58 +1468,58 @@ class ChannelPipeline:
         self._handler_update(ctx, 'added')  # noqa
 
         # FIXME: exceptions?
-        self._notify(ctx, ChannelPipelineHandlerNotifications.Added())  # noqa
+        self._notify(ctx, IoPipelineHandlerNotifications.Added())  # noqa
 
         return ctx._ref  # noqa
 
     def add_innermost(
             self,
-            handler: ChannelPipelineHandler,
+            handler: IoPipelineHandler,
             *,
             name: ta.Optional[str] = None,
-    ) -> ChannelPipelineHandlerRef:
+    ) -> IoPipelineHandlerRef:
         return self._add(handler, outer_to=self._innermost, name=name)
 
     def add_outermost(
             self,
-            handler: ChannelPipelineHandler,
+            handler: IoPipelineHandler,
             *,
             name: ta.Optional[str] = None,
-    ) -> ChannelPipelineHandlerRef:
+    ) -> IoPipelineHandlerRef:
         return self._add(handler, inner_to=self._outermost, name=name)
 
     def add_inner_to(
             self,
-            inner_to: ChannelPipelineHandlerRef,
-            handler: ChannelPipelineHandler,
+            inner_to: IoPipelineHandlerRef,
+            handler: IoPipelineHandler,
             *,
             name: ta.Optional[str] = None,
-    ) -> ChannelPipelineHandlerRef:
+    ) -> IoPipelineHandlerRef:
         ctx = inner_to._context   # noqa
         return self._add(handler, inner_to=ctx, name=name)
 
     def add_outer_to(
             self,
-            outer_to: ChannelPipelineHandlerRef,
-            handler: ChannelPipelineHandler,
+            outer_to: IoPipelineHandlerRef,
+            handler: IoPipelineHandler,
             *,
             name: ta.Optional[str] = None,
-    ) -> ChannelPipelineHandlerRef:
+    ) -> IoPipelineHandlerRef:
         ctx = outer_to._context   # noqa
         return self._add(handler, outer_to=ctx, name=name)
 
     #
 
-    def _check_can_remove(self, handler_ref: ChannelPipelineHandlerRef) -> ChannelPipelineHandler:
+    def _check_can_remove(self, handler_ref: IoPipelineHandlerRef) -> IoPipelineHandler:
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self)  # noqa
 
-        check.state(self._state in (ChannelPipeline.State.READY, ChannelPipeline.State.DESTROYING))  # noqa
+        check.state(self._state in (IoPipeline.State.READY, IoPipeline.State.DESTROYING))  # noqa
 
         check.state(not ctx._invalidated)  # noqa
 
         handler = ctx._handler  # noqa
-        if isinstance(handler, ShareableChannelPipelineHandler):
+        if isinstance(handler, ShareableIoPipelineHandler):
             check.in_(ctx, self._shareable_contexts[handler])
         else:
             check.equal(ctx, self._unique_contexts[handler])
@@ -1529,7 +1529,7 @@ class ChannelPipeline:
 
         return handler
 
-    def _remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
+    def _remove(self, handler_ref: IoPipelineHandlerRef) -> None:
         self._check_can_remove(handler_ref)
 
         ctx = handler_ref._context  # noqa
@@ -1540,7 +1540,7 @@ class ChannelPipeline:
         if ctx._name is not None:  # noqa
             del self._contexts_by_name[ctx._name]  # noqa
 
-        if isinstance(handler, ShareableChannelPipelineHandler):
+        if isinstance(handler, ShareableIoPipelineHandler):
             cs = self._shareable_contexts[handler]
             cs.remove(ctx)
             if not cs:
@@ -1560,20 +1560,20 @@ class ChannelPipeline:
         self._handler_update(ctx, 'removed')  # noqa
 
         # FIXME: exceptions? defer?
-        self._notify(ctx, ChannelPipelineHandlerNotifications.Removed())  # noqa
+        self._notify(ctx, IoPipelineHandlerNotifications.Removed())  # noqa
 
-    def remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
+    def remove(self, handler_ref: IoPipelineHandlerRef) -> None:
         self._remove(handler_ref)
 
     #
 
     def replace(
             self,
-            old_handler_ref: ChannelPipelineHandlerRef,
-            new_handler: ChannelPipelineHandler,
+            old_handler_ref: IoPipelineHandlerRef,
+            new_handler: IoPipelineHandler,
             *,
             name: ta.Optional[str] = None,
-    ) -> ChannelPipelineHandlerRef:
+    ) -> IoPipelineHandlerRef:
         self._check_can_remove(old_handler_ref)
         self._check_can_add(new_handler, name=name)
 
@@ -1584,27 +1584,27 @@ class ChannelPipeline:
     #
 
     @ta.final
-    class _Outermost(ChannelPipelineHandler):
+    class _Outermost(IoPipelineHandler):
         """'Head' in Netty terms."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
-            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+        def outbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+            if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'outbound', msg)  # noqa
 
             ctx._pipeline._terminal_outbound(ctx, msg)  # noqa
 
     @ta.final
-    class _Innermost(ChannelPipelineHandler):
+    class _Innermost(IoPipelineHandler):
         """'Tail' in Netty terms."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
-            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+        def inbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+            if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'inbound', msg)  # noqa
 
             ctx._pipeline._terminal_inbound(ctx, msg)  # noqa
@@ -1613,21 +1613,21 @@ class ChannelPipeline:
 
     @ta.final
     class _Caches:
-        def __init__(self, p: 'ChannelPipeline') -> None:
+        def __init__(self, p: 'IoPipeline') -> None:
             self._p = p
 
-            self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ChannelPipelineHandlerRef]] = {}
-            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ChannelPipelineHandlerRef]] = {}
+            self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[IoPipelineHandlerRef]] = {}
+            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[IoPipelineHandlerRef]] = {}
 
-        _handlers: ta.Sequence[ChannelPipelineHandlerRef_]
+        _handlers: ta.Sequence[IoPipelineHandlerRef_]
 
-        def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef_]:
+        def handlers(self) -> ta.Sequence[IoPipelineHandlerRef_]:
             try:
                 return self._handlers
             except AttributeError:
                 pass
 
-            lst: ta.List[ChannelPipelineHandlerRef_] = []
+            lst: ta.List[IoPipelineHandlerRef_] = []
             ctx = self._p._outermost  # noqa
             while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
                 lst.append(ctx._ref)  # noqa
@@ -1635,15 +1635,15 @@ class ChannelPipeline:
             self._handlers = lst
             return lst
 
-        _handlers_by_name: ta.Mapping[str, ChannelPipelineHandlerRef_]
+        _handlers_by_name: ta.Mapping[str, IoPipelineHandlerRef_]
 
-        def handlers_by_name(self) -> ta.Mapping[str, ChannelPipelineHandlerRef_]:
+        def handlers_by_name(self) -> ta.Mapping[str, IoPipelineHandlerRef_]:
             try:
                 return self._handlers_by_name
             except AttributeError:
                 pass
 
-            dct: ta.Dict[str, ChannelPipelineHandlerRef_] = {}
+            dct: ta.Dict[str, IoPipelineHandlerRef_] = {}
             ctx = self._p._outermost  # noqa
             while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
                 if (n := ctx._name) is not None:  # noqa
@@ -1652,7 +1652,7 @@ class ChannelPipeline:
             self._handlers_by_name = dct
             return dct
 
-        def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
+        def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[IoPipelineHandlerRef[T]]:
             try:
                 return self._handlers_by_type_cache[ty]
             except KeyError:
@@ -1667,7 +1667,7 @@ class ChannelPipeline:
             self._handlers_by_type_cache[ty] = ret
             return ret
 
-        def find_single_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
+        def find_single_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[IoPipelineHandlerRef[T]]:
             try:
                 return self._single_handlers_by_type_cache[ty]
             except KeyError:
@@ -1683,7 +1683,7 @@ class ChannelPipeline:
             return self.__caches
         except AttributeError:
             pass
-        self.__caches = caches = ChannelPipeline._Caches(self)
+        self.__caches = caches = IoPipeline._Caches(self)
         return caches
 
     def _clear_caches(self) -> None:
@@ -1692,10 +1692,10 @@ class ChannelPipeline:
         except AttributeError:
             pass
 
-    def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef]:
+    def handlers(self) -> ta.Sequence[IoPipelineHandlerRef]:
         return self._caches().handlers()
 
-    def handlers_by_name(self) -> ta.Mapping[str, ChannelPipelineHandlerRef_]:
+    def handlers_by_name(self) -> ta.Mapping[str, IoPipelineHandlerRef_]:
         return self._caches().handlers_by_name()
 
     @dc.dataclass(frozen=True)
@@ -1707,16 +1707,16 @@ class ChannelPipeline:
     def find_handlers_of_type(
             self,
             ty: ta.Union[HandlerType[T], ta.Type[T]],
-    ) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
-        if isinstance(ty, ChannelPipeline.HandlerType):
+    ) -> ta.Sequence[IoPipelineHandlerRef[T]]:
+        if isinstance(ty, IoPipeline.HandlerType):
             ty = ty.ty
         return self._caches().find_handlers_of_type(ty)
 
     def find_single_handler_of_type(
             self,
             ty: ta.Union[HandlerType[T], ta.Type[T]],
-    ) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
-        if isinstance(ty, ChannelPipeline.HandlerType):
+    ) -> ta.Optional[IoPipelineHandlerRef[T]]:
+        if isinstance(ty, IoPipeline.HandlerType):
             ty = ty.ty
         return self._caches().find_single_handler_of_type(ty)
 
@@ -1725,19 +1725,19 @@ class ChannelPipeline:
     @ta.overload
     def find_handler(  # type: ignore[overload-overlap]
             self,
-            handler: ShareableChannelPipelineHandlerT,
-    ) -> ta.Sequence[ChannelPipelineHandlerRef[ShareableChannelPipelineHandlerT]]:
+            handler: ShareableIoPipelineHandlerT,
+    ) -> ta.Sequence[IoPipelineHandlerRef[ShareableIoPipelineHandlerT]]:
         ...
 
     @ta.overload
     def find_handler(
             self,
-            handler: ChannelPipelineHandlerT,
-    ) -> ta.Optional[ChannelPipelineHandlerRef[ChannelPipelineHandlerT]]:
+            handler: IoPipelineHandlerT,
+    ) -> ta.Optional[IoPipelineHandlerRef[IoPipelineHandlerT]]:
         ...
 
     def find_handler(self, handler):
-        if isinstance(handler, ShareableChannelPipelineHandler):
+        if isinstance(handler, ShareableIoPipelineHandler):
             out: ta.List[ta.Any] = []
             ctx = self._outermost
             while (ctx := ctx._next_in) is not self._innermost:  # noqa

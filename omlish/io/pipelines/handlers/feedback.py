@@ -3,23 +3,23 @@
 import dataclasses as dc
 import typing as ta
 
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
 
 
 ##
 
 
-class FeedbackInboundChannelPipelineHandler(ChannelPipelineHandler):
+class FeedbackInboundIoPipelineHandler(IoPipelineHandler):
     @ta.final
     @dc.dataclass(frozen=True)
     class FeedbackMessages:
         msgs: ta.Iterable[ta.Any]
 
-        _handler: ta.Optional['FeedbackInboundChannelPipelineHandler'] = None
+        _handler: ta.Optional['FeedbackInboundIoPipelineHandler'] = None
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, FeedbackInboundChannelPipelineHandler.FeedbackMessages):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if not isinstance(msg, FeedbackInboundIoPipelineHandler.FeedbackMessages):
             ctx.feed_in(msg)
             return
 
@@ -31,4 +31,4 @@ class FeedbackInboundChannelPipelineHandler(ChannelPipelineHandler):
             ctx.feed_out(m)
 
     def wrap(self, *msgs: ta.Any) -> FeedbackMessages:
-        return FeedbackInboundChannelPipelineHandler.FeedbackMessages(msgs, self)
+        return FeedbackInboundIoPipelineHandler.FeedbackMessages(msgs, self)

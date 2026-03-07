@@ -54,7 +54,7 @@ public class SslServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
-                            ChannelPipeline p = ch.pipeline();
+                            IoPipeline p = ch.pipeline();
                             // TLS first
                             p.addLast("ssl", sslCtx.newHandler(ch.alloc()));
                             // HTTP

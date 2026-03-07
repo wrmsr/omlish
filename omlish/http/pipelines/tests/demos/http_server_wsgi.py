@@ -3,11 +3,11 @@
 import asyncio
 import typing as ta
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
-from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
-from .....io.pipelines.handlers.flatmap import FlatMapChannelPipelineHandlers
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from .....io.pipelines.flow.types import IoPipelineFlowMessages
+from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from ...server.apps.wsgi import WsgiHandler
 from ...server.apps.wsgi import WsgiSpec
 from ...server.requests import PipelineHttpRequestAggregatorDecoder
@@ -18,17 +18,17 @@ from ...server.responses import PipelineHttpResponseEncoder
 ##
 
 
-def build_wsgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
-    return ChannelPipeline.Spec([
+def build_wsgi_channel(app: ta.Any) -> IoPipeline.Spec:
+    return IoPipeline.Spec([
         PipelineHttpRequestDecoder(),
         PipelineHttpRequestAggregatorDecoder(),
         PipelineHttpResponseEncoder(),
         WsgiHandler(app),
-        FlatMapChannelPipelineHandlers.drop(
+        FlatMapIoPipelineHandlers.drop(
             'inbound',
             filter_type=(
-                ChannelPipelineMessages.FinalInput,
-                ChannelPipelineFlowMessages.FlushInput,
+                IoPipelineMessages.FinalInput,
+                IoPipelineFlowMessages.FlushInput,
             ),
         ),
     ])
@@ -36,7 +36,7 @@ def build_wsgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
 
 async def a_serve_wsgi_pipeline(spec: WsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamChannelPipelineDriver(
+        drv = SimpleAsyncioStreamIoPipelineDriver(
             build_wsgi_channel(spec.app),
             reader,
             writer,

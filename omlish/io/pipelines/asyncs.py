@@ -4,7 +4,7 @@ import dataclasses as dc
 import typing as ta
 
 from ...lite.namespaces import NamespaceClass
-from .core import ChannelPipelineMessages
+from .core import IoPipelineMessages
 
 
 T = ta.TypeVar('T')
@@ -13,12 +13,12 @@ T = ta.TypeVar('T')
 ##
 
 
-class AsyncChannelPipelineMessages(NamespaceClass):
+class AsyncIoPipelineMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
     class Await(
-        ChannelPipelineMessages.Completable[T],
-        ChannelPipelineMessages.NeverInbound,
+        IoPipelineMessages.Completable[T],
+        IoPipelineMessages.NeverInbound,
         ta.Generic[T],
     ):
         obj: ta.Awaitable[T]

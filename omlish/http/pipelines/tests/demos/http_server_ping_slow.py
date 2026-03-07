@@ -3,13 +3,13 @@
 import asyncio
 import typing as ta
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
-from .....io.pipelines.flow.stub import StubChannelPipelineFlow
-from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
-from .....io.pipelines.sched.types import ChannelPipelineScheduling
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineHandler
+from .....io.pipelines.core import IoPipelineHandlerContext
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from .....io.pipelines.flow.stub import StubIoPipelineFlow
+from .....io.pipelines.flow.types import IoPipelineFlowMessages
+from .....io.pipelines.sched.types import IoPipelineScheduling
 from ....headers import HttpHeaders
 from ....versions import HttpVersions
 from ...requests import PipelineHttpRequestHead
@@ -22,8 +22,8 @@ from ...server.responses import PipelineHttpResponseEncoder
 ##
 
 
-class PingHandler(ChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class PingHandler(IoPipelineHandler):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if not isinstance(msg, PipelineHttpRequestHead):
             ctx.feed_in(msg)
             return
@@ -39,18 +39,18 @@ class PingHandler(ChannelPipelineHandler):
                     ('Connection', 'close'),
                 ]),
             ))
-            ctx.feed_out(ChannelPipelineFlowMessages.FlushOutput())
+            ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
 
             def write_pong(n: int) -> None:
                 ctx.feed_out(b'pong'[n:n + 1])
-                ctx.feed_out(ChannelPipelineFlowMessages.FlushOutput())
+                ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
 
                 if n < 4:
-                    ctx.services[ChannelPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(n + 1))
+                    ctx.services[IoPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(n + 1))
                 else:
                     ctx.feed_final_output()
 
-            ctx.services[ChannelPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(0))
+            ctx.services[IoPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(0))
 
         else:
             ctx.feed_out(FullPipelineHttpResponse.simple(
@@ -60,15 +60,15 @@ class PingHandler(ChannelPipelineHandler):
             ctx.feed_final_output()
 
 
-def build_http_ping_channel() -> ChannelPipeline.Spec:
-    return ChannelPipeline.Spec(
+def build_http_ping_channel() -> IoPipeline.Spec:
+    return IoPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PipelineHttpResponseEncoder(),
             PingHandler(),
         ],
         services=[
-            StubChannelPipelineFlow(auto_read=True),
+            StubIoPipelineFlow(auto_read=True),
         ],
     )
 
@@ -79,7 +79,7 @@ async def serve_ping(
         port: int = 8087,
 ) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamChannelPipelineDriver(
+        drv = SimpleAsyncioStreamIoPipelineDriver(
             build_http_ping_channel(),
             reader,
             writer,

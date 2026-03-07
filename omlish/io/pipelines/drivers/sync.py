@@ -9,8 +9,8 @@ import typing as ta
 
 from ....io.streams.utils import ByteStreamBuffers
 from ....logs.modules import get_module_loggers
-from ..core import ChannelPipeline
-from ..core import ChannelPipelineMessages
+from ..core import IoPipeline
+from ..core import IoPipelineMessages
 
 
 log, alog = get_module_loggers(globals())  # noqa
@@ -19,10 +19,10 @@ log, alog = get_module_loggers(globals())  # noqa
 ##
 
 
-class SyncSocketChannelPipelineDriver:
+class SyncSocketIoPipelineDriver:
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['SyncSocketChannelPipelineDriver.Config']
+        DEFAULT: ta.ClassVar['SyncSocketIoPipelineDriver.Config']
 
         read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
@@ -33,7 +33,7 @@ class SyncSocketChannelPipelineDriver:
 
     def __init__(
             self,
-            spec: ChannelPipeline.Spec,
+            spec: IoPipeline.Spec,
             sock: ta.Any,
             config: ta.Optional[Config] = None,
     ) -> None:
@@ -42,7 +42,7 @@ class SyncSocketChannelPipelineDriver:
         self._spec = spec
         self._sock = sock
         if config is None:
-            config = SyncSocketChannelPipelineDriver.Config.DEFAULT
+            config = SyncSocketIoPipelineDriver.Config.DEFAULT
         self._config = config
 
     def __repr__(self) -> str:
@@ -52,7 +52,7 @@ class SyncSocketChannelPipelineDriver:
     def config(self) -> Config:
         return self._config
 
-    _channel: ChannelPipeline
+    _channel: IoPipeline
 
     def _handle_output(self, msg: ta.Any) -> bool:
         """Returns whether or not to continue running."""
@@ -62,10 +62,10 @@ class SyncSocketChannelPipelineDriver:
                 self._sock.send(mv)
             return True
 
-        elif isinstance(msg, ChannelPipelineMessages.FinalOutput):
+        elif isinstance(msg, IoPipelineMessages.FinalOutput):
             return False
 
-        elif isinstance(msg, ChannelPipelineMessages.Defer):
+        elif isinstance(msg, IoPipelineMessages.Defer):
             self._channel.run_deferred(msg)
             return True
 
@@ -80,7 +80,7 @@ class SyncSocketChannelPipelineDriver:
         else:
             raise RuntimeError('Already running')
 
-        self._channel = ChannelPipeline(self._spec)
+        self._channel = IoPipeline(self._spec)
 
         try:
             self._channel.feed_initial_input()
@@ -97,7 +97,7 @@ class SyncSocketChannelPipelineDriver:
                 if not self._channel.saw_final_input:
                     b = self._sock.recv(self._config.read_chunk_size)
                     if not b:
-                        in_msgs.append(ChannelPipelineMessages.FinalInput())
+                        in_msgs.append(IoPipelineMessages.FinalInput())
                     else:
                         in_msgs.append(b)
 

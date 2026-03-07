@@ -30,7 +30,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
+import io.netty.channel.IoPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -174,7 +174,7 @@ public final class DupServer
         @Override
         protected void initChannel(SocketChannel ch)
         {
-            ChannelPipeline p = ch.pipeline();
+            IoPipeline p = ch.pipeline();
 
             p.addLast(new LineBasedFrameDecoder(MAX_LINE_LENGTH, true, true));
             p.addLast(new StringDecoder(CharsetUtil.US_ASCII));

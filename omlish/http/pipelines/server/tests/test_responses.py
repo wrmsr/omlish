@@ -2,8 +2,8 @@
 # @omlish-lite
 import unittest
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.handlers.feedback import FeedbackInboundChannelPipelineHandler
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.handlers.feedback import FeedbackInboundIoPipelineHandler
 from ....headers import HttpHeaders
 from ....versions import HttpVersion
 from ...responses import FullPipelineHttpResponse
@@ -18,9 +18,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test basic HTTP response encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -51,9 +51,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 404 response encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -84,9 +84,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with empty body."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -119,9 +119,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with multiple headers."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -158,9 +158,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test HTTP/1.0 version encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -189,9 +189,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with large body."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         body = b'x' * 10000
@@ -224,9 +224,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with duplicate header names (e.g., Set-Cookie)."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -260,9 +260,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test that non-response messages pass through unchanged."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         # Send various non-response messages
@@ -281,9 +281,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test encoding responses mixed with other messages."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         # Send response
@@ -317,9 +317,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 302 redirect response."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -354,9 +354,9 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 500 server error response."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         response = FullPipelineHttpResponse(
@@ -389,9 +389,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test streaming response with Content-Length (no chunked encoding)."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         # Send head
@@ -432,9 +432,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test streaming response with Transfer-Encoding: chunked."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         # Send head with Transfer-Encoding: chunked
@@ -482,9 +482,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that chunked encoding emits final terminator."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
@@ -508,9 +508,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that empty chunks don't emit bytes."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
@@ -538,9 +538,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that encoder resets state between responses."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         # First response (chunked)
@@ -581,9 +581,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test chunked encoding with larger chunk sizes."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             encoder,
-            fbi := FeedbackInboundChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
         channel.feed_in(fbi.wrap(PipelineHttpResponseHead(

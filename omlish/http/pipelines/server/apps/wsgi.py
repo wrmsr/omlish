@@ -3,11 +3,11 @@
 import dataclasses as dc
 import typing as ta
 
-from .....io.pipelines.core import ChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.flow.types import ChannelPipelineFlow
-from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
+from .....io.pipelines.core import IoPipelineHandler
+from .....io.pipelines.core import IoPipelineHandlerContext
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.flow.types import IoPipelineFlow
+from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.check import check
 from ....headers import HttpHeaders
 from ...requests import FullPipelineHttpRequest
@@ -28,18 +28,18 @@ class WsgiSpec:
 ##
 
 
-class WsgiHandler(ChannelPipelineHandler):
+class WsgiHandler(IoPipelineHandler):
     def __init__(self, app: ta.Any) -> None:
         super().__init__()
 
         self._app = app
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.InitialInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not ChannelPipelineFlow.is_auto_read_context(ctx):
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            if not IoPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return
 
@@ -97,4 +97,4 @@ class WsgiHandler(ChannelPipelineHandler):
         #
 
         ctx.feed_out(resp)
-        ctx.feed_out(ChannelPipelineMessages.FinalOutput())
+        ctx.feed_out(IoPipelineMessages.FinalOutput())

@@ -5,9 +5,9 @@ import typing as ta
 
 from ....lite.abstract import Abstract
 from ....lite.namespaces import NamespaceClass
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineHandlerFn
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
+from ..core import IoPipelineHandlerFn
 
 
 F = ta.TypeVar('F')
@@ -17,7 +17,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class ChannelPipelineHandlerFns(NamespaceClass):
+class IoPipelineHandlerFns(NamespaceClass):
     @dc.dataclass(frozen=True)
     class NoContext(ta.Generic[F, T]):
         fn: ta.Callable[[F], T]
@@ -25,27 +25,27 @@ class ChannelPipelineHandlerFns(NamespaceClass):
         def __repr__(self) -> str:
             return f'{type(self).__name__}({self.fn!r})'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, obj: F) -> T:
+        def __call__(self, ctx: IoPipelineHandlerContext, obj: F) -> T:
             return self.fn(obj)
 
     @classmethod
-    def no_context(cls, fn: ta.Callable[[F], T]) -> ChannelPipelineHandlerFn[F, T]:
+    def no_context(cls, fn: ta.Callable[[F], T]) -> IoPipelineHandlerFn[F, T]:
         return cls.NoContext(fn)
 
     #
 
     @dc.dataclass(frozen=True)
     class And:
-        fns: ta.Sequence[ChannelPipelineHandlerFn[ta.Any, bool]]
+        fns: ta.Sequence[IoPipelineHandlerFn[ta.Any, bool]]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
             return all(fn(ctx, msg) for fn in self.fns)
 
     @classmethod
-    def and_(cls, *fns: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+    def and_(cls, *fns: IoPipelineHandlerFn[ta.Any, bool]) -> IoPipelineHandlerFn[ta.Any, bool]:
         if len(fns) == 1:
             return fns[0]
         return cls.And(fns)
@@ -54,16 +54,16 @@ class ChannelPipelineHandlerFns(NamespaceClass):
 
     @dc.dataclass(frozen=True)
     class Or:
-        fns: ta.Sequence[ChannelPipelineHandlerFn[ta.Any, bool]]
+        fns: ta.Sequence[IoPipelineHandlerFn[ta.Any, bool]]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
             return any(fn(ctx, msg) for fn in self.fns)
 
     @classmethod
-    def or_(cls, *fns: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+    def or_(cls, *fns: IoPipelineHandlerFn[ta.Any, bool]) -> IoPipelineHandlerFn[ta.Any, bool]:
         if len(fns) == 1:
             return fns[0]
         return cls.Or(fns)
@@ -72,16 +72,16 @@ class ChannelPipelineHandlerFns(NamespaceClass):
 
     @dc.dataclass(frozen=True)
     class Not:
-        fn: ChannelPipelineHandlerFn[ta.Any, bool]
+        fn: IoPipelineHandlerFn[ta.Any, bool]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}({self.fn!r})'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
             return not self.fn(ctx, msg)
 
     @classmethod
-    def not_(cls, fn: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+    def not_(cls, fn: IoPipelineHandlerFn[ta.Any, bool]) -> IoPipelineHandlerFn[ta.Any, bool]:
         if isinstance(fn, cls.Not):
             return fn.fn
         return cls.Not(fn)
@@ -95,41 +95,41 @@ class ChannelPipelineHandlerFns(NamespaceClass):
         def __repr__(self) -> str:
             return f'{type(self).__name__}({self.ty!r})'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
             return isinstance(msg, self.ty)
 
     @classmethod
-    def isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+    def isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> IoPipelineHandlerFn[ta.Any, bool]:
         return cls.IsInstance(ty)
 
     @classmethod
-    def not_isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+    def not_isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> IoPipelineHandlerFn[ta.Any, bool]:
         return cls.Not(cls.IsInstance(ty))
 
 
 ##
 
 
-class FnChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class FnIoPipelineHandler(IoPipelineHandler, Abstract):
     @classmethod
     def of(
             cls,
             *,
-            inbound: ta.Optional[ChannelPipelineHandlerFn[ta.Any, None]] = None,
-            outbound: ta.Optional[ChannelPipelineHandlerFn[ta.Any, None]] = None,
-    ) -> ChannelPipelineHandler:
+            inbound: ta.Optional[IoPipelineHandlerFn[ta.Any, None]] = None,
+            outbound: ta.Optional[IoPipelineHandlerFn[ta.Any, None]] = None,
+    ) -> IoPipelineHandler:
         if inbound is not None and outbound is not None:
-            return DuplexFnChannelPipelineHandler(inbound=inbound, outbound=outbound)
+            return DuplexFnIoPipelineHandler(inbound=inbound, outbound=outbound)
         elif inbound is not None:
-            return InboundFnChannelPipelineHandler(inbound)
+            return InboundFnIoPipelineHandler(inbound)
         elif outbound is not None:
-            return OutboundFnChannelPipelineHandler(outbound)
+            return OutboundFnIoPipelineHandler(outbound)
         else:
             raise ValueError('At least one of inbound or outbound must be specified')
 
 
-class InboundFnChannelPipelineHandler(FnChannelPipelineHandler):
-    def __init__(self, inbound: ChannelPipelineHandlerFn[ta.Any, None]) -> None:
+class InboundFnIoPipelineHandler(FnIoPipelineHandler):
+    def __init__(self, inbound: IoPipelineHandlerFn[ta.Any, None]) -> None:
         super().__init__()
 
         self._inbound = inbound
@@ -137,12 +137,12 @@ class InboundFnChannelPipelineHandler(FnChannelPipelineHandler):
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}({self._inbound!r})'
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._inbound(ctx, msg)
 
 
-class OutboundFnChannelPipelineHandler(FnChannelPipelineHandler):
-    def __init__(self, outbound: ChannelPipelineHandlerFn[ta.Any, None]) -> None:
+class OutboundFnIoPipelineHandler(FnIoPipelineHandler):
+    def __init__(self, outbound: IoPipelineHandlerFn[ta.Any, None]) -> None:
         super().__init__()
 
         self._outbound = outbound
@@ -150,16 +150,16 @@ class OutboundFnChannelPipelineHandler(FnChannelPipelineHandler):
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}({self._outbound!r})'
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._outbound(ctx, msg)
 
 
-class DuplexFnChannelPipelineHandler(FnChannelPipelineHandler):
+class DuplexFnIoPipelineHandler(FnIoPipelineHandler):
     def __init__(
             self,
             *,
-            inbound: ChannelPipelineHandlerFn[ta.Any, None],
-            outbound: ChannelPipelineHandlerFn[ta.Any, None],
+            inbound: IoPipelineHandlerFn[ta.Any, None],
+            outbound: IoPipelineHandlerFn[ta.Any, None],
     ) -> None:
         super().__init__()
 
@@ -169,8 +169,8 @@ class DuplexFnChannelPipelineHandler(FnChannelPipelineHandler):
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}(inbound={self._inbound!r}, outbound={self._outbound!r})'
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._inbound(ctx, msg)
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._outbound(ctx, msg)

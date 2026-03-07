@@ -4,13 +4,13 @@ import typing as ta
 
 from .....lite.abstract import Abstract
 from .....lite.check import check
-from ...core import ChannelPipelineHandler
+from ...core import IoPipelineHandler
 
 
 ##
 
 
-class CoroChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class CoroIoPipelineHandler(IoPipelineHandler, Abstract):
     class Error(Exception):
         pass
 
@@ -30,7 +30,7 @@ class CoroChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             self._gen = initial
 
             if (n := next(self._gen)) is not None:
-                raise CoroChannelPipelineHandler.NotStartedError
+                raise CoroIoPipelineHandler.NotStartedError
             check.none(n)
 
         _gen: ta.Optional[ta.Any]
@@ -55,7 +55,7 @@ class CoroChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
         def feed(self, i: ta.Any) -> ta.Iterator[ta.Any]:
             if self._gen is None:
-                raise CoroChannelPipelineHandler.FinalOutputdError
+                raise CoroIoPipelineHandler.FinalOutputdError
 
             gi: ta.Optional[ta.Any] = i
             while True:

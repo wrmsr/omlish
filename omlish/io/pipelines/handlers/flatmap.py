@@ -7,26 +7,26 @@ import typing as ta
 from ....lite.abstract import Abstract
 from ....lite.check import check
 from ....lite.namespaces import NamespaceClass
-from ..core import ChannelPipelineDirectionOrDuplex
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineHandlerFn
-from ..core import ChannelPipelineMessages
-from .fns import ChannelPipelineHandlerFns
+from ..core import IoPipelineDirectionOrDuplex
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
+from ..core import IoPipelineHandlerFn
+from ..core import IoPipelineMessages
+from .fns import IoPipelineHandlerFns
 
 
 ##
 
 
-FlatMapChannelPipelineHandlerFn = ChannelPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+FlatMapIoPipelineHandlerFn = IoPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
-class FlatMapChannelPipelineHandlerFns(NamespaceClass):
+class FlatMapIoPipelineHandlerFns(NamespaceClass):
     @dc.dataclass(frozen=True)
     class Filter:
-        pred: ChannelPipelineHandlerFn[ta.Any, bool]
-        fn: FlatMapChannelPipelineHandlerFn
-        else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None
+        pred: IoPipelineHandlerFn[ta.Any, bool]
+        fn: FlatMapIoPipelineHandlerFn
+        else_fn: ta.Optional[FlatMapIoPipelineHandlerFn] = None
 
         def __repr__(self) -> str:
             return (
@@ -37,7 +37,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
                 f')'
             )
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             if self.pred(ctx, msg):
                 yield from self.fn(ctx, msg)
             elif (ef := self.else_fn) is not None:
@@ -48,26 +48,26 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     @classmethod
     def filter(
             cls,
-            pred: ChannelPipelineHandlerFn[ta.Any, bool],
-            fn: FlatMapChannelPipelineHandlerFn,
-            else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None,
-    ) -> FlatMapChannelPipelineHandlerFn:
+            pred: IoPipelineHandlerFn[ta.Any, bool],
+            fn: FlatMapIoPipelineHandlerFn,
+            else_fn: ta.Optional[FlatMapIoPipelineHandlerFn] = None,
+    ) -> FlatMapIoPipelineHandlerFn:
         return cls.Filter(pred, fn, else_fn)
 
     @classmethod
     def filter_type(
             cls,
             ty: ta.Union[type, ta.Tuple[type, ...]],
-            fn: FlatMapChannelPipelineHandlerFn,
-            else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None,
-    ) -> FlatMapChannelPipelineHandlerFn:
-        return cls.filter(ChannelPipelineHandlerFns.isinstance(ty), fn, else_fn)
+            fn: FlatMapIoPipelineHandlerFn,
+            else_fn: ta.Optional[FlatMapIoPipelineHandlerFn] = None,
+    ) -> FlatMapIoPipelineHandlerFn:
+        return cls.filter(IoPipelineHandlerFns.isinstance(ty), fn, else_fn)
 
     #
 
     @dc.dataclass(frozen=True)
     class Concat:
-        fns: ta.Sequence[FlatMapChannelPipelineHandlerFn]
+        fns: ta.Sequence[FlatMapIoPipelineHandlerFn]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
@@ -75,24 +75,24 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
         def __post_init__(self) -> None:
             check.not_empty(self.fns)
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             for fn in self.fns:
                 yield from fn(ctx, msg)
 
     @classmethod
-    def concat(cls, *fns: FlatMapChannelPipelineHandlerFn) -> FlatMapChannelPipelineHandlerFn:
+    def concat(cls, *fns: FlatMapIoPipelineHandlerFn) -> FlatMapIoPipelineHandlerFn:
         return cls.Concat(fns)
 
     #
 
     @dc.dataclass(frozen=True)
     class Compose:
-        fns: ta.Sequence[FlatMapChannelPipelineHandlerFn]
+        fns: ta.Sequence[FlatMapIoPipelineHandlerFn]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
 
-        _fn: FlatMapChannelPipelineHandlerFn = dc.field(init=False)
+        _fn: FlatMapIoPipelineHandlerFn = dc.field(init=False)
 
         def __post_init__(self) -> None:
             check.not_empty(self.fns)
@@ -107,56 +107,56 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
 
             object.__setattr__(self, '_fn', xf)
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             return self._fn(ctx, msg)
 
     @classmethod
-    def compose(cls, *fns: FlatMapChannelPipelineHandlerFn) -> FlatMapChannelPipelineHandlerFn:
+    def compose(cls, *fns: FlatMapIoPipelineHandlerFn) -> FlatMapIoPipelineHandlerFn:
         return cls.Compose(fns)
 
     #
 
     @dc.dataclass(frozen=True)
     class Map:
-        fn: ChannelPipelineHandlerFn[ta.Any, ta.Any]
+        fn: IoPipelineHandlerFn[ta.Any, ta.Any]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}({self.fn!r})'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             return (self.fn(ctx, msg),)
 
     @classmethod
-    def map(cls, fn: ChannelPipelineHandlerFn[ta.Any, ta.Any]) -> FlatMapChannelPipelineHandlerFn:
+    def map(cls, fn: IoPipelineHandlerFn[ta.Any, ta.Any]) -> FlatMapIoPipelineHandlerFn:
         return cls.Map(fn)
 
     #
 
     @dc.dataclass(frozen=True)
     class Apply:
-        fn: ChannelPipelineHandlerFn[ta.Any, None]
+        fn: IoPipelineHandlerFn[ta.Any, None]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}({self.fn!r})'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             self.fn(ctx, msg)
             return (msg,)
 
     @classmethod
-    def apply(cls, fn: ChannelPipelineHandlerFn[ta.Any, None]) -> FlatMapChannelPipelineHandlerFn:
+    def apply(cls, fn: IoPipelineHandlerFn[ta.Any, None]) -> FlatMapIoPipelineHandlerFn:
         return cls.Apply(fn)
 
     #
 
     @dc.dataclass(frozen=True)
     class Feed:
-        direction: ChannelPipelineDirectionOrDuplex
+        direction: IoPipelineDirectionOrDuplex
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}({self.direction!r})'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             if self.direction == 'inbound':
                 ctx.feed_in(msg)
             elif self.direction == 'outbound':
@@ -166,11 +166,11 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
             return (msg,)
 
     @classmethod
-    def feed_in(cls) -> FlatMapChannelPipelineHandlerFn:
+    def feed_in(cls) -> FlatMapIoPipelineHandlerFn:
         return cls.Feed('inbound')
 
     @classmethod
-    def feed_out(cls) -> FlatMapChannelPipelineHandlerFn:
+    def feed_out(cls) -> FlatMapIoPipelineHandlerFn:
         return cls.Feed('outbound')
 
     #
@@ -190,7 +190,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
                 ')',
             ])
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             out: ta.List[ta.Any] = []
             if (before := self.before) is not None:
                 out.extend(before() if callable(before) else before)  # noqa
@@ -205,7 +205,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
             *,
             before: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None,
             after: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None,
-    ) -> FlatMapChannelPipelineHandlerFn:
+    ) -> FlatMapIoPipelineHandlerFn:
         return cls.Inject(
             before=before,
             after=after,
@@ -218,11 +218,11 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
         def __repr__(self) -> str:
             return f'{type(self).__name__}()'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             return ()
 
     @classmethod
-    def drop(cls) -> FlatMapChannelPipelineHandlerFn:
+    def drop(cls) -> FlatMapIoPipelineHandlerFn:
         return cls.Drop()
 
     #
@@ -232,27 +232,27 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
         def __repr__(self) -> str:
             return f'{type(self).__name__}()'
 
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+        def __call__(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             return (msg,)
 
     @classmethod
-    def nop(cls) -> FlatMapChannelPipelineHandlerFn:
+    def nop(cls) -> FlatMapIoPipelineHandlerFn:
         return cls.Nop()
 
 
 #
 
 
-class FlatMapChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class FlatMapIoPipelineHandler(IoPipelineHandler, Abstract):
     def __init__(
             self,
-            fn: FlatMapChannelPipelineHandlerFn,
+            fn: FlatMapIoPipelineHandlerFn,
     ) -> None:
         super().__init__()
 
         self._fn = check.callable(fn)
 
-    _fn: FlatMapChannelPipelineHandlerFn
+    _fn: FlatMapIoPipelineHandlerFn
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._fn!r})'
@@ -261,21 +261,21 @@ class FlatMapChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 #
 
 
-class InboundFlatMapChannelPipelineHandler(FlatMapChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class InboundFlatMapIoPipelineHandler(FlatMapIoPipelineHandler):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         for x in self._fn(ctx, msg):
             ctx.feed_in(x)
 
 
-class OutboundFlatMapChannelPipelineHandler(FlatMapChannelPipelineHandler):
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class OutboundFlatMapIoPipelineHandler(FlatMapIoPipelineHandler):
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         for x in self._fn(ctx, msg):
             ctx.feed_out(x)
 
 
-class DuplexFlatMapChannelPipelineHandler(
-    InboundFlatMapChannelPipelineHandler,
-    OutboundFlatMapChannelPipelineHandler,
+class DuplexFlatMapIoPipelineHandler(
+    InboundFlatMapIoPipelineHandler,
+    OutboundFlatMapIoPipelineHandler,
 ):
     pass
 
@@ -283,58 +283,58 @@ class DuplexFlatMapChannelPipelineHandler(
 #
 
 
-class FlatMapChannelPipelineHandlers(NamespaceClass):
-    _CLS_BY_DIRECTION: ta.ClassVar[ta.Mapping[ChannelPipelineDirectionOrDuplex, ta.Type[FlatMapChannelPipelineHandler]]] = {  # noqa
-        'inbound': InboundFlatMapChannelPipelineHandler,
-        'outbound': OutboundFlatMapChannelPipelineHandler,
-        'duplex': DuplexFlatMapChannelPipelineHandler,
+class FlatMapIoPipelineHandlers(NamespaceClass):
+    _CLS_BY_DIRECTION: ta.ClassVar[ta.Mapping[IoPipelineDirectionOrDuplex, ta.Type[FlatMapIoPipelineHandler]]] = {  # noqa
+        'inbound': InboundFlatMapIoPipelineHandler,
+        'outbound': OutboundFlatMapIoPipelineHandler,
+        'duplex': DuplexFlatMapIoPipelineHandler,
     }
 
     @classmethod
     def new(
             cls,
-            direction: ChannelPipelineDirectionOrDuplex,
-            fn: FlatMapChannelPipelineHandlerFn,
-    ) -> ChannelPipelineHandler:
+            direction: IoPipelineDirectionOrDuplex,
+            fn: FlatMapIoPipelineHandlerFn,
+    ) -> IoPipelineHandler:
         h_cls = cls._CLS_BY_DIRECTION[direction]
         return h_cls(fn)
 
     #
 
-    _NOT_MUST_PROPAGATE: ta.ClassVar[ChannelPipelineHandlerFn[ta.Any, bool]] = ChannelPipelineHandlerFns.not_(
-        ChannelPipelineHandlerFns.isinstance(ChannelPipelineMessages.MustPropagate),
+    _NOT_MUST_PROPAGATE: ta.ClassVar[IoPipelineHandlerFn[ta.Any, bool]] = IoPipelineHandlerFns.not_(
+        IoPipelineHandlerFns.isinstance(IoPipelineMessages.MustPropagate),
     )
 
     @classmethod
     def _add_drop_filters(
             cls,
-            fn: FlatMapChannelPipelineHandlerFn,
+            fn: FlatMapIoPipelineHandlerFn,
             *,
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
-            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
-    ) -> FlatMapChannelPipelineHandlerFn:
+            filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> FlatMapIoPipelineHandlerFn:
         if filter is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
+            fn = FlatMapIoPipelineHandlerFns.filter(filter, fn)
 
         if filter_type is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter_type(filter_type, fn)
+            fn = FlatMapIoPipelineHandlerFns.filter_type(filter_type, fn)
 
-        fn = FlatMapChannelPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
+        fn = FlatMapIoPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
 
         return fn
 
     @classmethod
     def drop(
             cls,
-            direction: ChannelPipelineDirectionOrDuplex,
+            direction: IoPipelineDirectionOrDuplex,
             *,
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
-            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
-    ) -> ChannelPipelineHandler:
+            filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> IoPipelineHandler:
         return cls.new(
             direction,
             cls._add_drop_filters(
-                FlatMapChannelPipelineHandlerFns.drop(),
+                FlatMapIoPipelineHandlerFns.drop(),
                 filter=filter,
                 filter_type=filter_type,
             ),
@@ -345,14 +345,14 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             cls,
             *,
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
-            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
-    ) -> ChannelPipelineHandler:
+            filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> IoPipelineHandler:
         return cls.new(
             'inbound',
             cls._add_drop_filters(
-                FlatMapChannelPipelineHandlerFns.compose(
-                    FlatMapChannelPipelineHandlerFns.feed_out(),
-                    FlatMapChannelPipelineHandlerFns.drop(),
+                FlatMapIoPipelineHandlerFns.compose(
+                    FlatMapIoPipelineHandlerFns.feed_out(),
+                    FlatMapIoPipelineHandlerFns.drop(),
                 ),
                 filter=filter,
                 filter_type=filter_type,

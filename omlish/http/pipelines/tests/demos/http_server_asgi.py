@@ -3,9 +3,9 @@
 import asyncio
 import typing as ta
 
-from .....io.pipelines.asyncs import AsyncChannelPipelineMessages  # noqa
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
+from .....io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from ...responses import FullPipelineHttpResponse  # noqa
 from ...responses import PipelineHttpResponseHead  # noqa
 from ...server.apps.asgi import AsgiHandler
@@ -18,8 +18,8 @@ from ...server.responses import PipelineHttpResponseEncoder
 ##
 
 
-def build_asgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
-    return ChannelPipeline.Spec(
+def build_asgi_channel(app: ta.Any) -> IoPipeline.Spec:
+    return IoPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PipelineHttpRequestAggregatorDecoder(),
@@ -33,7 +33,7 @@ def build_asgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
 
 async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamChannelPipelineDriver(
+        drv = SimpleAsyncioStreamIoPipelineDriver(
             build_asgi_channel(spec.app),
             reader,
             writer,

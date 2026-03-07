@@ -2,9 +2,9 @@
 # @omlish-lite
 import unittest
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.handlers.queues import InboundQueueChannelPipelineHandler
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from ...responses import PipelineHttpResponseAborted
 from ...responses import PipelineHttpResponseContentChunkData
@@ -17,9 +17,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test basic HTTP response head parsing."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n'
@@ -37,9 +37,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head + body bytes received together."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello'
@@ -60,9 +60,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head received incrementally."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         # Send head in parts
@@ -82,9 +82,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test EOF arriving before head is complete raises ValueError."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         # Send partial head
@@ -98,4 +98,4 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         # Should get an aborted message
         aborted, eof = out
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
-        self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
+        self.assertIsInstance(eof, IoPipelineMessages.FinalInput)

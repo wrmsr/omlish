@@ -21,14 +21,14 @@ from ....lite.check import check
 from ....logs.modules import get_module_loggers
 from ....logs.utils import async_exception_logging
 from ...streams.utils import ByteStreamBuffers
-from ..asyncs import AsyncChannelPipelineMessages
-from ..core import ChannelPipeline
-from ..core import ChannelPipelineHandlerRef
-from ..core import ChannelPipelineMessages
-from ..core import ChannelPipelineServices
-from ..flow.types import ChannelPipelineFlow
-from ..flow.types import ChannelPipelineFlowMessages
-from ..sched.types import ChannelPipelineScheduling
+from ..asyncs import AsyncIoPipelineMessages
+from ..core import IoPipeline
+from ..core import IoPipelineHandlerRef
+from ..core import IoPipelineMessages
+from ..core import IoPipelineServices
+from ..flow.types import IoPipelineFlow
+from ..flow.types import IoPipelineFlowMessages
+from ..sched.types import IoPipelineScheduling
 
 
 log, alog = get_module_loggers(globals())  # noqa
@@ -37,10 +37,10 @@ log, alog = get_module_loggers(globals())  # noqa
 ##
 
 
-class AsyncioStreamChannelPipelineDriver(Abstract):
+class AsyncioStreamIoPipelineDriver(Abstract):
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['AsyncioStreamChannelPipelineDriver.Config']
+        DEFAULT: ta.ClassVar['AsyncioStreamIoPipelineDriver.Config']
 
         read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
@@ -51,7 +51,7 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
 
     def __init__(
             self,
-            spec: ChannelPipeline.Spec,
+            spec: IoPipeline.Spec,
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             config: ta.Optional[Config] = None,
@@ -62,14 +62,14 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
         self._reader = reader
         self._writer = writer
         if config is None:
-            config = AsyncioStreamChannelPipelineDriver.Config.DEFAULT
+            config = AsyncioStreamIoPipelineDriver.Config.DEFAULT
         self._config = config
 
         #
 
         self._shutdown_event = asyncio.Event()
 
-        self._command_queue: asyncio.Queue[AsyncioStreamChannelPipelineDriver._Command] = asyncio.Queue()
+        self._command_queue: asyncio.Queue[AsyncioStreamIoPipelineDriver._Command] = asyncio.Queue()
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -79,33 +79,33 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
         return self._config
 
     @property
-    def channel(self) -> ChannelPipeline:
+    def channel(self) -> IoPipeline:
         return self._channel
 
     ##
     # init
 
-    _sched: 'AsyncioStreamChannelPipelineDriver._Scheduling'
+    _sched: 'AsyncioStreamIoPipelineDriver._Scheduling'
 
-    _channel: ChannelPipeline
+    _channel: IoPipeline
 
-    _flow: ta.Optional[ChannelPipelineFlow]
+    _flow: ta.Optional[IoPipelineFlow]
 
-    _command_handlers: ta.Mapping[ta.Type['AsyncioStreamChannelPipelineDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
+    _command_handlers: ta.Mapping[ta.Type['AsyncioStreamIoPipelineDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
     _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
 
     async def _init(self) -> None:
         self._sched = self._Scheduling(self)
 
-        services = ChannelPipelineServices.of(self._spec.services)
-        self._flow = services.find(ChannelPipelineFlow)
+        services = IoPipelineServices.of(self._spec.services)
+        self._flow = services.find(IoPipelineFlow)
 
         self._command_handlers = self._build_command_handlers()
         self._output_handlers = self._build_output_handlers()
 
         #
 
-        self._channel = ChannelPipeline(dc.replace(
+        self._channel = IoPipeline(dc.replace(
             self._spec,
             services=(*self._spec.services, self._sched),
         ))
@@ -194,13 +194,13 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
         check.state(not self._shutdown_event.is_set())
 
         fut: asyncio.Future[None] = asyncio.Future()
-        self._command_queue.put_nowait(AsyncioStreamChannelPipelineDriver._FeedInCommand(msgs, fut=fut))
+        self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs, fut=fut))
         await fut
 
     def feed_in_nowait(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
-        self._command_queue.put_nowait(AsyncioStreamChannelPipelineDriver._FeedInCommand(msgs))
+        self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs))
 
     ##
     # read completed
@@ -250,12 +250,12 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
                 in_msgs.append(b)
 
         if self._flow is not None:
-            in_msgs.append(ChannelPipelineFlowMessages.FlushInput())
+            in_msgs.append(IoPipelineFlowMessages.FlushInput())
 
         if eof:
             self._has_read_eof = True
 
-            in_msgs.append(ChannelPipelineMessages.FinalInput())
+            in_msgs.append(IoPipelineMessages.FinalInput())
 
         #
 
@@ -284,7 +284,7 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
             return
 
         self._has_sent_update_want_read_command = True
-        await self._command_queue.put(AsyncioStreamChannelPipelineDriver._UpdateWantReadCommand())
+        await self._command_queue.put(AsyncioStreamIoPipelineDriver._UpdateWantReadCommand())
 
     _want_read = False
 
@@ -304,7 +304,7 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
 
         if self._want_read:
             if self._pending_completed_reads:
-                in_cmd = AsyncioStreamChannelPipelineDriver._ReadCompletedCommand([
+                in_cmd = AsyncioStreamIoPipelineDriver._ReadCompletedCommand([
                     b
                     for pcr_cmd in self._pending_completed_reads
                     for b in pcr_cmd.data()
@@ -327,8 +327,8 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
     ##
     # scheduling
 
-    class _Scheduling(ChannelPipelineScheduling):
-        def __init__(self, d: 'AsyncioStreamChannelPipelineDriver') -> None:
+    class _Scheduling(IoPipelineScheduling):
+        def __init__(self, d: 'AsyncioStreamIoPipelineDriver') -> None:
             super().__init__()
 
             self._d = d
@@ -336,26 +336,26 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
             self._pending: ta.List[ta.Tuple[float, ta.Callable[[], None]]] = []
             self._tasks: ta.Set[asyncio.Task] = set()
 
-        class _Handle(ChannelPipelineScheduling.Handle):
+        class _Handle(IoPipelineScheduling.Handle):
             def cancel(self) -> None:
                 raise NotImplementedError
 
         def schedule(
                 self,
-                handler_ref: ChannelPipelineHandlerRef,
+                handler_ref: IoPipelineHandlerRef,
                 delay_s: float,
                 fn: ta.Callable[[], None],
-        ) -> ChannelPipelineScheduling.Handle:
+        ) -> IoPipelineScheduling.Handle:
             self._pending.append((delay_s, fn))
             return self._Handle()
 
-        def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
+        def cancel_all(self, handler_ref: ta.Optional[IoPipelineHandlerRef] = None) -> None:
             raise NotImplementedError
 
         async def _task_body(self, delay: float, fn: ta.Callable[[], None]) -> None:
             await asyncio.sleep(delay)
 
-            self._d._command_queue.put_nowait(AsyncioStreamChannelPipelineDriver._ScheduledCommand(fn))  # noqa
+            self._d._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._ScheduledCommand(fn))  # noqa
 
         async def _flush_pending(self) -> None:
             if not (lst := self._pending):
@@ -381,10 +381,10 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
 
     def _build_command_handlers(self) -> ta.Mapping[ta.Type[_Command], ta.Callable[[ta.Any], ta.Awaitable[None]]]:
         return {
-            AsyncioStreamChannelPipelineDriver._FeedInCommand: self._handle_command_feed_in,
-            AsyncioStreamChannelPipelineDriver._ReadCompletedCommand: self._handle_command_read_completed,
-            AsyncioStreamChannelPipelineDriver._UpdateWantReadCommand: self._handle_command_update_want_read,
-            AsyncioStreamChannelPipelineDriver._ScheduledCommand: self._handle_scheduled_command,
+            AsyncioStreamIoPipelineDriver._FeedInCommand: self._handle_command_feed_in,
+            AsyncioStreamIoPipelineDriver._ReadCompletedCommand: self._handle_command_read_completed,
+            AsyncioStreamIoPipelineDriver._UpdateWantReadCommand: self._handle_command_update_want_read,
+            AsyncioStreamIoPipelineDriver._ScheduledCommand: self._handle_scheduled_command,
         }
 
     async def _handle_command(self, cmd: _Command) -> None:
@@ -402,14 +402,14 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
 
     # lifecycle
 
-    async def _handle_output_final_output(self, msg: ChannelPipelineMessages.FinalOutput) -> None:
+    async def _handle_output_final_output(self, msg: IoPipelineMessages.FinalOutput) -> None:
         self._shutdown_event.set()
 
         await self._close_writer()
 
     # defer
 
-    async def _handle_output_defer(self, msg: ChannelPipelineMessages.Defer) -> None:
+    async def _handle_output_defer(self, msg: IoPipelineMessages.Defer) -> None:
         self._channel.run_deferred(msg)
 
     # data (special cased)
@@ -421,16 +421,16 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
 
     # flow
 
-    async def _handle_output_flush_output(self, msg: ChannelPipelineFlowMessages.FlushOutput) -> None:
+    async def _handle_output_flush_output(self, msg: IoPipelineFlowMessages.FlushOutput) -> None:
         if self._writer is not None:
             await self._writer.drain()
 
-    async def _handle_output_ready_for_input(self, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:
+    async def _handle_output_ready_for_input(self, msg: IoPipelineFlowMessages.ReadyForInput) -> None:
         await self._set_want_read(True)
 
     # async
 
-    async def _handle_output_await(self, msg: AsyncChannelPipelineMessages.Await) -> None:
+    async def _handle_output_await(self, msg: AsyncIoPipelineMessages.Await) -> None:
         try:
             result = await msg.obj
 
@@ -446,11 +446,11 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
 
     def _build_output_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]:
         return {
-            ChannelPipelineMessages.FinalOutput: self._handle_output_final_output,
-            ChannelPipelineMessages.Defer: self._handle_output_defer,
-            ChannelPipelineFlowMessages.FlushOutput: self._handle_output_flush_output,
-            ChannelPipelineFlowMessages.ReadyForInput: self._handle_output_ready_for_input,
-            AsyncChannelPipelineMessages.Await: self._handle_output_await,
+            IoPipelineMessages.FinalOutput: self._handle_output_final_output,
+            IoPipelineMessages.Defer: self._handle_output_defer,
+            IoPipelineFlowMessages.FlushOutput: self._handle_output_flush_output,
+            IoPipelineFlowMessages.ReadyForInput: self._handle_output_ready_for_input,
+            AsyncIoPipelineMessages.Await: self._handle_output_await,
         }
 
     async def _handle_output(self, msg: ta.Any) -> None:
@@ -539,7 +539,7 @@ class AsyncioStreamChannelPipelineDriver(Abstract):
 ##
 
 
-class SimpleAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPipelineDriver):
+class SimpleAsyncioStreamIoPipelineDriver(AsyncioStreamIoPipelineDriver):
     _read_task: ta.Optional[asyncio.Task] = None
 
     def _ensure_read_task(self) -> None:
@@ -555,16 +555,16 @@ class SimpleAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPipelineDrive
             if self._shutdown_event.is_set():
                 return
 
-            cmd: AsyncioStreamChannelPipelineDriver._Command
+            cmd: AsyncioStreamIoPipelineDriver._Command
             eof = False
             try:
                 data = task.result()
 
             except asyncio.CancelledError:
-                cmd = AsyncioStreamChannelPipelineDriver._ReadCancelledCommand()  # noqa
+                cmd = AsyncioStreamIoPipelineDriver._ReadCancelledCommand()  # noqa
 
             else:
-                cmd = AsyncioStreamChannelPipelineDriver._ReadCompletedCommand(data)  # noqa
+                cmd = AsyncioStreamIoPipelineDriver._ReadCompletedCommand(data)  # noqa
                 eof = not data
 
             self._command_queue.put_nowait(cmd)
@@ -582,12 +582,12 @@ class SimpleAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPipelineDrive
 
         #
 
-        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamChannelPipelineDriver._Command]] = None
+        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamIoPipelineDriver._Command]] = None
 
         try:
             if not self._shutdown_event.is_set():
-                await self._handle_command(AsyncioStreamChannelPipelineDriver._FeedInCommand([  # noqa
-                    ChannelPipelineMessages.InitialInput(),
+                await self._handle_command(AsyncioStreamIoPipelineDriver._FeedInCommand([  # noqa
+                    IoPipelineMessages.InitialInput(),
                 ]))
 
             while not self._shutdown_event.is_set():

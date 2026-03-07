@@ -1,13 +1,13 @@
 import typing as ta
 
-from .types import ChannelPipelineFlow
+from .types import IoPipelineFlow
 
 
 ##
 
 
 @ta.final
-class StubChannelPipelineFlow(ChannelPipelineFlow):
+class StubIoPipelineFlow(IoPipelineFlow):
     def __init__(self, *, auto_read: bool = True) -> None:
         super().__init__()
 

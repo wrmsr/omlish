@@ -3,9 +3,9 @@
 import dataclasses as dc
 import typing as ta
 
-from ...io.pipelines.core import ChannelPipelineHandler
-from ...io.pipelines.core import ChannelPipelineHandlerContext
-from ...io.pipelines.core import ChannelPipelineMessages
+from ...io.pipelines.core import IoPipelineHandler
+from ...io.pipelines.core import IoPipelineHandlerContext
+from ...io.pipelines.core import IoPipelineMessages
 
 
 ##
@@ -22,7 +22,7 @@ class PipelineSseEvent:
 ##
 
 
-class PipelineSseDecoder(ChannelPipelineHandler):
+class PipelineSseDecoder(IoPipelineHandler):
     """Consumes lines and emits SseEvent objects; ignores comment lines and handles blank-line termination."""
 
     def __init__(self) -> None:
@@ -33,8 +33,8 @@ class PipelineSseDecoder(ChannelPipelineHandler):
         self._id: ta.Optional[str] = None
         self._retry: ta.Optional[int] = None
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.FinalInput):
             self._emit_if_any(ctx)
             ctx.feed_in(msg)
             return
@@ -74,7 +74,7 @@ class PipelineSseDecoder(ChannelPipelineHandler):
             except ValueError:
                 pass
 
-    def _emit_if_any(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def _emit_if_any(self, ctx: IoPipelineHandlerContext) -> None:
         if (
                 self._event is None and
                 not self._data and

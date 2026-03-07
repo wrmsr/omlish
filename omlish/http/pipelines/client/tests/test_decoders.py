@@ -6,7 +6,7 @@
 # from omlish.http.parsing import HttpParser
 # from omlish.http.parsing import ParsedHttpMessage
 #
-# from ....core import ChannelPipelineMessages
+# from ....core import IoPipelineMessages
 # from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 # from ..decoders import PipelineHttpDecodingConfig
 # from ..decoders import PipelineHttpDecodingMessageAdapter
@@ -301,7 +301,7 @@
 #         self.assertEqual(len(out1), 0)
 #
 #         # Send FinalInput
-#         final_input = ChannelPipelineMessages.FinalInput()
+#         final_input = IoPipelineMessages.FinalInput()
 #         out2 = decoder.inbound(final_input)
 #
 #         self.assertEqual(len(out2), 2)
@@ -317,7 +317,7 @@
 #             HttpParser.Mode.REQUEST,
 #         )
 #
-#         final_input = ChannelPipelineMessages.FinalInput()
+#         final_input = IoPipelineMessages.FinalInput()
 #         out = decoder.inbound(final_input)
 #
 #         self.assertEqual(len(out), 2)
@@ -680,7 +680,7 @@
 #         out1 = decoder.inbound(chunk)
 #         self.assertEqual(len(out1), 1)
 #
-#         final_input = ChannelPipelineMessages.FinalInput()
+#         final_input = IoPipelineMessages.FinalInput()
 #         out2 = decoder.inbound(final_input)
 #
 #         self.assertEqual(len(out2), 2)

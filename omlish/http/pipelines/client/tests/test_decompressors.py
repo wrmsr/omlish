@@ -4,9 +4,9 @@ import dataclasses as dc
 import unittest
 import zlib
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.handlers.queues import InboundQueueChannelPipelineHandler
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....lite.check import check
 from ....headers import HttpHeaders
 from ...decompressors import PipelineHttpDecompressionConfig
@@ -40,10 +40,10 @@ class TestGzipDecompressorFlow(unittest.TestCase):
 
         handler = PipelineHttpResponseDecompressor(config=self.config)
 
-        channel = ChannelPipeline.new(
+        channel = IoPipeline.new(
             [
                 handler,
-                ibq := InboundQueueChannelPipelineHandler(),
+                ibq := InboundQueueIoPipelineHandler(),
             ],
         )
 
@@ -54,7 +54,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
 
         channel.feed_in(PipelineHttpResponseContentChunkData(data))
         # Should have deferred because max_steps is 2 (20 bytes out max)
-        dfl = check.isinstance(check.single(channel.output.drain()), ChannelPipelineMessages.Defer)
+        dfl = check.isinstance(check.single(channel.output.drain()), IoPipelineMessages.Defer)
         # Verify FinalInput is pinned and NOT yet fed inbound
         self.assertIsNone(dfl.pinned)
 
@@ -65,7 +65,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
             count += 1
             if count > 100:
                 self.fail('Infinite defer loop')
-            dfl = check.isinstance(out, ChannelPipelineMessages.Defer)
+            dfl = check.isinstance(out, IoPipelineMessages.Defer)
             channel.run_deferred(dfl)
 
         fi = PipelineHttpResponseEnd()
@@ -88,10 +88,10 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         compressor = zlib.compressobj(wbits=16 + zlib.MAX_WBITS)
         bomb_data = compressor.compress(b'A' * 1000) + compressor.flush()
 
-        channel = ChannelPipeline.new(
+        channel = IoPipeline.new(
             [
                 handler,
-                ibq := InboundQueueChannelPipelineHandler(),  # noqa
+                ibq := InboundQueueIoPipelineHandler(),  # noqa
             ],
         )
         channel.feed_in(self.head)
@@ -103,19 +103,19 @@ class TestGzipDecompressorFlow(unittest.TestCase):
             count += 1
             if count > 100:
                 self.fail('Infinite defer loop')
-            dfl = check.isinstance(out, ChannelPipelineMessages.Defer)
+            dfl = check.isinstance(out, IoPipelineMessages.Defer)
             channel.run_deferred(dfl)
 
         [out_head, *out_data, out_err] = ibq.drain()
         self.assertIs(self.head, out_head)
-        err = check.isinstance(out_err, ChannelPipelineMessages.Error)
+        err = check.isinstance(out_err, IoPipelineMessages.Error)
         self.assertIsInstance(err.exc, ValueError)
         self.assertIn('expansion ratio exceeds limit', repr(err.exc))
 
     # def test_manual_read_backpressure_with_defer(self):
     #     """Test that manual read (auto_read=False) correctly stalls the defer loop."""
     #
-    #     self.ctx.services[ChannelPipelineFlow] = StubChannelPipelineFlow(auto_read=False)
+    #     self.ctx.services[IoPipelineFlow] = StubIoPipelineFlow(auto_read=False)
     #
     #     compressor = zlib.compressobj(wbits=16+zlib.MAX_WBITS)
     #     data = compressor.compress(b"Some data that will be buffered") + compressor.flush()
@@ -127,7 +127,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
     #     self.assertEqual(len([m for m in self.ctx.inbound_results if isinstance(m, bytes)]), 0)
     #
     #     # 2. Send ReadyForInput
-    #     self.handler.outbound(self.ctx, ChannelPipelineFlowMessages.ReadyForInput())
+    #     self.handler.outbound(self.ctx, IoPipelineFlowMessages.ReadyForInput())
     #
     #     # Now one chunk should be present
     #     self.assertGreater(len(self.ctx.inbound_results), 0)

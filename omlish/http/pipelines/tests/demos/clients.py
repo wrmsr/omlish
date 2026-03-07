@@ -3,17 +3,17 @@
 import dataclasses as dc
 import typing as ta
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.core import ChannelPipelineHandlerFn
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
-from .....io.pipelines.drivers.sync import SyncSocketChannelPipelineDriver
-from .....io.pipelines.flow.stub import StubChannelPipelineFlow
-from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
-from .....io.pipelines.handlers.logs import LoggingChannelPipelineHandler
-from .....io.pipelines.ssl.handlers import SslChannelPipelineHandler
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineHandler
+from .....io.pipelines.core import IoPipelineHandlerContext
+from .....io.pipelines.core import IoPipelineHandlerFn
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from .....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
+from .....io.pipelines.flow.stub import StubIoPipelineFlow
+from .....io.pipelines.flow.types import IoPipelineFlowMessages
+from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
+from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from .....lite.check import check
 from ...client.requests import PipelineHttpRequestEncoder
@@ -31,7 +31,7 @@ from ...responses import PipelineHttpResponseObject
 
 HttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
     PipelineHttpResponseObject,
-    ChannelPipelineMessages.FinalInput,
+    IoPipelineMessages.FinalInput,
     'HttpClientClose',
 ]
 
@@ -40,7 +40,7 @@ HttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
 class HttpClientRequest:
     request: FullPipelineHttpRequest
 
-    on_output: ChannelPipelineHandlerFn[HttpClientRequestOutput, None]
+    on_output: IoPipelineHandlerFn[HttpClientRequestOutput, None]
 
     stream: bool = False
 
@@ -53,10 +53,10 @@ class HttpClientClose:
 #
 
 
-class HttpClientHandler(ChannelPipelineHandler):
+class HttpClientHandler(IoPipelineHandler):
     _request: ta.Optional[HttpClientRequest] = None
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, HttpClientRequest):
             check.none(self._request)
             self._request = msg
@@ -66,8 +66,8 @@ class HttpClientHandler(ChannelPipelineHandler):
 
             ctx.feed_out(msg.request)
 
-            if not StubChannelPipelineFlow.is_auto_read_context(ctx):
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            if not StubIoPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return
 
@@ -81,16 +81,16 @@ class HttpClientHandler(ChannelPipelineHandler):
 
             return
 
-        if isinstance(msg, (ChannelPipelineMessages.FinalInput, HttpClientClose)):
+        if isinstance(msg, (IoPipelineMessages.FinalInput, HttpClientClose)):
             if (request2 := self._request) is not None:
                 self._request = None
 
                 request2.on_output(ctx, msg)
 
-            if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            if isinstance(msg, IoPipelineMessages.FinalInput):
                 ctx.feed_in(msg)
 
-            ctx.feed_out(ChannelPipelineMessages.FinalOutput())
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
 
             return
 
@@ -101,8 +101,8 @@ class HttpClientHandler(ChannelPipelineHandler):
 
 
 def build_http_client(
-        outermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
-        innermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
+        outermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
+        innermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
 
         with_logging: bool = False,
 
@@ -115,14 +115,14 @@ def build_http_client(
         flow_auto_read: bool = False,
 
         raise_immediately: bool = False,
-) -> ChannelPipeline.Spec:
-    return ChannelPipeline.Spec(
+) -> IoPipeline.Spec:
+    return IoPipeline.Spec(
         [
             *(outermost_handlers or []),
 
-            *([LoggingChannelPipelineHandler()] if with_logging else []),
+            *([LoggingIoPipelineHandler()] if with_logging else []),
 
-            *([SslChannelPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
+            *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
             PipelineHttpResponseDecoder(),
             *([PipelineHttpResponseDecompressor()] if with_gzip else []),
@@ -135,12 +135,12 @@ def build_http_client(
             *(innermost_handlers or []),
         ],
 
-        config=ChannelPipeline.Config.DEFAULT.update(
+        config=IoPipeline.Config.DEFAULT.update(
             raise_immediately=raise_immediately,
         ),
 
         services=[
-            *([StubChannelPipelineFlow(auto_read=flow_auto_read)] if with_flow else []),
+            *([StubIoPipelineFlow(auto_read=flow_auto_read)] if with_flow else []),
         ],
     )
 
@@ -224,7 +224,7 @@ def print_full_response(response: FullPipelineHttpResponse) -> None:
 class _PreparedUrlFetch(ta.NamedTuple):
     parsed_url: ParsedUrl
     request: FullPipelineHttpRequest
-    pipeline_spec: ChannelPipeline.Spec
+    pipeline_spec: IoPipeline.Spec
 
 
 def _prepare_url_fetch(
@@ -274,7 +274,7 @@ async def asyncio_fetch_url(
 
     response: ta.Optional[FullPipelineHttpResponse] = None
 
-    def on_output(ctx: ChannelPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
+    def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
         if isinstance(msg, FullPipelineHttpResponse):
             nonlocal response
             check.none(response)
@@ -289,7 +289,7 @@ async def asyncio_fetch_url(
     reader, writer = await asyncio.open_connection(puf.parsed_url.host, puf.parsed_url.port)
 
     try:
-        drv = SimpleAsyncioStreamChannelPipelineDriver(
+        drv = SimpleAsyncioStreamIoPipelineDriver(
             puf.pipeline_spec,
             reader,
             writer,
@@ -324,7 +324,7 @@ def sync_fetch_url(
 
     response: ta.Optional[FullPipelineHttpResponse] = None
 
-    def on_output(ctx: ChannelPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
+    def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
         if isinstance(msg, FullPipelineHttpResponse):
             nonlocal response
             check.none(response)
@@ -349,7 +349,7 @@ def sync_fetch_url(
 
     try:
         # Run driver to process request/response
-        drv = SyncSocketChannelPipelineDriver(
+        drv = SyncSocketIoPipelineDriver(
             puf.pipeline_spec,
             sock,
         )

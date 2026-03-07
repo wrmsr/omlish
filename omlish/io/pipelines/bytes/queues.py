@@ -3,27 +3,27 @@
 import typing as ta
 
 from ...streams.utils import ByteStreamBuffers
-from ..core import ChannelPipelineHandlerFn
-from ..handlers.fns import ChannelPipelineHandlerFns
-from ..handlers.queues import InboundQueueChannelPipelineHandler
-from .buffering import InboundBytesBufferingChannelPipelineHandler
+from ..core import IoPipelineHandlerFn
+from ..handlers.fns import IoPipelineHandlerFns
+from ..handlers.queues import InboundQueueIoPipelineHandler
+from .buffering import InboundBytesBufferingIoPipelineHandler
 
 
 ##
 
 
-class InboundBytesBufferingQueueChannelPipelineHandler(
-    InboundBytesBufferingChannelPipelineHandler,
-    InboundQueueChannelPipelineHandler,
+class InboundBytesBufferingQueueIoPipelineHandler(
+    InboundBytesBufferingIoPipelineHandler,
+    InboundQueueIoPipelineHandler,
 ):
     def __init__(
             self,
             *,
-            filter: ta.Union[ChannelPipelineHandlerFn[ta.Any, bool], ta.Literal[True], None] = None,  # noqa
+            filter: ta.Union[IoPipelineHandlerFn[ta.Any, bool], ta.Literal[True], None] = None,  # noqa
             passthrough: bool = False,
     ) -> None:
         if filter is True:
-            filter = ChannelPipelineHandlerFns.no_context(ByteStreamBuffers.can_bytes)  # noqa
+            filter = IoPipelineHandlerFns.no_context(ByteStreamBuffers.can_bytes)  # noqa
 
         super().__init__(
             filter=filter,  # noqa

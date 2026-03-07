@@ -8,11 +8,11 @@ import asyncio
 import hashlib
 import typing as ta
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
-from .....io.pipelines.flow.stub import StubChannelPipelineFlow
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineHandler
+from .....io.pipelines.core import IoPipelineHandlerContext
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from .....io.pipelines.flow.stub import StubIoPipelineFlow
 from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunkData
 from ...requests import PipelineHttpRequestEnd
@@ -25,7 +25,7 @@ from ...server.responses import PipelineHttpResponseEncoder
 ##
 
 
-class Sha1Handler(ChannelPipelineHandler):
+class Sha1Handler(IoPipelineHandler):
     """
     Handles:
       POST /sha1
@@ -42,7 +42,7 @@ class Sha1Handler(ChannelPipelineHandler):
         self._active = False
         self._h: ta.Any = None  # hashlib object
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, PipelineHttpRequestHead):
             if msg.method.upper() == 'POST' and msg.target.split('?', 1)[0] == '/sha1':
                 self._active = True
@@ -92,8 +92,8 @@ class Sha1Handler(ChannelPipelineHandler):
         ctx.feed_in(msg)
 
 
-def build_http_sha1_channel() -> ChannelPipeline.Spec:
-    return ChannelPipeline.Spec(
+def build_http_sha1_channel() -> IoPipeline.Spec:
+    return IoPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PipelineHttpResponseEncoder(),
@@ -101,7 +101,7 @@ def build_http_sha1_channel() -> ChannelPipeline.Spec:
         ],
 
         services=[
-            StubChannelPipelineFlow(auto_read=True),
+            StubIoPipelineFlow(auto_read=True),
         ],
     )
 
@@ -127,7 +127,7 @@ async def serve_sha1(
             reader: asyncio.StreamReader,
             writer: asyncio.StreamWriter,
     ) -> None:
-        drv = SimpleAsyncioStreamChannelPipelineDriver(
+        drv = SimpleAsyncioStreamIoPipelineDriver(
             build_http_sha1_channel(),
             reader,
             writer,

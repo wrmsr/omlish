@@ -5,10 +5,10 @@ import typing as ta
 from ....logs.base import Logger
 from ....logs.levels import NamedLogLevel
 from ....logs.modules import get_module_logger
-from ..core import ChannelPipelineDirection
-from ..core import ChannelPipelineDirectionOrDuplex
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
+from ..core import IoPipelineDirection
+from ..core import IoPipelineDirectionOrDuplex
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
 
 
 log = get_module_logger(globals())  # noqa
@@ -17,13 +17,13 @@ log = get_module_logger(globals())  # noqa
 ##
 
 
-class LoggingChannelPipelineHandler(ChannelPipelineHandler):
+class LoggingIoPipelineHandler(IoPipelineHandler):
     def __init__(
             self,
             log: ta.Optional[Logger] = None,  # noqa
             level: ta.Union[int, str] = 'debug',
             *,
-            direction: ChannelPipelineDirectionOrDuplex = 'duplex',
+            direction: IoPipelineDirectionOrDuplex = 'duplex',
     ) -> None:
         super().__init__()
 
@@ -35,8 +35,8 @@ class LoggingChannelPipelineHandler(ChannelPipelineHandler):
 
     def _do_log(
             self,
-            ctx: ChannelPipelineHandlerContext,
-            direction: ChannelPipelineDirection,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
             msg: ta.Any,
     ) -> None:
         self._log.log(
@@ -46,12 +46,12 @@ class LoggingChannelPipelineHandler(ChannelPipelineHandler):
             msg,
         )
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if self._direction in ('inbound', 'duplex'):
             self._do_log(ctx, 'inbound', msg)
         ctx.feed_in(msg)
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if self._direction in ('outbound', 'duplex'):
             self._do_log(ctx, 'outbound', msg)
         ctx.feed_out(msg)

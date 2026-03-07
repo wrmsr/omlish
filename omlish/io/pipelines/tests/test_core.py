@@ -4,58 +4,58 @@ import typing as ta
 import unittest
 
 from ....lite.check import check
-from ..core import ChannelPipeline
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineMessages
-from ..core import ChannelPipelineMetadata
-from ..errors import ContextInvalidatedChannelPipelineError
-from ..errors import MessageNotPropagatedChannelPipelineError
-from ..handlers.feedback import FeedbackInboundChannelPipelineHandler
-from ..handlers.queues import InboundQueueChannelPipelineHandler
+from ..core import IoPipeline
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
+from ..core import IoPipelineMessages
+from ..core import IoPipelineMetadata
+from ..errors import ContextInvalidatedIoPipelineError
+from ..errors import MessageNotPropagatedIoPipelineError
+from ..handlers.feedback import FeedbackInboundIoPipelineHandler
+from ..handlers.queues import InboundQueueIoPipelineHandler
 
 
-class IntIncInboundHandler(ChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class IntIncInboundHandler(IoPipelineHandler):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, int):
             msg += 1
 
         ctx.feed_in(msg)
 
 
-class IntMulThreeInboundHandler(ChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class IntMulThreeInboundHandler(IoPipelineHandler):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, int):
             msg *= 3
 
         ctx.feed_in(msg)
 
 
-class IntStrDuplexHandler(ChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class IntStrDuplexHandler(IoPipelineHandler):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, int):
             msg = str(msg)
 
         ctx.feed_in(msg)
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, str):
             msg = int(msg)
 
         ctx.feed_out(msg)
 
 
-class DuplicateInboundHandler(ChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class DuplicateInboundHandler(IoPipelineHandler):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         ctx.feed_in(msg)
         ctx.feed_in(msg)
 
 
-class ReplaceSelfInboundHandler(ChannelPipelineHandler):
+class ReplaceSelfInboundHandler(IoPipelineHandler):
     def __init__(self, fn):
         self.fn = fn
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         h = self.fn()
         hr = ctx.pipeline.replace(ctx.ref, h)
         ctx.pipeline.feed_in_to(hr, msg)
@@ -63,11 +63,11 @@ class ReplaceSelfInboundHandler(ChannelPipelineHandler):
 
 class TestCore(unittest.TestCase):
     def test_core(self):
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             IntIncInboundHandler(),
             IntStrDuplexHandler(),
-            fbi := FeedbackInboundChannelPipelineHandler(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            fbi := FeedbackInboundIoPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in('hi')
@@ -98,7 +98,7 @@ class TestCore(unittest.TestCase):
         ch.remove(ch.handlers()[1])
 
         with ch.enter():
-            with self.assertRaises(ContextInvalidatedChannelPipelineError):
+            with self.assertRaises(ContextInvalidatedIoPipelineError):
                 rem._context._inbound('hi')  # noqa
 
         #
@@ -123,20 +123,20 @@ class TestCore(unittest.TestCase):
         assert ch.output.drain() == [24]
 
     def test_replace_self(self):
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             DuplicateInboundHandler(),
             ReplaceSelfInboundHandler(IntIncInboundHandler),
             IntStrDuplexHandler(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(42)
         assert ibq.drain() == ['43', '43']
 
     def test_named(self):
-        ch = ChannelPipeline.new([
-            fbi := FeedbackInboundChannelPipelineHandler(),
-            ibq := InboundQueueChannelPipelineHandler(),
+        ch = IoPipeline.new([
+            fbi := FeedbackInboundIoPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.add_outermost(IntStrDuplexHandler(), name='int_str')
@@ -159,15 +159,15 @@ class TestCore(unittest.TestCase):
 
 class TestMetadata(unittest.TestCase):
     @dc.dataclass(frozen=True)
-    class FooMetadata(ChannelPipelineMetadata):
+    class FooMetadata(IoPipelineMetadata):
         foo: str
 
     @dc.dataclass(frozen=True)
-    class BarMetadata(ChannelPipelineMetadata):
+    class BarMetadata(IoPipelineMetadata):
         bar: str
 
     def test_metadata(self):
-        ch = ChannelPipeline.new(metadata=[TestMetadata.FooMetadata('foo')])
+        ch = IoPipeline.new(metadata=[TestMetadata.FooMetadata('foo')])
         assert ch.metadata[TestMetadata.FooMetadata] == TestMetadata.FooMetadata('foo')
         assert TestMetadata.FooMetadata in ch.metadata
         with self.assertRaises(KeyError):  # noqa
@@ -177,7 +177,7 @@ class TestMetadata(unittest.TestCase):
 
 class TestCompletable(unittest.TestCase):
     @dc.dataclass(frozen=True)
-    class CompletableFoo(ChannelPipelineMessages.Completable[str]):
+    class CompletableFoo(IoPipelineMessages.Completable[str]):
         i: int
 
     def test_completable_no_listeners(self):
@@ -209,27 +209,27 @@ class TestCompletable(unittest.TestCase):
 
 class TestMustPropagate(unittest.TestCase):
     def test_must_propagate(self):
-        class BrokenPropagator(ChannelPipelineHandler):
-            def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+        class BrokenPropagator(IoPipelineHandler):
+            def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+                if isinstance(msg, IoPipelineMessages.FinalInput):
                     return
 
                 ctx.feed_in(msg)
 
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             IntStrDuplexHandler(),
             bph := BrokenPropagator(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(240)
         assert not ch.output.drain()
         assert ibq.drain() == ['240']
 
-        fi = ChannelPipelineMessages.FinalInput()
-        with self.assertRaises(MessageNotPropagatedChannelPipelineError) as ex:
+        fi = IoPipelineMessages.FinalInput()
+        with self.assertRaises(MessageNotPropagatedIoPipelineError) as ex:
             ch.feed_in(fi)
-        assert isinstance(ex.exception, MessageNotPropagatedChannelPipelineError)
+        assert isinstance(ex.exception, MessageNotPropagatedIoPipelineError)
         it = ex.exception.items[0]
         assert it.direction == 'inbound'
         assert it.msg is fi
@@ -238,18 +238,18 @@ class TestMustPropagate(unittest.TestCase):
 
 class TestDefer(unittest.TestCase):
     def test_defer(self):
-        class DeferThing(ChannelPipelineHandler):
-            def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        class DeferThing(IoPipelineHandler):
+            def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
                 if msg == 'hi':
                     ctx.defer_no_context(lambda: ctx.feed_in('bye'))
                     return
 
                 ctx.feed_in(msg)
 
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             IntStrDuplexHandler(),
             DeferThing(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(240)
@@ -259,16 +259,16 @@ class TestDefer(unittest.TestCase):
         ch.feed_in('hi')
         assert not ibq.drain()
         [dfl] = ch.output.drain()
-        assert isinstance(dfl, ChannelPipelineMessages.Defer)
+        assert isinstance(dfl, IoPipelineMessages.Defer)
 
         ch.run_deferred(dfl)
         assert not ch.output.drain()
         assert ibq.drain() == ['bye']
 
     def test_defer_pinning(self):
-        class PinningDeferThing(ChannelPipelineHandler):
-            def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+        class PinningDeferThing(IoPipelineHandler):
+            def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+                if isinstance(msg, IoPipelineMessages.FinalInput):
                     def foo():
                         ctx.feed_in(msg)
 
@@ -277,21 +277,21 @@ class TestDefer(unittest.TestCase):
 
                 ctx.feed_in(msg)
 
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             IntStrDuplexHandler(),
             PinningDeferThing(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(240)
         assert not ch.output.drain()
         assert ibq.drain() == ['240']
 
-        fi = ChannelPipelineMessages.FinalInput()
+        fi = IoPipelineMessages.FinalInput()
         ch.feed_in(fi)
         assert not ibq.drain()
         [dfl] = ch.output.drain()
-        assert isinstance(dfl, ChannelPipelineMessages.Defer)
+        assert isinstance(dfl, IoPipelineMessages.Defer)
 
         ch.run_deferred(dfl)
         assert not ch.output.drain()

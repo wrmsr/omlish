@@ -17,19 +17,19 @@ from ...streams.types import ByteStreamBuffer
 from ...streams.types import MutableByteStreamBuffer
 from ...streams.utils import ByteStreamBuffers
 from ...streams.utils import CanByteStreamBuffer
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineMessages
-from ..errors import IncompleteDecodingChannelPipelineError
-from ..flow.types import ChannelPipelineFlow
-from ..flow.types import ChannelPipelineFlowMessages
-from .buffering import InboundBytesBufferingChannelPipelineHandler
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
+from ..core import IoPipelineMessages
+from ..errors import IncompleteDecodingIoPipelineError
+from ..flow.types import IoPipelineFlow
+from ..flow.types import IoPipelineFlowMessages
+from .buffering import InboundBytesBufferingIoPipelineHandler
 
 
 ##
 
 
-class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
+class UnicodeDecoderIoPipelineHandler(IoPipelineHandler):
     """bytes/view -> str (UTF-8, replacement)."""
 
     def __init__(
@@ -43,7 +43,7 @@ class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
         self._encoding = encoding
         self._errors = errors
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if ByteStreamBuffers.can_bytes(msg):
             b = ByteStreamBuffers.to_bytes(msg)
 
@@ -55,12 +55,12 @@ class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
 ##
 
 
-class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPipelineHandler):
+class DelimiterFrameDecoderIoPipelineHandler(InboundBytesBufferingIoPipelineHandler):
     """
     bytes-like -> frames using longest-match delimiter semantics.
 
     TODO:
-     - flow control, *or* replace with BytesToMessageDecoderChannelPipelineHandler
+     - flow control, *or* replace with BytesToMessageDecoderIoPipelineHandler
     """
 
     def __init__(
@@ -91,8 +91,8 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
     def inbound_buffered_bytes(self) -> int:
         return len(self._buf)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.FinalInput):
             self._produce_frames(ctx, final=True)
             ctx.feed_in(msg)
             return
@@ -107,14 +107,14 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
 
         self._produce_frames(ctx)
 
-    def _produce_frames(self, ctx: ChannelPipelineHandlerContext, *, final: bool = False) -> None:
+    def _produce_frames(self, ctx: IoPipelineHandlerContext, *, final: bool = False) -> None:
         frames = self._fr.decode(self._buf, final=final)
 
         if final and len(self._buf):
             if (oif := self._on_incomplete_final) == 'allow':
                 frames.append(self._buf.split_to(len(self._buf)))
             elif oif == 'raise':
-                raise IncompleteDecodingChannelPipelineError
+                raise IncompleteDecodingIoPipelineError
             else:
                 raise RuntimeError(f'unexpected on_incomplete_final: {oif!r}')
 
@@ -125,11 +125,11 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
 ##
 
 
-class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
     @abc.abstractmethod
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             data: CanByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
@@ -144,7 +144,7 @@ class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstra
 
     def _call_decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             data: CanByteStreamBuffer,
             *,
             final: bool = False,
@@ -164,36 +164,36 @@ class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstra
 
     #
 
-    def _on_bytes_input(self, ctx: ChannelPipelineHandlerContext, data: CanByteStreamBuffer) -> None:
+    def _on_bytes_input(self, ctx: IoPipelineHandlerContext, data: CanByteStreamBuffer) -> None:
         check.arg(len(data) > 0)
 
         self._call_decode(ctx, data)
 
-    def _on_flush_input(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def _on_flush_input(self, ctx: IoPipelineHandlerContext) -> None:
         if (
                 self._called_decode and
                 not self._produced_messages and
-                not ctx.services[ChannelPipelineFlow].is_auto_read()
+                not ctx.services[IoPipelineFlow].is_auto_read()
         ):
-            ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
         self._called_decode = False
         self._produced_messages = False
 
-        ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+        ctx.feed_in(IoPipelineFlowMessages.FlushInput())
 
-    def _on_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:
+    def _on_final_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalInput) -> None:
         self._call_decode(ctx, DirectByteStreamBuffer(b''), final=True)
 
         ctx.feed_in(msg)
 
     #
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.FlushInput):
             self._on_flush_input(ctx)
 
-        elif isinstance(msg, ChannelPipelineMessages.FinalInput):
+        elif isinstance(msg, IoPipelineMessages.FinalInput):
             self._on_final_input(ctx, msg)
 
         elif ByteStreamBuffers.can_bytes(msg):
@@ -207,11 +207,11 @@ class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstra
 
 
 @ta.final
-class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannelPipelineHandler):
+class FnBytesToMessageDecoderIoPipelineHandler(BytesToMessageDecoderIoPipelineHandler):
     class DecodeFn(ta.Protocol):
         def __call__(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
@@ -229,7 +229,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
 
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             buf: CanByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
@@ -241,9 +241,9 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
 ##
 
 
-class BufferedBytesToMessageDecoderChannelPipelineHandler(
-    InboundBytesBufferingChannelPipelineHandler,
-    BytesToMessageDecoderChannelPipelineHandler,
+class BufferedBytesToMessageDecoderIoPipelineHandler(
+    InboundBytesBufferingIoPipelineHandler,
+    BytesToMessageDecoderIoPipelineHandler,
     Abstract,
 ):
     def __init__(
@@ -283,7 +283,7 @@ class BufferedBytesToMessageDecoderChannelPipelineHandler(
 
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             data: CanByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
@@ -314,7 +314,7 @@ class BufferedBytesToMessageDecoderChannelPipelineHandler(
     @abc.abstractmethod
     def _decode_buffer(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             buf: ByteStreamBuffer,
             out: ta.List[ta.Any],
             *,

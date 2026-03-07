@@ -5,9 +5,9 @@ import socket
 import threading
 import typing as ta
 
-from ....io.pipelines.core import ChannelPipeline
-from ....io.pipelines.drivers.asyncio import AsyncioStreamChannelPipelineDriver
-from ....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
+from ....io.pipelines.core import IoPipeline
+from ....io.pipelines.drivers.asyncio import AsyncioStreamIoPipelineDriver
+from ....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 
 
 ##
@@ -22,7 +22,7 @@ class HttpServerRunner:
 
     def __init__(
             self,
-            channel_builder: ta.Callable[[], ChannelPipeline.Spec],
+            channel_builder: ta.Callable[[], IoPipeline.Spec],
             preferred_port: int = 0,
             *,
             use_flow_control: bool = False,
@@ -89,9 +89,9 @@ class HttpServerRunner:
         """Serve requests until shutdown."""
 
         async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-            drv: AsyncioStreamChannelPipelineDriver
+            drv: AsyncioStreamIoPipelineDriver
 
-            drv = SimpleAsyncioStreamChannelPipelineDriver(
+            drv = SimpleAsyncioStreamIoPipelineDriver(
                 self._channel_builder(),
                 reader,
                 writer,

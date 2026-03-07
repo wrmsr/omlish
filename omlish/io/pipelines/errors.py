@@ -7,14 +7,14 @@ import typing as ta
 ##
 
 
-class ChannelPipelineError(Exception):
+class IoPipelineError(Exception):
     pass
 
 
 ##
 
 
-class UnhandleableChannelPipelineError(ChannelPipelineError):
+class UnhandleableIoPipelineError(IoPipelineError):
     pass
 
 
@@ -22,23 +22,23 @@ class UnhandleableChannelPipelineError(ChannelPipelineError):
 # state
 
 
-class StateChannelPipelineError(ChannelPipelineError):
+class StateIoPipelineError(IoPipelineError):
     pass
 
 
-class ContextInvalidatedChannelPipelineError(StateChannelPipelineError):
+class ContextInvalidatedIoPipelineError(StateIoPipelineError):
     pass
 
 
-class SawInitialInputChannelPipelineError(StateChannelPipelineError):
+class SawInitialInputIoPipelineError(StateIoPipelineError):
     pass
 
 
-class SawFinalInputChannelPipelineError(StateChannelPipelineError):
+class SawFinalInputIoPipelineError(StateIoPipelineError):
     pass
 
 
-class SawFinalOutputChannelPipelineError(StateChannelPipelineError):
+class SawFinalOutputIoPipelineError(StateIoPipelineError):
     pass
 
 
@@ -47,7 +47,7 @@ class SawFinalOutputChannelPipelineError(StateChannelPipelineError):
 
 
 @dc.dataclass()
-class MessageChannelPipelineError(ChannelPipelineError):
+class MessageIoPipelineError(IoPipelineError):
     @ta.final
     @dc.dataclass(frozen=True)
     class Item:
@@ -77,16 +77,16 @@ class MessageChannelPipelineError(ChannelPipelineError):
             inbound_with_last_seen: ta.Optional[ta.Sequence[ta.Tuple[ta.Any, ta.Any]]] = None,
             outbound: ta.Optional[ta.Sequence[ta.Any]] = None,
             outbound_with_last_seen: ta.Optional[ta.Sequence[ta.Tuple[ta.Any, ta.Any]]] = None,
-    ) -> 'MessageChannelPipelineError':
-        items: ta.List[MessageChannelPipelineError.Item] = []
+    ) -> 'MessageIoPipelineError':
+        items: ta.List[MessageIoPipelineError.Item] = []
         for msg in inbound or ():
-            items.append(MessageChannelPipelineError.Item('inbound', msg))
+            items.append(MessageIoPipelineError.Item('inbound', msg))
         for msg, last_seen in inbound_with_last_seen or ():
-            items.append(MessageChannelPipelineError.Item('inbound', msg, last_seen=last_seen))
+            items.append(MessageIoPipelineError.Item('inbound', msg, last_seen=last_seen))
         for msg in outbound or ():
-            items.append(MessageChannelPipelineError.Item('outbound', msg))
+            items.append(MessageIoPipelineError.Item('outbound', msg))
         for msg, last_seen in outbound_with_last_seen or ():
-            items.append(MessageChannelPipelineError.Item('outbound', msg, last_seen=last_seen))
+            items.append(MessageIoPipelineError.Item('outbound', msg, last_seen=last_seen))
         return cls(items)
 
     @classmethod
@@ -96,9 +96,9 @@ class MessageChannelPipelineError(ChannelPipelineError):
             msg: ta.Any,
             *,
             last_seen: ta.Optional[ta.Any] = None,
-    ) -> 'MessageChannelPipelineError':
+    ) -> 'MessageIoPipelineError':
         return cls([
-            MessageChannelPipelineError.Item(
+            MessageIoPipelineError.Item(
                 direction,
                 msg,
                 last_seen=last_seen,
@@ -110,12 +110,12 @@ class MessageChannelPipelineError(ChannelPipelineError):
 
 
 @dc.dataclass(repr=False)
-class MessageNotPropagatedChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
+class MessageNotPropagatedIoPipelineError(MessageIoPipelineError, UnhandleableIoPipelineError):
     pass
 
 
 @dc.dataclass(repr=False)
-class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
+class MessageReachedTerminalIoPipelineError(MessageIoPipelineError, UnhandleableIoPipelineError):
     pass
 
 
@@ -123,13 +123,13 @@ class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, Un
 # misc (TODO: move/cleanup)
 
 
-class DecodingChannelPipelineError(ChannelPipelineError):
+class DecodingIoPipelineError(IoPipelineError):
     pass
 
 
-class IncompleteDecodingChannelPipelineError(DecodingChannelPipelineError):
+class IncompleteDecodingIoPipelineError(DecodingIoPipelineError):
     pass
 
 
-class FlowControlValidationChannelPipelineError(ChannelPipelineError):
+class FlowControlValidationIoPipelineError(IoPipelineError):
     pass

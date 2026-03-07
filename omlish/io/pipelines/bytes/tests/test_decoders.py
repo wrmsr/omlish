@@ -6,15 +6,15 @@ import unittest
 
 from .....lite.check import check
 from ....streams.types import ByteStreamBuffer
-from ...core import ChannelPipeline
-from ...core import ChannelPipelineMessages
-from ...flow.types import ChannelPipelineFlow
-from ...flow.types import ChannelPipelineFlowMessages
-from ...handlers.queues import InboundQueueChannelPipelineHandler
-from ..decoders import BufferedBytesToMessageDecoderChannelPipelineHandler
-from ..decoders import ChannelPipelineHandlerContext
-from ..decoders import DelimiterFrameDecoderChannelPipelineHandler
-from ..decoders import UnicodeDecoderChannelPipelineHandler
+from ...core import IoPipeline
+from ...core import IoPipelineMessages
+from ...flow.types import IoPipelineFlow
+from ...flow.types import IoPipelineFlowMessages
+from ...handlers.queues import InboundQueueIoPipelineHandler
+from ..decoders import BufferedBytesToMessageDecoderIoPipelineHandler
+from ..decoders import DelimiterFrameDecoderIoPipelineHandler
+from ..decoders import IoPipelineHandlerContext
+from ..decoders import UnicodeDecoderIoPipelineHandler
 
 
 ##
@@ -22,9 +22,9 @@ from ..decoders import UnicodeDecoderChannelPipelineHandler
 
 class TestDecoders(unittest.TestCase):
     def test_decoders(self):
-        ch = ChannelPipeline.new([
-            UnicodeDecoderChannelPipelineHandler(),
-            ibq := InboundQueueChannelPipelineHandler(),
+        ch = IoPipeline.new([
+            UnicodeDecoderIoPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(b'abcd')
@@ -34,10 +34,10 @@ class TestDecoders(unittest.TestCase):
         assert ibq.drain() == ['hi ☃ there']
 
     def test_delim(self):
-        ch = ChannelPipeline.new([
-            DelimiterFrameDecoderChannelPipelineHandler([b'\n']),
-            UnicodeDecoderChannelPipelineHandler(),
-            ibq := InboundQueueChannelPipelineHandler(),
+        ch = IoPipeline.new([
+            DelimiterFrameDecoderIoPipelineHandler([b'\n']),
+            UnicodeDecoderIoPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(b'abc')
@@ -51,13 +51,13 @@ class TestDecoders(unittest.TestCase):
         ch.feed_final_input()
         om, eof = ibq.drain()
         assert om == 'k'
-        assert isinstance(eof, ChannelPipelineMessages.FinalInput)
+        assert isinstance(eof, IoPipelineMessages.FinalInput)
 
 
 ##
 
 
-class MyFlow(ChannelPipelineFlow):
+class MyFlow(IoPipelineFlow):
     def __init__(self, *, auto_read: bool) -> None:
         super().__init__()
 
@@ -75,10 +75,10 @@ class DumbBytesMessage:
     b: bytes
 
 
-class ByteTripletsToMessageDecoder(BufferedBytesToMessageDecoderChannelPipelineHandler):
+class ByteTripletsToMessageDecoder(BufferedBytesToMessageDecoderIoPipelineHandler):
     def _decode_buffer(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             inb: ByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
@@ -94,36 +94,36 @@ class ByteTripletsToMessageDecoder(BufferedBytesToMessageDecoderChannelPipelineH
 
 
 def test_b2md_ar():
-    ch = ChannelPipeline.new(
+    ch = IoPipeline.new(
         [
             ByteTripletsToMessageDecoder(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ],
         services=[mf := MyFlow(auto_read=True)],  # noqa
     )
 
     print()
 
-    ch.feed_in(b'abcd', ChannelPipelineFlowMessages.FlushInput())
+    ch.feed_in(b'abcd', IoPipelineFlowMessages.FlushInput())
     print(f'{ch.output.drain()=} {ibq.drain()=}')
 
-    ch.feed_in(ChannelPipelineMessages.FinalInput())
+    ch.feed_in(IoPipelineMessages.FinalInput())
     print(f'{ch.output.drain()=} {ibq.drain()=}')
 
 
 def test_b2md_nar():
-    ch = ChannelPipeline.new(
+    ch = IoPipeline.new(
         [
             ByteTripletsToMessageDecoder(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ],
         services=[mf := MyFlow(auto_read=False)],  # noqa
     )
 
     print()
 
-    ch.feed_in(b'abcd', ChannelPipelineFlowMessages.FlushInput())
+    ch.feed_in(b'abcd', IoPipelineFlowMessages.FlushInput())
     print(f'{ch.output.drain()=} {ibq.drain()=}')
 
-    ch.feed_in(ChannelPipelineMessages.FinalInput())
+    ch.feed_in(IoPipelineMessages.FinalInput())
     print(f'{ch.output.drain()=} {ibq.drain()=}')

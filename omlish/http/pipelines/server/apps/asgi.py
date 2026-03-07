@@ -7,12 +7,12 @@ import functools
 import types
 import typing as ta
 
-from .....io.pipelines.asyncs import AsyncChannelPipelineMessages
-from .....io.pipelines.core import ChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.flow.types import ChannelPipelineFlow
-from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
+from .....io.pipelines.asyncs import AsyncIoPipelineMessages
+from .....io.pipelines.core import IoPipelineHandler
+from .....io.pipelines.core import IoPipelineHandlerContext
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.flow.types import IoPipelineFlow
+from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from ....headers import HttpHeaders
@@ -115,7 +115,7 @@ class _AsgiPump:
 
 
 class _AsgiDriver:
-    def __init__(self, ctx: ChannelPipelineHandlerContext, fn: ta.Any) -> None:
+    def __init__(self, ctx: IoPipelineHandlerContext, fn: ta.Any) -> None:
         super().__init__()
 
         self._ctx = ctx
@@ -185,7 +185,7 @@ class _AsgiDriver:
 
     def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
         if gv.k == 'y' and not isinstance(gv.v, _AsgiFuture):
-            awm = AsyncChannelPipelineMessages.Await(gv.v)
+            awm = AsyncIoPipelineMessages.Await(gv.v)
             awm.add_listener(lambda _: self.step())
             out.append(awm)
             return False
@@ -201,8 +201,8 @@ class _AsgiDriver:
                 reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
                 headers=HttpHeaders(md['headers']),
             ))
-            if ChannelPipelineFlow.is_auto_read_context(self._ctx):
-                out.append(ChannelPipelineFlowMessages.FlushOutput())
+            if IoPipelineFlow.is_auto_read_context(self._ctx):
+                out.append(IoPipelineFlowMessages.FlushOutput())
 
             self._state = _AsgiDriver.State.RESPONSE_STARTED
 
@@ -216,8 +216,8 @@ class _AsgiDriver:
             check.equal(md['type'], 'http.response.body')
 
             out.append(md['body'])
-            if ChannelPipelineFlow.is_auto_read_context(self._ctx):
-                out.append(ChannelPipelineFlowMessages.FlushOutput())
+            if IoPipelineFlow.is_auto_read_context(self._ctx):
+                out.append(IoPipelineFlowMessages.FlushOutput())
 
             if not md.get('more_body', False):
                 self._state = _AsgiDriver.State.RESPONSE_FINISHED
@@ -229,7 +229,7 @@ class _AsgiDriver:
             check.state(gv.k == 'r')
             check.state(gv.v is None)
 
-            out.append(ChannelPipelineMessages.FinalOutput())
+            out.append(IoPipelineMessages.FinalOutput())
 
             self.close()
             return False
@@ -241,18 +241,18 @@ class _AsgiDriver:
 #
 
 
-class AsgiHandler(ChannelPipelineHandler):
+class AsgiHandler(IoPipelineHandler):
     def __init__(self, app: ta.Any) -> None:
         super().__init__()
 
         self._app = app
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.InitialInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not ChannelPipelineFlow.is_auto_read_context(ctx):
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            if not IoPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return
 

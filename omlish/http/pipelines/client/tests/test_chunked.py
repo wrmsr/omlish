@@ -3,9 +3,9 @@
 import dataclasses as dc
 import unittest
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.handlers.queues import InboundQueueChannelPipelineHandler
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from ...decoders import PipelineHttpDecodingConfig
 from ...responses import PipelineHttpResponseAborted
@@ -20,9 +20,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test decoding simple chunked response."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         # Send response head with chunked encoding
@@ -51,9 +51,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test chunked response split across multiple reads."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -88,9 +88,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
     def test_non_chunked_response_passes_through(self) -> None:
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -116,9 +116,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test that zero-size chunks before final chunk work correctly."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -152,9 +152,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
                 ),
             ),
         )
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -181,9 +181,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test that hex chunk sizes are properly decoded."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -216,9 +216,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test that EOF before chunked encoding completes raises error."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -232,7 +232,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         channel.feed_in(b'5\r\nhel')
 
         # Send EOF before completion - pipeline wraps exception in Error event
-        channel.feed_in(ChannelPipelineMessages.FinalInput())
+        channel.feed_in(IoPipelineMessages.FinalInput())
 
         out = ibq.drain()
 
@@ -242,15 +242,15 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         self.assertIsInstance(chunk, PipelineHttpResponseContentChunkData)
         self.assertEqual(chunk.data.tobytes(), b'hel')
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
-        self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
+        self.assertIsInstance(eof, IoPipelineMessages.FinalInput)
 
     def test_invalid_chunk_size_raises(self) -> None:
         """Test that invalid chunk size raises error."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -274,9 +274,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test that missing trailing CRLF after chunk data raises error."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -302,9 +302,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test that uppercase hex chunk sizes work."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -328,9 +328,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test multiple chunks in sequence."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -367,9 +367,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test that EOF after complete chunked response is OK."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = ChannelPipeline.new([
+        channel = IoPipeline.new([
             decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         head = (
@@ -380,10 +380,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         channel.feed_in(head)
 
         channel.feed_in(b'5\r\nhello\r\n0\r\n\r\n')
-        channel.feed_in(ChannelPipelineMessages.FinalInput())
+        channel.feed_in(IoPipelineMessages.FinalInput())
 
         out = ibq.drain()
 
         # Should complete without error
         self.assertEqual(len(out), 4)
-        self.assertIsInstance(out[3], ChannelPipelineMessages.FinalInput)
+        self.assertIsInstance(out[3], IoPipelineMessages.FinalInput)

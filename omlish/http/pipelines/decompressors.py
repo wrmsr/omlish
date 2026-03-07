@@ -6,11 +6,11 @@ import dataclasses as dc
 import typing as ta
 import zlib
 
-from ...io.pipelines.bytes.buffering import InboundBytesBufferingChannelPipelineHandler
-from ...io.pipelines.core import ChannelPipelineHandlerContext
-from ...io.pipelines.core import ChannelPipelineMessages
-from ...io.pipelines.flow.types import ChannelPipelineFlow
-from ...io.pipelines.flow.types import ChannelPipelineFlowMessages
+from ...io.pipelines.bytes.buffering import InboundBytesBufferingIoPipelineHandler
+from ...io.pipelines.core import IoPipelineHandlerContext
+from ...io.pipelines.core import IoPipelineMessages
+from ...io.pipelines.flow.types import IoPipelineFlow
+from ...io.pipelines.flow.types import IoPipelineFlowMessages
 from ...io.streams.types import BytesLike
 from ...io.streams.utils import ByteStreamBuffers
 from ...lite.abstract import Abstract
@@ -46,7 +46,7 @@ PipelineHttpDecompressionConfig.DEFAULT = PipelineHttpDecompressionConfig()
 
 class PipelineHttpObjectDecompressor(
     PipelineHttpMessageObjects,
-    InboundBytesBufferingChannelPipelineHandler,
+    InboundBytesBufferingIoPipelineHandler,
     Abstract,
 ):
     """Conditional streaming gzip decompression with CPU-bounding and flow control."""
@@ -145,12 +145,12 @@ class PipelineHttpObjectDecompressor(
             if self._out_total_bytes > (max(1, self._in_total_bytes) * mer + slack):
                 raise ValueError('gzip expansion ratio exceeds limit (possible zip bomb)')
 
-    def _is_auto_read(self, ctx: ChannelPipelineHandlerContext) -> bool:
-        if (flow := ctx.services.find(ChannelPipelineFlow)) is None:
+    def _is_auto_read(self, ctx: IoPipelineHandlerContext) -> bool:
+        if (flow := ctx.services.find(IoPipelineFlow)) is None:
             return True
         return flow.is_auto_read()
 
-    def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> bool:
+    def _emit_out_pending(self, ctx: IoPipelineHandlerContext) -> bool:
         """Returns True if at least one message was emitted."""
 
         emitted = False
@@ -171,7 +171,7 @@ class PipelineHttpObjectDecompressor(
 
         return emitted
 
-    def _pump(self, ctx: ChannelPipelineHandlerContext) -> bool:
+    def _pump(self, ctx: IoPipelineHandlerContext) -> bool:
         """Returns True if it effectively satisfied a read request."""
 
         z = self._decompressor
@@ -249,17 +249,17 @@ class PipelineHttpObjectDecompressor(
 
         return False
 
-    def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
-        def resume(c: ChannelPipelineHandlerContext) -> None:
+    def _defer_resume(self, ctx: IoPipelineHandlerContext) -> None:
+        def resume(c: IoPipelineHandlerContext) -> None:
             # If a deferred pump satisfies a read, it must provide the FlushInput
             if self._pump(c) and not self._is_auto_read(c):
-                c.feed_in(ChannelPipelineFlowMessages.FlushInput())
+                c.feed_in(IoPipelineFlowMessages.FlushInput())
 
         ctx.defer(resume)
 
     #
 
-    def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
+    def _on_inbound_final_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalInput) -> None:  # noqa
         if self._decompressor is None:
             ctx.feed_in(msg)
             return
@@ -269,11 +269,11 @@ class PipelineHttpObjectDecompressor(
         ctx.feed_in(self._make_aborted('eof before end of message'))
         ctx.feed_in(msg)
 
-    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
+    def _on_inbound_flush_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushInput) -> None:  # noqa
         self._pump(ctx)
         ctx.feed_in(msg)
 
-    def _on_inbound_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
+    def _on_inbound_head(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
         if self._decompressor is not None:
             ctx.feed_in(self._make_aborted('unexpected message sequence'))
             return
@@ -285,7 +285,7 @@ class PipelineHttpObjectDecompressor(
 
         ctx.feed_in(msg)
 
-    def _on_inbound_content_chunk_data(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
+    def _on_inbound_content_chunk_data(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
         if self._decompressor is None:
             ctx.feed_in(msg)
             return
@@ -299,7 +299,7 @@ class PipelineHttpObjectDecompressor(
 
         self._pump(ctx)
 
-    def _on_inbound_end(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:
+    def _on_inbound_end(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:
         if self._decompressor is None:
             ctx.feed_in(msg)
             return
@@ -307,11 +307,11 @@ class PipelineHttpObjectDecompressor(
         self._pending_end = msg
         self._pump(ctx)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.FinalInput):
             self._on_inbound_final_input(ctx, msg)
 
-        elif isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+        elif isinstance(msg, IoPipelineFlowMessages.FlushInput):
             self._on_inbound_flush_input(ctx, msg)
 
         elif isinstance(msg, self._head_type):
@@ -328,20 +328,20 @@ class PipelineHttpObjectDecompressor(
 
     #
 
-    def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # Noqa
+    def _on_outbound_ready_for_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.ReadyForInput) -> None:  # Noqa
         self._read_requested = True
 
         if self._out_pending or (self._decompressor is not None and self._in_pending):
             if self._pump(ctx):
                 if not self._is_auto_read(ctx):
-                    ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+                    ctx.feed_in(IoPipelineFlowMessages.FlushInput())
 
                 return  # Swallow since we satisfied it
 
         ctx.feed_out(msg)
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.ReadyForInput):
             self._on_outbound_ready_for_input(ctx, msg)
 
         else:

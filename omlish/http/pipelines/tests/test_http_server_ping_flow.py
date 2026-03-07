@@ -12,7 +12,7 @@ class TestHttpServerPingFlow(unittest.TestCase):
     """
     Integration tests for the HTTP ping server with flow control.
 
-    Functionality is same as regular ping, but uses BytesFlowControlChannelPipelineHandler.
+    Functionality is same as regular ping, but uses BytesFlowControlIoPipelineHandler.
     """
 
     def test_ping_endpoint(self) -> None:

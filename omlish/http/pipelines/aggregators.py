@@ -4,11 +4,11 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from ...io.pipelines.bytes.buffering import InboundBytesBufferingChannelPipelineHandler
-from ...io.pipelines.core import ChannelPipelineHandler
-from ...io.pipelines.core import ChannelPipelineHandlerContext
-from ...io.pipelines.core import ChannelPipelineMessages
-from ...io.pipelines.handlers.decoders import MessageToMessageDecoderChannelPipelineHandler
+from ...io.pipelines.bytes.buffering import InboundBytesBufferingIoPipelineHandler
+from ...io.pipelines.core import IoPipelineHandler
+from ...io.pipelines.core import IoPipelineHandlerContext
+from ...io.pipelines.core import IoPipelineMessages
+from ...io.pipelines.handlers.decoders import MessageToMessageDecoderIoPipelineHandler
 from ...io.streams.errors import FrameTooLargeByteStreamBufferError
 from ...io.streams.segmented import SegmentedByteStreamBuffer
 from ...io.streams.types import BytesLike
@@ -45,7 +45,7 @@ PipelineHttpAggregationConfig.DEFAULT = PipelineHttpAggregationConfig()
 
 class PipelineHttpObjectAggregator(
     PipelineHttpMessageObjects,
-    ChannelPipelineHandler,
+    IoPipelineHandler,
     Abstract,
 ):
     def __init__(
@@ -102,7 +102,7 @@ class PipelineHttpObjectAggregator(
 
     def _handle(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:
@@ -148,7 +148,7 @@ class PipelineHttpObjectAggregator(
         @abc.abstractmethod
         def handle(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
@@ -159,7 +159,7 @@ class PipelineHttpObjectAggregator(
     class _HeadState(_State):
         def handle(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
@@ -211,7 +211,7 @@ class PipelineHttpObjectAggregator(
 
         def handle(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
@@ -260,7 +260,7 @@ class PipelineHttpObjectAggregator(
 
         def handle(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
@@ -280,7 +280,7 @@ class PipelineHttpObjectAggregator(
     class _DisabledHeadState(_State):
         def handle(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
@@ -292,7 +292,7 @@ class PipelineHttpObjectAggregator(
     class _DisabledEndState(_State):
         def handle(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
@@ -306,11 +306,11 @@ class PipelineHttpObjectAggregator(
     class _AbortedState(_State):
         def handle(
                 self,
-                ctx: ChannelPipelineHandlerContext,
+                ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
-            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+            if isinstance(msg, IoPipelineMessages.MustPropagate):
                 out.append(msg)
                 return self
             raise NotImplementedError
@@ -320,12 +320,12 @@ class PipelineHttpObjectAggregator(
 
 
 class PipelineHttpObjectAggregatorDecoder(
-    InboundBytesBufferingChannelPipelineHandler,
-    MessageToMessageDecoderChannelPipelineHandler,
+    InboundBytesBufferingIoPipelineHandler,
+    MessageToMessageDecoderIoPipelineHandler,
     PipelineHttpObjectAggregator,
     Abstract,
 ):
-    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
+    _final_type: ta.Final[type] = IoPipelineMessages.FinalInput
 
     #
 
@@ -334,12 +334,12 @@ class PipelineHttpObjectAggregatorDecoder(
 
     #
 
-    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
         return self._should_handle(msg)
 
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:

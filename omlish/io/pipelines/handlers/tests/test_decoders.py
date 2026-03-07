@@ -5,14 +5,14 @@ import typing as ta
 import unittest
 
 from .....lite.check import check
-from ...core import ChannelPipeline
-from ...core import ChannelPipelineHandlerContext
-from ...flow.types import ChannelPipelineFlow
-from ...flow.types import ChannelPipelineFlowMessages
-from ...handlers.fns import ChannelPipelineHandlerFns
-from ...handlers.queues import InboundQueueChannelPipelineHandler
-from ..decoders import FnMessageToMessageDecoderChannelPipelineHandler
-from ..decoders import MessageToMessageDecoderChannelPipelineHandler
+from ...core import IoPipeline
+from ...core import IoPipelineHandlerContext
+from ...flow.types import IoPipelineFlow
+from ...flow.types import IoPipelineFlowMessages
+from ...handlers.fns import IoPipelineHandlerFns
+from ...handlers.queues import InboundQueueIoPipelineHandler
+from ..decoders import FnMessageToMessageDecoderIoPipelineHandler
+from ..decoders import MessageToMessageDecoderIoPipelineHandler
 
 
 ##
@@ -33,8 +33,8 @@ class BazMsg:
     o: ta.Any
 
 
-SIMPLE_FOO_TO_BAR_DECODER = FnMessageToMessageDecoderChannelPipelineHandler(
-    ChannelPipelineHandlerFns.isinstance(FooMsg),
+SIMPLE_FOO_TO_BAR_DECODER = FnMessageToMessageDecoderIoPipelineHandler(
+    IoPipelineHandlerFns.isinstance(FooMsg),
     lambda _, msg: (BarMsg(str(msg.i)),),
 )
 
@@ -42,18 +42,18 @@ SIMPLE_FOO_TO_BAR_DECODER = FnMessageToMessageDecoderChannelPipelineHandler(
 ##
 
 
-class DuplicatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler):
+class DuplicatingFooToBarDecoder(MessageToMessageDecoderIoPipelineHandler):
     def __init__(self, n: int = 2) -> None:
         super().__init__()
 
         self._n = n
 
-    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
         return isinstance(msg, FooMsg)
 
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:
@@ -61,7 +61,7 @@ class DuplicatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler):
             out.append(BarMsg(str(msg.i)))
 
 
-class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler):
+class AccumulatingFooToBarDecoder(MessageToMessageDecoderIoPipelineHandler):
     def __init__(self, n: int = 2) -> None:
         super().__init__()
 
@@ -69,12 +69,12 @@ class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler)
 
         self._lst: ta.List[FooMsg] = []
 
-    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
         return isinstance(msg, FooMsg)
 
     def _decode(
             self,
-            ctx: ChannelPipelineHandlerContext,
+            ctx: IoPipelineHandlerContext,
             msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:
@@ -92,9 +92,9 @@ class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler)
 
 class TestM2mdecNoFlow(unittest.TestCase):
     def test_simple(self):
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             SIMPLE_FOO_TO_BAR_DECODER,
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(FooMsg(123), BazMsg(True))
@@ -104,9 +104,9 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
     def test_duplicating(self):
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             DuplicatingFooToBarDecoder(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(FooMsg(123), BazMsg(True))
@@ -117,9 +117,9 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
     def test_accumulating(self):
-        ch = ChannelPipeline.new([
+        ch = IoPipeline.new([
             AccumulatingFooToBarDecoder(),
-            ibq := InboundQueueChannelPipelineHandler(),
+            ibq := InboundQueueIoPipelineHandler(),
         ])
 
         ch.feed_in(FooMsg(123), BazMsg(True))
@@ -139,7 +139,7 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
 
-class MyFlow(ChannelPipelineFlow):
+class MyFlow(IoPipelineFlow):
     def __init__(self, *, auto_read: bool) -> None:
         super().__init__()
 
@@ -154,10 +154,10 @@ class MyFlow(ChannelPipelineFlow):
 
 class TestM2mdecMyFlow(unittest.TestCase):
     def test_m2mdec(self):
-        ch = ChannelPipeline.new(
+        ch = IoPipeline.new(
             [
                 SIMPLE_FOO_TO_BAR_DECODER,
-                ibq := InboundQueueChannelPipelineHandler(),
+                ibq := InboundQueueIoPipelineHandler(),
             ],
             services=[mf := MyFlow(auto_read=True)],  # noqa
         )
@@ -169,10 +169,10 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_duplicating(self):
-        ch = ChannelPipeline.new(
+        ch = IoPipeline.new(
             [
                 DuplicatingFooToBarDecoder(),
-                ibq := InboundQueueChannelPipelineHandler(),
+                ibq := InboundQueueIoPipelineHandler(),
             ],
             services=[mf := MyFlow(auto_read=True)],  # noqa
         )
@@ -185,95 +185,95 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_accumulating_auto_read(self):
-        ch = ChannelPipeline.new(
+        ch = IoPipeline.new(
             [
                 AccumulatingFooToBarDecoder(),
-                ibq := InboundQueueChannelPipelineHandler(),
+                ibq := InboundQueueIoPipelineHandler(),
             ],
             services=[mf := MyFlow(auto_read=True)],  # noqa
         )
 
         #
 
-        ch.feed_in(FooMsg(123), BazMsg(True), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), BazMsg(True), IoPipelineFlowMessages.FlushInput())
         assert ibq.drain() == [
             BazMsg(True),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(BazMsg(420), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(BazMsg(420), IoPipelineFlowMessages.FlushInput())
         assert ibq.drain() == [
             BazMsg(420),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(ChannelPipelineFlowMessages.FlushInput())
-        assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
+        ch.feed_in(IoPipelineFlowMessages.FlushInput())
+        assert ibq.drain() == [IoPipelineFlowMessages.FlushInput()]
 
-        ch.feed_in(FooMsg(420), BazMsg(421), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(420), BazMsg(421), IoPipelineFlowMessages.FlushInput())
         assert ibq.drain() == [
             BarMsg('123420'),
             BazMsg(421),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), IoPipelineFlowMessages.FlushInput())
         assert ibq.drain() == [
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), IoPipelineFlowMessages.FlushInput())
         assert ibq.drain() == [
             BarMsg('123123'),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
     def test_accumulating_no_auto_read(self):
-        ch = ChannelPipeline.new(
+        ch = IoPipeline.new(
             [
                 AccumulatingFooToBarDecoder(),
-                ibq := InboundQueueChannelPipelineHandler(),
+                ibq := InboundQueueIoPipelineHandler(),
             ],
             services=[mf := MyFlow(auto_read=False)],  # noqa
         )
 
         #
 
-        ch.feed_in(FooMsg(123), BazMsg(True), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.output.drain() == [ChannelPipelineFlowMessages.ReadyForInput()]
+        ch.feed_in(FooMsg(123), BazMsg(True), IoPipelineFlowMessages.FlushInput())
+        assert ch.output.drain() == [IoPipelineFlowMessages.ReadyForInput()]
         assert ibq.drain() == [
             BazMsg(True),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(BazMsg(420), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(BazMsg(420), IoPipelineFlowMessages.FlushInput())
         assert ch.output.drain() == []
         assert ibq.drain() == [
             BazMsg(420),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(IoPipelineFlowMessages.FlushInput())
         assert ch.output.drain() == []
-        assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
+        assert ibq.drain() == [IoPipelineFlowMessages.FlushInput()]
 
-        ch.feed_in(FooMsg(420), BazMsg(421), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(420), BazMsg(421), IoPipelineFlowMessages.FlushInput())
         assert ch.output.drain() == []
         assert ibq.drain() == [
             BarMsg('123420'),
             BazMsg(421),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]
 
         #
 
-        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.output.drain() == [ChannelPipelineFlowMessages.ReadyForInput()]
-        assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
+        ch.feed_in(FooMsg(123), IoPipelineFlowMessages.FlushInput())
+        assert ch.output.drain() == [IoPipelineFlowMessages.ReadyForInput()]
+        assert ibq.drain() == [IoPipelineFlowMessages.FlushInput()]
 
-        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), IoPipelineFlowMessages.FlushInput())
         assert ch.output.drain() == []
         assert ibq.drain() == [
             BarMsg('123123'),
-            ChannelPipelineFlowMessages.FlushInput(),
+            IoPipelineFlowMessages.FlushInput(),
         ]

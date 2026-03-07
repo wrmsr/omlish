@@ -3,14 +3,14 @@
 import asyncio
 import typing as ta
 
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
-from .....io.pipelines.flow.stub import StubChannelPipelineFlow
-from .....io.pipelines.flow.types import ChannelPipelineFlow
-from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineHandler
+from .....io.pipelines.core import IoPipelineHandlerContext
+from .....io.pipelines.core import IoPipelineMessages
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from .....io.pipelines.flow.stub import StubIoPipelineFlow
+from .....io.pipelines.flow.types import IoPipelineFlow
+from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from ...requests import PipelineHttpRequestHead
 from ...requests import PipelineHttpRequestObject
 from ...server.requests import PipelineHttpRequestDecoder
@@ -19,19 +19,19 @@ from ...server.requests import PipelineHttpRequestDecoder
 ##
 
 
-class PingHandler(ChannelPipelineHandler):
+class PingHandler(IoPipelineHandler):
     """
     Responds to GET /ping with plaintext "pong" and closes the channel.
 
     This is intentionally minimal and not a full HTTP server implementation.
     """
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.InitialInput):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not ChannelPipelineFlow.is_auto_read_context(ctx):
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            if not IoPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return
 
@@ -73,14 +73,14 @@ def build_http_ping_channel(
         # *,
         # outbound_capacity: ta.Optional[int] = 1 << 22,
         # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
-) -> ChannelPipeline.Spec:
-    return ChannelPipeline.Spec(
+) -> IoPipeline.Spec:
+    return IoPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PingHandler(),
         ],
         services=[
-            StubChannelPipelineFlow(auto_read=False),
+            StubIoPipelineFlow(auto_read=False),
         ],
     )
 
@@ -99,7 +99,7 @@ async def serve_ping(
     """
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamChannelPipelineDriver(
+        drv = SimpleAsyncioStreamIoPipelineDriver(
             build_http_ping_channel(),
             reader,
             writer,

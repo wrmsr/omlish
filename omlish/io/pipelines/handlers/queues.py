@@ -8,20 +8,20 @@ import collections
 import typing as ta
 
 from ....lite.abstract import Abstract
-from ..core import ChannelPipelineHandler
-from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineHandlerFn
-from ..core import ChannelPipelineMessages
+from ..core import IoPipelineHandler
+from ..core import IoPipelineHandlerContext
+from ..core import IoPipelineHandlerFn
+from ..core import IoPipelineMessages
 
 
 ##
 
 
-class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class QueueIoPipelineHandler(IoPipelineHandler, Abstract):
     def __init__(
             self,
             *,
-            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+            filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             passthrough: ta.Union[bool, ta.Literal['must_propagate']] = 'must_propagate',
     ) -> None:
@@ -70,7 +70,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
     #
 
-    def _should_enqueue(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+    def _should_enqueue(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
         if self._filter is not None and not self._filter(ctx, msg):
             return False
 
@@ -84,12 +84,12 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             return pt
 
         elif pt == 'must_propagate':
-            return isinstance(msg, ChannelPipelineMessages.MustPropagate)
+            return isinstance(msg, IoPipelineMessages.MustPropagate)
 
         else:
             raise RuntimeError(f'Unknown passthrough mode {self._passthrough!r} for {self!r}')
 
-    def _handle(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any, feed: ta.Callable[[ta.Any], None]) -> None:
+    def _handle(self, ctx: IoPipelineHandlerContext, msg: ta.Any, feed: ta.Callable[[ta.Any], None]) -> None:
         if not self._should_enqueue(ctx, msg):
             feed(msg)
             return
@@ -100,18 +100,18 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             feed(msg)
 
 
-class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class InboundQueueIoPipelineHandler(QueueIoPipelineHandler):
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._handle(ctx, msg, ctx.feed_in)
 
 
-class OutboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+class OutboundQueueIoPipelineHandler(QueueIoPipelineHandler):
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         self._handle(ctx, msg, ctx.feed_out)
 
 
-class DuplexQueueChannelPipelineHandler(
-    InboundQueueChannelPipelineHandler,
-    OutboundQueueChannelPipelineHandler,
+class DuplexQueueIoPipelineHandler(
+    InboundQueueIoPipelineHandler,
+    OutboundQueueIoPipelineHandler,
 ):
     pass

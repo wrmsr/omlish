@@ -3,12 +3,12 @@
 import asyncio
 import typing as ta
 
-from .....io.pipelines.asyncs import AsyncChannelPipelineMessages
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.core import ChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
-from .....io.pipelines.flow.stub import StubChannelPipelineFlow
+from .....io.pipelines.asyncs import AsyncIoPipelineMessages
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.core import IoPipelineHandler
+from .....io.pipelines.core import IoPipelineHandlerContext
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from .....io.pipelines.flow.stub import StubIoPipelineFlow
 from .....io.streams.utils import ByteStreamBuffers
 from .....logs.modules import get_module_loggers
 from .....logs.std.standard import configure_standard_logging
@@ -23,7 +23,7 @@ log, alog = get_module_loggers(globals())
 ##
 
 
-class KvStoreHandler(ChannelPipelineHandler):
+class KvStoreHandler(IoPipelineHandler):
     """
     A minimal KV store over HTTP/1 with one-segment paths.
 
@@ -43,7 +43,7 @@ class KvStoreHandler(ChannelPipelineHandler):
 
         self._items = items
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if not isinstance(msg, FullPipelineHttpRequest):
             ctx.feed_in(msg)
             return
@@ -59,7 +59,7 @@ class KvStoreHandler(ChannelPipelineHandler):
 
         #
 
-        aw = AsyncChannelPipelineMessages.Await(alog.info(f'{method} {key}'))
+        aw = AsyncIoPipelineMessages.Await(alog.info(f'{method} {key}'))
 
         @aw.add_listener
         def after_log(_):
@@ -116,7 +116,7 @@ class KvStoreHandler(ChannelPipelineHandler):
 
         return path
 
-    def _write_response(self, ctx: ChannelPipelineHandlerContext, status: int, body: bytes) -> None:
+    def _write_response(self, ctx: IoPipelineHandlerContext, status: int, body: bytes) -> None:
         reason = {
             200: b'OK',
             201: b'Created',
@@ -138,15 +138,15 @@ class KvStoreHandler(ChannelPipelineHandler):
 
 def build_http_kv_channel(
         items: ta.MutableMapping[str, str],
-) -> ChannelPipeline.Spec:
-    return ChannelPipeline.Spec(
+) -> IoPipeline.Spec:
+    return IoPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PipelineHttpRequestAggregatorDecoder(),
             KvStoreHandler(items),
         ],
         services=[
-            StubChannelPipelineFlow(),
+            StubIoPipelineFlow(),
         ],
     )
 
@@ -169,7 +169,7 @@ async def serve_kv(
     items: ta.Dict[str, str] = {}
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamChannelPipelineDriver(
+        drv = SimpleAsyncioStreamIoPipelineDriver(
             build_http_kv_channel(items),
             reader,
             writer,

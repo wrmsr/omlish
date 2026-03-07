@@ -4,13 +4,13 @@ import abc
 import typing as ta
 
 from ....lite.abstract import Abstract
-from ..core import ChannelPipelineHandler
+from ..core import IoPipelineHandler
 
 
 ##
 
 
-class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class InboundBytesBufferingIoPipelineHandler(IoPipelineHandler, Abstract):
     @abc.abstractmethod
     def inbound_buffered_bytes(self) -> ta.Optional[int]:
         """Returning `None` denotes currently unknown/unanswerable."""
@@ -18,7 +18,7 @@ class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstra
         raise NotImplementedError
 
 
-class OutboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+class OutboundBytesBufferingIoPipelineHandler(IoPipelineHandler, Abstract):
     @abc.abstractmethod
     def outbound_buffered_bytes(self) -> ta.Optional[int]:
         """Returning `None` denotes currently unknown/unanswerable."""

@@ -2,10 +2,10 @@
 # @omlish-lite
 import typing as ta
 
-from .....io.pipelines.bytes.decoders import DelimiterFrameDecoderChannelPipelineHandler
-from .....io.pipelines.bytes.decoders import UnicodeDecoderChannelPipelineHandler
-from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.handlers.flatmap import FlatMapChannelPipelineHandlers
+from .....io.pipelines.bytes.decoders import DelimiterFrameDecoderIoPipelineHandler
+from .....io.pipelines.bytes.decoders import UnicodeDecoderIoPipelineHandler
+from .....io.pipelines.core import IoPipeline
+from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from ...client.responses import PipelineHttpResponseDecoder
 from ...client.responses import PipelineHttpResponseDecompressor
 from ...sse import PipelineSseDecoder
@@ -14,16 +14,16 @@ from ...sse import PipelineSseDecoder
 ##
 
 
-def build_http_sse_channel() -> ChannelPipeline:
+def build_http_sse_channel() -> IoPipeline:
     """Example: raw bytes -> HTTP response head -> conditional gzip -> longest-match line framing -> Sse events."""
 
-    return ChannelPipeline.new([
+    return IoPipeline.new([
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseDecompressor(),
-        DelimiterFrameDecoderChannelPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
-        UnicodeDecoderChannelPipelineHandler(),
+        DelimiterFrameDecoderIoPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
+        UnicodeDecoderIoPipelineHandler(),
         PipelineSseDecoder(),
-        FlatMapChannelPipelineHandlers.feed_out_and_drop(),
+        FlatMapIoPipelineHandlers.feed_out_and_drop(),
     ])
 
 
