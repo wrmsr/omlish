@@ -22,19 +22,23 @@ class UnhandleableChannelPipelineError(ChannelPipelineError):
 # state
 
 
-class ContextInvalidatedChannelPipelineError(ChannelPipelineError):
+class StateChannelPipelineError(ChannelPipelineError):
     pass
 
 
-class SawInitialInputChannelPipelineError(ChannelPipelineError):
+class ContextInvalidatedChannelPipelineError(StateChannelPipelineError):
     pass
 
 
-class SawFinalInputChannelPipelineError(ChannelPipelineError):
+class SawInitialInputChannelPipelineError(StateChannelPipelineError):
     pass
 
 
-class FinalOutputChannelPipelineError(ChannelPipelineError):
+class SawFinalInputChannelPipelineError(StateChannelPipelineError):
+    pass
+
+
+class SawFinalOutputChannelPipelineError(StateChannelPipelineError):
     pass
 
 

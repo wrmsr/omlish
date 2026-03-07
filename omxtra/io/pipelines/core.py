@@ -11,7 +11,7 @@ from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
 from .errors import ContextInvalidatedChannelPipelineError
-from .errors import FinalOutputChannelPipelineError
+from .errors import SawFinalOutputChannelPipelineError
 from .errors import MessageNotPropagatedChannelPipelineError
 from .errors import MessageReachedTerminalChannelPipelineError
 from .errors import SawInitialInputChannelPipelineError
@@ -1619,7 +1619,7 @@ class PipelineChannel:
         if isinstance(msg, ChannelPipelineMessages.FinalOutput):
             self._saw_final_output = True
         elif self._saw_final_output:
-            raise FinalOutputChannelPipelineError
+            raise SawFinalOutputChannelPipelineError
 
         self._output._q.append(msg)  # noqa
 

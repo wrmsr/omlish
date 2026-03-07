@@ -3,11 +3,13 @@
 import asyncio
 import typing as ta
 
+from ....core import ChannelPipelineMessages
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestHead
@@ -25,6 +27,14 @@ class PingHandler(ChannelPipelineHandler):
     """
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.InitialInput):
+            ctx.feed_in(msg)
+
+            if not ChannelPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            return
+
         if not isinstance(msg, PipelineHttpRequestHead):
             ctx.feed_in(msg)
             return

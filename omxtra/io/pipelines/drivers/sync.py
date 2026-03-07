@@ -84,6 +84,8 @@ class SyncSocketPipelineChannelDriver:
         self._channel = PipelineChannel(self._spec)
 
         try:
+            self._channel.feed_initial_input()
+
             while True:
                 if in_msgs:
                     self._channel.feed_in(*in_msgs)

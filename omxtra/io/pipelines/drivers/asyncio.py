@@ -584,6 +584,11 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
         command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamPipelineChannelDriver._Command]] = None
 
         try:
+            if not self._shutdown_event.is_set():
+                await self._handle_command(AsyncioStreamPipelineChannelDriver._FeedInCommand([
+                    ChannelPipelineMessages.InitialInput(),
+                ]))
+
             while not self._shutdown_event.is_set():
                 if command_queue_task is None:
                     command_queue_task = asyncio.create_task(self._command_queue.get())

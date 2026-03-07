@@ -9,6 +9,8 @@ from omlish.lite.check import check
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import ChannelPipelineMessages
+from ....flow.types import ChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlowMessages
 from ...requests import FullPipelineHttpRequest
 from ...responses import FullPipelineHttpResponse
 from ...responses import PipelineHttpResponseHead
@@ -34,6 +36,14 @@ class WsgiHandler(ChannelPipelineHandler):
         self._app = app
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.InitialInput):
+            ctx.feed_in(msg)
+
+            if not ChannelPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            return
+
         if not isinstance(msg, FullPipelineHttpRequest):
             ctx.feed_in(msg)
             return

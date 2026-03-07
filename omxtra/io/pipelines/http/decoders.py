@@ -219,7 +219,12 @@ class PipelineHttpObjectDecoder(
                     next_mvs.append(rem_mv)
 
             if done:
-                return (self._d._TransferEncodingState(self._d, head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                return (
+                    self._d._TransferEncodingState(self._d, head),  # noqa
+                    # NOTE: not `.of_opt` - even if no more data it may be an empty body, in which case we should get
+                    #       request out eagerly
+                    SegmentedByteStreamBufferView(next_mvs) if next_mvs else b'',  # noqa
+                )
             else:
                 return None
 

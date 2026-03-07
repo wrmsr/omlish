@@ -16,7 +16,7 @@ from ...responses import FullPipelineHttpResponse  # noqa
 from ...responses import PipelineHttpResponseHead  # noqa
 from ...server.apps.asgi import AsgiHandler
 from ...server.apps.asgi import AsgiSpec
-from ...server.requests import PipelineHttpRequestAggregator
+from ...server.requests import PipelineHttpRequestAggregatorDecoder
 from ...server.requests import PipelineHttpRequestDecoder
 from ...server.responses import PipelineHttpResponseEncoder
 
@@ -28,7 +28,7 @@ def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
     return PipelineChannel.Spec(
         [
             PipelineHttpRequestDecoder(),
-            PipelineHttpRequestAggregator(),
+            PipelineHttpRequestAggregatorDecoder(),
             PipelineHttpResponseEncoder(),
             AsgiHandler(app),
             FlatMapChannelPipelineHandlers.drop(

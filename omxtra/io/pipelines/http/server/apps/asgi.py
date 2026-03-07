@@ -15,6 +15,7 @@ from ....asyncs import AsyncChannelPipelineMessages
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import ChannelPipelineMessages
+from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseHead
@@ -201,7 +202,8 @@ class _AsgiDriver:
                 reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
                 headers=HttpHeaders(md['headers']),
             ))
-            out.append(ChannelPipelineFlowMessages.FlushOutput())
+            if ChannelPipelineFlow.is_auto_read_context(self._ctx):
+                out.append(ChannelPipelineFlowMessages.FlushOutput())
 
             self._state = _AsgiDriver.State.RESPONSE_STARTED
 
@@ -215,7 +217,8 @@ class _AsgiDriver:
             check.equal(md['type'], 'http.response.body')
 
             out.append(md['body'])
-            out.append(ChannelPipelineFlowMessages.FlushOutput())
+            if ChannelPipelineFlow.is_auto_read_context(self._ctx):
+                out.append(ChannelPipelineFlowMessages.FlushOutput())
 
             if not md.get('more_body', False):
                 self._state = _AsgiDriver.State.RESPONSE_FINISHED
@@ -246,6 +249,14 @@ class AsgiHandler(ChannelPipelineHandler):
         self._app = app
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.InitialInput):
+            ctx.feed_in(msg)
+
+            if not ChannelPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            return
+
         if not isinstance(msg, FullPipelineHttpRequest):
             ctx.feed_in(msg)
             return

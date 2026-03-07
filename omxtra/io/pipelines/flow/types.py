@@ -6,6 +6,7 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 from omlish.lite.namespaces import NamespaceClass
 
+from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
 from ..core import ChannelPipelineService
 
@@ -56,3 +57,7 @@ class ChannelPipelineFlow(ChannelPipelineService, Abstract):
     @abc.abstractmethod
     def is_auto_read(self) -> bool:
         raise NotImplementedError
+
+    @staticmethod
+    def is_auto_read_context(ctx: ChannelPipelineHandlerContext) -> bool:
+        return (fc := ctx.services.find(ChannelPipelineFlow)) is None or fc.is_auto_read()

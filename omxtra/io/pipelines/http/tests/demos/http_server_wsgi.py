@@ -10,7 +10,7 @@ from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...server.apps.wsgi import WsgiHandler
 from ...server.apps.wsgi import WsgiSpec
-from ...server.requests import PipelineHttpRequestAggregator
+from ...server.requests import PipelineHttpRequestAggregatorDecoder
 from ...server.requests import PipelineHttpRequestDecoder
 from ...server.responses import PipelineHttpResponseEncoder
 
@@ -21,7 +21,7 @@ from ...server.responses import PipelineHttpResponseEncoder
 def build_wsgi_channel(app: ta.Any) -> PipelineChannel.Spec:
     return PipelineChannel.Spec([
         PipelineHttpRequestDecoder(),
-        PipelineHttpRequestAggregator(),
+        PipelineHttpRequestAggregatorDecoder(),
         PipelineHttpResponseEncoder(),
         WsgiHandler(app),
         FlatMapChannelPipelineHandlers.drop(
