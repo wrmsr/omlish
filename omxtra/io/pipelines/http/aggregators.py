@@ -53,19 +53,22 @@ class PipelineHttpObjectAggregator(
             self,
             *,
             config: PipelineHttpAggregationConfig = PipelineHttpAggregationConfig.DEFAULT,
+            enabled: bool = True,
     ) -> None:
         super().__init__()
 
         self._config = config
+        self._enabled = enabled
 
         self._handled_types: ta.Tuple[type, ...] = (
             self._head_type,
             self._content_chunk_data_type,
             self._end_type,
+            self._aborted_type,
             self._final_type,
         )
 
-        self._state: PipelineHttpObjectAggregator._State = self._HeadState(self)
+        self._state: PipelineHttpObjectAggregator._State = self._init_state()
 
     #
 
@@ -94,10 +97,23 @@ class PipelineHttpObjectAggregator(
     def _handle(
             self,
             ctx: ChannelPipelineHandlerContext,
-            msg: CanByteStreamBuffer,
+            msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:
+        if isinstance(msg, self._aborted_type):
+            self._state = self._AbortedState(self)
+            out.append(msg)
+            return
+
         self._state = self._state.handle(ctx, msg, out)
+
+    #
+
+    def _init_state(self) -> '_State':
+        if self._enabled:
+            return self._HeadState(self)
+        else:
+            return self._DisabledHeadState(self)
 
     #
 
@@ -214,7 +230,7 @@ class PipelineHttpObjectAggregator(
 
                 full = self._a._make_full(self._head, body)  # noqa
                 out.append(full)
-                return self._a._HeadState(self._a)  # noqa
+                return self._a._init_state()  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort(out, 'incomplete message body', msg)
@@ -245,13 +261,39 @@ class PipelineHttpObjectAggregator(
             if isinstance(msg, self._a._end_type):  # noqa
                 full = self._a._make_full(self._head, self._body)  # noqa
                 out.append(full)
-                return self._a._HeadState(self._a)  # noqa
+                return self._a._init_state()  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort(out, 'incomplete message sequence', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
+
+    #
+
+    class _DisabledHeadState(_State):
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
+            out.append(msg)
+            if isinstance(msg, self._a._head_type):  # noqa
+                return self._a._DisabledEndState(self._a)  # noqa
+            return self
+
+    class _DisabledEndState(_State):
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
+            out.append(msg)
+            if isinstance(msg, self._a._end_type):  # noqa
+                return self._a._init_state()  # noqa
+            return self
 
     #
 
@@ -262,6 +304,9 @@ class PipelineHttpObjectAggregator(
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
+            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                out.append(msg)
+                return self
             raise NotImplementedError
 
 

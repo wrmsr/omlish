@@ -36,7 +36,7 @@ class PipelineHttpDecompressionConfig:
     max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
 
     # CPU Bounding: how many decompress steps to perform before yielding to the driver
-    max_steps_per_call: ta.Optional[int] = 10
+    max_steps_per_call: ta.Optional[int] = None
 
 
 PipelineHttpDecompressionConfig.DEFAULT = PipelineHttpDecompressionConfig()

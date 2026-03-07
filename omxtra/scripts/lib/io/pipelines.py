@@ -77,7 +77,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='handlers/decoders.py', sha1='ee73fc17feec7d7c64ce16e0fff1a28dbc9aa2a5'),
             dict(path='handlers/flatmap.py', sha1='3e5fae70e01ee2694719dd200b366536c930c858'),
-            dict(path='http/decompressors.py', sha1='18e8b058d6c65c728d78afc8adbee2cf3adb7df4'),
+            dict(path='http/decompressors.py', sha1='8e53f28105bb85360240baeb753dc942509bb2cf'),
             dict(path='http/encoders.py', sha1='eb0b41f9aa971bb32080c326f4e3b3094f6d05d2'),
             dict(path='http/requests.py', sha1='4f09ec21db9a699b1734c0c6bcd20bd2caebd62c'),
             dict(path='http/responses.py', sha1='7aac63649e92e380daa699f08c56e8c5f4cc7451'),
@@ -88,7 +88,7 @@ def __omlish_amalg__():  # noqa
             dict(path='http/server/responses.py', sha1='4ec57def38b996880f6802d5766cd726f708cc73'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='5d4f809ccc0261f5906714b7aae561a28cc7c3b4'),
-            dict(path='http/aggregators.py', sha1='d5868c8dbd1b10e05b0eee87e482505b71e99788'),
+            dict(path='http/aggregators.py', sha1='dad6809ee0e3b987ce01a1e4c2df2e580ed317d0'),
             dict(path='drivers/asyncio.py', sha1='4d9119d7069832880ddfb8d614a4af475c0848c7'),
             dict(path='http/decoders.py', sha1='7714493031c87ba220458ec273c47247a323716c'),
             dict(path='http/client/responses.py', sha1='39f1a97dbeabf728aa9ef63cb9f6b8c5711f3d21'),
@@ -9562,7 +9562,7 @@ class PipelineHttpDecompressionConfig:
     max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
 
     # CPU Bounding: how many decompress steps to perform before yielding to the driver
-    max_steps_per_call: ta.Optional[int] = 10
+    max_steps_per_call: ta.Optional[int] = None
 
 
 PipelineHttpDecompressionConfig.DEFAULT = PipelineHttpDecompressionConfig()
@@ -11522,19 +11522,22 @@ class PipelineHttpObjectAggregator(
             self,
             *,
             config: PipelineHttpAggregationConfig = PipelineHttpAggregationConfig.DEFAULT,
+            enabled: bool = True,
     ) -> None:
         super().__init__()
 
         self._config = config
+        self._enabled = enabled
 
         self._handled_types: ta.Tuple[type, ...] = (
             self._head_type,
             self._content_chunk_data_type,
             self._end_type,
+            self._aborted_type,
             self._final_type,
         )
 
-        self._state: PipelineHttpObjectAggregator._State = self._HeadState(self)
+        self._state: PipelineHttpObjectAggregator._State = self._init_state()
 
     #
 
@@ -11563,10 +11566,23 @@ class PipelineHttpObjectAggregator(
     def _handle(
             self,
             ctx: ChannelPipelineHandlerContext,
-            msg: CanByteStreamBuffer,
+            msg: ta.Any,
             out: ta.List[ta.Any],
     ) -> None:
+        if isinstance(msg, self._aborted_type):
+            self._state = self._AbortedState(self)
+            out.append(msg)
+            return
+
         self._state = self._state.handle(ctx, msg, out)
+
+    #
+
+    def _init_state(self) -> '_State':
+        if self._enabled:
+            return self._HeadState(self)
+        else:
+            return self._DisabledHeadState(self)
 
     #
 
@@ -11683,7 +11699,7 @@ class PipelineHttpObjectAggregator(
 
                 full = self._a._make_full(self._head, body)  # noqa
                 out.append(full)
-                return self._a._HeadState(self._a)  # noqa
+                return self._a._init_state()  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort(out, 'incomplete message body', msg)
@@ -11714,13 +11730,39 @@ class PipelineHttpObjectAggregator(
             if isinstance(msg, self._a._end_type):  # noqa
                 full = self._a._make_full(self._head, self._body)  # noqa
                 out.append(full)
-                return self._a._HeadState(self._a)  # noqa
+                return self._a._init_state()  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort(out, 'incomplete message sequence', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
+
+    #
+
+    class _DisabledHeadState(_State):
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
+            out.append(msg)
+            if isinstance(msg, self._a._head_type):  # noqa
+                return self._a._DisabledEndState(self._a)  # noqa
+            return self
+
+    class _DisabledEndState(_State):
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
+            out.append(msg)
+            if isinstance(msg, self._a._end_type):  # noqa
+                return self._a._init_state()  # noqa
+            return self
 
     #
 
@@ -11731,6 +11773,9 @@ class PipelineHttpObjectAggregator(
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> 'PipelineHttpObjectAggregator._State':
+            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                out.append(msg)
+                return self
             raise NotImplementedError
 
 
