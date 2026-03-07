@@ -4,10 +4,7 @@ import typing as ta
 
 from omlish.http.parsing import HttpParser
 
-from ...bytes.buffering import InboundBytesBufferingChannelPipelineHandler
-from ...core import ChannelPipelineHandlerContext
-from ...core import ChannelPipelineMessages
-from ..aggregators import PipelineHttpObjectAggregator
+from ..aggregators import PipelineHttpObjectAggregatorDecoder
 from ..decoders import PipelineHttpObjectDecoder
 from ..decompressors import PipelineHttpObjectDecompressor
 from ..responses import PipelineHttpResponseObjects
@@ -26,21 +23,9 @@ class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjec
 
 class PipelineHttpResponseAggregatorDecoder(
     PipelineHttpResponseObjects,
-    InboundBytesBufferingChannelPipelineHandler,
-    PipelineHttpObjectAggregator,
+    PipelineHttpObjectAggregatorDecoder,
 ):
     _if_content_length_missing: ta.Final = 'eof'
-    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
-
-    #
-
-    def inbound_buffered_bytes(self) -> int:
-        return self.buffered_bytes()
-
-    #
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        self._handle(ctx, msg, ctx.feed_in)
 
 
 ##

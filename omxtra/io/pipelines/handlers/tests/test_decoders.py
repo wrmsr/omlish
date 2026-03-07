@@ -52,8 +52,14 @@ class DuplicatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler):
     def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
         return isinstance(msg, FooMsg)
 
-    def _decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
-        return [BarMsg(str(msg.i))] * self._n
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        for _ in range(self._n):
+            out.append(BarMsg(str(msg.i)))
 
 
 class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler):
@@ -67,14 +73,19 @@ class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler)
     def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
         return isinstance(msg, FooMsg)
 
-    def _decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
         check.state(len(self._lst) < self._n)
         self._lst.append(msg)
         if len(self._lst) < self._n:
-            return ()
+            return
         bar = BarMsg(''.join(str(x.i) for x in self._lst))
         self._lst.clear()
-        return (bar,)
+        out.append(bar)
 
 
 ##

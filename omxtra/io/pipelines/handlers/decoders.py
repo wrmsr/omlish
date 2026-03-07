@@ -22,35 +22,37 @@ class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abst
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
         raise NotImplementedError
 
     _called_decode = False
     _produced_messages = False
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not isinstance(self, ShareableChannelPipelineHandler):
-                if (
-                        self._called_decode and
-                        not self._produced_messages and
-                        not ctx.services[ChannelPipelineFlow].is_auto_read()
-                ):
-                    ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
+        if not isinstance(self, ShareableChannelPipelineHandler):
+            if (
+                    self._called_decode and
+                    not self._produced_messages and
+                    not ctx.services[ChannelPipelineFlow].is_auto_read()
+            ):
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
-                self._called_decode = False
-                self._produced_messages = False
+            self._called_decode = False
+            self._produced_messages = False
 
-            ctx.feed_in(msg)
-            return
+        ctx.feed_in(msg)
 
-        if not self._should_decode(ctx, msg):
-            ctx.feed_in(msg)
-            return
-
+    def _on_inbound_should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         self._called_decode = True
 
-        out = list(self._decode(ctx, msg))
+        out: ta.List[ta.Any] = []
+
+        self._decode(ctx, msg, out)
 
         if not out:
             return
@@ -59,6 +61,16 @@ class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abst
 
         for out_msg in out:
             ctx.feed_in(out_msg)
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._on_inbound_flush_input(ctx, msg)
+
+        elif self._should_decode(ctx, msg):
+            self._on_inbound_should_decode(ctx, msg)
+
+        else:
+            ctx.feed_in(msg)
 
 
 ##
@@ -78,5 +90,10 @@ class FnMessageToMessageDecoderChannelPipelineHandler(MessageToMessageDecoderCha
     def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
         return self._filter_fn(ctx, msg)
 
-    def _decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
-        return self._decode_fn(ctx, msg)
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        out.extend(self._decode_fn(ctx, msg))

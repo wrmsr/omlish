@@ -12,8 +12,11 @@ from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.io.streams.utils import CanByteStreamBuffer
 from omlish.lite.abstract import Abstract
 
+from ..bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineMessages
+from ..handlers.decoders import MessageToMessageDecoderChannelPipelineHandler
 from .objects import PipelineHttpMessageHead
 from .objects import PipelineHttpMessageObjects
 from .transferencoding import PipelineHttpTransferEncoding
@@ -85,20 +88,16 @@ class PipelineHttpObjectAggregator(
 
     #
 
+    def _should_handle(self, msg: ta.Any) -> bool:
+        return isinstance(msg, self._handled_types)
+
     def _handle(
             self,
             ctx: ChannelPipelineHandlerContext,
             msg: CanByteStreamBuffer,
-            feed: ta.Callable[[ta.Any], None],
+            out: ta.List[ta.Any],
     ) -> None:
-        if not isinstance(msg, self._handled_types):
-            feed(msg)
-            return
-
-        self._state, out = self._state.handle(ctx, msg)
-
-        for out_msg in out:
-            feed(out_msg)
+        self._state = self._state.handle(ctx, msg, out)
 
     #
 
@@ -114,21 +113,23 @@ class PipelineHttpObjectAggregator(
 
         def _abort(
                 self,
+                out: ta.List[ta.Any],
                 reason: ta.Union[str, BaseException],
                 msg: ta.Optional[ta.Any] = None,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+        ) -> 'PipelineHttpObjectAggregator._State':
             nxt_state = self._a._AbortedState(self._a)  # noqa
-            out: ta.List[ta.Any] = [self._a._make_aborted(reason)]  # noqa
+            out.append(self._a._make_aborted(reason))  # noqa
             if msg is not None:
                 out.append(msg)
-            return (nxt_state, out)
+            return nxt_state
 
         @abc.abstractmethod
         def handle(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             raise NotImplementedError
 
     #
@@ -138,7 +139,8 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._head_type):  # noqa
                 try:
                     te = PipelineHttpTransferEncoding.select(
@@ -146,22 +148,23 @@ class PipelineHttpObjectAggregator(
                         if_length_missing=self._a._if_content_length_missing,  # noqa
                     )
                 except PipelineHttpTransferEncodingError as e:
-                    return self._abort(f'Invalid Transfer-Encoding: {e.reason}')
+                    return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
                 if te.mode in 'none':
-                    return (self._a._EndState(self._a, msg, b''), [])  # noqa
+                    return self._a._EndState(self._a, msg, b'')  # noqa
 
                 if (
                         te.length is not None and
                         (max_body := self._a._config.body_buffer.max_size) is not None and  # noqa
                         te.length > max_body
                 ):
-                    return self._abort(FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
+                    return self._abort(out, FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
 
-                return (self._a._BodyState(self._a, msg), [])  # noqa
+                return self._a._BodyState(self._a, msg)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
-                return (self, [msg])
+                out.append(msg)
+                return self
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -188,7 +191,8 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._content_chunk_data_type):  # noqa
                 if (buf := self._buf) is None:
                     buf = self._buf = SegmentedByteStreamBuffer(
@@ -199,7 +203,7 @@ class PipelineHttpObjectAggregator(
                 for mv in ByteStreamBuffers.iter_segments(msg.data):
                     buf.write(mv)
 
-                return (self, [])
+                return self
 
             elif isinstance(msg, self._a._end_type):  # noqa
                 body: CanByteStreamBuffer
@@ -209,10 +213,11 @@ class PipelineHttpObjectAggregator(
                     body = b''
 
                 full = self._a._make_full(self._head, body)  # noqa
-                return (self._a._HeadState(self._a), [full])  # noqa
+                out.append(full)
+                return self._a._HeadState(self._a)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
-                return self._abort('incomplete message body', msg)
+                return self._abort(out, 'incomplete message body', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -235,13 +240,15 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._end_type):  # noqa
                 full = self._a._make_full(self._head, self._body)  # noqa
-                return (self._a._HeadState(self._a), [full])  # noqa
+                out.append(full)
+                return self._a._HeadState(self._a)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
-                return self._abort('incomplete message sequence', msg)
+                return self._abort(out, 'incomplete message sequence', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -253,5 +260,36 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             raise NotImplementedError
+
+
+#
+
+
+class PipelineHttpObjectAggregatorDecoder(
+    InboundBytesBufferingChannelPipelineHandler,
+    MessageToMessageDecoderChannelPipelineHandler,
+    PipelineHttpObjectAggregator,
+    Abstract,
+):
+    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        return self.buffered_bytes()
+
+    #
+
+    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        return self._should_handle(msg)
+
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        self._handle(ctx, msg, out)

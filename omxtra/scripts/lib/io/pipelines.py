@@ -75,6 +75,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
+            dict(path='handlers/decoders.py', sha1='ee73fc17feec7d7c64ce16e0fff1a28dbc9aa2a5'),
             dict(path='handlers/flatmap.py', sha1='3e5fae70e01ee2694719dd200b366536c930c858'),
             dict(path='http/decompressors.py', sha1='18e8b058d6c65c728d78afc8adbee2cf3adb7df4'),
             dict(path='http/encoders.py', sha1='eb0b41f9aa971bb32080c326f4e3b3094f6d05d2'),
@@ -87,11 +88,11 @@ def __omlish_amalg__():  # noqa
             dict(path='http/server/responses.py', sha1='4ec57def38b996880f6802d5766cd726f708cc73'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='5d4f809ccc0261f5906714b7aae561a28cc7c3b4'),
-            dict(path='http/aggregators.py', sha1='b3489d749d6b319149aff261f3fb7dfa420000f7'),
+            dict(path='http/aggregators.py', sha1='d5868c8dbd1b10e05b0eee87e482505b71e99788'),
             dict(path='drivers/asyncio.py', sha1='4d9119d7069832880ddfb8d614a4af475c0848c7'),
             dict(path='http/decoders.py', sha1='7714493031c87ba220458ec273c47247a323716c'),
-            dict(path='http/client/responses.py', sha1='66febe38032fd5ff9ee4711faa47e1fa5f66d774'),
-            dict(path='http/server/requests.py', sha1='bbf9bfaba4193f69782eb83edf6a0370cc975e89'),
+            dict(path='http/client/responses.py', sha1='3e77973e7fd51e67da2e2c30a5f02a59010386a1'),
+            dict(path='http/server/requests.py', sha1='d7d4f2bcd0b5a6bb669c15d737b97bbfa6fb0c6c'),
             dict(path='_amalg.py', sha1='12299c57406515b545b21f8c5ec96d672f9209b4'),
         ],
     )
@@ -9075,6 +9076,96 @@ class InboundBytesBufferingQueueChannelPipelineHandler(
 
 
 ########################################
+# ../handlers/decoders.py
+
+
+##
+
+
+class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+    @abc.abstractmethod
+    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        raise NotImplementedError
+
+    _called_decode = False
+    _produced_messages = False
+
+    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
+        if not isinstance(self, ShareableChannelPipelineHandler):
+            if (
+                    self._called_decode and
+                    not self._produced_messages and
+                    not ctx.services[ChannelPipelineFlow].is_auto_read()
+            ):
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            self._called_decode = False
+            self._produced_messages = False
+
+        ctx.feed_in(msg)
+
+    def _on_inbound_should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        self._called_decode = True
+
+        out: ta.List[ta.Any] = []
+
+        self._decode(ctx, msg, out)
+
+        if not out:
+            return
+
+        self._produced_messages = True
+
+        for out_msg in out:
+            ctx.feed_in(out_msg)
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._on_inbound_flush_input(ctx, msg)
+
+        elif self._should_decode(ctx, msg):
+            self._on_inbound_should_decode(ctx, msg)
+
+        else:
+            ctx.feed_in(msg)
+
+
+##
+
+
+class FnMessageToMessageDecoderChannelPipelineHandler(MessageToMessageDecoderChannelPipelineHandler):
+    def __init__(
+            self,
+            filter_fn: ChannelPipelineHandlerFn[ta.Any, bool],  # noqa
+            decode_fn: ChannelPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]],
+    ) -> None:
+        super().__init__()
+
+        self._filter_fn = filter_fn
+        self._decode_fn = decode_fn
+
+    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        return self._filter_fn(ctx, msg)
+
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        out.extend(self._decode_fn(ctx, msg))
+
+
+########################################
 # ../handlers/flatmap.py
 
 
@@ -11437,20 +11528,16 @@ class PipelineHttpObjectAggregator(
 
     #
 
+    def _should_handle(self, msg: ta.Any) -> bool:
+        return isinstance(msg, self._handled_types)
+
     def _handle(
             self,
             ctx: ChannelPipelineHandlerContext,
             msg: CanByteStreamBuffer,
-            feed: ta.Callable[[ta.Any], None],
+            out: ta.List[ta.Any],
     ) -> None:
-        if not isinstance(msg, self._handled_types):
-            feed(msg)
-            return
-
-        self._state, out = self._state.handle(ctx, msg)
-
-        for out_msg in out:
-            feed(out_msg)
+        self._state = self._state.handle(ctx, msg, out)
 
     #
 
@@ -11466,21 +11553,23 @@ class PipelineHttpObjectAggregator(
 
         def _abort(
                 self,
+                out: ta.List[ta.Any],
                 reason: ta.Union[str, BaseException],
                 msg: ta.Optional[ta.Any] = None,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+        ) -> 'PipelineHttpObjectAggregator._State':
             nxt_state = self._a._AbortedState(self._a)  # noqa
-            out: ta.List[ta.Any] = [self._a._make_aborted(reason)]  # noqa
+            out.append(self._a._make_aborted(reason))  # noqa
             if msg is not None:
                 out.append(msg)
-            return (nxt_state, out)
+            return nxt_state
 
         @abc.abstractmethod
         def handle(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             raise NotImplementedError
 
     #
@@ -11490,7 +11579,8 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._head_type):  # noqa
                 try:
                     te = PipelineHttpTransferEncoding.select(
@@ -11498,22 +11588,23 @@ class PipelineHttpObjectAggregator(
                         if_length_missing=self._a._if_content_length_missing,  # noqa
                     )
                 except PipelineHttpTransferEncodingError as e:
-                    return self._abort(f'Invalid Transfer-Encoding: {e.reason}')
+                    return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
                 if te.mode in 'none':
-                    return (self._a._EndState(self._a, msg, b''), [])  # noqa
+                    return self._a._EndState(self._a, msg, b'')  # noqa
 
                 if (
                         te.length is not None and
                         (max_body := self._a._config.body_buffer.max_size) is not None and  # noqa
                         te.length > max_body
                 ):
-                    return self._abort(FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
+                    return self._abort(out, FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
 
-                return (self._a._BodyState(self._a, msg), [])  # noqa
+                return self._a._BodyState(self._a, msg)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
-                return (self, [msg])
+                out.append(msg)
+                return self
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -11540,7 +11631,8 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._content_chunk_data_type):  # noqa
                 if (buf := self._buf) is None:
                     buf = self._buf = SegmentedByteStreamBuffer(
@@ -11551,7 +11643,7 @@ class PipelineHttpObjectAggregator(
                 for mv in ByteStreamBuffers.iter_segments(msg.data):
                     buf.write(mv)
 
-                return (self, [])
+                return self
 
             elif isinstance(msg, self._a._end_type):  # noqa
                 body: CanByteStreamBuffer
@@ -11561,10 +11653,11 @@ class PipelineHttpObjectAggregator(
                     body = b''
 
                 full = self._a._make_full(self._head, body)  # noqa
-                return (self._a._HeadState(self._a), [full])  # noqa
+                out.append(full)
+                return self._a._HeadState(self._a)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
-                return self._abort('incomplete message body', msg)
+                return self._abort(out, 'incomplete message body', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -11587,13 +11680,15 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._end_type):  # noqa
                 full = self._a._make_full(self._head, self._body)  # noqa
-                return (self._a._HeadState(self._a), [full])  # noqa
+                out.append(full)
+                return self._a._HeadState(self._a)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
-                return self._abort('incomplete message sequence', msg)
+                return self._abort(out, 'incomplete message sequence', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -11605,8 +11700,39 @@ class PipelineHttpObjectAggregator(
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 msg: ta.Any,
-        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+                out: ta.List[ta.Any],
+        ) -> 'PipelineHttpObjectAggregator._State':
             raise NotImplementedError
+
+
+#
+
+
+class PipelineHttpObjectAggregatorDecoder(
+    InboundBytesBufferingChannelPipelineHandler,
+    MessageToMessageDecoderChannelPipelineHandler,
+    PipelineHttpObjectAggregator,
+    Abstract,
+):
+    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        return self.buffered_bytes()
+
+    #
+
+    def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        return self._should_handle(msg)
+
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        self._handle(ctx, msg, out)
 
 
 ########################################
@@ -12850,21 +12976,9 @@ class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjec
 
 class PipelineHttpResponseAggregatorDecoder(
     PipelineHttpResponseObjects,
-    InboundBytesBufferingChannelPipelineHandler,
-    PipelineHttpObjectAggregator,
+    PipelineHttpObjectAggregatorDecoder,
 ):
     _if_content_length_missing: ta.Final = 'eof'
-    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
-
-    #
-
-    def inbound_buffered_bytes(self) -> int:
-        return self.buffered_bytes()
-
-    #
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        self._handle(ctx, msg, ctx.feed_in)
 
 
 ##
@@ -12891,21 +13005,9 @@ class PipelineHttpRequestDecoder(PipelineHttpRequestObjects, PipelineHttpObjectD
 
 class PipelineHttpRequestAggregatorDecoder(
     PipelineHttpRequestObjects,
-    InboundBytesBufferingChannelPipelineHandler,
-    PipelineHttpObjectAggregator,
+    PipelineHttpObjectAggregatorDecoder,
 ):
     _if_content_length_missing: ta.Final = 'none'
-    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
-
-    #
-
-    def inbound_buffered_bytes(self) -> int:
-        return self.buffered_bytes()
-
-    #
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        self._handle(ctx, msg, ctx.feed_in)
 
 
 ##
