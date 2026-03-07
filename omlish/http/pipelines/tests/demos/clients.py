@@ -16,21 +16,21 @@ from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from .....lite.check import check
-from ...client.requests import PipelineHttpRequestEncoder
-from ...client.responses import PipelineHttpResponseAggregatorDecoder
-from ...client.responses import PipelineHttpResponseDecoder
-from ...client.responses import PipelineHttpResponseDecompressor
-from ...requests import FullPipelineHttpRequest
-from ...responses import FullPipelineHttpResponse
-from ...responses import PipelineHttpResponseEnd
-from ...responses import PipelineHttpResponseObject
+from ...client.requests import IoPipelineHttpRequestEncoder
+from ...client.responses import IoPipelineHttpResponseAggregatorDecoder
+from ...client.responses import IoPipelineHttpResponseDecoder
+from ...client.responses import IoPipelineHttpResponseDecompressor
+from ...requests import IoFullPipelineHttpRequest
+from ...responses import IoFullPipelineHttpResponse
+from ...responses import IoPipelineHttpResponseEnd
+from ...responses import IoPipelineHttpResponseObject
 
 
 ##
 
 
 HttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
-    PipelineHttpResponseObject,
+    IoPipelineHttpResponseObject,
     IoPipelineMessages.FinalInput,
     'HttpClientClose',
 ]
@@ -38,7 +38,7 @@ HttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
 
 @dc.dataclass(frozen=True)
 class HttpClientRequest:
-    request: FullPipelineHttpRequest
+    request: IoFullPipelineHttpRequest
 
     on_output: IoPipelineHandlerFn[HttpClientRequestOutput, None]
 
@@ -61,7 +61,7 @@ class HttpClientHandler(IoPipelineHandler):
             check.none(self._request)
             self._request = msg
 
-            rad = check.not_none(ctx.pipeline.find_single_handler_of_type(PipelineHttpResponseAggregatorDecoder))
+            rad = check.not_none(ctx.pipeline.find_single_handler_of_type(IoPipelineHttpResponseAggregatorDecoder))
             rad.handler.set_enabled(not msg.stream)
 
             ctx.feed_out(msg.request)
@@ -71,12 +71,12 @@ class HttpClientHandler(IoPipelineHandler):
 
             return
 
-        if isinstance(msg, PipelineHttpResponseObject):
+        if isinstance(msg, IoPipelineHttpResponseObject):
             request = check.not_none(self._request)
 
             request.on_output(ctx, msg)
 
-            if isinstance(msg, (FullPipelineHttpResponse, PipelineHttpResponseEnd)):
+            if isinstance(msg, (IoFullPipelineHttpResponse, IoPipelineHttpResponseEnd)):
                 self._request = None
 
             return
@@ -124,11 +124,11 @@ def build_http_client(
 
             *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
-            PipelineHttpResponseDecoder(),
-            *([PipelineHttpResponseDecompressor()] if with_gzip else []),
-            PipelineHttpResponseAggregatorDecoder(),
+            IoPipelineHttpResponseDecoder(),
+            *([IoPipelineHttpResponseDecompressor()] if with_gzip else []),
+            IoPipelineHttpResponseAggregatorDecoder(),
 
-            PipelineHttpRequestEncoder(),
+            IoPipelineHttpRequestEncoder(),
 
             HttpClientHandler(),
 
@@ -196,7 +196,7 @@ def parse_url(url: str) -> ParsedUrl:
 ##
 
 
-def print_full_response(response: FullPipelineHttpResponse) -> None:
+def print_full_response(response: IoFullPipelineHttpResponse) -> None:
     """Print the accumulated response."""
 
     head = response.head
@@ -223,7 +223,7 @@ def print_full_response(response: FullPipelineHttpResponse) -> None:
 
 class _PreparedUrlFetch(ta.NamedTuple):
     parsed_url: ParsedUrl
-    request: FullPipelineHttpRequest
+    request: IoFullPipelineHttpRequest
     pipeline_spec: IoPipeline.Spec
 
 
@@ -233,7 +233,7 @@ def _prepare_url_fetch(
 ) -> _PreparedUrlFetch:
     parsed_url = parse_url(url)
 
-    request = FullPipelineHttpRequest.simple(
+    request = IoFullPipelineHttpRequest.simple(
         parsed_url.host,
         parsed_url.path,
         headers={
@@ -267,15 +267,15 @@ def _prepare_url_fetch(
 async def asyncio_fetch_url(
         url: str,
         **client_kwargs: ta.Any,
-) -> FullPipelineHttpResponse:
+) -> IoFullPipelineHttpResponse:
     puf = _prepare_url_fetch(url, **client_kwargs)
 
     #
 
-    response: ta.Optional[FullPipelineHttpResponse] = None
+    response: ta.Optional[IoFullPipelineHttpResponse] = None
 
     def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
-        if isinstance(msg, FullPipelineHttpResponse):
+        if isinstance(msg, IoFullPipelineHttpResponse):
             nonlocal response
             check.none(response)
             response = msg
@@ -317,15 +317,15 @@ async def asyncio_fetch_url(
 def sync_fetch_url(
         url: str,
         **client_kwargs: ta.Any,
-) -> FullPipelineHttpResponse:
+) -> IoFullPipelineHttpResponse:
     puf = _prepare_url_fetch(url, **client_kwargs)
 
     #
 
-    response: ta.Optional[FullPipelineHttpResponse] = None
+    response: ta.Optional[IoFullPipelineHttpResponse] = None
 
     def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
-        if isinstance(msg, FullPipelineHttpResponse):
+        if isinstance(msg, IoFullPipelineHttpResponse):
             nonlocal response
             check.none(response)
             response = msg

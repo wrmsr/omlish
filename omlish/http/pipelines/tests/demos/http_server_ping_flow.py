@@ -11,9 +11,9 @@ from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDrive
 from .....io.pipelines.flow.stub import StubIoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
-from ...requests import PipelineHttpRequestHead
-from ...requests import PipelineHttpRequestObject
-from ...server.requests import PipelineHttpRequestDecoder
+from ...requests import IoPipelineHttpRequestHead
+from ...requests import IoPipelineHttpRequestObject
+from ...server.requests import IoPipelineHttpRequestDecoder
 
 
 ##
@@ -35,8 +35,8 @@ class PingHandler(IoPipelineHandler):
 
             return
 
-        if not isinstance(msg, PipelineHttpRequestHead):
-            if not isinstance(msg, PipelineHttpRequestObject):
+        if not isinstance(msg, IoPipelineHttpRequestHead):
+            if not isinstance(msg, IoPipelineHttpRequestObject):
                 ctx.feed_in(msg)
             return
 
@@ -76,7 +76,7 @@ def build_http_ping_channel(
 ) -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
-            PipelineHttpRequestDecoder(),
+            IoPipelineHttpRequestDecoder(),
             PingHandler(),
         ],
         services=[

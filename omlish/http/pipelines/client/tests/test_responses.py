@@ -6,17 +6,17 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
-from ...responses import PipelineHttpResponseAborted
-from ...responses import PipelineHttpResponseContentChunkData
-from ...responses import PipelineHttpResponseEnd
-from ..responses import PipelineHttpResponseDecoder
+from ...responses import IoPipelineHttpResponseAborted
+from ...responses import IoPipelineHttpResponseContentChunkData
+from ...responses import IoPipelineHttpResponseEnd
+from ..responses import IoPipelineHttpResponseDecoder
 
 
 class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_basic_response_head(self) -> None:
         """Test basic HTTP response head parsing."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = IoPipelineHttpResponseDecoder()
         channel = IoPipeline.new([
             decoder,
             ibq := InboundQueueIoPipelineHandler(),
@@ -36,7 +36,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_response_with_body_in_same_chunk(self) -> None:
         """Test response head + body bytes received together."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = IoPipelineHttpResponseDecoder()
         channel = IoPipeline.new([
             decoder,
             ibq := InboundQueueIoPipelineHandler(),
@@ -51,15 +51,15 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         self.assertEqual(head.status, 200)
 
         # Second: body bytes
-        self.assertIsInstance(body, PipelineHttpResponseContentChunkData)
+        self.assertIsInstance(body, IoPipelineHttpResponseContentChunkData)
         self.assertEqual(ByteStreamBuffers.to_bytes(body.data), b'hello')
 
-        self.assertIsInstance(end, PipelineHttpResponseEnd)
+        self.assertIsInstance(end, IoPipelineHttpResponseEnd)
 
     def test_response_incremental_head(self) -> None:
         """Test response head received incrementally."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = IoPipelineHttpResponseDecoder()
         channel = IoPipeline.new([
             decoder,
             ibq := InboundQueueIoPipelineHandler(),
@@ -81,7 +81,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_eof_before_head_complete(self) -> None:
         """Test EOF arriving before head is complete raises ValueError."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = IoPipelineHttpResponseDecoder()
         channel = IoPipeline.new([
             decoder,
             ibq := InboundQueueIoPipelineHandler(),
@@ -97,5 +97,5 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # Should get an aborted message
         aborted, eof = out
-        self.assertIsInstance(aborted, PipelineHttpResponseAborted)
+        self.assertIsInstance(aborted, IoPipelineHttpResponseAborted)
         self.assertIsInstance(eof, IoPipelineMessages.FinalInput)

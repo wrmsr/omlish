@@ -12,19 +12,19 @@ from ..headers import HttpHeaders
 from ..parsing import ParsedHttpMessage
 from ..versions import HttpVersion
 from ..versions import HttpVersions
-from .objects import FullPipelineHttpMessage
-from .objects import PipelineHttpMessageAborted
-from .objects import PipelineHttpMessageContentChunkData
-from .objects import PipelineHttpMessageEnd
-from .objects import PipelineHttpMessageHead
-from .objects import PipelineHttpMessageObject
-from .objects import PipelineHttpMessageObjects
+from .objects import FullIoPipelineHttpMessage
+from .objects import IoPipelineHttpMessageAborted
+from .objects import IoPipelineHttpMessageContentChunkData
+from .objects import IoPipelineHttpMessageEnd
+from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageObject
+from .objects import IoPipelineHttpMessageObjects
 
 
 ##
 
 
-class PipelineHttpResponseObject(PipelineHttpMessageObject, Abstract):
+class IoPipelineHttpResponseObject(IoPipelineHttpMessageObject, Abstract):
     pass
 
 
@@ -33,7 +33,7 @@ class PipelineHttpResponseObject(PipelineHttpMessageObject, Abstract):
 
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObject):
+class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpResponseObject):
     status: int
     reason: str
 
@@ -54,8 +54,8 @@ class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObje
 
 
 @dc.dataclass(frozen=True)
-class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObject):
-    head: PipelineHttpResponseHead
+class IoFullPipelineHttpResponse(FullIoPipelineHttpMessage, IoPipelineHttpResponseObject):
+    head: IoPipelineHttpResponseHead
     body: BytesLike
 
     @classmethod
@@ -73,10 +73,10 @@ class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObje
             headers: ta.Optional[ta.Mapping[str, str]] = None,
     ):
         return cls(
-            head=PipelineHttpResponseHead(
+            head=IoPipelineHttpResponseHead(
                 version=version,
                 status=status,
-                reason=PipelineHttpResponseHead.get_reason_phrase(status) if reason is None else reason,
+                reason=IoPipelineHttpResponseHead.get_reason_phrase(status) if reason is None else reason,
                 headers=HttpHeaders([
                     ('Content-Type', content_type),
                     ('Content-Length', str(len(body))),
@@ -92,7 +92,7 @@ class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObje
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpResponseObject):
+class IoPipelineHttpResponseContentChunkData(IoPipelineHttpMessageContentChunkData, IoPipelineHttpResponseObject):
     pass
 
 
@@ -100,7 +100,7 @@ class PipelineHttpResponseContentChunkData(PipelineHttpMessageContentChunkData, 
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseEnd(PipelineHttpMessageEnd, PipelineHttpResponseObject):
+class IoPipelineHttpResponseEnd(IoPipelineHttpMessageEnd, IoPipelineHttpResponseObject):
     pass
 
 
@@ -108,20 +108,20 @@ class PipelineHttpResponseEnd(PipelineHttpMessageEnd, PipelineHttpResponseObject
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseAborted(PipelineHttpMessageAborted, PipelineHttpResponseObject):
+class IoPipelineHttpResponseAborted(IoPipelineHttpMessageAborted, IoPipelineHttpResponseObject):
     pass
 
 
 ##
 
 
-class PipelineHttpResponseObjects(PipelineHttpMessageObjects):
-    _head_type: ta.Final = PipelineHttpResponseHead
+class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
+    _head_type: ta.Final = IoPipelineHttpResponseHead
 
     def _make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
         status = check.not_none(parsed.status_line)
 
-        return PipelineHttpResponseHead(
+        return IoPipelineHttpResponseHead(
             version=status.http_version,
             status=status.status_code,
             reason=status.reason_phrase,
@@ -131,28 +131,28 @@ class PipelineHttpResponseObjects(PipelineHttpMessageObjects):
 
     #
 
-    _full_type: ta.Final = FullPipelineHttpResponse
+    _full_type: ta.Final = IoFullPipelineHttpResponse
 
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpResponse:
-        return FullPipelineHttpResponse(check.isinstance(head, PipelineHttpResponseHead), body)
-
-    #
-
-    _content_chunk_data_type: ta.Final = PipelineHttpResponseContentChunkData
-
-    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpResponseContentChunkData:
-        return PipelineHttpResponseContentChunkData(data)
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> IoFullPipelineHttpResponse:
+        return IoFullPipelineHttpResponse(check.isinstance(head, IoPipelineHttpResponseHead), body)
 
     #
 
-    _end_type: ta.Final = PipelineHttpResponseEnd
+    _content_chunk_data_type: ta.Final = IoPipelineHttpResponseContentChunkData
 
-    def _make_end(self) -> PipelineHttpResponseEnd:
-        return PipelineHttpResponseEnd()
+    def _make_content_chunk_data(self, data: BytesLike) -> IoPipelineHttpResponseContentChunkData:
+        return IoPipelineHttpResponseContentChunkData(data)
 
     #
 
-    _aborted_type: ta.Final = PipelineHttpResponseAborted
+    _end_type: ta.Final = IoPipelineHttpResponseEnd
 
-    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpResponseAborted:
-        return PipelineHttpResponseAborted(reason)
+    def _make_end(self) -> IoPipelineHttpResponseEnd:
+        return IoPipelineHttpResponseEnd()
+
+    #
+
+    _aborted_type: ta.Final = IoPipelineHttpResponseAborted
+
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> IoPipelineHttpResponseAborted:
+        return IoPipelineHttpResponseAborted(reason)

@@ -8,18 +8,18 @@ from ...io.pipelines.core import IoPipelineHandler
 from ...io.pipelines.core import IoPipelineHandlerContext
 from ...lite.abstract import Abstract
 from ..headers import HttpHeaders
-from .objects import FullPipelineHttpMessage
-from .objects import PipelineHttpMessageContentChunkData
-from .objects import PipelineHttpMessageEnd
-from .objects import PipelineHttpMessageHead
-from .objects import PipelineHttpMessageObjects
+from .objects import FullIoPipelineHttpMessage
+from .objects import IoPipelineHttpMessageContentChunkData
+from .objects import IoPipelineHttpMessageEnd
+from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageObjects
 
 
 ##
 
 
-class PipelineHttpObjectEncoder(
-    PipelineHttpMessageObjects,
+class IoPipelineHttpObjectEncoder(
+    IoPipelineHttpMessageObjects,
     IoPipelineHandler,
     Abstract,
 ):
@@ -32,7 +32,7 @@ class PipelineHttpObjectEncoder(
     #
 
     @abc.abstractmethod
-    def _encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+    def _encode_head_line(self, head: IoPipelineHttpMessageHead) -> bytes:
         raise NotImplementedError
 
     #
@@ -55,7 +55,7 @@ class PipelineHttpObjectEncoder(
 
     #
 
-    def _handle_request_head(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
+    def _handle_request_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:  # noqa
         """Emit request line + headers, enter streaming mode."""
 
         self._streaming = True
@@ -65,7 +65,7 @@ class PipelineHttpObjectEncoder(
 
     #
 
-    def _handle_full_request(self, ctx: IoPipelineHandlerContext, msg: FullPipelineHttpMessage) -> ta.Any:
+    def _handle_full_request(self, ctx: IoPipelineHandlerContext, msg: FullIoPipelineHttpMessage) -> ta.Any:
         """Emit complete request in one shot."""
 
         ctx.feed_out(self._encode_head(msg.head))
@@ -74,7 +74,7 @@ class PipelineHttpObjectEncoder(
 
     #
 
-    def _handle_content_chunk_data(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
+    def _handle_content_chunk_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageContentChunkData) -> None:  # noqa
         """Emit body chunk (raw or chunked-encoded)."""
 
         if not self._streaming:
@@ -96,7 +96,7 @@ class PipelineHttpObjectEncoder(
 
     #
 
-    def _handle_request_end(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:  # noqa
+    def _handle_request_end(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEnd) -> None:  # noqa
         """Emit terminator if chunked, reset state."""
 
         if not self._streaming:
@@ -116,7 +116,7 @@ class PipelineHttpObjectEncoder(
 
     #
 
-    def _encode_head(self, head: PipelineHttpMessageHead) -> bytes:
+    def _encode_head(self, head: IoPipelineHttpMessageHead) -> bytes:
         buf = io.BytesIO()
 
         buf.write(self._encode_head_line(head))

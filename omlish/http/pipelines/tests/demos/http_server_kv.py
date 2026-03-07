@@ -12,9 +12,9 @@ from .....io.pipelines.flow.stub import StubIoPipelineFlow
 from .....io.streams.utils import ByteStreamBuffers
 from .....logs.modules import get_module_loggers
 from .....logs.std.standard import configure_standard_logging
-from ...requests import FullPipelineHttpRequest
-from ...server.requests import PipelineHttpRequestAggregatorDecoder
-from ...server.requests import PipelineHttpRequestDecoder
+from ...requests import IoFullPipelineHttpRequest
+from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...server.requests import IoPipelineHttpRequestDecoder
 
 
 log, alog = get_module_loggers(globals())
@@ -44,7 +44,7 @@ class KvStoreHandler(IoPipelineHandler):
         self._items = items
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, FullPipelineHttpRequest):
+        if not isinstance(msg, IoFullPipelineHttpRequest):
             ctx.feed_in(msg)
             return
 
@@ -141,8 +141,8 @@ def build_http_kv_channel(
 ) -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
-            PipelineHttpRequestDecoder(),
-            PipelineHttpRequestAggregatorDecoder(),
+            IoPipelineHttpRequestDecoder(),
+            IoPipelineHttpRequestAggregatorDecoder(),
             KvStoreHandler(items),
         ],
         services=[

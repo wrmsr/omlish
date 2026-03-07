@@ -16,18 +16,18 @@ from ...io.streams.types import MutableByteStreamBuffer
 from ...io.streams.utils import ByteStreamBuffers
 from ...io.streams.utils import CanByteStreamBuffer
 from ...lite.abstract import Abstract
-from .objects import PipelineHttpMessageHead
-from .objects import PipelineHttpMessageObjects
-from .transferencoding import PipelineHttpTransferEncoding
-from .transferencoding import PipelineHttpTransferEncodingError
+from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageObjects
+from .transferencoding import IoPipelineHttpTransferEncoding
+from .transferencoding import IoPipelineHttpTransferEncodingError
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpAggregationConfig:
-    DEFAULT: ta.ClassVar['PipelineHttpAggregationConfig']
+class IoPipelineHttpAggregationConfig:
+    DEFAULT: ta.ClassVar['IoPipelineHttpAggregationConfig']
 
     @dc.dataclass(frozen=True)
     class BufferConfig:
@@ -37,21 +37,21 @@ class PipelineHttpAggregationConfig:
     body_buffer: BufferConfig = BufferConfig(max_size=64 * 1024, chunk_size=64 * 1024)
 
 
-PipelineHttpAggregationConfig.DEFAULT = PipelineHttpAggregationConfig()
+IoPipelineHttpAggregationConfig.DEFAULT = IoPipelineHttpAggregationConfig()
 
 
 #
 
 
-class PipelineHttpObjectAggregator(
-    PipelineHttpMessageObjects,
+class IoIoPipelineHttpObjectAggregator(
+    IoPipelineHttpMessageObjects,
     IoPipelineHandler,
     Abstract,
 ):
     def __init__(
             self,
             *,
-            config: PipelineHttpAggregationConfig = PipelineHttpAggregationConfig.DEFAULT,
+            config: IoPipelineHttpAggregationConfig = IoPipelineHttpAggregationConfig.DEFAULT,
             enabled: bool = True,
     ) -> None:
         super().__init__()
@@ -67,7 +67,7 @@ class PipelineHttpObjectAggregator(
             self._final_type,
         )
 
-        self._state: PipelineHttpObjectAggregator._State = self._init_state()
+        self._state: IoIoPipelineHttpObjectAggregator._State = self._init_state()
 
     @property
     def enabled(self) -> bool:
@@ -124,7 +124,7 @@ class PipelineHttpObjectAggregator(
     #
 
     class _State(Abstract):
-        def __init__(self, a: 'PipelineHttpObjectAggregator') -> None:
+        def __init__(self, a: 'IoIoPipelineHttpObjectAggregator') -> None:
             super().__init__()
 
             self._a = a
@@ -138,7 +138,7 @@ class PipelineHttpObjectAggregator(
                 out: ta.List[ta.Any],
                 reason: ta.Union[str, BaseException],
                 msg: ta.Optional[ta.Any] = None,
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             nxt_state = self._a._AbortedState(self._a)  # noqa
             out.append(self._a._make_aborted(reason))  # noqa
             if msg is not None:
@@ -151,7 +151,7 @@ class PipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             raise NotImplementedError
 
     #
@@ -162,14 +162,14 @@ class PipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._head_type):  # noqa
                 try:
-                    te = PipelineHttpTransferEncoding.select(
+                    te = IoPipelineHttpTransferEncoding.select(
                         msg.headers,
                         if_length_missing=self._a._if_content_length_missing,  # noqa
                     )
-                except PipelineHttpTransferEncodingError as e:
+                except IoPipelineHttpTransferEncodingError as e:
                     return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
                 if te.mode in 'none':
@@ -196,8 +196,8 @@ class PipelineHttpObjectAggregator(
     class _BodyState(_State):
         def __init__(
                 self,
-                a: 'PipelineHttpObjectAggregator',
-                head: PipelineHttpMessageHead,
+                a: 'IoIoPipelineHttpObjectAggregator',
+                head: IoPipelineHttpMessageHead,
         ) -> None:
             super().__init__(a)
 
@@ -214,7 +214,7 @@ class PipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._content_chunk_data_type):  # noqa
                 if (buf := self._buf) is None:
                     buf = self._buf = SegmentedByteStreamBuffer(
@@ -249,8 +249,8 @@ class PipelineHttpObjectAggregator(
     class _EndState(_State):
         def __init__(
                 self,
-                a: 'PipelineHttpObjectAggregator',
-                head: PipelineHttpMessageHead,
+                a: 'IoIoPipelineHttpObjectAggregator',
+                head: IoPipelineHttpMessageHead,
                 body: BytesLike,
         ) -> None:
             super().__init__(a)
@@ -263,7 +263,7 @@ class PipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             if isinstance(msg, self._a._end_type):  # noqa
                 full = self._a._make_full(self._head, self._body)  # noqa
                 out.append(full)
@@ -283,7 +283,7 @@ class PipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             out.append(msg)
             if isinstance(msg, self._a._head_type):  # noqa
                 return self._a._DisabledEndState(self._a)  # noqa
@@ -295,7 +295,7 @@ class PipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             out.append(msg)
             if isinstance(msg, self._a._end_type):  # noqa
                 return self._a._init_state()  # noqa
@@ -309,7 +309,7 @@ class PipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'PipelineHttpObjectAggregator._State':
+        ) -> 'IoIoPipelineHttpObjectAggregator._State':
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 out.append(msg)
                 return self
@@ -319,10 +319,10 @@ class PipelineHttpObjectAggregator(
 #
 
 
-class PipelineHttpObjectAggregatorDecoder(
+class IoPipelineHttpObjectAggregatorDecoder(
     InboundBytesBufferingIoPipelineHandler,
     MessageToMessageDecoderIoPipelineHandler,
-    PipelineHttpObjectAggregator,
+    IoIoPipelineHttpObjectAggregator,
     Abstract,
 ):
     _final_type: ta.Final[type] = IoPipelineMessages.FinalInput

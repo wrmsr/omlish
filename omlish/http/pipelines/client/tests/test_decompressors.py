@@ -9,15 +9,15 @@ from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....lite.check import check
 from ....headers import HttpHeaders
-from ...decompressors import PipelineHttpDecompressionConfig
-from ...responses import PipelineHttpResponseContentChunkData
-from ...responses import PipelineHttpResponseEnd
-from ...responses import PipelineHttpResponseHead
-from ..responses import PipelineHttpResponseDecompressor
+from ...decompressors import IoPipelineHttpDecompressionConfig
+from ...responses import IoPipelineHttpResponseContentChunkData
+from ...responses import IoPipelineHttpResponseEnd
+from ...responses import IoPipelineHttpResponseHead
+from ..responses import IoPipelineHttpResponseDecompressor
 
 
 class TestGzipDecompressorFlow(unittest.TestCase):
-    config = PipelineHttpDecompressionConfig(
+    config = IoPipelineHttpDecompressionConfig(
         max_steps_per_call=2,      # Very low for testing
         max_decomp_chunk=10,       # Tiny chunks to force multiple steps
         max_out_pending=100,
@@ -25,7 +25,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
     )
 
     # Enable Gzip
-    head = PipelineHttpResponseHead(
+    head = IoPipelineHttpResponseHead(
         status=200,
         reason='OK',
         headers=HttpHeaders({'content-encoding': 'gzip'}),
@@ -38,7 +38,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         raw_data = b'This is a reasonably long string that should exceed the tiny chunk limit.'
         data = compressor.compress(raw_data) + compressor.flush()
 
-        handler = PipelineHttpResponseDecompressor(config=self.config)
+        handler = IoPipelineHttpResponseDecompressor(config=self.config)
 
         channel = IoPipeline.new(
             [
@@ -52,7 +52,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         assert channel.output.drain() == []
         assert ibq.drain() == [self.head]
 
-        channel.feed_in(PipelineHttpResponseContentChunkData(data))
+        channel.feed_in(IoPipelineHttpResponseContentChunkData(data))
         # Should have deferred because max_steps is 2 (20 bytes out max)
         dfl = check.isinstance(check.single(channel.output.drain()), IoPipelineMessages.Defer)
         # Verify FinalInput is pinned and NOT yet fed inbound
@@ -68,13 +68,13 @@ class TestGzipDecompressorFlow(unittest.TestCase):
             dfl = check.isinstance(out, IoPipelineMessages.Defer)
             channel.run_deferred(dfl)
 
-        fi = PipelineHttpResponseEnd()
+        fi = IoPipelineHttpResponseEnd()
         channel.feed_in(fi)
         assert channel.output.drain() == []
         [*out_data, out_fi] = ibq.drain()
 
         # 3. Final Verification
-        full_output = b''.join(check.isinstance(m, PipelineHttpResponseContentChunkData).data for m in out_data)
+        full_output = b''.join(check.isinstance(m, IoPipelineHttpResponseContentChunkData).data for m in out_data)
         self.assertEqual(full_output, raw_data)
         self.assertIs(fi, out_fi)
 
@@ -82,7 +82,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         """Test that budget checks trigger even during deferred steps."""
 
         config = dc.replace(self.config, max_expansion_ratio=2)
-        handler = PipelineHttpResponseDecompressor(config=config)
+        handler = IoPipelineHttpResponseDecompressor(config=config)
 
         # 10 bytes compressed -> 1000 bytes uncompressed (ratio 100)
         compressor = zlib.compressobj(wbits=16 + zlib.MAX_WBITS)
@@ -97,7 +97,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         channel.feed_in(self.head)
 
         # Feeding this should eventually raise ValueError due to expansion ratio
-        channel.feed_in(PipelineHttpResponseContentChunkData(bomb_data))
+        channel.feed_in(IoPipelineHttpResponseContentChunkData(bomb_data))
         count = 0
         while (out := channel.output.poll()) is not None:
             count += 1

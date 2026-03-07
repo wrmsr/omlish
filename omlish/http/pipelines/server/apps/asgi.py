@@ -16,8 +16,8 @@ from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from ....headers import HttpHeaders
-from ...requests import FullPipelineHttpRequest
-from ...responses import PipelineHttpResponseHead
+from ...requests import IoFullPipelineHttpRequest
+from ...responses import IoPipelineHttpResponseHead
 
 
 T = ta.TypeVar('T')
@@ -196,9 +196,9 @@ class _AsgiDriver:
             md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, collections.abc.Mapping)
             check.equal(md['type'], 'http.response.start')
 
-            out.append(PipelineHttpResponseHead(
+            out.append(IoPipelineHttpResponseHead(
                 status=(status_code := md['status']),
-                reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
+                reason=IoPipelineHttpResponseHead.get_reason_phrase(status_code),
                 headers=HttpHeaders(md['headers']),
             ))
             if IoPipelineFlow.is_auto_read_context(self._ctx):
@@ -256,7 +256,7 @@ class AsgiHandler(IoPipelineHandler):
 
             return
 
-        if not isinstance(msg, FullPipelineHttpRequest):
+        if not isinstance(msg, IoFullPipelineHttpRequest):
             ctx.feed_in(msg)
             return
 

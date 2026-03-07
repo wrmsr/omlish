@@ -3,16 +3,16 @@
 import typing as ta
 
 from ...parsing import HttpParser
-from ..aggregators import PipelineHttpObjectAggregatorDecoder
-from ..decoders import PipelineHttpObjectDecoder
-from ..decompressors import PipelineHttpObjectDecompressor
-from ..responses import PipelineHttpResponseObjects
+from ..aggregators import IoPipelineHttpObjectAggregatorDecoder
+from ..decoders import IoPipelineHttpObjectDecoder
+from ..decompressors import IoPipelineHttpObjectDecompressor
+from ..responses import IoPipelineHttpResponseObjects
 
 
 ##
 
 
-class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjectDecoder):
+class IoPipelineHttpResponseDecoder(IoPipelineHttpResponseObjects, IoPipelineHttpObjectDecoder):
     _parse_mode: ta.Final = HttpParser.Mode.RESPONSE
     _if_content_length_missing: ta.Final = 'eof'
 
@@ -20,9 +20,9 @@ class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjec
 ##
 
 
-class PipelineHttpResponseAggregatorDecoder(
-    PipelineHttpResponseObjects,
-    PipelineHttpObjectAggregatorDecoder,
+class IoPipelineHttpResponseAggregatorDecoder(
+    IoPipelineHttpResponseObjects,
+    IoPipelineHttpObjectAggregatorDecoder,
 ):
     _if_content_length_missing: ta.Final = 'eof'
 
@@ -30,5 +30,5 @@ class PipelineHttpResponseAggregatorDecoder(
 ##
 
 
-class PipelineHttpResponseDecompressor(PipelineHttpResponseObjects, PipelineHttpObjectDecompressor):
+class IoPipelineHttpResponseDecompressor(IoPipelineHttpResponseObjects, IoPipelineHttpObjectDecompressor):
     pass

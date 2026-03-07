@@ -12,11 +12,11 @@ from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....io.pipelines.sched.types import IoPipelineScheduling
 from ....headers import HttpHeaders
 from ....versions import HttpVersions
-from ...requests import PipelineHttpRequestHead
-from ...responses import FullPipelineHttpResponse
-from ...responses import PipelineHttpResponseHead
-from ...server.requests import PipelineHttpRequestDecoder
-from ...server.responses import PipelineHttpResponseEncoder
+from ...requests import IoPipelineHttpRequestHead
+from ...responses import IoFullPipelineHttpResponse
+from ...responses import IoPipelineHttpResponseHead
+from ...server.requests import IoPipelineHttpRequestDecoder
+from ...server.responses import IoPipelineHttpResponseEncoder
 
 
 ##
@@ -24,12 +24,12 @@ from ...server.responses import PipelineHttpResponseEncoder
 
 class PingHandler(IoPipelineHandler):
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, PipelineHttpRequestHead):
+        if not isinstance(msg, IoPipelineHttpRequestHead):
             ctx.feed_in(msg)
             return
 
         if msg.method == 'GET' and msg.target == '/ping':
-            ctx.feed_out(PipelineHttpResponseHead(
+            ctx.feed_out(IoPipelineHttpResponseHead(
                 status=200,
                 reason='OK',
                 version=HttpVersions.HTTP_1_1,
@@ -53,7 +53,7 @@ class PingHandler(IoPipelineHandler):
             ctx.services[IoPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(0))
 
         else:
-            ctx.feed_out(FullPipelineHttpResponse.simple(
+            ctx.feed_out(IoFullPipelineHttpResponse.simple(
                 status=404,
                 body=b'not found',
             ))
@@ -63,8 +63,8 @@ class PingHandler(IoPipelineHandler):
 def build_http_ping_channel() -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
-            PipelineHttpRequestDecoder(),
-            PipelineHttpResponseEncoder(),
+            IoPipelineHttpRequestDecoder(),
+            IoPipelineHttpResponseEncoder(),
             PingHandler(),
         ],
         services=[

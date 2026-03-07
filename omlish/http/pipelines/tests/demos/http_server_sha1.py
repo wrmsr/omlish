@@ -13,13 +13,13 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from .....io.pipelines.flow.stub import StubIoPipelineFlow
-from ...requests import PipelineHttpRequestAborted
-from ...requests import PipelineHttpRequestContentChunkData
-from ...requests import PipelineHttpRequestEnd
-from ...requests import PipelineHttpRequestHead
-from ...responses import FullPipelineHttpResponse
-from ...server.requests import PipelineHttpRequestDecoder
-from ...server.responses import PipelineHttpResponseEncoder
+from ...requests import IoPipelineHttpRequestAborted
+from ...requests import IoPipelineHttpRequestContentChunkData
+from ...requests import IoPipelineHttpRequestEnd
+from ...requests import IoPipelineHttpRequestHead
+from ...responses import IoFullPipelineHttpResponse
+from ...server.requests import IoPipelineHttpRequestDecoder
+from ...server.responses import IoPipelineHttpResponseEncoder
 
 
 ##
@@ -43,14 +43,14 @@ class Sha1Handler(IoPipelineHandler):
         self._h: ta.Any = None  # hashlib object
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, PipelineHttpRequestHead):
+        if isinstance(msg, IoPipelineHttpRequestHead):
             if msg.method.upper() == 'POST' and msg.target.split('?', 1)[0] == '/sha1':
                 self._active = True
                 self._h = hashlib.sha1()  # noqa
 
             else:
                 # Not our endpoint; reply 404 and close.
-                ctx.feed_out(FullPipelineHttpResponse.simple(
+                ctx.feed_out(IoFullPipelineHttpResponse.simple(
                     status=404,
                     body=b'not found',
                 ))
@@ -59,17 +59,17 @@ class Sha1Handler(IoPipelineHandler):
 
             return
 
-        if isinstance(msg, PipelineHttpRequestContentChunkData):
+        if isinstance(msg, IoPipelineHttpRequestContentChunkData):
             if self._active and self._h is not None:
                 self._h.update(msg.data)
 
             return
 
-        if isinstance(msg, PipelineHttpRequestEnd):
+        if isinstance(msg, IoPipelineHttpRequestEnd):
             if self._active and self._h is not None:
                 hexd = self._h.hexdigest().encode('ascii')
 
-                ctx.feed_out(FullPipelineHttpResponse.simple(
+                ctx.feed_out(IoFullPipelineHttpResponse.simple(
                     body=hexd,
                 ))
 
@@ -80,7 +80,7 @@ class Sha1Handler(IoPipelineHandler):
 
             return
 
-        if isinstance(msg, PipelineHttpRequestAborted):
+        if isinstance(msg, IoPipelineHttpRequestAborted):
             # Graceful: nothing to do, just close and drop state.
             self._active = False
             self._h = None
@@ -95,8 +95,8 @@ class Sha1Handler(IoPipelineHandler):
 def build_http_sha1_channel() -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
-            PipelineHttpRequestDecoder(),
-            PipelineHttpResponseEncoder(),
+            IoPipelineHttpRequestDecoder(),
+            IoPipelineHttpResponseEncoder(),
             Sha1Handler(),
         ],
 

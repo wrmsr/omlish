@@ -11,19 +11,19 @@ from ..headers import HttpHeaders
 from ..parsing import ParsedHttpMessage
 from ..versions import HttpVersion
 from ..versions import HttpVersions
-from .objects import FullPipelineHttpMessage
-from .objects import PipelineHttpMessageAborted
-from .objects import PipelineHttpMessageContentChunkData
-from .objects import PipelineHttpMessageEnd
-from .objects import PipelineHttpMessageHead
-from .objects import PipelineHttpMessageObject
-from .objects import PipelineHttpMessageObjects
+from .objects import FullIoPipelineHttpMessage
+from .objects import IoPipelineHttpMessageAborted
+from .objects import IoPipelineHttpMessageContentChunkData
+from .objects import IoPipelineHttpMessageEnd
+from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageObject
+from .objects import IoPipelineHttpMessageObjects
 
 
 ##
 
 
-class PipelineHttpRequestObject(PipelineHttpMessageObject, Abstract):
+class IoPipelineHttpRequestObject(IoPipelineHttpMessageObject, Abstract):
     pass
 
 
@@ -32,7 +32,7 @@ class PipelineHttpRequestObject(PipelineHttpMessageObject, Abstract):
 
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject):
+class IoPipelineHttpRequestHead(IoPipelineHttpMessageHead, IoPipelineHttpRequestObject):
     method: str
     target: str
 
@@ -46,8 +46,8 @@ class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject
 
 
 @dc.dataclass(frozen=True)
-class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject):
-    head: PipelineHttpRequestHead
+class IoFullPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequestObject):
+    head: IoPipelineHttpRequestHead
     body: BytesLike
 
     @classmethod
@@ -64,9 +64,9 @@ class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject
             connection: str = 'close',
 
             headers: ta.Optional[ta.Mapping[str, str]] = None,
-    ) -> 'FullPipelineHttpRequest':
+    ) -> 'IoFullPipelineHttpRequest':
         return cls(
-            head=PipelineHttpRequestHead(
+            head=IoPipelineHttpRequestHead(
                 method=method,
                 target=target,
                 version=version,
@@ -86,7 +86,7 @@ class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpRequestObject):
+class IoPipelineHttpRequestContentChunkData(IoPipelineHttpMessageContentChunkData, IoPipelineHttpRequestObject):
     pass
 
 
@@ -94,7 +94,7 @@ class PipelineHttpRequestContentChunkData(PipelineHttpMessageContentChunkData, P
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestEnd(PipelineHttpMessageEnd, PipelineHttpRequestObject):
+class IoPipelineHttpRequestEnd(IoPipelineHttpMessageEnd, IoPipelineHttpRequestObject):
     pass
 
 
@@ -102,20 +102,20 @@ class PipelineHttpRequestEnd(PipelineHttpMessageEnd, PipelineHttpRequestObject):
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestAborted(PipelineHttpMessageAborted, PipelineHttpRequestObject):
+class IoPipelineHttpRequestAborted(IoPipelineHttpMessageAborted, IoPipelineHttpRequestObject):
     pass
 
 
 ##
 
 
-class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
-    _head_type: ta.Final = PipelineHttpRequestHead
+class IoPipelineHttpRequestObjects(IoPipelineHttpMessageObjects):
+    _head_type: ta.Final = IoPipelineHttpRequestHead
 
-    def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
+    def _make_head(self, parsed: ParsedHttpMessage) -> IoPipelineHttpRequestHead:
         request = check.not_none(parsed.request_line)
 
-        return PipelineHttpRequestHead(
+        return IoPipelineHttpRequestHead(
             method=request.method,
             target=check.not_none(request.request_target).decode('utf-8'),
             version=request.http_version,
@@ -125,28 +125,28 @@ class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
 
     #
 
-    _full_type: ta.Final = FullPipelineHttpRequest
+    _full_type: ta.Final = IoFullPipelineHttpRequest
 
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpRequest:
-        return FullPipelineHttpRequest(check.isinstance(head, PipelineHttpRequestHead), body)
-
-    #
-
-    _content_chunk_data_type: ta.Final = PipelineHttpRequestContentChunkData
-
-    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpRequestContentChunkData:
-        return PipelineHttpRequestContentChunkData(data)
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> IoFullPipelineHttpRequest:
+        return IoFullPipelineHttpRequest(check.isinstance(head, IoPipelineHttpRequestHead), body)
 
     #
 
-    _end_type: ta.Final = PipelineHttpRequestEnd
+    _content_chunk_data_type: ta.Final = IoPipelineHttpRequestContentChunkData
 
-    def _make_end(self) -> PipelineHttpRequestEnd:
-        return PipelineHttpRequestEnd()
+    def _make_content_chunk_data(self, data: BytesLike) -> IoPipelineHttpRequestContentChunkData:
+        return IoPipelineHttpRequestContentChunkData(data)
 
     #
 
-    _aborted_type: ta.Final = PipelineHttpRequestAborted
+    _end_type: ta.Final = IoPipelineHttpRequestEnd
 
-    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpRequestAborted:
-        return PipelineHttpRequestAborted(reason)
+    def _make_end(self) -> IoPipelineHttpRequestEnd:
+        return IoPipelineHttpRequestEnd()
+
+    #
+
+    _aborted_type: ta.Final = IoPipelineHttpRequestAborted
+
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> IoPipelineHttpRequestAborted:
+        return IoPipelineHttpRequestAborted(reason)

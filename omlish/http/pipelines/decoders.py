@@ -23,18 +23,18 @@ from ...lite.abstract import Abstract
 from ...lite.check import check
 from ..parsing import HttpParser
 from ..parsing import parse_http_message
-from .objects import PipelineHttpMessageHead
-from .objects import PipelineHttpMessageObjects
-from .transferencoding import PipelineHttpTransferEncoding
-from .transferencoding import PipelineHttpTransferEncodingError
+from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageObjects
+from .transferencoding import IoPipelineHttpTransferEncoding
+from .transferencoding import IoPipelineHttpTransferEncodingError
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpDecodingConfig:
-    DEFAULT: ta.ClassVar['PipelineHttpDecodingConfig']
+class IoPipelineHttpDecodingConfig:
+    DEFAULT: ta.ClassVar['IoPipelineHttpDecodingConfig']
 
     parser_config: ta.Optional[HttpParser.Config] = None
 
@@ -49,14 +49,14 @@ class PipelineHttpDecodingConfig:
     content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
 
 
-PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
+IoPipelineHttpDecodingConfig.DEFAULT = IoPipelineHttpDecodingConfig()
 
 
 #
 
 
-class PipelineHttpObjectDecoder(
-    PipelineHttpMessageObjects,
+class IoPipelineHttpObjectDecoder(
+    IoPipelineHttpMessageObjects,
     InboundBytesBufferingIoPipelineHandler,
     BytesToMessageDecoderIoPipelineHandler,
     Abstract,
@@ -64,13 +64,13 @@ class PipelineHttpObjectDecoder(
     def __init__(
             self,
             *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+            config: IoPipelineHttpDecodingConfig = IoPipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
         self._config = config
 
-        self._state: PipelineHttpObjectDecoder._State = self._HeadState(self)
+        self._state: IoPipelineHttpObjectDecoder._State = self._HeadState(self)
 
     #
 
@@ -115,7 +115,7 @@ class PipelineHttpObjectDecoder(
     #
 
     class _State(Abstract):
-        def __init__(self, d: 'PipelineHttpObjectDecoder') -> None:
+        def __init__(self, d: 'IoPipelineHttpObjectDecoder') -> None:
             super().__init__()
 
             self._d = d
@@ -129,7 +129,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 reason: ta.Union[str, BaseException],
                 data: ta.Optional[CanByteStreamBuffer] = None,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             out.append(self._d._make_aborted(reason))  # noqa
             return (self._d._AbortedState(self._d), data)  # noqa
 
@@ -141,7 +141,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             raise NotImplementedError
 
     #
@@ -160,7 +160,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             if final:
                 return self._abort(out, 'EOF before HTTP head complete')
 
@@ -233,7 +233,7 @@ class PipelineHttpObjectDecoder(
     #
 
     class _TransferEncodingState(_State):
-        def __init__(self, d: 'PipelineHttpObjectDecoder', head: PipelineHttpMessageHead) -> None:
+        def __init__(self, d: 'IoPipelineHttpObjectDecoder', head: IoPipelineHttpMessageHead) -> None:
             super().__init__(d)
 
             self._head = head
@@ -245,13 +245,13 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             try:
-                te = PipelineHttpTransferEncoding.select(
+                te = IoPipelineHttpTransferEncoding.select(
                     self._head.headers,
                     if_length_missing=self._d._if_content_length_missing,  # noqa
                 )
-            except PipelineHttpTransferEncodingError as e:
+            except IoPipelineHttpTransferEncodingError as e:
                 return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
             if te.mode == 'none':
@@ -275,8 +275,8 @@ class PipelineHttpObjectDecoder(
     class _ContentState(_State, Abstract):
         def __init__(
                 self,
-                d: 'PipelineHttpObjectDecoder',
-                head: PipelineHttpMessageHead,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: IoPipelineHttpMessageHead,
         ) -> None:
             super().__init__(d)
 
@@ -292,7 +292,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             for mv in ByteStreamBuffers.iter_segments(data):
                 if len(data):
                     out.append(self._d._make_content_chunk_data(mv))  # noqa
@@ -308,8 +308,8 @@ class PipelineHttpObjectDecoder(
     class _ContentLengthContentState(_ContentState):
         def __init__(
                 self,
-                d: 'PipelineHttpObjectDecoder',
-                head: PipelineHttpMessageHead,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: IoPipelineHttpMessageHead,
                 content_length: int,
         ) -> None:
             check.arg(content_length > 0)
@@ -325,7 +325,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             next_mvs: ta.List[memoryview]
 
             for mv in ByteStreamBuffers.iter_segments(data):
@@ -385,7 +385,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             chunk_size: ta.Optional[int] = None
             next_mvs: ta.List[memoryview]
 
@@ -461,8 +461,8 @@ class PipelineHttpObjectDecoder(
     class _DataChunkedContentState(_ChunkedContentState):
         def __init__(
                 self,
-                d: 'PipelineHttpObjectDecoder',
-                head: PipelineHttpMessageHead,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: IoPipelineHttpMessageHead,
                 chunk_size: int,
         ) -> None:
             check.arg(chunk_size > 0)
@@ -480,7 +480,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             next_mvs: ta.Optional[ta.List[memoryview]] = None
 
             for mv in ByteStreamBuffers.iter_segments(data):
@@ -552,7 +552,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             next_mvs: ta.Optional[ta.List[memoryview]] = None
 
             for mv in ByteStreamBuffers.iter_segments(data):
@@ -601,8 +601,8 @@ class PipelineHttpObjectDecoder(
     class _DoneState(_State):
         def __init__(
                 self,
-                d: 'PipelineHttpObjectDecoder',
-                head: ta.Optional[PipelineHttpMessageHead] = None,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: ta.Optional[IoPipelineHttpMessageHead] = None,
         ) -> None:
             super().__init__(d)
 
@@ -615,7 +615,7 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             if not len(data):
                 return None
 
@@ -631,5 +631,5 @@ class PipelineHttpObjectDecoder(
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             raise NotImplementedError

@@ -6,13 +6,13 @@ import typing as ta
 from .....io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from ...responses import FullPipelineHttpResponse  # noqa
-from ...responses import PipelineHttpResponseHead  # noqa
+from ...responses import IoFullPipelineHttpResponse  # noqa
+from ...responses import IoPipelineHttpResponseHead  # noqa
 from ...server.apps.asgi import AsgiHandler
 from ...server.apps.asgi import AsgiSpec
-from ...server.requests import PipelineHttpRequestAggregatorDecoder
-from ...server.requests import PipelineHttpRequestDecoder
-from ...server.responses import PipelineHttpResponseEncoder
+from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...server.requests import IoPipelineHttpRequestDecoder
+from ...server.responses import IoPipelineHttpResponseEncoder
 
 
 ##
@@ -21,9 +21,9 @@ from ...server.responses import PipelineHttpResponseEncoder
 def build_asgi_channel(app: ta.Any) -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
-            PipelineHttpRequestDecoder(),
-            PipelineHttpRequestAggregatorDecoder(),
-            PipelineHttpResponseEncoder(),
+            IoPipelineHttpRequestDecoder(),
+            IoPipelineHttpRequestAggregatorDecoder(),
+            IoPipelineHttpResponseEncoder(),
             AsgiHandler(app),
         ],
     ).update_config(

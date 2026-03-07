@@ -15,14 +15,14 @@ from ..versions import HttpVersion
 ##
 
 
-class PipelineHttpMessageObject(Abstract):
+class IoPipelineHttpMessageObject(Abstract):
     pass
 
 
 #
 
 
-class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
+class IoPipelineHttpMessageHead(IoPipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
     def headers(self) -> HttpHeaders:
@@ -42,10 +42,10 @@ class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
 #
 
 
-class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
+class FullIoPipelineHttpMessage(IoPipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
-    def head(self) -> PipelineHttpMessageHead:
+    def head(self) -> IoPipelineHttpMessageHead:
         raise NotImplementedError
 
     @property
@@ -58,7 +58,7 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
+class IoPipelineHttpMessageContentChunkData(IoPipelineHttpMessageObject, Abstract):
     data: BytesLike
 
     def __post_init__(self) -> None:
@@ -69,7 +69,7 @@ class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpMessageEnd(PipelineHttpMessageObject, Abstract):
+class IoPipelineHttpMessageEnd(IoPipelineHttpMessageObject, Abstract):
     pass
 
 
@@ -77,7 +77,7 @@ class PipelineHttpMessageEnd(PipelineHttpMessageObject, Abstract):
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
+class IoPipelineHttpMessageAborted(IoPipelineHttpMessageObject, Abstract):
     reason: ta.Union[str, BaseException]
 
     @property
@@ -96,7 +96,7 @@ class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
 def _un_abstract_pipeline_http_object_classes() -> None:
     # So this is regrettable, but I think the benefits of having the base objects be actual dataclasses outweighs the
     # gnarliness here.
-    for cls in [PipelineHttpMessageHead, FullPipelineHttpMessage]:
+    for cls in [IoPipelineHttpMessageHead, FullIoPipelineHttpMessage]:
         atts = {a for a in cls.__dict__ if not a.startswith('_')}
         for att in atts:
             delattr(cls, att)
@@ -110,43 +110,43 @@ _un_abstract_pipeline_http_object_classes()
 ##
 
 
-class PipelineHttpMessageObjects(Abstract):
+class IoPipelineHttpMessageObjects(Abstract):
     @property
     @abc.abstractmethod
-    def _head_type(self) -> ta.Type[PipelineHttpMessageHead]:
+    def _head_type(self) -> ta.Type[IoPipelineHttpMessageHead]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpMessageHead:
+    def _make_head(self, parsed: ParsedHttpMessage) -> IoPipelineHttpMessageHead:
         raise NotImplementedError
 
     #
 
     @property
     @abc.abstractmethod
-    def _full_type(self) -> ta.Type[FullPipelineHttpMessage]:
+    def _full_type(self) -> ta.Type[FullIoPipelineHttpMessage]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLike) -> FullPipelineHttpMessage:
-        raise NotImplementedError
-
-    #
-
-    @property
-    @abc.abstractmethod
-    def _content_chunk_data_type(self) -> ta.Type[PipelineHttpMessageContentChunkData]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _make_content_chunk_data(self, data: BytesLike) -> PipelineHttpMessageContentChunkData:
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpMessage:
         raise NotImplementedError
 
     #
 
     @property
     @abc.abstractmethod
-    def _end_type(self) -> ta.Type[PipelineHttpMessageEnd]:
+    def _content_chunk_data_type(self) -> ta.Type[IoPipelineHttpMessageContentChunkData]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_content_chunk_data(self, data: BytesLike) -> IoPipelineHttpMessageContentChunkData:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _end_type(self) -> ta.Type[IoPipelineHttpMessageEnd]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -157,9 +157,9 @@ class PipelineHttpMessageObjects(Abstract):
 
     @property
     @abc.abstractmethod
-    def _aborted_type(self) -> ta.Type[PipelineHttpMessageAborted]:
+    def _aborted_type(self) -> ta.Type[IoPipelineHttpMessageAborted]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpMessageAborted:
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> IoPipelineHttpMessageAborted:
         raise NotImplementedError

@@ -10,9 +10,9 @@ from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from ...server.apps.wsgi import WsgiHandler
 from ...server.apps.wsgi import WsgiSpec
-from ...server.requests import PipelineHttpRequestAggregatorDecoder
-from ...server.requests import PipelineHttpRequestDecoder
-from ...server.responses import PipelineHttpResponseEncoder
+from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...server.requests import IoPipelineHttpRequestDecoder
+from ...server.responses import IoPipelineHttpResponseEncoder
 
 
 ##
@@ -20,9 +20,9 @@ from ...server.responses import PipelineHttpResponseEncoder
 
 def build_wsgi_channel(app: ta.Any) -> IoPipeline.Spec:
     return IoPipeline.Spec([
-        PipelineHttpRequestDecoder(),
-        PipelineHttpRequestAggregatorDecoder(),
-        PipelineHttpResponseEncoder(),
+        IoPipelineHttpRequestDecoder(),
+        IoPipelineHttpRequestAggregatorDecoder(),
+        IoPipelineHttpResponseEncoder(),
         WsgiHandler(app),
         FlatMapIoPipelineHandlers.drop(
             'inbound',

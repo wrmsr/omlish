@@ -14,18 +14,18 @@ from ...io.pipelines.flow.types import IoPipelineFlowMessages
 from ...io.streams.types import BytesLike
 from ...io.streams.utils import ByteStreamBuffers
 from ...lite.abstract import Abstract
-from .objects import PipelineHttpMessageContentChunkData
-from .objects import PipelineHttpMessageEnd
-from .objects import PipelineHttpMessageHead
-from .objects import PipelineHttpMessageObjects
+from .objects import IoPipelineHttpMessageContentChunkData
+from .objects import IoPipelineHttpMessageEnd
+from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageObjects
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpDecompressionConfig:
-    DEFAULT: ta.ClassVar['PipelineHttpDecompressionConfig']
+class IoPipelineHttpDecompressionConfig:
+    DEFAULT: ta.ClassVar['IoPipelineHttpDecompressionConfig']
 
     max_decomp_chunk: int = 64 * 1024  # max bytes emitted per inflate step
 
@@ -38,14 +38,14 @@ class PipelineHttpDecompressionConfig:
     max_steps_per_call: ta.Optional[int] = None
 
 
-PipelineHttpDecompressionConfig.DEFAULT = PipelineHttpDecompressionConfig()
+IoPipelineHttpDecompressionConfig.DEFAULT = IoPipelineHttpDecompressionConfig()
 
 
 #
 
 
-class PipelineHttpObjectDecompressor(
-    PipelineHttpMessageObjects,
+class IoPipelineHttpObjectDecompressor(
+    IoPipelineHttpMessageObjects,
     InboundBytesBufferingIoPipelineHandler,
     Abstract,
 ):
@@ -54,13 +54,13 @@ class PipelineHttpObjectDecompressor(
     def __init__(
             self,
             *,
-            config: PipelineHttpDecompressionConfig = PipelineHttpDecompressionConfig.DEFAULT,
+            config: IoPipelineHttpDecompressionConfig = IoPipelineHttpDecompressionConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
         self._config = config
 
-        self._decompressor: ta.Optional[PipelineHttpObjectDecompressor.Decompressor] = None
+        self._decompressor: ta.Optional[IoPipelineHttpObjectDecompressor.Decompressor] = None
 
         # Statistics for budget checks
         self._in_total_bytes = 0
@@ -74,7 +74,7 @@ class PipelineHttpObjectDecompressor(
 
         # Flow Control and Deferral State
         self._read_requested = False
-        self._pending_end: ta.Optional[PipelineHttpMessageEnd] = None
+        self._pending_end: ta.Optional[IoPipelineHttpMessageEnd] = None
 
     #
 
@@ -273,7 +273,7 @@ class PipelineHttpObjectDecompressor(
         self._pump(ctx)
         ctx.feed_in(msg)
 
-    def _on_inbound_head(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
+    def _on_inbound_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:  # noqa
         if self._decompressor is not None:
             ctx.feed_in(self._make_aborted('unexpected message sequence'))
             return
@@ -285,7 +285,7 @@ class PipelineHttpObjectDecompressor(
 
         ctx.feed_in(msg)
 
-    def _on_inbound_content_chunk_data(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
+    def _on_inbound_content_chunk_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageContentChunkData) -> None:  # noqa
         if self._decompressor is None:
             ctx.feed_in(msg)
             return
@@ -299,7 +299,7 @@ class PipelineHttpObjectDecompressor(
 
         self._pump(ctx)
 
-    def _on_inbound_end(self, ctx: IoPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:
+    def _on_inbound_end(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEnd) -> None:
         if self._decompressor is None:
             ctx.feed_in(msg)
             return

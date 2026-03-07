@@ -7,11 +7,11 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from ...requests import PipelineHttpRequestHead
-from ...requests import PipelineHttpRequestObject
-from ...responses import FullPipelineHttpResponse
-from ...server.requests import PipelineHttpRequestDecoder
-from ...server.responses import PipelineHttpResponseEncoder
+from ...requests import IoPipelineHttpRequestHead
+from ...requests import IoPipelineHttpRequestObject
+from ...responses import IoFullPipelineHttpResponse
+from ...server.requests import IoPipelineHttpRequestDecoder
+from ...server.responses import IoPipelineHttpResponseEncoder
 
 
 ##
@@ -19,19 +19,19 @@ from ...server.responses import PipelineHttpResponseEncoder
 
 class PingHandler(IoPipelineHandler):
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, PipelineHttpRequestHead):
-            if not isinstance(msg, PipelineHttpRequestObject):
+        if not isinstance(msg, IoPipelineHttpRequestHead):
+            if not isinstance(msg, IoPipelineHttpRequestObject):
                 ctx.feed_in(msg)
             return
 
         if msg.method == 'GET' and msg.target == '/ping':
-            ctx.feed_out(FullPipelineHttpResponse.simple(
+            ctx.feed_out(IoFullPipelineHttpResponse.simple(
                 status=200,
                 body=b'pong',
             ))
 
         else:
-            ctx.feed_out(FullPipelineHttpResponse.simple(
+            ctx.feed_out(IoFullPipelineHttpResponse.simple(
                 status=404,
                 body=b'not found',
             ))
@@ -41,8 +41,8 @@ class PingHandler(IoPipelineHandler):
 
 def build_http_ping_channel() -> IoPipeline.Spec:
     return IoPipeline.Spec([
-        PipelineHttpRequestDecoder(),
-        PipelineHttpResponseEncoder(),
+        IoPipelineHttpRequestDecoder(),
+        IoPipelineHttpResponseEncoder(),
         PingHandler(),
     ])
 

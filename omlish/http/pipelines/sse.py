@@ -12,7 +12,7 @@ from ...io.pipelines.core import IoPipelineMessages
 
 
 @dc.dataclass(frozen=True)
-class PipelineSseEvent:
+class IoPipelineSseEvent:
     event: ta.Optional[str] = None
     data: str = ''
     id: ta.Optional[str] = None
@@ -22,7 +22,7 @@ class PipelineSseEvent:
 ##
 
 
-class PipelineSseDecoder(IoPipelineHandler):
+class IoPipelineSseDecoder(IoPipelineHandler):
     """Consumes lines and emits SseEvent objects; ignores comment lines and handles blank-line termination."""
 
     def __init__(self) -> None:
@@ -83,7 +83,7 @@ class PipelineSseDecoder(IoPipelineHandler):
         ):
             return
 
-        ev = PipelineSseEvent(
+        ev = IoPipelineSseEvent(
             event=self._event,
             data='\n'.join(self._data),
             id=self._id,

@@ -6,9 +6,9 @@ from .....io.pipelines.bytes.decoders import DelimiterFrameDecoderIoPipelineHand
 from .....io.pipelines.bytes.decoders import UnicodeDecoderIoPipelineHandler
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
-from ...client.responses import PipelineHttpResponseDecoder
-from ...client.responses import PipelineHttpResponseDecompressor
-from ...sse import PipelineSseDecoder
+from ...client.responses import IoPipelineHttpResponseDecoder
+from ...client.responses import IoPipelineHttpResponseDecompressor
+from ...sse import IoPipelineSseDecoder
 
 
 ##
@@ -18,11 +18,11 @@ def build_http_sse_channel() -> IoPipeline:
     """Example: raw bytes -> HTTP response head -> conditional gzip -> longest-match line framing -> Sse events."""
 
     return IoPipeline.new([
-        PipelineHttpResponseDecoder(),
-        PipelineHttpResponseDecompressor(),
+        IoPipelineHttpResponseDecoder(),
+        IoPipelineHttpResponseDecompressor(),
         DelimiterFrameDecoderIoPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
         UnicodeDecoderIoPipelineHandler(),
-        PipelineSseDecoder(),
+        IoPipelineSseDecoder(),
         FlatMapIoPipelineHandlers.feed_out_and_drop(),
     ])
 
