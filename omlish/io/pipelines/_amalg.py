@@ -4,7 +4,7 @@ from .bytes.buffering import InboundBytesBufferingChannelPipelineHandler  # noqa
 from .bytes.decoders import DelimiterFrameDecoderChannelPipelineHandler  # noqa
 from .bytes.queues import InboundBytesBufferingQueueChannelPipelineHandler  # noqa
 from .core import ChannelPipelineHandler  # noqa
-from .drivers.asyncio import AsyncioStreamPipelineChannelDriver  # noqa
+from .drivers.asyncio import AsyncioStreamChannelPipelineDriver  # noqa
 from .handlers.flatmap import FlatMapChannelPipelineHandler  # noqa
 from .handlers.fns import FnChannelPipelineHandler  # noqa
 from .handlers.queues import QueueChannelPipelineHandler  # noqa

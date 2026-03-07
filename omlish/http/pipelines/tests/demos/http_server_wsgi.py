@@ -5,7 +5,7 @@ import typing as ta
 
 from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
 from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
 from .....io.pipelines.handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...server.apps.wsgi import WsgiHandler
@@ -36,7 +36,7 @@ def build_wsgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
 
 async def a_serve_wsgi_pipeline(spec: WsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamPipelineChannelDriver(
+        drv = SimpleAsyncioStreamChannelPipelineDriver(
             build_wsgi_channel(spec.app),
             reader,
             writer,

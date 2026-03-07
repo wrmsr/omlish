@@ -8,8 +8,8 @@ from .....io.pipelines.core import ChannelPipelineHandler
 from .....io.pipelines.core import ChannelPipelineHandlerContext
 from .....io.pipelines.core import ChannelPipelineHandlerFn
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
-from .....io.pipelines.drivers.sync import SyncSocketPipelineChannelDriver
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
+from .....io.pipelines.drivers.sync import SyncSocketChannelPipelineDriver
 from .....io.pipelines.flow.stub import StubChannelPipelineFlow
 from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
 from .....io.pipelines.handlers.logs import LoggingChannelPipelineHandler
@@ -289,7 +289,7 @@ async def asyncio_fetch_url(
     reader, writer = await asyncio.open_connection(puf.parsed_url.host, puf.parsed_url.port)
 
     try:
-        drv = SimpleAsyncioStreamPipelineChannelDriver(
+        drv = SimpleAsyncioStreamChannelPipelineDriver(
             puf.pipeline_spec,
             reader,
             writer,
@@ -349,7 +349,7 @@ def sync_fetch_url(
 
     try:
         # Run driver to process request/response
-        drv = SyncSocketPipelineChannelDriver(
+        drv = SyncSocketChannelPipelineDriver(
             puf.pipeline_spec,
             sock,
         )

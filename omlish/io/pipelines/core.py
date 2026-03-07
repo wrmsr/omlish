@@ -26,7 +26,7 @@ ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T] 
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
 
-PipelineChannelMetadataT = ta.TypeVar('PipelineChannelMetadataT', bound='PipelineChannelMetadata')
+ChannelPipelineMetadataT = ta.TypeVar('ChannelPipelineMetadataT', bound='ChannelPipelineMetadata')
 
 
 ##
@@ -783,13 +783,13 @@ class ChannelPipelineServices:
 ##
 
 
-class PipelineChannelMetadata(Abstract):
+class ChannelPipelineMetadata(Abstract):
     pass
 
 
 @ta.final
-class PipelineChannelMetadatas:
-    def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
+class ChannelPipelineMetadatas:
+    def __init__(self, lst: ta.Sequence[ChannelPipelineMetadata]) -> None:
         dct: ta.Dict[type, ta.Any] = {}
         for md in lst:
             ty = type(md)
@@ -798,7 +798,7 @@ class PipelineChannelMetadatas:
         self._dct = dct
 
     @classmethod
-    def of(cls, obj: ta.Union['PipelineChannelMetadatas', ta.Sequence[PipelineChannelMetadata]]) -> 'PipelineChannelMetadatas':  # noqa
+    def of(cls, obj: ta.Union['ChannelPipelineMetadatas', ta.Sequence[ChannelPipelineMetadata]]) -> 'ChannelPipelineMetadatas':  # noqa
         if isinstance(obj, cls):
             return obj
         else:
@@ -807,25 +807,25 @@ class PipelineChannelMetadatas:
     def __len__(self) -> int:
         return len(self._dct)
 
-    def __contains__(self, ty: ta.Type[PipelineChannelMetadata]) -> bool:
+    def __contains__(self, ty: ta.Type[ChannelPipelineMetadata]) -> bool:
         return ty in self._dct
 
-    def __iter__(self) -> ta.Iterator[PipelineChannelMetadata]:
+    def __iter__(self) -> ta.Iterator[ChannelPipelineMetadata]:
         return iter(self._dct.values())
 
     @dc.dataclass(frozen=True)
-    class MetadataType(ta.Generic[PipelineChannelMetadataT]):
+    class MetadataType(ta.Generic[ChannelPipelineMetadataT]):
         """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
 
-        ty: ta.Type[PipelineChannelMetadataT]
+        ty: ta.Type[ChannelPipelineMetadataT]
 
     def __getitem__(
             self,
             ty: ta.Union[
-                MetadataType[PipelineChannelMetadataT],
-                ta.Type[PipelineChannelMetadataT],
+                MetadataType[ChannelPipelineMetadataT],
+                ta.Type[ChannelPipelineMetadataT],
             ],
-    ) -> PipelineChannelMetadataT:
+    ) -> ChannelPipelineMetadataT:
         if isinstance(ty, self.MetadataType):
             ty = ty.ty
 
@@ -835,24 +835,24 @@ class PipelineChannelMetadatas:
     def get(
             self,
             ty: ta.Union[
-                MetadataType[PipelineChannelMetadataT],
-                ta.Type[PipelineChannelMetadataT],
+                MetadataType[ChannelPipelineMetadataT],
+                ta.Type[ChannelPipelineMetadataT],
             ],
-            default: PipelineChannelMetadataT,
+            default: ChannelPipelineMetadataT,
             /,
-    ) -> PipelineChannelMetadataT:
+    ) -> ChannelPipelineMetadataT:
         ...
 
     @ta.overload
     def get(
             self,
             ty: ta.Union[
-                MetadataType[PipelineChannelMetadataT],
-                ta.Type[PipelineChannelMetadataT],
+                MetadataType[ChannelPipelineMetadataT],
+                ta.Type[ChannelPipelineMetadataT],
             ],
-            default: ta.Optional[PipelineChannelMetadataT] = None,
+            default: ta.Optional[ChannelPipelineMetadataT] = None,
             /,
-    ) -> ta.Optional[PipelineChannelMetadataT]:
+    ) -> ta.Optional[ChannelPipelineMetadataT]:
         ...
 
     def get(self, ty, default=None, /):
@@ -865,7 +865,7 @@ class PipelineChannelMetadatas:
 
 
 @ta.final
-class _PipelineChannelPropagation:
+class _ChannelPipelinePropagation:
     @dc.dataclass()
     class _PendingMustEntry:
         msg: ta.Any
@@ -877,7 +877,7 @@ class _PipelineChannelPropagation:
         self._ch = ch
 
         if not self._ch._config.disable_propagation_checking:  # noqa
-            self._pending_must: ta.Final[ta.Dict[int, _PipelineChannelPropagation._PendingMustEntry]] = {}
+            self._pending_must: ta.Final[ta.Dict[int, _ChannelPipelinePropagation._PendingMustEntry]] = {}
 
     def add_must(
             self,
@@ -892,7 +892,7 @@ class _PipelineChannelPropagation:
         try:
             x = self._pending_must[i]
         except KeyError:
-            self._pending_must[i] = _PipelineChannelPropagation._PendingMustEntry(  # noqa
+            self._pending_must[i] = _ChannelPipelinePropagation._PendingMustEntry(  # noqa
                 msg,
                 direction,
                 ctx,
@@ -1026,7 +1026,7 @@ class ChannelPipeline:
 
         # _: dc.KW_ONLY
 
-        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = ()
+        metadata: ta.Union[ta.Sequence[ChannelPipelineMetadata], ChannelPipelineMetadatas] = ()
 
         # Services are fixed for the lifetime of the channel.
         services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = ()
@@ -1042,7 +1042,7 @@ class ChannelPipeline:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: 'ChannelPipeline.Config' = Config.DEFAULT,
             *,
-            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = (),
+            metadata: ta.Union[ta.Sequence[ChannelPipelineMetadata], ChannelPipelineMetadatas] = (),
             services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = (),
     ) -> 'ChannelPipeline':
         return cls(ChannelPipeline.Spec(
@@ -1065,7 +1065,7 @@ class ChannelPipeline:
         self._config: ta.Final[ChannelPipeline.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._metadata: ta.Final[PipelineChannelMetadatas] = PipelineChannelMetadatas.of(spec.metadata)
+        self._metadata: ta.Final[ChannelPipelineMetadatas] = ChannelPipelineMetadatas.of(spec.metadata)
         self._services: ta.Final[ChannelPipelineServices] = ChannelPipelineServices.of(spec.services)
 
         #
@@ -1084,7 +1084,7 @@ class ChannelPipeline:
 
         self._execution_depth = 0
 
-        self._propagation: _PipelineChannelPropagation = _PipelineChannelPropagation(self)
+        self._propagation: _ChannelPipelinePropagation = _ChannelPipelinePropagation(self)
 
         #
 
@@ -1166,7 +1166,7 @@ class ChannelPipeline:
     #
 
     @property
-    def metadata(self) -> PipelineChannelMetadatas:
+    def metadata(self) -> ChannelPipelineMetadatas:
         return self._metadata
 
     #

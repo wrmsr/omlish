@@ -19,10 +19,10 @@ log, alog = get_module_loggers(globals())  # noqa
 ##
 
 
-class SyncSocketPipelineChannelDriver:
+class SyncSocketChannelPipelineDriver:
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['SyncSocketPipelineChannelDriver.Config']
+        DEFAULT: ta.ClassVar['SyncSocketChannelPipelineDriver.Config']
 
         read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
@@ -42,7 +42,7 @@ class SyncSocketPipelineChannelDriver:
         self._spec = spec
         self._sock = sock
         if config is None:
-            config = SyncSocketPipelineChannelDriver.Config.DEFAULT
+            config = SyncSocketChannelPipelineDriver.Config.DEFAULT
         self._config = config
 
     def __repr__(self) -> str:

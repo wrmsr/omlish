@@ -8,7 +8,7 @@ from ..core import ChannelPipeline
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
-from ..core import PipelineChannelMetadata
+from ..core import ChannelPipelineMetadata
 from ..errors import ContextInvalidatedChannelPipelineError
 from ..errors import MessageNotPropagatedChannelPipelineError
 from ..handlers.feedback import FeedbackInboundChannelPipelineHandler
@@ -159,11 +159,11 @@ class TestCore(unittest.TestCase):
 
 class TestMetadata(unittest.TestCase):
     @dc.dataclass(frozen=True)
-    class FooMetadata(PipelineChannelMetadata):
+    class FooMetadata(ChannelPipelineMetadata):
         foo: str
 
     @dc.dataclass(frozen=True)
-    class BarMetadata(PipelineChannelMetadata):
+    class BarMetadata(ChannelPipelineMetadata):
         bar: str
 
     def test_metadata(self):

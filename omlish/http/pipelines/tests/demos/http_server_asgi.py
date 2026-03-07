@@ -5,7 +5,7 @@ import typing as ta
 
 from .....io.pipelines.asyncs import AsyncChannelPipelineMessages  # noqa
 from .....io.pipelines.core import ChannelPipeline
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
 from ...responses import FullPipelineHttpResponse  # noqa
 from ...responses import PipelineHttpResponseHead  # noqa
 from ...server.apps.asgi import AsgiHandler
@@ -33,7 +33,7 @@ def build_asgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
 
 async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamPipelineChannelDriver(
+        drv = SimpleAsyncioStreamChannelPipelineDriver(
             build_asgi_channel(spec.app),
             reader,
             writer,

@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='7e39e328cca167e4f03560bd6966237414e453cd'),
+            dict(path='core.py', sha1='df3507a2c5919681dc4662264e7b081214d1ede1'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -70,8 +70,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='389bffc6c02d68825e440725023bef62d4cf1d01'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='1ef4ed95e68f3fad73eddb23ed31805109d099f3'),
-            dict(path='_amalg.py', sha1='ffee68f3cc7810f0c9e8c7659c8347a622443bea'),
+            dict(path='drivers/asyncio.py', sha1='7db784ce5612cb283fecbe94d4fec398db79f683'),
+            dict(path='_amalg.py', sha1='78c9e412500f0afff1d744b60c2c30f72636d9cd'),
         ],
     )
 
@@ -98,7 +98,7 @@ F = ta.TypeVar('F')
 ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T]  # ta.TypeAlias
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
-PipelineChannelMetadataT = ta.TypeVar('PipelineChannelMetadataT', bound='PipelineChannelMetadata')
+ChannelPipelineMetadataT = ta.TypeVar('ChannelPipelineMetadataT', bound='ChannelPipelineMetadata')
 
 # ../streams/types.py
 BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
@@ -2068,13 +2068,13 @@ class ChannelPipelineServices:
 ##
 
 
-class PipelineChannelMetadata(Abstract):
+class ChannelPipelineMetadata(Abstract):
     pass
 
 
 @ta.final
-class PipelineChannelMetadatas:
-    def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
+class ChannelPipelineMetadatas:
+    def __init__(self, lst: ta.Sequence[ChannelPipelineMetadata]) -> None:
         dct: ta.Dict[type, ta.Any] = {}
         for md in lst:
             ty = type(md)
@@ -2083,7 +2083,7 @@ class PipelineChannelMetadatas:
         self._dct = dct
 
     @classmethod
-    def of(cls, obj: ta.Union['PipelineChannelMetadatas', ta.Sequence[PipelineChannelMetadata]]) -> 'PipelineChannelMetadatas':  # noqa
+    def of(cls, obj: ta.Union['ChannelPipelineMetadatas', ta.Sequence[ChannelPipelineMetadata]]) -> 'ChannelPipelineMetadatas':  # noqa
         if isinstance(obj, cls):
             return obj
         else:
@@ -2092,25 +2092,25 @@ class PipelineChannelMetadatas:
     def __len__(self) -> int:
         return len(self._dct)
 
-    def __contains__(self, ty: ta.Type[PipelineChannelMetadata]) -> bool:
+    def __contains__(self, ty: ta.Type[ChannelPipelineMetadata]) -> bool:
         return ty in self._dct
 
-    def __iter__(self) -> ta.Iterator[PipelineChannelMetadata]:
+    def __iter__(self) -> ta.Iterator[ChannelPipelineMetadata]:
         return iter(self._dct.values())
 
     @dc.dataclass(frozen=True)
-    class MetadataType(ta.Generic[PipelineChannelMetadataT]):
+    class MetadataType(ta.Generic[ChannelPipelineMetadataT]):
         """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
 
-        ty: ta.Type[PipelineChannelMetadataT]
+        ty: ta.Type[ChannelPipelineMetadataT]
 
     def __getitem__(
             self,
             ty: ta.Union[
-                MetadataType[PipelineChannelMetadataT],
-                ta.Type[PipelineChannelMetadataT],
+                MetadataType[ChannelPipelineMetadataT],
+                ta.Type[ChannelPipelineMetadataT],
             ],
-    ) -> PipelineChannelMetadataT:
+    ) -> ChannelPipelineMetadataT:
         if isinstance(ty, self.MetadataType):
             ty = ty.ty
 
@@ -2120,24 +2120,24 @@ class PipelineChannelMetadatas:
     def get(
             self,
             ty: ta.Union[
-                MetadataType[PipelineChannelMetadataT],
-                ta.Type[PipelineChannelMetadataT],
+                MetadataType[ChannelPipelineMetadataT],
+                ta.Type[ChannelPipelineMetadataT],
             ],
-            default: PipelineChannelMetadataT,
+            default: ChannelPipelineMetadataT,
             /,
-    ) -> PipelineChannelMetadataT:
+    ) -> ChannelPipelineMetadataT:
         ...
 
     @ta.overload
     def get(
             self,
             ty: ta.Union[
-                MetadataType[PipelineChannelMetadataT],
-                ta.Type[PipelineChannelMetadataT],
+                MetadataType[ChannelPipelineMetadataT],
+                ta.Type[ChannelPipelineMetadataT],
             ],
-            default: ta.Optional[PipelineChannelMetadataT] = None,
+            default: ta.Optional[ChannelPipelineMetadataT] = None,
             /,
-    ) -> ta.Optional[PipelineChannelMetadataT]:
+    ) -> ta.Optional[ChannelPipelineMetadataT]:
         ...
 
     def get(self, ty, default=None, /):
@@ -2150,7 +2150,7 @@ class PipelineChannelMetadatas:
 
 
 @ta.final
-class _PipelineChannelPropagation:
+class _ChannelPipelinePropagation:
     @dc.dataclass()
     class _PendingMustEntry:
         msg: ta.Any
@@ -2162,7 +2162,7 @@ class _PipelineChannelPropagation:
         self._ch = ch
 
         if not self._ch._config.disable_propagation_checking:  # noqa
-            self._pending_must: ta.Final[ta.Dict[int, _PipelineChannelPropagation._PendingMustEntry]] = {}
+            self._pending_must: ta.Final[ta.Dict[int, _ChannelPipelinePropagation._PendingMustEntry]] = {}
 
     def add_must(
             self,
@@ -2177,7 +2177,7 @@ class _PipelineChannelPropagation:
         try:
             x = self._pending_must[i]
         except KeyError:
-            self._pending_must[i] = _PipelineChannelPropagation._PendingMustEntry(  # noqa
+            self._pending_must[i] = _ChannelPipelinePropagation._PendingMustEntry(  # noqa
                 msg,
                 direction,
                 ctx,
@@ -2311,7 +2311,7 @@ class ChannelPipeline:
 
         # _: dc.KW_ONLY
 
-        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = ()
+        metadata: ta.Union[ta.Sequence[ChannelPipelineMetadata], ChannelPipelineMetadatas] = ()
 
         # Services are fixed for the lifetime of the channel.
         services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = ()
@@ -2327,7 +2327,7 @@ class ChannelPipeline:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: 'ChannelPipeline.Config' = Config.DEFAULT,
             *,
-            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], PipelineChannelMetadatas] = (),
+            metadata: ta.Union[ta.Sequence[ChannelPipelineMetadata], ChannelPipelineMetadatas] = (),
             services: ta.Union[ta.Sequence[ChannelPipelineService], ChannelPipelineServices] = (),
     ) -> 'ChannelPipeline':
         return cls(ChannelPipeline.Spec(
@@ -2350,7 +2350,7 @@ class ChannelPipeline:
         self._config: ta.Final[ChannelPipeline.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._metadata: ta.Final[PipelineChannelMetadatas] = PipelineChannelMetadatas.of(spec.metadata)
+        self._metadata: ta.Final[ChannelPipelineMetadatas] = ChannelPipelineMetadatas.of(spec.metadata)
         self._services: ta.Final[ChannelPipelineServices] = ChannelPipelineServices.of(spec.services)
 
         #
@@ -2369,7 +2369,7 @@ class ChannelPipeline:
 
         self._execution_depth = 0
 
-        self._propagation: _PipelineChannelPropagation = _PipelineChannelPropagation(self)
+        self._propagation: _ChannelPipelinePropagation = _ChannelPipelinePropagation(self)
 
         #
 
@@ -2451,7 +2451,7 @@ class ChannelPipeline:
     #
 
     @property
-    def metadata(self) -> PipelineChannelMetadatas:
+    def metadata(self) -> ChannelPipelineMetadatas:
         return self._metadata
 
     #
@@ -7921,10 +7921,10 @@ log, alog = get_module_loggers(globals())  # noqa
 ##
 
 
-class AsyncioStreamPipelineChannelDriver(Abstract):
+class AsyncioStreamChannelPipelineDriver(Abstract):
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['AsyncioStreamPipelineChannelDriver.Config']
+        DEFAULT: ta.ClassVar['AsyncioStreamChannelPipelineDriver.Config']
 
         read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
@@ -7946,14 +7946,14 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._reader = reader
         self._writer = writer
         if config is None:
-            config = AsyncioStreamPipelineChannelDriver.Config.DEFAULT
+            config = AsyncioStreamChannelPipelineDriver.Config.DEFAULT
         self._config = config
 
         #
 
         self._shutdown_event = asyncio.Event()
 
-        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
+        self._command_queue: asyncio.Queue[AsyncioStreamChannelPipelineDriver._Command] = asyncio.Queue()
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -7969,13 +7969,13 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     ##
     # init
 
-    _sched: 'AsyncioStreamPipelineChannelDriver._Scheduling'
+    _sched: 'AsyncioStreamChannelPipelineDriver._Scheduling'
 
     _channel: ChannelPipeline
 
     _flow: ta.Optional[ChannelPipelineFlow]
 
-    _command_handlers: ta.Mapping[ta.Type['AsyncioStreamPipelineChannelDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
+    _command_handlers: ta.Mapping[ta.Type['AsyncioStreamChannelPipelineDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
     _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
 
     async def _init(self) -> None:
@@ -8078,13 +8078,13 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         check.state(not self._shutdown_event.is_set())
 
         fut: asyncio.Future[None] = asyncio.Future()
-        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs, fut=fut))
+        self._command_queue.put_nowait(AsyncioStreamChannelPipelineDriver._FeedInCommand(msgs, fut=fut))
         await fut
 
     def feed_in_nowait(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
-        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs))
+        self._command_queue.put_nowait(AsyncioStreamChannelPipelineDriver._FeedInCommand(msgs))
 
     ##
     # read completed
@@ -8168,7 +8168,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             return
 
         self._has_sent_update_want_read_command = True
-        await self._command_queue.put(AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand())
+        await self._command_queue.put(AsyncioStreamChannelPipelineDriver._UpdateWantReadCommand())
 
     _want_read = False
 
@@ -8188,7 +8188,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
         if self._want_read:
             if self._pending_completed_reads:
-                in_cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand([
+                in_cmd = AsyncioStreamChannelPipelineDriver._ReadCompletedCommand([
                     b
                     for pcr_cmd in self._pending_completed_reads
                     for b in pcr_cmd.data()
@@ -8212,7 +8212,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     # scheduling
 
     class _Scheduling(ChannelPipelineScheduling):
-        def __init__(self, d: 'AsyncioStreamPipelineChannelDriver') -> None:
+        def __init__(self, d: 'AsyncioStreamChannelPipelineDriver') -> None:
             super().__init__()
 
             self._d = d
@@ -8239,7 +8239,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         async def _task_body(self, delay: float, fn: ta.Callable[[], None]) -> None:
             await asyncio.sleep(delay)
 
-            self._d._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._ScheduledCommand(fn))  # noqa
+            self._d._command_queue.put_nowait(AsyncioStreamChannelPipelineDriver._ScheduledCommand(fn))  # noqa
 
         async def _flush_pending(self) -> None:
             if not (lst := self._pending):
@@ -8265,10 +8265,10 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
     def _build_command_handlers(self) -> ta.Mapping[ta.Type[_Command], ta.Callable[[ta.Any], ta.Awaitable[None]]]:
         return {
-            AsyncioStreamPipelineChannelDriver._FeedInCommand: self._handle_command_feed_in,
-            AsyncioStreamPipelineChannelDriver._ReadCompletedCommand: self._handle_command_read_completed,
-            AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand: self._handle_command_update_want_read,
-            AsyncioStreamPipelineChannelDriver._ScheduledCommand: self._handle_scheduled_command,
+            AsyncioStreamChannelPipelineDriver._FeedInCommand: self._handle_command_feed_in,
+            AsyncioStreamChannelPipelineDriver._ReadCompletedCommand: self._handle_command_read_completed,
+            AsyncioStreamChannelPipelineDriver._UpdateWantReadCommand: self._handle_command_update_want_read,
+            AsyncioStreamChannelPipelineDriver._ScheduledCommand: self._handle_scheduled_command,
         }
 
     async def _handle_command(self, cmd: _Command) -> None:
@@ -8423,7 +8423,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 ##
 
 
-class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDriver):
+class SimpleAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPipelineDriver):
     _read_task: ta.Optional[asyncio.Task] = None
 
     def _ensure_read_task(self) -> None:
@@ -8439,16 +8439,16 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
             if self._shutdown_event.is_set():
                 return
 
-            cmd: AsyncioStreamPipelineChannelDriver._Command
+            cmd: AsyncioStreamChannelPipelineDriver._Command
             eof = False
             try:
                 data = task.result()
 
             except asyncio.CancelledError:
-                cmd = AsyncioStreamPipelineChannelDriver._ReadCancelledCommand()  # noqa
+                cmd = AsyncioStreamChannelPipelineDriver._ReadCancelledCommand()  # noqa
 
             else:
-                cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand(data)  # noqa
+                cmd = AsyncioStreamChannelPipelineDriver._ReadCompletedCommand(data)  # noqa
                 eof = not data
 
             self._command_queue.put_nowait(cmd)
@@ -8466,11 +8466,11 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
 
         #
 
-        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamPipelineChannelDriver._Command]] = None
+        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamChannelPipelineDriver._Command]] = None
 
         try:
             if not self._shutdown_event.is_set():
-                await self._handle_command(AsyncioStreamPipelineChannelDriver._FeedInCommand([  # noqa
+                await self._handle_command(AsyncioStreamChannelPipelineDriver._FeedInCommand([  # noqa
                     ChannelPipelineMessages.InitialInput(),
                 ]))
 

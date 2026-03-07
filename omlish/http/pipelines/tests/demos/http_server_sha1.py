@@ -11,7 +11,7 @@ import typing as ta
 from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineHandler
 from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
+from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamChannelPipelineDriver
 from .....io.pipelines.flow.stub import StubChannelPipelineFlow
 from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunkData
@@ -127,7 +127,7 @@ async def serve_sha1(
             reader: asyncio.StreamReader,
             writer: asyncio.StreamWriter,
     ) -> None:
-        drv = SimpleAsyncioStreamPipelineChannelDriver(
+        drv = SimpleAsyncioStreamChannelPipelineDriver(
             build_http_sha1_channel(),
             reader,
             writer,
