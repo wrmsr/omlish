@@ -88,7 +88,7 @@ def __omlish_amalg__():  # noqa
             dict(path='http/server/responses.py', sha1='4ec57def38b996880f6802d5766cd726f708cc73'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='5d4f809ccc0261f5906714b7aae561a28cc7c3b4'),
-            dict(path='http/aggregators.py', sha1='dad6809ee0e3b987ce01a1e4c2df2e580ed317d0'),
+            dict(path='http/aggregators.py', sha1='36f20cac486a41a67f2828c8210d75c94bce2879'),
             dict(path='drivers/asyncio.py', sha1='4d9119d7069832880ddfb8d614a4af475c0848c7'),
             dict(path='http/decoders.py', sha1='7714493031c87ba220458ec273c47247a323716c'),
             dict(path='http/client/responses.py', sha1='39f1a97dbeabf728aa9ef63cb9f6b8c5711f3d21'),
@@ -11538,6 +11538,13 @@ class PipelineHttpObjectAggregator(
         )
 
         self._state: PipelineHttpObjectAggregator._State = self._init_state()
+
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
+    def set_enabled(self, enabled: bool) -> None:
+        self._enabled = enabled
 
     #
 

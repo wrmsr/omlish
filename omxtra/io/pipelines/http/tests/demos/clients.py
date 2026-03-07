@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-import collections
 import dataclasses as dc
 import typing as ta
 
@@ -24,40 +23,85 @@ from ...client.responses import PipelineHttpResponseDecoder
 from ...client.responses import PipelineHttpResponseDecompressor
 from ...requests import FullPipelineHttpRequest
 from ...responses import FullPipelineHttpResponse
+from ...responses import PipelineHttpResponseEnd
+from ...responses import PipelineHttpResponseObject
 
 
 ##
 
 
-class HttpClientHandler(ChannelPipelineHandler):
-    def __init__(
-            self,
-            on_response: ChannelPipelineHandlerFn[FullPipelineHttpResponse, None],
-    ) -> None:
-        super().__init__()
+HttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+    PipelineHttpResponseObject,
+    ChannelPipelineMessages.FinalInput,
+    'HttpClientClose',
+]
 
-        self._on_response = on_response
+
+@dc.dataclass(frozen=True)
+class HttpClientRequest:
+    request: FullPipelineHttpRequest
+
+    on_output: ChannelPipelineHandlerFn[HttpClientRequestOutput, None]
+
+    stream: bool = False
+
+
+@dc.dataclass(frozen=True)
+class HttpClientClose:
+    pass
+
+
+#
+
+
+class HttpClientHandler(ChannelPipelineHandler):
+    _request: ta.Optional[HttpClientRequest] = None
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, FullPipelineHttpRequest):
-            ctx.feed_out(msg)
+        if isinstance(msg, HttpClientRequest):
+            check.none(self._request)
+            self._request = msg
+
+            rad = check.not_none(ctx.pipeline.find_single_handler_of_type(PipelineHttpResponseAggregatorDecoder))
+            rad.handler.set_enabled(not msg.stream)
+
+            ctx.feed_out(msg.request)
+
             if not StubChannelPipelineFlow.is_auto_read_context(ctx):
                 ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
             return
 
-        if isinstance(msg, FullPipelineHttpResponse):
-            self._on_response(ctx, msg)
+        if isinstance(msg, PipelineHttpResponseObject):
+            request = check.not_none(self._request)
+
+            request.on_output(ctx, msg)
+
+            if isinstance(msg, (FullPipelineHttpResponse, PipelineHttpResponseEnd)):
+                self._request = None
+
+            return
+
+        if isinstance(msg, (ChannelPipelineMessages.FinalInput, HttpClientClose)):
+            if (request2 := self._request) is not None:
+                self._request = None
+
+                request2.on_output(ctx, msg)
+
+            if isinstance(msg, ChannelPipelineMessages.FinalInput):
+                ctx.feed_in(msg)
+
             ctx.feed_out(ChannelPipelineMessages.FinalOutput())
+
             return
 
         ctx.feed_in(msg)
 
 
+#
+
+
 def build_http_client(
-        on_response: ChannelPipelineHandlerFn[FullPipelineHttpResponse, None],
-
-        *,
-
         outermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
         innermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
 
@@ -67,8 +111,6 @@ def build_http_client(
         ssl_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
 
         with_gzip: bool = False,
-
-        with_aggregator: bool = False,
 
         with_flow: bool = False,
         flow_auto_read: bool = False,
@@ -85,11 +127,11 @@ def build_http_client(
 
             PipelineHttpResponseDecoder(),
             *([PipelineHttpResponseDecompressor()] if with_gzip else []),
-            *([PipelineHttpResponseAggregatorDecoder()] if with_aggregator else []),
+            PipelineHttpResponseAggregatorDecoder(),
 
             PipelineHttpRequestEncoder(),
 
-            HttpClientHandler(on_response),
+            HttpClientHandler(),
 
             *(innermost_handlers or []),
         ],
@@ -184,7 +226,6 @@ class _PreparedUrlFetch(ta.NamedTuple):
     parsed_url: ParsedUrl
     request: FullPipelineHttpRequest
     pipeline_spec: PipelineChannel.Spec
-    get_response: ta.Callable[[], FullPipelineHttpResponse]
 
 
 def _prepare_url_fetch(
@@ -202,13 +243,7 @@ def _prepare_url_fetch(
         },
     )
 
-    responses: collections.deque[ta.Any] = collections.deque()
-
     pipeline_spec = build_http_client(
-        lambda ctx, resp: responses.append(resp),
-
-        with_aggregator=True,
-
         **(dict(  # type: ignore[arg-type]
             with_ssl=True,
             ssl_kwargs=dict(
@@ -220,19 +255,10 @@ def _prepare_url_fetch(
         **client_kwargs,
     )
 
-    def get_response() -> FullPipelineHttpResponse:
-        lst = []
-        while responses:
-            lst.append(responses.popleft())
-
-        out = check.single(lst)
-        return check.isinstance(out, FullPipelineHttpResponse)
-
     return _PreparedUrlFetch(
         parsed_url,
         request,
         pipeline_spec,
-        get_response,
     )
 
 
@@ -244,6 +270,20 @@ async def asyncio_fetch_url(
         **client_kwargs: ta.Any,
 ) -> FullPipelineHttpResponse:
     puf = _prepare_url_fetch(url, **client_kwargs)
+
+    #
+
+    response: ta.Optional[FullPipelineHttpResponse] = None
+
+    def on_output(ctx: ChannelPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
+        if isinstance(msg, FullPipelineHttpResponse):
+            nonlocal response
+            check.none(response)
+            response = msg
+
+            ctx.channel.feed_in(HttpClientClose())
+
+    #
 
     import asyncio
 
@@ -258,7 +298,10 @@ async def asyncio_fetch_url(
 
         drv_run_task = asyncio.create_task(drv.run())
 
-        await drv.feed_in(puf.request)
+        await drv.feed_in(HttpClientRequest(
+            puf.request,
+            on_output,
+        ))
 
         await drv_run_task
 
@@ -266,7 +309,7 @@ async def asyncio_fetch_url(
         writer.close()
         await writer.wait_closed()
 
-    return puf.get_response()
+    return check.not_none(response)
 
 
 ##
@@ -277,6 +320,20 @@ def sync_fetch_url(
         **client_kwargs: ta.Any,
 ) -> FullPipelineHttpResponse:
     puf = _prepare_url_fetch(url, **client_kwargs)
+
+    #
+
+    response: ta.Optional[FullPipelineHttpResponse] = None
+
+    def on_output(ctx: ChannelPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
+        if isinstance(msg, FullPipelineHttpResponse):
+            nonlocal response
+            check.none(response)
+            response = msg
+
+            ctx.channel.feed_in(HttpClientClose())
+
+    #
 
     import errno
     import socket
@@ -289,6 +346,8 @@ def sync_fetch_url(
         if e.errno != errno.ENOPROTOOPT:
             raise
 
+    #
+
     try:
         # Run driver to process request/response
         drv = SyncSocketPipelineChannelDriver(
@@ -296,9 +355,14 @@ def sync_fetch_url(
             sock,
         )
 
-        drv.run(puf.request)
+        drv.run(HttpClientRequest(
+            puf.request,
+            on_output,
+        ))
 
     finally:
         sock.close()
 
-    return puf.get_response()
+    #
+
+    return check.not_none(response)

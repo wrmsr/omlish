@@ -70,6 +70,13 @@ class PipelineHttpObjectAggregator(
 
         self._state: PipelineHttpObjectAggregator._State = self._init_state()
 
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
+    def set_enabled(self, enabled: bool) -> None:
+        self._enabled = enabled
+
     #
 
     @property

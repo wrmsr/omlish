@@ -95,11 +95,12 @@ class SyncSocketPipelineChannelDriver:
                     if not self._handle_output(msg):
                         return
 
-                b = self._sock.recv(self._config.read_chunk_size)
-                if not b:
-                    in_msgs.append(ChannelPipelineMessages.FinalInput())
-                else:
-                    in_msgs.append(b)
+                if not self._channel.saw_final_input:
+                    b = self._sock.recv(self._config.read_chunk_size)
+                    if not b:
+                        in_msgs.append(ChannelPipelineMessages.FinalInput())
+                    else:
+                        in_msgs.append(b)
 
         finally:
             self._channel.destroy()
