@@ -38,7 +38,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/check.py', sha1='5e625d74d4ad4e0492e25acac42820baa9956965'),
+            dict(path='../../omlish/lite/check.py', sha1='d0fd2e52b4227fe590add3c567328c3c4cf5f199'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -57,7 +57,7 @@ T = ta.TypeVar('T')
 
 # ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
-CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], None]  # ta.TypeAlias
+CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
 CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
@@ -302,25 +302,33 @@ class Checks:
             *,
             render_fmt: ta.Optional[str] = None,
     ) -> ta.NoReturn:
-        exc_args = ()
-        if callable(message):
-            message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
-            if isinstance(message, tuple):
-                message, *exc_args = message  # type: ignore
-
-        if message is None:
-            message = default_message
-
         self._late_configure()
 
-        if render_fmt is not None and (af := self._args_renderer) is not None:
-            rendered_args = af(render_fmt, *ak.args)
-            if rendered_args is not None:
-                message = f'{message} : {rendered_args}'
+        exc_args: tuple = ()
+
+        if isinstance(message, type):
+            exception_type = message
+
+        else:
+            message = default_message
+
+            if callable(message):
+                message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
+                if isinstance(message, tuple):
+                    message, *exc_args = message  # type: ignore
+
+            if message is None:
+                message = default_message
+
+            if render_fmt is not None and (af := self._args_renderer) is not None:
+                rendered_args = af(render_fmt, *ak.args)
+                if rendered_args is not None:
+                    message = f'{message} : {rendered_args}'
+
+            exc_args = (message, *exc_args)
 
         exc = self._exception_factory(
             exception_type,
-            message,
             *exc_args,
             *ak.args,
             **ak.kwargs,
@@ -355,7 +363,7 @@ class Checks:
         ...
 
     def isinstance(self, v, spec, msg=None):
-        if not isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
+        if not isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
             self._raise(
                 TypeError,
                 'Must be instance',
@@ -375,7 +383,7 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None, /):
-        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
+        spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa
 
         def inner(v):
             return self.isinstance(v, spec, msg)
@@ -400,7 +408,7 @@ class Checks:
         return inner
 
     def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None, /) -> T:  # noqa
-        if isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
+        if isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
             self._raise(
                 TypeError,
                 'Must not be instance',
@@ -412,7 +420,7 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
-        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
+        spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa
 
         def inner(v):
             return self.not_isinstance(v, spec, msg)
@@ -642,7 +650,6 @@ class Checks:
                 ValueError,
                 'Must be None',
                 msg,
-                Checks._ArgsKwargs(v),
                 render_fmt='%s',
             )
 
@@ -764,7 +771,6 @@ class Checks:
                 RuntimeError,
                 'Argument condition not met',
                 msg,
-                Checks._ArgsKwargs(v),
                 render_fmt='%s',
             )
 
@@ -774,7 +780,6 @@ class Checks:
                 RuntimeError,
                 'State condition not met',
                 msg,
-                Checks._ArgsKwargs(v),
                 render_fmt='%s',
             )
 

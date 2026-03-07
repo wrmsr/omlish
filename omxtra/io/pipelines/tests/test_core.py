@@ -10,6 +10,7 @@ from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
 from ..core import PipelineChannel
 from ..core import PipelineChannelMetadata
+from ..errors import ContextInvalidatedChannelPipelineError
 from ..errors import MessageNotPropagatedChannelPipelineError
 from ..handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ..handlers.queues import InboundQueueChannelPipelineHandler
@@ -94,7 +95,14 @@ class TestCore(unittest.TestCase):
 
         #
 
+        rem = ch.pipeline.handlers()[1]
         ch.pipeline.remove(ch.pipeline.handlers()[1])
+
+        with ch.enter():
+            with self.assertRaises(ContextInvalidatedChannelPipelineError):
+                rem._context._inbound('hi')  # noqa
+
+        #
 
         ch.feed_in(42)
         assert ibq.drain() == ['126']

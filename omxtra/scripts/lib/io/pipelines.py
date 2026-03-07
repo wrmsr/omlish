@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
-            dict(path='../../../omlish/lite/check.py', sha1='5e625d74d4ad4e0492e25acac42820baa9956965'),
+            dict(path='../../../omlish/lite/check.py', sha1='d0fd2e52b4227fe590add3c567328c3c4cf5f199'),
             dict(path='../../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='cc243034756fe1ff3760243fb9ce6928649db4be'),
+            dict(path='core.py', sha1='2e38bd3379821933a26961b30e87adf3651f29bf'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
@@ -106,7 +106,7 @@ T = ta.TypeVar('T')
 
 # ../../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
-CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], None]  # ta.TypeAlias
+CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], ta.Type[Exception], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
 CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
@@ -684,25 +684,33 @@ class Checks:
             *,
             render_fmt: ta.Optional[str] = None,
     ) -> ta.NoReturn:
-        exc_args = ()
-        if callable(message):
-            message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
-            if isinstance(message, tuple):
-                message, *exc_args = message  # type: ignore
-
-        if message is None:
-            message = default_message
-
         self._late_configure()
 
-        if render_fmt is not None and (af := self._args_renderer) is not None:
-            rendered_args = af(render_fmt, *ak.args)
-            if rendered_args is not None:
-                message = f'{message} : {rendered_args}'
+        exc_args: tuple = ()
+
+        if isinstance(message, type):
+            exception_type = message
+
+        else:
+            message = default_message
+
+            if callable(message):
+                message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
+                if isinstance(message, tuple):
+                    message, *exc_args = message  # type: ignore
+
+            if message is None:
+                message = default_message
+
+            if render_fmt is not None and (af := self._args_renderer) is not None:
+                rendered_args = af(render_fmt, *ak.args)
+                if rendered_args is not None:
+                    message = f'{message} : {rendered_args}'
+
+            exc_args = (message, *exc_args)
 
         exc = self._exception_factory(
             exception_type,
-            message,
             *exc_args,
             *ak.args,
             **ak.kwargs,
@@ -737,7 +745,7 @@ class Checks:
         ...
 
     def isinstance(self, v, spec, msg=None):
-        if not isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
+        if not isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
             self._raise(
                 TypeError,
                 'Must be instance',
@@ -757,7 +765,7 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None, /):
-        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
+        spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa
 
         def inner(v):
             return self.isinstance(v, spec, msg)
@@ -782,7 +790,7 @@ class Checks:
         return inner
 
     def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None, /) -> T:  # noqa
-        if isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
+        if isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
             self._raise(
                 TypeError,
                 'Must not be instance',
@@ -794,7 +802,7 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
-        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
+        spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa
 
         def inner(v):
             return self.not_isinstance(v, spec, msg)
@@ -1024,7 +1032,6 @@ class Checks:
                 ValueError,
                 'Must be None',
                 msg,
-                Checks._ArgsKwargs(v),
                 render_fmt='%s',
             )
 
@@ -1146,7 +1153,6 @@ class Checks:
                 RuntimeError,
                 'Argument condition not met',
                 msg,
-                Checks._ArgsKwargs(v),
                 render_fmt='%s',
             )
 
@@ -1156,7 +1162,6 @@ class Checks:
                 RuntimeError,
                 'State condition not met',
                 msg,
-                Checks._ArgsKwargs(v),
                 render_fmt='%s',
             )
 
@@ -5057,12 +5062,6 @@ class ChannelPipelineHandlerContext:
 
         self._handler.notify(self, no)
 
-    def _check_can_feed(self) -> None:
-        if self._invalidated:
-            raise ContextInvalidatedChannelPipelineError
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
-        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
-
     ##
     # Feeding `type`'s is forbidden as it's almost always going to be an error - usually forgetting to instantiate a
     # marker dataclass)
@@ -5075,7 +5074,9 @@ class ChannelPipelineHandlerContext:
     )
 
     def _inbound(self, msg: ta.Any) -> None:
-        self._check_can_feed()
+        check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY and self._pipeline._channel._execution_depth > 0)  # noqa
+
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -5100,7 +5101,9 @@ class ChannelPipelineHandlerContext:
     )
 
     def _outbound(self, msg: ta.Any) -> None:
-        self._check_can_feed()
+        check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY and self._pipeline._channel._execution_depth > 0)  # noqa
+
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -5120,7 +5123,9 @@ class ChannelPipelineHandlerContext:
     #
 
     def _run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
-        self._check_can_feed()
+        check.state(not self._invalidated, ContextInvalidatedChannelPipelineError)
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY and self._pipeline._channel._execution_depth > 0)  # noqa
+
         check.state(dfl._ctx is self)  # noqa
 
         try:
