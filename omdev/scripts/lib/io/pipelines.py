@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='6b2d4622c3a0dfbab3b8c6ae542af730c7d23e78'),
+            dict(path='core.py', sha1='ddac59c8d08b2602c2f1a9d1e4fde19d9f390c1d'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -2357,13 +2357,6 @@ class IoPipeline:
 
         #
 
-        self._output: ta.Final[IoPipeline._Output] = IoPipeline._Output()
-
-        self._saw_any_input = False
-        self._saw_initial_input = False
-        self._saw_final_input = False
-        self._saw_final_output = False
-
         self._all_never_handle_exceptions: ta.Tuple[type, ...] = (
             UnhandleableIoPipelineError,
             *never_handle_exceptions,
@@ -2372,6 +2365,10 @@ class IoPipeline:
         self._execution_depth = 0
 
         self._propagation: _IoPipelinePropagation = _IoPipelinePropagation(self)
+
+        #
+
+        self._output: ta.Final[IoPipeline._Output] = IoPipeline._Output()
 
         #
 
@@ -2395,6 +2392,11 @@ class IoPipeline:
         self._contexts_by_name: ta.Final[ta.Dict[str, IoPipelineHandlerContext]] = {}
 
         #
+
+        self._saw_any_input = False
+        self._saw_initial_input = False
+        self._saw_final_input = False
+        self._saw_final_output = False
 
         self._state = IoPipeline.State.READY
 
@@ -3044,6 +3046,9 @@ class IoPipeline:
         self.destroy()
 
     def destroy(self) -> None:
+        if self._state == IoPipeline.State.DESTROYED:
+            return
+
         check.state(self._state == IoPipeline.State.READY)
         self._state = IoPipeline.State.DESTROYING
 

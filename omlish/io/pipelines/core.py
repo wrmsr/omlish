@@ -1072,13 +1072,6 @@ class IoPipeline:
 
         #
 
-        self._output: ta.Final[IoPipeline._Output] = IoPipeline._Output()
-
-        self._saw_any_input = False
-        self._saw_initial_input = False
-        self._saw_final_input = False
-        self._saw_final_output = False
-
         self._all_never_handle_exceptions: ta.Tuple[type, ...] = (
             UnhandleableIoPipelineError,
             *never_handle_exceptions,
@@ -1087,6 +1080,10 @@ class IoPipeline:
         self._execution_depth = 0
 
         self._propagation: _IoPipelinePropagation = _IoPipelinePropagation(self)
+
+        #
+
+        self._output: ta.Final[IoPipeline._Output] = IoPipeline._Output()
 
         #
 
@@ -1110,6 +1107,11 @@ class IoPipeline:
         self._contexts_by_name: ta.Final[ta.Dict[str, IoPipelineHandlerContext]] = {}
 
         #
+
+        self._saw_any_input = False
+        self._saw_initial_input = False
+        self._saw_final_input = False
+        self._saw_final_output = False
 
         self._state = IoPipeline.State.READY
 
@@ -1759,6 +1761,9 @@ class IoPipeline:
         self.destroy()
 
     def destroy(self) -> None:
+        if self._state == IoPipeline.State.DESTROYED:
+            return
+
         check.state(self._state == IoPipeline.State.READY)
         self._state = IoPipeline.State.DESTROYING
 
