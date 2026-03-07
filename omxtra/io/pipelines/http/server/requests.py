@@ -18,6 +18,7 @@ from ..decompressors import PipelineHttpObjectDecompressor
 
 class PipelineHttpRequestDecoder(PipelineHttpRequestObjects, PipelineHttpObjectDecoder):
     _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.REQUEST
+    _if_content_length_missing: ta.Final[ta.Literal['none']] = 'none'
 
 
 ##
@@ -28,6 +29,7 @@ class PipelineHttpRequestAggregatorDecoder(
     InboundBytesBufferingChannelPipelineHandler,
     PipelineHttpObjectAggregator,
 ):
+    _if_content_length_missing: ta.Final[ta.Literal['none']] = 'none'
     _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
 
     #

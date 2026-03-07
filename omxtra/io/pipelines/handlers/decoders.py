@@ -9,7 +9,6 @@ from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerFn
 from ..core import ShareableChannelPipelineHandler
-from ..errors import DecodingChannelPipelineError
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
 
@@ -51,13 +50,7 @@ class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abst
 
         self._called_decode = True
 
-        try:
-            out = list(self._decode(ctx, msg))
-
-        except DecodingChannelPipelineError:
-            raise
-        except Exception as e:
-            raise DecodingChannelPipelineError from e
+        out = list(self._decode(ctx, msg))
 
         if not out:
             return

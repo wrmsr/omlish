@@ -67,6 +67,11 @@ class PipelineHttpObjectAggregator(
 
     @property
     @abc.abstractmethod
+    def _if_content_length_missing(self) -> ta.Literal['none', 'eof']:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
     def _final_type(self) -> type:
         raise NotImplementedError
 
@@ -135,7 +140,10 @@ class PipelineHttpObjectAggregator(
         ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
             if isinstance(msg, self._a._head_type):
                 try:
-                    te = PipelineHttpTransferEncoding.select(msg.headers)  # noqa
+                    te = PipelineHttpTransferEncoding.select(
+                        msg.headers,
+                        if_length_missing=self._a._if_content_length_missing,  # noqa
+                    )
                 except PipelineHttpTransferEncodingError as e:
                     return self._abort(f'Invalid Transfer-Encoding: {e.reason}')
 

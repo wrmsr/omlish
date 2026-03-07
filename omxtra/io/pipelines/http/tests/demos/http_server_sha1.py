@@ -20,7 +20,6 @@ from ...requests import PipelineHttpRequestContentChunkData
 from ...requests import PipelineHttpRequestEnd
 from ...requests import PipelineHttpRequestHead
 from ...responses import FullPipelineHttpResponse
-from ...server.requests import PipelineHttpRequestBodyStreamDecoder
 from ...server.requests import PipelineHttpRequestDecoder
 from ...server.responses import PipelineHttpResponseEncoder
 
@@ -100,8 +99,6 @@ def build_http_sha1_channel() -> PipelineChannel.Spec:
         [
 
             PipelineHttpRequestDecoder(),
-
-            PipelineHttpRequestBodyStreamDecoder(),
 
             PipelineHttpResponseEncoder(),
 

@@ -87,6 +87,11 @@ class PipelineHttpObjectDecoder(
     def _parse_mode(self) -> HttpParser.Mode:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def _if_content_length_missing(self) -> ta.Literal['none', 'eof']:
+        raise NotImplementedError
+
     #
 
     def _decode(
@@ -221,9 +226,7 @@ class PipelineHttpObjectDecoder(
             if done:
                 return (
                     self._d._TransferEncodingState(self._d, head),  # noqa
-                    # NOTE: not `.of_opt` - even if no more data it may be an empty body, in which case we should get
-                    #       request out eagerly
-                    SegmentedByteStreamBufferView(next_mvs) if next_mvs else b'',  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
                 )
             else:
                 return None
@@ -245,7 +248,10 @@ class PipelineHttpObjectDecoder(
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             try:
-                te = PipelineHttpTransferEncoding.select(self._head.headers)  # noqa
+                te = PipelineHttpTransferEncoding.select(
+                    self._head.headers,
+                    if_length_missing=self._d._if_content_length_missing,  # noqa
+                )
             except PipelineHttpTransferEncodingError as e:
                 return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
@@ -289,7 +295,8 @@ class PipelineHttpObjectDecoder(
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             for mv in ByteStreamBuffers.iter_segments(data):
-                out.append(self._d._make_content_chunk_data(mv))  # noqa
+                if len(data):
+                    out.append(self._d._make_content_chunk_data(mv))  # noqa
 
             if final:
                 out.append(self._d._make_end())  # noqa
@@ -323,11 +330,13 @@ class PipelineHttpObjectDecoder(
             next_mvs: ta.List[memoryview]
 
             for mv in ByteStreamBuffers.iter_segments(data):
+                mvl = len(mv)
+                if not mvl:
+                    continue
+
                 if self._remaining < 1:
                     next_mvs.append(mv)  # noqa
                     continue
-
-                mvl = len(mv)
 
                 if self._remaining > mvl:
                     out.append(self._d._make_content_chunk_data(mv))  # noqa
@@ -349,7 +358,10 @@ class PipelineHttpObjectDecoder(
             if final and self._remaining > 0:
                 return self._abort(out, 'EOF before HTTP body complete')
             elif self._remaining == 0:
-                return (self._d._DoneState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                return (
+                    self._d._DoneState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
             else:
                 return None
 
@@ -431,9 +443,17 @@ class PipelineHttpObjectDecoder(
 
             if chunk_size is not None:
                 if chunk_size == 0:
-                    return (self._d._TrailerChunkedContentState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                    return (
+                        self._d._TrailerChunkedContentState(self._d, self._head),  # noqa
+                        SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                    )
                 else:
-                    return (self._d._DataChunkedContentState(self._d, self._head, chunk_size), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                    return (
+                        self._d._DataChunkedContentState(self._d, self._head, chunk_size),  # noqa
+                        SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                    )
+            elif final:
+                return self._abort(out, 'EOF before HTTP chunk header complete')
             else:
                 return None
 
@@ -509,7 +529,10 @@ class PipelineHttpObjectDecoder(
                     next_mvs.append(mv)
 
             if next_mvs is not None:
-                return (self._d._HeaderChunkedContentState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                return (
+                    self._d._HeaderChunkedContentState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
             elif final:
                 return self._abort(out, 'EOF before HTTP chunk complete')
             else:
@@ -562,7 +585,10 @@ class PipelineHttpObjectDecoder(
                     next_mvs.append(mv)
 
             if next_mvs is not None:
-                return (self._d._DoneState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                return (
+                    self._d._DoneState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.of_opt(next_mvs),
+                )
             elif final:
                 return self._abort(out, 'EOF before HTTP trailer complete')
             else:

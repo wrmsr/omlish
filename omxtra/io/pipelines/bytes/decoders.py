@@ -21,7 +21,6 @@ from omlish.lite.check import check
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
-from ..errors import DecodingChannelPipelineError
 from ..errors import IncompleteDecodingChannelPipelineError
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
@@ -154,14 +153,7 @@ class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstra
         self._called_decode = True
 
         out: ta.List[ta.Any] = []
-        try:
-            self._decode(ctx, data, out, final=final)
-        except DecodingChannelPipelineError:
-            raise
-        except Exception as e:
-            if ctx.pipeline.config.raise_immediately:
-                raise
-            raise DecodingChannelPipelineError from e
+        self._decode(ctx, data, out, final=final)
 
         if not out:
             return

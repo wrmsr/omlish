@@ -21,24 +21,28 @@ class PipelineHttpTransferEncoding:
     length: ta.Optional[int]
 
     @classmethod
-    def select(cls, headers: HttpHeaders) -> 'PipelineHttpTransferEncoding':
+    def select(
+            cls,
+            headers: HttpHeaders,
+            *,
+            if_length_missing: ta.Literal['none', 'eof'],
+    ) -> 'PipelineHttpTransferEncoding':
         if headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
             return cls('chunked', None)
 
         cl = headers.single.get('content-length')
-        if cl is not None and cl != '':
-            try:
-                n = int(cl)
-            except ValueError:
-                raise PipelineHttpTransferEncodingError('bad Content-Length') from None
+        if not cl:
+            return cls(if_length_missing, None)
 
-            if n < 0:
-                raise PipelineHttpTransferEncodingError('bad Content-Length')
+        try:
+            n = int(cl)
+        except ValueError:
+            raise PipelineHttpTransferEncodingError('bad Content-Length') from None
 
-            if n == 0:
-                return cls('none', None)
+        if n < 0:
+            raise PipelineHttpTransferEncodingError('bad Content-Length')
 
-            return cls('cl', n)
+        if n == 0:
+            return cls('none', None)
 
-        # No length info: treat as until EOF (supports infinite streaming).
-        return cls('eof', None)
+        return cls('cl', n)

@@ -3,8 +3,7 @@
 import dataclasses as dc
 import unittest
 
-from omlish.http.headers import HttpHeaders
-from omlish.http.versions import HttpVersion
+from omlish.io.streams.utils import ByteStreamBuffers
 
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
@@ -44,9 +43,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         self.assertEqual(len(out), 4)
         self.assertIsInstance(out[0], PipelineHttpResponseHead)
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
-        self.assertEqual(out[1].data, b'hello')
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1].data), b'hello')
         self.assertIsInstance(out[2], PipelineHttpResponseContentChunkData)
-        self.assertEqual(out[2].data, b'world')
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[2].data), b'world')
         self.assertIsInstance(out[3], PipelineHttpResponseEnd)
 
     def test_chunked_response_split_across_reads(self) -> None:

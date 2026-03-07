@@ -14,6 +14,9 @@ from .types import MutableByteStreamBuffer
 from .utils import ByteStreamBuffers
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
@@ -37,6 +40,12 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
     def of_opt(cls, segs: ta.Sequence[memoryview]) -> ta.Optional['SegmentedByteStreamBufferView']:
         if not segs:
             return None
+        return cls(segs)
+
+    @classmethod
+    def or_else(cls, segs: ta.Sequence[memoryview], default: T) -> ta.Union['SegmentedByteStreamBufferView', T]:
+        if not segs:
+            return default
         return cls(segs)
 
     _len = 0
