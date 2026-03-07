@@ -40,7 +40,7 @@ class Project(ProjectBase):
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 1.5',
+            'huggingface-hub ~= 1.6',
             'datasets ~= 4.6',
         ],
 

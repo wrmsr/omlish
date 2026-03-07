@@ -9,13 +9,13 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
-from ...core import ChannelPipelineHandler
-from ...core import ChannelPipelineHandlerContext
-from ...core import ChannelPipelineHandlerNotification
-from ...core import ChannelPipelineHandlerNotifications
-from ...core import ChannelPipelineMessages
-from ...core import PipelineChannel
-from ...errors import FlowControlValidationChannelPipelineError
+from omxtra.io.pipelines.core import ChannelPipelineHandler
+from omxtra.io.pipelines.core import ChannelPipelineHandlerContext
+from omxtra.io.pipelines.core import ChannelPipelineHandlerNotification
+from omxtra.io.pipelines.core import ChannelPipelineHandlerNotifications
+from omxtra.io.pipelines.core import ChannelPipelineMessages
+from omxtra.io.pipelines.core import PipelineChannel
+from omxtra.io.pipelines.errors import FlowControlValidationChannelPipelineError
 
 
 ##
@@ -254,7 +254,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
         if before and self._pending_out > self._config.high_watermark:
             after = False
 
-        elif (not before) and self._pending_out <= self._config.low_watermark:
+        elif not before and self._pending_out <= self._config.low_watermark:
             after = True
 
         if after == before:
