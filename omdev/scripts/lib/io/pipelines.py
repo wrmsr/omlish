@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='9d8c23a87400da57b4970bc18ba3a5bc56c25de9'),
+            dict(path='core.py', sha1='a4d3cf58a45a3fdde6c546a6e03a970e72c4c84e'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -1960,11 +1960,19 @@ class ShareableIoPipelineHandler(IoPipelineHandler, Abstract):
 ##
 
 
-IoPipelineDirection = ta.Literal['inbound', 'outbound']  # ta.TypeAlias  # omlish-amalg-typing-no-move
+IoPipelineDirection = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'inbound',
+    'outbound',
+]
 
 IoPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
     IoPipelineDirection,
     'duplex',
+]
+
+IoPipelineUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'added',
+    'removed',
 ]
 
 IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
@@ -1979,6 +1987,9 @@ IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-
 
 
 class IoPipelineService(Abstract):
+    def pipeline_update(self, pipeline: 'IoPipeline', kind: IoPipelineUpdate) -> None:
+        pass
+
     def handler_update(self, handler_ref: IoPipelineHandlerRef, kind: IoPipelineHandlerUpdate) -> None:
         pass
 
@@ -1997,12 +2008,15 @@ class IoPipelineServices:
         self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
         self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
 
+        self._handles_pipeline_update = handles_pipeline_update = []
         self._handles_handler_update = handles_handler_update = []
         self._handles_pipeline_enter = handles_pipeline_enter = []
         self._handles_pipeline_exit = handles_pipeline_exit = []
 
         for svc in lst:
             sty = type(svc)
+            if sty.pipeline_update is not IoPipelineService.pipeline_update:
+                handles_pipeline_update.append(sty)
             if sty.handler_update is not IoPipelineService.handler_update:
                 handles_handler_update.append(sty)
             if sty.pipeline_enter is not IoPipelineService.pipeline_enter:
@@ -2010,6 +2024,7 @@ class IoPipelineServices:
             if sty.pipeline_exit is not IoPipelineService.pipeline_exit:
                 handles_pipeline_exit.append(sty)
 
+    _handles_pipeline_update: ta.Sequence[IoPipelineService]
     _handles_handler_update: ta.Sequence[IoPipelineService]
     _handles_pipeline_enter: ta.Sequence[IoPipelineService]
     _handles_pipeline_exit: ta.Sequence[IoPipelineService]
@@ -2410,6 +2425,9 @@ class IoPipeline:
         #
 
         try:
+            for svc in self._services._handles_pipeline_update:  # noqa
+                svc.pipeline_update(self, 'added')
+
             for h in spec.handlers:
                 self.add_innermost(h)
 
@@ -3075,6 +3093,9 @@ class IoPipeline:
 
         finally:
             self._step_out()
+
+        for svc in self._services._handles_pipeline_update:  # noqa
+            svc.pipeline_update(self, 'removed')
 
         self._state = IoPipeline.State.DESTROYED
 
