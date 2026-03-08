@@ -12,6 +12,7 @@ with lang.auto_proxy_import(globals()):
     from .chat import inject as _chat
     from .completion import inject as _completion
     from .embedding import inject as _embedding
+    from .modules import inject as _modules
 
 
 ##
@@ -42,6 +43,11 @@ def bind_sessions(
 
     else:
         raise TypeError(cfg)
+
+    #
+
+    for mod_cfg in cfg.modules or []:
+        els.extend(_modules.bind_module(mod_cfg))
 
     #
 

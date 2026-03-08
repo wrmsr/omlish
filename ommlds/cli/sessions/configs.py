@@ -1,5 +1,9 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 from omlish import lang
+
+from .modules.configs import ModuleConfig
 
 
 ##
@@ -7,4 +11,4 @@ from omlish import lang
 
 @dc.dataclass(frozen=True, kw_only=True)
 class SessionConfig(lang.Abstract):
-    pass
+    modules: ta.Sequence[ModuleConfig] | None = None

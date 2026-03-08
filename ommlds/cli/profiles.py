@@ -14,6 +14,7 @@ from .sessions.chat.interfaces.textual.configs import TextualInterfaceConfig
 from .sessions.completion.configs import CompletionConfig
 from .sessions.configs import SessionConfig
 from .sessions.embedding.configs import EmbeddingConfig
+from .sessions.modules.code.configs import CodeConfig
 
 
 SessionConfigT = ta.TypeVar('SessionConfigT', bound=SessionConfig)
@@ -326,6 +327,10 @@ class ChatProfile(AspectProfile[ChatConfig]):
         def configure_for_code(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
             cfg = dc.replace(
                 cfg,
+                modules=[
+                    *(cfg.modules or []),
+                    CodeConfig(),
+                ],
                 driver=dc.replace(
                     cfg.driver,
                     ai=dc.replace(
@@ -334,24 +339,6 @@ class ChatProfile(AspectProfile[ChatConfig]):
                     ),
                 ),
             )
-
-            if ctx.args.new or ctx.args.ephemeral:
-                from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
-                system_content = CODE_AGENT_SYSTEM_PROMPT
-
-                # from ......minichain.lib.code import prompts as code_prompts
-                # ph_dct[code_prompts.CodeAgentSystemPromptEnvironmentPlaceholder] = code_prompts.build_code_agent_system_prompt_environment()  # noqa
-
-                cfg = dc.replace(
-                    cfg,
-                    driver=dc.replace(
-                        cfg.driver,
-                        user=dc.replace(
-                            cfg.driver.user,
-                            initial_system_content=system_content,
-                        ),
-                    ),
-                )
 
             return cfg
 

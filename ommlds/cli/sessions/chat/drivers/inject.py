@@ -10,6 +10,8 @@ from omlish import lang
 from ....backends.types import DefaultBackendName
 from .configs import DEFAULT_BACKEND
 from .configs import DriverConfig
+from .injection import placeholder_contents_providers
+from .injection import system_message_providers
 
 
 with lang.auto_proxy_import(globals()):
@@ -49,6 +51,13 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         _tools.bind_tools(cfg.tools),
 
         _user.bind_user(cfg.user),
+    ])
+
+    #
+
+    els.extend([
+        system_message_providers().bind_items_provider(singleton=True),
+        placeholder_contents_providers().bind_items_provider(singleton=True),
     ])
 
     #
