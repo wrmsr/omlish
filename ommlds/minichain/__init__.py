@@ -197,6 +197,7 @@ with _lang.auto_proxy_init(
         check_ai_chat,
 
         SystemMessage,
+        DeveloperMessage,
         UserMessage,
         AiMessage,
         ToolUseMessage,

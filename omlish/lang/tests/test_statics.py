@@ -14,3 +14,9 @@ def test_static():
 
     assert l0 == [True]
     assert l1 == [420] * 3
+
+    for _ in range(3):
+        l1.append(static(lambda: foo()))
+
+    assert l0 == [True, True]
+    assert l1 == [420] * 6

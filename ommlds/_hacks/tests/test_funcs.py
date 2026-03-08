@@ -6,19 +6,22 @@ from ..funcs import create_detour
 def test_recode_func():
     class C:
         def f(self):
-            return 1
+            return '$REPLACEME$'
 
-    assert C().f() == 1
+    assert C().f() == '$REPLACEME$'
 
-    def patch_f():
+    def patch_f(v):
         func = C.f
         code = func.__code__
-        newcode = code.replace(co_consts=(None, 2))
+        consts = code.co_consts
+        [i] = [i for i, v in enumerate(consts) if v == '$REPLACEME$']
+        newcode = code.replace(co_consts=(*consts[:i], v, *consts[i + 1:]))
         func.__code__ = newcode
 
-    patch_f()
+    patch_f('efgh')
 
-    assert C().f() == 2
+    print(C().f())
+    assert C().f() == 'efgh'
 
 
 def test_create_detour():

@@ -103,8 +103,11 @@ def create_detour(
         gfn = create_function(
             '_',
             params,
-            f'return 1{render_param_spec_call(params, as_kwargs=as_kwargs)}',
+            f'return "$REPLACEME$"{render_param_spec_call(params, as_kwargs=as_kwargs)}',
         )
 
-    check.state(gfn.__code__.co_consts[:2] == (None, 1))
-    return gfn.__code__.replace(co_consts=(None, target, *gfn.__code__.co_consts[2:]))
+    code = gfn.__code__
+    consts = code.co_consts
+    [i] = [i for i, v in enumerate(consts) if v == '$REPLACEME$']
+    new_code = code.replace(co_consts=(*consts[:i], target, *consts[i + 1:]))
+    return new_code

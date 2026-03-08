@@ -112,6 +112,14 @@ class SystemMessage(AnyUserMessage, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class DeveloperMessage(AnyUserMessage, lang.Final):
+    c: Content
+
+
+#
+
+
+@dc.dataclass(frozen=True)
 @msh.update_fields_options(['name'], omit_if=operator.not_)
 class UserMessage(AnyUserMessage, lang.Final):
     c: Content

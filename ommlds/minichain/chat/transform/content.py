@@ -25,10 +25,10 @@ MessageT = ta.TypeVar('MessageT', bound=Message)
 class ContentTransformMessageTransform(VisitorMessageTransform):
     ct: ContentTransform
 
-    def visit_user_message(self, m: UserMessage, ctx: None) -> UserMessage:
+    def visit_system_message(self, m: SystemMessage, ctx: None) -> SystemMessage:
         return m.replace(c=self.ct.transform(m.c))
 
-    def visit_system_message(self, m: SystemMessage, ctx: None) -> SystemMessage:
+    def visit_user_message(self, m: UserMessage, ctx: None) -> UserMessage:
         return m.replace(c=self.ct.transform(m.c))
 
     def visit_tool_use_result_message(self, m: ToolUseResultMessage, ctx: None) -> ToolUseResultMessage:

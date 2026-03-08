@@ -7,6 +7,7 @@ from omlish import lang
 from .messages import AiMessage
 from .messages import AnyAiMessage
 from .messages import AnyUserMessage
+from .messages import DeveloperMessage
 from .messages import Message
 from .messages import SystemMessage
 from .messages import ToolUseMessage
@@ -44,10 +45,13 @@ class MessageVisitor(lang.Abstract, ta.Generic[C, R]):
     def visit_any_user_message(self, m: AnyUserMessage, ctx: C) -> R:
         return self.visit_message(m, ctx)
 
-    def visit_user_message(self, m: UserMessage, ctx: C) -> R:
+    def visit_system_message(self, m: SystemMessage, ctx: C) -> R:
         return self.visit_any_user_message(m, ctx)
 
-    def visit_system_message(self, m: SystemMessage, ctx: C) -> R:
+    def visit_developer_message(self, m: DeveloperMessage, ctx: C) -> R:
+        return self.visit_any_user_message(m, ctx)
+
+    def visit_user_message(self, m: UserMessage, ctx: C) -> R:
         return self.visit_any_user_message(m, ctx)
 
     def visit_tool_use_result_message(self, m: ToolUseResultMessage, ctx: C) -> R:
