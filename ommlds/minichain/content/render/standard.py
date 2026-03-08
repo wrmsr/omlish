@@ -65,15 +65,13 @@ class StandardContentRenderer(ContentStrRenderer):
                 self.visit(x, None)
 
     def _transform(self, c: Content, ctx: Context) -> Content:
-        c = LiftToStandardContentTransform().transform(c)
-
         c = RecursiveContentTransform(
+            LiftToStandardContentTransform(),
             NamespaceContentMaterializer(),
             PlaceholderContentMaterializer(ctx.placeholder_contents),
             ResourceContentMaterializer(),
+            TemplateContentMaterializer(ctx.templater_context),
         ).transform(c)
-
-        c = TemplateContentMaterializer(ctx.templater_context).transform(c)
 
         c = UnnestContainersTransform().transform(c)
         c = JoinContainerContentsTransform().transform(c)

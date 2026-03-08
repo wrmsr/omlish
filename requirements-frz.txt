@@ -317,7 +317,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.24.1
 typer-slim==0.24.0
-types-awscrt==0.31.2
+types-awscrt==0.31.3
 types-boto3==1.42.63
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
