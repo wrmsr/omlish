@@ -249,6 +249,16 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .content.transform.materialize.placeholders import (  # noqa
+        PlaceholderContentValue,
+        PlaceholderContentMap,
+        PlaceholderContents,
+
+        PlaceholderContentKeyError,
+        MissingPlaceholderContentKeyError,
+        DuplicatePlaceholderContentKeyError,
+    )
+
     from .content.transform.strings import (  # noqa
         StringFnContentTransform,
         transform_content_strings,

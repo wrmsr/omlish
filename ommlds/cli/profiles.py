@@ -339,6 +339,9 @@ class ChatProfile(AspectProfile[ChatConfig]):
                 from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
                 system_content = CODE_AGENT_SYSTEM_PROMPT
 
+                # from ......minichain.lib.code import prompts as code_prompts
+                # ph_dct[code_prompts.CodeAgentSystemPromptEnvironmentPlaceholder] = code_prompts.build_code_agent_system_prompt_environment()  # noqa
+
                 cfg = dc.replace(
                     cfg,
                     driver=dc.replace(

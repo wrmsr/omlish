@@ -1,17 +1,26 @@
 from ...... import minichain as mc
 from .types import ChatPreparer
+from .types import PlaceholderContentsProviders
+from .types import SystemMessageProviders
 
 
 ##
 
 
 class SimpleChatPreparer(ChatPreparer):
+    def __init__(
+            self,
+            *,
+            system_message_providers: SystemMessageProviders | None = None,
+            placeholder_contents_providers: PlaceholderContentsProviders | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._system_message_providers = system_message_providers
+        self._placeholder_contents_providers = placeholder_contents_providers
+
     async def prepare_chat(self, chat: 'mc.Chat') -> 'mc.Chat':
         ph_dct: dict[mc.PlaceholderContentKey, mc.Content] = {}
-
-        # FIXME: lol
-        # from ......minichain.lib.code import prompts as code_prompts
-        # ph_dct[code_prompts.CodeAgentSystemPromptEnvironmentPlaceholder] = code_prompts.build_code_agent_system_prompt_environment()  # noqa
 
         ch_tfm = mc.MessageTransformChatTransform(
             mc.ContentTransformMessageTransform(

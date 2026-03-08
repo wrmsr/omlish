@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish import lang
 
 from ...content import Content
 from ...placeholders import PlaceholderContent
@@ -11,14 +12,33 @@ from ..visitors import VisitorContentTransform
 ##
 
 
-PlaceholderContentMap: ta.TypeAlias = ta.Mapping[PlaceholderContentKey, Content | ta.Callable[[], Content]]
-PlaceholderContentFn: ta.TypeAlias = ta.Callable[[PlaceholderContentKey], Content]
-PlaceholderContents: ta.TypeAlias = PlaceholderContentMap | PlaceholderContentFn
+PlaceholderContentValue: ta.TypeAlias = Content | ta.Callable[[], Content]
+PlaceholderContentMap: ta.TypeAlias = ta.Mapping[PlaceholderContentKey, PlaceholderContentValue]
+
+PlaceholderContents: ta.TypeAlias = ta.Union[  # noqa
+    PlaceholderContentMap,
+    ta.Iterable['PlaceholderContents'],
+    ta.Callable[[], 'PlaceholderContents'],
+]
+
+
+##
 
 
 @dc.dataclass()
-class PlaceholderContentMissingError(Exception):
+class PlaceholderContentKeyError(Exception):
     key: PlaceholderContentKey
+
+
+class MissingPlaceholderContentKeyError(PlaceholderContentKeyError):
+    pass
+
+
+class DuplicatePlaceholderContentKeyError(PlaceholderContentKeyError):
+    pass
+
+
+##
 
 
 class PlaceholderContentMaterializer(VisitorContentTransform):
@@ -32,28 +52,44 @@ class PlaceholderContentMaterializer(VisitorContentTransform):
 
         self._cache: dict[PlaceholderContentKey, Content] = {}
 
+    @lang.cached_function
+    def _build_map(self) -> PlaceholderContentMap:
+        dct: dict[PlaceholderContentKey, Content] = {}
+
+        def rec(cur: PlaceholderContents) -> None:
+            if callable(cur):
+                rec(cur())
+
+            elif isinstance(cur, ta.Mapping):
+                for k, v in cur.items():
+                    if k in dct:
+                        raise DuplicatePlaceholderContentKeyError(k)
+
+                    if callable(v):
+                        v = v()
+
+                    dct[k] = v
+
+            else:
+                for nxt in cur:
+                    rec(nxt)
+
+        if (root := self._placeholder_contents) is not None:
+            rec(root)
+
+        return dct
+
     def _get_placeholder_content(self, key: PlaceholderContentKey) -> Content:
         try:
             return self._cache[key]
         except KeyError:
             pass
 
-        if (pcs := self._placeholder_contents) is None:
-            raise PlaceholderContentMissingError(key)
-
-        c: ta.Any
-
-        if isinstance(pcs, ta.Mapping):
-            try:
-                c = pcs[key]
-            except KeyError:
-                raise PlaceholderContentMissingError(key) from None
-
-        elif callable(pcs):
-            c = pcs(key)
-
-        else:
-            raise TypeError(pcs)
+        dct = self._build_map()
+        try:
+            c = dct[key]
+        except KeyError:
+            raise MissingPlaceholderContentKeyError(key) from None
 
         if callable(c):
             c = c()

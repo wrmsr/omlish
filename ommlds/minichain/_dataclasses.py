@@ -2472,7 +2472,7 @@ def _process_dataclass__92981ef19f0ed4d429fe88ffe7c0f22996b15862():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'PlaceholderContentMissingError'),
+        ('ommlds.minichain.backends.impls.anthropic.chat', 'PlaceholderContentKeyError'),
     ),
 )
 def _process_dataclass__7e1881cd893ea68089f1fe26ad810799dd14a0d5():
