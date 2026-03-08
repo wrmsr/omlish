@@ -320,14 +320,14 @@ class IoPipelineHandlerContext:
             _pipeline: 'IoPipeline',
             _handler: 'IoPipelineHandler',
 
-            name: ta.Optional[str] = None,
+            _name: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
         self._pipeline: ta.Final[IoPipeline] = _pipeline
         self._handler: ta.Final[IoPipelineHandler] = _handler
 
-        self._name: ta.Final[ta.Optional[str]] = name
+        self._name: ta.Final[ta.Optional[str]] = _name
 
         self._ref: IoPipelineHandlerRef_ = IoPipelineHandlerRef(_context=self)
 
@@ -729,10 +729,14 @@ class IoPipelineServices:
     _handles_pipeline_enter: ta.Sequence[IoPipelineService]
     _handles_pipeline_exit: ta.Sequence[IoPipelineService]
 
+    _EMPTY: ta.ClassVar['IoPipelineServices']
+
     @classmethod
     def of(cls, obj: ta.Union['IoPipelineServices', ta.Sequence[IoPipelineService]]) -> 'IoPipelineServices':  # noqa
         if isinstance(obj, cls):
             return obj
+        elif not obj:
+            return cls._EMPTY
         else:
             return cls(list(obj))
 
@@ -781,6 +785,9 @@ class IoPipelineServices:
         return svc
 
 
+IoPipelineServices._EMPTY = IoPipelineServices([])  # noqa
+
+
 ##
 
 
@@ -798,10 +805,14 @@ class IoPipelineMetadatas:
             dct[mty] = md
         self._dct = dct
 
+    _EMPTY: ta.ClassVar['IoPipelineMetadatas']
+
     @classmethod
     def of(cls, obj: ta.Union['IoPipelineMetadatas', ta.Sequence[IoPipelineMetadata]]) -> 'IoPipelineMetadatas':  # noqa
         if isinstance(obj, cls):
             return obj
+        elif not obj:
+            return cls._EMPTY
         else:
             return cls(list(obj))
 
@@ -861,6 +872,9 @@ class IoPipelineMetadatas:
             ty = ty.ty
 
         return self._dct.get(ty, default)
+
+
+IoPipelineMetadatas._EMPTY = IoPipelineMetadatas([])  # noqa
 
 
 ##
@@ -1077,8 +1091,6 @@ class IoPipeline:
             *never_handle_exceptions,
         )
 
-        self._execution_depth = 0
-
         self._propagation: _IoPipelinePropagation = _IoPipelinePropagation(self)
 
         #
@@ -1107,11 +1119,6 @@ class IoPipeline:
         self._contexts_by_name: ta.Final[ta.Dict[str, IoPipelineHandlerContext]] = {}
 
         #
-
-        self._saw_any_input = False
-        self._saw_initial_input = False
-        self._saw_final_input = False
-        self._saw_final_output = False
 
         self._state = IoPipeline.State.READY
 
@@ -1152,6 +1159,11 @@ class IoPipeline:
 
     #
 
+    _saw_any_input = False
+    _saw_initial_input = False
+    _saw_final_input = False
+    _saw_final_output = False
+
     @property
     def saw_any_input(self) -> bool:
         return self._saw_any_input
@@ -1181,6 +1193,8 @@ class IoPipeline:
 
     ##
     # execution
+
+    _execution_depth = 0
 
     def _step_in(self) -> None:
         self._execution_depth += 1
@@ -1432,7 +1446,7 @@ class IoPipeline:
             _pipeline=self,
             _handler=handler,
 
-            name=name,
+            _name=name,
         )
 
         self._handler_update(ctx, 'adding')  # noqa

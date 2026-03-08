@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='ddac59c8d08b2602c2f1a9d1e4fde19d9f390c1d'),
+            dict(path='core.py', sha1='9d8c23a87400da57b4970bc18ba3a5bc56c25de9'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -1605,14 +1605,14 @@ class IoPipelineHandlerContext:
             _pipeline: 'IoPipeline',
             _handler: 'IoPipelineHandler',
 
-            name: ta.Optional[str] = None,
+            _name: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
         self._pipeline: ta.Final[IoPipeline] = _pipeline
         self._handler: ta.Final[IoPipelineHandler] = _handler
 
-        self._name: ta.Final[ta.Optional[str]] = name
+        self._name: ta.Final[ta.Optional[str]] = _name
 
         self._ref: IoPipelineHandlerRef_ = IoPipelineHandlerRef(_context=self)
 
@@ -2014,10 +2014,14 @@ class IoPipelineServices:
     _handles_pipeline_enter: ta.Sequence[IoPipelineService]
     _handles_pipeline_exit: ta.Sequence[IoPipelineService]
 
+    _EMPTY: ta.ClassVar['IoPipelineServices']
+
     @classmethod
     def of(cls, obj: ta.Union['IoPipelineServices', ta.Sequence[IoPipelineService]]) -> 'IoPipelineServices':  # noqa
         if isinstance(obj, cls):
             return obj
+        elif not obj:
+            return cls._EMPTY
         else:
             return cls(list(obj))
 
@@ -2066,6 +2070,9 @@ class IoPipelineServices:
         return svc
 
 
+IoPipelineServices._EMPTY = IoPipelineServices([])  # noqa
+
+
 ##
 
 
@@ -2083,10 +2090,14 @@ class IoPipelineMetadatas:
             dct[mty] = md
         self._dct = dct
 
+    _EMPTY: ta.ClassVar['IoPipelineMetadatas']
+
     @classmethod
     def of(cls, obj: ta.Union['IoPipelineMetadatas', ta.Sequence[IoPipelineMetadata]]) -> 'IoPipelineMetadatas':  # noqa
         if isinstance(obj, cls):
             return obj
+        elif not obj:
+            return cls._EMPTY
         else:
             return cls(list(obj))
 
@@ -2146,6 +2157,9 @@ class IoPipelineMetadatas:
             ty = ty.ty
 
         return self._dct.get(ty, default)
+
+
+IoPipelineMetadatas._EMPTY = IoPipelineMetadatas([])  # noqa
 
 
 ##
@@ -2362,8 +2376,6 @@ class IoPipeline:
             *never_handle_exceptions,
         )
 
-        self._execution_depth = 0
-
         self._propagation: _IoPipelinePropagation = _IoPipelinePropagation(self)
 
         #
@@ -2392,11 +2404,6 @@ class IoPipeline:
         self._contexts_by_name: ta.Final[ta.Dict[str, IoPipelineHandlerContext]] = {}
 
         #
-
-        self._saw_any_input = False
-        self._saw_initial_input = False
-        self._saw_final_input = False
-        self._saw_final_output = False
 
         self._state = IoPipeline.State.READY
 
@@ -2437,6 +2444,11 @@ class IoPipeline:
 
     #
 
+    _saw_any_input = False
+    _saw_initial_input = False
+    _saw_final_input = False
+    _saw_final_output = False
+
     @property
     def saw_any_input(self) -> bool:
         return self._saw_any_input
@@ -2466,6 +2478,8 @@ class IoPipeline:
 
     ##
     # execution
+
+    _execution_depth = 0
 
     def _step_in(self) -> None:
         self._execution_depth += 1
@@ -2717,7 +2731,7 @@ class IoPipeline:
             _pipeline=self,
             _handler=handler,
 
-            name=name,
+            _name=name,
         )
 
         self._handler_update(ctx, 'adding')  # noqa
