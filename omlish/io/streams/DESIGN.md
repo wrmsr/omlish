@@ -59,14 +59,31 @@ Buffers are **not sequences** and are **not random-access containers** in the ge
 
 ---
 
-## 4. Two Concrete Buffer Backends
+## 4. Concrete Buffer Backends
+
+### DirectByteStreamBuffer A read-only, zero-copy wrapper around existing bytes/bytearray/memoryview:
+
+**Strengths**
+- Zero-copy construction from existing data
+- Always contiguous (trivial `coalesce`)
+- Fast find/rfind delegating to optimized bytes methods
+- Minimal overhead
+
+**Use cases**
+- Parsing fixed/immutable data (HTTP requests, protocol messages)
+- Using framers/codecs on data already in memory
+- Avoiding buffer allocation when mutation isn't needed
+
+**Tradeoffs**
+- Read-only (does not implement `MutableByteStreamBuffer`)
 
 ### SegmentedByteStreamBuffer A list-of-segments design (bytes / bytearray chunks):
 
 **Strengths**
-- Avoids pathological “large buffer pinned by tiny tail”
+- Avoids pathological "large buffer pinned by tiny tail"
 - Stable zero-copy views for `split_to`
 - Natural fit for network chunking and streaming
+- Optional chunking mode for small writes
 
 **Tradeoffs**
 - Search and coalescing require careful logic
@@ -83,7 +100,18 @@ Buffers are **not sequences** and are **not random-access containers** in the ge
 - `split_to` must copy to keep views stable
 - Needs compaction heuristics to avoid growth from head advancement
 
-These two backends intentionally cover different workload shapes; both conform to the same conceptual interface.
+### BytesIoByteStreamBuffer A `io.BytesIO`-backed implementation using `getbuffer()`:
+
+**Strengths**
+- Interoperability with existing BytesIO-based code
+- Always contiguous
+
+**Tradeoffs**
+- Exported memoryviews can pin storage against resizing (BufferError)
+- Not recommended as default backend (segmented/linear are more predictable)
+- Primarily exists for interop scenarios
+
+These backends intentionally cover different workload shapes; all conform to the same conceptual interface.
 
 ---
 
@@ -168,6 +196,20 @@ These limits are enforced eagerly to prevent memory exhaustion.
 
 ## 9. Framing & Search
 
+### ScanningByteStreamBuffer A wrapper that caches negative `find()` progress:
+
+**Purpose**
+- Optimizes trickle-data scenarios where small writes are repeatedly followed by unsuccessful delimiter searches
+- Conservatively caches only negative results for default find range (`start==0, end=None`)
+- Prevents re-scanning the same prefix repeatedly
+
+**Design**
+- Tracks "scan_from" position per delimiter
+- Allows overlap region (`delimiter_length - 1`) to catch matches spanning old/new boundaries
+- Adjusts cache on consumption (advance/split_to)
+
+Pairs well with `LongestMatchDelimiterByteStreamFrameDecoder`.
+
 ### Longest-match delimiter framing A dedicated codec layer implements:
 - Overlapping delimiters (`\r` vs `\r\n`)
 - Longest-match semantics
@@ -176,37 +218,55 @@ These limits are enforced eagerly to prevent memory exhaustion.
 
 Key insight: > Delimiter resolution must live *above* the buffer but *below* protocol logic.
 
-The buffer’s `find/rfind` remain simple, single-needle primitives; framing logic resolves ambiguity.
+The buffer's `find/rfind` remain simple, single-needle primitives; framing logic resolves ambiguity.
+
+### Length-field framing (`LengthFieldByteStreamFrameDecoder`)
+- Netty-style length-prefixed frame decoding
+- Configurable field offset, length (1/2/4/8 bytes), byte order
+- Length adjustment and initial byte stripping
+- Uses `coalesce()` for efficient header parsing
 
 ---
 
 ## 10. Binary Read Helpers
 
-Implemented as **pure functions atop buffers**, not methods:
-- `peek_exact`
-- `take`
-- `read_bytes`
-- `read_u8`, `read_u16_be`, `read_u32_le`, etc.
+Implemented as methods on **`ByteStreamBufferReader`** (a lightweight wrapper around a buffer):
+- `peek_exact(n)` / `take(n)` / `read_bytes(n)`
+- `peek_u8()` / `read_u8()`
+- `peek_u16_be()` / `read_u16_be()` / `peek_u16_le()` / `read_u16_le()`
+- `peek_u32_be()` / `read_u32_be()` / `peek_u32_le()` / `read_u32_le()`
 
 All rely on:
 - `coalesce(n)` for contiguity
 - `advance(n)` for consumption
-- `NeedMoreData` for retry signaling
+- `NeedMoreDataByteStreamBufferError` for retry signaling
 
-This keeps the buffer surface small while enabling rich protocol parsing.
+This keeps the buffer surface small while enabling rich protocol parsing. The reader is a thin adapter; the real work
+remains in the buffer.
 
 ---
 
 ## 11. File-Like Adapters & Interop
 
 Adapters exist to bridge:
-- File-like objects → buffers
-- Buffers → file-like readers/writers
+- Buffers → file-like readers: `ByteStreamBufferReaderAdapter`
+- Buffers → file-like writers: `ByteStreamBufferWriterAdapter`
+- BytesIO → buffers: `BytesIoByteStreamBuffer`
 
-Key properties:
+**ByteStreamBufferReaderAdapter** properties:
 - Policy-driven behavior (`raise`, `return_partial`, `block`)
-- No reliance on `io` abstractions in the core
-- Explicit handling of `BytesIO.getbuffer()` pinning hazards
+- Implements `read(n)`, `read1(n)`, `readall()`
+- Optional `fill()` callback for blocking mode
+- Explicit handling of partial reads and EOF
+
+**ByteStreamBufferWriterAdapter** properties:
+- Simple write-through to file-like sink
+- Accepts bytes-like and buffer views
+- Writes segments without materializing copies when possible
+
+Key design:
+- No reliance on `io` abstractions in the core buffer layer
+- Explicit handling of `BytesIO.getbuffer()` pinning hazards in `BytesIoByteStreamBuffer`
 
 Interop is intentionally *ugly but isolated*; the core remains clean.
 
@@ -230,12 +290,19 @@ Interop is intentionally *ugly but isolated*; the core remains clean.
 
 ## 13. What This Enables Next
 
-With the buffer layer stabilized, higher-level work can proceed safely:
-- Length-prefixed framing
+With the buffer layer stabilized and core framers implemented, higher-level work can proceed safely:
 - HTTP/1 streaming parsing
-- Binary protocol codecs
+- Binary protocol codecs (using `ByteStreamBufferReader`)
 - Pipeline lifecycle (EOF, errors, close)
 - Transport drivers (async, sync, custom)
+- Additional specialized framers as protocol needs emerge
+
+**Already implemented:**
+- Length-prefixed framing (`LengthFieldByteStreamFrameDecoder`)
+- Delimiter-based framing with overlap handling (`LongestMatchDelimiterByteStreamFrameDecoder`)
+- Binary read helpers (`ByteStreamBufferReader`)
+- File-like adapters (`ByteStreamBufferReaderAdapter`, `ByteStreamBufferWriterAdapter`)
+- Trickle-data optimization (`ScanningByteStreamBuffer`)
 
 The buffer layer is now considered **foundationally complete**: additional features should be justified by concrete
 protocol needs, not speculation.
