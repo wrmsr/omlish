@@ -11,6 +11,8 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.sync import IterSyncSocketIoPipelineDriver
+from .....io.pipelines.flow.stub import StubIoPipelineFlowService
+from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....io.streams.types import BytesLike
 from .....lite.abstract import Abstract
@@ -39,6 +41,13 @@ class WsgiFeedbackHandler(IoPipelineHandler):
         msg: ta.Any
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.InitialInput):
+            if not IoPipelineFlow.is_auto_read_context(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
+            return
+
         if isinstance(msg, IoPipelineHttpRequestObject):
             ctx.feed_out(WsgiFeedbackHandler.Envelope(msg))
             return
@@ -57,6 +66,9 @@ def build_wsgi_spec() -> IoPipeline.Spec:
             IoPipelineHttpRequestAggregatorDecoder(enabled='unless_chunked'),
             IoPipelineHttpResponseEncoder(),
             WsgiFeedbackHandler(),
+        ],
+        services=[
+            StubIoPipelineFlowService(auto_read=False),
         ],
     )
 
@@ -288,9 +300,9 @@ def demo_app(environ, start_response):
 
         def slow_ping():
             for i, o in enumerate(b'pong'):
+                if i:
+                    time.sleep(5)
                 yield bytes([o])
-                if i < 4:
-                    time.sleep(1)
 
         return slow_ping()
 
