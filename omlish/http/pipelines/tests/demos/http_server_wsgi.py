@@ -4,10 +4,7 @@ import asyncio
 import typing as ta
 
 from .....io.pipelines.core import IoPipeline
-from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from .....io.pipelines.flow.types import IoPipelineFlowMessages
-from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from ...server.apps.wsgi import WsgiHandler
 from ...server.apps.wsgi import WsgiSpec
 from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
@@ -24,13 +21,6 @@ def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
         IoPipelineHttpRequestAggregatorDecoder(),
         IoPipelineHttpResponseEncoder(),
         WsgiHandler(app),
-        FlatMapIoPipelineHandlers.drop(
-            'inbound',
-            filter_type=(
-                IoPipelineMessages.FinalInput,
-                IoPipelineFlowMessages.FlushInput,
-            ),
-        ),
     ])
 
 
