@@ -1,9 +1,7 @@
 import asyncio
-import threading
 import types
 import typing as ta
 
-from omlish import check
 from omlish.sync.threadrunners import SingleThreadRunner
 
 
@@ -13,25 +11,17 @@ T = ta.TypeVar('T')
 ##
 
 
-class _AwaitInThread:
-    def __init__(self, aw: ta.Awaitable[T]) -> None:
-        super().__init__()
-
-        self._aw = aw
-
-    def _thread_main(self) -> None:
-        pass
-
-    @types.coroutine
-    def run(self):
+@types.coroutine
+def _await_in_thread(aw):
+    with SingleThreadRunner(name=f'_await_in_thread({aw!r})') as r:
         try:
-            a = self._aw.__await__()
+            a = r.run(lambda: aw.__await__())
             try:
-                g = iter(a)
+                g = r.run(lambda: iter(a))
                 try:
                     while True:
                         try:
-                            f = g.send(None)
+                            f = r.run(lambda: g.send(None))
                         except StopIteration as ex:
                             return ex.value
 
@@ -40,25 +30,29 @@ class _AwaitInThread:
 
                 finally:
                     if g is not a:
-                        g.close()
+                        r.run(lambda: g.close())
 
             finally:
-                a.close()  # noqa
+                r.run(lambda: a.close())  # noqa
 
         finally:
-            self._aw.close()  # noqa
+            r.run(lambda: aw.close())  # noqa
 
 
 async def await_in_thread(aw: ta.Awaitable[T]) -> T:
-    return await _AwaitInThread(aw).run()  # noqa
+    return await _await_in_thread(aw)  # noqa
 
 
 ##
 
 
-async def oof(s: str) -> str:
-    await asyncio.sleep(1)
+async def exclaim(s: str) -> str:
     return s + '!'
+
+
+async def oof(s: str) -> str:
+    # await asyncio.sleep(1)
+    return await exclaim(s)
 
 
 async def _a_main() -> None:

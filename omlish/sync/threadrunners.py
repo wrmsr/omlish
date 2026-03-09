@@ -25,10 +25,10 @@ class ThreadRunner(lang.Abstract):
     def run(self, fn: ta.Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
         raise NotImplementedError
 
-    DEFAULT_WAIT_TIMEOUT: ta.ClassVar[float | None] = 10.
+    DEFAULT_CLOSE_TIMEOUT: ta.ClassVar[float | None] = 10.
 
     @abc.abstractmethod
-    def close(self, *, wait: bool = False, timeout: float | None = DEFAULT_WAIT_TIMEOUT) -> None:
+    def close(self, *, wait: bool = False, timeout: float | None = DEFAULT_CLOSE_TIMEOUT) -> None:
         raise NotImplementedError
 
     #
@@ -44,16 +44,26 @@ class ThreadRunner(lang.Abstract):
 
 
 class BaseThreadRunner(ThreadRunner, lang.Abstract):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            name: str | None = None,
+    ) -> None:
         super().__init__()
+
+        self._name = name
 
         self._lock = threading.Lock()
 
         self._thread: threading.Thread | None = None
         self._closed = False
 
+    @property
+    def name(self) -> str | None:
+        return self._name
+
     def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}()'
+        return f'{type(self).__name__}@{id(self):x}({f"name={self._name!r}" if self._name is not None else ""})'
 
     class _Stop:
         pass
@@ -62,7 +72,7 @@ class BaseThreadRunner(ThreadRunner, lang.Abstract):
         if self._thread is None:
             t = threading.Thread(
                 target=self._thread_main,
-                name=f'{type(self).__name__}-worker',
+                name=f'{self!r}-worker',
                 daemon=True,
             )
             t.start()
@@ -88,8 +98,12 @@ class BaseThreadRunner(ThreadRunner, lang.Abstract):
 
 
 class SingleThreadRunner(BaseThreadRunner):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            *,
+            name: str | None = None,
+    ) -> None:
+        super().__init__(name=name)
 
         self._req_cv = threading.Condition(self._lock)
         self._res_cv = threading.Condition(self._lock)
@@ -155,9 +169,9 @@ class SingleThreadRunner(BaseThreadRunner):
 
         if res.e is not None:
             raise res.e
-        return ta.cast(T, res.v)
+        return res.v
 
-    def close(self, *, wait: bool = False, timeout: float | None = BaseThreadRunner.DEFAULT_WAIT_TIMEOUT) -> None:
+    def close(self, *, wait: bool = False, timeout: float | None = BaseThreadRunner.DEFAULT_CLOSE_TIMEOUT) -> None:
         with self._run_lock:
             t = self._thread
             if t is None:
@@ -192,8 +206,12 @@ class SingleThreadRunner(BaseThreadRunner):
 
 
 class QueueThreadRunner(BaseThreadRunner):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            *,
+            name: str | None = None,
+    ) -> None:
+        super().__init__(name=name)
 
         self._queue: queue.Queue[QueueThreadRunner._Call | QueueThreadRunner._Stop] = queue.Queue()
 
@@ -225,14 +243,14 @@ class QueueThreadRunner(BaseThreadRunner):
 
             self._ensure_thread()
             self._queue.put(self._Call(
-                ta.cast('ta.Callable[[], ta.Any]', fn),
-                ta.cast('cf.Future[ta.Any]', fut),
+                fn,
+                fut,
             ))
 
         return fut.result()
 
     @ta.override
-    def close(self, *, wait: bool = False, timeout: float | None = BaseThreadRunner.DEFAULT_WAIT_TIMEOUT) -> None:
+    def close(self, *, wait: bool = False, timeout: float | None = BaseThreadRunner.DEFAULT_CLOSE_TIMEOUT) -> None:
         with self._lock:
             if self._closed:
                 t = self._thread
