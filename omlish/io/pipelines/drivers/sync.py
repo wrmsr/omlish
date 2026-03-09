@@ -134,7 +134,7 @@ class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverCo
             return 'handled'
 
         elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
-            self._sock.flush()
+            # self._sock.flush()
             return 'handled'
 
         elif isinstance(msg, IoPipelineMessages.FinalOutput):

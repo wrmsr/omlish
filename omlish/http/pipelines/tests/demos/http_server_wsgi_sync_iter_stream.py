@@ -118,7 +118,7 @@ class WsgiConnHandler:
         def _send_response_stream(self, head: IoPipelineHttpResponseHead, body: ta.Iterable[BytesLike]) -> None:
             self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(head))  # noqa
             if self._o._drv._flow is not None:  # noqa
-                self._o._drv.enqueue(IoPipelineFlowMessages.FlushOutput()) # noqa
+                self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineFlowMessages.FlushOutput())) # noqa
 
             for d in body:
                 while out := self._o._drv.poll(read=False):  # noqa
@@ -132,7 +132,7 @@ class WsgiConnHandler:
 
                 self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseBodyData(d)))  # noqa
                 if self._o._drv._flow is not None:  # noqa
-                    self._o._drv.enqueue(IoPipelineFlowMessages.FlushOutput()) # noqa
+                    self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineFlowMessages.FlushOutput())) # noqa
 
             self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseEnd()))  # noqa
 
@@ -296,12 +296,13 @@ def demo_app(environ, start_response):
     elif method == 'GET' and path == '/slowping':
         start_response('200 OK', [
             ('Content-Type', 'text/plain'),
+            ('Content-Encoding', 'chunked'),
         ])
 
         def slow_ping():
             for i, o in enumerate(b'pong'):
                 if i:
-                    time.sleep(5)
+                    time.sleep(1)
                 yield bytes([o])
 
         return slow_ping()
