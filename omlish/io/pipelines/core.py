@@ -1175,6 +1175,10 @@ class IoPipeline:
     def state(self) -> State:
         return self._state
 
+    @property
+    def is_ready(self) -> bool:
+        return self._state is IoPipeline.State.READY
+
     #
 
     _saw_any_input = False

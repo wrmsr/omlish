@@ -35,7 +35,7 @@ class StreamWsgiOuterHandler(IoPipelineHandler):
         if isinstance(msg, IoPipelineFlowMessages.ReadyForInput):
             driver = check.isinstance(ctx.pipeline.metadata[DriverIoPipelineMetadata].driver, LoopSyncSocketIoPipelineDriver)  # noqa
             b = driver._sock.recv(driver._config.read_chunk_size)  # noqa
-            driver._pipeline_.feed_in(b, IoPipelineFlowMessages.FlushInput())  # noqa
+            driver._pipeline.feed_in(b, IoPipelineFlowMessages.FlushInput())  # noqa
             return
 
         ctx.feed_out(msg)

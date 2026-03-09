@@ -74,8 +74,12 @@ class IoPipelineFlowMessages(NamespaceClass):
 
 class IoPipelineFlow(IoPipelineService, Abstract):
     @abc.abstractmethod
-    def is_auto_read(self) -> bool:
-        raise NotImplementedError
+    def is_auto_read(self: ta.Optional['IoPipelineFlow']) -> bool:
+        # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
+        # increasingly frequently useful in real code.
+        if self is None:
+            return False
+        return self.is_auto_read()
 
     @staticmethod
     def is_auto_read_pipeline(pi: IoPipeline) -> bool:

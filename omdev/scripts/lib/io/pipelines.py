@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='a4d3cf58a45a3fdde6c546a6e03a970e72c4c84e'),
+            dict(path='core.py', sha1='d9c24e9b85536086a93fc6f00ae02cdba2824e55'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -51,7 +51,7 @@ def __omlish_amalg__():  # noqa
             dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
             dict(path='bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),
-            dict(path='flow/types.py', sha1='1d522f2f0c9bca8a923eb991727145de5efb5a99'),
+            dict(path='flow/types.py', sha1='b8cd49d268b9d8a1d4d96bb8566126ec987ad303'),
             dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
             dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
             dict(path='sched/types.py', sha1='0ef85c6cce69bdf8a6cd9c85eb806d52808f7e0d'),
@@ -2461,6 +2461,10 @@ class IoPipeline:
     def state(self) -> State:
         return self._state
 
+    @property
+    def is_ready(self) -> bool:
+        return self._state is IoPipeline.State.READY
+
     #
 
     _saw_any_input = False
@@ -4055,8 +4059,12 @@ class IoPipelineFlowMessages(NamespaceClass):
 
 class IoPipelineFlow(IoPipelineService, Abstract):
     @abc.abstractmethod
-    def is_auto_read(self) -> bool:
-        raise NotImplementedError
+    def is_auto_read(self: ta.Optional['IoPipelineFlow']) -> bool:
+        # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
+        # increasingly frequently useful in real code.
+        if self is None:
+            return False
+        return self.is_auto_read()
 
     @staticmethod
     def is_auto_read_pipeline(pi: IoPipeline) -> bool:
