@@ -52,7 +52,7 @@ class IoIoPipelineHttpObjectAggregator(
             self,
             *,
             config: IoPipelineHttpAggregationConfig = IoPipelineHttpAggregationConfig.DEFAULT,
-            enabled: bool = True,
+            enabled: ta.Union[bool, ta.Literal['unless_chunked']] = True,
     ) -> None:
         super().__init__()
 
@@ -70,10 +70,10 @@ class IoIoPipelineHttpObjectAggregator(
         self._state: IoIoPipelineHttpObjectAggregator._State = self._init_state()
 
     @property
-    def enabled(self) -> bool:
+    def enabled(self) -> ta.Union[bool, ta.Literal['unless_chunked']]:
         return self._enabled
 
-    def set_enabled(self, enabled: bool) -> None:
+    def set_enabled(self, enabled: ta.Union[bool, ta.Literal['unless_chunked']]) -> None:
         self._enabled = enabled
 
     #
@@ -111,13 +111,24 @@ class IoIoPipelineHttpObjectAggregator(
             out.append(msg)
             return
 
-        self._state = self._state.handle(ctx, msg, out)
+        while True:
+            if (ret := self._state.handle(ctx, msg, out)) is None:
+                return
+
+            self._state, next_msg = ret
+
+            if next_msg is None:
+                return
+
+            msg = next_msg
 
     #
 
     def _init_state(self) -> '_State':
-        if self._enabled:
+        if self._enabled is True:
             return self._HeadState(self)
+        elif self._enabled == 'unless_chunked':
+            return self._UnlessChunkedHeadState(self)
         else:
             return self._DisabledHeadState(self)
 
@@ -137,13 +148,13 @@ class IoIoPipelineHttpObjectAggregator(
                 self,
                 out: ta.List[ta.Any],
                 reason: ta.Union[str, BaseException],
-                msg: ta.Optional[ta.Any] = None,
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+                out_msg: ta.Optional[ta.Any] = None,
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             nxt_state = self._a._AbortedState(self._a)  # noqa
             out.append(self._a._make_aborted(reason))  # noqa
-            if msg is not None:
-                out.append(msg)
-            return nxt_state
+            if out_msg is not None:
+                out.append(out_msg)
+            return (nxt_state, None)
 
         @abc.abstractmethod
         def handle(
@@ -151,7 +162,7 @@ class IoIoPipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             raise NotImplementedError
 
     #
@@ -162,7 +173,7 @@ class IoIoPipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             if isinstance(msg, self._a._head_type):  # noqa
                 try:
                     te = IoPipelineHttpTransferEncoding.select(
@@ -173,7 +184,7 @@ class IoIoPipelineHttpObjectAggregator(
                     return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
                 if te.mode in 'none':
-                    return self._a._EndState(self._a, msg, b'')  # noqa
+                    return (self._a._EndState(self._a, msg, b''), None)  # noqa
 
                 if (
                         te.length is not None and
@@ -182,11 +193,11 @@ class IoIoPipelineHttpObjectAggregator(
                 ):
                     return self._abort(out, FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
 
-                return self._a._BodyState(self._a, msg)  # noqa
+                return (self._a._BodyState(self._a, msg), None)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
                 out.append(msg)
-                return self
+                return None
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -214,7 +225,7 @@ class IoIoPipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             if isinstance(msg, self._a._content_chunk_data_type):  # noqa
                 if (buf := self._buf) is None:
                     buf = self._buf = SegmentedByteStreamBuffer(
@@ -225,7 +236,7 @@ class IoIoPipelineHttpObjectAggregator(
                 for mv in ByteStreamBuffers.iter_segments(msg.data):
                     buf.write(mv)
 
-                return self
+                return None
 
             elif isinstance(msg, self._a._end_type):  # noqa
                 body: CanByteStreamBuffer
@@ -236,7 +247,7 @@ class IoIoPipelineHttpObjectAggregator(
 
                 full = self._a._make_full(self._head, body)  # noqa
                 out.append(full)
-                return self._a._init_state()  # noqa
+                return (self._a._init_state(), None)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort(out, 'incomplete message body', msg)
@@ -263,11 +274,11 @@ class IoIoPipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             if isinstance(msg, self._a._end_type):  # noqa
                 full = self._a._make_full(self._head, self._body)  # noqa
                 out.append(full)
-                return self._a._init_state()  # noqa
+                return (self._a._init_state(), None)  # noqa
 
             elif isinstance(msg, self._a._final_type):  # noqa
                 return self._abort(out, 'incomplete message sequence', msg)
@@ -277,29 +288,58 @@ class IoIoPipelineHttpObjectAggregator(
 
     #
 
+    class _UnlessChunkedHeadState(_State):
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            if isinstance(msg, self._a._head_type):  # noqa
+                try:
+                    te = IoPipelineHttpTransferEncoding.select(
+                        msg.headers,
+                        if_length_missing=self._a._if_content_length_missing,  # noqa
+                    )
+                except IoPipelineHttpTransferEncodingError as e:
+                    return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
+
+                if te.mode == 'chunked':
+                    return (self._a._HeadState(self._a), msg)  # noqa
+                else:
+                    out.append(msg)
+                    return (self._a._ReInitEndState(self._a), None)  # noqa
+
+            out.append(msg)
+            return None
+
     class _DisabledHeadState(_State):
         def handle(
                 self,
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             out.append(msg)
-            if isinstance(msg, self._a._head_type):  # noqa
-                return self._a._DisabledEndState(self._a)  # noqa
-            return self
 
-    class _DisabledEndState(_State):
+            if isinstance(msg, self._a._head_type):  # noqa
+                return (self._a._ReInitEndState(self._a), None)  # noqa
+
+            return None
+
+    class _ReInitEndState(_State):
         def handle(
                 self,
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             out.append(msg)
+
             if isinstance(msg, self._a._end_type):  # noqa
-                return self._a._init_state()  # noqa
-            return self
+                return (self._a._init_state(), None)  # noqa
+
+            return None
 
     #
 
@@ -309,10 +349,11 @@ class IoIoPipelineHttpObjectAggregator(
                 ctx: IoPipelineHandlerContext,
                 msg: ta.Any,
                 out: ta.List[ta.Any],
-        ) -> 'IoIoPipelineHttpObjectAggregator._State':
+        ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 out.append(msg)
-                return self
+                return None
+
             raise NotImplementedError
 
 
