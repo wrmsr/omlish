@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
 import errno
+import hashlib
 import socket
 import typing as ta
 
@@ -40,7 +41,7 @@ class WsgiFeedbackHandler(IoPipelineHandler):
         ctx.feed_in(msg)
 
 
-def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
+def build_wsgi_spec() -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
             IoPipelineHttpRequestDecoder(),
@@ -60,7 +61,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
                 raise
 
         drv = IterSyncSocketIoPipelineDriver(
-            build_wsgi_spec(spec.app),
+            build_wsgi_spec(),
             conn,
         )
 
@@ -153,7 +154,7 @@ def serve_wsgi_wsgiref(spec: WsgiSpec) -> None:
 ##
 
 
-def ping_app(environ, start_response):
+def ping_and_sha1_app(environ, start_response):
     method = environ.get('REQUEST_METHOD', '')
     path = environ.get('PATH_INFO', '')
 
@@ -164,6 +165,19 @@ def ping_app(environ, start_response):
             ('Content-Length', str(len(body))),
         ])
         return [body]
+
+    elif method == 'POST' and path == '/sha1':
+        h = hashlib.sha1()  # noqa
+        while b := environ['wsgi.input'].read():
+            h.update(b)
+
+        body = h.hexdigest().encode('ascii')
+        start_response('200 OK', [
+            ('Content-Type', 'text/plain'),
+            ('Content-Length', str(len(body))),
+        ])
+        return [body]
+
     else:
         body = b'not found'
         start_response('404 Not Found', [
@@ -177,10 +191,10 @@ def ping_app(environ, start_response):
 
 
 def _main() -> None:
-    ping_spec = WsgiSpec(ping_app)
+    wsgi_spec = WsgiSpec(ping_and_sha1_app)
 
     # serve_wsgi_wsgiref(ping_spec)
-    serve_wsgi_pipeline(ping_spec)
+    serve_wsgi_pipeline(wsgi_spec)
 
 
 if __name__ == '__main__':

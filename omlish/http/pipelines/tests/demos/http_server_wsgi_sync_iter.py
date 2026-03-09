@@ -39,7 +39,7 @@ class WsgiFeedbackHandler(IoPipelineHandler):
         ctx.feed_in(msg)
 
 
-def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
+def build_wsgi_spec() -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
             IoPipelineHttpRequestDecoder(),
@@ -59,7 +59,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
                 raise
 
         drv = IterSyncSocketIoPipelineDriver(
-            build_wsgi_spec(spec.app),
+            build_wsgi_spec(),
             conn,
         )
 
