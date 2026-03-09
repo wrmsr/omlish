@@ -8,7 +8,7 @@ from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from ...requests import FullIoPipelineHttpRequest
 from ...requests import IoPipelineHttpRequestAborted
-from ...requests import IoPipelineHttpRequestContentChunkData
+from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
 from ..requests import IoPipelineHttpRequestAggregatorDecoder
@@ -54,7 +54,7 @@ class TestPipelineHttpRequestDecoder(unittest.TestCase):
         self.assertEqual(head.target, '/api')
 
         # Second: body bytes (forwarded)
-        self.assertIsInstance(body, IoPipelineHttpRequestContentChunkData)
+        self.assertIsInstance(body, IoPipelineHttpRequestBodyData)
         self.assertEqual(ByteStreamBuffers.to_bytes(body.data), b'test')
 
         self.assertIsInstance(end, IoPipelineHttpRequestEnd)
@@ -213,7 +213,7 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
         self.assertEqual(head.target, '/api')
 
         # Second: body bytes (forwarded)
-        self.assertIsInstance(body, IoPipelineHttpRequestContentChunkData)
+        self.assertIsInstance(body, IoPipelineHttpRequestBodyData)
         self.assertEqual(ByteStreamBuffers.to_bytes(body.data), b'test')
 
         # Second: body bytes (forwarded)
@@ -245,10 +245,10 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
         out = ibq.drain()
 
         self.assertEqual(len(out), 5)  # head + 3 chunks + end
-        self.assertIsInstance(out[1], IoPipelineHttpRequestContentChunkData)
+        self.assertIsInstance(out[1], IoPipelineHttpRequestBodyData)
         self.assertEqual(out[1].data, b'0123456789')
-        self.assertIsInstance(out[2], IoPipelineHttpRequestContentChunkData)
+        self.assertIsInstance(out[2], IoPipelineHttpRequestBodyData)
         self.assertEqual(out[2].data, b'a' * 16)
-        self.assertIsInstance(out[3], IoPipelineHttpRequestContentChunkData)
+        self.assertIsInstance(out[3], IoPipelineHttpRequestBodyData)
         self.assertEqual(out[3].data, b'b' * 100)
         self.assertIsInstance(out[4], IoPipelineHttpRequestEnd)

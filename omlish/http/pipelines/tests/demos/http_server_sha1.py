@@ -14,7 +14,7 @@ from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from .....io.pipelines.flow.stub import StubIoPipelineFlow
 from ...requests import IoPipelineHttpRequestAborted
-from ...requests import IoPipelineHttpRequestContentChunkData
+from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
 from ...responses import FullIoPipelineHttpResponse
@@ -59,7 +59,7 @@ class Sha1Handler(IoPipelineHandler):
 
             return
 
-        if isinstance(msg, IoPipelineHttpRequestContentChunkData):
+        if isinstance(msg, IoPipelineHttpRequestBodyData):
             if self._active and self._h is not None:
                 self._h.update(msg.data)
 

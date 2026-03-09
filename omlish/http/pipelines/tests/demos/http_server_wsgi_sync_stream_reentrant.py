@@ -17,7 +17,7 @@ from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.check import check
 from ....headers import HttpHeaders
-from ...requests import IoPipelineHttpRequestContentChunkData
+from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
 from ...responses import FullIoPipelineHttpResponse
@@ -59,7 +59,7 @@ class StreamWsgiInnerHandler(IoPipelineHandler):
                 if len(iq) > 0:
                     msg = iq.popleft()
 
-                    if isinstance(msg, IoPipelineHttpRequestContentChunkData):
+                    if isinstance(msg, IoPipelineHttpRequestBodyData):
                         return msg.data
                     elif isinstance(msg, IoPipelineHttpRequestEnd):
                         return b''
@@ -73,7 +73,7 @@ class StreamWsgiInnerHandler(IoPipelineHandler):
 
             msg = iq.popleft()
 
-            if isinstance(msg, IoPipelineHttpRequestContentChunkData):
+            if isinstance(msg, IoPipelineHttpRequestBodyData):
                 return msg.data
             elif isinstance(msg, IoPipelineHttpRequestEnd):
                 return b''
@@ -141,7 +141,7 @@ class StreamWsgiInnerHandler(IoPipelineHandler):
 
             return
 
-        if isinstance(msg, (IoPipelineHttpRequestContentChunkData, IoPipelineHttpRequestEnd)):
+        if isinstance(msg, (IoPipelineHttpRequestBodyData, IoPipelineHttpRequestEnd)):
             check.not_none(self._inbound_queue).append(msg)
             return
 

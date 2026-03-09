@@ -61,7 +61,7 @@ class IoIoPipelineHttpObjectAggregator(
 
         self._handled_types: ta.Tuple[type, ...] = (
             self._head_type,
-            self._content_chunk_data_type,
+            self._body_data_type,
             self._end_type,
             self._aborted_type,
             self._final_type,
@@ -226,7 +226,7 @@ class IoIoPipelineHttpObjectAggregator(
                 msg: ta.Any,
                 out: ta.List[ta.Any],
         ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
-            if isinstance(msg, self._a._content_chunk_data_type):  # noqa
+            if isinstance(msg, self._a._body_data_type):  # noqa
                 if (buf := self._buf) is None:
                     buf = self._buf = SegmentedByteStreamBuffer(
                         max_size=self._a._config.body_buffer.max_size,  # noqa

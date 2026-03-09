@@ -58,7 +58,7 @@ class FullIoPipelineHttpMessage(IoPipelineHttpMessageObject, Abstract):
 
 
 @dc.dataclass(frozen=True)
-class IoPipelineHttpMessageContentChunkData(IoPipelineHttpMessageObject, Abstract):
+class IoPipelineHttpMessageBodyData(IoPipelineHttpMessageObject, Abstract):
     data: BytesLike
 
     def __post_init__(self) -> None:
@@ -135,11 +135,11 @@ class IoPipelineHttpMessageObjects(Abstract):
 
     @property
     @abc.abstractmethod
-    def _content_chunk_data_type(self) -> ta.Type[IoPipelineHttpMessageContentChunkData]:
+    def _body_data_type(self) -> ta.Type[IoPipelineHttpMessageBodyData]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _make_content_chunk_data(self, data: BytesLike) -> IoPipelineHttpMessageContentChunkData:
+    def _make_body_data(self, data: BytesLike) -> IoPipelineHttpMessageBodyData:
         raise NotImplementedError
 
     #

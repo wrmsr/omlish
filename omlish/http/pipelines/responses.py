@@ -14,7 +14,7 @@ from ..versions import HttpVersion
 from ..versions import HttpVersions
 from .objects import FullIoPipelineHttpMessage
 from .objects import IoPipelineHttpMessageAborted
-from .objects import IoPipelineHttpMessageContentChunkData
+from .objects import IoPipelineHttpMessageBodyData
 from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageObject
@@ -92,7 +92,7 @@ class FullIoPipelineHttpResponse(FullIoPipelineHttpMessage, IoPipelineHttpRespon
 
 
 @dc.dataclass(frozen=True)
-class IoPipelineHttpResponseContentChunkData(IoPipelineHttpMessageContentChunkData, IoPipelineHttpResponseObject):
+class IoPipelineHttpResponseBodyData(IoPipelineHttpMessageBodyData, IoPipelineHttpResponseObject):
     pass
 
 
@@ -138,10 +138,10 @@ class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
 
     #
 
-    _content_chunk_data_type: ta.Final = IoPipelineHttpResponseContentChunkData
+    _body_data_type: ta.Final = IoPipelineHttpResponseBodyData
 
-    def _make_content_chunk_data(self, data: BytesLike) -> IoPipelineHttpResponseContentChunkData:
-        return IoPipelineHttpResponseContentChunkData(data)
+    def _make_body_data(self, data: BytesLike) -> IoPipelineHttpResponseBodyData:
+        return IoPipelineHttpResponseBodyData(data)
 
     #
 

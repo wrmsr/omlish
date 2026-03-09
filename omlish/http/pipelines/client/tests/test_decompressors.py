@@ -10,7 +10,7 @@ from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....lite.check import check
 from ....headers import HttpHeaders
 from ...decompressors import IoPipelineHttpDecompressionConfig
-from ...responses import IoPipelineHttpResponseContentChunkData
+from ...responses import IoPipelineHttpResponseBodyData
 from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseHead
 from ..responses import IoPipelineHttpResponseDecompressor
@@ -52,7 +52,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         assert channel.output.drain() == []
         assert ibq.drain() == [self.head]
 
-        channel.feed_in(IoPipelineHttpResponseContentChunkData(data))
+        channel.feed_in(IoPipelineHttpResponseBodyData(data))
         # Should have deferred because max_steps is 2 (20 bytes out max)
         dfl = check.isinstance(check.single(channel.output.drain()), IoPipelineMessages.Defer)
         # Verify FinalInput is pinned and NOT yet fed inbound
@@ -74,7 +74,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         [*out_data, out_fi] = ibq.drain()
 
         # 3. Final Verification
-        full_output = b''.join(check.isinstance(m, IoPipelineHttpResponseContentChunkData).data for m in out_data)
+        full_output = b''.join(check.isinstance(m, IoPipelineHttpResponseBodyData).data for m in out_data)
         self.assertEqual(full_output, raw_data)
         self.assertIs(fi, out_fi)
 
@@ -97,7 +97,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         channel.feed_in(self.head)
 
         # Feeding this should eventually raise ValueError due to expansion ratio
-        channel.feed_in(IoPipelineHttpResponseContentChunkData(bomb_data))
+        channel.feed_in(IoPipelineHttpResponseBodyData(bomb_data))
         count = 0
         while (out := channel.output.poll()) is not None:
             count += 1

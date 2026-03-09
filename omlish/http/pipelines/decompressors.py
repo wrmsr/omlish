@@ -14,7 +14,7 @@ from ...io.pipelines.flow.types import IoPipelineFlowMessages
 from ...io.streams.types import BytesLike
 from ...io.streams.utils import ByteStreamBuffers
 from ...lite.abstract import Abstract
-from .objects import IoPipelineHttpMessageContentChunkData
+from .objects import IoPipelineHttpMessageBodyData
 from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageObjects
@@ -162,7 +162,7 @@ class IoPipelineHttpObjectDecompressor(
             if not self._is_auto_read(ctx):
                 self._read_requested = False
 
-            ctx.feed_in(self._make_content_chunk_data(o))
+            ctx.feed_in(self._make_body_data(o))
             emitted = True
 
             # In manual mode, we satisfy one 'read' at a time.
@@ -285,7 +285,7 @@ class IoPipelineHttpObjectDecompressor(
 
         ctx.feed_in(msg)
 
-    def _on_inbound_content_chunk_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageContentChunkData) -> None:  # noqa
+    def _on_inbound_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:  # noqa
         if self._decompressor is None:
             ctx.feed_in(msg)
             return
@@ -317,8 +317,8 @@ class IoPipelineHttpObjectDecompressor(
         elif isinstance(msg, self._head_type):
             self._on_inbound_head(ctx, msg)
 
-        elif isinstance(msg, self._content_chunk_data_type):
-            self._on_inbound_content_chunk_data(ctx, msg)
+        elif isinstance(msg, self._body_data_type):
+            self._on_inbound_body_data(ctx, msg)
 
         elif isinstance(msg, self._end_type):
             self._on_inbound_end(ctx, msg)

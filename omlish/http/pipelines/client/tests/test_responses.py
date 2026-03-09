@@ -7,7 +7,7 @@ from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from ...responses import IoPipelineHttpResponseAborted
-from ...responses import IoPipelineHttpResponseContentChunkData
+from ...responses import IoPipelineHttpResponseBodyData
 from ...responses import IoPipelineHttpResponseEnd
 from ..responses import IoPipelineHttpResponseDecoder
 
@@ -51,7 +51,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         self.assertEqual(head.status, 200)
 
         # Second: body bytes
-        self.assertIsInstance(body, IoPipelineHttpResponseContentChunkData)
+        self.assertIsInstance(body, IoPipelineHttpResponseBodyData)
         self.assertEqual(ByteStreamBuffers.to_bytes(body.data), b'hello')
 
         self.assertIsInstance(end, IoPipelineHttpResponseEnd)

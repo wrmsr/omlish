@@ -3,7 +3,7 @@
 """
 TODO:
  - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
-  - and make_content_chunk_data ...
+  - and make_body_data ...
  - fix exception handling lol - do we raise ValueError?? do we return aborted??
 """
 import abc
@@ -45,8 +45,8 @@ class IoPipelineHttpDecodingConfig:
 
     head_buffer: BufferConfig = BufferConfig(max_size=4 * 1024, chunk_size=4 * 1024)
 
-    max_content_chunk_size: ta.Optional[int] = None
-    content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
+    max_chunk_size: ta.Optional[int] = None
+    chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
 
 
 IoPipelineHttpDecodingConfig.DEFAULT = IoPipelineHttpDecodingConfig()
@@ -295,7 +295,7 @@ class IoPipelineHttpObjectDecoder(
         ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             for mv in ByteStreamBuffers.iter_segments(data):
                 if len(data):
-                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    out.append(self._d._make_body_data(mv))  # noqa
 
             if final:
                 out.append(self._d._make_end())  # noqa
@@ -338,17 +338,17 @@ class IoPipelineHttpObjectDecoder(
                     continue
 
                 if self._remaining > mvl:
-                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    out.append(self._d._make_body_data(mv))  # noqa
                     self._remaining -= mvl
 
                 elif self._remaining == mvl:
-                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    out.append(self._d._make_body_data(mv))  # noqa
                     out.append(self._d._make_end())  # noqa
                     self._remaining = 0
                     next_mvs = []
 
                 else:
-                    out.append(self._d._make_content_chunk_data(mv[:self._remaining]))  # noqa
+                    out.append(self._d._make_body_data(mv[:self._remaining]))  # noqa
                     out.append(self._d._make_end())  # noqa
                     ofs = self._remaining
                     self._remaining = 0
@@ -396,8 +396,8 @@ class IoPipelineHttpObjectDecoder(
 
                 if (buf := self._buf) is None:
                     buf = self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-                        max_size=self._d._config.content_chunk_header_buffer.max_size,  # noqa
-                        chunk_size=self._d._config.content_chunk_header_buffer.chunk_size,  # noqa
+                        max_size=self._d._config.chunk_header_buffer.max_size,  # noqa
+                        chunk_size=self._d._config.chunk_header_buffer.chunk_size,  # noqa
                     ))
 
                 rem_mv: ta.Optional[memoryview] = None
@@ -427,7 +427,7 @@ class IoPipelineHttpObjectDecoder(
                 except ValueError:
                     return self._abort(out, f'Invalid chunk size: {size_bytes!r}')
 
-                if (mcs := self._d._config.max_content_chunk_size) is not None and chunk_size > mcs:  # noqa
+                if (mcs := self._d._config.max_chunk_size) is not None and chunk_size > mcs:  # noqa
                     return self._abort(out, f'Content chunk size {chunk_size} exceeds maximum content chunk size: {mcs}')  # noqa
 
                 next_mvs = []
@@ -494,16 +494,16 @@ class IoPipelineHttpObjectDecoder(
 
                 if mvl < self._remaining:
                     self._remaining -= mvl
-                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    out.append(self._d._make_body_data(mv))  # noqa
                     continue
 
                 if self._remaining > 0:
                     if mvl == self._remaining:
-                        out.append(self._d._make_content_chunk_data(mv))  # noqa
+                        out.append(self._d._make_body_data(mv))  # noqa
                         self._remaining = 0
                         continue
 
-                    out.append(self._d._make_content_chunk_data(mv[:self._remaining]))  # noqa
+                    out.append(self._d._make_body_data(mv[:self._remaining]))  # noqa
                     mv = mv[self._remaining:]
                     mvl = len(mv)
                     self._remaining = 0

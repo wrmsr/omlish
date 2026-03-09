@@ -7,7 +7,7 @@ from .....io.pipelines.handlers.feedback import FeedbackInboundIoPipelineHandler
 from ....headers import HttpHeaders
 from ....versions import HttpVersion
 from ...requests import FullIoPipelineHttpRequest
-from ...requests import IoPipelineHttpRequestContentChunkData
+from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
 from ..requests import IoPipelineHttpRequestEncoder
@@ -295,9 +295,9 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(head))
 
         # Send chunks
-        channel.feed_in(fbi.wrap(IoPipelineHttpRequestContentChunkData(b'hello')))
-        channel.feed_in(fbi.wrap(IoPipelineHttpRequestContentChunkData(b' ')))
-        channel.feed_in(fbi.wrap(IoPipelineHttpRequestContentChunkData(b'world')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'hello')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b' ')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'world')))
 
         # Send end
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestEnd()))
@@ -343,8 +343,8 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(head))
 
         # Send chunks
-        channel.feed_in(fbi.wrap(IoPipelineHttpRequestContentChunkData(b'hello')))
-        channel.feed_in(fbi.wrap(IoPipelineHttpRequestContentChunkData(b'world')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'hello')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'world')))
 
         # Send end
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestEnd()))
@@ -397,9 +397,9 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(head))
 
         # Empty chunks should not emit
-        # channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'')))
-        channel.feed_in(fbi.wrap(IoPipelineHttpRequestContentChunkData(b'hello')))
-        # channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'')))
+        # channel.feed_in(fbi.wrap(PipelineHttpRequestBodyData(b'')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'hello')))
+        # channel.feed_in(fbi.wrap(PipelineHttpRequestBodyData(b'')))
 
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestEnd()))
 

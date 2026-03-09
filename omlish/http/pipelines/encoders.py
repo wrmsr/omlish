@@ -9,7 +9,7 @@ from ...io.pipelines.core import IoPipelineHandlerContext
 from ...lite.abstract import Abstract
 from ..headers import HttpHeaders
 from .objects import FullIoPipelineHttpMessage
-from .objects import IoPipelineHttpMessageContentChunkData
+from .objects import IoPipelineHttpMessageBodyData
 from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageObjects
@@ -44,8 +44,8 @@ class IoPipelineHttpObjectEncoder(
         elif isinstance(msg, self._full_type):
             self._handle_full_request(ctx, msg)
 
-        elif isinstance(msg, self._content_chunk_data_type):
-            self._handle_content_chunk_data(ctx, msg)
+        elif isinstance(msg, self._body_data_type):
+            self._handle_body_data(ctx, msg)
 
         elif isinstance(msg, self._end_type):
             self._handle_request_end(ctx, msg)
@@ -74,7 +74,7 @@ class IoPipelineHttpObjectEncoder(
 
     #
 
-    def _handle_content_chunk_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageContentChunkData) -> None:  # noqa
+    def _handle_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:  # noqa
         """Emit body chunk (raw or chunked-encoded)."""
 
         if not self._streaming:
