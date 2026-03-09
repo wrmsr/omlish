@@ -14,6 +14,7 @@ from .objects import IoPipelineHttpMessageChunk
 from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageLastChunk
+from .objects import IoPipelineHttpMessageChunkedTrailers
 from .objects import IoPipelineHttpMessageObjects
 
 
@@ -52,6 +53,9 @@ class IoPipelineHttpObjectEncoder(
         elif isinstance(msg, self._last_chunk_type):
             self._handle_last_chunk(ctx, msg)
 
+        elif isinstance(msg, self._chunked_trailers_type):
+            self._handle_chunked_trailers(ctx, msg)
+
         elif isinstance(msg, self._body_data_type):
             self._handle_body_data(ctx, msg)
 
@@ -84,6 +88,11 @@ class IoPipelineHttpObjectEncoder(
     #
 
     def _handle_last_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageLastChunk) -> None:  # noqa
+        raise NotImplementedError
+
+    #
+
+    def _handle_chunked_trailers(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunkedTrailers) -> None:  # noqa
         raise NotImplementedError
 
     #

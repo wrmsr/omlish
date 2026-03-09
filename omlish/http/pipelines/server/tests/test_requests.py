@@ -9,6 +9,9 @@ from .....io.streams.utils import ByteStreamBuffers
 from ...requests import FullIoPipelineHttpRequest
 from ...requests import IoPipelineHttpRequestAborted
 from ...requests import IoPipelineHttpRequestBodyData
+from ...requests import IoPipelineHttpRequestChunkedTrailers
+from ...requests import IoPipelineHttpRequestChunk
+from ...requests import IoPipelineHttpRequestLastChunk
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
 from ..requests import IoPipelineHttpRequestAggregatorDecoder
@@ -242,13 +245,28 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
 
         channel.feed_in(head_b + body_b)
 
-        out = ibq.drain()
+        (
+            head,
+            chunk1,
+            data1,
+            chunk2,
+            data2,
+            chunk3,
+            data3,
+            last_chunk,
+            trailers,
+            end,
+        ) = ibq.drain()
 
-        self.assertEqual(len(out), 5)  # head + 3 chunks + end
-        self.assertIsInstance(out[1], IoPipelineHttpRequestBodyData)
-        self.assertEqual(out[1].data, b'0123456789')
-        self.assertIsInstance(out[2], IoPipelineHttpRequestBodyData)
-        self.assertEqual(out[2].data, b'a' * 16)
-        self.assertIsInstance(out[3], IoPipelineHttpRequestBodyData)
-        self.assertEqual(out[3].data, b'b' * 100)
-        self.assertIsInstance(out[4], IoPipelineHttpRequestEnd)
+        self.assertIsInstance(head, IoPipelineHttpRequestHead)
+        for co, cdo, xd in [
+            (chunk1, data1, b'0123456789'),
+            (chunk2, data2, b'a' * 16),
+            (chunk3, data3, b'b' * 100),
+        ]:
+            self.assertIsInstance(co, IoPipelineHttpRequestChunk)
+            self.assertIsInstance(cdo, IoPipelineHttpRequestBodyData)
+            self.assertEqual(cdo.data, xd)
+        self.assertIsInstance(last_chunk, IoPipelineHttpRequestLastChunk)
+        self.assertIsInstance(trailers, IoPipelineHttpRequestChunkedTrailers)
+        self.assertIsInstance(end, IoPipelineHttpRequestEnd)

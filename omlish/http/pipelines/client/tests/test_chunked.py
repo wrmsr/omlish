@@ -11,6 +11,9 @@ from ...decoders import IoPipelineHttpDecodingConfig
 from ...responses import IoPipelineHttpResponseAborted
 from ...responses import IoPipelineHttpResponseBodyData
 from ...responses import IoPipelineHttpResponseEnd
+from ...responses import IoPipelineHttpResponseChunk
+from ...responses import IoPipelineHttpResponseChunkedTrailers
+from ...responses import IoPipelineHttpResponseLastChunk
 from ...responses import IoPipelineHttpResponseHead
 from ..responses import IoPipelineHttpResponseDecoder
 

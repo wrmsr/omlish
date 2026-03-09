@@ -16,6 +16,7 @@ from .objects import IoPipelineHttpMessageAborted
 from .objects import IoPipelineHttpMessageBodyData
 from .objects import IoPipelineHttpMessageChunk
 from .objects import IoPipelineHttpMessageEnd
+from .objects import IoPipelineHttpMessageChunkedTrailers
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageLastChunk
 from .objects import IoPipelineHttpMessageObject
@@ -104,6 +105,14 @@ class IoPipelineHttpRequestLastChunk(IoPipelineHttpMessageLastChunk, IoPipelineH
 
 
 @dc.dataclass(frozen=True)
+class IoPipelineHttpRequestChunkedTrailers(IoPipelineHttpMessageChunkedTrailers, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
 class IoPipelineHttpRequestBodyData(IoPipelineHttpMessageBodyData, IoPipelineHttpRequestObject):
     pass
 
@@ -161,6 +170,13 @@ class IoPipelineHttpRequestObjects(IoPipelineHttpMessageObjects):
 
     def _make_last_chunk(self) -> IoPipelineHttpRequestLastChunk:
         return IoPipelineHttpRequestLastChunk()
+
+    #
+
+    _chunked_trailers_type: ta.Final = IoPipelineHttpRequestChunkedTrailers
+
+    def _make_chunked_trailers(self) -> IoPipelineHttpRequestChunkedTrailers:
+        return IoPipelineHttpRequestChunkedTrailers()
 
     #
 

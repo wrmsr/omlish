@@ -60,7 +60,7 @@ class FullIoPipelineHttpMessage(IoPipelineHttpMessageObject, Abstract):
 @dc.dataclass(frozen=True)
 class IoPipelineHttpMessageChunk(IoPipelineHttpMessageObject, Abstract):
     size: int
-    # headers
+    # ext: HttpHeaders
 
 
 #
@@ -68,7 +68,17 @@ class IoPipelineHttpMessageChunk(IoPipelineHttpMessageObject, Abstract):
 
 @dc.dataclass(frozen=True)
 class IoPipelineHttpMessageLastChunk(IoPipelineHttpMessageObject, Abstract):
-    # headers
+    # ext: HttpHeaders
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageChunkedTrailers(IoPipelineHttpMessageObject, Abstract):
+    # trailers: HttpHeaders
+    # parsed_trailers: ta.Optional[ParsedHttpMessage] = None
     pass
 
 
@@ -169,6 +179,17 @@ class IoPipelineHttpMessageObjects(Abstract):
 
     @abc.abstractmethod
     def _make_last_chunk(self) -> IoPipelineHttpMessageLastChunk:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _chunked_trailers_type(self) -> ta.Type[IoPipelineHttpMessageChunkedTrailers]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_chunked_trailers(self) -> IoPipelineHttpMessageChunkedTrailers:
         raise NotImplementedError
 
     #

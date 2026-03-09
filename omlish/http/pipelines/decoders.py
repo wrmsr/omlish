@@ -442,11 +442,13 @@ class IoPipelineHttpObjectDecoder(
 
             if chunk_size is not None:
                 if chunk_size == 0:
+                    out.append(self._d._make_last_chunk())  # noqa
                     return (
                         self._d._TrailerChunkedContentState(self._d, self._head),  # noqa
                         SegmentedByteStreamBufferView.or_else(next_mvs, b''),
                     )
                 else:
+                    out.append(self._d._make_chunk(chunk_size))  # noqa
                     return (
                         self._d._DataChunkedContentState(self._d, self._head, chunk_size),  # noqa
                         SegmentedByteStreamBufferView.or_else(next_mvs, b''),
@@ -578,7 +580,7 @@ class IoPipelineHttpObjectDecoder(
                 mv = mv[1:]
                 mvl -= 1
 
-                # Emit end marker
+                out.append(self._d._make_chunked_trailers())
                 out.append(self._d._make_end())  # noqa
 
                 next_mvs = []
