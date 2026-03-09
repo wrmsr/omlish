@@ -201,7 +201,7 @@ class _AsgiDriver:
                 reason=IoPipelineHttpResponseHead.get_reason_phrase(status_code),
                 headers=HttpHeaders(md['headers']),
             ))
-            if IoPipelineFlow.is_auto_read_context(self._ctx):
+            if IoPipelineFlow.is_auto_read(self._ctx):
                 out.append(IoPipelineFlowMessages.FlushOutput())
 
             self._state = _AsgiDriver.State.RESPONSE_STARTED
@@ -216,7 +216,7 @@ class _AsgiDriver:
             check.equal(md['type'], 'http.response.body')
 
             out.append(md['body'])
-            if IoPipelineFlow.is_auto_read_context(self._ctx):
+            if IoPipelineFlow.is_auto_read(self._ctx):
                 out.append(IoPipelineFlowMessages.FlushOutput())
 
             if not md.get('more_body', False):
@@ -251,7 +251,7 @@ class AsgiHandler(IoPipelineHandler):
         if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not IoPipelineFlow.is_auto_read_context(ctx):
+            if not IoPipelineFlow.is_auto_read(ctx):
                 ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return

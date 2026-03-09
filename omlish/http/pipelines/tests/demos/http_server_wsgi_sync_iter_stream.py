@@ -42,7 +42,7 @@ class WsgiFeedbackHandler(IoPipelineHandler):
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, IoPipelineMessages.InitialInput):
-            if not IoPipelineFlow.is_auto_read_context(ctx):
+            if not IoPipelineFlow.is_auto_read(ctx):
                 ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             ctx.feed_in(msg)

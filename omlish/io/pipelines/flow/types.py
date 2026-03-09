@@ -73,17 +73,26 @@ class IoPipelineFlowMessages(NamespaceClass):
 
 class IoPipelineFlow(Abstract):
     @abc.abstractmethod
-    def is_auto_read(self: ta.Optional['IoPipelineFlow']) -> bool:
+    def is_auto_read(
+            self: ta.Union[
+                'IoPipelineFlow',
+                IoPipeline,
+                IoPipelineHandlerContext,
+                None,
+            ],
+    ) -> bool:
         # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
         # increasingly frequently useful in real code.
         if self is None:
             return False
-        return self.is_auto_read()
 
-    @staticmethod
-    def is_auto_read_pipeline(pi: IoPipeline) -> bool:
-        return (fc := pi.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
+        if isinstance(self, IoPipelineFlow):
+            return self.is_auto_read()
 
-    @staticmethod
-    def is_auto_read_context(ctx: IoPipelineHandlerContext) -> bool:
-        return (fc := ctx.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
+        if isinstance(self, IoPipelineHandlerContext):
+            self = self._pipeline  # noqa
+
+        if isinstance(self, IoPipeline):
+            return (fc := self.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
+
+        raise TypeError(self)

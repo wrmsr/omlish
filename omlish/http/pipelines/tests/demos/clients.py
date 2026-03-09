@@ -11,6 +11,7 @@ from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from .....io.pipelines.drivers.sync import LoopSyncSocketIoPipelineDriver
 from .....io.pipelines.flow.stub import StubIoPipelineFlowService
+from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
@@ -66,7 +67,7 @@ class HttpClientHandler(IoPipelineHandler):
 
             ctx.feed_out(msg.request)
 
-            if not StubIoPipelineFlowService.is_auto_read_context(ctx):
+            if not IoPipelineFlow.is_auto_read(ctx):
                 ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return

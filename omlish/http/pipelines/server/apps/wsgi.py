@@ -38,7 +38,7 @@ class WsgiHandler(IoPipelineHandler):
         if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not IoPipelineFlow.is_auto_read_context(ctx):
+            if not IoPipelineFlow.is_auto_read(ctx):
                 ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return
