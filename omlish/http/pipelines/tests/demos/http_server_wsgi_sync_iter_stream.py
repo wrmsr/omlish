@@ -25,8 +25,11 @@ from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestObject
 from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseBodyData
+from ...responses import IoPipelineHttpResponseChunk
+from ...responses import IoPipelineHttpResponseChunkedTrailers
 from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseHead
+from ...responses import IoPipelineHttpResponseLastChunk
 from ...server.apps.wsgi import WsgiSpec
 from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
 from ...server.requests import IoPipelineHttpRequestDecoder
@@ -116,9 +119,14 @@ class WsgiConnHandler:
             self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(resp))  # noqa
 
         def _send_response_stream(self, head: IoPipelineHttpResponseHead, body: ta.Iterable[BytesLike]) -> None:
-            self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(head))  # noqa
+            chunked = 'chunked' in head.headers.lower.get('transfer-encoding', ())
+
+            def feed_out(msg: ta.Any) -> None:
+                self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(msg)) # noqa
+
+            feed_out(head)
             if self._o._drv._flow is not None:  # noqa
-                self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineFlowMessages.FlushOutput())) # noqa
+                feed_out(IoPipelineFlowMessages.FlushOutput())
 
             for d in body:
                 while out := self._o._drv.poll(read=False):  # noqa
@@ -130,13 +138,17 @@ class WsgiConnHandler:
                     # FIXME: early break??
                     continue
 
-                self._o._drv.enqueue(  # noqa
-                    WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseBodyData(d)),
-                )
+                if chunked:
+                    feed_out(IoPipelineHttpResponseChunk(len(d)))
+                feed_out(IoPipelineHttpResponseBodyData(d))
                 if self._o._drv._flow is not None:  # noqa
-                    self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineFlowMessages.FlushOutput())) # noqa
+                    feed_out(IoPipelineFlowMessages.FlushOutput())
 
-            self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseEnd()))  # noqa
+            if chunked:
+                feed_out(IoPipelineHttpResponseLastChunk())
+                feed_out(IoPipelineHttpResponseChunkedTrailers())
+
+            feed_out(IoPipelineHttpResponseEnd())
 
         #
 
@@ -298,7 +310,7 @@ def demo_app(environ, start_response):
     elif method == 'GET' and path == '/slowping':
         start_response('200 OK', [
             ('Content-Type', 'text/plain'),
-            ('Content-Encoding', 'chunked'),
+            ('Transfer-Encoding', 'chunked'),
         ])
 
         def slow_ping():

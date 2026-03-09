@@ -83,7 +83,7 @@ class IoPipelineHttpObjectEncoder(
     #
 
     def _handle_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunk) -> None:  # noqa
-        ctx.feed_out(f'{msg.size}\r\n'.encode('ascii'))
+        ctx.feed_out(f'{msg.size:x}\r\n'.encode('ascii'))
 
     #
 
@@ -106,8 +106,6 @@ class IoPipelineHttpObjectEncoder(
             pass
 
         elif self._chunked:
-            # Chunked encoding: <size-hex>\r\n<data>\r\n
-            ctx.feed_out(f'{len(msg.data):x}\r\n'.encode('ascii'))
             ctx.feed_out(msg.data)
             ctx.feed_out(b'\r\n')
 
@@ -123,15 +121,9 @@ class IoPipelineHttpObjectEncoder(
             ctx.feed_out(msg)
             return
 
-        was_chunked = self._chunked
-
         # Reset state
         self._streaming = False
         self._chunked = False
-
-        if was_chunked:
-            # Emit final chunk: 0\r\n\r\n
-            ctx.feed_out(b'0\r\n\r\n')
 
     #
 

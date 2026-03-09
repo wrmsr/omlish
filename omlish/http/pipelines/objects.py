@@ -62,6 +62,8 @@ class IoPipelineHttpMessageChunk(IoPipelineHttpMessageObject, Abstract):
     size: int
     # ext: HttpHeaders
 
+    def __post_init__(self) -> None:
+        check.arg(self.size > 0)
 
 #
 

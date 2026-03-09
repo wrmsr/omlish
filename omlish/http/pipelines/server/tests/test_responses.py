@@ -8,8 +8,11 @@ from ....headers import HttpHeaders
 from ....versions import HttpVersion
 from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseBodyData
+from ...responses import IoPipelineHttpResponseChunk
+from ...responses import IoPipelineHttpResponseChunkedTrailers
 from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseHead
+from ...responses import IoPipelineHttpResponseLastChunk
 from ..responses import IoPipelineHttpResponseEncoder
 
 
@@ -449,16 +452,20 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         )))
 
         # Send body chunks
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'hello')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'world')))
+
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseLastChunk()))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunkedTrailers()))
 
         # Send end
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseEnd()))
 
         out = channel.output.drain()
 
-        # Should get: head, chunk1 (size+data+crlf), chunk2 (size+data+crlf), terminator
-        self.assertEqual(len(out), 8)
+        self.assertEqual(len(out), 9)
 
         # Head
         head = out[0]
@@ -476,7 +483,8 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         self.assertEqual(out[6], b'\r\n')
 
         # Terminator
-        self.assertEqual(out[7], b'0\r\n\r\n')
+        self.assertEqual(out[7], b'0\r\n')
+        self.assertEqual(out[8], b'\r\n')
 
     def test_streaming_response_chunked_terminator(self) -> None:
         """Test that chunked encoding emits final terminator."""
@@ -496,43 +504,19 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
             ]),
         )))
 
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'data')))
+
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseLastChunk()))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunkedTrailers()))
+
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseEnd()))
 
         out = channel.output.drain()
 
         # Last message should be the terminator
-        self.assertEqual(out[-1], b'0\r\n\r\n')
-
-    def test_streaming_empty_chunks_ignored(self) -> None:
-        """Test that empty chunks don't emit bytes."""
-
-        encoder = IoPipelineHttpResponseEncoder()
-        channel = IoPipeline.new([
-            encoder,
-            fbi := FeedbackInboundIoPipelineHandler(),
-        ])
-
-        channel.feed_in(fbi.wrap(IoPipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Content-Length', '5'),
-            ]),
-        )))
-
-        # channel.feed_in(fbi.wrap(PipelineHttpResponseBodyData(b'')))  # Empty - should be ignored
-        channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'hello')))
-        # channel.feed_in(fbi.wrap(PipelineHttpResponseBodyData(b'')))  # Empty - should be ignored
-        channel.feed_in(fbi.wrap(IoPipelineHttpResponseEnd()))
-
-        out = channel.output.drain()
-
-        # Should only get head + 1 chunk
-        self.assertEqual(len(out), 2)
-        self.assertIn(b'HTTP/1.1 200 OK\r\n', out[0])
-        self.assertEqual(out[1], b'hello')
+        self.assertEqual(out[-2], b'0\r\n')
+        self.assertEqual(out[-1], b'\r\n')
 
     def test_streaming_multiple_responses(self) -> None:
         """Test that encoder resets state between responses."""
@@ -552,7 +536,10 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
                 ('Transfer-Encoding', 'chunked'),
             ]),
         )))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'first')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseLastChunk()))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunkedTrailers()))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseEnd()))
 
         # Second response (Content-Length)
@@ -569,13 +556,18 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
 
         out = channel.output.drain()
 
-        # Verify first response was chunked
-        self.assertIn(b'5\r\n', out)
-        self.assertIn(b'first', out)
-        self.assertIn(b'0\r\n\r\n', out)
-
-        # Verify second response was NOT chunked (raw bytes)
-        self.assertIn(b'second', out)
+        self.assertEqual(out, [
+            # Verify first response was chunked
+            b'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n',
+            b'5\r\n',
+            b'first',
+            b'\r\n',
+            b'0\r\n',
+            b'\r\n',
+            # Verify second response was NOT chunked (raw bytes)
+            b'HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\n',
+            b'second',
+        ])
 
     def test_streaming_large_chunk_hex_encoding(self) -> None:
         """Test chunked encoding with larger chunk sizes."""
@@ -597,7 +589,10 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
 
         # 256 byte chunk -> 100 in hex
         data = b'x' * 256
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(len(data))))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(data)))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseLastChunk()))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunkedTrailers()))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseEnd()))
 
         out = channel.output.drain()

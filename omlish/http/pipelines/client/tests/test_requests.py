@@ -8,8 +8,11 @@ from ....headers import HttpHeaders
 from ....versions import HttpVersion
 from ...requests import FullIoPipelineHttpRequest
 from ...requests import IoPipelineHttpRequestBodyData
+from ...requests import IoPipelineHttpRequestChunk
+from ...requests import IoPipelineHttpRequestChunkedTrailers
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
+from ...requests import IoPipelineHttpRequestLastChunk
 from ..requests import IoPipelineHttpRequestEncoder
 
 
@@ -343,16 +346,20 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(head))
 
         # Send chunks
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'hello')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'world')))
+
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestLastChunk()))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestChunkedTrailers()))
 
         # Send end
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestEnd()))
 
         out = channel.output.drain()
 
-        # Should get: head, chunked data, terminator
-        self.assertEqual(len(out), 8)
+        self.assertEqual(len(out), 9)
 
         # Head
         self.assertEqual(
@@ -374,7 +381,8 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         self.assertEqual(out[6], b'\r\n')
 
         # Terminator: 0\r\n\r\n
-        self.assertEqual(out[7], b'0\r\n\r\n')
+        self.assertEqual(out[7], b'0\r\n')
+        self.assertEqual(out[8], b'\r\n')
 
     def test_streaming_empty_chunk_not_emitted(self) -> None:
         """Test that empty chunks don't emit data."""
