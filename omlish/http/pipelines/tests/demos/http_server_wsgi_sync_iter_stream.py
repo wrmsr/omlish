@@ -10,9 +10,13 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.sync import IterSyncSocketIoPipelineDriver
+from .....lite.abstract import Abstract
 from .....lite.check import check
 from ....headers import HttpHeaders
 from ...requests import FullIoPipelineHttpRequest
+from ...requests import IoPipelineHttpRequestBodyData
+from ...requests import IoPipelineHttpRequestEnd
+from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestObject
 from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseHead
@@ -45,91 +49,162 @@ def build_wsgi_spec() -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
             IoPipelineHttpRequestDecoder(),
-            IoPipelineHttpRequestAggregatorDecoder(),
+            IoPipelineHttpRequestAggregatorDecoder(enabled='unless_chunked'),
             IoPipelineHttpResponseEncoder(),
             WsgiFeedbackHandler(),
         ],
     )
 
 
-def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
-    def _handle_client(conn: socket.socket, addr: ta.Any) -> None:  # noqa
+class WsgiConnHandler:
+    def __init__(
+            self,
+            spec: WsgiSpec,
+            conn: socket.socket,
+            addr: ta.Any,
+    ) -> None:
+        super().__init__()
+
+        self._spec = spec
+        self._conn = conn
+        self._addr = addr
+
+    _drv: IterSyncSocketIoPipelineDriver
+
+    #
+
+    class _RequestHandler(Abstract):
+        def __init__(self, o: 'WsgiConnHandler', head: 'IoPipelineHttpRequestHead') -> None:
+            super().__init__()
+
+            self._o = o
+            self._head = head
+
+        def _make_environ(self) -> ta.Dict[str, ta.Any]:
+            return {
+                'REQUEST_METHOD': self._head.method,
+                'PATH_INFO': self._head.target,
+            }
+
+        def run(self) -> None:
+            environ = self._make_environ()
+
+            #
+
+            started_response: ta.Optional[ta.Tuple[ta.Any, ta.Any]] = None
+
+            def start_response(status, headers):  # noqa
+                nonlocal started_response
+                check.none(started_response)
+                started_response = (status, headers)
+
+            #
+
+            ret = self._o._spec.app(environ, start_response)  # noqa
+
+            #
+
+            status, headers = check.not_none(started_response)
+            status_code_str, _, status_reason = status.partition(' ')
+            status_code = int(status_code_str)
+
+            #
+
+            body: bytes
+            if isinstance(ret, bytes):
+                body = ret
+            elif isinstance(ret, list):
+                body = b''.join(ret)
+            else:
+                raise TypeError(ret)
+
+            #
+
+            resp = FullIoPipelineHttpResponse(
+                head=IoPipelineHttpResponseHead(
+                    status=status_code,
+                    reason=status_reason,
+                    headers=HttpHeaders(headers),
+                ),
+                body=body,
+            )
+
+            #
+
+            self._o._drv.enqueue(  # noqa
+                WsgiFeedbackHandler.Envelope(resp),
+                WsgiFeedbackHandler.Envelope(IoPipelineMessages.FinalOutput()),
+            )
+
+    class _FullRequestHandler(_RequestHandler):
+        def __init__(self, o: 'WsgiConnHandler', req: 'FullIoPipelineHttpRequest') -> None:
+            super().__init__(o, req.head)
+
+            self._req = req
+
+    class _StreamRequestHandler(_RequestHandler):
+        class _RequestInput:
+            def __init__(self, o: 'WsgiConnHandler._StreamRequestHandler') -> None:
+                super().__init__()
+
+                self._o = o
+
+            def read(self, n: int = 0) -> bytes:
+                while (out := self._o._o._drv.next()) is not None:  # noqa
+                    if isinstance(out, WsgiFeedbackHandler.Envelope):
+                        out = out.msg
+
+                        if isinstance(out, IoPipelineHttpRequestBodyData):
+                            return out.data
+
+                        elif isinstance(out, IoPipelineHttpRequestEnd):
+                            return b''
+
+                        else:
+                            raise TypeError(out)
+
+                    else:
+                        raise TypeError(out)
+
+                raise RuntimeError('Pipeline stalled')
+
+        def _make_environ(self) -> ta.Dict[str, ta.Any]:
+            return {
+                **super()._make_environ(),
+                'wsgi.input': self._RequestInput(self),
+            }
+
+    #
+
+    def run(self) -> None:
         try:
-            conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            self._conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         except OSError as e:
             if e.errno != errno.ENOPROTOOPT:
                 raise
 
-        drv = IterSyncSocketIoPipelineDriver(
+        self._drv = IterSyncSocketIoPipelineDriver(
             build_wsgi_spec(),
-            conn,
+            self._conn,
         )
 
-        req: ta.Optional[FullIoPipelineHttpRequest] = None
-
-        started_response: ta.Optional[ta.Tuple[ta.Any, ta.Any]] = None
-
-        def start_response(status, headers):  # noqa
-            nonlocal started_response
-            check.none(started_response)
-            started_response = (status, headers)
-
-        while (out := drv.next()) is not None:
+        while (out := self._drv.next()) is not None:
             if isinstance(out, WsgiFeedbackHandler.Envelope):
                 out = out.msg
 
                 if isinstance(out, FullIoPipelineHttpRequest):
-                    check.none(req)
-                    req = out
+                    self._FullRequestHandler(self, out).run()
 
-                    environ = {
-                        'REQUEST_METHOD': req.head.method,
-                        'PATH_INFO': req.head.target,
-                    }
-
-                    #
-
-                    ret = spec.app(environ, start_response)
-
-                    #
-
-                    status, headers = check.not_none(started_response)
-                    status_code_str, _, status_reason = status.partition(' ')
-                    status_code = int(status_code_str)
-
-                    #
-
-                    body: bytes
-                    if isinstance(ret, bytes):
-                        body = ret
-                    elif isinstance(ret, list):
-                        body = b''.join(ret)
-                    else:
-                        raise TypeError(ret)
-
-                    #
-
-                    resp = FullIoPipelineHttpResponse(
-                        head=IoPipelineHttpResponseHead(
-                            status=status_code,
-                            reason=status_reason,
-                            headers=HttpHeaders(headers),
-                        ),
-                        body=body,
-                    )
-
-                    #
-
-                    drv.enqueue(
-                        WsgiFeedbackHandler.Envelope(resp),
-                        WsgiFeedbackHandler.Envelope(IoPipelineMessages.FinalOutput()),
-                    )
+                elif isinstance(out, IoPipelineHttpRequestHead):
+                    self._StreamRequestHandler(self, out).run()
 
                 else:
                     raise TypeError(out)
 
-            else:
-                raise TypeError(out)
+
+def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
+    def _handle_client(conn: socket.socket, addr: ta.Any) -> None:  # noqa
+        WsgiConnHandler(spec, conn, addr).run()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
