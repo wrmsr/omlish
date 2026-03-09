@@ -17,6 +17,7 @@ from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from .....lite.check import check
+from ...client.requests import IoPipelineHttpRequestCompressor
 from ...client.requests import IoPipelineHttpRequestEncoder
 from ...client.responses import IoPipelineHttpResponseAggregatorDecoder
 from ...client.responses import IoPipelineHttpResponseDecoder
@@ -110,8 +111,6 @@ def build_http_client(
         with_ssl: bool = False,
         ssl_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
 
-        with_gzip: bool = False,
-
         with_flow: bool = False,
         flow_auto_read: bool = False,
 
@@ -126,10 +125,11 @@ def build_http_client(
             *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
             IoPipelineHttpResponseDecoder(),
-            *([IoPipelineHttpResponseDecompressor()] if with_gzip else []),
+            IoPipelineHttpResponseDecompressor(),
             IoPipelineHttpResponseAggregatorDecoder(),
 
             IoPipelineHttpRequestEncoder(),
+            IoPipelineHttpRequestCompressor(),
 
             HttpClientHandler(),
 

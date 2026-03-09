@@ -16,8 +16,6 @@ async def _a_main(url: str = 'http://httpbingo.org/gzip') -> None:
 
         with_flow=True,
         flow_auto_read=False,
-
-        with_gzip=True,
     )
 
     print_full_response(resp)

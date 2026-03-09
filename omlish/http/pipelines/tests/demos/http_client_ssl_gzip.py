@@ -10,7 +10,7 @@ from .clients import print_full_response
 ##
 
 
-async def _a_main(url: str = 'http://httpbingo.org/gzip') -> None:
+async def _a_main(url: str = 'https://httpbingo.org/gzip') -> None:
     resp = await asyncio_fetch_url(
         url,
 
