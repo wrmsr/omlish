@@ -52,7 +52,7 @@ class IoIoPipelineHttpObjectAggregator(
             self,
             *,
             config: IoPipelineHttpAggregationConfig = IoPipelineHttpAggregationConfig.DEFAULT,
-            enabled: ta.Union[bool, ta.Literal['unless_chunked']] = True,
+            enabled: ta.Union[bool, ta.Literal['if_chunked']] = True,
     ) -> None:
         super().__init__()
 
@@ -70,10 +70,10 @@ class IoIoPipelineHttpObjectAggregator(
         self._state: IoIoPipelineHttpObjectAggregator._State = self._init_state()
 
     @property
-    def enabled(self) -> ta.Union[bool, ta.Literal['unless_chunked']]:
+    def enabled(self) -> ta.Union[bool, ta.Literal['if_chunked']]:
         return self._enabled
 
-    def set_enabled(self, enabled: ta.Union[bool, ta.Literal['unless_chunked']]) -> None:
+    def set_enabled(self, enabled: ta.Union[bool, ta.Literal['if_chunked']]) -> None:
         self._enabled = enabled
 
     #
@@ -127,8 +127,8 @@ class IoIoPipelineHttpObjectAggregator(
     def _init_state(self) -> '_State':
         if self._enabled is True:
             return self._HeadState(self)
-        elif self._enabled == 'unless_chunked':
-            return self._UnlessChunkedHeadState(self)
+        elif self._enabled == 'if_chunked':
+            return self._IfChunkedChunkedHeadState(self)
         else:
             return self._DisabledHeadState(self)
 
@@ -288,7 +288,7 @@ class IoIoPipelineHttpObjectAggregator(
 
     #
 
-    class _UnlessChunkedHeadState(_State):
+    class _IfChunkedChunkedHeadState(_State):
         def handle(
                 self,
                 ctx: IoPipelineHandlerContext,
