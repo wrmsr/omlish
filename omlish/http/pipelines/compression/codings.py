@@ -13,7 +13,17 @@ from ....lite.namespaces import NamespaceClass
 
 
 class IoPiplineHttpCompressorCoding(Abstract):
-    pass  # TODO
+    @abc.abstractmethod
+    def compress(
+            self,
+            data: BytesLike,
+            /,
+    ) -> ta.Optional[BytesLike]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def flush(self) -> ta.Optional[BytesLike]:
+        raise NotImplementedError
 
 
 IoPiplineHttpCompressorCodings = ta.Mapping[str, ta.Callable[[], IoPiplineHttpCompressorCoding]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
@@ -47,6 +57,23 @@ IoPiplineHttpDecompressorCodings = ta.Mapping[str, ta.Callable[[], IoPiplineHttp
 ##
 
 
+class ZlibIoPiplineHttpCompressorCoding(IoPiplineHttpCompressorCoding):
+    def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
+        super().__init__()
+
+        self._z = zlib.compressobj(wbits=wbits)
+
+    def compress(
+            self,
+            data: BytesLike,
+            /,
+    ) -> ta.Optional[BytesLike]:
+        return self._z.compress(data)
+
+    def flush(self) -> ta.Optional[BytesLike]:
+        return self._z.flush()
+
+
 class ZlibIoPiplineHttpDecompressorCoding(IoPiplineHttpDecompressorCoding):
     def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
         super().__init__()
@@ -72,7 +99,9 @@ class ZlibIoPiplineHttpDecompressorCoding(IoPiplineHttpDecompressorCoding):
 
 
 class DefaultIoPiplineHttpCompressionCodings(NamespaceClass):
-    COMPRESSOR: ta.Final[IoPiplineHttpCompressorCodings] = {}
+    COMPRESSOR: ta.Final[IoPiplineHttpCompressorCodings] = {
+        'gzip': ZlibIoPiplineHttpCompressorCoding,
+    }
 
     DECOMPRESSOR: ta.Final[IoPiplineHttpDecompressorCodings] = {
         'gzip': ZlibIoPiplineHttpDecompressorCoding,
