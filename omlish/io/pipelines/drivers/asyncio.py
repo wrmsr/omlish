@@ -29,6 +29,7 @@ from ..core import IoPipelineServices
 from ..flow.types import IoPipelineFlow
 from ..flow.types import IoPipelineFlowMessages
 from ..sched.types import IoPipelineScheduling
+from .metadata import DriverIoPipelineMetadata
 
 
 log, alog = get_module_loggers(globals())  # noqa
@@ -107,6 +108,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
         self._pipeline = IoPipeline(dc.replace(
             self._spec,
+            metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
             services=(*self._spec.services, self._sched),
         ))
 

@@ -11,6 +11,7 @@ from ....io.streams.utils import ByteStreamBuffers
 from ....logs.modules import get_module_loggers
 from ..core import IoPipeline
 from ..core import IoPipelineMessages
+from .metadata import DriverIoPipelineMetadata
 
 
 log, alog = get_module_loggers(globals())  # noqa
@@ -80,7 +81,10 @@ class SyncSocketIoPipelineDriver:
         else:
             raise RuntimeError('Already running')
 
-        self._pipeline = IoPipeline(self._spec)
+        self._pipeline = IoPipeline(dc.replace(
+            self._spec,
+            metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
+        ))
 
         try:
             self._pipeline.feed_initial_input()
