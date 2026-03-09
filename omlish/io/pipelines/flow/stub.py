@@ -1,5 +1,6 @@
 import typing as ta
 
+from ..core import IoPipelineService
 from .types import IoPipelineFlow
 
 
@@ -7,7 +8,7 @@ from .types import IoPipelineFlow
 
 
 @ta.final
-class StubIoPipelineFlow(IoPipelineFlow):
+class StubIoPipelineFlowService(IoPipelineFlow, IoPipelineService):
     def __init__(self, *, auto_read: bool = True) -> None:
         super().__init__()
 

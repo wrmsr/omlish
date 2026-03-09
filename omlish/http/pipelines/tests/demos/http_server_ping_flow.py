@@ -8,7 +8,7 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from .....io.pipelines.flow.stub import StubIoPipelineFlow
+from .....io.pipelines.flow.stub import StubIoPipelineFlowService
 from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from ...requests import IoPipelineHttpRequestHead
@@ -80,7 +80,7 @@ def build_http_ping_spec(
             PingHandler(),
         ],
         services=[
-            StubIoPipelineFlow(auto_read=False),
+            StubIoPipelineFlowService(auto_read=False),
         ],
     )
 

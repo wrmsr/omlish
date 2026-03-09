@@ -5,13 +5,12 @@ import typing as ta
 
 from ....lite.abstract import Abstract
 from ..core import IoPipelineHandlerRef
-from ..core import IoPipelineService
 
 
 ##
 
 
-class IoPipelineScheduling(IoPipelineService, Abstract):
+class IoPipelineScheduling(Abstract):
     class Handle(Abstract):
         @abc.abstractmethod
         def cancel(self) -> None:

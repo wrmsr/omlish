@@ -12,7 +12,7 @@ from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.metadata import DriverIoPipelineMetadata
 from .....io.pipelines.drivers.sync import LoopSyncSocketIoPipelineDriver
-from .....io.pipelines.flow.stub import StubIoPipelineFlow
+from .....io.pipelines.flow.stub import StubIoPipelineFlowService
 from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.check import check
@@ -165,7 +165,7 @@ def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
             StreamWsgiInnerHandler(app),
         ],
         services=[
-            StubIoPipelineFlow(auto_read=False),
+            StubIoPipelineFlowService(auto_read=False),
         ],
     )
 

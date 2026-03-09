@@ -10,7 +10,7 @@ from .....io.pipelines.core import IoPipelineHandlerFn
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from .....io.pipelines.drivers.sync import LoopSyncSocketIoPipelineDriver
-from .....io.pipelines.flow.stub import StubIoPipelineFlow
+from .....io.pipelines.flow.stub import StubIoPipelineFlowService
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
@@ -66,7 +66,7 @@ class HttpClientHandler(IoPipelineHandler):
 
             ctx.feed_out(msg.request)
 
-            if not StubIoPipelineFlow.is_auto_read_context(ctx):
+            if not StubIoPipelineFlowService.is_auto_read_context(ctx):
                 ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return
@@ -140,7 +140,7 @@ def build_http_client(
         ),
 
         services=[
-            *([StubIoPipelineFlow(auto_read=flow_auto_read)] if with_flow else []),
+            *([StubIoPipelineFlowService(auto_read=flow_auto_read)] if with_flow else []),
         ],
     )
 

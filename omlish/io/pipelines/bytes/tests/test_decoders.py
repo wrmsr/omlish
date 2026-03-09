@@ -8,6 +8,7 @@ from .....lite.check import check
 from ....streams.types import ByteStreamBuffer
 from ...core import IoPipeline
 from ...core import IoPipelineMessages
+from ...core import IoPipelineService
 from ...flow.types import IoPipelineFlow
 from ...flow.types import IoPipelineFlowMessages
 from ...handlers.queues import InboundQueueIoPipelineHandler
@@ -57,7 +58,7 @@ class TestDecoders(unittest.TestCase):
 ##
 
 
-class MyFlow(IoPipelineFlow):
+class MyFlow(IoPipelineFlow, IoPipelineService):
     def __init__(self, *, auto_read: bool) -> None:
         super().__init__()
 

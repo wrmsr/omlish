@@ -51,10 +51,10 @@ def __omlish_amalg__():  # noqa
             dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
             dict(path='bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),
-            dict(path='flow/types.py', sha1='b8cd49d268b9d8a1d4d96bb8566126ec987ad303'),
+            dict(path='flow/types.py', sha1='574f976911144f550348f73a266f87cfef29568e'),
             dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
             dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
-            dict(path='sched/types.py', sha1='0ef85c6cce69bdf8a6cd9c85eb806d52808f7e0d'),
+            dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
             dict(path='../streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../streams/utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
@@ -71,7 +71,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='cd9f3315017aee690227978d92225c7a4a0ba4d8'),
+            dict(path='drivers/asyncio.py', sha1='59e80c4ac127e727676f17e956783f3aa39b4088'),
             dict(path='_amalg.py', sha1='14b67747b1e3b3c1483050a7948a29888d732ed9'),
         ],
     )
@@ -4057,7 +4057,7 @@ class IoPipelineFlowMessages(NamespaceClass):
 ##
 
 
-class IoPipelineFlow(IoPipelineService, Abstract):
+class IoPipelineFlow(Abstract):
     @abc.abstractmethod
     def is_auto_read(self: ta.Optional['IoPipelineFlow']) -> bool:
         # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
@@ -4359,7 +4359,7 @@ class DuplexQueueIoPipelineHandler(
 ##
 
 
-class IoPipelineScheduling(IoPipelineService, Abstract):
+class IoPipelineScheduling(Abstract):
     class Handle(Abstract):
         @abc.abstractmethod
         def cancel(self) -> None:
@@ -8055,7 +8055,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     ##
     # init
 
-    _sched: 'AsyncioStreamIoPipelineDriver._Scheduling'
+    _sched: 'AsyncioStreamIoPipelineDriver._SchedulingService'
 
     _pipeline: IoPipeline
 
@@ -8065,7 +8065,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
 
     async def _init(self) -> None:
-        self._sched = self._Scheduling(self)
+        self._sched = self._SchedulingService(self)
 
         services = IoPipelineServices.of(self._spec.services)
         self._flow = services.find(IoPipelineFlow)
@@ -8298,7 +8298,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     ##
     # scheduling
 
-    class _Scheduling(IoPipelineScheduling):
+    class _SchedulingService(IoPipelineScheduling, IoPipelineService):
         def __init__(self, d: 'AsyncioStreamIoPipelineDriver') -> None:
             super().__init__()
 

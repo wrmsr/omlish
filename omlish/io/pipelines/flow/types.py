@@ -8,7 +8,6 @@ from ....lite.namespaces import NamespaceClass
 from ..core import IoPipeline
 from ..core import IoPipelineHandlerContext
 from ..core import IoPipelineMessages
-from ..core import IoPipelineService
 
 
 ##
@@ -72,7 +71,7 @@ class IoPipelineFlowMessages(NamespaceClass):
 ##
 
 
-class IoPipelineFlow(IoPipelineService, Abstract):
+class IoPipelineFlow(Abstract):
     @abc.abstractmethod
     def is_auto_read(self: ta.Optional['IoPipelineFlow']) -> bool:
         # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming

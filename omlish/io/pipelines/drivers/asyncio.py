@@ -25,6 +25,7 @@ from ..asyncs import AsyncIoPipelineMessages
 from ..core import IoPipeline
 from ..core import IoPipelineHandlerRef
 from ..core import IoPipelineMessages
+from ..core import IoPipelineService
 from ..core import IoPipelineServices
 from ..flow.types import IoPipelineFlow
 from ..flow.types import IoPipelineFlowMessages
@@ -86,7 +87,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     ##
     # init
 
-    _sched: 'AsyncioStreamIoPipelineDriver._Scheduling'
+    _sched: 'AsyncioStreamIoPipelineDriver._SchedulingService'
 
     _pipeline: IoPipeline
 
@@ -96,7 +97,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
 
     async def _init(self) -> None:
-        self._sched = self._Scheduling(self)
+        self._sched = self._SchedulingService(self)
 
         services = IoPipelineServices.of(self._spec.services)
         self._flow = services.find(IoPipelineFlow)
@@ -329,7 +330,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     ##
     # scheduling
 
-    class _Scheduling(IoPipelineScheduling):
+    class _SchedulingService(IoPipelineScheduling, IoPipelineService):
         def __init__(self, d: 'AsyncioStreamIoPipelineDriver') -> None:
             super().__init__()
 

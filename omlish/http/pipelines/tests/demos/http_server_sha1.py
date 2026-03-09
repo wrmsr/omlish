@@ -12,7 +12,7 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from .....io.pipelines.flow.stub import StubIoPipelineFlow
+from .....io.pipelines.flow.stub import StubIoPipelineFlowService
 from ...requests import IoPipelineHttpRequestAborted
 from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestEnd
@@ -101,7 +101,7 @@ def build_http_sha1_spec() -> IoPipeline.Spec:
         ],
 
         services=[
-            StubIoPipelineFlow(auto_read=True),
+            StubIoPipelineFlowService(auto_read=True),
         ],
     )
 
