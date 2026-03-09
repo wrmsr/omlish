@@ -41,7 +41,7 @@ class Project(ProjectBase):
 
         'huggingface': [
             'huggingface-hub ~= 1.6',
-            'datasets ~= 4.6',
+            'datasets ~= 4.7',
         ],
 
         'nanochat': [
@@ -64,6 +64,8 @@ class Project(ProjectBase):
 
         'search': [
             'ddgs ~= 9.11',
+
+            'tavily-python ~= 0.7',
         ],
 
         'wiki': [

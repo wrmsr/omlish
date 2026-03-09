@@ -41,13 +41,14 @@ all = [
     'transformers ~= 5.3',
     'sentence-transformers ~= 5.2',
     'huggingface-hub ~= 1.6',
-    'datasets ~= 4.6',
+    'datasets ~= 4.7',
     'regex >= 2026.2',
     'numpy >= 1.26',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
     'pillow ~= 12.1',
     'ddgs ~= 9.11',
+    'tavily-python ~= 0.7',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
     'lxml >= 5.3; python_version < "3.13"',
@@ -69,7 +70,7 @@ backends = [
 ]
 huggingface = [
     'huggingface-hub ~= 1.6',
-    'datasets ~= 4.6',
+    'datasets ~= 4.7',
 ]
 nanochat = [
     'regex >= 2026.2',
@@ -86,6 +87,7 @@ pillow = [
 ]
 search = [
     'ddgs ~= 9.11',
+    'tavily-python ~= 0.7',
 ]
 wiki = [
     'mwparserfromhell ~= 0.7',

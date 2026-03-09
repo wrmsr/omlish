@@ -90,6 +90,12 @@ class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverCo
             metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
         ))
 
+    @property
+    def is_running(self) -> bool:
+        if (pipeline := self._opt_pipeline()) is None:
+            return False
+        return pipeline.is_ready
+
     #
 
     def __enter__(self) -> 'BaseSyncSocketIoPipelineDriver':  # noqa
@@ -272,6 +278,39 @@ class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSoc
                 return 'read'
 
             return None
+
+    def poll(self, *, read: bool = False) -> ta.Optional[ta.Any]:
+        pipeline = self._ensure_pipeline()  # noqa
+        check.state(pipeline.is_ready)
+
+        while True:
+            out = self._poll()
+
+            if isinstance(out, tuple):
+                ok, ov = out
+                if ok == 'unhandled':
+                    return ov
+
+                else:
+                    raise RuntimeError(f'Unknown output: {ok!r}')
+
+            elif out == 'read':
+                if not read:
+                    return None
+
+                self._input_q.extend(self._do_read())
+
+            elif out == 'stop':
+                break
+
+            elif out is None:
+                return None
+
+            else:
+                raise RuntimeError(f'Unknown output: {out!r}')
+
+        pipeline.destroy()
+        return None
 
     def next(self) -> ta.Optional[ta.Any]:
         pipeline = self._ensure_pipeline()  # noqa
