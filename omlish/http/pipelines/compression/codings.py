@@ -21,9 +21,13 @@ class IoPiplineHttpCompressorCoding(Abstract):
     ) -> ta.Optional[BytesLike]:
         raise NotImplementedError
 
-    @abc.abstractmethod
     def flush(self) -> ta.Optional[BytesLike]:
+        return None
+
+    @abc.abstractmethod
+    def finish(self) -> ta.Optional[BytesLike]:
         raise NotImplementedError
+
 
 
 IoPiplineHttpCompressorCodings = ta.Mapping[str, ta.Callable[[], IoPiplineHttpCompressorCoding]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
@@ -47,7 +51,7 @@ class IoPiplineHttpDecompressorCoding(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def flush(self) -> ta.Optional[BytesLike]:
+    def finish(self) -> ta.Optional[BytesLike]:
         raise NotImplementedError
 
 
@@ -71,6 +75,9 @@ class ZlibIoPiplineHttpCompressorCoding(IoPiplineHttpCompressorCoding):
         return self._z.compress(data)
 
     def flush(self) -> ta.Optional[BytesLike]:
+        return self._z.flush(zlib.Z_PARTIAL_FLUSH) or None
+
+    def finish(self) -> ta.Optional[BytesLike]:
         return self._z.flush()
 
 
@@ -91,7 +98,7 @@ class ZlibIoPiplineHttpDecompressorCoding(IoPiplineHttpDecompressorCoding):
     def unconsumed_tail(self) -> ta.Optional[BytesLike]:
         return self._z.unconsumed_tail
 
-    def flush(self) -> ta.Optional[BytesLike]:
+    def finish(self) -> ta.Optional[BytesLike]:
         return self._z.flush()
 
 

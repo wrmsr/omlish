@@ -50,8 +50,6 @@ class IoPipelineHttpObjectDecompressor(
     InboundBytesBufferingIoPipelineHandler,
     Abstract,
 ):
-    """Conditional streaming gzip decompression with CPU-bounding and flow control."""
-
     def __init__(
             self,
             codings: ta.Optional[IoPiplineHttpDecompressorCodings] = None,
@@ -102,12 +100,12 @@ class IoPipelineHttpObjectDecompressor(
 
     def _check_budgets(self) -> None:
         if (mdt := self._config.max_decomp_total) is not None and self._out_total_bytes > mdt:
-            raise ValueError('gzip output exceeds limit (possible zip bomb)')
+            raise ValueError('decompressor output exceeds limit (possible zip bomb)')
 
         if (mer := self._config.max_expansion_ratio) is not None:
             slack = self._config.max_decomp_chunk
             if self._out_total_bytes > (max(1, self._in_total_bytes) * mer + slack):
-                raise ValueError('gzip expansion ratio exceeds limit (possible zip bomb)')
+                raise ValueError('decompressor expansion ratio exceeds limit (possible zip bomb)')
 
     def _is_auto_read(self, ctx: IoPipelineHandlerContext) -> bool:
         if (flow := ctx.services.find(IoPipelineFlow)) is None:
@@ -196,7 +194,7 @@ class IoPipelineHttpObjectDecompressor(
                 self._defer_resume(ctx)
                 return False
 
-            out = z.flush()
+            out = z.finish()
             if out:
                 ol = len(out)
                 self._out_total_bytes += ol
