@@ -10,11 +10,11 @@ from .....io.streams.utils import ByteStreamBuffers
 from ...decoders import IoPipelineHttpDecodingConfig
 from ...responses import IoPipelineHttpResponseAborted
 from ...responses import IoPipelineHttpResponseBodyData
-from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseChunk
 from ...responses import IoPipelineHttpResponseChunkedTrailers
-from ...responses import IoPipelineHttpResponseLastChunk
+from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseHead
+from ...responses import IoPipelineHttpResponseLastChunk
 from ..responses import IoPipelineHttpResponseDecoder
 
 
@@ -41,14 +41,20 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        # Should get: head, chunk1 data, chunk2 data, end marker
-        self.assertEqual(len(out), 4)
+        # Should get: head, chunk1, chunk1 data, chunk2, chunk2 data, last chunk, trailers, end marker
+        self.assertEqual(len(out), 8)
         self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
-        self.assertIsInstance(out[1], IoPipelineHttpResponseBodyData)
-        self.assertEqual(ByteStreamBuffers.to_bytes(out[1].data), b'hello')
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 5)
         self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
-        self.assertEqual(ByteStreamBuffers.to_bytes(out[2].data), b'world')
-        self.assertIsInstance(out[3], IoPipelineHttpResponseEnd)
+        self.assertEqual(ByteStreamBuffers.to_bytes(out[2].data), b'hello')
+        self.assertIsInstance(out[3], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[3].size, 5)
+        self.assertIsInstance(out[4], IoPipelineHttpResponseBodyData)
+        self.assertEqual(ByteStreamBuffers.to_bytes(out[4].data), b'world')
+        self.assertIsInstance(out[5], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[6], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[7], IoPipelineHttpResponseEnd)
 
     def test_chunked_response_split_across_reads(self) -> None:
         """Test chunked response split across multiple reads."""
@@ -80,14 +86,18 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        # Should get: head, chunk data, end marker
-        self.assertEqual(len(out), 4)
+        # Should get: head, chunk, chunk data (split), last chunk, trailers, end marker
+        self.assertEqual(len(out), 7)
         self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
-        self.assertIsInstance(out[1], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[1].data, b'hel')
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 5)
         self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[2].data, b'lo')
-        self.assertIsInstance(out[3], IoPipelineHttpResponseEnd)
+        self.assertEqual(out[2].data, b'hel')
+        self.assertIsInstance(out[3], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[3].data, b'lo')
+        self.assertIsInstance(out[4], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[5], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[6], IoPipelineHttpResponseEnd)
 
     def test_non_chunked_response_passes_through(self) -> None:
         decoder = IoPipelineHttpResponseDecoder()
@@ -136,11 +146,15 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        self.assertEqual(len(out), 3)
+        self.assertEqual(len(out), 6)
         self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
-        self.assertIsInstance(out[1], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[1].data, b'hello')
-        self.assertIsInstance(out[2], IoPipelineHttpResponseEnd)
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 5)
+        self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[2].data, b'hello')
+        self.assertIsInstance(out[3], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[4], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[5], IoPipelineHttpResponseEnd)
 
     def test_large_chunk(self) -> None:
         """Test decoding large chunk."""
@@ -175,10 +189,15 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        self.assertEqual(len(out), 3)
-        self.assertIsInstance(out[1], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[1].data, data)
-        self.assertIsInstance(out[2], IoPipelineHttpResponseEnd)
+        self.assertEqual(len(out), 6)
+        self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 1024)
+        self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[2].data, data)
+        self.assertIsInstance(out[3], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[4], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[5], IoPipelineHttpResponseEnd)
 
     def test_hex_chunk_sizes(self) -> None:
         """Test that hex chunk sizes are properly decoded."""
@@ -206,14 +225,23 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        self.assertEqual(len(out), 5)  # head + 3 chunks + end
-        self.assertIsInstance(out[1], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[1].data, b'0123456789')
+        self.assertEqual(len(out), 10)  # head + 3*(chunk + data) + last chunk + trailers + end
+        self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 10)
         self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[2].data, b'a' * 16)
-        self.assertIsInstance(out[3], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[3].data, b'b' * 100)
-        self.assertIsInstance(out[4], IoPipelineHttpResponseEnd)
+        self.assertEqual(out[2].data, b'0123456789')
+        self.assertIsInstance(out[3], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[3].size, 16)
+        self.assertIsInstance(out[4], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[4].data, b'a' * 16)
+        self.assertIsInstance(out[5], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[5].size, 100)
+        self.assertIsInstance(out[6], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[6].data, b'b' * 100)
+        self.assertIsInstance(out[7], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[8], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[9], IoPipelineHttpResponseEnd)
 
     def test_eof_before_complete_raises(self) -> None:
         """Test that EOF before chunked encoding completes raises error."""
@@ -239,11 +267,13 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        # Should get an aborted message
-        out_head, chunk, aborted, eof = out
+        # Should get: head, chunk, partial data, aborted, eof
+        out_head, chunk_obj, chunk_data, aborted, eof = out
         self.assertIsInstance(out_head, IoPipelineHttpResponseHead)
-        self.assertIsInstance(chunk, IoPipelineHttpResponseBodyData)
-        self.assertEqual(chunk.data.tobytes(), b'hel')
+        self.assertIsInstance(chunk_obj, IoPipelineHttpResponseChunk)
+        self.assertEqual(chunk_obj.size, 5)
+        self.assertIsInstance(chunk_data, IoPipelineHttpResponseBodyData)
+        self.assertEqual(chunk_data.data.tobytes(), b'hel')
         self.assertIsInstance(aborted, IoPipelineHttpResponseAborted)
         self.assertIsInstance(eof, IoPipelineMessages.FinalInput)
 
@@ -294,12 +324,14 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        # Should get head and Error event
+        # Should get: head, chunk, body data, aborted
         self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
-        self.assertIsInstance(out[1], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[1].data.tobytes(), b'hello')
-        self.assertIsInstance(out[2], IoPipelineHttpResponseAborted)
-        self.assertIn('Expected \\r\\n after chunk data', out[2].reason_str)
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 5)
+        self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[2].data.tobytes(), b'hello')
+        self.assertIsInstance(out[3], IoPipelineHttpResponseAborted)
+        self.assertIn('Expected \\r\\n after chunk data', out[3].reason_str)
 
     def test_uppercase_hex_chunk_size(self) -> None:
         """Test that uppercase hex chunk sizes work."""
@@ -322,10 +354,15 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        self.assertEqual(len(out), 3)
-        self.assertIsInstance(out[1], IoPipelineHttpResponseBodyData)
-        self.assertEqual(out[1].data, b'x' * 10)
-        self.assertIsInstance(out[2], IoPipelineHttpResponseEnd)
+        self.assertEqual(len(out), 6)
+        self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 10)
+        self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[2].data, b'x' * 10)
+        self.assertIsInstance(out[3], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[4], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[5], IoPipelineHttpResponseEnd)
 
     def test_multiple_chunks(self) -> None:
         """Test multiple chunks in sequence."""
@@ -356,15 +393,21 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        # head + 5 chunks + end
-        self.assertEqual(len(out), 7)
+        # head + 5*(chunk + data) + last chunk + trailers + end
+        self.assertEqual(len(out), 14)
         self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
 
-        for i, chunk in enumerate(chunks, 1):
-            self.assertIsInstance(out[i], IoPipelineHttpResponseBodyData)
-            self.assertEqual(out[i].data, chunk)
+        for i, chunk in enumerate(chunks):
+            chunk_idx = 1 + i * 2
+            data_idx = chunk_idx + 1
+            self.assertIsInstance(out[chunk_idx], IoPipelineHttpResponseChunk)
+            self.assertEqual(out[chunk_idx].size, len(chunk))
+            self.assertIsInstance(out[data_idx], IoPipelineHttpResponseBodyData)
+            self.assertEqual(out[data_idx].data, chunk)
 
-        self.assertIsInstance(out[6], IoPipelineHttpResponseEnd)
+        self.assertIsInstance(out[11], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[12], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[13], IoPipelineHttpResponseEnd)
 
     def test_eof_after_complete_ok(self) -> None:
         """Test that EOF after complete chunked response is OK."""
@@ -387,6 +430,14 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         out = ibq.drain()
 
-        # Should complete without error
-        self.assertEqual(len(out), 4)
-        self.assertIsInstance(out[3], IoPipelineMessages.FinalInput)
+        # Should complete without error: head + chunk + data + last chunk + trailers + end + final input
+        self.assertEqual(len(out), 7)
+        self.assertIsInstance(out[0], IoPipelineHttpResponseHead)
+        self.assertIsInstance(out[1], IoPipelineHttpResponseChunk)
+        self.assertEqual(out[1].size, 5)
+        self.assertIsInstance(out[2], IoPipelineHttpResponseBodyData)
+        self.assertEqual(out[2].data, b'hello')
+        self.assertIsInstance(out[3], IoPipelineHttpResponseLastChunk)
+        self.assertIsInstance(out[4], IoPipelineHttpResponseChunkedTrailers)
+        self.assertIsInstance(out[5], IoPipelineHttpResponseEnd)
+        self.assertIsInstance(out[6], IoPipelineMessages.FinalInput)

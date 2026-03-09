@@ -15,8 +15,8 @@ from .objects import FullIoPipelineHttpMessage
 from .objects import IoPipelineHttpMessageAborted
 from .objects import IoPipelineHttpMessageBodyData
 from .objects import IoPipelineHttpMessageChunk
-from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageChunkedTrailers
+from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageLastChunk
 from .objects import IoPipelineHttpMessageObject

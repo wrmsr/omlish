@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
+"""
+TODO:
+ - validating mode?
+"""
 import abc
 import dataclasses as dc
 import typing as ta
@@ -61,6 +65,9 @@ class IoIoPipelineHttpObjectAggregator(
 
         self._handled_types: ta.Tuple[type, ...] = (
             self._head_type,
+            self._chunk_type,
+            self._last_chunk_type,
+            self._chunked_trailers_type,
             self._body_data_type,
             self._end_type,
             self._aborted_type,
@@ -236,6 +243,13 @@ class IoIoPipelineHttpObjectAggregator(
                 for mv in ByteStreamBuffers.iter_segments(msg.data):
                     buf.write(mv)
 
+                return None
+
+            elif isinstance(msg, (
+                    self._a._chunk_type,  # noqa
+                    self._a._last_chunk_type,  # noqa
+                    self._a._chunked_trailers_type,  # noqa
+            )):
                 return None
 
             elif isinstance(msg, self._a._end_type):  # noqa

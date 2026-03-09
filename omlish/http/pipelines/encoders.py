@@ -11,10 +11,10 @@ from ..headers import HttpHeaders
 from .objects import FullIoPipelineHttpMessage
 from .objects import IoPipelineHttpMessageBodyData
 from .objects import IoPipelineHttpMessageChunk
+from .objects import IoPipelineHttpMessageChunkedTrailers
 from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageLastChunk
-from .objects import IoPipelineHttpMessageChunkedTrailers
 from .objects import IoPipelineHttpMessageObjects
 
 
@@ -83,17 +83,17 @@ class IoPipelineHttpObjectEncoder(
     #
 
     def _handle_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunk) -> None:  # noqa
-        raise NotImplementedError
+        ctx.feed_out(f'{msg.size}\r\n'.encode('ascii'))
 
     #
 
     def _handle_last_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageLastChunk) -> None:  # noqa
-        raise NotImplementedError
+        ctx.feed_out(b'0\r\n')
 
     #
 
     def _handle_chunked_trailers(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunkedTrailers) -> None:  # noqa
-        raise NotImplementedError
+        ctx.feed_out(b'\r\n')
 
     #
 

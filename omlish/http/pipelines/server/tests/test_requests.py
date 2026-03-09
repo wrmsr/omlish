@@ -9,11 +9,11 @@ from .....io.streams.utils import ByteStreamBuffers
 from ...requests import FullIoPipelineHttpRequest
 from ...requests import IoPipelineHttpRequestAborted
 from ...requests import IoPipelineHttpRequestBodyData
-from ...requests import IoPipelineHttpRequestChunkedTrailers
 from ...requests import IoPipelineHttpRequestChunk
-from ...requests import IoPipelineHttpRequestLastChunk
+from ...requests import IoPipelineHttpRequestChunkedTrailers
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
+from ...requests import IoPipelineHttpRequestLastChunk
 from ..requests import IoPipelineHttpRequestAggregatorDecoder
 from ..requests import IoPipelineHttpRequestDecoder
 

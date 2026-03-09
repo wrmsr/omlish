@@ -580,7 +580,7 @@ class IoPipelineHttpObjectDecoder(
                 mv = mv[1:]
                 mvl -= 1
 
-                out.append(self._d._make_chunked_trailers())
+                out.append(self._d._make_chunked_trailers())  # noqa
                 out.append(self._d._make_end())  # noqa
 
                 next_mvs = []
