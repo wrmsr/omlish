@@ -25,6 +25,9 @@ MessageT = ta.TypeVar('MessageT', bound=Message)
 class ContentTransformMessageTransform(VisitorMessageTransform):
     ct: ContentTransform
 
+    def visit_message(self, m: Message, ctx: None) -> Message:
+        return m
+
     def visit_system_message(self, m: SystemMessage, ctx: None) -> SystemMessage:
         return m.replace(c=self.ct.transform(m.c))
 
