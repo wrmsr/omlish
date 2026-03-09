@@ -58,6 +58,24 @@ class FullIoPipelineHttpMessage(IoPipelineHttpMessageObject, Abstract):
 
 
 @dc.dataclass(frozen=True)
+class IoPipelineHttpMessageChunk(IoPipelineHttpMessageObject, Abstract):
+    size: int
+    # headers
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageLastChunk(IoPipelineHttpMessageObject, Abstract):
+    # headers
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
 class IoPipelineHttpMessageBodyData(IoPipelineHttpMessageObject, Abstract):
     data: BytesLike
 
@@ -129,6 +147,28 @@ class IoPipelineHttpMessageObjects(Abstract):
 
     @abc.abstractmethod
     def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpMessage:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _chunk_type(self) -> ta.Type[IoPipelineHttpMessageChunk]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_chunk(self, size: int) -> IoPipelineHttpMessageChunk:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _last_chunk_type(self) -> ta.Type[IoPipelineHttpMessageLastChunk]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_last_chunk(self) -> IoPipelineHttpMessageLastChunk:
         raise NotImplementedError
 
     #

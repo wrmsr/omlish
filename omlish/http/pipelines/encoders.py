@@ -10,8 +10,10 @@ from ...lite.abstract import Abstract
 from ..headers import HttpHeaders
 from .objects import FullIoPipelineHttpMessage
 from .objects import IoPipelineHttpMessageBodyData
+from .objects import IoPipelineHttpMessageChunk
 from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageLastChunk
 from .objects import IoPipelineHttpMessageObjects
 
 
@@ -44,6 +46,12 @@ class IoPipelineHttpObjectEncoder(
         elif isinstance(msg, self._full_type):
             self._handle_full_request(ctx, msg)
 
+        elif isinstance(msg, self._chunk_type):
+            self._handle_chunk(ctx, msg)
+
+        elif isinstance(msg, self._last_chunk_type):
+            self._handle_last_chunk(ctx, msg)
+
         elif isinstance(msg, self._body_data_type):
             self._handle_body_data(ctx, msg)
 
@@ -56,8 +64,6 @@ class IoPipelineHttpObjectEncoder(
     #
 
     def _handle_request_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:  # noqa
-        """Emit request line + headers, enter streaming mode."""
-
         self._streaming = True
         self._chunked = self._is_chunked(msg.headers)
 
@@ -66,17 +72,23 @@ class IoPipelineHttpObjectEncoder(
     #
 
     def _handle_full_request(self, ctx: IoPipelineHandlerContext, msg: FullIoPipelineHttpMessage) -> ta.Any:
-        """Emit complete request in one shot."""
-
         ctx.feed_out(self._encode_head(msg.head))
         if len(msg.body) > 0:
             ctx.feed_out(msg.body)
 
     #
 
-    def _handle_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:  # noqa
-        """Emit body chunk (raw or chunked-encoded)."""
+    def _handle_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunk) -> None:  # noqa
+        raise NotImplementedError
 
+    #
+
+    def _handle_last_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageLastChunk) -> None:  # noqa
+        raise NotImplementedError
+
+    #
+
+    def _handle_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:  # noqa
         if not self._streaming:
             # Not in streaming mode - pass through unchanged
             ctx.feed_out(msg)
@@ -97,8 +109,6 @@ class IoPipelineHttpObjectEncoder(
     #
 
     def _handle_request_end(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEnd) -> None:  # noqa
-        """Emit terminator if chunked, reset state."""
-
         if not self._streaming:
             # Not in streaming mode - pass through
             ctx.feed_out(msg)
@@ -129,8 +139,6 @@ class IoPipelineHttpObjectEncoder(
         return buf.getvalue()
 
     def _encode_headers(self, headers: HttpHeaders) -> ta.List[bytes]:
-        """Encode headers as 'Name: value\r\n' lines."""
-
         lines: ta.List[bytes] = []
 
         # HttpHeaders stores entries as list of (name, value) tuples
@@ -142,7 +150,5 @@ class IoPipelineHttpObjectEncoder(
         return lines
 
     def _is_chunked(self, headers: HttpHeaders) -> bool:
-        """Check if Transfer-Encoding includes 'chunked'."""
-
         te = headers.lower.get('transfer-encoding', ())
         return 'chunked' in te

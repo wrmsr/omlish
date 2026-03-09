@@ -130,7 +130,9 @@ class WsgiConnHandler:
                     # FIXME: early break??
                     continue
 
-                self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseBodyData(d)))  # noqa
+                self._o._drv.enqueue(  # noqa
+                    WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseBodyData(d)),
+                )
                 if self._o._drv._flow is not None:  # noqa
                     self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineFlowMessages.FlushOutput())) # noqa
 

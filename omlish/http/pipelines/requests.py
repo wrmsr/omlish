@@ -14,8 +14,10 @@ from ..versions import HttpVersions
 from .objects import FullIoPipelineHttpMessage
 from .objects import IoPipelineHttpMessageAborted
 from .objects import IoPipelineHttpMessageBodyData
+from .objects import IoPipelineHttpMessageChunk
 from .objects import IoPipelineHttpMessageEnd
 from .objects import IoPipelineHttpMessageHead
+from .objects import IoPipelineHttpMessageLastChunk
 from .objects import IoPipelineHttpMessageObject
 from .objects import IoPipelineHttpMessageObjects
 
@@ -86,6 +88,22 @@ class FullIoPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequest
 
 
 @dc.dataclass(frozen=True)
+class IoPipelineHttpRequestChunk(IoPipelineHttpMessageChunk, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestLastChunk(IoPipelineHttpMessageLastChunk, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
 class IoPipelineHttpRequestBodyData(IoPipelineHttpMessageBodyData, IoPipelineHttpRequestObject):
     pass
 
@@ -129,6 +147,20 @@ class IoPipelineHttpRequestObjects(IoPipelineHttpMessageObjects):
 
     def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpRequest:
         return FullIoPipelineHttpRequest(check.isinstance(head, IoPipelineHttpRequestHead), body)
+
+    #
+
+    _chunk_type: ta.Final = IoPipelineHttpRequestChunk
+
+    def _make_chunk(self, size: int) -> IoPipelineHttpRequestChunk:
+        return IoPipelineHttpRequestChunk(size)
+
+    #
+
+    _last_chunk_type: ta.Final = IoPipelineHttpRequestLastChunk
+
+    def _make_last_chunk(self) -> IoPipelineHttpRequestLastChunk:
+        return IoPipelineHttpRequestLastChunk()
 
     #
 
