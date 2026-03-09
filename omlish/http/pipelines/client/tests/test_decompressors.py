@@ -16,6 +16,115 @@ from ...responses import IoPipelineHttpResponseHead
 from ..responses import IoPipelineHttpResponseDecompressor
 
 
+class TestGzipDecompressorSimple(unittest.TestCase):
+    """Simple decompression tests without flow control complexity."""
+
+    def test_passthrough_no_encoding(self):
+        """Test that data passes through unchanged when no content-encoding is present."""
+        handler = IoPipelineHttpResponseDecompressor()
+
+        channel = IoPipeline.new([
+            handler,
+            ibq := InboundQueueIoPipelineHandler(),
+        ])
+
+        # Head without content-encoding
+        head = IoPipelineHttpResponseHead(
+            status=200,
+            reason='OK',
+            headers=HttpHeaders({}),
+        )
+
+        # Feed messages
+        channel.feed_in(head)
+        channel.feed_in(IoPipelineHttpResponseBodyData(b'Hello, World!'))
+        channel.feed_in(IoPipelineHttpResponseEnd())
+
+        # Verify passthrough
+        results = ibq.drain()
+        self.assertEqual(len(results), 3)
+        self.assertIs(results[0], head)
+        self.assertEqual(check.isinstance(results[1], IoPipelineHttpResponseBodyData).data, b'Hello, World!')
+        self.assertIsInstance(results[2], IoPipelineHttpResponseEnd)
+
+    def test_simple_gzip_decompression(self):
+        """Test basic gzip decompression with default config."""
+        handler = IoPipelineHttpResponseDecompressor()
+
+        channel = IoPipeline.new([
+            handler,
+            ibq := InboundQueueIoPipelineHandler(),
+        ])
+
+        # Create gzipped data
+        raw_data = b'Hello, World!'
+        compressor = zlib.compressobj(wbits=16 + zlib.MAX_WBITS)
+        compressed_data = compressor.compress(raw_data) + compressor.flush()
+
+        # Head with gzip encoding
+        head = IoPipelineHttpResponseHead(
+            status=200,
+            reason='OK',
+            headers=HttpHeaders({'content-encoding': 'gzip'}),
+        )
+
+        # Feed messages
+        channel.feed_in(head)
+        channel.feed_in(IoPipelineHttpResponseBodyData(compressed_data))
+        channel.feed_in(IoPipelineHttpResponseEnd())
+
+        # Verify decompression
+        results = ibq.drain()
+        self.assertEqual(len(results), 3)
+        self.assertIs(results[0], head)
+        self.assertEqual(check.isinstance(results[1], IoPipelineHttpResponseBodyData).data, raw_data)
+        self.assertIsInstance(results[2], IoPipelineHttpResponseEnd)
+
+    def test_gzip_multiple_chunks(self):
+        """Test gzip decompression with multiple body data chunks."""
+        handler = IoPipelineHttpResponseDecompressor()
+
+        channel = IoPipeline.new([
+            handler,
+            ibq := InboundQueueIoPipelineHandler(),
+        ])
+
+        # Create gzipped data
+        raw_data = b'This is a longer message that will be split into chunks during compression.'
+        compressor = zlib.compressobj(wbits=16 + zlib.MAX_WBITS)
+        compressed_data = compressor.compress(raw_data) + compressor.flush()
+
+        # Split compressed data into chunks
+        chunk_size = len(compressed_data) // 3
+        chunk1 = compressed_data[:chunk_size]
+        chunk2 = compressed_data[chunk_size:2 * chunk_size]
+        chunk3 = compressed_data[2 * chunk_size:]
+
+        # Head with gzip encoding
+        head = IoPipelineHttpResponseHead(
+            status=200,
+            reason='OK',
+            headers=HttpHeaders({'content-encoding': 'gzip'}),
+        )
+
+        # Feed messages
+        channel.feed_in(head)
+        channel.feed_in(IoPipelineHttpResponseBodyData(chunk1))
+        channel.feed_in(IoPipelineHttpResponseBodyData(chunk2))
+        channel.feed_in(IoPipelineHttpResponseBodyData(chunk3))
+        channel.feed_in(IoPipelineHttpResponseEnd())
+
+        # Verify decompression - collect all body data
+        results = ibq.drain()
+        self.assertIs(results[0], head)
+
+        body_data_msgs = [m for m in results[1:-1] if isinstance(m, IoPipelineHttpResponseBodyData)]
+        decompressed = b''.join(m.data for m in body_data_msgs)
+
+        self.assertEqual(decompressed, raw_data)
+        self.assertIsInstance(results[-1], IoPipelineHttpResponseEnd)
+
+
 class TestGzipDecompressorFlow(unittest.TestCase):
     config = IoPipelineHttpDecompressionConfig(
         max_steps_per_call=2,      # Very low for testing
