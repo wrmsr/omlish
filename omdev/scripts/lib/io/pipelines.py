@@ -51,7 +51,7 @@ def __omlish_amalg__():  # noqa
             dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
             dict(path='bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),
-            dict(path='flow/types.py', sha1='713bd98b7ecb094655439d8517c43147a25ff9a1'),
+            dict(path='flow/types.py', sha1='1d522f2f0c9bca8a923eb991727145de5efb5a99'),
             dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
             dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
             dict(path='sched/types.py', sha1='0ef85c6cce69bdf8a6cd9c85eb806d52808f7e0d'),
@@ -4057,6 +4057,10 @@ class IoPipelineFlow(IoPipelineService, Abstract):
     @abc.abstractmethod
     def is_auto_read(self) -> bool:
         raise NotImplementedError
+
+    @staticmethod
+    def is_auto_read_pipeline(pi: IoPipeline) -> bool:
+        return (fc := pi.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
 
     @staticmethod
     def is_auto_read_context(ctx: IoPipelineHandlerContext) -> bool:

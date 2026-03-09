@@ -5,6 +5,7 @@ import typing as ta
 
 from ....lite.abstract import Abstract
 from ....lite.namespaces import NamespaceClass
+from ..core import IoPipeline
 from ..core import IoPipelineHandlerContext
 from ..core import IoPipelineMessages
 from ..core import IoPipelineService
@@ -75,6 +76,10 @@ class IoPipelineFlow(IoPipelineService, Abstract):
     @abc.abstractmethod
     def is_auto_read(self) -> bool:
         raise NotImplementedError
+
+    @staticmethod
+    def is_auto_read_pipeline(pi: IoPipeline) -> bool:
+        return (fc := pi.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
 
     @staticmethod
     def is_auto_read_context(ctx: IoPipelineHandlerContext) -> bool:

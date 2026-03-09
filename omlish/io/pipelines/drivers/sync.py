@@ -12,6 +12,7 @@ from ....io.streams.utils import ByteStreamBuffers
 from ....logs.modules import get_module_loggers
 from ..core import IoPipeline
 from ..core import IoPipelineMessages
+from ..flow.types import IoPipelineFlow
 from .metadata import DriverIoPipelineMetadata
 
 
@@ -86,23 +87,21 @@ class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverCo
 
     #
 
-    def _handle_output(self, msg: ta.Any) -> bool:
-        """Returns whether or not to continue running."""
-
+    def _handle_output(self, msg: ta.Any) -> ta.Literal['handled', 'unhandled', 'stop']:
         if ByteStreamBuffers.can_bytes(msg):
             for mv in ByteStreamBuffers.iter_segments(msg):
                 self._sock.send(mv)
-            return True
+            return 'handled'
 
         elif isinstance(msg, IoPipelineMessages.FinalOutput):
-            return False
+            return 'stop'
 
         elif isinstance(msg, IoPipelineMessages.Defer):
             self._pipeline_.run_deferred(msg)
-            return True
+            return 'handled'
 
         else:
-            raise TypeError(msg)
+            return 'unhandled'
 
 
 ##
@@ -147,8 +146,15 @@ class LoopSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['LoopSyncSoc
                     in_msgs.clear()
 
                 while (msg := pipeline.output.poll()) is not None:
-                    if not self._handle_output(msg):
+                    handled = self._handle_output(msg)
+                    if handled == 'handled':
+                        pass
+                    elif handled == 'unhandled':
+                        raise TypeError(msg)
+                    elif handled == 'stop':
                         return
+                    else:
+                        raise RuntimeError(f'Unknown handled value: {handled!r}')
 
                 if not pipeline.saw_final_input:
                     b = self._sock.recv(self._config.read_chunk_size)
@@ -171,6 +177,8 @@ class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSoc
     @dc.dataclass(frozen=True)
     class Config(BaseSyncSocketIoPipelineDriver.Config):
         DEFAULT: ta.ClassVar['IterSyncSocketIoPipelineDriver.Config']
+
+    Config.DEFAULT = Config()
 
     #
 
@@ -198,4 +206,28 @@ class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSoc
     def next(self) -> ta.Optional[ta.Any]:
         pipeline = self._ensure_pipeline()  # noqa
 
-        raise NotImplementedError
+        while True:
+            if (out_msg := pipeline.output.poll()) is not None:
+                handled = self._handle_output(out_msg)
+                if handled == 'handled':
+                    continue
+                elif handled == 'unhandled':
+                    return out_msg
+                elif handled == 'stop':
+                    raise NotImplementedError
+                else:
+                    raise RuntimeError(f'Unknown handled value: {handled!r}')
+
+            if self._input_q:
+                pipeline.feed_in(self._input_q.popleft())
+                continue
+
+            if IoPipelineFlow.is_auto_read_pipeline(self._pipeline_):
+                b = self._sock.recv(self._config.read_chunk_size)
+                if not b:
+                    self._input_q.append(IoPipelineMessages.FinalInput())
+                else:
+                    self._input_q.append(b)
+                continue
+
+            raise NotImplementedError
