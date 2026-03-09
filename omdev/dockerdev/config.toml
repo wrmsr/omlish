@@ -11,7 +11,7 @@ jdks = [
     'zulu25-ca-jdk',
 ]
 
-go_version = '1.26.0'
+go_version = '1.26.1'
 
 zig_version = '0.15.2'
 

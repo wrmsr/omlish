@@ -220,7 +220,7 @@ $HOME/.cargo/bin/cargo install \
 ## go
 
 RUN (\
-export GO_VERSION='1.26.0' ;\
+export GO_VERSION='1.26.1' ;\
 \
 set -ex ;\
 \
