@@ -3,6 +3,7 @@
 import errno
 import hashlib
 import socket
+import time
 import typing as ta
 
 from .....io.pipelines.core import IoPipeline
@@ -10,6 +11,7 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.sync import IterSyncSocketIoPipelineDriver
+from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....io.streams.types import BytesLike
 from .....lite.abstract import Abstract
 from .....lite.check import check
@@ -20,6 +22,8 @@ from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestObject
 from ...responses import FullIoPipelineHttpResponse
+from ...responses import IoPipelineHttpResponseBodyData
+from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseHead
 from ...server.apps.wsgi import WsgiSpec
 from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
@@ -101,15 +105,24 @@ class WsgiConnHandler:
 
         def _send_response_stream(self, head: IoPipelineHttpResponseHead, body: ta.Iterable[BytesLike]) -> None:
             self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(head))  # noqa
+            if self._o._drv._flow is not None:  # noqa
+                self._o._drv.enqueue(IoPipelineFlowMessages.FlushOutput()) # noqa
 
-            # for d in body:
-            #     if not d:
-            #         # FIXME: early break??
-            #         continue
-            #
-            #     self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseBodyData(d)))
+            for d in body:
+                while out := self._o._drv.poll(read=False):  # noqa
+                    raise TypeError(out)
 
-            raise NotImplementedError
+                check.state(self._o._drv.is_running)  # noqa
+
+                if not d:
+                    # FIXME: early break??
+                    continue
+
+                self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseBodyData(d)))  # noqa
+                if self._o._drv._flow is not None:  # noqa
+                    self._o._drv.enqueue(IoPipelineFlowMessages.FlushOutput()) # noqa
+
+            self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseEnd()))  # noqa
 
         #
 
@@ -220,10 +233,18 @@ class WsgiConnHandler:
                 else:
                     raise TypeError(out)
 
+            else:
+                raise TypeError(out)
+
+        check.state(not self._drv.is_running)
+
 
 def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
     def _handle_client(conn: socket.socket, addr: ta.Any) -> None:  # noqa
-        WsgiConnHandler(spec, conn, addr).run()
+        try:
+            WsgiConnHandler(spec, conn, addr).run()
+        finally:
+            conn.close()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -248,7 +269,7 @@ def serve_wsgi_wsgiref(spec: WsgiSpec) -> None:
 ##
 
 
-def ping_and_sha1_app(environ, start_response):
+def demo_app(environ, start_response):
     method = environ.get('REQUEST_METHOD', '')
     path = environ.get('PATH_INFO', '')
 
@@ -259,6 +280,19 @@ def ping_and_sha1_app(environ, start_response):
             ('Content-Length', str(len(body))),
         ])
         return [body]
+
+    elif method == 'GET' and path == '/slowping':
+        start_response('200 OK', [
+            ('Content-Type', 'text/plain'),
+        ])
+
+        def slow_ping():
+            for i, o in enumerate(b'pong'):
+                yield bytes([o])
+                if i < 4:
+                    time.sleep(1)
+
+        return slow_ping()
 
     elif method == 'POST' and path == '/sha1':
         h = hashlib.sha1()  # noqa
@@ -285,7 +319,7 @@ def ping_and_sha1_app(environ, start_response):
 
 
 def _main() -> None:
-    wsgi_spec = WsgiSpec(ping_and_sha1_app)
+    wsgi_spec = WsgiSpec(demo_app)
 
     # serve_wsgi_wsgiref(ping_spec)
     serve_wsgi_pipeline(wsgi_spec)
