@@ -6,18 +6,18 @@ import dataclasses as dc
 import typing as ta
 import zlib
 
-from ...io.pipelines.bytes.buffering import InboundBytesBufferingIoPipelineHandler
-from ...io.pipelines.core import IoPipelineHandlerContext
-from ...io.pipelines.core import IoPipelineMessages
-from ...io.pipelines.flow.types import IoPipelineFlow
-from ...io.pipelines.flow.types import IoPipelineFlowMessages
-from ...io.streams.types import BytesLike
-from ...io.streams.utils import ByteStreamBuffers
-from ...lite.abstract import Abstract
-from .objects import IoPipelineHttpMessageBodyData
-from .objects import IoPipelineHttpMessageEnd
-from .objects import IoPipelineHttpMessageHead
-from .objects import IoPipelineHttpMessageObjects
+from ....io.pipelines.bytes.buffering import InboundBytesBufferingIoPipelineHandler
+from ....io.pipelines.core import IoPipelineHandlerContext
+from ....io.pipelines.core import IoPipelineMessages
+from ....io.pipelines.flow.types import IoPipelineFlow
+from ....io.pipelines.flow.types import IoPipelineFlowMessages
+from ....io.streams.types import BytesLike
+from ....io.streams.utils import ByteStreamBuffers
+from ....lite.abstract import Abstract
+from ..objects import IoPipelineHttpMessageBodyData
+from ..objects import IoPipelineHttpMessageEnd
+from ..objects import IoPipelineHttpMessageHead
+from ..objects import IoPipelineHttpMessageObjects
 
 
 ##

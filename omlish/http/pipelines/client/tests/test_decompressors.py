@@ -9,7 +9,7 @@ from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....lite.check import check
 from ....headers import HttpHeaders
-from ...decompressors import IoPipelineHttpDecompressionConfig
+from ...compression.decompressors import IoPipelineHttpDecompressionConfig
 from ...responses import IoPipelineHttpResponseBodyData
 from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseHead

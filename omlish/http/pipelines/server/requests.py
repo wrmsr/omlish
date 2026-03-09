@@ -4,8 +4,8 @@ import typing as ta
 
 from ...parsing import HttpParser
 from ..aggregators import IoPipelineHttpObjectAggregatorDecoder
+from ..compression.decompressors import IoPipelineHttpObjectDecompressor
 from ..decoders import IoPipelineHttpObjectDecoder
-from ..decompressors import IoPipelineHttpObjectDecompressor
 from ..requests import IoPipelineHttpRequestObjects
 
 
