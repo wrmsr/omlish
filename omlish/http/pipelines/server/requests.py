@@ -14,7 +14,7 @@ from ..requests import IoPipelineHttpRequestObjects
 
 class IoPipelineHttpRequestDecoder(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDecoder):
     _parse_mode: ta.Final = HttpParser.Mode.REQUEST
-    _if_content_length_missing: ta.Final = 'none'
+    _if_content_length_missing: ta.Final = 'empty'
 
 
 ##
@@ -24,7 +24,7 @@ class IoPipelineHttpRequestAggregatorDecoder(
     IoPipelineHttpRequestObjects,
     IoPipelineHttpObjectAggregatorDecoder,
 ):
-    _if_content_length_missing: ta.Final = 'none'
+    _if_content_length_missing: ta.Final = 'empty'
 
 
 ##

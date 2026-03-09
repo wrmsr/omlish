@@ -23,10 +23,10 @@ from ...lite.abstract import Abstract
 from ...lite.check import check
 from ..parsing import HttpParser
 from ..parsing import parse_http_message
+from .bodymodes import IoPipelineHttpBodyMode
+from .bodymodes import IoPipelineHttpBodyModeError
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageObjects
-from .transferencoding import IoPipelineHttpTransferEncoding
-from .transferencoding import IoPipelineHttpTransferEncodingError
 
 
 ##
@@ -88,7 +88,7 @@ class IoPipelineHttpObjectDecoder(
 
     @property
     @abc.abstractmethod
-    def _if_content_length_missing(self) -> ta.Literal['none', 'eof']:
+    def _if_content_length_missing(self) -> ta.Literal['empty', 'eof']:
         raise NotImplementedError
 
     #
@@ -224,7 +224,7 @@ class IoPipelineHttpObjectDecoder(
 
             if done:
                 return (
-                    self._d._TransferEncodingState(self._d, head),  # noqa
+                    self._d._BodyModeState(self._d, head),  # noqa
                     SegmentedByteStreamBufferView.or_else(next_mvs, b''),
                 )
             else:
@@ -232,7 +232,7 @@ class IoPipelineHttpObjectDecoder(
 
     #
 
-    class _TransferEncodingState(_State):
+    class _BodyModeState(_State):
         def __init__(self, d: 'IoPipelineHttpObjectDecoder', head: IoPipelineHttpMessageHead) -> None:
             super().__init__(d)
 
@@ -247,14 +247,14 @@ class IoPipelineHttpObjectDecoder(
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             try:
-                te = IoPipelineHttpTransferEncoding.select(
+                te = IoPipelineHttpBodyMode.select(
                     self._head.headers,
                     if_length_missing=self._d._if_content_length_missing,  # noqa
                 )
-            except IoPipelineHttpTransferEncodingError as e:
+            except IoPipelineHttpBodyModeError as e:
                 return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
-            if te.mode == 'none':
+            if te.mode == 'empty':
                 out.append(self._d._make_end())  # noqa
                 return (self._d._DoneState(self._d, self._head), data)  # noqa
 

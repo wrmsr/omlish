@@ -16,10 +16,10 @@ from ...io.streams.types import MutableByteStreamBuffer
 from ...io.streams.utils import ByteStreamBuffers
 from ...io.streams.utils import CanByteStreamBuffer
 from ...lite.abstract import Abstract
+from .bodymodes import IoPipelineHttpBodyMode
+from .bodymodes import IoPipelineHttpBodyModeError
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageObjects
-from .transferencoding import IoPipelineHttpTransferEncoding
-from .transferencoding import IoPipelineHttpTransferEncodingError
 
 
 ##
@@ -52,7 +52,7 @@ class IoIoPipelineHttpObjectAggregator(
             self,
             *,
             config: IoPipelineHttpAggregationConfig = IoPipelineHttpAggregationConfig.DEFAULT,
-            enabled: ta.Union[bool, ta.Literal['if_chunked']] = True,
+            enabled: ta.Union[bool, ta.Literal['unless_chunked']] = True,
     ) -> None:
         super().__init__()
 
@@ -70,17 +70,17 @@ class IoIoPipelineHttpObjectAggregator(
         self._state: IoIoPipelineHttpObjectAggregator._State = self._init_state()
 
     @property
-    def enabled(self) -> ta.Union[bool, ta.Literal['if_chunked']]:
+    def enabled(self) -> ta.Union[bool, ta.Literal['unless_chunked']]:
         return self._enabled
 
-    def set_enabled(self, enabled: ta.Union[bool, ta.Literal['if_chunked']]) -> None:
+    def set_enabled(self, enabled: ta.Union[bool, ta.Literal['unless_chunked']]) -> None:
         self._enabled = enabled
 
     #
 
     @property
     @abc.abstractmethod
-    def _if_content_length_missing(self) -> ta.Literal['none', 'eof']:
+    def _if_content_length_missing(self) -> ta.Literal['empty', 'eof']:
         raise NotImplementedError
 
     @property
@@ -127,8 +127,8 @@ class IoIoPipelineHttpObjectAggregator(
     def _init_state(self) -> '_State':
         if self._enabled is True:
             return self._HeadState(self)
-        elif self._enabled == 'if_chunked':
-            return self._IfChunkedChunkedHeadState(self)
+        elif self._enabled == 'unless_chunked':
+            return self._UnlessChunkedHeadState(self)
         else:
             return self._DisabledHeadState(self)
 
@@ -176,14 +176,14 @@ class IoIoPipelineHttpObjectAggregator(
         ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             if isinstance(msg, self._a._head_type):  # noqa
                 try:
-                    te = IoPipelineHttpTransferEncoding.select(
+                    te = IoPipelineHttpBodyMode.select(
                         msg.headers,
                         if_length_missing=self._a._if_content_length_missing,  # noqa
                     )
-                except IoPipelineHttpTransferEncodingError as e:
+                except IoPipelineHttpBodyModeError as e:
                     return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
-                if te.mode in 'none':
+                if te.mode == 'empty':
                     return (self._a._EndState(self._a, msg, b''), None)  # noqa
 
                 if (
@@ -288,7 +288,7 @@ class IoIoPipelineHttpObjectAggregator(
 
     #
 
-    class _IfChunkedChunkedHeadState(_State):
+    class _UnlessChunkedHeadState(_State):
         def handle(
                 self,
                 ctx: IoPipelineHandlerContext,
@@ -297,14 +297,14 @@ class IoIoPipelineHttpObjectAggregator(
         ) -> ta.Optional[ta.Tuple['IoIoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
             if isinstance(msg, self._a._head_type):  # noqa
                 try:
-                    te = IoPipelineHttpTransferEncoding.select(
+                    te = IoPipelineHttpBodyMode.select(
                         msg.headers,
                         if_length_missing=self._a._if_content_length_missing,  # noqa
                     )
-                except IoPipelineHttpTransferEncodingError as e:
+                except IoPipelineHttpBodyModeError as e:
                     return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
-                if te.mode == 'chunked':
+                if te.mode != 'chunked':
                     return (self._a._HeadState(self._a), msg)  # noqa
                 else:
                     out.append(msg)

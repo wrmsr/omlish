@@ -10,14 +10,14 @@ from ..headers import HttpHeaders
 
 
 @dc.dataclass()
-class IoPipelineHttpTransferEncodingError(Exception):
+class IoPipelineHttpBodyModeError(Exception):
     reason: str
 
 
 @ta.final
 @dc.dataclass(frozen=True)
-class IoPipelineHttpTransferEncoding:
-    mode: ta.Literal['none', 'eof', 'cl', 'chunked']
+class IoPipelineHttpBodyMode:
+    mode: ta.Literal['empty', 'eof', 'cl', 'chunked']
     length: ta.Optional[int]
 
     @classmethod
@@ -25,8 +25,8 @@ class IoPipelineHttpTransferEncoding:
             cls,
             headers: HttpHeaders,
             *,
-            if_length_missing: ta.Literal['none', 'eof'],
-    ) -> 'IoPipelineHttpTransferEncoding':
+            if_length_missing: ta.Literal['empty', 'eof'],
+    ) -> 'IoPipelineHttpBodyMode':
         if headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
             return cls('chunked', None)
 
@@ -37,12 +37,12 @@ class IoPipelineHttpTransferEncoding:
         try:
             n = int(cl)
         except ValueError:
-            raise IoPipelineHttpTransferEncodingError('bad Content-Length') from None
+            raise IoPipelineHttpBodyModeError('bad Content-Length') from None
 
         if n < 0:
-            raise IoPipelineHttpTransferEncodingError('bad Content-Length')
+            raise IoPipelineHttpBodyModeError('bad Content-Length')
 
         if n == 0:
-            return cls('none', None)
+            return cls('empty', None)
 
         return cls('cl', n)
