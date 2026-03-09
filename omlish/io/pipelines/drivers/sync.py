@@ -14,21 +14,20 @@ from ..core import IoPipelineMessages
 from .metadata import DriverIoPipelineMetadata
 
 
+BaseSyncSocketIoPipelineDriverConfigT = ta.TypeVar('BaseSyncSocketIoPipelineDriverConfigT', bound='BaseSyncSocketIoPipelineDriver.Config')  # noqa
+
+
 log, alog = get_module_loggers(globals())  # noqa
 
 
 ##
 
 
-class SyncSocketIoPipelineDriver:
+class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverConfigT]):
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['SyncSocketIoPipelineDriver.Config']
-
         read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
-
-    Config.DEFAULT = Config()
 
     #
 
@@ -36,21 +35,19 @@ class SyncSocketIoPipelineDriver:
             self,
             spec: IoPipeline.Spec,
             sock: ta.Any,
-            config: ta.Optional[Config] = None,
+            config: BaseSyncSocketIoPipelineDriverConfigT,
     ) -> None:
         super().__init__()
 
         self._spec = spec
         self._sock = sock
-        if config is None:
-            config = SyncSocketIoPipelineDriver.Config.DEFAULT
         self._config = config
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
     @property
-    def config(self) -> Config:
+    def config(self) -> BaseSyncSocketIoPipelineDriverConfigT:
         return self._config
 
     _pipeline: IoPipeline
@@ -72,6 +69,31 @@ class SyncSocketIoPipelineDriver:
 
         else:
             raise TypeError(msg)
+
+
+##
+
+
+class LoopSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['LoopSyncSocketIoPipelineDriver.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(BaseSyncSocketIoPipelineDriver.Config):
+        DEFAULT: ta.ClassVar['LoopSyncSocketIoPipelineDriver.Config']
+
+    Config.DEFAULT = Config()
+
+    #
+
+    def __init__(
+            self,
+            spec: IoPipeline.Spec,
+            sock: ta.Any,
+            config: ta.Optional[Config] = None,
+    ) -> None:
+        super().__init__(
+            spec,
+            sock,
+            config or LoopSyncSocketIoPipelineDriver.Config.DEFAULT,
+        )
 
     def _run(self, in_msgs: ta.List[ta.Any]) -> None:
         try:

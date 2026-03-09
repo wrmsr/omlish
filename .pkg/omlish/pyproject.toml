@@ -55,7 +55,7 @@ all = [
     'asyncpg ~= 0.31',
     'apsw ~= 3.51',
     'sqlean.py ~= 3.50',
-    'duckdb ~= 1.4',
+    'duckdb ~= 1.5',
     'markupsafe ~= 3.0',
     'jinja2 ~= 3.1',
     'pytest ~= 9.0',
@@ -113,7 +113,7 @@ sqldrivers = [
     'asyncpg ~= 0.31',
     'apsw ~= 3.51',
     'sqlean.py ~= 3.50',
-    'duckdb ~= 1.4',
+    'duckdb ~= 1.5',
 ]
 templates = [
     'markupsafe ~= 3.0',
