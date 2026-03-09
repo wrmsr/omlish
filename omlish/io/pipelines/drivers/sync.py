@@ -197,7 +197,7 @@ class LoopSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['LoopSyncSoc
                     else:
                         raise RuntimeError(f'Unknown handled value: {handled!r}')
 
-                if not pipeline.saw_final_input:
+                if not pipeline.saw_final_input and self._want_read:
                     in_msgs.extend(self._do_read())
 
         finally:
@@ -260,7 +260,7 @@ class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSoc
                 pipeline.feed_in(self._input_q.popleft())
                 continue
 
-            if self._want_read:
+            if not pipeline.saw_final_input and self._want_read:
                 self._input_q.extend(self._do_read())
                 continue
 
