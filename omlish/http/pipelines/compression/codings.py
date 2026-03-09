@@ -12,17 +12,17 @@ from ....lite.namespaces import NamespaceClass
 ##
 
 
-class IoPiplineHttpCompressionCoding(Abstract):
+class IoPiplineHttpCompressorCoding(Abstract):
     pass  # TODO
 
 
-IoPiplineHttpCompressionCodings = ta.Mapping[str, ta.Callable[[], IoPiplineHttpCompressionCoding]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+IoPiplineHttpCompressorCodings = ta.Mapping[str, ta.Callable[[], IoPiplineHttpCompressorCoding]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
 #
 
 
-class IoPiplineHttpDecompressionCoding(Abstract):
+class IoPiplineHttpDecompressorCoding(Abstract):
     @abc.abstractmethod
     def decompress(
             self,
@@ -41,13 +41,13 @@ class IoPiplineHttpDecompressionCoding(Abstract):
         raise NotImplementedError
 
 
-IoPiplineHttpDeompressionCodings = ta.Mapping[str, ta.Callable[[], IoPiplineHttpDecompressionCoding]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+IoPiplineHttpDecompressorCodings = ta.Mapping[str, ta.Callable[[], IoPiplineHttpDecompressorCoding]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
 ##
 
 
-class ZlibIoPiplineHttpDecompressionCoding(IoPiplineHttpDecompressionCoding):
+class ZlibIoPiplineHttpDecompressorCoding(IoPiplineHttpDecompressorCoding):
     def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
         super().__init__()
 
@@ -72,8 +72,8 @@ class ZlibIoPiplineHttpDecompressionCoding(IoPiplineHttpDecompressionCoding):
 
 
 class DefaultIoPiplineHttpCompressionCodings(NamespaceClass):
-    COMPRESSION: ta.Final[IoPiplineHttpCompressionCodings] = {}
+    COMPRESSOR: ta.Final[IoPiplineHttpCompressorCodings] = {}
 
-    DECOMPRESSION: ta.Final[IoPiplineHttpDeompressionCodings] = {
-        'zlib': ZlibIoPiplineHttpDecompressionCoding,
+    DECOMPRESSOR: ta.Final[IoPiplineHttpDecompressorCodings] = {
+        'gzip': ZlibIoPiplineHttpDecompressorCoding,
     }

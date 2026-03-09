@@ -1,10 +1,8 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-import abc
 import collections
 import dataclasses as dc
 import typing as ta
-import zlib
 
 from ....io.pipelines.bytes.buffering import InboundBytesBufferingIoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
@@ -18,6 +16,9 @@ from ..objects import IoPipelineHttpMessageBodyData
 from ..objects import IoPipelineHttpMessageEnd
 from ..objects import IoPipelineHttpMessageHead
 from ..objects import IoPipelineHttpMessageObjects
+from .codings import DefaultIoPiplineHttpCompressionCodings
+from .codings import IoPiplineHttpDecompressorCoding
+from .codings import IoPiplineHttpDecompressorCodings
 
 
 ##
@@ -53,14 +54,17 @@ class IoPipelineHttpObjectDecompressor(
 
     def __init__(
             self,
-            *,
+            codings: ta.Optional[IoPiplineHttpDecompressorCodings] = None,
             config: IoPipelineHttpDecompressionConfig = IoPipelineHttpDecompressionConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
         self._config = config
+        if codings is None:
+            codings = DefaultIoPiplineHttpCompressionCodings.DECOMPRESSOR
+        self._codings = codings
 
-        self._decompressor: ta.Optional[IoPipelineHttpObjectDecompressor.Decompressor] = None
+        self._decompressor: ta.Optional[IoPiplineHttpDecompressorCoding] = None
 
         # Statistics for budget checks
         self._in_total_bytes = 0
@@ -80,46 +84,6 @@ class IoPipelineHttpObjectDecompressor(
 
     def inbound_buffered_bytes(self) -> int:
         return self._in_pending_bytes + self._out_pending_bytes
-
-    #
-
-    class Decompressor(Abstract):
-        @abc.abstractmethod
-        def decompress(
-                self,
-                data: BytesLike,
-                max_bytes: ta.Optional[int] = None,
-                /,
-        ) -> ta.Optional[BytesLike]:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def unconsumed_tail(self) -> ta.Optional[BytesLike]:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def flush(self) -> ta.Optional[BytesLike]:
-            raise NotImplementedError
-
-    #
-
-    class ZlibDecompressor(Decompressor):
-        def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
-            self._z = zlib.decompressobj(wbits)
-
-        def decompress(
-                self,
-                data: BytesLike,
-                max_bytes: ta.Optional[int] = None,
-                /,
-        ) -> ta.Optional[BytesLike]:
-            return self._z.decompress(data, max_bytes or 0)
-
-        def unconsumed_tail(self) -> ta.Optional[BytesLike]:
-            return self._z.unconsumed_tail
-
-        def flush(self) -> ta.Optional[BytesLike]:
-            return self._z.flush()
 
     #
 
@@ -280,8 +244,10 @@ class IoPipelineHttpObjectDecompressor(
 
         enc = msg.headers.lower.get('content-encoding', ())
 
-        if 'gzip' in enc:
-            self._decompressor = self.ZlibDecompressor()
+        for coding_name, coding in self._codings.items():
+            if coding_name.lower() in enc:
+                self._decompressor = coding()
+                break
 
         ctx.feed_in(msg)
 
