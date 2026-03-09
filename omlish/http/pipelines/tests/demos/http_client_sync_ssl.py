@@ -11,6 +11,7 @@ from .clients import sync_fetch_url
 def _main(url: str = 'https://example.com/') -> None:
     resp = sync_fetch_url(
         url,
+        flow_auto_read=True,
     )
 
     print_full_response(resp)

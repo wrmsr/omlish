@@ -331,7 +331,7 @@ def sync_fetch_url(
             check.none(response)
             response = msg
 
-            ctx.feed_in(HttpClientClose())
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
 
     #
 
