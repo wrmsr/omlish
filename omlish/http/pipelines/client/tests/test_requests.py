@@ -6,7 +6,7 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.handlers.feedback import FeedbackInboundIoPipelineHandler
 from ....headers import HttpHeaders
 from ....versions import HttpVersion
-from ...requests import IoFullPipelineHttpRequest
+from ...requests import FullIoPipelineHttpRequest
 from ...requests import IoPipelineHttpRequestContentChunkData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
@@ -23,7 +23,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        request = IoFullPipelineHttpRequest(
+        request = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='GET',
                 target='/index.html',
@@ -62,7 +62,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
 
         body = b'name=value&foo=bar'
 
-        request = IoFullPipelineHttpRequest(
+        request = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='POST',
                 target='/submit',
@@ -99,7 +99,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
 
         body = b'{"key": "value"}'
 
-        request = IoFullPipelineHttpRequest(
+        request = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='PUT',
                 target='/api/resource/123',
@@ -134,7 +134,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        request = IoFullPipelineHttpRequest(
+        request = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='DELETE',
                 target='/api/resource/456',
@@ -169,7 +169,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        request = IoFullPipelineHttpRequest(
+        request = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='GET',
                 target='/page.html',
@@ -204,7 +204,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        request = IoFullPipelineHttpRequest(
+        request = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='GET',
                 target='/',
@@ -247,7 +247,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        request = IoFullPipelineHttpRequest(
+        request = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='GET',
                 target='http://example.com:8080/path?query=value',
@@ -419,7 +419,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         ])
 
         # First request
-        req1 = IoFullPipelineHttpRequest(
+        req1 = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='GET',
                 target='/first',
@@ -431,7 +431,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(req1))
 
         # Second request
-        req2 = IoFullPipelineHttpRequest(
+        req2 = FullIoPipelineHttpRequest(
             head=IoPipelineHttpRequestHead(
                 method='POST',
                 target='/second',

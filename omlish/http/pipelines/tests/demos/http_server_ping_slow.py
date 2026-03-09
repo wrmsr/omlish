@@ -13,7 +13,7 @@ from .....io.pipelines.sched.types import IoPipelineScheduling
 from ....headers import HttpHeaders
 from ....versions import HttpVersions
 from ...requests import IoPipelineHttpRequestHead
-from ...responses import IoFullPipelineHttpResponse
+from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseHead
 from ...server.requests import IoPipelineHttpRequestDecoder
 from ...server.responses import IoPipelineHttpResponseEncoder
@@ -53,7 +53,7 @@ class PingHandler(IoPipelineHandler):
             ctx.services[IoPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(0))
 
         else:
-            ctx.feed_out(IoFullPipelineHttpResponse.simple(
+            ctx.feed_out(FullIoPipelineHttpResponse.simple(
                 status=404,
                 body=b'not found',
             ))

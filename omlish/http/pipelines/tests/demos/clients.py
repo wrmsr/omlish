@@ -20,8 +20,8 @@ from ...client.requests import IoPipelineHttpRequestEncoder
 from ...client.responses import IoPipelineHttpResponseAggregatorDecoder
 from ...client.responses import IoPipelineHttpResponseDecoder
 from ...client.responses import IoPipelineHttpResponseDecompressor
-from ...requests import IoFullPipelineHttpRequest
-from ...responses import IoFullPipelineHttpResponse
+from ...requests import FullIoPipelineHttpRequest
+from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseObject
 
@@ -38,7 +38,7 @@ HttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
 
 @dc.dataclass(frozen=True)
 class HttpClientRequest:
-    request: IoFullPipelineHttpRequest
+    request: FullIoPipelineHttpRequest
 
     on_output: IoPipelineHandlerFn[HttpClientRequestOutput, None]
 
@@ -76,7 +76,7 @@ class HttpClientHandler(IoPipelineHandler):
 
             request.on_output(ctx, msg)
 
-            if isinstance(msg, (IoFullPipelineHttpResponse, IoPipelineHttpResponseEnd)):
+            if isinstance(msg, (FullIoPipelineHttpResponse, IoPipelineHttpResponseEnd)):
                 self._request = None
 
             return
@@ -196,7 +196,7 @@ def parse_url(url: str) -> ParsedUrl:
 ##
 
 
-def print_full_response(response: IoFullPipelineHttpResponse) -> None:
+def print_full_response(response: FullIoPipelineHttpResponse) -> None:
     """Print the accumulated response."""
 
     head = response.head
@@ -223,7 +223,7 @@ def print_full_response(response: IoFullPipelineHttpResponse) -> None:
 
 class _PreparedUrlFetch(ta.NamedTuple):
     parsed_url: ParsedUrl
-    request: IoFullPipelineHttpRequest
+    request: FullIoPipelineHttpRequest
     pipeline_spec: IoPipeline.Spec
 
 
@@ -233,7 +233,7 @@ def _prepare_url_fetch(
 ) -> _PreparedUrlFetch:
     parsed_url = parse_url(url)
 
-    request = IoFullPipelineHttpRequest.simple(
+    request = FullIoPipelineHttpRequest.simple(
         parsed_url.host,
         parsed_url.path,
         headers={
@@ -267,15 +267,15 @@ def _prepare_url_fetch(
 async def asyncio_fetch_url(
         url: str,
         **client_kwargs: ta.Any,
-) -> IoFullPipelineHttpResponse:
+) -> FullIoPipelineHttpResponse:
     puf = _prepare_url_fetch(url, **client_kwargs)
 
     #
 
-    response: ta.Optional[IoFullPipelineHttpResponse] = None
+    response: ta.Optional[FullIoPipelineHttpResponse] = None
 
     def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
-        if isinstance(msg, IoFullPipelineHttpResponse):
+        if isinstance(msg, FullIoPipelineHttpResponse):
             nonlocal response
             check.none(response)
             response = msg
@@ -317,15 +317,15 @@ async def asyncio_fetch_url(
 def sync_fetch_url(
         url: str,
         **client_kwargs: ta.Any,
-) -> IoFullPipelineHttpResponse:
+) -> FullIoPipelineHttpResponse:
     puf = _prepare_url_fetch(url, **client_kwargs)
 
     #
 
-    response: ta.Optional[IoFullPipelineHttpResponse] = None
+    response: ta.Optional[FullIoPipelineHttpResponse] = None
 
     def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
-        if isinstance(msg, IoFullPipelineHttpResponse):
+        if isinstance(msg, FullIoPipelineHttpResponse):
             nonlocal response
             check.none(response)
             response = msg

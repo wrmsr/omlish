@@ -17,7 +17,7 @@ from ...requests import IoPipelineHttpRequestAborted
 from ...requests import IoPipelineHttpRequestContentChunkData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
-from ...responses import IoFullPipelineHttpResponse
+from ...responses import FullIoPipelineHttpResponse
 from ...server.requests import IoPipelineHttpRequestDecoder
 from ...server.responses import IoPipelineHttpResponseEncoder
 
@@ -50,7 +50,7 @@ class Sha1Handler(IoPipelineHandler):
 
             else:
                 # Not our endpoint; reply 404 and close.
-                ctx.feed_out(IoFullPipelineHttpResponse.simple(
+                ctx.feed_out(FullIoPipelineHttpResponse.simple(
                     status=404,
                     body=b'not found',
                 ))
@@ -69,7 +69,7 @@ class Sha1Handler(IoPipelineHandler):
             if self._active and self._h is not None:
                 hexd = self._h.hexdigest().encode('ascii')
 
-                ctx.feed_out(IoFullPipelineHttpResponse.simple(
+                ctx.feed_out(FullIoPipelineHttpResponse.simple(
                     body=hexd,
                 ))
 

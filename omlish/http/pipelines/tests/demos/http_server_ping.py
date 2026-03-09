@@ -9,7 +9,7 @@ from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestObject
-from ...responses import IoFullPipelineHttpResponse
+from ...responses import FullIoPipelineHttpResponse
 from ...server.requests import IoPipelineHttpRequestDecoder
 from ...server.responses import IoPipelineHttpResponseEncoder
 
@@ -25,13 +25,13 @@ class PingHandler(IoPipelineHandler):
             return
 
         if msg.method == 'GET' and msg.target == '/ping':
-            ctx.feed_out(IoFullPipelineHttpResponse.simple(
+            ctx.feed_out(FullIoPipelineHttpResponse.simple(
                 status=200,
                 body=b'pong',
             ))
 
         else:
-            ctx.feed_out(IoFullPipelineHttpResponse.simple(
+            ctx.feed_out(FullIoPipelineHttpResponse.simple(
                 status=404,
                 body=b'not found',
             ))

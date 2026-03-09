@@ -20,7 +20,7 @@ from ....headers import HttpHeaders
 from ...requests import IoPipelineHttpRequestContentChunkData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
-from ...responses import IoFullPipelineHttpResponse
+from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseHead
 from ...server.apps.wsgi import WsgiSpec
 from ...server.requests import IoPipelineHttpRequestDecoder
@@ -118,7 +118,7 @@ class StreamWsgiInnerHandler(IoPipelineHandler):
 
         #
 
-        resp = IoFullPipelineHttpResponse(
+        resp = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 status=status_code,
                 reason=status_reason,

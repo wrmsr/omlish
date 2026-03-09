@@ -6,7 +6,7 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.handlers.feedback import FeedbackInboundIoPipelineHandler
 from ....headers import HttpHeaders
 from ....versions import HttpVersion
-from ...responses import IoFullPipelineHttpResponse
+from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseContentChunkData
 from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseHead
@@ -23,7 +23,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=200,
@@ -56,7 +56,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=404,
@@ -89,7 +89,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=204,
@@ -124,7 +124,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=200,
@@ -163,7 +163,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 0),
                 status=200,
@@ -196,7 +196,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
 
         body = b'x' * 10000
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=200,
@@ -229,7 +229,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=200,
@@ -287,7 +287,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         ])
 
         # Send response
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=200,
@@ -322,7 +322,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=302,
@@ -359,7 +359,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             fbi := FeedbackInboundIoPipelineHandler(),
         ])
 
-        response = IoFullPipelineHttpResponse(
+        response = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 version=HttpVersion(1, 1),
                 status=500,

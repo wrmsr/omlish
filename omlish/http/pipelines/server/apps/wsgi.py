@@ -10,8 +10,8 @@ from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.check import check
 from ....headers import HttpHeaders
-from ...requests import IoFullPipelineHttpRequest
-from ...responses import IoFullPipelineHttpResponse
+from ...requests import FullIoPipelineHttpRequest
+from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseHead
 
 
@@ -43,7 +43,7 @@ class WsgiHandler(IoPipelineHandler):
 
             return
 
-        if not isinstance(msg, IoFullPipelineHttpRequest):
+        if not isinstance(msg, FullIoPipelineHttpRequest):
             ctx.feed_in(msg)
             return
 
@@ -85,7 +85,7 @@ class WsgiHandler(IoPipelineHandler):
 
         #
 
-        resp = IoFullPipelineHttpResponse(
+        resp = FullIoPipelineHttpResponse(
             head=IoPipelineHttpResponseHead(
                 status=status_code,
                 reason=status_reason,

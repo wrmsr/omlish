@@ -6,7 +6,7 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.handlers.queues import InboundQueueIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
-from ...requests import IoFullPipelineHttpRequest
+from ...requests import FullIoPipelineHttpRequest
 from ...requests import IoPipelineHttpRequestAborted
 from ...requests import IoPipelineHttpRequestContentChunkData
 from ...requests import IoPipelineHttpRequestEnd
@@ -92,7 +92,7 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
         channel.feed_in(request)
 
         [req] = ibq.drain()
-        self.assertIsInstance(req, IoFullPipelineHttpRequest)
+        self.assertIsInstance(req, FullIoPipelineHttpRequest)
         self.assertEqual(req.head.method, 'GET')
         self.assertEqual(req.body, b'')
 
@@ -114,7 +114,7 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
         self.assertEqual(len(out), 1)
 
         req = out[0]
-        self.assertIsInstance(req, IoFullPipelineHttpRequest)
+        self.assertIsInstance(req, FullIoPipelineHttpRequest)
         self.assertEqual(req.head.method, 'POST')
         self.assertEqual(req.body, b'hello world')
 

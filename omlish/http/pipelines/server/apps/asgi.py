@@ -16,7 +16,7 @@ from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from ....headers import HttpHeaders
-from ...requests import IoFullPipelineHttpRequest
+from ...requests import FullIoPipelineHttpRequest
 from ...responses import IoPipelineHttpResponseHead
 
 
@@ -256,7 +256,7 @@ class AsgiHandler(IoPipelineHandler):
 
             return
 
-        if not isinstance(msg, IoFullPipelineHttpRequest):
+        if not isinstance(msg, FullIoPipelineHttpRequest):
             ctx.feed_in(msg)
             return
 

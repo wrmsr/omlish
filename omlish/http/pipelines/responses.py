@@ -54,7 +54,7 @@ class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpRespon
 
 
 @dc.dataclass(frozen=True)
-class IoFullPipelineHttpResponse(FullIoPipelineHttpMessage, IoPipelineHttpResponseObject):
+class FullIoPipelineHttpResponse(FullIoPipelineHttpMessage, IoPipelineHttpResponseObject):
     head: IoPipelineHttpResponseHead
     body: BytesLike
 
@@ -131,10 +131,10 @@ class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
 
     #
 
-    _full_type: ta.Final = IoFullPipelineHttpResponse
+    _full_type: ta.Final = FullIoPipelineHttpResponse
 
-    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> IoFullPipelineHttpResponse:
-        return IoFullPipelineHttpResponse(check.isinstance(head, IoPipelineHttpResponseHead), body)
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpResponse:
+        return FullIoPipelineHttpResponse(check.isinstance(head, IoPipelineHttpResponseHead), body)
 
     #
 

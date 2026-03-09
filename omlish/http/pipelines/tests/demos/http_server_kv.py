@@ -12,7 +12,7 @@ from .....io.pipelines.flow.stub import StubIoPipelineFlow
 from .....io.streams.utils import ByteStreamBuffers
 from .....logs.modules import get_module_loggers
 from .....logs.std.standard import configure_standard_logging
-from ...requests import IoFullPipelineHttpRequest
+from ...requests import FullIoPipelineHttpRequest
 from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
 from ...server.requests import IoPipelineHttpRequestDecoder
 
@@ -44,7 +44,7 @@ class KvStoreHandler(IoPipelineHandler):
         self._items = items
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, IoFullPipelineHttpRequest):
+        if not isinstance(msg, FullIoPipelineHttpRequest):
             ctx.feed_in(msg)
             return
 

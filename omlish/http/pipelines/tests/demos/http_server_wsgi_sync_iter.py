@@ -11,8 +11,8 @@ from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.sync import IterSyncSocketIoPipelineDriver
 from .....lite.check import check
 from ....headers import HttpHeaders
-from ...requests import IoFullPipelineHttpRequest
-from ...responses import IoFullPipelineHttpResponse
+from ...requests import FullIoPipelineHttpRequest
+from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseHead
 from ...server.apps.wsgi import WsgiSpec
 from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
@@ -28,7 +28,7 @@ class WsgiFeedbackHandler(IoPipelineHandler):
         msg: ta.Any
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, IoFullPipelineHttpRequest):
+        if isinstance(msg, FullIoPipelineHttpRequest):
             ctx.feed_out(WsgiFeedbackHandler.Envelope(msg))
             return
 
@@ -63,7 +63,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
             conn,
         )
 
-        req: ta.Optional[IoFullPipelineHttpRequest] = None
+        req: ta.Optional[FullIoPipelineHttpRequest] = None
 
         started_response: ta.Optional[ta.Tuple[ta.Any, ta.Any]] = None
 
@@ -76,7 +76,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
             if isinstance(out, WsgiFeedbackHandler.Envelope):
                 out = out.msg
 
-                if isinstance(out, IoFullPipelineHttpRequest):
+                if isinstance(out, FullIoPipelineHttpRequest):
                     check.none(req)
                     req = out
 
@@ -107,7 +107,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
 
                     #
 
-                    resp = IoFullPipelineHttpResponse(
+                    resp = FullIoPipelineHttpResponse(
                         head=IoPipelineHttpResponseHead(
                             status=status_code,
                             reason=status_reason,

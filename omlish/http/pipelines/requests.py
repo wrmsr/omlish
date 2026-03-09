@@ -46,7 +46,7 @@ class IoPipelineHttpRequestHead(IoPipelineHttpMessageHead, IoPipelineHttpRequest
 
 
 @dc.dataclass(frozen=True)
-class IoFullPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequestObject):
+class FullIoPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequestObject):
     head: IoPipelineHttpRequestHead
     body: BytesLike
 
@@ -64,7 +64,7 @@ class IoFullPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequest
             connection: str = 'close',
 
             headers: ta.Optional[ta.Mapping[str, str]] = None,
-    ) -> 'IoFullPipelineHttpRequest':
+    ) -> 'FullIoPipelineHttpRequest':
         return cls(
             head=IoPipelineHttpRequestHead(
                 method=method,
@@ -125,10 +125,10 @@ class IoPipelineHttpRequestObjects(IoPipelineHttpMessageObjects):
 
     #
 
-    _full_type: ta.Final = IoFullPipelineHttpRequest
+    _full_type: ta.Final = FullIoPipelineHttpRequest
 
-    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> IoFullPipelineHttpRequest:
-        return IoFullPipelineHttpRequest(check.isinstance(head, IoPipelineHttpRequestHead), body)
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpRequest:
+        return FullIoPipelineHttpRequest(check.isinstance(head, IoPipelineHttpRequestHead), body)
 
     #
 

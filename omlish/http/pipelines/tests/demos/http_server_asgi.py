@@ -6,7 +6,7 @@ import typing as ta
 from .....io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from ...responses import IoFullPipelineHttpResponse  # noqa
+from ...responses import FullIoPipelineHttpResponse  # noqa
 from ...responses import IoPipelineHttpResponseHead  # noqa
 from ...server.apps.asgi import AsgiHandler
 from ...server.apps.asgi import AsgiSpec
