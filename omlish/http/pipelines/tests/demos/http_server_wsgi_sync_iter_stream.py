@@ -10,6 +10,7 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.sync import IterSyncSocketIoPipelineDriver
+from .....io.streams.types import BytesLike
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from ....headers import HttpHeaders
@@ -80,11 +81,37 @@ class WsgiConnHandler:
             self._o = o
             self._head = head
 
+        #
+
         def _make_environ(self) -> ta.Dict[str, ta.Any]:
             return {
                 'REQUEST_METHOD': self._head.method,
                 'PATH_INFO': self._head.target,
             }
+
+        #
+
+        def _send_response_full(self, head: IoPipelineHttpResponseHead, body: BytesLike) -> None:
+            resp = FullIoPipelineHttpResponse(
+                head=head,
+                body=body,
+            )
+
+            self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(resp))  # noqa
+
+        def _send_response_stream(self, head: IoPipelineHttpResponseHead, body: ta.Iterable[BytesLike]) -> None:
+            self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(head))  # noqa
+
+            # for d in body:
+            #     if not d:
+            #         # FIXME: early break??
+            #         continue
+            #
+            #     self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineHttpResponseBodyData(d)))
+
+            raise NotImplementedError
+
+        #
 
         def run(self) -> None:
             environ = self._make_environ()
@@ -107,34 +134,26 @@ class WsgiConnHandler:
             status, headers = check.not_none(started_response)
             status_code_str, _, status_reason = status.partition(' ')
             status_code = int(status_code_str)
+            head = IoPipelineHttpResponseHead(
+                status=status_code,
+                reason=status_reason,
+                headers=HttpHeaders(headers),
+            )
 
             #
 
-            body: bytes
+            if isinstance(ret, list):
+                ret = b''.join(ret)
             if isinstance(ret, bytes):
-                body = ret
-            elif isinstance(ret, list):
-                body = b''.join(ret)
+                self._send_response_full(head, ret)
+            elif isinstance(ret, ta.Iterable):
+                self._send_response_stream(head, ret)
             else:
                 raise TypeError(ret)
 
             #
 
-            resp = FullIoPipelineHttpResponse(
-                head=IoPipelineHttpResponseHead(
-                    status=status_code,
-                    reason=status_reason,
-                    headers=HttpHeaders(headers),
-                ),
-                body=body,
-            )
-
-            #
-
-            self._o._drv.enqueue(  # noqa
-                WsgiFeedbackHandler.Envelope(resp),
-                WsgiFeedbackHandler.Envelope(IoPipelineMessages.FinalOutput()),
-            )
+            self._o._drv.enqueue(WsgiFeedbackHandler.Envelope(IoPipelineMessages.FinalOutput()))  # noqa
 
     class _FullRequestHandler(_RequestHandler):
         def __init__(self, o: 'WsgiConnHandler', req: 'FullIoPipelineHttpRequest') -> None:

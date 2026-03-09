@@ -240,19 +240,27 @@ class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSoc
     def enqueue(self, *in_msgs: ta.Any) -> None:
         self._input_q.extend(in_msgs)
 
-    def next(self) -> ta.Optional[ta.Any]:
+    def _poll(self) -> ta.Union[
+        ta.Tuple[ta.Literal['unhandled'], ta.Any],
+        ta.Literal['read', 'stop'],
+        None,
+    ]:
         pipeline = self._ensure_pipeline()  # noqa
         check.state(pipeline.is_ready)
 
         while True:
             if (out_msg := pipeline.output.poll()) is not None:
                 handled = self._handle_output(out_msg)
+
                 if handled == 'handled':
                     continue
+
                 elif handled == 'unhandled':
-                    return out_msg
+                    return ('unhandled', out_msg)
+
                 elif handled == 'stop':
-                    break
+                    return 'stop'
+
                 else:
                     raise RuntimeError(f'Unknown handled value: {handled!r}')
 
@@ -261,10 +269,36 @@ class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSoc
                 continue
 
             if not pipeline.saw_final_input and self._want_read:
-                self._input_q.extend(self._do_read())
-                continue
+                return 'read'
 
-            raise RuntimeError('Pipeline stalled')
+            return None
+
+    def next(self) -> ta.Optional[ta.Any]:
+        pipeline = self._ensure_pipeline()  # noqa
+        check.state(pipeline.is_ready)
+
+        while True:
+            out = self._poll()
+
+            if isinstance(out, tuple):
+                ok, ov = out
+                if ok == 'unhandled':
+                    return ov
+
+                else:
+                    raise RuntimeError(f'Unknown output: {ok!r}')
+
+            elif out == 'read':
+                self._input_q.extend(self._do_read())
+
+            elif out == 'stop':
+                break
+
+            elif out is None:
+                raise RuntimeError('Pipeline stalled')
+
+            else:
+                raise RuntimeError(f'Unknown output: {out!r}')
 
         pipeline.destroy()
         return None
