@@ -111,7 +111,7 @@ class CiCli(ArgparseCli):
         argparse_arg('cmd', nargs=argparse.REMAINDER),
     )
     async def run(self) -> None:
-        log.info('Python interpreter: %r, version %s', sys.executable, ' '.join(sys.version.split()))
+        log.info('Python interpreter: %r, version %r', sys.executable, ' '.join(sys.version.split()))
 
         project_dir = self.args.project_dir
         docker_file = self.args.docker_file
