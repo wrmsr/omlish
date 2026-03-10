@@ -451,17 +451,17 @@ def _main() -> None:
     subparsers = parser.add_subparsers(dest='command', required=True)
 
     # Chat command
-    subparsers.add_parser('chat', help='Start interactive chat with notification support')
+    subparsers.add_parser('chat')
 
     # Notify command
-    notify_parser = subparsers.add_parser('notify', help='Send notification to socket(s)')
-    notify_parser.add_argument('payload', help='Notification payload')
+    notify_parser = subparsers.add_parser('notify')
+    notify_parser.add_argument('payload')
     notify_group = notify_parser.add_mutually_exclusive_group()
-    notify_group.add_argument('-p', '--pid', type=int, help='Target specific PID')
-    notify_group.add_argument('-l', '--latest', action='store_true', help='Target most recent socket')
+    notify_group.add_argument('-p', '--pid', type=int)
+    notify_group.add_argument('-l', '--latest', action='store_true')
 
     # Cleanup command
-    cleanup_parser = subparsers.add_parser('cleanup', help='Clean up stale socket files')
+    cleanup_parser = subparsers.add_parser('cleanup')
     cleanup_parser.add_argument('-M', '--min-age', type=float, default=5)
 
     args = parser.parse_args()

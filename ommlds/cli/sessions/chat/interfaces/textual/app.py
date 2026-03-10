@@ -13,6 +13,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.logs import all as logs
+from omlish.term.alt import render_write_from_alt  # noqa
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
@@ -375,6 +376,10 @@ class ChatApp(
         await self._input_history_manager.add(event.text)
 
         await self._chat_action_queue.put(ChatApp.UserInput(event.text))
+
+        # pwd = check.isinstance(self._driver, tx.PendingWritesDriverMixin)
+        # pwd.queue_primary_buffer_write(render_write_from_alt(f'You said:\n{event.text}\n\n'))
+        # self.refresh()
 
     def _move_input_cursor_to_end(self) -> None:
         ita = self._get_input_text_area()
