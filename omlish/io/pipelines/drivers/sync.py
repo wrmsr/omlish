@@ -6,15 +6,20 @@ TODO:
 """
 import collections
 import dataclasses as dc
+import heapq
+import time
 import typing as ta
 
 from ....io.streams.utils import ByteStreamBuffers
 from ....lite.check import check
 from ....logs.modules import get_module_logger
 from ..core import IoPipeline
+from ..core import IoPipelineHandlerRef
 from ..core import IoPipelineMessages
+from ..core import IoPipelineService
 from ..flow.types import IoPipelineFlow
 from ..flow.types import IoPipelineFlowMessages
+from ..sched.types import IoPipelineScheduling
 from .metadata import DriverIoPipelineMetadata
 
 
@@ -80,6 +85,8 @@ class SyncSocketIoPipelineDriver:
         except AttributeError:
             pass
 
+        self._sched = self._SchedulingService(self)
+
         self._pipeline = pipeline = self._make_pipeline()
 
         self._flow = flow = pipeline.services.find(IoPipelineFlow)
@@ -91,7 +98,16 @@ class SyncSocketIoPipelineDriver:
     def _make_pipeline(self) -> IoPipeline:
         return IoPipeline(dc.replace(
             self._spec,
-            metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
+
+            metadata=[
+                *self._spec.metadata,
+                DriverIoPipelineMetadata(self),
+            ],
+
+            services=[
+                *self._spec.services,
+                self._sched,
+            ],
         ))
 
     @property
@@ -119,6 +135,11 @@ class SyncSocketIoPipelineDriver:
     def _do_read(self) -> ta.List[ta.Any]:
         out: ta.List[ta.Any] = []
 
+        # if (dl := self._sched.next_deadline()) is not None:
+        #     self._sock.settimeout(dl)
+        # else:
+        #     self._sock.settimeout(None)
+
         b = self._sock.recv(self._config.read_chunk_size)
 
         if not b:
@@ -135,9 +156,66 @@ class SyncSocketIoPipelineDriver:
 
     #
 
+    class _SchedulingService(IoPipelineScheduling, IoPipelineService):
+        def __init__(self, d: 'SyncSocketIoPipelineDriver') -> None:
+            super().__init__()
+
+            self._d = d
+
+            self._seq = 0
+            self._pending: ta.List[ta.Tuple[float, int, SyncSocketIoPipelineDriver._SchedulingService._Handle]] = []
+
+        def next_deadline(self) -> ta.Optional[float]:
+            if not self._pending:
+                return None
+            return self._pending[0][0]
+
+        @ta.final
+        class _Handle(IoPipelineScheduling.Handle):
+            def __init__(
+                    self,
+                    handler_ref: IoPipelineHandlerRef,
+                    fn: ta.Callable[[], None],
+                    deadline: float,
+                    seq: int,
+            ) -> None:
+                self._deadline = deadline
+                self._seq = seq
+                self._handler_ref = handler_ref
+                self._fn = fn
+
+                self._cancelled = False
+
+            def cancel(self) -> None:
+                self._cancelled = True
+
+        def schedule(
+                self,
+                handler_ref: IoPipelineHandlerRef,
+                delay_s: float,
+                fn: ta.Callable[[], None],
+        ) -> IoPipelineScheduling.Handle:
+            h = self._Handle(
+                handler_ref,
+                fn,
+                time.time() + delay_s,
+                self._seq,
+            )
+            self._seq += 1
+            heapq.heappush(self._pending, (h._deadline, h._seq, h))  # noqa
+            return h
+
+        def cancel_all(self, handler_ref: ta.Optional[IoPipelineHandlerRef] = None) -> None:
+            raise NotImplementedError
+
+    _sched: _SchedulingService
+
+    #
+
     def _handle_output(self, msg: ta.Any) -> ta.Literal['handled', 'unhandled', 'stop']:
         if ByteStreamBuffers.can_bytes(msg):
             for mv in ByteStreamBuffers.iter_segments(msg):
+                # self._sock.settimeout(None)
                 self._sock.send(mv)
             return 'handled'
 
