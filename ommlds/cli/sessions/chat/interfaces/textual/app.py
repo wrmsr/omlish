@@ -8,14 +8,10 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.logs import all as logs
-from omlish.term.alt import render_write_from_alt  # noqa
+from omlish.term.alt import render_write_from_alt
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
-from .....content.messages import MessageContentExtractor
-from .....content.messages import MessageContentExtractorImpl
-from .....content.strings import ContentStringifierImpl
-from .....rendering.types import ContentRendering
 from ....types import SessionProfileName
 from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
@@ -112,8 +108,6 @@ class ChatApp(
             input_history_manager: InputHistoryManager,
             session_profile_name: SessionProfileName | None = None,
             suggestions_manager: SuggestionsManager,
-            extractor: MessageContentExtractor | None = None,
-            renderer: ContentRendering,
     ) -> None:
         super().__init__()
 
@@ -127,16 +121,24 @@ class ChatApp(
         self._input_history_manager = input_history_manager
         self._session_profile_name = session_profile_name
         self._suggestions_manager = suggestions_manager
-        if extractor is None:
-            extractor = MessageContentExtractorImpl()
-        self._extractor = extractor
-        self._renderer = renderer
+
+        #
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
         self._input_focused_key_events: weakref.WeakSet[tx.Key] = weakref.WeakSet()
 
         self._pending_tool_confirmations: set[ToolConfirmationMessage] = set()
+
+        #
+
+        self._messages_container = MessagesContainer()
+
+        self._input_container = InputContainer(
+            suggestions_manager=self._suggestions_manager,
+        )
+
+        self._status_container = StatusContainer()
 
     def get_driver_class(self) -> type[tx.Driver]:
         return tx.get_pending_writes_driver_class(super().get_driver_class())
@@ -157,13 +159,9 @@ class ChatApp(
 
         #
 
-        yield MessagesContainer()
-
-        yield InputContainer(
-            suggestions_manager=self._suggestions_manager,
-        )
-
-        yield StatusContainer()
+        yield self._messages_container
+        yield self._input_container
+        yield self._status_container
 
     ##
     # Widget getters
@@ -253,29 +251,60 @@ class ChatApp(
 
     #
 
+    # class RenderSandbox(tx.Container):
+    #     def __init__(self, **kwargs: ta.Any) -> None:
+    #         super().__init__(**kwargs)
+    #
+    #         self.display = 'none'
+
+    # async def _render_widget_ansi(self, widget, width=80):
+    #     # Mount temporarily
+    #     await self._render_sandbox.mount(widget)
+    #
+    #     # Force layout so virtual_size gets computed
+    #     self.refresh(layout=True)
+    #
+    #     # Give Textual a tick to process layout
+    #     await self.run_action('refresh')
+    #
+    #     widget.styles.width = width
+    #
+    #     height = 10  # widget.virtual_size.height or widget.size.height
+    #
+    #     console = tx.Console(
+    #         width=width,
+    #         height=height,
+    #         record=True,
+    #         force_terminal=True,
+    #         color_system=ta.cast(ta.Any, self.console.color_system or 'auto'),
+    #     )
+    #
+    #     for line in widget.render_lines(tx.Region(0, 0, width, height)):
+    #         console.print(line)
+    #
+    #     ansi = console.export_text(styles=True)
+    #
+    #     await widget.remove()
+    #
+    #     return ansi
+
     async def _background_render_chat(self, chat: mc.Chat) -> None:
-        console = tx.Console(
-            width=self.screen.size.width,
-            height=self.screen.size.height,
-            color_system=ta.cast(ta.Any, self.console.color_system or 'auto'),
-            record=True,
-        )
+        lst: list[str] = []
 
-        for msg in chat:
-            if (c := MessageContentExtractorImpl().extract_message_content(msg)) is not None:
-                if (s := ContentStringifierImpl().stringify_content(c)) is not None and (s := s.strip()):
-                    console.print(tx.RichMarkdown(s))
+        for msg in chat:  # noqa
+            # if (c := MessageContentExtractorImpl().extract_message_content(msg)) is not None:
+            #     if (s := ContentStringifierImpl().stringify_content(c)) is not None and (s := s.strip()):
+            #         if len(lst):
+            #             lst.append('\n\n')
+            #         lst.append(await self._render_widget_ansi(tx.Markdown(s)))
+            # FIXME: GARBAGE ALL GARBAGE
+            pass
 
-        try:
-            ansi = console.export_text(styles=True)
-        except Exception as e:  # noqa
-            raise
+        if not lst:
+            return
 
         pwd = check.isinstance(self._driver, tx.PendingWritesDriverMixin)
-        pwd.queue_primary_buffer_write(render_write_from_alt(
-            ansi,
-            '\n\n',
-        ))
+        pwd.queue_primary_buffer_write(render_write_from_alt(*lst, '\n\n'))
 
         self.refresh()
 
