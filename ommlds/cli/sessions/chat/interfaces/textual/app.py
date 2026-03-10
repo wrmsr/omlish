@@ -24,7 +24,8 @@ from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
-from .widgets.input import InputOuter
+from .suggestions import SuggestionsManager
+from .widgets.input import InputContainer
 from .widgets.input import InputTextArea
 from .widgets.messages import AiMessage
 from .widgets.messages import MessageDivider
@@ -110,6 +111,7 @@ class ChatApp(
             devtools_setup: tx.DevtoolsSetup | None = None,
             input_history_manager: InputHistoryManager,
             session_profile_name: SessionProfileName | None = None,
+            suggestions_manager: SuggestionsManager,
     ) -> None:
         super().__init__()
 
@@ -122,6 +124,7 @@ class ChatApp(
         self._backend_name = backend_name
         self._input_history_manager = input_history_manager
         self._session_profile_name = session_profile_name
+        self._suggestions_manager = suggestions_manager
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
@@ -140,12 +143,21 @@ class ChatApp(
     ##
     # Compose
 
+    _has_composed = False
+
     def compose(self) -> tx.ComposeResult:
-        yield MessagesContainer(id='messages-container')
+        check.state(not self._has_composed)
+        self._has_composed = True
 
-        yield InputOuter(id='input-outer')
+        #
 
-        yield StatusContainer(id='status-container')
+        yield MessagesContainer()
+
+        yield InputContainer(
+            suggestions_manager=self._suggestions_manager,
+        )
+
+        yield StatusContainer()
 
     ##
     # Widget getters
@@ -175,6 +187,11 @@ class ChatApp(
 
     #
 
+    async def _commit_message(self, msg: tx.Widget) -> None:
+        pass
+
+    #
+
     _pending_mount_messages: list[tx.Widget] | None = None
 
     async def _enqueue_mount_messages(self, *messages: tx.Widget) -> None:
@@ -186,11 +203,13 @@ class ChatApp(
     _stream_ai_message: StreamAiMessage | None = None
 
     async def _finalize_stream_ai_message(self) -> None:
-        if self._stream_ai_message is None:
+        if (aim := self._stream_ai_message) is None:
             return
 
-        await self._stream_ai_message.stop_stream()
+        await aim.stop_stream()
         self._stream_ai_message = None
+
+        await self._commit_message(aim)
 
     async def _append_stream_ai_message_content(self, content: str) -> None:
         if (sam := self._stream_ai_message) is not None:
@@ -225,6 +244,9 @@ class ChatApp(
             if isinstance(msg, StreamAiMessage):
                 self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
                 await msg.write_initial_content()
+
+            else:
+                await self._commit_message(msg)
 
         self._pending_mount_messages = None
 

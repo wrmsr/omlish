@@ -10,13 +10,6 @@ from omlish import lang
 ##
 
 
-class MessagesContainer(tx.VerticalScroll):
-    pass
-
-
-##
-
-
 class MessageDivider(tx.Static):
     def __init__(self) -> None:
         super().__init__()
@@ -253,3 +246,24 @@ class UiMessage(Message):
             yield tx.Static('~ ', classes='ui-message-glyph message-glyph')
             with tx.Vertical(classes='ui-message-inner message-inner'):
                 yield tx.Static(self._content)
+
+
+##
+
+
+class MessagesContainer(tx.VerticalScroll):
+    def __init__(self, **kwargs: ta.Any) -> None:
+        super().__init__(id='messages-container', **kwargs)
+
+    #
+
+    _has_composed = False
+
+    def compose(self) -> tx.ComposeResult:
+        check.state(not self._has_composed)
+        self._has_composed = True
+
+        #
+
+        return
+        yield  # type: ignore  # noqa

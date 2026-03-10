@@ -22,6 +22,7 @@ with lang.auto_proxy_import(globals()):
     from . import facades as _facades
     from . import inputhistory as _inputhistory
     from . import interface as _interface
+    from . import suggestions as _suggestions
     from . import tools as _tools
 
 
@@ -104,6 +105,12 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     els.extend([
         inj.bind(_inputhistory.InputHistoryStorage, to_fn=_make_input_history_storage, singleton=True),
         inj.bind(_inputhistory.InputHistoryManager, singleton=True),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(_suggestions.SuggestionsManager, singleton=True),
     ])
 
     #

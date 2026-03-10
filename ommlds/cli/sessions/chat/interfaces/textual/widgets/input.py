@@ -1,13 +1,71 @@
+# ruff: noqa: SLF001
 import typing as ta
 
 from omdev.tui import textual as tx
+from omlish import check
 from omlish import dataclasses as dc
+
+from ..suggestions import SuggestionItem
+from ..suggestions import SuggestionsManager
 
 
 ##
 
 
+class SuggestionsPopup(tx.Static):
+    def __init__(self, ic: 'InputContainer', **kwargs: ta.Any) -> None:
+        super().__init__(**kwargs, id='suggestions-popup')
+
+        self._ic = ic
+
+        self.styles.display = 'none'
+        self.can_focus = False
+
+    def hide(self) -> None:
+        self.update('')
+        self.styles.display = 'none'
+
+    def show(self) -> None:
+        self.styles.display = 'block'
+
+    def update_suggestions(self, items: ta.Sequence[SuggestionItem]) -> None:
+        if not items:
+            self.hide()
+            return
+
+        txt = tx.Text()
+
+        mll = max(len(ci.label or ' ') for ci in items)
+
+        for i, ci in enumerate(items):
+            if i:
+                txt.append('\n')
+
+            l = ci.label or ' '
+            txt.append(l, style='bold reverse' if ci.selected else 'bold')
+            if ci.description:
+                txt.append(' ' * (mll - len(l or ' ') + 2))
+                txt.append(ci.description, style='italic' if ci.selected else 'dim')
+
+        self.update(txt)
+        self.show()
+
+
+InputMode: ta.TypeAlias = ta.Literal['>', '/']
+
+
 class InputTextArea(tx.TextArea):
+    def __init__(self, ic: 'InputContainer', **kwargs: ta.Any) -> None:
+        super().__init__(
+            id='input',
+            placeholder='...',
+            **kwargs,
+        )
+
+        self._ic = ic
+
+        self._mode: InputMode = '>'
+
     @dc.dataclass()
     class Submitted(tx.Message):
         text: str
@@ -24,8 +82,23 @@ class InputTextArea(tx.TextArea):
     class HistoryReset(tx.Message):
         pass
 
-    def __init__(self, **kwargs: ta.Any) -> None:
-        super().__init__(**kwargs)
+    @property
+    def mode(self) -> InputMode:
+        return self._mode
+
+    def set_mode(self, mode: InputMode) -> None:
+        if self._mode == mode:
+            return
+
+        self._mode = mode
+
+        self._ic._input_glyph.content = mode
+
+        if mode == '/':
+            sis = self._ic._suggestions_manager.get_suggestions()
+            self._ic._suggestions_popup.update_suggestions(sis)
+        else:
+            self._ic._suggestions_popup.hide()
 
     BINDINGS: ta.ClassVar[ta.Sequence[tx.Binding]] = [  # type: ignore[assignment]
         tx.Binding(
@@ -60,11 +133,39 @@ class InputTextArea(tx.TextArea):
     def action_history_next(self) -> None:
         self.post_message(self.HistoryNext(self.text))
 
+    async def on_text_area_changed(self, event: tx.TextArea.Changed) -> None:
+        text = self.text
 
-class InputOuter(tx.Static):
+        if not text:
+            self.set_mode('>')
+        elif text[0] == '/':
+            self.set_mode('/')
+
+
+class InputContainer(tx.Static):
+    def __init__(
+            self,
+            *,
+            suggestions_manager: SuggestionsManager,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs, id='input-container')
+
+        self._suggestions_manager = suggestions_manager
+
+        self._input_text_area = InputTextArea(self)
+        self._input_glyph = tx.Static('>', id='input-glyph')
+        self._suggestions_popup = SuggestionsPopup(self)
+
+    _has_composed = False
+
     def compose(self) -> tx.ComposeResult:
+        check.state(not self._has_composed)
+        self._has_composed = True
+
         with tx.Vertical(id='input-vertical'):
+            yield self._suggestions_popup
             with tx.Vertical(id='input-vertical2'):
                 with tx.Horizontal(id='input-horizontal'):
-                    yield tx.Static('>', id='input-glyph')
-                    yield InputTextArea(placeholder='...', id='input')
+                    yield self._input_glyph
+                    yield self._input_text_area

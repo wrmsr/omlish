@@ -1,5 +1,6 @@
 import enum
 import shlex
+import typing as ta
 
 from omlish import collections as col
 
@@ -31,6 +32,9 @@ class CommandsManager:
         self._commands_by_name = col.make_map((
             (c.name, c) for c in commands
         ), strict=True)
+
+    def get_commands(self) -> ta.Mapping[str, Command]:
+        return self._commands_by_name
 
     async def run_command_text(self, text: str) -> RunCommandResult:
         try:
