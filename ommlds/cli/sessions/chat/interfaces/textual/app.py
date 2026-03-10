@@ -34,6 +34,7 @@ from .widgets.messages import ToolConfirmationMessage
 from .widgets.messages import UiMessage
 from .widgets.messages import UserMessage
 from .widgets.messages import WelcomeMessage
+from .widgets.status import StatusContainer
 
 
 log, alog = logs.get_module_loggers(globals())
@@ -142,6 +143,8 @@ class ChatApp(
         yield MessagesContainer(id='messages-container')
 
         yield InputOuter(id='input-outer')
+
+        yield StatusContainer(id='status-container')
 
     ##
     # Widget getters
