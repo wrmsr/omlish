@@ -17,6 +17,7 @@ from .injection import system_message_providers
 with lang.auto_proxy_import(globals()):
     from ....backends import inject as _backends
     from . import impl as _impl
+    from . import permissions as _permissions
     from . import types as _types
     from .ai import inject as _ai
     from .events import inject as _events
@@ -67,6 +68,13 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         inj.bind(_types.ChatDriver, to_key=_impl.ChatDriverImpl),
 
         inj.bind_async_late(_types.ChatDriver, _types.ChatDriverGetter),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(_permissions.DictPermissions, singleton=True),
+        inj.bind(_permissions.Permissions, to_key=_permissions.DictPermissions),
     ])
 
     #

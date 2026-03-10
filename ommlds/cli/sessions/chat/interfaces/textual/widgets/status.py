@@ -20,4 +20,4 @@ class StatusBar(tx.Static):
 class StatusContainer(tx.Static):
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(id='status-horizontal'):
-            yield StatusBar('status goes here')
+            yield StatusBar(' ')

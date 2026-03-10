@@ -7,6 +7,7 @@ from .injection import commands
 
 with lang.auto_proxy_import(globals()):
     from . import manager as _manager
+    from . import permissions as _permissions
     from . import simple as _simple
 
 
@@ -28,13 +29,15 @@ def bind_commands(cfg: CommandsConfig = CommandsConfig()) -> inj.Elements:
 
     #
 
-    els.extend([
-        inj.bind(_simple.EchoCommand, singleton=True),
-        commands().bind_item(to_key=_simple.EchoCommand),
-
-        inj.bind(_simple.QuitCommand, singleton=True),
-        commands().bind_item(to_key=_simple.QuitCommand),
-    ])
+    for cmd_cls in [
+        _simple.EchoCommand,
+        _simple.QuitCommand,
+        _permissions.PermissionsCommand,
+    ]:
+        els.extend([
+            inj.bind(cmd_cls, singleton=True),
+            commands().bind_item(to_key=cmd_cls),
+        ])
 
     #
 

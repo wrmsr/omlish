@@ -107,8 +107,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 # must be kept in sync
-textual==8.1.0  # @omlish-venv 13t 13dt 14t
-textual[syntax]==8.1.0  # @omlish-venv !13t !13dt !14t
+textual==8.1.1  # @omlish-venv 13t 13dt 14t
+textual[syntax]==8.1.1  # @omlish-venv !13t !13dt !14t
 
 rich==14.3.3
 textual-dev==1.8.0
