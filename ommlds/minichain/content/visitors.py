@@ -14,8 +14,8 @@ from .containers import BlocksContent
 from .containers import ConcatContent
 from .containers import ContainerContent
 from .containers import FlowContent
-from .content import BaseContent
 from .content import Content
+from .content import ContentBase
 from .dynamic import DynamicContent
 from .emphasis import BoldContent
 from .emphasis import BoldItalicContent
@@ -70,7 +70,7 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
         raise TypeError(c)
 
     ##
-    # non-BaseContent
+    # non-ContentBase
 
     def visit_str(self, c: str, ctx: C) -> R:
         return self.visit_content(c, ctx)
@@ -79,16 +79,16 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
         return self.visit_content(c, ctx)
 
     ##
-    # BaseContent
+    # ContentBase
 
-    def visit_base_content(self, c: BaseContent, ctx: C) -> R:
+    def visit_content_base(self, c: ContentBase, ctx: C) -> R:
         return self.visit_content(c, ctx)
 
     ##
     # StandardContent
 
     def visit_standard_content(self, c: StandardContent, ctx: C) -> R:
-        return self.visit_base_content(c, ctx)
+        return self.visit_content_base(c, ctx)
 
     ##
     # leaf StandardContent

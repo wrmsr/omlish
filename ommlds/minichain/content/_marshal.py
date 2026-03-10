@@ -13,8 +13,8 @@ from .code import InlineCodeContent
 from .containers import BlocksContent
 from .containers import ConcatContent
 from .containers import FlowContent
-from .content import BaseContent
 from .content import Content
+from .content import ContentBase
 from .emphasis import BoldContent
 from .emphasis import BoldItalicContent
 from .emphasis import ItalicContent
@@ -45,7 +45,7 @@ class MarshalContent(lang.NotInstantiable, lang.Final):
 
 MarshalContentUnion: ta.TypeAlias = ta.Union[  # noqa
     str,
-    BaseContent,
+    ContentBase,
     ta.Sequence[MarshalContent],
 ]
 
@@ -62,7 +62,7 @@ class _ContentMarshaler(msh.Marshaler):
             return o
         elif isinstance(o, ta.Sequence):
             return [self.marshal(ctx, e) for e in o]
-        elif isinstance(o, BaseContent):
+        elif isinstance(o, ContentBase):
             return self.bt.marshal(ctx, o)
         else:
             raise TypeError(o)
@@ -72,7 +72,7 @@ class _ContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
             return None
-        return lambda: _ContentMarshaler(ctx.make_marshaler(BaseContent))
+        return lambda: _ContentMarshaler(ctx.make_marshaler(ContentBase))
 
 
 @dc.dataclass(frozen=True)
@@ -94,7 +94,7 @@ class _ContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
             return None
-        return lambda: _ContentUnmarshaler(ctx.make_unmarshaler(BaseContent))
+        return lambda: _ContentUnmarshaler(ctx.make_unmarshaler(ContentBase))
 
 
 ##
@@ -274,7 +274,7 @@ class _JsonContentUnmarshaler(msh.Unmarshaler):
 @lang.static_init
 def _install_standard_marshaling() -> None:
     base_content_poly = msh.Polymorphism(
-        BaseContent,
+        ContentBase,
         [
 
             msh.Impl(BlankContent, 'blank'),

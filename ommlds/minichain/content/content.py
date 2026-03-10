@@ -6,7 +6,7 @@ from omlish import lang
 ##
 
 
-class BaseContent(lang.Abstract, lang.PackageSealed):
+class ContentBase(lang.Abstract, lang.PackageSealed):
     """
     Serves only as a root class for all non-typealias Content. All real Content should extend StandardContent, not this.
     """
@@ -17,13 +17,13 @@ class BaseContent(lang.Abstract, lang.PackageSealed):
 
 Content: ta.TypeAlias = ta.Union[  # noqa
     str,
-    BaseContent,
+    ContentBase,
     ta.Sequence['Content'],
 ]
 
 
 CONTENT_TYPES: tuple[type, ...] = (
     str,
-    BaseContent,
+    ContentBase,
     ta.Sequence,
 )

@@ -300,7 +300,7 @@ with _lang.auto_proxy_init(
     )
 
     from .content.content import (  # noqa
-        BaseContent,
+        ContentBase,
 
         Content,
         CONTENT_TYPES,

@@ -4,7 +4,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..metadata import MetadataContainerDataclass
-from .content import BaseContent
+from .content import ContentBase
 from .metadata import ContentMetadatas
 from .metadata import with_content_original
 
@@ -15,7 +15,7 @@ from .metadata import with_content_original
 @dc.dataclass(frozen=True)
 class StandardContent(  # noqa
     MetadataContainerDataclass[ContentMetadatas],
-    BaseContent,
+    ContentBase,
     lang.Abstract,
 ):
     _metadata: ta.Sequence[ContentMetadatas] = dc.field(
