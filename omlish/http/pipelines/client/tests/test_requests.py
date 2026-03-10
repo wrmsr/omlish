@@ -11,6 +11,7 @@ from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestChunk
 from ...requests import IoPipelineHttpRequestChunkedTrailers
 from ...requests import IoPipelineHttpRequestEnd
+from ...requests import IoPipelineHttpRequestEndChunk
 from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestLastChunk
 from ..requests import IoPipelineHttpRequestEncoder
@@ -348,8 +349,10 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         # Send chunks
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'hello')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestEndChunk()))
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestBodyData(b'world')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpRequestEndChunk()))
 
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestLastChunk()))
         channel.feed_in(fbi.wrap(IoPipelineHttpRequestChunkedTrailers()))

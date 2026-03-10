@@ -242,6 +242,7 @@ class IoPipelineHttpObjectDecompressor(
 
         enc = msg.headers.lower.get('content-encoding', ())
 
+        # TODO: spec is actually an ordered stack lol
         for coding_name, coding in self._codings.items():
             if coding_name.lower() in enc:
                 self._decompressor = coding()

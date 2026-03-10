@@ -533,6 +533,7 @@ class IoPipelineHttpObjectDecoder(
                     next_mvs.append(mv)
 
             if next_mvs is not None:
+                out.append(self._d._make_end_chunk())  # noqa
                 return (
                     self._d._HeaderChunkedContentState(self._d, self._head),  # noqa
                     SegmentedByteStreamBufferView.or_else(next_mvs, b''),

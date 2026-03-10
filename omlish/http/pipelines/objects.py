@@ -65,6 +65,15 @@ class IoPipelineHttpMessageChunk(IoPipelineHttpMessageObject, Abstract):
     def __post_init__(self) -> None:
         check.arg(self.size > 0)
 
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageEndChunk(IoPipelineHttpMessageObject, Abstract):
+    pass
+
+
 #
 
 
@@ -170,6 +179,17 @@ class IoPipelineHttpMessageObjects(Abstract):
 
     @abc.abstractmethod
     def _make_chunk(self, size: int) -> IoPipelineHttpMessageChunk:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _end_chunk_type(self) -> ta.Type[IoPipelineHttpMessageEndChunk]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_end_chunk(self) -> IoPipelineHttpMessageEndChunk:
         raise NotImplementedError
 
     #

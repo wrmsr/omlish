@@ -75,7 +75,7 @@ class ZlibIoPiplineHttpCompressorCoding(IoPiplineHttpCompressorCoding):
         return self._z.compress(data)
 
     def flush(self) -> ta.Optional[BytesLike]:
-        return self._z.flush(zlib.Z_PARTIAL_FLUSH) or None
+        return self._z.flush(zlib.Z_SYNC_FLUSH) or None
 
     def finish(self) -> ta.Optional[BytesLike]:
         return self._z.flush()

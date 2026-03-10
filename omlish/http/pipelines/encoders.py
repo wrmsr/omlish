@@ -13,6 +13,7 @@ from .objects import IoPipelineHttpMessageBodyData
 from .objects import IoPipelineHttpMessageChunk
 from .objects import IoPipelineHttpMessageChunkedTrailers
 from .objects import IoPipelineHttpMessageEnd
+from .objects import IoPipelineHttpMessageEndChunk
 from .objects import IoPipelineHttpMessageHead
 from .objects import IoPipelineHttpMessageLastChunk
 from .objects import IoPipelineHttpMessageObjects
@@ -30,7 +31,6 @@ class IoPipelineHttpObjectEncoder(
         super().__init__()
 
         self._streaming = False
-        self._chunked = False
 
     #
 
@@ -49,6 +49,9 @@ class IoPipelineHttpObjectEncoder(
 
         elif isinstance(msg, self._chunk_type):
             self._handle_chunk(ctx, msg)
+
+        elif isinstance(msg, self._end_chunk_type):
+            self._handle_end_chunk(ctx, msg)
 
         elif isinstance(msg, self._last_chunk_type):
             self._handle_last_chunk(ctx, msg)
@@ -69,7 +72,6 @@ class IoPipelineHttpObjectEncoder(
 
     def _handle_request_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:  # noqa
         self._streaming = True
-        self._chunked = self._is_chunked(msg.headers)
 
         ctx.feed_out(self._encode_head(msg))
 
@@ -84,6 +86,11 @@ class IoPipelineHttpObjectEncoder(
 
     def _handle_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunk) -> None:  # noqa
         ctx.feed_out(f'{msg.size:x}\r\n'.encode('ascii'))
+
+    #
+
+    def _handle_end_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEndChunk) -> None:  # noqa
+        ctx.feed_out(b'\r\n')
 
     #
 
@@ -102,16 +109,10 @@ class IoPipelineHttpObjectEncoder(
             # Not in streaming mode - pass through unchanged
             ctx.feed_out(msg)
 
-        elif len(msg.data) < 1:
+        if len(msg.data) < 1:
             pass
 
-        elif self._chunked:
-            ctx.feed_out(msg.data)
-            ctx.feed_out(b'\r\n')
-
-        else:
-            # Raw data
-            ctx.feed_out(msg.data)
+        ctx.feed_out(msg.data)
 
     #
 
@@ -123,7 +124,6 @@ class IoPipelineHttpObjectEncoder(
 
         # Reset state
         self._streaming = False
-        self._chunked = False
 
     #
 
@@ -149,7 +149,3 @@ class IoPipelineHttpObjectEncoder(
             lines.append(line)
 
         return lines
-
-    def _is_chunked(self, headers: HttpHeaders) -> bool:
-        te = headers.lower.get('transfer-encoding', ())
-        return 'chunked' in te

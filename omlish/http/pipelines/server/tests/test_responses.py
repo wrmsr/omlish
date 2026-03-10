@@ -11,6 +11,7 @@ from ...responses import IoPipelineHttpResponseBodyData
 from ...responses import IoPipelineHttpResponseChunk
 from ...responses import IoPipelineHttpResponseChunkedTrailers
 from ...responses import IoPipelineHttpResponseEnd
+from ...responses import IoPipelineHttpResponseEndChunk
 from ...responses import IoPipelineHttpResponseHead
 from ...responses import IoPipelineHttpResponseLastChunk
 from ..responses import IoPipelineHttpResponseEncoder
@@ -454,8 +455,10 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         # Send body chunks
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'hello')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseEndChunk()))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'world')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseEndChunk()))
 
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseLastChunk()))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunkedTrailers()))
@@ -538,6 +541,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         )))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunk(5)))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseBodyData(b'first')))
+        channel.feed_in(fbi.wrap(IoPipelineHttpResponseEndChunk()))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseLastChunk()))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseChunkedTrailers()))
         channel.feed_in(fbi.wrap(IoPipelineHttpResponseEnd()))

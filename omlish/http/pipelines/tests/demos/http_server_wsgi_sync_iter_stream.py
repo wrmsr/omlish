@@ -17,6 +17,8 @@ from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....io.streams.types import BytesLike
 from .....lite.abstract import Abstract
 from .....lite.check import check
+from .....logs.modules import get_module_logger
+from .....logs.std.standard import configure_standard_logging
 from ....headers import HttpHeaders
 from ...requests import FullIoPipelineHttpRequest
 from ...requests import IoPipelineHttpRequestBodyData
@@ -28,12 +30,16 @@ from ...responses import IoPipelineHttpResponseBodyData
 from ...responses import IoPipelineHttpResponseChunk
 from ...responses import IoPipelineHttpResponseChunkedTrailers
 from ...responses import IoPipelineHttpResponseEnd
+from ...responses import IoPipelineHttpResponseEndChunk
 from ...responses import IoPipelineHttpResponseHead
 from ...responses import IoPipelineHttpResponseLastChunk
 from ...server.apps.wsgi import WsgiSpec
 from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
 from ...server.requests import IoPipelineHttpRequestDecoder
 from ...server.responses import IoPipelineHttpResponseEncoder
+
+
+log = get_module_logger(globals())
 
 
 ##
@@ -128,10 +134,10 @@ class WsgiConnHandler:
             if self._o._drv._flow is not None:  # noqa
                 feed_out(IoPipelineFlowMessages.FlushOutput())
 
-            for d in body:
-                while out := self._o._drv.poll(read=False):  # noqa
-                    raise TypeError(out)
+            while out := self._o._drv.poll(read=False):  # noqa
+                raise TypeError(out)
 
+            for d in body:
                 check.state(self._o._drv.is_running)  # noqa
 
                 if not d:
@@ -141,8 +147,12 @@ class WsgiConnHandler:
                 if chunked:
                     feed_out(IoPipelineHttpResponseChunk(len(d)))
                 feed_out(IoPipelineHttpResponseBodyData(d))
+                feed_out(IoPipelineHttpResponseEndChunk())
                 if self._o._drv._flow is not None:  # noqa
                     feed_out(IoPipelineFlowMessages.FlushOutput())
+
+                while out := self._o._drv.poll(read=False):  # noqa
+                    raise TypeError(out)
 
             if chunked:
                 feed_out(IoPipelineHttpResponseLastChunk())
@@ -346,6 +356,8 @@ def demo_app(environ, start_response):
 
 
 def _main() -> None:
+    configure_standard_logging('debug')
+
     wsgi_spec = WsgiSpec(demo_app)
 
     # serve_wsgi_wsgiref(ping_spec)

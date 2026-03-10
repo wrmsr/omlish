@@ -2,7 +2,8 @@
 # @omlish-lite
 """
 TODO:
- - can implement sched w/ select
+ - can implement sched w/ settimeout
+ - sanity / upper bound read/write timeouts
 """
 import collections
 import dataclasses as dc
@@ -135,7 +136,7 @@ class SyncSocketIoPipelineDriver:
     def _do_read(self) -> ta.List[ta.Any]:
         out: ta.List[ta.Any] = []
 
-        # if (dl := self._sched.next_deadline()) is not None:
+        # if (dl := self._sched.next_delay()) is not None:
         #     self._sock.settimeout(dl)
         # else:
         #     self._sock.settimeout(None)
@@ -165,10 +166,15 @@ class SyncSocketIoPipelineDriver:
             self._seq = 0
             self._pending: ta.List[ta.Tuple[float, int, SyncSocketIoPipelineDriver._SchedulingService._Handle]] = []
 
-        def next_deadline(self) -> ta.Optional[float]:
+        def _clear_cancelled(self) -> None:
+            while self._pending and self._pending[0][2]._cancelled:  # noqa
+                heapq.heappop(self._pending)
+
+        def next_delay(self) -> ta.Optional[float]:
+            self._clear_cancelled()
             if not self._pending:
                 return None
-            return self._pending[0][0]
+            return time.time() - self._pending[0][0]
 
         @ta.final
         class _Handle(IoPipelineScheduling.Handle):

@@ -12,6 +12,7 @@ from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestChunk
 from ...requests import IoPipelineHttpRequestChunkedTrailers
 from ...requests import IoPipelineHttpRequestEnd
+from ...requests import IoPipelineHttpRequestEndChunk
 from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestLastChunk
 from ..requests import IoPipelineHttpRequestAggregatorDecoder
@@ -249,24 +250,28 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
             head,
             chunk1,
             data1,
+            end_chunk1,
             chunk2,
             data2,
+            end_chunk2,
             chunk3,
             data3,
+            end_chunk3,
             last_chunk,
             trailers,
             end,
         ) = ibq.drain()
 
         self.assertIsInstance(head, IoPipelineHttpRequestHead)
-        for co, cdo, xd in [
-            (chunk1, data1, b'0123456789'),
-            (chunk2, data2, b'a' * 16),
-            (chunk3, data3, b'b' * 100),
+        for co, cdo, eco, xd in [
+            (chunk1, data1, end_chunk1, b'0123456789'),
+            (chunk2, data2, end_chunk2, b'a' * 16),
+            (chunk3, data3, end_chunk3, b'b' * 100),
         ]:
             self.assertIsInstance(co, IoPipelineHttpRequestChunk)
             self.assertIsInstance(cdo, IoPipelineHttpRequestBodyData)
             self.assertEqual(cdo.data, xd)
+            self.assertIsInstance(eco, IoPipelineHttpRequestEndChunk)
         self.assertIsInstance(last_chunk, IoPipelineHttpRequestLastChunk)
         self.assertIsInstance(trailers, IoPipelineHttpRequestChunkedTrailers)
         self.assertIsInstance(end, IoPipelineHttpRequestEnd)
