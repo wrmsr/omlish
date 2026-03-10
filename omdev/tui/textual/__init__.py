@@ -232,6 +232,9 @@ with _lang.auto_proxy_init(globals()):
 
     ##
 
+    from rich.align import AlignMethod  # noqa
+    from rich.rule import Rule as RichRule  # noqa
+    from rich.style import Style as RichStyle  # noqa
     from rich.text import Text  # noqa
 
     ##

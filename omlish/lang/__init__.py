@@ -211,6 +211,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         ISO_FMT_US_NTZ,
 
         utcnow,
+        localnow,
         utcfromtimestamp,
     )
 

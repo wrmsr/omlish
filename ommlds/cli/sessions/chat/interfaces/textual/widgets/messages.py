@@ -11,10 +11,52 @@ from omlish import lang
 
 
 class MessageDivider(tx.Static):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            text: str = '',
+            *,
+            align: tx.AlignMethod = 'center',
+            line_style: ta.Any | None = None,
+            text_style: ta.Any | None = None,
+    ) -> None:
         super().__init__()
 
         self.add_class('message-divider')
+
+        self._text = text
+        self._align = align
+        self._line_style = line_style
+        self._text_style = text_style
+
+        self._refresh()
+
+    def set_text(self, text: str) -> None:
+        self._text = text
+        self._refresh()
+
+    def set_align(self, align: tx.AlignMethod) -> None:
+        self._align = align
+        self._refresh()
+
+    def _refresh(self) -> None:
+        if (text_style := self._text_style) is None:
+            text_style = tx.RichStyle(color=self.rich_style.color)
+
+        text = tx.Text(
+            self._text,
+            style=text_style,
+        ) if self._text else ''
+
+        if (line_style := self._line_style) is None:
+            line_style = tx.RichStyle(color=self.app.current_theme.primary)
+
+        self.update(
+            tx.RichRule(
+                text,
+                align=self._align,
+                style=line_style,
+            ),
+        )
 
 
 ##

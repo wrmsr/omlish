@@ -235,7 +235,7 @@ class ChatApp(
                 await self._finalize_stream_ai_message()
 
             if self._num_mounted_messages:
-                await msg_ctr.mount(MessageDivider())
+                await msg_ctr.mount(MessageDivider(lang.localnow().strftime('%Y-%m-%d %H:%M:%S')))
 
             await msg_ctr.mount(msg)
 
