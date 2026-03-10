@@ -14,6 +14,7 @@ import argparse
 import asyncio
 import itertools
 import os.path
+import sys
 import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
@@ -110,6 +111,8 @@ class CiCli(ArgparseCli):
         argparse_arg('cmd', nargs=argparse.REMAINDER),
     )
     async def run(self) -> None:
+        log.info('Python interpreter: %r, version %s', sys.executable, ' '.join(sys.version.split()))
+
         project_dir = self.args.project_dir
         docker_file = self.args.docker_file
         compose_file = self.args.compose_file

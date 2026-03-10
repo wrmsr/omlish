@@ -208,7 +208,7 @@ def __omlish_amalg__():  # noqa
             dict(path='github/cli.py', sha1='6d14b0eb4ca5f606ad2821b63b9707ce57f50406'),
             dict(path='github/inject.py', sha1='99c0dd7c55767e7c49f70b7edac25da67f718b2e'),
             dict(path='inject.py', sha1='e86b16d79a113a4f387e68ed0db1d067bcada93a'),
-            dict(path='cli.py', sha1='92948cf3ec76fd9ceb25762aadbf497354adce6d'),
+            dict(path='cli.py', sha1='4087201a2351068898ad338000e146ac609a955f'),
         ],
     )
 
@@ -26698,6 +26698,8 @@ class CiCli(ArgparseCli):
         argparse_arg('cmd', nargs=argparse.REMAINDER),
     )
     async def run(self) -> None:
+        log.info('Python interpreter: %r, version %s', sys.executable, ' '.join(sys.version.split()))
+
         project_dir = self.args.project_dir
         docker_file = self.args.docker_file
         compose_file = self.args.compose_file
