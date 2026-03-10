@@ -207,10 +207,13 @@ class Grammar(lang.Final):
             **kwargs,
         )
 
-        yield from parser.iter_parse(
-            root._op,  # noqa
-            start,
-        )
+        try:
+            yield from parser.iter_parse(
+                root._op,  # noqa
+                start,
+            )
+        finally:
+            pass  # Debugging aid to inspect parser state after parse
 
     def parse(
             self,
