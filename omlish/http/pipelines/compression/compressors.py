@@ -58,7 +58,7 @@ class IoPipelineHttpObjectCompressor(
 
     #
 
-    def _on_outbound_final_output(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalOutput) -> None:  # noqa
+    def _on_outbound_final_output(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalOutput) -> None:
         if self._compressor is None:
             ctx.feed_out(msg)
             return
@@ -68,7 +68,7 @@ class IoPipelineHttpObjectCompressor(
         ctx.feed_out(self._make_aborted('eof before end of message'))
         ctx.feed_out(msg)
 
-    def _on_outbound_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:  # noqa
+    def _on_outbound_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:
         if self._compressor is not None:
             ctx.feed_out(self._make_aborted('unexpected message sequence'))
             return
@@ -82,7 +82,7 @@ class IoPipelineHttpObjectCompressor(
 
         ctx.feed_out(msg)
 
-    def _on_outbound_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:  # noqa
+    def _on_outbound_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:
         if (z := self._compressor) is None:
             ctx.feed_out(msg)
             return

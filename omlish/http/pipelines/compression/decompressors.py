@@ -221,7 +221,7 @@ class IoPipelineHttpObjectDecompressor(
 
     #
 
-    def _on_inbound_final_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalInput) -> None:  # noqa
+    def _on_inbound_final_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalInput) -> None:
         if self._decompressor is None:
             ctx.feed_in(msg)
             return
@@ -231,11 +231,11 @@ class IoPipelineHttpObjectDecompressor(
         ctx.feed_in(self._make_aborted('eof before end of message'))
         ctx.feed_in(msg)
 
-    def _on_inbound_flush_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushInput) -> None:  # noqa
+    def _on_inbound_flush_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushInput) -> None:
         self._pump(ctx)
         ctx.feed_in(msg)
 
-    def _on_inbound_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:  # noqa
+    def _on_inbound_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:
         if self._decompressor is not None:
             ctx.feed_in(self._make_aborted('unexpected message sequence'))
             return
@@ -250,7 +250,7 @@ class IoPipelineHttpObjectDecompressor(
 
         ctx.feed_in(msg)
 
-    def _on_inbound_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:  # noqa
+    def _on_inbound_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:
         if self._decompressor is None:
             ctx.feed_in(msg)
             return
