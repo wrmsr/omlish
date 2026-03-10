@@ -32,8 +32,7 @@ _MOVE_BOTTOM_LEFT = _move(999, 1)  # clamped
 
 
 def render_write_from_alt(
-        s: str,
-        *,
+        *s: str,
         no_sync_output: bool = False,
         move_and_clear: bool = False,
 ) -> str:
@@ -49,7 +48,8 @@ def render_write_from_alt(
         out.write(_MOVE_BOTTOM_LEFT)
         out.write(_CLEAR_LINE)
 
-    out.write(s)
+    for c in s:
+        out.write(c)
 
     out.write(_ENTER_ALT)
     out.write(_SHOW_CURSOR)

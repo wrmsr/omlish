@@ -1,8 +1,3 @@
-"""
-TODO:
- - textual.getters.query_one
- - AUTO_FOCUS
-"""
 import asyncio
 import os
 import typing as ta
@@ -17,9 +12,14 @@ from omlish.term.alt import render_write_from_alt  # noqa
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
+from .....content.messages import MessageContentExtractor
+from .....content.messages import MessageContentExtractorImpl
+from .....content.strings import ContentStringifierImpl
+from .....rendering.types import ContentRendering
 from ....types import SessionProfileName
 from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
+from ...drivers.events.types import UserMessagesChatEvent
 from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
 from .inputhistory import InputHistoryManager
@@ -112,6 +112,8 @@ class ChatApp(
             input_history_manager: InputHistoryManager,
             session_profile_name: SessionProfileName | None = None,
             suggestions_manager: SuggestionsManager,
+            extractor: MessageContentExtractor | None = None,
+            renderer: ContentRendering,
     ) -> None:
         super().__init__()
 
@@ -125,6 +127,10 @@ class ChatApp(
         self._input_history_manager = input_history_manager
         self._session_profile_name = session_profile_name
         self._suggestions_manager = suggestions_manager
+        if extractor is None:
+            extractor = MessageContentExtractorImpl()
+        self._extractor = extractor
+        self._renderer = renderer
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
@@ -187,11 +193,6 @@ class ChatApp(
 
     #
 
-    async def _commit_message(self, msg: tx.Widget) -> None:
-        pass
-
-    #
-
     _pending_mount_messages: list[tx.Widget] | None = None
 
     async def _enqueue_mount_messages(self, *messages: tx.Widget) -> None:
@@ -208,8 +209,6 @@ class ChatApp(
 
         await aim.stop_stream()
         self._stream_ai_message = None
-
-        await self._commit_message(aim)
 
     async def _append_stream_ai_message_content(self, content: str) -> None:
         if (sam := self._stream_ai_message) is not None:
@@ -245,15 +244,40 @@ class ChatApp(
                 self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
                 await msg.write_initial_content()
 
-            else:
-                await self._commit_message(msg)
-
         self._pending_mount_messages = None
 
         self.call_after_refresh(self._scroll_messages_to_bottom)
 
         if was_at_bottom:
             self.call_after_refresh(self._anchor_messages)
+
+    #
+
+    async def _background_render_chat(self, chat: mc.Chat) -> None:
+        console = tx.Console(
+            width=self.screen.size.width,
+            height=self.screen.size.height,
+            color_system=ta.cast(ta.Any, self.console.color_system or 'auto'),
+            record=True,
+        )
+
+        for msg in chat:
+            if (c := MessageContentExtractorImpl().extract_message_content(msg)) is not None:
+                if (s := ContentStringifierImpl().stringify_content(c)) is not None and (s := s.strip()):
+                    console.print(tx.RichMarkdown(s))
+
+        try:
+            ansi = console.export_text(styles=True)
+        except Exception as e:  # noqa
+            raise
+
+        pwd = check.isinstance(self._driver, tx.PendingWritesDriverMixin)
+        pwd.queue_primary_buffer_write(render_write_from_alt(
+            ansi,
+            '\n\n',
+        ))
+
+        self.refresh()
 
     ##
     # Chat events
@@ -270,20 +294,25 @@ class ChatApp(
             await alog.debug(lambda: f'Got chat event: {ev!r}')
 
             if isinstance(ev, AiMessagesChatEvent):
-                wx: list[tx.Widget] = []
+                if ev.streamed:
+                    await self._finalize_stream_ai_message()
+                    await self._background_render_chat(ev.chat)
 
-                for ai_msg in ev.chat:
-                    if isinstance(ai_msg, mc.AiMessage):
-                        wx.append(
-                            StaticAiMessage(
-                                check.isinstance(ai_msg.c, str),
-                                markdown=True,
-                            ),
-                        )
+                else:
+                    wx: list[tx.Widget] = []
 
-                if wx:
-                    await self._enqueue_mount_messages(*wx)
-                    self.call_later(self._mount_messages)
+                    for ai_msg in ev.chat:
+                        if isinstance(ai_msg, mc.AiMessage):
+                            wx.append(
+                                StaticAiMessage(
+                                    check.isinstance(ai_msg.c, str),
+                                    markdown=True,
+                                ),
+                            )
+
+                    if wx:
+                        await self._enqueue_mount_messages(*wx)
+                        self.call_later(self._mount_messages)
 
             elif isinstance(ev, AiDeltaChatEvent):
                 if isinstance(ev.delta, mc.ContentAiDelta):
@@ -292,6 +321,9 @@ class ChatApp(
 
                 elif isinstance(ev.delta, mc.ToolUseAiDelta):
                     pass
+
+            elif isinstance(ev, UserMessagesChatEvent):
+                await self._background_render_chat(ev.chat)
 
     ##
     # Chat actions
@@ -389,19 +421,11 @@ class ChatApp(
 
         await self._finalize_stream_ai_message()
 
-        await self._mount_messages(
-            UserMessage(
-                event.text,
-            ),
-        )
+        await self._mount_messages(UserMessage(event.text))
 
         await self._input_history_manager.add(event.text)
 
         await self._chat_action_queue.put(ChatApp.UserInput(event.text))
-
-        # pwd = check.isinstance(self._driver, tx.PendingWritesDriverMixin)
-        # pwd.queue_primary_buffer_write(render_write_from_alt(f'You said:\n{event.text}\n\n'))
-        # self.refresh()
 
     def _move_input_cursor_to_end(self) -> None:
         ita = self._get_input_text_area()

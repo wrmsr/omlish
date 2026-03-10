@@ -32,6 +32,10 @@ class UserMessagesChatEvent(ChatEvent, lang.Final):
 class AiMessagesChatEvent(ChatEvent, lang.Final):
     chat: 'mc.Chat'
 
+    _: dc.KW_ONLY
+
+    streamed: bool = False
+
 
 @dc.dataclass(frozen=True)
 class AiDeltaChatEvent(ChatEvent, lang.Final):

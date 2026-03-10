@@ -54,4 +54,8 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             if delta_callback is not None:
                 await delta_callback(delta)
 
-        return await self._wrapped.get_next_ai_messages_streamed(chat, delta_callback=inner)
+        out = await self._wrapped.get_next_ai_messages_streamed(chat, delta_callback=inner)
+
+        await self._events.emit_event(AiMessagesChatEvent(out, streamed=True))
+
+        return out

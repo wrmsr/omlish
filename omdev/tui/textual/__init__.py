@@ -233,7 +233,11 @@ with _lang.auto_proxy_init(globals()):
     ##
 
     from rich.align import AlignMethod  # noqa
+    from rich.console import Console  # noqa
+    from rich.console import ConsoleOptions  # noqa
+    from rich.markdown import Markdown as RichMarkdown  # noqa
     from rich.rule import Rule as RichRule  # noqa
+    from rich.segment import Segment  # noqa
     from rich.style import Style as RichStyle  # noqa
     from rich.text import Text  # noqa
 
