@@ -9,7 +9,7 @@ from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineHandlerFn
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from .....io.pipelines.drivers.sync import LoopSyncSocketIoPipelineDriver
+from .....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from .....io.pipelines.flow.stub import StubIoPipelineFlowService
 from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
@@ -350,15 +350,16 @@ def sync_fetch_url(
 
     try:
         # Run driver to process request/response
-        drv = LoopSyncSocketIoPipelineDriver(
+        drv = SyncSocketIoPipelineDriver(
             puf.pipeline_spec,
             sock,
         )
 
-        drv.run(HttpClientRequest(
+        drv.enqueue(HttpClientRequest(
             puf.request,
             on_output,
         ))
+        drv.loop_until_done()
 
     finally:
         sock.close()

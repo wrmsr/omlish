@@ -8,7 +8,7 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
-from .....io.pipelines.drivers.sync import IterSyncSocketIoPipelineDriver
+from .....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from .....lite.check import check
 from ....headers import HttpHeaders
 from ...requests import FullIoPipelineHttpRequest
@@ -58,7 +58,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
             if e.errno != errno.ENOPROTOOPT:
                 raise
 
-        drv = IterSyncSocketIoPipelineDriver(
+        drv = SyncSocketIoPipelineDriver(
             build_wsgi_spec(),
             conn,
         )

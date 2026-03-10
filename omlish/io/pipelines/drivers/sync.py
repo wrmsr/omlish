@@ -10,7 +10,7 @@ import typing as ta
 
 from ....io.streams.utils import ByteStreamBuffers
 from ....lite.check import check
-from ....logs.modules import get_module_loggers
+from ....logs.modules import get_module_logger
 from ..core import IoPipeline
 from ..core import IoPipelineMessages
 from ..flow.types import IoPipelineFlow
@@ -18,24 +18,23 @@ from ..flow.types import IoPipelineFlowMessages
 from .metadata import DriverIoPipelineMetadata
 
 
-BaseSyncSocketIoPipelineDriverConfigT = ta.TypeVar('BaseSyncSocketIoPipelineDriverConfigT', bound='BaseSyncSocketIoPipelineDriver.Config')  # noqa
-
-
-log, alog = get_module_loggers(globals())  # noqa
+log = get_module_logger(globals())  # noqa
 
 
 ##
 
 
-class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverConfigT]):
+class SyncSocketIoPipelineDriver:
     @dc.dataclass(frozen=True)
     class Config:
+        DEFAULT: ta.ClassVar['SyncSocketIoPipelineDriver.Config']
+
         read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
 
-        #
-
         strict_input_flow: bool = False
+
+    Config.DEFAULT = Config()
 
     #
 
@@ -43,19 +42,24 @@ class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverCo
             self,
             spec: IoPipeline.Spec,
             sock: ta.Any,
-            config: BaseSyncSocketIoPipelineDriverConfigT,
+            config: ta.Optional[Config] = None,
     ) -> None:
         super().__init__()
 
         self._spec = spec
         self._sock = sock
+        if config is None:
+            config = self.Config.DEFAULT
         self._config = config
+
+        self._input_q: collections.deque[ta.Any] = collections.deque()
+        self._input_q.append(IoPipelineMessages.InitialInput())
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
     @property
-    def config(self) -> BaseSyncSocketIoPipelineDriverConfigT:
+    def config(self) -> Config:
         return self._config
 
     #
@@ -98,12 +102,15 @@ class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverCo
 
     #
 
-    def __enter__(self) -> 'BaseSyncSocketIoPipelineDriver':  # noqa
+    def close(self) -> None:
+        if (pipeline := self._opt_pipeline()) is not None:
+            pipeline.destroy()
+
+    def __enter__(self) -> 'SyncSocketIoPipelineDriver':  # noqa
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if (pipeline := self._opt_pipeline()) is not None:
-            pipeline.destroy()
+        self.close()
 
     #
 
@@ -113,6 +120,7 @@ class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverCo
         out: ta.List[ta.Any] = []
 
         b = self._sock.recv(self._config.read_chunk_size)
+
         if not b:
             out.append(IoPipelineMessages.FinalInput())
         else:
@@ -153,97 +161,6 @@ class BaseSyncSocketIoPipelineDriver(ta.Generic[BaseSyncSocketIoPipelineDriverCo
 
         else:
             return 'unhandled'
-
-
-##
-
-
-class LoopSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['LoopSyncSocketIoPipelineDriver.Config']):
-    @dc.dataclass(frozen=True)
-    class Config(BaseSyncSocketIoPipelineDriver.Config):
-        DEFAULT: ta.ClassVar['LoopSyncSocketIoPipelineDriver.Config']
-
-    Config.DEFAULT = Config()
-
-    #
-
-    def __init__(
-            self,
-            spec: IoPipeline.Spec,
-            sock: ta.Any,
-            config: ta.Optional[Config] = None,
-    ) -> None:
-        super().__init__(spec, sock, config or LoopSyncSocketIoPipelineDriver.Config.DEFAULT)
-
-    #
-
-    def __enter__(self) -> 'LoopSyncSocketIoPipelineDriver':  # noqa
-        return self
-
-    #
-
-    def _run(self, in_msgs: ta.List[ta.Any]) -> None:
-        if self._opt_pipeline() is not None:
-            raise RuntimeError('Already running')
-
-        pipeline = self._ensure_pipeline()
-
-        try:
-            pipeline.feed_initial_input()
-
-            while True:
-                if in_msgs:
-                    pipeline.feed_in(*in_msgs)
-                    in_msgs.clear()
-
-                while (msg := pipeline.output.poll()) is not None:
-                    handled = self._handle_output(msg)
-                    if handled == 'handled':
-                        pass
-                    elif handled == 'unhandled':
-                        raise TypeError(msg)
-                    elif handled == 'stop':
-                        return
-                    else:
-                        raise RuntimeError(f'Unknown handled value: {handled!r}')
-
-                if not pipeline.saw_final_input and self._want_read:
-                    in_msgs.extend(self._do_read())
-
-        finally:
-            pipeline.destroy()
-
-    def run(self, *in_msgs: ta.Any) -> None:
-        self._run(list(in_msgs))
-
-
-##
-
-
-class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSocketIoPipelineDriver.Config']):
-    @dc.dataclass(frozen=True)
-    class Config(BaseSyncSocketIoPipelineDriver.Config):
-        DEFAULT: ta.ClassVar['IterSyncSocketIoPipelineDriver.Config']
-
-    Config.DEFAULT = Config()
-
-    #
-
-    def __init__(
-            self,
-            spec: IoPipeline.Spec,
-            sock: ta.Any,
-            config: ta.Optional[Config] = None,
-    ) -> None:
-        super().__init__(spec, sock, config or self.Config.DEFAULT)
-
-        self._input_q: collections.deque[ta.Any] = collections.deque()
-        self._input_q.append(IoPipelineMessages.InitialInput())
-
-    #
-
-    def __enter__(self) -> 'IterSyncSocketIoPipelineDriver':  # noqa
-        return self
 
     #
 
@@ -345,3 +262,15 @@ class IterSyncSocketIoPipelineDriver(BaseSyncSocketIoPipelineDriver['IterSyncSoc
 
         pipeline.destroy()
         return None
+
+    def loop_until_done(self) -> None:
+        try:
+            while True:
+                if (out := self.next()) is not None:
+                    raise TypeError(out)
+
+                if not self._pipeline.is_ready:
+                    break
+
+        finally:
+            self.close()
