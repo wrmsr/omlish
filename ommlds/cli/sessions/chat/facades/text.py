@@ -24,6 +24,23 @@ FacadeTextColor: ta.TypeAlias = ta.Literal[
 ##
 
 
+@dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(cache_hash=True, default_repr_fn=lang.opt_repr)
+class FacadeTextStyle(lang.Final):
+    DEFAULT: ta.ClassVar['FacadeTextStyle']
+
+    color: FacadeTextColor | None = None
+
+    bold: bool | None = None
+    italic: bool | None = None
+
+
+FacadeTextStyle.DEFAULT = FacadeTextStyle()
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class FacadeText(lang.Abstract, lang.Sealed):
     _BLANK: ta.ClassVar['StrFacadeText']
@@ -63,32 +80,43 @@ class FacadeText(lang.Abstract, lang.Sealed):
         else:
             return str(cls.of(obj))
 
-    @classmethod
-    def join(cls, delim: CanFacadeText, items: ta.Iterable[CanFacadeText]) -> 'FacadeText':
-        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
-
-        if not delim:
-            return cls._BLANK
-
-        return ConcatFacadeText(tuple(lang.interleave(map(cls.of, items), cls.of(delim))))
-
     #
 
+    def join(
+            self: CanFacadeText,
+            items: ta.Iterable[CanFacadeText],
+    ) -> 'FacadeText':
+        delim = FacadeText.of(self)
+
+        if not delim:
+            return FacadeText._BLANK
+
+        return ConcatFacadeText(tuple(lang.interleave(map(FacadeText.of, items), delim)))
+
     def style(
-            self,
+            self: CanFacadeText,
             *,
             color: FacadeTextColor | None = None,
 
-            bold: bool = False,
-            italic: bool = False,
+            bold: bool | None = None,
+            italic: bool | None = None,
     ) -> 'FacadeText':
+        x = FacadeText.of(self)
+
+        if (
+                color is None and
+                bold is not None and
+                italic is not None
+        ):
+            return x
+
         return StyleFacadeText(
-            self,
-
-            color=color,
-
-            bold=bold,
-            italic=italic,
+            x,
+            FacadeTextStyle(
+                color=color,
+                bold=bold,
+                italic=italic,
+            ),
         )
 
     #
@@ -108,7 +136,7 @@ class FacadeText(lang.Abstract, lang.Sealed):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_class_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
 class StrFacadeText(FacadeText, lang.Final):
     s: str
 
@@ -131,6 +159,11 @@ class ConcatFacadeText(FacadeText, lang.Final):
 
     #
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({list(self.l)!r})'
+
+    #
+
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
         for t in self.l:
             t.write_str_to(fn)
@@ -140,18 +173,12 @@ class ConcatFacadeText(FacadeText, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-@dc.extra_class_params(cache_hash=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
 class StyleFacadeText(FacadeText, lang.Final):
-    t: FacadeText
-
-    _: dc.KW_ONLY
-
-    color: FacadeTextColor | None = None
-
-    bold: bool = False
-    italic: bool = False
+    c: FacadeText
+    y: FacadeTextStyle = FacadeTextStyle.DEFAULT
 
     #
 
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
-        self.t.write_str_to(fn)
+        self.c.write_str_to(fn)

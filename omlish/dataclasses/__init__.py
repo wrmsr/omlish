@@ -142,6 +142,10 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         replace_if,
         replace_ne,
         replace_is_not,
+
+        merge_if,
+        merge_ne,
+        merge_is_not,
     )
 
     from .tools.static import (  # noqa

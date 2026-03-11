@@ -22,8 +22,8 @@ def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any
 
 
 def replace_if(
+        fn: ta.Callable[[ta.Any, ta.Any], bool],
         o: T,
-        fn: ta.Callable[[ta.Any, ta.Any], bool] = operator.eq,
         /,
         **kwargs: ta.Any,
 ) -> T:
@@ -37,8 +37,42 @@ def replace_if(
 
 
 def replace_ne(o: T, **kwargs: ta.Any) -> T:
-    return replace_if(o, operator.ne, **kwargs)
+    return replace_if(operator.ne, o, **kwargs)
 
 
 def replace_is_not(o: T, **kwargs: ta.Any) -> T:
-    return replace_if(o, operator.is_not, **kwargs)
+    return replace_if(operator.is_not, o, **kwargs)
+
+
+##
+
+
+def merge_if(
+        fn: ta.Callable[[ta.Any, ta.Any], bool],
+        o: T,
+        *os: T,
+) -> T:
+    odct = {f.name: getattr(o, f.name) for f in dc.fields(o)}  # type: ignore[arg-type]
+    xdct: dict[str, ta.Any] = {}
+    for x in reversed(os):
+        if not odct:
+            break
+        if xu := {
+            k: xv
+            for k, ov in odct.items()
+            if fn(ov, xv := getattr(x, k))
+        }:
+            xdct.update(xu)
+            for k in xu:
+                del odct[k]
+    if not xdct:
+        return o
+    return dc.replace(o, **xdct)  # type: ignore
+
+
+def merge_ne(o: T, *os: T) -> T:
+    return merge_if(operator.ne, o, *os)
+
+
+def merge_is_not(o: T, *os: T) -> T:
+    return merge_if(operator.is_not, o,*os)
