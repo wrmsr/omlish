@@ -22,11 +22,13 @@ def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any
 
 
 def replace_if(
-        fn: ta.Callable[[ta.Any, ta.Any], bool],
+        fn: ta.Callable[[ta.Any, ta.Any], bool] | None,
         o: T,
         /,
         **kwargs: ta.Any,
 ) -> T:
+    if fn is None:
+        fn = lambda l, r: r is not None
     dct: dict[str, ta.Any] = {}
     for k, v in kwargs.items():
         if fn(getattr(o, k), v):
@@ -48,10 +50,12 @@ def replace_is_not(o: T, **kwargs: ta.Any) -> T:
 
 
 def merge_if(
-        fn: ta.Callable[[ta.Any, ta.Any], bool],
+        fn: ta.Callable[[ta.Any, ta.Any], bool] | None,
         o: T,
         *os: T,
 ) -> T:
+    if fn is None:
+        fn = lambda l, r: r is not None
     odct = {f.name: getattr(o, f.name) for f in dc.fields(o)}  # type: ignore[arg-type]
     xdct: dict[str, ta.Any] = {}
     for x in reversed(os):
@@ -75,4 +79,4 @@ def merge_ne(o: T, *os: T) -> T:
 
 
 def merge_is_not(o: T, *os: T) -> T:
-    return merge_if(operator.is_not, o,*os)
+    return merge_if(operator.is_not, o, *os)
