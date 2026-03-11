@@ -11,7 +11,7 @@ from ..context import tool_fs_context
 ##
 
 
-def execute_ls_tool(
+async def execute_ls_tool(
         dir_path: str,
 ) -> str:
     """

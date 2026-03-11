@@ -58,7 +58,7 @@ MAX_LINE_LENGTH = 2_000
         ),
     ],
 )
-def execute_read_tool(
+async def execute_read_tool(
         file_path: str,
         *,
         line_offset: int = 0,
@@ -73,7 +73,7 @@ def execute_read_tool(
     zp = len(str(line_offset + num_lines))
     n = line_offset
     has_trunc = False  # noqa
-    with open(file_path, errors='replace') as f:
+    with open(file_path, errors='replace') as f:  # noqa
         fi = iter(f)
 
         for line in itertools.islice(fi, line_offset, line_offset + num_lines):

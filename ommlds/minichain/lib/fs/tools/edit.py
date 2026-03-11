@@ -42,7 +42,7 @@ class OldStringPresentMultipleTimesError(EditToolError):
 ##
 
 
-def execute_edit_tool(
+async def execute_edit_tool(
         *,
         file_path: str,
         old_string: str,
@@ -79,7 +79,7 @@ def execute_edit_tool(
     ctx = tool_fs_context()
     ctx.check_stat_file(file_path, text=True, write=True)
 
-    with open(file_path) as f:
+    with open(file_path) as f:  # noqa
         old_file = f.read()
 
     n = old_file.count(old_string)
@@ -93,7 +93,7 @@ def execute_edit_tool(
 
     # FIXME: confirm lol
 
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w') as f:  # noqa
         f.write(new_file)
 
     return 'The file has been edited successfully.'
