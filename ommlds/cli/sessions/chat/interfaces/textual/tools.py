@@ -3,7 +3,7 @@ from omlish.formats import json
 from ...... import minichain as mc
 from ...drivers.tools.confirmation import ToolExecutionConfirmation
 from ...drivers.tools.confirmation import ToolExecutionRequestDeniedError
-from .app import ChatAppGetter
+from .types import ChatAppGetter
 
 
 ##

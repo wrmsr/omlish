@@ -7,7 +7,7 @@ from ...facades.text import FacadeTextStyle
 from ...facades.text import StrFacadeText
 from ...facades.text import StyleFacadeText
 from ...facades.ui import UiMessageDisplayer
-from .app import ChatAppGetter
+from .types import ChatAppGetter
 
 
 ##

@@ -8,7 +8,6 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.logs import all as logs
-from omlish.term.alt import render_write_from_alt
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
@@ -21,6 +20,7 @@ from ...facades.facade import ChatFacade
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
 from .suggestions import SuggestionsManager
+from .termrender import BackgroundTerminalRenderer
 from .widgets.input import InputContainer
 from .widgets.input import InputTextArea
 from .widgets.messages import AiMessage
@@ -45,10 +45,6 @@ ChatEventQueue = ta.NewType('ChatEventQueue', asyncio.Queue)
 
 
 ##
-
-
-class ChatAppGetter(lang.AsyncCachedFunc0['ChatApp']):
-    pass
 
 
 class ChatAppScreen(tx.Screen):
@@ -109,6 +105,7 @@ class ChatApp(
             input_history_manager: InputHistoryManager,
             session_profile_name: SessionProfileName | None = None,
             suggestions_manager: SuggestionsManager,
+            background_terminal_renderer: BackgroundTerminalRenderer,
     ) -> None:
         super().__init__()
 
@@ -122,6 +119,7 @@ class ChatApp(
         self._input_history_manager = input_history_manager
         self._session_profile_name = session_profile_name
         self._suggestions_manager = suggestions_manager
+        self._background_terminal_renderer = background_terminal_renderer
 
         #
 
@@ -241,18 +239,9 @@ class ChatApp(
     #
 
     async def _background_render_chat(self, chat: mc.Chat) -> None:
-        def inner():
-            try:
-                msg_ctrl = self._messages_container.children[-1]  # FIXME: lol do better
-                ansi = tx.render_full_widget_ansi(msg_ctrl, self.console, strip=True, reset=True)
-
-                pwd = check.isinstance(self._driver, tx.PendingWritesDriverMixin)
-                pwd.queue_primary_buffer_write(render_write_from_alt(ansi, '\n\n'))
-
-                self.refresh(layout=True)
-
-            except Exception as e:  # noqa
-                raise
+        async def inner() -> None:
+            msg_ctrl = self._messages_container.children[-1]  # FIXME: lol do better
+            await self._background_terminal_renderer.background_render_widget(msg_ctrl)
 
         self.refresh(layout=True)
         self.call_after_refresh(inner)

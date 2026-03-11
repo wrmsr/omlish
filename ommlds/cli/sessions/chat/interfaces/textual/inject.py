@@ -11,6 +11,7 @@ from omlish import lang
 from ...drivers.events.injection import event_callbacks
 from ..base import ChatInterface
 from .configs import TextualInterfaceConfig
+from .types import ChatAppGetter
 
 
 with lang.auto_proxy_import(globals()):
@@ -23,6 +24,7 @@ with lang.auto_proxy_import(globals()):
     from . import inputhistory as _inputhistory
     from . import interface as _interface
     from . import suggestions as _suggestions
+    from . import termrender as _termrender
     from . import tools as _tools
 
 
@@ -38,7 +40,7 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
 
     els.extend([
         inj.bind(_app.ChatApp, singleton=True),
-        inj.bind_async_late(_app.ChatApp, _app.ChatAppGetter),
+        inj.bind_async_late(_app.ChatApp, ChatAppGetter),
     ])
 
     #
@@ -111,6 +113,12 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
 
     els.extend([
         inj.bind(_suggestions.SuggestionsManager, singleton=True),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(_termrender.BackgroundTerminalRenderer, singleton=True),
     ])
 
     #
