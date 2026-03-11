@@ -145,7 +145,7 @@ types-boto3>=1.42.65
 antlr4-python3-runtime==4.13.2
 
 mlx==0.31.0; sys_platform == "darwin"  # @omlish-venv !13t !13dt !14t
-mlx-lm==0.31.0; sys_platform == "darwin"  # @omlish-venv !13t !13dt !14t
+mlx-lm==0.31.1; sys_platform == "darwin"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.52.0.0
 
