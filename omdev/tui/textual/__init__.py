@@ -282,6 +282,10 @@ with _lang.auto_proxy_init(globals()):
         translate_log_level,
     )
 
+    from .render2 import (  # noqa
+        render_full_widget_ansi,
+    )
+
     from .screen2 import (  # noqa
         Screen,
     )

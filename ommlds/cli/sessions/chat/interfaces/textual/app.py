@@ -1,5 +1,4 @@
 import asyncio
-import io
 import os
 import typing as ta
 import weakref
@@ -9,7 +8,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.logs import all as logs
-from omlish.term.alt import render_write_from_alt  # noqa
+from omlish.term.alt import render_write_from_alt
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
@@ -246,34 +245,16 @@ class ChatApp(
 
     #
 
-    def _render_full_widget_ansi(self, widget: tx.Widget) -> str:
-        width = widget.size.width
-        height = widget.size.height  # often already full doc height for Markdown inside MarkdownViewer
-
-        comp = tx.Compositor()
-        comp.reflow(widget, tx.Size(width, height))
-
-        update = comp.render_full_update(simplify=True)
-
-        # ansi = update.render_segments(self.console)
-
-        out = io.StringIO()
-        for row in update.strips:
-            for strip in row:
-                out.write(strip.render(self.console))
-            out.write('\n')
-        ansi = out.getvalue()
-
-        return ansi
-
     async def _background_render_chat(self, chat: mc.Chat) -> None:
         def inner():
             try:
-                msg_ctrl = self._messages_container.children[-1]
-                ansi = self._render_full_widget_ansi(msg_ctrl)  # noqa
+                msg_ctrl = self._messages_container.children[-1]  # FIXME: lol do better
+                ansi = tx.render_full_widget_ansi(msg_ctrl, self.console, strip=True, reset=True)
 
                 pwd = check.isinstance(self._driver, tx.PendingWritesDriverMixin)
                 pwd.queue_primary_buffer_write(render_write_from_alt(ansi, '\n\n'))
+
+                self.refresh(layout=True)
 
             except Exception as e:  # noqa
                 raise
