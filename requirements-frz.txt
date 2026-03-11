@@ -168,7 +168,7 @@ networkx==3.6.1
 nh3==0.3.3
 nodeenv==1.10.0
 nodejs-wheel-binaries==24.14.0
-notebook==7.5.4
+notebook==7.5.5
 notebook_shim==0.2.4
 numpy==2.4.3
 objgraph==3.6.2
