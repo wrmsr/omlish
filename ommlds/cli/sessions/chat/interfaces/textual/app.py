@@ -1,6 +1,7 @@
 import asyncio
 import os
 import typing as ta
+import uuid
 import weakref
 
 from omdev.tui import textual as tx
@@ -299,9 +300,17 @@ class ChatApp(
     class UserInput:
         text: str
 
+        _: dc.KW_ONLY
+
+        input_uuid: uuid.UUID | None = None
+
     async def _execute_user_input(self, ac: UserInput) -> None:
         try:
-            await self._chat_facade.handle_user_input(ac.text)
+            await self._chat_facade.handle_user_input(
+                ac.text,
+                input_uuid=ac.input_uuid,
+            )
+
         except Exception as e:  # noqa
             # raise
             await self.display_ui_message(tx.Text(repr(e)))

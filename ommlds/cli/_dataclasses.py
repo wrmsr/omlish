@@ -4882,27 +4882,34 @@ def _process_dataclass__1146b322d3d7f9de2743046ef41ed24699798077():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('text',)), EqPlan(fields=('text',)), FrozenPlan(fields=('text',), allow_dynamic_du"
-        "nder_attrs=False), HashPlan(action='add', fields=('text',), cache=False), InitPlan(fields=(InitPlan.Field(name"
-        "='text', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self',"
-        " std_params=('text',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), valida"
-        "te_fns=()), ReprPlan(fields=(ReprPlan.Field(name='text', kw_only=False, fn=None),), id=False, terse=False, def"
-        "ault_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('text', 'input_uuid')), EqPlan(fields=('text', 'input_uuid')), FrozenPlan(fields=("
+        "'text', 'input_uuid'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('text', 'input_uuid')"
+        ", cache=False), InitPlan(fields=(InitPlan.Field(name='text', annotation=OpRef(name='init.fields.0.annotation')"
+        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='input_uuid', annotation=OpRef(name='init.fields.1.annotat"
+        "ion'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('text',), "
+        "kw_only_params=('input_uuid',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=())"
+        ", ReprPlan(fields=(ReprPlan.Field(name='text', kw_only=False, fn=None), ReprPlan.Field(name='input_uuid', kw_o"
+        "nly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='ce2a4c81e0f66e62a54ea3adfdc532902daece78',
+    plan_repr_sha1='a147f14d22fda2880e5bb366e3496276b9fa48e1',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
     cls_names=(
         ('ommlds.cli.sessions.chat.interfaces.textual.app', 'ChatApp.UserInput'),
     ),
 )
-def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
+def _process_dataclass__a147f14d22fda2880e5bb366e3496276b9fa48e1():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4922,6 +4929,7 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 text=self.text,
+                input_uuid=self.input_uuid,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -4935,7 +4943,8 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.text == other.text
+                self.text == other.text and
+                self.input_uuid == other.input_uuid
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -4945,6 +4954,7 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
 
         __dataclass___setattr_frozen_fields = {
             'text',
+            'input_uuid',
         }
 
         def __setattr__(self, name, value):
@@ -4962,6 +4972,7 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
 
         __dataclass___delattr_frozen_fields = {
             'text',
+            'input_uuid',
         }
 
         def __delattr__(self, name):
@@ -4980,6 +4991,7 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
         def __hash__(self):
             return hash((
                 self.text,
+                self.input_uuid,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -4988,8 +5000,11 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
         def __init__(
             self,
             text: __dataclass__init__fields__0__annotation,
+            *,
+            input_uuid: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'text', text)
+            __dataclass__object_setattr(self, 'input_uuid', input_uuid)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -5000,6 +5015,7 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
         def __repr__(self):
             parts = []
             parts.append(f"text={self.text!r}")
+            parts.append(f"input_uuid={self.input_uuid!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

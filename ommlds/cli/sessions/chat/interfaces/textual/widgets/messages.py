@@ -1,6 +1,7 @@
 import abc
 import asyncio
 import typing as ta
+import uuid
 
 from omdev.tui import textual as tx
 from omlish import check
@@ -65,6 +66,20 @@ class MessageDivider(tx.InitAddClass, tx.Static):
 class Message(tx.InitAddClass, tx.Static, lang.Abstract):
     init_add_class = 'message'
 
+    def __init__(
+            self,
+            *,
+            message_uuid: uuid.UUID | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._message_uuid = message_uuid
+
+    @property
+    def message_uuid(self) -> uuid.UUID | None:
+        return self._message_uuid
+
 
 #
 
@@ -72,8 +87,15 @@ class Message(tx.InitAddClass, tx.Static, lang.Abstract):
 class WelcomeMessage(Message):
     init_add_class = 'welcome-message'
 
-    def __init__(self, content: tx.VisualType) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            content: tx.VisualType,
+            *,
+            message_uuid: uuid.UUID | None = None,
+    ) -> None:
+        super().__init__(
+            message_uuid=message_uuid,
+        )
 
         self._content = content
 
@@ -88,8 +110,15 @@ class WelcomeMessage(Message):
 class UserMessage(Message):
     init_add_class = 'user-message'
 
-    def __init__(self, content: tx.VisualType) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            content: tx.VisualType,
+            *,
+            message_uuid: uuid.UUID | None = None,
+    ) -> None:
+        super().__init__(
+            message_uuid=message_uuid,
+        )
 
         self._content = content
 
@@ -125,8 +154,11 @@ class StaticAiMessage(AiMessage):
             content: str,
             *,
             markdown: bool = False,
+            message_uuid: uuid.UUID | None = None,
     ) -> None:
-        super().__init__()
+        super().__init__(
+            message_uuid=message_uuid,
+        )
 
         self._content = content
         self._markdown = markdown
@@ -141,8 +173,15 @@ class StaticAiMessage(AiMessage):
 class StreamAiMessage(AiMessage):
     init_add_class = 'stream-ai-message'
 
-    def __init__(self, content: str) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            content: str,
+            *,
+            message_uuid: uuid.UUID | None = None,
+    ) -> None:
+        super().__init__(
+            message_uuid=message_uuid,
+        )
 
         self._content = content
 
@@ -206,8 +245,12 @@ class ToolConfirmationMessage(Message):
             outer_content: tx.VisualType,
             inner_content: tx.VisualType,
             fut: asyncio.Future[bool],
+            *,
+            message_uuid: uuid.UUID | None = None,
     ) -> None:
-        super().__init__()
+        super().__init__(
+            message_uuid=message_uuid,
+        )
 
         self._outer_content = outer_content
         self._inner_content = inner_content
@@ -278,8 +321,15 @@ class ToolConfirmationMessage(Message):
 class UiMessage(Message):
     init_add_class = 'ui-message'
 
-    def __init__(self, content: tx.VisualType) -> None:
-        super().__init__()
+    def __init__(
+            self,
+            content: tx.VisualType,
+            *,
+            message_uuid: uuid.UUID | None = None,
+    ) -> None:
+        super().__init__(
+            message_uuid=message_uuid,
+        )
 
         self._content = content
 
