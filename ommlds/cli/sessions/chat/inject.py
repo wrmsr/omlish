@@ -6,7 +6,7 @@ from .configs import ChatConfig
 
 
 with lang.auto_proxy_import(globals()):
-    from ...rendering import inject as _rendering
+    from ...interfaces.bare.printing import inject as _printing
     from . import session as _session
     from .drivers import inject as _drivers
     from .facades import inject as _facades
@@ -28,7 +28,7 @@ def bind_chat(cfg: ChatConfig = ChatConfig()) -> inj.Elements:
 
         _interfaces.bind_interface(cfg.interface),
 
-        _rendering.bind_rendering(cfg.rendering),
+        _printing.bind_printing(cfg.printing),
     ])
 
     #

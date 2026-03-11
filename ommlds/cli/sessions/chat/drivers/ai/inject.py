@@ -8,7 +8,7 @@ from .injection import chat_options_providers
 
 with lang.auto_proxy_import(globals()):
     from . import events as _events
-    from . import rendering as _rendering
+    from . import printing as _printing
     from . import services as _services
     from . import tools as _tools
     from . import types as _types
@@ -41,7 +41,7 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
         els.append(stream_ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
 
         if cfg.verbose:
-            els.append(stream_ai_stack.push_bind(to_ctor=_rendering.RenderingStreamAiChatGenerator, singleton=True))
+            els.append(stream_ai_stack.push_bind(to_ctor=_printing.PrintingStreamAiChatGenerator, singleton=True))
 
         els.append(stream_ai_stack.push_bind(to_ctor=_events.EventEmittingStreamAiChatGenerator, singleton=True))
 
@@ -54,7 +54,7 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
 
         if cfg.verbose:
-            els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingAiChatGenerator, singleton=True))
+            els.append(ai_stack.push_bind(to_ctor=_printing.PrintingAiChatGenerator, singleton=True))
 
         els.append(ai_stack.push_bind(to_ctor=_events.EventEmittingAiChatGenerator, singleton=True))
 

@@ -1,8 +1,8 @@
 import typing as ta
 
-from .....inputs.asyncs import AsyncStringInput
-from .....inputs.asyncs import SyncAsyncStringInput
-from .....inputs.sync import InputSyncStringInput
+from .....interfaces.bare.inputs.asyncs import AsyncStringInput
+from .....interfaces.bare.inputs.asyncs import SyncAsyncStringInput
+from .....interfaces.bare.inputs.sync import InputSyncStringInput
 from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
 from ..base import ChatInterface

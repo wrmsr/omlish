@@ -1,31 +1,31 @@
 import typing as ta
 
 from ...... import minichain as mc
-from .....rendering.types import ContentRendering
+from .....interfaces.bare.printing.types import ContentPrinting
 from ...drivers.tools.execution import ToolUseExecutor
 
 
 ##
 
 
-class ArgsRenderingToolUseExecutor(ToolUseExecutor):
+class ArgsPrintingToolUseExecutor(ToolUseExecutor):
     def __init__(
             self,
             *,
             wrapped: ToolUseExecutor,
-            renderer: ContentRendering,
+            printer: ContentPrinting,
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
-        self._renderer = renderer
+        self._printer = printer
 
     async def execute_tool_use(
             self,
             use: 'mc.ToolUse',
             *ctx_items: ta.Any,
     ) -> 'mc.ToolUseResultMessage':
-        await self._renderer.render_content(mc.JsonContent(dict(
+        await self._printer.print_content(mc.JsonContent(dict(
             id=use.id,
             name=use.name,
             args=use.args,
@@ -34,17 +34,17 @@ class ArgsRenderingToolUseExecutor(ToolUseExecutor):
         return await self._wrapped.execute_tool_use(use, *ctx_items)
 
 
-class ResultRenderingToolUseExecutor(ToolUseExecutor):
+class ResultPrintingToolUseExecutor(ToolUseExecutor):
     def __init__(
             self,
             *,
             wrapped: ToolUseExecutor,
-            renderer: ContentRendering,
+            printer: ContentPrinting,
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
-        self._renderer = renderer
+        self._printer = printer
 
     async def execute_tool_use(
             self,
@@ -53,6 +53,6 @@ class ResultRenderingToolUseExecutor(ToolUseExecutor):
     ) -> 'mc.ToolUseResultMessage':
         out = await self._wrapped.execute_tool_use(use, *ctx_items)
 
-        await self._renderer.render_content(out.tur.c)
+        await self._printer.print_content(out.tur.c)
 
         return out

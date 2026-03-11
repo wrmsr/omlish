@@ -1,6 +1,6 @@
 import typing as ta
 
-from .. import asyncs
+from .... import asyncs
 from .sync import SyncStringInput
 
 

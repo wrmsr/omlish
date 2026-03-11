@@ -1,6 +1,6 @@
 from omlish import dataclasses as dc
 
-from ...rendering.configs import RenderingConfig
+from ...interfaces.bare.printing.configs import PrintingConfig
 from ..configs import SessionConfig
 from .drivers.configs import DriverConfig
 from .facades.configs import FacadeConfig
@@ -16,4 +16,4 @@ class ChatConfig(SessionConfig):
     driver: DriverConfig = DriverConfig()
     facade: FacadeConfig = FacadeConfig()
     interface: InterfaceConfig = BareInterfaceConfig()
-    rendering: RenderingConfig = RenderingConfig()
+    printing: PrintingConfig = PrintingConfig()

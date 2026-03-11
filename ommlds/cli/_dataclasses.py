@@ -768,28 +768,28 @@ def _process_dataclass__9e8c99e7d2eb01a6861d3003bd95e38b3c3fe9ae():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('modules', 'driver', 'facade', 'interface', 'rendering')), EqPlan(fields=('modules"
-        "', 'driver', 'facade', 'interface', 'rendering')), FrozenPlan(fields=('modules', 'driver', 'facade', 'interfac"
-        "e', 'rendering'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('modules', 'driver', 'faca"
-        "de', 'interface', 'rendering'), cache=False), InitPlan(fields=(InitPlan.Field(name='modules', annotation=OpRef"
-        "(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='driver', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='facade', annotation=OpRef(name='init.fields.2.annotation'), default=OpR"
-        "ef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='interface', annotation=OpRef(name='init"
-        ".fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='rend"
-        "ering', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None)), self_param='self', std_params=(), kw_only_params=('modules', 'driver', 'facade', 'interface', 'rend"
-        "ering'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Repr"
-        "Plan.Field(name='modules', kw_only=True, fn=None), ReprPlan.Field(name='driver', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='facade', kw_only=True, fn=None), ReprPlan.Field(name='interface', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='rendering', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('modules', 'driver', 'facade', 'interface', 'printing')), EqPlan(fields=('modules'"
+        ", 'driver', 'facade', 'interface', 'printing')), FrozenPlan(fields=('modules', 'driver', 'facade', 'interface'"
+        ", 'printing'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('modules', 'driver', 'facade'"
+        ", 'interface', 'printing'), cache=False), InitPlan(fields=(InitPlan.Field(name='modules', annotation=OpRef(nam"
+        "e='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='driver', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='facade', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(n"
+        "ame='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='interface', annotation=OpRef(name='init.fie"
+        "lds.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='printing"
+        "', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne)), self_param='self', std_params=(), kw_only_params=('modules', 'driver', 'facade', 'interface', 'printing'"
+        "), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.F"
+        "ield(name='modules', kw_only=True, fn=None), ReprPlan.Field(name='driver', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='facade', kw_only=True, fn=None), ReprPlan.Field(name='interface', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='printing', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='cd965f9b07ec62587cab2d0bd61a763123436c0f',
+    plan_repr_sha1='349fd76d26747dd6cbed7dc4561c7137e925c9fc',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -806,7 +806,7 @@ def _process_dataclass__9e8c99e7d2eb01a6861d3003bd95e38b3c3fe9ae():
         ('ommlds.cli.main', 'ChatConfig'),
     ),
 )
-def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
+def _process_dataclass__349fd76d26747dd6cbed7dc4561c7137e925c9fc():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -842,7 +842,7 @@ def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
                 driver=self.driver,
                 facade=self.facade,
                 interface=self.interface,
-                rendering=self.rendering,
+                printing=self.printing,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -860,7 +860,7 @@ def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
                 self.driver == other.driver and
                 self.facade == other.facade and
                 self.interface == other.interface and
-                self.rendering == other.rendering
+                self.printing == other.printing
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -873,7 +873,7 @@ def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
             'driver',
             'facade',
             'interface',
-            'rendering',
+            'printing',
         }
 
         def __setattr__(self, name, value):
@@ -894,7 +894,7 @@ def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
             'driver',
             'facade',
             'interface',
-            'rendering',
+            'printing',
         }
 
         def __delattr__(self, name):
@@ -916,7 +916,7 @@ def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
                 self.driver,
                 self.facade,
                 self.interface,
-                self.rendering,
+                self.printing,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -929,13 +929,13 @@ def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
             driver: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             facade: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             interface: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            rendering: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            printing: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'modules', modules)
             __dataclass__object_setattr(self, 'driver', driver)
             __dataclass__object_setattr(self, 'facade', facade)
             __dataclass__object_setattr(self, 'interface', interface)
-            __dataclass__object_setattr(self, 'rendering', rendering)
+            __dataclass__object_setattr(self, 'printing', printing)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -949,7 +949,7 @@ def _process_dataclass__cd965f9b07ec62587cab2d0bd61a763123436c0f():
             parts.append(f"driver={self.driver!r}")
             parts.append(f"facade={self.facade!r}")
             parts.append(f"interface={self.interface!r}")
-            parts.append(f"rendering={self.rendering!r}")
+            parts.append(f"printing={self.printing!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1620,6 +1620,143 @@ def _process_dataclass__d65d18393f357ae0fb02bb80268c6f1473462613():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('markdown',)), EqPlan(fields=('markdown',)), FrozenPlan(fields=('markdown',), allo"
+        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('markdown',), cache=False), InitPlan(fields=(Ini"
+        "tPlan.Field(name='markdown', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.field"
+        "s.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None),), self_param='self', std_params=(), kw_only_params=('markdown',), frozen=True, "
+        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='markd"
+        "own', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='254623427d52b86f69ed60d24a0e95b0b1b391ca',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+    ),
+    cls_names=(
+        ('ommlds.cli.main', 'PrintingConfig'),
+    ),
+)
+def _process_dataclass__254623427d52b86f69ed60d24a0e95b0b1b391ca():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                markdown=self.markdown,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.markdown == other.markdown
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'markdown',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'markdown',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.markdown,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            markdown: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'markdown', markdown)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"markdown={self.markdown!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('profile', 'args')), EqPlan(fields=('profile', 'args')), FrozenPlan(fields=('profi"
         "le', 'args'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('profile', 'args'), cache=Fals"
         "e), InitPlan(fields=(InitPlan.Field(name='profile', annotation=OpRef(name='init.fields.0.annotation'), default"
@@ -1751,143 +1888,6 @@ def _process_dataclass__3ca2bdd121559ad92e95a0e4bdf8210452f20e5d():
             parts = []
             parts.append(f"profile={self.profile!r}")
             parts.append(f"args={self.args!r}")
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
-
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
-
-    return _process_dataclass
-
-
-@_register(
-    plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('markdown',)), EqPlan(fields=('markdown',)), FrozenPlan(fields=('markdown',), allo"
-        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('markdown',), cache=False), InitPlan(fields=(Ini"
-        "tPlan.Field(name='markdown', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.field"
-        "s.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None),), self_param='self', std_params=(), kw_only_params=('markdown',), frozen=True, "
-        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='markd"
-        "own', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
-    ),
-    plan_repr_sha1='254623427d52b86f69ed60d24a0e95b0b1b391ca',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-    ),
-    cls_names=(
-        ('ommlds.cli.main', 'RenderingConfig'),
-    ),
-)
-def _process_dataclass__254623427d52b86f69ed60d24a0e95b0b1b391ca():
-    def _process_dataclass(
-        *,
-        __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
-    ):
-        def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
-                raise TypeError(self)
-            return __dataclass__cls(  # noqa
-                markdown=self.markdown,
-            )
-
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
-
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return (
-                self.markdown == other.markdown
-            )
-
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
-
-        __dataclass___setattr_frozen_fields = {
-            'markdown',
-        }
-
-        def __setattr__(self, name, value):
-            if (
-                type(self) is __dataclass__cls
-                or name in __dataclass___setattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
-
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
-
-        __dataclass___delattr_frozen_fields = {
-            'markdown',
-        }
-
-        def __delattr__(self, name):
-            if (
-                type(self) is __dataclass__cls
-                or name in __dataclass___delattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
-
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
-
-        def __hash__(self):
-            return hash((
-                self.markdown,
-            ))
-
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
-
-        def __init__(
-            self,
-            *,
-            markdown: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-        ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'markdown', markdown)
-
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
-
-        @__dataclass___recursive_repr()
-        def __repr__(self):
-            parts = []
-            parts.append(f"markdown={self.markdown!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

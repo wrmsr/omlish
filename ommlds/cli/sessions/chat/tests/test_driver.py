@@ -7,7 +7,7 @@ from omlish import lang
 
 from ..... import minichain as mc
 from ....backends.types import ChatChoicesServiceBackendProvider
-from ....rendering.configs import RenderingConfig
+from ....interfaces.bare.printing.configs import PrintingConfig
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
 from ..configs import ChatConfig
@@ -73,7 +73,7 @@ def test_driver():
                     state='new',
                 ),
             ),
-            rendering=RenderingConfig(
+            printing=PrintingConfig(
                 markdown=True,
             ),
         ),

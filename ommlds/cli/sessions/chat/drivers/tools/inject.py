@@ -12,7 +12,7 @@ from .injection import tool_context_providers
 with lang.auto_proxy_import(globals()):
     from . import errorhandling as _errorhandling
     from . import execution as _execution
-    from . import rendering as _rendering
+    from . import printing as _printing
 
 
 ##
@@ -61,8 +61,8 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     els.append(exec_stack.push_bind(to_ctor=_errorhandling.ErrorHandlingToolUseExecutor, singleton=True))
 
     if cfg.verbose:
-        els.append(exec_stack.push_bind(to_ctor=_rendering.ArgsRenderingToolUseExecutor, singleton=True))
-        els.append(exec_stack.push_bind(to_ctor=_rendering.ResultRenderingToolUseExecutor, singleton=True))
+        els.append(exec_stack.push_bind(to_ctor=_printing.ArgsPrintingToolUseExecutor, singleton=True))
+        els.append(exec_stack.push_bind(to_ctor=_printing.ResultPrintingToolUseExecutor, singleton=True))
 
     els.extend([
         inj.bind(_execution.ToolUseExecutor, to_key=exec_stack.top),

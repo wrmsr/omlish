@@ -256,8 +256,8 @@ class ChatProfile(AspectProfile[ChatConfig]):
                         stream=bool(ctx.args.stream),
                     ),
                 ),
-                rendering=dc.replace(
-                    cfg.rendering,
+                printing=dc.replace(
+                    cfg.printing,
                     markdown=bool(ctx.args.markdown),
                 ),
             )

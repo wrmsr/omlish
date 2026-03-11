@@ -14,6 +14,10 @@ from omlish.sockets.peercreds import get_unix_socket_peer_cred
 ##
 
 
+def _default_socket_dir() -> str:
+    return os.path.join(os.path.dirname(__file__), '.socks')
+
+
 def _get_socket_path(socket_dir: str, pid: int | None = None) -> str:
     """Get the socket file path for a given PID (or current process)."""
 
@@ -47,6 +51,9 @@ def _iter_pid_socket_files(socket_dir: str, pid: int) -> list[str]:
 
 def _parse_socket_pid(filename: str) -> int:
     return int(filename[:-5].split('-', 1)[0])
+
+
+##
 
 
 async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, queue: asyncio.Queue) -> None:
@@ -115,6 +122,9 @@ async def _run_server(socket_path: str, queue: asyncio.Queue) -> asyncio.Server:
     return server
 
 
+##
+
+
 async def _chat_loop(socket_path: str) -> None:
     queue: asyncio.Queue[tuple[str, str | None]] = asyncio.Queue()
     server_queue: asyncio.Queue[str] = asyncio.Queue()
@@ -180,11 +190,16 @@ async def _chat_loop(socket_path: str) -> None:
             os.unlink(socket_path)
 
 
-def _chat_command(args: argparse.Namespace) -> int:
+def _chat_command(
+        *,
+        socket_dir: str | None = None,
+) -> int:
     """Execute the chat command."""
 
-    _ensure_socket_dir(args.socket_dir)
-    socket_path = _get_socket_path(args.socket_dir)
+    if socket_dir is None:
+        socket_dir = _default_socket_dir()
+    _ensure_socket_dir(socket_dir)
+    socket_path = _get_socket_path(socket_dir)
 
     # Remove stale socket file if it exists
     if os.path.exists(socket_path):
@@ -205,6 +220,9 @@ def _chat_command(args: argparse.Namespace) -> int:
         if os.path.exists(socket_path):
             os.unlink(socket_path)
         return 1
+
+
+##
 
 
 def _send_notification(
@@ -254,6 +272,9 @@ def _send_notification(
 
     finally:
         sock.close()
+
+
+#
 
 
 async def _async_send_notification(
@@ -326,33 +347,45 @@ async def _async_send_notification(
                 pass
 
 
-def _notify_command(args: argparse.Namespace) -> int:
+##
+
+
+def _notify_command(
+        payload: str,
+        *,
+        socket_dir: str | None = None,
+        pid: int | None = None,
+        latest: bool = False,
+) -> int:
     """Execute the notify command."""
 
-    _ensure_socket_dir(args.socket_dir)
+    if socket_dir is None:
+        socket_dir = _default_socket_dir()
+    _ensure_socket_dir(socket_dir)
+    _ensure_socket_dir(socket_dir)
 
-    if args.pid:
+    if pid:
         # Notify specific PID
-        socket_files = _iter_pid_socket_files(args.socket_dir, args.pid)
+        socket_files = _iter_pid_socket_files(socket_dir, pid)
         if not socket_files:
-            print(f'Socket for PID {args.pid} not found', file=sys.stderr)
+            print(f'Socket for PID {pid} not found', file=sys.stderr)
             return 1
 
         for filename in socket_files:
-            socket_path = os.path.join(args.socket_dir, filename)
-            if (ack := _send_notification(socket_path, args.payload)) is not None:
+            socket_path = os.path.join(socket_dir, filename)
+            if (ack := _send_notification(socket_path, payload)) is not None:
                 if (ack := ack.strip()):
                     print(ack)
                 return 0
 
-        print(f'Failed to send notification to PID {args.pid}', file=sys.stderr)
+        print(f'Failed to send notification to PID {pid}', file=sys.stderr)
         return 1
 
-    elif args.latest:
+    elif latest:
         # Notify the most recently modified socket
         socket_files = []
-        for filename in _iter_socket_files(args.socket_dir):
-            path = os.path.join(args.socket_dir, filename)
+        for filename in _iter_socket_files(socket_dir):
+            path = os.path.join(socket_dir, filename)
             try:
                 mtime = os.path.getmtime(path)
                 socket_files.append((mtime, path, filename))
@@ -367,7 +400,7 @@ def _notify_command(args: argparse.Namespace) -> int:
         socket_files.sort(reverse=True, key=lambda x: x[0])
 
         for _, path, filename in socket_files:
-            if (ack := _send_notification(path, args.payload)) is not None:
+            if (ack := _send_notification(path, payload)) is not None:
                 pid = _parse_socket_pid(filename)
                 print(pid)
                 if (ack := ack.strip()):
@@ -381,9 +414,9 @@ def _notify_command(args: argparse.Namespace) -> int:
         # Notify all sockets
         success_pids = []
 
-        for filename in _iter_socket_files(args.socket_dir):
-            path = os.path.join(args.socket_dir, filename)
-            if (ack := _send_notification(path, args.payload)) is not None:
+        for filename in _iter_socket_files(socket_dir):
+            path = os.path.join(socket_dir, filename)
+            if (ack := _send_notification(path, payload)) is not None:
                 pid = _parse_socket_pid(filename)
                 print(pid)
                 print(ack)
@@ -395,18 +428,27 @@ def _notify_command(args: argparse.Namespace) -> int:
             return 1
 
 
-def _cleanup_command(args: argparse.Namespace) -> int:
+##
+
+
+def _cleanup_command(
+        *,
+        socket_dir: str | None = None,
+        min_age: float | None = 5.,
+) -> int:
     """Execute the cleanup command."""
 
-    _ensure_socket_dir(args.socket_dir)
+    if socket_dir is None:
+        socket_dir = _default_socket_dir()
+    _ensure_socket_dir(socket_dir)
 
     current_time = time.time()
 
     print(f'{"File":<40} {"Created":<20} {"Modified":<20} {"Status":<10}')
     print('-' * 89)
 
-    for filename in _iter_socket_files(args.socket_dir):
-        path = os.path.join(args.socket_dir, filename)
+    for filename in _iter_socket_files(socket_dir):
+        path = os.path.join(socket_dir, filename)
 
         try:
             stat_info = os.stat(path)
@@ -415,7 +457,7 @@ def _cleanup_command(args: argparse.Namespace) -> int:
             age = current_time - mtime
 
             # Skip if too young (to avoid race condition)
-            if age < args.min_age:
+            if age < min_age:
                 continue
 
             # Try to connect
@@ -442,11 +484,14 @@ def _cleanup_command(args: argparse.Namespace) -> int:
     return 0
 
 
+##
+
+
 def _main() -> None:
     """Main entry point."""
 
     parser = argparse.ArgumentParser(description='Unix socket notification system')
-    parser.add_argument('--socket-dir', default=os.path.join(os.path.dirname(__file__), '.socks'))
+    parser.add_argument('--socket-dir')
 
     subparsers = parser.add_subparsers(dest='command', required=True)
 
@@ -467,11 +512,19 @@ def _main() -> None:
     args = parser.parse_args()
 
     if args.command == 'chat':
-        sys.exit(_chat_command(args))
+        sys.exit(_chat_command(
+            socket_dir=args.socket_dir,
+        ))
     elif args.command == 'notify':
-        sys.exit(_notify_command(args))
+        sys.exit(_notify_command(
+            args.payload,
+            socket_dir=args.socket_dir,
+        ))
     elif args.command == 'cleanup':
-        sys.exit(_cleanup_command(args))
+        sys.exit(_cleanup_command(
+            socket_dir=args.socket_dir,
+            min_age=args.min_age,
+        ))
 
 
 if __name__ == '__main__':
