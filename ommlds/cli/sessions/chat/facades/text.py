@@ -26,14 +26,25 @@ FacadeTextColor: ta.TypeAlias = ta.Literal[
 
 @dc.dataclass(frozen=True)
 class FacadeText(lang.Abstract, lang.Sealed):
+    _BLANK: ta.ClassVar['StrFacadeText']
+
+    @classmethod
+    def blank(cls) -> 'StrFacadeText':
+        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
+
+        return cls._BLANK
+
     @classmethod
     def of(cls, obj: CanFacadeText) -> 'FacadeText':
-        check.is_(cls, FacadeText, '`FacadeText.of()` must not be accessed through subclasses.')
+        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
 
         if isinstance(obj, FacadeText):
             return obj
 
         elif isinstance(obj, str):
+            if not obj:
+                return cls._BLANK
+
             return StrFacadeText(obj)
 
         elif isinstance(obj, ta.Sequence):
@@ -44,13 +55,22 @@ class FacadeText(lang.Abstract, lang.Sealed):
 
     @classmethod
     def str_of(cls, obj: CanFacadeText) -> str:
-        check.is_(cls, FacadeText, '`FacadeText.str_of()` must not be accessed through subclasses.')
+        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
 
         if isinstance(obj, str):
             return obj
 
         else:
             return str(cls.of(obj))
+
+    @classmethod
+    def join(cls, delim: CanFacadeText, items: ta.Iterable[CanFacadeText]) -> 'FacadeText':
+        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
+
+        if not delim:
+            return cls._BLANK
+
+        return ConcatFacadeText(tuple(lang.interleave(map(cls.of, items), cls.of(delim))))
 
     #
 
@@ -84,6 +104,9 @@ class FacadeText(lang.Abstract, lang.Sealed):
         return out.getvalue()
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
 class StrFacadeText(FacadeText, lang.Final):
@@ -93,6 +116,12 @@ class StrFacadeText(FacadeText, lang.Final):
 
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
         fn(self.s)
+
+
+FacadeText._BLANK = StrFacadeText('')  # noqa
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -105,6 +134,9 @@ class ConcatFacadeText(FacadeText, lang.Final):
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
         for t in self.l:
             t.write_str_to(fn)
+
+
+##
 
 
 @dc.dataclass(frozen=True)

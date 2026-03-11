@@ -33,7 +33,7 @@ def extra_field_params(
         repr_fn: ReprFn | None = None,
         repr_priority: int | None = None,
 ):
-    raise NotImplementedError
+    return {}
 
 
 def _extra_field_params(**kwargs: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:

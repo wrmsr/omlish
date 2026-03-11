@@ -67,7 +67,7 @@ def extra_class_params(
         allow_redundant_decorator: bool | None = None,
 ):
     def inner(cls):
-        raise NotImplementedError
+        return cls
     return inner
 
 
