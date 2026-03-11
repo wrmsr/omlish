@@ -11,7 +11,7 @@ from omlish import lang
 class ToolsConfig:
     enabled_tools: ta.Iterable[str] | None = None
 
-    verbose: bool = False
+    print_executions: bool = False
 
 
 ##

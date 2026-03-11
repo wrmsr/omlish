@@ -145,7 +145,7 @@
 .tool-confirmation-message-inner-content {
     background: $background;
 
-    margin: 1;
+    margin: 1 1 0 1;
     padding: 1;
 }
 

@@ -40,7 +40,7 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
 
         els.append(stream_ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
 
-        if cfg.verbose:
+        if cfg.print_responses:
             els.append(stream_ai_stack.push_bind(to_ctor=_printing.PrintingStreamAiChatGenerator, singleton=True))
 
         els.append(stream_ai_stack.push_bind(to_ctor=_events.EventEmittingStreamAiChatGenerator, singleton=True))
@@ -53,7 +53,7 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
     else:
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
 
-        if cfg.verbose:
+        if cfg.print_responses:
             els.append(ai_stack.push_bind(to_ctor=_printing.PrintingAiChatGenerator, singleton=True))
 
         els.append(ai_stack.push_bind(to_ctor=_events.EventEmittingAiChatGenerator, singleton=True))

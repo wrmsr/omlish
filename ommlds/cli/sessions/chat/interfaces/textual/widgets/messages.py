@@ -188,8 +188,8 @@ class ToolConfirmationControls(tx.Static):
         pass
 
     def compose(self) -> tx.ComposeResult:
-        yield tx.Button('Allow', action='allow')
-        yield tx.Button('Deny', action='deny')
+        yield tx.Button('Allow (F10)', action='allow')
+        yield tx.Button('Deny (F2)', action='deny')
 
     def action_allow(self) -> None:
         self.post_message(self.ClickedAllow())

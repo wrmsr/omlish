@@ -67,7 +67,7 @@ class ChatAppScreen(tx.Screen):
         ),
 
         tx.Binding(
-            'f11',
+            'f2',
             'app.deny_all_pending_tool_uses',
             'Denies all pending tool uses',
         ),

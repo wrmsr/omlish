@@ -60,7 +60,7 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
 
     els.append(exec_stack.push_bind(to_ctor=_errorhandling.ErrorHandlingToolUseExecutor, singleton=True))
 
-    if cfg.verbose:
+    if cfg.print_executions:
         els.append(exec_stack.push_bind(to_ctor=_printing.ArgsPrintingToolUseExecutor, singleton=True))
         els.append(exec_stack.push_bind(to_ctor=_printing.ResultPrintingToolUseExecutor, singleton=True))
 

@@ -164,7 +164,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                         cfg.driver,
                         ai=dc.replace(
                             cfg.driver.ai,
-                            verbose=True,
+                            print_responses=True,
                         ),
                     ),
                     interface=dc.replace(
@@ -294,6 +294,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                             *(cfg.driver.tools.enabled_tools or []),
                             *enabled_tools,
                         },
+                        # print_executions=True,
                     ),
                 ),
                 interface=dc.replace(

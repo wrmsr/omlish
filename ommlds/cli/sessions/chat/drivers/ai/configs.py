@@ -8,6 +8,6 @@ from omlish import dataclasses as dc
 class AiConfig:
     stream: bool = False
 
-    verbose: bool = False
+    print_responses: bool = False
 
     enable_tools: bool = False

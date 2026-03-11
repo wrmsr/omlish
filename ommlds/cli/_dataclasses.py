@@ -278,22 +278,22 @@ def _process_dataclass__b3c5ceb1d3f2d52621e06fa7d3819d96ffea7347():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('stream', 'verbose', 'enable_tools')), EqPlan(fields=('stream', 'verbose', 'enable"
-        "_tools')), FrozenPlan(fields=('stream', 'verbose', 'enable_tools'), allow_dynamic_dunder_attrs=False), HashPla"
-        "n(action='add', fields=('stream', 'verbose', 'enable_tools'), cache=False), InitPlan(fields=(InitPlan.Field(na"
-        "me='stream', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='verbose', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef"
-        "(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_tools', annotation=OpRef(name='ini"
-        "t.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_"
-        "params=(), kw_only_params=('stream', 'verbose', 'enable_tools'), frozen=True, slots=False, post_init_params=No"
-        "ne, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='stream', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='verbose', kw_only=True, fn=None), ReprPlan.Field(name='enable_tools', kw_only=True, fn=None))"
-        ", id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('stream', 'print_responses', 'enable_tools')), EqPlan(fields=('stream', 'print_res"
+        "ponses', 'enable_tools')), FrozenPlan(fields=('stream', 'print_responses', 'enable_tools'), allow_dynamic_dund"
+        "er_attrs=False), HashPlan(action='add', fields=('stream', 'print_responses', 'enable_tools'), cache=False), In"
+        "itPlan(fields=(InitPlan.Field(name='stream', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef("
+        "name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='print_responses', annotation=OpRef(name='i"
+        "nit.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='e"
+        "nable_tools', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None)), self_param='self', std_params=(), kw_only_params=('stream', 'print_responses', 'enable_tools'"
+        "), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.F"
+        "ield(name='stream', kw_only=True, fn=None), ReprPlan.Field(name='print_responses', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='enable_tools', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='0af757919efd30aee522fc0804dd63f932b30d84',
+    plan_repr_sha1='17738f142862654c42f9f84d427d220ccb503c93',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -306,7 +306,7 @@ def _process_dataclass__b3c5ceb1d3f2d52621e06fa7d3819d96ffea7347():
         ('ommlds.cli.main', 'AiConfig'),
     ),
 )
-def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
+def _process_dataclass__17738f142862654c42f9f84d427d220ccb503c93():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -335,7 +335,7 @@ def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 stream=self.stream,
-                verbose=self.verbose,
+                print_responses=self.print_responses,
                 enable_tools=self.enable_tools,
             )
 
@@ -351,7 +351,7 @@ def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
                 return NotImplemented
             return (
                 self.stream == other.stream and
-                self.verbose == other.verbose and
+                self.print_responses == other.print_responses and
                 self.enable_tools == other.enable_tools
             )
 
@@ -362,7 +362,7 @@ def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
 
         __dataclass___setattr_frozen_fields = {
             'stream',
-            'verbose',
+            'print_responses',
             'enable_tools',
         }
 
@@ -381,7 +381,7 @@ def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
 
         __dataclass___delattr_frozen_fields = {
             'stream',
-            'verbose',
+            'print_responses',
             'enable_tools',
         }
 
@@ -401,7 +401,7 @@ def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
         def __hash__(self):
             return hash((
                 self.stream,
-                self.verbose,
+                self.print_responses,
                 self.enable_tools,
             ))
 
@@ -412,11 +412,11 @@ def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
             self,
             *,
             stream: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            verbose: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            print_responses: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             enable_tools: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'stream', stream)
-            __dataclass__object_setattr(self, 'verbose', verbose)
+            __dataclass__object_setattr(self, 'print_responses', print_responses)
             __dataclass__object_setattr(self, 'enable_tools', enable_tools)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -428,7 +428,7 @@ def _process_dataclass__0af757919efd30aee522fc0804dd63f932b30d84():
         def __repr__(self):
             parts = []
             parts.append(f"stream={self.stream!r}")
-            parts.append(f"verbose={self.verbose!r}")
+            parts.append(f"print_responses={self.print_responses!r}")
             parts.append(f"enable_tools={self.enable_tools!r}")
             return (
                 f"{self.__class__.__qualname__}("
@@ -2226,19 +2226,19 @@ def _process_dataclass__f515764cf4b50b208c232c9355d9b2ed75cf26f4():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('enabled_tools', 'verbose')), EqPlan(fields=('enabled_tools', 'verbose')), FrozenP"
-        "lan(fields=('enabled_tools', 'verbose'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('en"
-        "abled_tools', 'verbose'), cache=False), InitPlan(fields=(InitPlan.Field(name='enabled_tools', annotation=OpRef"
-        "(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='verbose', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None)), self_param='self', std_params=(), kw_only_params=('enabled_tools', 'verbose'), frozen=True"
-        ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ena"
-        "bled_tools', kw_only=True, fn=None), ReprPlan.Field(name='verbose', kw_only=True, fn=None)), id=False, terse=F"
-        "alse, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('enabled_tools', 'print_executions')), EqPlan(fields=('enabled_tools', 'print_exec"
+        "utions')), FrozenPlan(fields=('enabled_tools', 'print_executions'), allow_dynamic_dunder_attrs=False), HashPla"
+        "n(action='add', fields=('enabled_tools', 'print_executions'), cache=False), InitPlan(fields=(InitPlan.Field(na"
+        "me='enabled_tools', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='print_executions', annotation=OpRef(name='init.fields.1.annotation'"
+        "), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_par"
+        "ams=('enabled_tools', 'print_executions'), frozen=True, slots=False, post_init_params=None, init_fns=(), valid"
+        "ate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='enabled_tools', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='print_executions', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42',
+    plan_repr_sha1='9667d785267fdec2e4d29d9c3ca27167fce824bd',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2249,7 +2249,7 @@ def _process_dataclass__f515764cf4b50b208c232c9355d9b2ed75cf26f4():
         ('ommlds.cli.main', 'ToolsConfig'),
     ),
 )
-def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
+def _process_dataclass__9667d785267fdec2e4d29d9c3ca27167fce824bd():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2276,7 +2276,7 @@ def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 enabled_tools=self.enabled_tools,
-                verbose=self.verbose,
+                print_executions=self.print_executions,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2291,7 +2291,7 @@ def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
                 return NotImplemented
             return (
                 self.enabled_tools == other.enabled_tools and
-                self.verbose == other.verbose
+                self.print_executions == other.print_executions
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2301,7 +2301,7 @@ def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
 
         __dataclass___setattr_frozen_fields = {
             'enabled_tools',
-            'verbose',
+            'print_executions',
         }
 
         def __setattr__(self, name, value):
@@ -2319,7 +2319,7 @@ def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
 
         __dataclass___delattr_frozen_fields = {
             'enabled_tools',
-            'verbose',
+            'print_executions',
         }
 
         def __delattr__(self, name):
@@ -2338,7 +2338,7 @@ def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
         def __hash__(self):
             return hash((
                 self.enabled_tools,
-                self.verbose,
+                self.print_executions,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2348,10 +2348,10 @@ def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
             self,
             *,
             enabled_tools: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            verbose: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            print_executions: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'enabled_tools', enabled_tools)
-            __dataclass__object_setattr(self, 'verbose', verbose)
+            __dataclass__object_setattr(self, 'print_executions', print_executions)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2362,7 +2362,7 @@ def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
         def __repr__(self):
             parts = []
             parts.append(f"enabled_tools={self.enabled_tools!r}")
-            parts.append(f"verbose={self.verbose!r}")
+            parts.append(f"print_executions={self.print_executions!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
