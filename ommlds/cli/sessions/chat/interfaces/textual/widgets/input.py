@@ -2,7 +2,6 @@
 import typing as ta
 
 from omdev.tui import textual as tx
-from omlish import check
 from omlish import dataclasses as dc
 
 from ..suggestions import SuggestionItem
@@ -142,7 +141,7 @@ class InputTextArea(tx.TextArea):
             self.set_mode('/')
 
 
-class InputContainer(tx.Static):
+class InputContainer(tx.ComposeOnce, tx.Static):
     def __init__(
             self,
             *,
@@ -157,12 +156,7 @@ class InputContainer(tx.Static):
         self._input_glyph = tx.Static('>', id='input-glyph')
         self._suggestions_popup = SuggestionsPopup(self)
 
-    _has_composed = False
-
-    def compose(self) -> tx.ComposeResult:
-        check.state(not self._has_composed)
-        self._has_composed = True
-
+    def _compose_once(self) -> tx.ComposeResult:
         with tx.Vertical(id='input-vertical'):
             yield self._suggestions_popup
             with tx.Vertical(id='input-vertical2'):

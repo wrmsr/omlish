@@ -293,19 +293,12 @@ class UiMessage(Message):
 ##
 
 
-class MessagesContainer(tx.VerticalScroll):
+class MessagesContainer(tx.ComposeOnce, tx.VerticalScroll):
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(id='messages-container', **kwargs)
 
     #
 
-    _has_composed = False
-
-    def compose(self) -> tx.ComposeResult:
-        check.state(not self._has_composed)
-        self._has_composed = True
-
-        #
-
+    def _compose_once(self) -> tx.ComposeResult:
         return
-        yield  # type: ignore  # noqa
+        yield  # noqa

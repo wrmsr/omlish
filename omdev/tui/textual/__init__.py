@@ -30,6 +30,7 @@ with _lang.auto_proxy_init(globals()):
     from textual import widget  # noqa
     from textual import widgets  # noqa
     from textual import work  # noqa
+    from textual._compositor import Compositor  # noqa
     from textual.app import ActionError  # noqa
     from textual.app import ActiveModeError  # noqa
     from textual.app import App as App_  # noqa
@@ -163,6 +164,7 @@ with _lang.auto_proxy_init(globals()):
     from textual.screen import ModalScreen  # noqa
     from textual.screen import Screen as Screen_  # noqa
     from textual.screen import SystemModalScreen  # noqa
+    from textual.strip import Strip  # noqa
     from textual.style import Style  # noqa
     from textual.suggester import SuggestFromList  # noqa
     from textual.suggester import Suggester  # noqa
@@ -287,4 +289,8 @@ with _lang.auto_proxy_init(globals()):
     from .types import (  # noqa
         TopRightBottomLeft,
         trbl_to_dict,
+    )
+
+    from .widgets2 import (  # noqa
+        ComposeOnce,
     )
