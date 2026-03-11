@@ -1,3 +1,5 @@
+from ...facades.text import CanFacadeText
+from ...facades.text import FacadeText
 from ...facades.ui import UiMessageDisplayer
 from .app import ChatAppGetter
 
@@ -15,5 +17,5 @@ class ChatAppUiMessageDisplayer(UiMessageDisplayer):
 
         self._app = app
 
-    async def display_ui_message(self, content: str) -> None:
-        await (await self._app()).display_ui_message(content)
+    async def display_ui_message(self, text: CanFacadeText) -> None:
+        await (await self._app()).display_ui_message(FacadeText.str_of(text))

@@ -5,6 +5,7 @@ from ..... import check
 from ..... import lang
 from .....lite.dataclasses import is_immediate_dataclass
 from ....specs import InitFn
+from ....specs import ReprFn
 
 
 T = ta.TypeVar('T')
@@ -44,11 +45,40 @@ class _ExtraClassParamsMetadata(lang.Marker):
     pass
 
 
-def extra_class_params(**kwargs):
+# The following function duplicates non-stdlib kwargs/defaults from the class decorator, but does so only for
+# autocomplete - the underlying impl blindly forwards given kwargs to allow distinction between `None` and absent.
+
+
+def extra_class_params(
+        *,
+
+        metadata: ta.Sequence[ta.Any] | None = None,  # noqa
+
+        reorder: bool | None = None,
+        cache_hash: bool | None = None,
+        generic_init: bool | None = None,
+        override: bool | None = None,
+        allow_dynamic_dunder_attrs: bool | None = None,
+
+        repr_id: bool | None = None,
+        terse_repr: bool | None = None,
+        default_repr_fn: ReprFn | None = None,
+
+        allow_redundant_decorator: bool | None = None,
+):
+    def inner(cls):
+        raise NotImplementedError
+    return inner
+
+
+def _extra_class_params(**kwargs):
     def inner(cls):
         _append_cls_metadata(cls, _ExtraClassParamsMetadata, kwargs)
         return cls
     return inner
+
+
+globals()['extra_class_params'] = _extra_class_params
 
 
 ##

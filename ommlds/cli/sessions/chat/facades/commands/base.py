@@ -5,6 +5,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.argparse import all as argparse
 
+from ..text import CanFacadeText
+
 
 ##
 
@@ -62,7 +64,7 @@ class Command(lang.Abstract):
 
     @dc.dataclass(frozen=True, kw_only=True)
     class Context:
-        print: ta.Callable[[str], ta.Awaitable[None]]
+        print: ta.Callable[[CanFacadeText], ta.Awaitable[None]]
 
     @ta.final
     async def run(self, ctx: Context, argv: list[str]) -> None:

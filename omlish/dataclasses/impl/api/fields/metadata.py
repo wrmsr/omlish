@@ -4,7 +4,10 @@ import typing as ta
 from ..... import check
 from ..... import lang
 from ....debug import DEBUG
+from ....specs import CoerceFn
 from ....specs import FieldSpec
+from ....specs import ReprFn
+from ....specs import ValidateFn
 from ....tools.modifiers import field_modifier
 from ...utils import chain_mapping_proxy
 
@@ -16,8 +19,28 @@ class _ExtraFieldParamsMetadata(lang.Marker):
     pass
 
 
-def extra_field_params(**kwargs: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:
+# The following function duplicates non-stdlib kwargs/defaults from the field constructor, but does so only for
+# autocomplete - the underlying impl blindly forwards given kwargs to allow distinction between `None` and absent.
+
+
+def extra_field_params(
+        *,
+
+        coerce: bool | CoerceFn | None = None,
+        validate: ValidateFn | None = None,
+        check_type: bool | type | tuple[type | None, ...] | None = None,
+        override: bool | None = None,
+        repr_fn: ReprFn | None = None,
+        repr_priority: int | None = None,
+):
+    raise NotImplementedError
+
+
+def _extra_field_params(**kwargs: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:
     return {_ExtraFieldParamsMetadata: kwargs}
+
+
+globals()['extra_field_params'] = _extra_field_params
 
 
 ##

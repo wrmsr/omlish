@@ -30,7 +30,7 @@ def field(
         doc=None,
 
         coerce: bool | CoerceFn | None = None,
-        validate: ValidateFn | None = None,  # noqa
+        validate: ValidateFn | None = None,
         check_type: bool | type | tuple[type | None, ...] | None = None,
         override: bool | None = None,
         repr_fn: ReprFn | None = None,
@@ -53,7 +53,7 @@ def field(
     if md is None:
         md = efp
     else:
-        md = collections.ChainMap(efp, md)  # type: ignore[arg-type]
+        md = collections.ChainMap(efp, md)
 
     return dc.field(
         default=default,

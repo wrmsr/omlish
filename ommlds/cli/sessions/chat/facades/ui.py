@@ -3,24 +3,27 @@ import typing as ta
 
 from omlish import lang
 
+from .text import CanFacadeText
+from .text import FacadeText
+
 
 ##
 
 
 class UiMessageDisplayer(lang.Abstract):
     @abc.abstractmethod
-    def display_ui_message(self, content: str) -> ta.Awaitable[None]:
+    def display_ui_message(self, text: CanFacadeText) -> ta.Awaitable[None]:
         pass
 
 
 class NopUiMessageDisplayer(UiMessageDisplayer):
-    async def display_ui_message(self, content: str) -> None:
+    async def display_ui_message(self, text: CanFacadeText) -> None:
         pass
 
 
 class PrintMessageDisplayer(UiMessageDisplayer):
-    async def display_ui_message(self, content: str) -> None:
-        print(content)
+    async def display_ui_message(self, text: CanFacadeText) -> None:
+        print(FacadeText.str_of(text))
 
 
 ##
