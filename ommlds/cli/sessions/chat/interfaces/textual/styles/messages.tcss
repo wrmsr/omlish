@@ -1,6 +1,6 @@
 /* Container */
 
-#messages-container {
+.messages-container {
     width: 100%;
     height: 1fr;
 

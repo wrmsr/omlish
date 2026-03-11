@@ -10,7 +10,9 @@ from omlish import lang
 ##
 
 
-class MessageDivider(tx.Static):
+class MessageDivider(tx.InitAddClass, tx.Static):
+    init_add_class = 'message-divider'
+
     def __init__(
             self,
             text: str = '',
@@ -20,8 +22,6 @@ class MessageDivider(tx.Static):
             text_style: ta.Any | None = None,
     ) -> None:
         super().__init__()
-
-        self.add_class('message-divider')
 
         self._text = text
         self._align = align
@@ -62,21 +62,18 @@ class MessageDivider(tx.Static):
 ##
 
 
-class Message(tx.Static, lang.Abstract):
-    def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
-        super().__init__(*args, **kwargs)
-
-        self.add_class('message')
+class Message(tx.InitAddClass, tx.Static, lang.Abstract):
+    init_add_class = 'message'
 
 
 #
 
 
 class WelcomeMessage(Message):
+    init_add_class = 'welcome-message'
+
     def __init__(self, content: tx.VisualType) -> None:
         super().__init__()
-
-        self.add_class('welcome-message')
 
         self._content = content
 
@@ -89,10 +86,10 @@ class WelcomeMessage(Message):
 
 
 class UserMessage(Message):
+    init_add_class = 'user-message'
+
     def __init__(self, content: tx.VisualType) -> None:
         super().__init__()
-
-        self.add_class('user-message')
 
         self._content = content
 
@@ -107,10 +104,7 @@ class UserMessage(Message):
 
 
 class AiMessage(Message, lang.Abstract):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.add_class('ai-message')
+    init_add_class = 'ai-message'
 
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='ai-message-outer message-outer'):
@@ -124,6 +118,8 @@ class AiMessage(Message, lang.Abstract):
 
 
 class StaticAiMessage(AiMessage):
+    init_add_class = 'static-ai-message'
+
     def __init__(
             self,
             content: str,
@@ -143,6 +139,8 @@ class StaticAiMessage(AiMessage):
 
 
 class StreamAiMessage(AiMessage):
+    init_add_class = 'stream-ai-message'
+
     def __init__(self, content: str) -> None:
         super().__init__()
 
@@ -180,7 +178,9 @@ class StreamAiMessage(AiMessage):
 #
 
 
-class ToolConfirmationControls(tx.Static):
+class ToolConfirmationControls(tx.InitAddClass, tx.Static):
+    init_add_class = 'tool-confirmation-controls'
+
     class ClickedAllow(tx.Message):
         pass
 
@@ -199,6 +199,8 @@ class ToolConfirmationControls(tx.Static):
 
 
 class ToolConfirmationMessage(Message):
+    init_add_class = 'tool-confirmation-message'
+
     def __init__(
             self,
             outer_content: tx.VisualType,
@@ -206,8 +208,6 @@ class ToolConfirmationMessage(Message):
             fut: asyncio.Future[bool],
     ) -> None:
         super().__init__()
-
-        self.add_class('tool-confirmation-message')
 
         self._outer_content = outer_content
         self._inner_content = inner_content
@@ -276,10 +276,10 @@ class ToolConfirmationMessage(Message):
 
 
 class UiMessage(Message):
+    init_add_class = 'ui-message'
+
     def __init__(self, content: tx.VisualType) -> None:
         super().__init__()
-
-        self.add_class('ui-message')
 
         self._content = content
 
@@ -293,9 +293,8 @@ class UiMessage(Message):
 ##
 
 
-class MessagesContainer(tx.ComposeOnce, tx.VerticalScroll):
-    def __init__(self, **kwargs: ta.Any) -> None:
-        super().__init__(id='messages-container', **kwargs)
+class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
+    init_add_class = 'messages-container'
 
     #
 

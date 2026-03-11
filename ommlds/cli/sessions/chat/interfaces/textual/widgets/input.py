@@ -11,9 +11,11 @@ from ..suggestions import SuggestionsManager
 ##
 
 
-class SuggestionsPopup(tx.Static):
+class SuggestionsPopup(tx.InitAddClass, tx.Static):
+    init_add_class = 'suggestions-popup'
+
     def __init__(self, ic: 'InputContainer', **kwargs: ta.Any) -> None:
-        super().__init__(**kwargs, id='suggestions-popup')
+        super().__init__(**kwargs)
 
         self._ic = ic
 
@@ -53,10 +55,11 @@ class SuggestionsPopup(tx.Static):
 InputMode: ta.TypeAlias = ta.Literal['>', '/']
 
 
-class InputTextArea(tx.TextArea):
+class InputTextArea(tx.InitAddClass, tx.TextArea):
+    init_add_class = 'input'
+
     def __init__(self, ic: 'InputContainer', **kwargs: ta.Any) -> None:
         super().__init__(
-            id='input',
             placeholder='...',
             **kwargs,
         )
@@ -141,25 +144,27 @@ class InputTextArea(tx.TextArea):
             self.set_mode('/')
 
 
-class InputContainer(tx.ComposeOnce, tx.Static):
+class InputContainer(tx.InitAddClass, tx.ComposeOnce, tx.Static):
+    input_add_class = 'input-container'
+
     def __init__(
             self,
             *,
             suggestions_manager: SuggestionsManager,
             **kwargs: ta.Any,
     ) -> None:
-        super().__init__(**kwargs, id='input-container')
+        super().__init__(**kwargs)
 
         self._suggestions_manager = suggestions_manager
 
         self._input_text_area = InputTextArea(self)
-        self._input_glyph = tx.Static('>', id='input-glyph')
+        self._input_glyph = tx.Static('>', classes='input-glyph')
         self._suggestions_popup = SuggestionsPopup(self)
 
     def _compose_once(self) -> tx.ComposeResult:
-        with tx.Vertical(id='input-vertical'):
+        with tx.Vertical(classes='input-vertical'):
             yield self._suggestions_popup
-            with tx.Vertical(id='input-vertical2'):
-                with tx.Horizontal(id='input-horizontal'):
+            with tx.Vertical(classes='input-vertical2'):
+                with tx.Horizontal(classes='input-horizontal'):
                     yield self._input_glyph
                     yield self._input_text_area

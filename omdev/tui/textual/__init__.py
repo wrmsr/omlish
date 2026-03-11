@@ -297,4 +297,5 @@ with _lang.auto_proxy_init(globals()):
 
     from .widgets2 import (  # noqa
         ComposeOnce,
+        InitAddClass,
     )

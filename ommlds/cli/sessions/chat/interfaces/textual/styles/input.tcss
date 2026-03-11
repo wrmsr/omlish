@@ -1,11 +1,11 @@
-#input-container {
+.input-container {
     width: 100%;
     height: auto;
 
     background: $background-darken-3;
 }
 
-#input-vertical {
+.input-vertical {
     width: 100%;
     height: auto;
 
@@ -14,7 +14,7 @@
     padding: 0;
 }
 
-#input-vertical2 {
+.input-vertical2 {
     width: 100%;
     height: auto;
 
@@ -23,12 +23,12 @@
     padding: 0 1;
 }
 
-#input-horizontal {
+.input-horizontal {
     width: 100%;
     height: auto;
 }
 
-#input-glyph {
+.input-glyph {
     width: auto;
 
     padding: 0 1 0 0;
@@ -39,7 +39,7 @@
     text-style: bold;
 }
 
-#input {
+.input {
     width: 1fr;
     height: auto;
     max-height: 16;

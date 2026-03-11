@@ -161,22 +161,19 @@ class ChatApp(
     # Widget getters
 
     def _get_input_text_area(self) -> InputTextArea:
-        return self.query_one('#input', InputTextArea)
-
-    def _get_messages_container(self) -> tx.VerticalScroll:
-        return self.query_one('#messages-container', MessagesContainer)
+        return self.query_one('.input', InputTextArea)
 
     ##
     # Messages
 
     def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
-        return (ms := self._get_messages_container()).scroll_y >= (ms.max_scroll_y - threshold)
+        return (ms := self._messages_container).scroll_y >= (ms.max_scroll_y - threshold)
 
     def _scroll_messages_to_bottom(self) -> None:
-        self._get_messages_container().scroll_end(animate=False)
+        self._messages_container.scroll_end(animate=False)
 
     def _anchor_messages(self) -> None:
-        if (ms := self._get_messages_container()).max_scroll_y:
+        if (ms := self._messages_container).max_scroll_y:
             ms.anchor()
 
     def _scroll_messages_to_bottom_and_anchor(self) -> None:
@@ -219,16 +216,14 @@ class ChatApp(
     async def _mount_messages(self, *messages: tx.Widget) -> None:
         was_at_bottom = self._is_messages_at_bottom()
 
-        msg_ctr = self._get_messages_container()
-
         for msg in [*(self._pending_mount_messages or []), *messages]:
             if isinstance(msg, (AiMessage, ToolConfirmationMessage)):
                 await self._finalize_stream_ai_message()
 
             if self._num_mounted_messages:
-                await msg_ctr.mount(MessageDivider(lang.localnow().strftime('%Y-%m-%d %H:%M:%S')))
+                await self._messages_container.mount(MessageDivider(lang.localnow().strftime('%Y-%m-%d %H:%M:%S')))
 
-            await msg_ctr.mount(msg)
+            await self._messages_container.mount(msg)
 
             self._num_mounted_messages += 1
 
