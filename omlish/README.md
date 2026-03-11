@@ -75,6 +75,10 @@ dependencies of any kind**.
     [Json5](https://json5.org/) parser.
   - **[toml](https://github.com/wrmsr/omlish/blob/master/omlish/formats/toml)** - Toml tools, including a
     [lite](#lite-code) version of the stdlib parser (for use in older pythons).
+  - **[goyaml](https://github.com/wrmsr/omlish/blob/master/omlish/formats/yaml/goyaml)** - A **manual**, near-direct,
+    'lite'-compatible translation of [go-yaml](https://github.com/goccy/go-yaml/).
+
+  https://github.com/goccy/go-yaml/tree/8dd51ebb7f36f616b85f7b0e54539afa4341f22a
 
 - **[http](https://github.com/wrmsr/omlish/blob/master/omlish/http)** - HTTP code, including:
 

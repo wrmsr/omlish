@@ -53,6 +53,8 @@ This simplification is possible because:
 - Lifecycle events are represented as special message types (e.g., `InitialInput`, `FinalInput`, `FinalOutput`)
 - Flow control is message-based rather than method-based
 - The smaller scope of use cases doesn't require the same level of granularity
+- Being python this doesn't attempt to achieve Netty's performance and accepts the relative overhead of boxing messages
+  and lack of inlining
 
 Handlers can be **unique** (only one instance per pipeline) or **shareable** (same instance at multiple positions).
 

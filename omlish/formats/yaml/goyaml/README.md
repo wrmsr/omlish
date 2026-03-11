@@ -1,4 +1,4 @@
-A *manual*, near-direct, 'lite'-compatible translation of go-yaml (see LICENSE file):
+A **manual**, near-direct, 'lite'-compatible translation of go-yaml (see LICENSE file):
 
   https://github.com/goccy/go-yaml/tree/8dd51ebb7f36f616b85f7b0e54539afa4341f22a
 
@@ -9,7 +9,7 @@ The primary reasons for.. doing this.. are as follows:
    requirement for them.
 
    Currently they require a system dependency on pyyaml, which violates amalg/lite isolation, and nearly defeats the
-   whole point of it. An alternative is relying on some system utility (as they already rely om some very basic shell
+   whole point of it. An alternative is relying on some system utility (as they already rely on some very basic shell
    utilities), but there is no remotely standard or common yaml-to-json utility.
 
    An obvious alternative would be shamefully implement the '10% of yaml that covers 95% of usecases' with a garbage

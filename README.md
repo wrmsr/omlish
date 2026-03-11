@@ -7,8 +7,6 @@ This is my 'production' codebase - code which has graduated from and powers my v
 It's organized into a handful of toplevel libraries - the `om*` directories - which are each independently installable
 and published to pypi.
 
-The most substantial toplevel libraries are `omlish`, `omdev`, and (at the moment) `ommlds`, described below.
-
 The toplevel libraries have no required dependencies besides each other - `omlish` in particular has none at all - but
 there are a number of optional ones - see their respective `pyproject.toml` files for details.
 

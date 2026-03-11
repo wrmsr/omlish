@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='d9c24e9b85536086a93fc6f00ae02cdba2824e55'),
+            dict(path='core.py', sha1='3dabd48ce0e19fd974a89ea7b4dd2b6c4118d36b'),
             dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -1394,7 +1394,7 @@ class IoPipelineMessages(NamespaceClass):
     #
 
     class Completable(Abstract, ta.Generic[T]):
-        # Management of completable state is implemented as a 'hidden' / dynamic attributes to allow mixing in with
+        # Management of completable state is implemented as 'hidden' / dynamic attributes to allow mixing in with
         # otherwise frozen dataclasses.
 
         # _completion_state: ta.Literal['pending', 'succeeded', 'failed'] = 'pending'
@@ -1529,12 +1529,12 @@ class IoPipelineHandlerNotifications(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
     class Added(IoPipelineHandlerNotification):
-        pass
+        ctx: 'IoPipelineHandlerContext'
 
     @ta.final
     @dc.dataclass(frozen=True)
     class Removed(IoPipelineHandlerNotification):
-        pass
+        ctx: 'IoPipelineHandlerContext'
 
 
 ##
@@ -1591,7 +1591,7 @@ IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlia
 class IoPipelineHandlerContext:
     """
     The embodiment of an instance of a handler at a position in a pipeline. Passed to IoPipelineHandler methods,
-    providing handler-specific access to the pipeline and. As instances of `ShareableIoPipelineHandler` may validly be
+    providing handler-specific access to the pipeline. As instances of `ShareableIoPipelineHandler` may validly be
     simultaneously present at multiple positions in a pipeline, a single handler may have multiple active context
     instances associated with it in any given pipeline.
 
@@ -2343,9 +2343,8 @@ class IoPipeline:
 
         # _: dc.KW_ONLY
 
+        # Metadata and ervices are fixed for the lifetime of the pipeline.
         metadata: ta.Union[ta.Sequence[IoPipelineMetadata], IoPipelineMetadatas] = ()
-
-        # Services are fixed for the lifetime of the pipeline.
         services: ta.Union[ta.Sequence[IoPipelineService], IoPipelineServices] = ()
 
         #
@@ -2787,7 +2786,7 @@ class IoPipeline:
         self._handler_update(ctx, 'added')  # noqa
 
         # FIXME: exceptions?
-        self._notify(ctx, IoPipelineHandlerNotifications.Added())  # noqa
+        self._notify(ctx, IoPipelineHandlerNotifications.Added(ctx))
 
         return ctx._ref  # noqa
 
@@ -2879,7 +2878,7 @@ class IoPipeline:
         self._handler_update(ctx, 'removed')  # noqa
 
         # FIXME: exceptions? defer?
-        self._notify(ctx, IoPipelineHandlerNotifications.Removed())  # noqa
+        self._notify(ctx, IoPipelineHandlerNotifications.Removed(ctx))
 
     def remove(self, handler_ref: IoPipelineHandlerRef) -> None:
         self._remove(handler_ref)

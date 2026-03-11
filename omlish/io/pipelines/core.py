@@ -108,7 +108,7 @@ class IoPipelineMessages(NamespaceClass):
     #
 
     class Completable(Abstract, ta.Generic[T]):
-        # Management of completable state is implemented as a 'hidden' / dynamic attributes to allow mixing in with
+        # Management of completable state is implemented as 'hidden' / dynamic attributes to allow mixing in with
         # otherwise frozen dataclasses.
 
         # _completion_state: ta.Literal['pending', 'succeeded', 'failed'] = 'pending'
@@ -243,12 +243,12 @@ class IoPipelineHandlerNotifications(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
     class Added(IoPipelineHandlerNotification):
-        pass
+        ctx: 'IoPipelineHandlerContext'
 
     @ta.final
     @dc.dataclass(frozen=True)
     class Removed(IoPipelineHandlerNotification):
-        pass
+        ctx: 'IoPipelineHandlerContext'
 
 
 ##
@@ -305,7 +305,7 @@ IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlia
 class IoPipelineHandlerContext:
     """
     The embodiment of an instance of a handler at a position in a pipeline. Passed to IoPipelineHandler methods,
-    providing handler-specific access to the pipeline and. As instances of `ShareableIoPipelineHandler` may validly be
+    providing handler-specific access to the pipeline. As instances of `ShareableIoPipelineHandler` may validly be
     simultaneously present at multiple positions in a pipeline, a single handler may have multiple active context
     instances associated with it in any given pipeline.
 
@@ -1057,9 +1057,8 @@ class IoPipeline:
 
         # _: dc.KW_ONLY
 
+        # Metadata and ervices are fixed for the lifetime of the pipeline.
         metadata: ta.Union[ta.Sequence[IoPipelineMetadata], IoPipelineMetadatas] = ()
-
-        # Services are fixed for the lifetime of the pipeline.
         services: ta.Union[ta.Sequence[IoPipelineService], IoPipelineServices] = ()
 
         #
@@ -1501,7 +1500,7 @@ class IoPipeline:
         self._handler_update(ctx, 'added')  # noqa
 
         # FIXME: exceptions?
-        self._notify(ctx, IoPipelineHandlerNotifications.Added())  # noqa
+        self._notify(ctx, IoPipelineHandlerNotifications.Added(ctx))
 
         return ctx._ref  # noqa
 
@@ -1593,7 +1592,7 @@ class IoPipeline:
         self._handler_update(ctx, 'removed')  # noqa
 
         # FIXME: exceptions? defer?
-        self._notify(ctx, IoPipelineHandlerNotifications.Removed())  # noqa
+        self._notify(ctx, IoPipelineHandlerNotifications.Removed(ctx))
 
     def remove(self, handler_ref: IoPipelineHandlerRef) -> None:
         self._remove(handler_ref)
