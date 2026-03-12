@@ -1517,15 +1517,15 @@ class YamlParser:
                 )
                 if isinstance(key0, YamlError):
                     return key0
-                ctx = ctx.with_child(self.map_key_text(key0))
+                ctx2 = ctx.with_child(self.map_key_text(key0))
                 colon_tk = check.not_none(check.not_none(map_key_tk).group).last()
 
-                if self.is_flow_map_delim(check.not_none(ctx.next_token())):
-                    value1 = YamlNodeMakers.new_null_node(ctx, ctx.insert_null_token(check.not_none(colon_tk)))
+                if self.is_flow_map_delim(check.not_none(ctx2.next_token())):
+                    value1 = YamlNodeMakers.new_null_node(ctx2, ctx2.insert_null_token(check.not_none(colon_tk)))
                     if isinstance(value1, YamlError):
                         return value1
                     map_value = YamlNodeMakers.new_mapping_value_node(
-                        ctx,
+                        ctx2,
                         check.not_none(colon_tk),
                         entry_tk,
                         key0,
@@ -1534,17 +1534,17 @@ class YamlParser:
                     if isinstance(map_value, YamlError):
                         return map_value
                     node.values.append(map_value)
-                    ctx.go_next()
+                    ctx2.go_next()
 
                 else:
-                    ctx.go_next()
-                    if ctx.is_token_not_found():
+                    ctx2.go_next()
+                    if ctx2.is_token_not_found():
                         return YamlSyntaxError('could not find map value', YamlParseToken.raw_token(colon_tk))
-                    value2 = self.parse_token(ctx, ctx.current_token())
+                    value2 = self.parse_token(ctx2, ctx2.current_token())
                     if isinstance(value2, YamlError):
                         return value2
                     map_value = YamlNodeMakers.new_mapping_value_node(
-                        ctx,
+                        ctx2,
                         check.not_none(colon_tk),
                         entry_tk,
                         key0,
@@ -1633,13 +1633,13 @@ class YamlParser:
                     YamlParseToken.raw_token(value_tk),
                 )
 
-            ctx = ctx.with_child(self.map_key_text(key))
-            value = self.parse_map_value(ctx, key, check.not_none(check.not_none(key_tk.group).last()))
+            ctx2 = ctx.with_child(self.map_key_text(key))
+            value = self.parse_map_value(ctx2, key, check.not_none(check.not_none(key_tk.group).last()))
             if isinstance(value, YamlError):
                 return value
 
             node1 = YamlNodeMakers.new_mapping_value_node(
-                ctx,
+                ctx2,
                 check.not_none(check.not_none(key_tk.group).last()),
                 None,
                 key,
@@ -2195,8 +2195,8 @@ class YamlParser:
             if ctx.is_token_not_found():
                 break
 
-            ctx = ctx.with_index(len(node.values))
-            value = self.parse_token(ctx, ctx.current_token())
+            ctx2 = ctx.with_index(len(node.values))
+            value = self.parse_token(ctx2, ctx2.current_token())
             if isinstance(value, YamlError):
                 return value
             node.values.append(value)
@@ -2205,9 +2205,9 @@ class YamlParser:
                 value,
                 None,
             )
-            if (err := yaml_set_line_comment(ctx, seq_entry, entry_tk)) is not None:
+            if (err := yaml_set_line_comment(ctx2, seq_entry, entry_tk)) is not None:
                 return err
-            seq_entry.set_path(ctx.path)
+            seq_entry.set_path(ctx2.path)
             node.entries.append(seq_entry)
 
             is_first = False
@@ -2234,22 +2234,22 @@ class YamlParser:
             head_comment = self.parse_head_comment(ctx)
             ctx.go_next()  # skip sequence entry token
 
-            ctx = ctx.with_index(len(seq_node.values))
-            value = self.parse_sequence_value(ctx, check.not_none(seq_tk))
+            ctx2 = ctx.with_index(len(seq_node.values))
+            value = self.parse_sequence_value(ctx2, check.not_none(seq_tk))
             if isinstance(value, YamlError):
                 return value
             seq_entry = yaml_sequence_entry(YamlParseToken.raw_token(seq_tk), value, head_comment)
-            if (err := yaml_set_line_comment(ctx, seq_entry, seq_tk)) is not None:
+            if (err := yaml_set_line_comment(ctx2, seq_entry, seq_tk)) is not None:
                 return err
-            seq_entry.set_path(ctx.path)
+            seq_entry.set_path(ctx2.path)
             seq_node.value_head_comments.append(head_comment)
             seq_node.values.append(value)
             seq_node.entries.append(seq_entry)
 
-            if ctx.is_comment():
-                tk = ctx.next_not_comment_token()
+            if ctx2.is_comment():
+                tk = ctx2.next_not_comment_token()
             else:
-                tk = ctx.current_token()
+                tk = ctx2.current_token()
         if ctx.is_comment():
             if YamlParseToken.column(seq_tk) <= YamlParseToken.column(ctx.current_token()):
                 # If the comment is in the same or deeper column as the last element column in sequence value,
