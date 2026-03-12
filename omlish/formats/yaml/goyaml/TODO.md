@@ -4,3 +4,6 @@
 - abstract backends like json
 - plug-in to omlish.configs.formats - must be optional
   - formalize default shim to try to import yaml lazily
+- happy path for cst manip
+  - full whitespace preservation (currently drops multiple adjacent empty lines)
+  - position 'reflow'

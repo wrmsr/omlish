@@ -128,7 +128,7 @@ hf-xet==1.4.0  # @omlish-venv !14t !14dt
 datasets==4.7.0  # !! includes arrow and pandas and shit
 
 transformers==5.3.0  # @omlish-venv !14t !14dt
-sentence-transformers==5.2.3  # @omlish-venv !14t !14dt
+sentence-transformers==5.3.0  # @omlish-venv !14t !14dt
 
 sentencepiece==0.2.1
 tiktoken==0.12.0
