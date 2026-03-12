@@ -1,4 +1,4 @@
-# ruff: noqa: UP045
+# ruff: noqa: UP006 UP045
 # @omlish-lite
 import dataclasses as dc
 import typing as ta
@@ -74,12 +74,13 @@ class OutboundBytesBufferIoPipelineHandler(OutboundBytesBufferingIoPipelineHandl
         # Reset buffer
         self._buf = None
 
-    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, IoPipelineFlowMessages.FlushOutput):
-            self._flush(ctx)
-            ctx.feed_out(msg)
+    _FLUSH_AND_FEED_OUT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        IoPipelineFlowMessages.FlushOutput,
+        IoPipelineMessages.FinalOutput,
+    )
 
-        elif isinstance(msg, IoPipelineMessages.FinalOutput):
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, self._FLUSH_AND_FEED_OUT_TYPES):
             self._flush(ctx)
             ctx.feed_out(msg)
 

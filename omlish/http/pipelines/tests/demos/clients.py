@@ -3,6 +3,7 @@
 import dataclasses as dc
 import typing as ta
 
+from .....io.pipelines.bytes.buffers import OutboundBytesBufferIoPipelineHandler
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
@@ -68,8 +69,11 @@ class HttpClientHandler(IoPipelineHandler):
 
             ctx.feed_out(msg.request)
 
-            if not IoPipelineFlow.is_auto_read(ctx):
-                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+            if (fc := ctx.services.find(IoPipelineFlow)) is not None:
+                ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
+
+                if not fc.is_auto_read():
+                    ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
             return
 
@@ -121,6 +125,8 @@ def build_http_client(
             *(outermost_handlers or []),
 
             *([LoggingIoPipelineHandler()] if with_logging else []),
+
+            *([OutboundBytesBufferIoPipelineHandler()] if with_flow else []),
 
             *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 

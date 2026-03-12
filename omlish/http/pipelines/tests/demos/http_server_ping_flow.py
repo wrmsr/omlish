@@ -3,6 +3,7 @@
 import asyncio
 import typing as ta
 
+from .....io.pipelines.bytes.buffers import OutboundBytesBufferIoPipelineHandler
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
@@ -13,7 +14,9 @@ from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestObject
+from ...responses import FullIoPipelineHttpResponse
 from ...server.requests import IoPipelineHttpRequestDecoder
+from ...server.responses import IoPipelineHttpResponseEncoder
 
 
 ##
@@ -41,26 +44,10 @@ class PingHandler(IoPipelineHandler):
             return
 
         if msg.method == 'GET' and msg.target == '/ping':
-            body = b'pong'
-            resp = (
-                b'HTTP/1.1 200 OK\r\n'
-                b'Content-Type: text/plain; charset=utf-8\r\n'
-                b'Content-Length: ' + str(len(body)).encode('ascii') + b'\r\n'
-                b'Connection: close\r\n'
-                b'\r\n' +
-                body
-            )
+            resp = FullIoPipelineHttpResponse.simple(body=b'pong')
 
         else:
-            body = b'not found'
-            resp = (
-                b'HTTP/1.1 404 Not Found\r\n'
-                b'Content-Type: text/plain; charset=utf-8\r\n'
-                b'Content-Length: ' + str(len(body)).encode('ascii') + b'\r\n'
-                b'Connection: close\r\n'
-                b'\r\n' +
-                body
-            )
+            resp = FullIoPipelineHttpResponse.simple(status=404, body=b'not found')
 
         # Write response bytes immediately.
         ctx.feed_out(resp)
@@ -76,6 +63,8 @@ def build_http_ping_spec(
 ) -> IoPipeline.Spec:
     return IoPipeline.Spec(
         [
+            OutboundBytesBufferIoPipelineHandler(),
+            IoPipelineHttpResponseEncoder(),
             IoPipelineHttpRequestDecoder(),
             PingHandler(),
         ],
