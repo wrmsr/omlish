@@ -39,7 +39,7 @@ all = [
     'executing ~= 2.2',
     'psutil ~= 7.2',
     'orjson ~= 3.11',
-    'ujson ~= 5.11',
+    'ujson ~= 5.12',
     'pyyaml ~= 6.0',
     'cbor2 ~= 5.8',
     'cloudpickle ~= 3.1',
@@ -87,7 +87,7 @@ diag = [
 ]
 formats = [
     'orjson ~= 3.11',
-    'ujson ~= 5.11',
+    'ujson ~= 5.12',
     'pyyaml ~= 6.0',
     'cbor2 ~= 5.8',
     'cloudpickle ~= 3.1',

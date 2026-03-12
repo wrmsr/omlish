@@ -1,12 +1,12 @@
 """
 TODO:
  - per-feature config, obv
+ - install pnpm
 """
 import io
 import typing as ta
 
-from omlish import dataclasses as dc
-
+from .config import Config
 from .content import LazyContent
 from .content import Resource
 from .helpers import APT_CACHE_MOUNTS
@@ -23,32 +23,6 @@ from .ops import Section
 from .ops import Workdir
 from .ops import Write
 from .rendering import render_op
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Config:
-    base_image: str
-
-    workdir: str | None = None
-
-    _: dc.KW_ONLY
-
-    dep_sets: ta.Sequence[str] | None = None
-
-    jdks: ta.Sequence[str] | None = None
-
-    go_version: str | None = None
-
-    zig_version: str | None = None
-
-    nvm_versions: ta.Sequence[str] | None = None
-
-    pyenv_version_keys: ta.Sequence[str] | None = None
-
-    config_files: ta.Sequence[str] | None = None
 
 
 ##
@@ -120,7 +94,10 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
             static_env={'NVM_VERSIONS': cfg.nvm_versions},
         ))
 
-    ops.append(fragment_section('uv'))
+    ops.append(fragment_section(
+        'uv',
+        static_env={'UV_PYTHON_VERSIONS': cfg.uv_python_versions or []},
+    ))
 
     if cfg.pyenv_version_keys:
         ops.append(fragment_section(

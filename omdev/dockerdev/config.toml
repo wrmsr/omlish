@@ -21,6 +21,11 @@ nvm_versions = [
     '25',
 ]
 
+uv_python_versions = [
+    '3.13',
+    '3.14',
+]
+
 pyenv_version_keys = [
     '8',
     '13',
@@ -34,3 +39,7 @@ config_files = [
 ]
 
 workdir = '/omlish'
+
+[cache_mounts]
+'pip' = '/root/.cache/pip'
+'uv' = '/root/.cache/uv'

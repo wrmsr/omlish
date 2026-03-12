@@ -2,6 +2,8 @@
 TODO:
  - default run bash
  - all of the below stuff
+ - launch / manage compose services
+ - more cache dirs
 
 ====
 
@@ -54,8 +56,10 @@ from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
+from omlish.os.paths import is_path_in_dir
 
-from .gen import Config
+from ..home.paths import get_cache_dir
+from .config import Config
 from .gen import gen_src
 
 
@@ -145,29 +149,49 @@ class Cli(ap.Cli):
 
     @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
+        ap.arg('-C', '--mount-caches', action='store_true'),
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
     def run(self) -> None:
-        check.not_empty(self.args.args)
-
         sha = self._build(
             verbose=self.args.verbose,
         )
 
+        #
+
+        run_args: list[str] = ['run']
+
+        if self.unknown_args:
+            run_args.extend(self.unknown_args)
+        else:
+            run_args.extend([
+                '--rm',
+                '-it',
+            ])
+
+        if self.args.mount_caches:
+            cache_dir = os.path.join(get_cache_dir(), 'dockerdev')
+            cfg = self._load_config()
+            for cl, cr in (cfg.cache_mounts or {}).items():
+                cld = os.path.join(cache_dir, cl)
+                check.state(is_path_in_dir(cache_dir, cld))
+                os.makedirs(cld, exist_ok=True)
+                run_args.append(f'--mount=type=bind,src={cld},dst={cr}')
+
+        run_args.append(sha)
+
+        if self.args.args:
+            check.not_empty(self.args.args)
+        else:
+            run_args.append('bash')
+
+        #
+
         os.execl(
             docker := check.not_none(shutil.which('docker')),
             docker,
-            'run',
-            *(
-                self.unknown_args or
-                [
-                    '--rm',
-                    '-it',
-                ]
-            ),
-            sha,
-            *self.args.args,
+            *run_args,
         )
 
 
