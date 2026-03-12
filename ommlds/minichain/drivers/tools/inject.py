@@ -1,0 +1,67 @@
+from omlish import check
+from omlish import inject as inj
+from omlish import lang
+
+from ..configs import ToolsConfig
+from .injection import ToolSetBinder
+from .injection import tool_catalog_entries
+from .injection import tool_context_providers
+
+
+with lang.auto_proxy_import(globals()):
+    from ...tools.execution import catalog as _tools_execution_catalog
+    from . import errorhandling as _errorhandling
+    from . import execution as _execution
+
+
+##
+
+
+def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
+    els: list[inj.Elemental] = []
+
+    #
+
+    els.append(inj.bind(_tools_execution_catalog.ToolCatalog, singleton=True))
+
+    #
+
+    els.append(tool_catalog_entries().bind_items_provider(singleton=True))
+
+    for etn in check.not_isinstance(cfg.enabled_tools or [], str):
+        from .fs.inject import FS_TOOL_SET_BINDER
+        from .todo.inject import TODO_TOOL_SET_BINDER
+        from .weather.inject import WEATHER_TOOL_SET_BINDER
+        ts_binder: ToolSetBinder = {  # type: ignore[assignment]  # FIXME: placeholder obviously lol
+            'fs': FS_TOOL_SET_BINDER,
+            'todo': TODO_TOOL_SET_BINDER,
+            'weather': WEATHER_TOOL_SET_BINDER,
+        }[etn]
+
+        els.append(ts_binder.fn(ts_binder.cfg_cls()))
+
+    #
+
+    exec_stack = inj.wrapper_binder_helper(_execution.ToolUseExecutor)
+
+    els.append(exec_stack.push_bind(to_ctor=_execution.ToolUseExecutorImpl, singleton=True))
+
+    els.append(exec_stack.push_bind(to_ctor=_errorhandling.ErrorHandlingToolUseExecutor, singleton=True))
+
+    els.extend([
+        inj.bind(_execution.ToolUseExecutor, to_key=exec_stack.top),
+    ])
+
+    #
+
+    els.extend([
+        tool_context_providers().bind_items_provider(singleton=True),
+
+        inj.bind(_execution.ToolContextProvider, to_fn=lang.typed_lambda(tcps=_execution.ToolContextProviders)(
+            lambda tcps: _execution.ToolContextProvider(lambda: [tc for tcp in tcps for tc in tcp()]),
+        ), singleton=True),
+    ])
+
+    #
+
+    return inj.as_elements(*els)

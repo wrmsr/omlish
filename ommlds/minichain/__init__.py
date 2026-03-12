@@ -250,10 +250,6 @@ with _lang.auto_proxy_init(
     ##
 
     from .content.transform.materialize.placeholders import (  # noqa
-        PlaceholderContentValue,
-        PlaceholderContentMap,
-        PlaceholderContents,
-
         PlaceholderContentKeyError,
         MissingPlaceholderContentKeyError,
         DuplicatePlaceholderContentKeyError,
@@ -352,6 +348,10 @@ with _lang.auto_proxy_init(
         ContentPlaceholder,
         PlaceholderContentKey,
         PlaceholderContent,
+
+        PlaceholderContentValue,
+        PlaceholderContentMap,
+        PlaceholderContents,
     )
 
     from .content.quote import (  # noqa

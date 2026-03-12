@@ -1,0 +1,75 @@
+from omlish import inject as inj
+from omlish import lang
+
+from .configs import AiConfig
+from .injection import chat_options_providers
+
+
+with lang.auto_proxy_import(globals()):
+    from ...chat.tools import types as _chat_tools_types
+    from ...tools.execution import catalog as _tools_execution_catalog
+    from . import events as _events
+    from . import services as _services
+    from . import tools as _tools
+    from . import types as _types
+
+
+##
+
+
+def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
+    els: list[inj.Elemental] = []
+
+    #
+
+    els.append(chat_options_providers().bind_items_provider(singleton=True))
+
+    def _provide_chat_choices_options_provider(
+            ps: _services.ChatChoicesServiceOptionsProviders,
+    ) -> _services.ChatChoicesServiceOptionsProvider:
+        return _services.ChatChoicesServiceOptionsProvider(lambda: [o for p in ps for o in p()])
+
+    els.append(inj.bind(_provide_chat_choices_options_provider, singleton=True))
+
+    #
+
+    ai_stack = inj.wrapper_binder_helper(_types.AiChatGenerator)
+
+    if cfg.stream:
+        stream_ai_stack = inj.wrapper_binder_helper(_types.StreamAiChatGenerator)
+
+        els.append(stream_ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
+
+        els.append(stream_ai_stack.push_bind(to_ctor=_events.EventEmittingStreamAiChatGenerator, singleton=True))
+
+        els.extend([
+            inj.bind(_types.StreamAiChatGenerator, to_key=stream_ai_stack.top),
+            ai_stack.push_bind(to_key=_types.StreamAiChatGenerator),
+        ])
+
+    else:
+        els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
+
+        els.append(ai_stack.push_bind(to_ctor=_events.EventEmittingAiChatGenerator, singleton=True))
+
+    if cfg.enable_tools:
+        els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
+
+    els.append(inj.bind(_types.AiChatGenerator, to_key=ai_stack.top))
+
+    #
+
+    if cfg.enable_tools:
+        def _provide_tools_chat_choices_options_provider(
+                tc: _tools_execution_catalog.ToolCatalog,
+        ) -> _services.ChatChoicesServiceOptionsProvider:
+            return _services.ChatChoicesServiceOptionsProvider(lambda: [
+                _chat_tools_types.Tool(tce.spec)
+                for tce in tc.by_name.values()
+            ])
+
+        els.append(chat_options_providers().bind_item(to_fn=_provide_tools_chat_choices_options_provider, singleton=True))  # noqa
+
+    #
+
+    return inj.as_elements(*els)

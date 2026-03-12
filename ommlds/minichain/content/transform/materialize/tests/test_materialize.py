@@ -5,13 +5,13 @@ from ....namespaces import ContentNamespace
 from ....namespaces import NamespaceContent
 from ....placeholders import ContentPlaceholder
 from ....placeholders import PlaceholderContent
+from ....placeholders import PlaceholderContents
 from ....resources import resource_content
 from ....templates import TemplateContent
 from ...recursive import RecursiveContentTransform
 from ...types import ContentTransform
 from ..namespaces import NamespaceContentMaterializer
 from ..placeholders import PlaceholderContentMaterializer
-from ..placeholders import PlaceholderContents
 from ..resources import ResourceContentMaterializer
 from ..templates import TemplateContentMaterializer
 

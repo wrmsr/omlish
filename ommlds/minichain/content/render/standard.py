@@ -6,6 +6,7 @@ from omlish.text import templating as tpl
 
 from ..containers import BlocksContent
 from ..content import Content
+from ..placeholders import PlaceholderContents
 from ..text import TextContent
 from ..transform.containers import JoinContainerContentsTransform
 from ..transform.containers import UnnestContainersTransform
@@ -13,7 +14,6 @@ from ..transform.containers import UnwrapContainersTransform
 from ..transform.lift import LiftToStandardContentTransform
 from ..transform.materialize.namespaces import NamespaceContentMaterializer
 from ..transform.materialize.placeholders import PlaceholderContentMaterializer
-from ..transform.materialize.placeholders import PlaceholderContents
 from ..transform.materialize.resources import ResourceContentMaterializer
 from ..transform.materialize.templates import TemplateContentMaterializer
 from ..transform.recursive import RecursiveContentTransform

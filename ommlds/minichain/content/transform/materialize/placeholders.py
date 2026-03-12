@@ -6,20 +6,9 @@ from omlish import lang
 from ...content import Content
 from ...placeholders import PlaceholderContent
 from ...placeholders import PlaceholderContentKey
+from ...placeholders import PlaceholderContentMap
+from ...placeholders import PlaceholderContents
 from ..visitors import VisitorContentTransform
-
-
-##
-
-
-PlaceholderContentValue: ta.TypeAlias = Content | ta.Callable[[], Content]
-PlaceholderContentMap: ta.TypeAlias = ta.Mapping[PlaceholderContentKey, PlaceholderContentValue]
-
-PlaceholderContents: ta.TypeAlias = ta.Union[  # noqa
-    PlaceholderContentMap,
-    ta.Iterable['PlaceholderContents'],
-    ta.Callable[[], 'PlaceholderContents'],
-]
 
 
 ##
