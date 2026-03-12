@@ -47,7 +47,7 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
     async def get_next_ai_messages_streamed(
             self,
             chat: Chat,
-            delta_callback: ta.Callable[['AiDelta'], ta.Awaitable[None]] | None = None,
+            delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> Chat:
         async def inner(delta: AiDelta) -> None:
             await self._events.emit_event(AiDeltaChatEvent(delta))

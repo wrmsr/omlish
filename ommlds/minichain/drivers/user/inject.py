@@ -1,18 +1,14 @@
 from omlish import check
 from omlish import inject as inj
-from omlish import lang
 
+from ...chat.messages import UserMessage
 from ..inject import system_message_providers
 from ..phases.injection import phase_callbacks
 from ..phases.types import ChatPhase
 from ..phases.types import ChatPhaseCallback
+from ..types import ChatDriverGetter
 from .configs import UserConfig
-
-
-with lang.auto_proxy_import(globals()):
-    from ...chat import messages as _messages
-    from .. import types as _driver
-    from . import preparing as _preparing
+from .preparing import InitialSystemMessageProvider
 
 
 ##
@@ -23,17 +19,17 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
 
     if cfg.initial_system_content is not None:
         els.extend([
-            inj.bind(_preparing.InitialSystemMessageProvider(cfg.initial_system_content)),
-            system_message_providers().bind_item(to_key=_preparing.InitialSystemMessageProvider),
+            inj.bind(InitialSystemMessageProvider(cfg.initial_system_content)),
+            system_message_providers().bind_item(to_key=InitialSystemMessageProvider),
         ])
 
     if cfg.initial_user_content is not None:
-        async def add_initial_user_content(cdg: '_driver.ChatDriverGetter') -> None:
-            await (await cdg()).send_user_messages([_messages.UserMessage(check.not_none(cfg.initial_user_content))])
+        async def add_initial_user_content(cdg: ChatDriverGetter) -> None:
+            await (await cdg()).send_user_messages([UserMessage(check.not_none(cfg.initial_user_content))])
 
         els.append(phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda cdg: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_user_content(cdg)),
-            cdg=_driver.ChatDriverGetter,
+            cdg=ChatDriverGetter,
         )))
 
     return inj.as_elements(*els)

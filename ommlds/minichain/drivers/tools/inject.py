@@ -2,16 +2,16 @@ from omlish import check
 from omlish import inject as inj
 from omlish import lang
 
+from ...tools.execution.catalog import ToolCatalog
 from ..configs import ToolsConfig
+from .errorhandling import ErrorHandlingToolUseExecutor
+from .execution import ToolContextProvider
+from .execution import ToolContextProviders
+from .execution import ToolUseExecutor
+from .execution import ToolUseExecutorImpl
 from .injection import ToolSetBinder
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
-
-
-with lang.auto_proxy_import(globals()):
-    from ...tools.execution import catalog as _tools_execution_catalog
-    from . import errorhandling as _errorhandling
-    from . import execution as _execution
 
 
 ##
@@ -22,7 +22,7 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
 
     #
 
-    els.append(inj.bind(_tools_execution_catalog.ToolCatalog, singleton=True))
+    els.append(inj.bind(ToolCatalog, singleton=True))
 
     #
 
@@ -42,14 +42,14 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
 
     #
 
-    exec_stack = inj.wrapper_binder_helper(_execution.ToolUseExecutor)
+    exec_stack = inj.wrapper_binder_helper(ToolUseExecutor)
 
-    els.append(exec_stack.push_bind(to_ctor=_execution.ToolUseExecutorImpl, singleton=True))
+    els.append(exec_stack.push_bind(to_ctor=ToolUseExecutorImpl, singleton=True))
 
-    els.append(exec_stack.push_bind(to_ctor=_errorhandling.ErrorHandlingToolUseExecutor, singleton=True))
+    els.append(exec_stack.push_bind(to_ctor=ErrorHandlingToolUseExecutor, singleton=True))
 
     els.extend([
-        inj.bind(_execution.ToolUseExecutor, to_key=exec_stack.top),
+        inj.bind(ToolUseExecutor, to_key=exec_stack.top),
     ])
 
     #
@@ -57,8 +57,8 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     els.extend([
         tool_context_providers().bind_items_provider(singleton=True),
 
-        inj.bind(_execution.ToolContextProvider, to_fn=lang.typed_lambda(tcps=_execution.ToolContextProviders)(
-            lambda tcps: _execution.ToolContextProvider(lambda: [tc for tcp in tcps for tc in tcp()]),
+        inj.bind(ToolContextProvider, to_fn=lang.typed_lambda(tcps=ToolContextProviders)(
+            lambda tcps: ToolContextProvider(lambda: [tc for tcp in tcps for tc in tcp()]),
         ), singleton=True),
     ])
 

@@ -1,17 +1,18 @@
 from omlish import inject as inj
-from omlish import lang
 
+from ...chat.tools.types import Tool
+from ...tools.execution.catalog import ToolCatalog
 from .configs import AiConfig
+from .events import EventEmittingAiChatGenerator
+from .events import EventEmittingStreamAiChatGenerator
 from .injection import chat_options_providers
-
-
-with lang.auto_proxy_import(globals()):
-    from ...chat.tools import types as _chat_tools_types
-    from ...tools.execution import catalog as _tools_execution_catalog
-    from . import events as _events
-    from . import services as _services
-    from . import tools as _tools
-    from . import types as _types
+from .services import ChatChoicesServiceAiChatGenerator
+from .services import ChatChoicesServiceOptionsProvider
+from .services import ChatChoicesServiceOptionsProviders
+from .services import ChatChoicesStreamServiceStreamAiChatGenerator
+from .tools import ToolExecutingAiChatGenerator
+from .types import AiChatGenerator
+from .types import StreamAiChatGenerator
 
 
 ##
@@ -25,46 +26,46 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
     els.append(chat_options_providers().bind_items_provider(singleton=True))
 
     def _provide_chat_choices_options_provider(
-            ps: _services.ChatChoicesServiceOptionsProviders,
-    ) -> _services.ChatChoicesServiceOptionsProvider:
-        return _services.ChatChoicesServiceOptionsProvider(lambda: [o for p in ps for o in p()])
+            ps: ChatChoicesServiceOptionsProviders,
+    ) -> ChatChoicesServiceOptionsProvider:
+        return ChatChoicesServiceOptionsProvider(lambda: [o for p in ps for o in p()])
 
     els.append(inj.bind(_provide_chat_choices_options_provider, singleton=True))
 
     #
 
-    ai_stack = inj.wrapper_binder_helper(_types.AiChatGenerator)
+    ai_stack = inj.wrapper_binder_helper(AiChatGenerator)
 
     if cfg.stream:
-        stream_ai_stack = inj.wrapper_binder_helper(_types.StreamAiChatGenerator)
+        stream_ai_stack = inj.wrapper_binder_helper(StreamAiChatGenerator)
 
-        els.append(stream_ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
+        els.append(stream_ai_stack.push_bind(to_ctor=ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
 
-        els.append(stream_ai_stack.push_bind(to_ctor=_events.EventEmittingStreamAiChatGenerator, singleton=True))
+        els.append(stream_ai_stack.push_bind(to_ctor=EventEmittingStreamAiChatGenerator, singleton=True))
 
         els.extend([
-            inj.bind(_types.StreamAiChatGenerator, to_key=stream_ai_stack.top),
-            ai_stack.push_bind(to_key=_types.StreamAiChatGenerator),
+            inj.bind(StreamAiChatGenerator, to_key=stream_ai_stack.top),
+            ai_stack.push_bind(to_key=StreamAiChatGenerator),
         ])
 
     else:
-        els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
+        els.append(ai_stack.push_bind(to_ctor=ChatChoicesServiceAiChatGenerator, singleton=True))
 
-        els.append(ai_stack.push_bind(to_ctor=_events.EventEmittingAiChatGenerator, singleton=True))
+        els.append(ai_stack.push_bind(to_ctor=EventEmittingAiChatGenerator, singleton=True))
 
     if cfg.enable_tools:
-        els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
+        els.append(ai_stack.push_bind(to_ctor=ToolExecutingAiChatGenerator, singleton=True))
 
-    els.append(inj.bind(_types.AiChatGenerator, to_key=ai_stack.top))
+    els.append(inj.bind(AiChatGenerator, to_key=ai_stack.top))
 
     #
 
     if cfg.enable_tools:
         def _provide_tools_chat_choices_options_provider(
-                tc: _tools_execution_catalog.ToolCatalog,
-        ) -> _services.ChatChoicesServiceOptionsProvider:
-            return _services.ChatChoicesServiceOptionsProvider(lambda: [
-                _chat_tools_types.Tool(tce.spec)
+                tc: ToolCatalog,
+        ) -> ChatChoicesServiceOptionsProvider:
+            return ChatChoicesServiceOptionsProvider(lambda: [
+                Tool(tce.spec)
                 for tce in tc.by_name.values()
             ])
 

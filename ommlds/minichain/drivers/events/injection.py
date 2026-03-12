@@ -1,14 +1,13 @@
 from omlish import inject as inj
 from omlish import lang
 
-
-with lang.auto_proxy_import(globals()):
-    from . import types as _types
+from .types import ChatEventCallback
+from .types import ChatEventCallbacks
 
 
 ##
 
 
 @lang.cached_function
-def event_callbacks() -> 'inj.ItemsBinderHelper[_types.ChatEventCallback]':
-    return inj.items_binder_helper[_types.ChatEventCallback](_types.ChatEventCallbacks)
+def event_callbacks() -> inj.ItemsBinderHelper[ChatEventCallback]:
+    return inj.items_binder_helper[ChatEventCallback](ChatEventCallbacks)

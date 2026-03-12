@@ -4,12 +4,11 @@ from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
 
+from ...tools.execution.catalog import ToolCatalogEntries
+from ...tools.execution.catalog import ToolCatalogEntry
 from .configs import ToolSetConfig
-
-
-with lang.auto_proxy_import(globals()):
-    from ...tools.execution import catalog as _tools_execution_catalog
-    from . import execution as _execution
+from .execution import ToolContextProvider
+from .execution import ToolContextProviders
 
 
 ToolSetConfigT = ta.TypeVar('ToolSetConfigT', bound='ToolSetConfig')
@@ -19,18 +18,18 @@ ToolSetConfigT = ta.TypeVar('ToolSetConfigT', bound='ToolSetConfig')
 
 
 @lang.cached_function
-def tool_catalog_entries() -> 'inj.ItemsBinderHelper[_tools_execution_catalog.ToolCatalogEntry]':
-    return inj.items_binder_helper[_tools_execution_catalog.ToolCatalogEntry](_tools_execution_catalog.ToolCatalogEntries)  # noqa
+def tool_catalog_entries() -> inj.ItemsBinderHelper[ToolCatalogEntry]:
+    return inj.items_binder_helper[ToolCatalogEntry](ToolCatalogEntries)
 
 
 @lang.cached_function
-def tool_context_providers() -> 'inj.ItemsBinderHelper[_execution.ToolContextProvider]':
-    return inj.items_binder_helper[_execution.ToolContextProvider](_execution.ToolContextProviders)
+def tool_context_providers() -> inj.ItemsBinderHelper[ToolContextProvider]:
+    return inj.items_binder_helper[ToolContextProvider](ToolContextProviders)
 
 
 def bind_tool_context_provider_to_key(key: ta.Any) -> inj.Elements:
     return tool_context_providers().bind_item(
-        to_fn=inj.target(v=key)(lambda v: _execution.ToolContextProvider(lambda: [v])),
+        to_fn=inj.target(v=key)(lambda v: ToolContextProvider(lambda: [v])),
         singleton=True,
     )
 

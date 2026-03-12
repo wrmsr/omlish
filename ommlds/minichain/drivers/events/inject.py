@@ -1,11 +1,7 @@
 from omlish import inject as inj
-from omlish import lang
 
 from .injection import event_callbacks
-
-
-with lang.auto_proxy_import(globals()):
-    from . import manager as _manager
+from .manager import ChatEventsManager
 
 
 ##
@@ -20,7 +16,7 @@ def bind_events() -> inj.Elements:
 
     #
 
-    els.append(inj.bind(_manager.ChatEventsManager, singleton=True))
+    els.append(inj.bind(ChatEventsManager, singleton=True))
 
     #
 

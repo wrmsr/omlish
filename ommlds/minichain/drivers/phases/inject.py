@@ -1,11 +1,7 @@
 from omlish import inject as inj
-from omlish import lang
 
 from .injection import phase_callbacks
-
-
-with lang.auto_proxy_import(globals()):
-    from . import manager as _manager
+from .manager import ChatPhaseManager
 
 
 ##
@@ -20,7 +16,7 @@ def bind_phases() -> inj.Elements:
 
     #
 
-    els.append(inj.bind(_manager.ChatPhaseManager, singleton=True))
+    els.append(inj.bind(ChatPhaseManager, singleton=True))
 
     #
 

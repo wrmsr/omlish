@@ -1,10 +1,7 @@
 from omlish import inject as inj
-from omlish import lang
 
-
-with lang.auto_proxy_import(globals()):
-    from . import simple as _simple
-    from . import types as _types
+from .simple import SimpleChatPreparer
+from .types import ChatPreparer
 
 
 ##
@@ -15,7 +12,7 @@ def bind_preparing() -> inj.Elements:
 
     #
 
-    els.append(inj.bind(_types.ChatPreparer, to_ctor=_simple.SimpleChatPreparer, singleton=True))
+    els.append(inj.bind(ChatPreparer, to_ctor=SimpleChatPreparer, singleton=True))
 
     #
 

@@ -1,27 +1,21 @@
-"""
-TODO:
- - private + expose(ChatDriver)
-"""
 import uuid
 
 from omlish import inject as inj
-from omlish import lang
 
+from .ai.inject import bind_ai
 from .configs import DriverConfig
+from .events.inject import bind_events
+from .impl import ChatDriverImpl
 from .injection import placeholder_contents_providers
 from .injection import system_message_providers
-
-
-with lang.auto_proxy_import(globals()):
-    from . import impl as _impl
-    from . import types as _types
-    from .ai import inject as _ai
-    from .events import inject as _events
-    from .phases import inject as _phases
-    from .preparing import inject as _preparing
-    from .state import inject as _state
-    from .tools import inject as _tools
-    from .user import inject as _user
+from .phases.inject import bind_phases
+from .preparing.inject import bind_preparing
+from .state.inject import bind_state
+from .tools.inject import bind_tools
+from .types import ChatDriver
+from .types import ChatDriverGetter
+from .types import ChatDriverId
+from .user.inject import bind_user
 
 
 ##
@@ -33,19 +27,19 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.extend([
-        _ai.bind_ai(cfg.ai),
+        bind_ai(cfg.ai),
 
-        _events.bind_events(),
+        bind_events(),
 
-        _phases.bind_phases(),
+        bind_phases(),
 
-        _preparing.bind_preparing(),
+        bind_preparing(),
 
-        _state.bind_state(cfg.state),
+        bind_state(cfg.state),
 
-        _tools.bind_tools(cfg.tools),
+        bind_tools(cfg.tools),
 
-        _user.bind_user(cfg.user),
+        bind_user(cfg.user),
     ])
 
     #
@@ -58,15 +52,15 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_impl.ChatDriverImpl, singleton=True),
-        inj.bind(_types.ChatDriver, to_key=_impl.ChatDriverImpl),
+        inj.bind(ChatDriverImpl, singleton=True),
+        inj.bind(ChatDriver, to_key=ChatDriverImpl),
 
-        inj.bind_async_late(_types.ChatDriver, _types.ChatDriverGetter),
+        inj.bind_async_late(ChatDriver, ChatDriverGetter),
     ])
 
     #
 
-    els.append(inj.bind(_types.ChatDriverId(uuid.uuid4())))
+    els.append(inj.bind(ChatDriverId(uuid.uuid4())))
 
     #
 
