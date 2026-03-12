@@ -1,0 +1,9 @@
+- ast
+- missing parses
+  - file headers
+  - timestamps
+  - mode changes
+  - rename / copy headers (git)
+  - binary patch markers
+  - index lines
+  - “No newline at end of file”

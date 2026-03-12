@@ -1,6 +1,11 @@
 """
 TODO:
- - default run bash
+ - (run) profiles
+   - auto mount r/o git share
+ - autoexec - multiple options
+   - can run 'bash -c 'barf barf barf && <user stuff>'
+     - or mount temp dir and exec a file in there
+   - can fast-build new (temp) image w preamble (probably slow and garbagey)
  - all of the below stuff
  - launch / manage compose services
  - more cache dirs
@@ -151,11 +156,17 @@ class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
         ap.arg('-C', '--mount-caches', action='store_true'),
+        ap.arg('-x', '--autoexec', action='append'),
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
     def run(self) -> None:
+        cfg = self._load_config()
+
+        #
+
         sha = self._build(
+            cfg,
             verbose=self.args.verbose,
         )
 
@@ -173,12 +184,27 @@ class Cli(ap.Cli):
 
         if self.args.mount_caches:
             cache_dir = os.path.join(get_cache_dir(), 'dockerdev')
-            cfg = self._load_config()
             for cl, cr in (cfg.cache_mounts or {}).items():
                 cld = os.path.join(cache_dir, cl)
                 check.state(is_path_in_dir(cache_dir, cld))
                 os.makedirs(cld, exist_ok=True)
                 run_args.append(f'--mount=type=bind,src={cld},dst={cr}')
+
+        if self.args.autoexec:
+            tmp_dir = tempfile.mkdtemp()
+            tmp_ep = os.path.join(tmp_dir, 'entrypoint.sh')
+            with open(tmp_ep, 'w') as f:
+                f.write('\n'.join([
+                    '#!/bin/sh',
+                    'set -e',
+                    *self.args.autoexec,
+                    'exec "$@"',
+                ]))
+            os.chmod(tmp_ep, 0o755)  # noqa
+            run_args.extend([
+                f'--mount=type=bind,src={tmp_dir},dst=/dockerdev,readonly',
+                f'--entrypoint=/dockerdev/entrypoint.sh',
+            ])
 
         run_args.append(sha)
 
