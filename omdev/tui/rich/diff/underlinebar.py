@@ -23,7 +23,8 @@ from rich.text import Text
 
 
 class UnderlineBar:
-    """Thin horizontal bar with a portion highlighted.
+    """
+    Thin horizontal bar with a portion highlighted.
 
     Args:
         highlight_range (tuple[float, float]): The range to highlight. Defaults to ``(0, 0)`` (no highlight)
