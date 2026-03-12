@@ -1,4 +1,5 @@
 # flake8: noqa: E241
+# @omlish-llm-author "opus-4.6"
 from .themes import DumpedTextualTheme
 
 

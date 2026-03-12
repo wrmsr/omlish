@@ -1,3 +1,4 @@
+# @omlish-llm-author "opus-4.6"
 import dataclasses as dc
 import io
 import typing as ta

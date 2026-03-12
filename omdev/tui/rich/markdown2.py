@@ -31,7 +31,7 @@ def configure_markdown_parser(parser: ta.Optional['md.MarkdownIt'] = None) -> 'm
     )
 
 
-def markdown_from_tokens(tokens: ta.Sequence['md.token.Token']) -> 'rich.markdown.Markdown':
+def markdown_from_tokens(tokens: ta.Sequence['md.token.Token'], **kwargs: ta.Any) -> 'rich.markdown.Markdown':
     rmd = rich.markdown.Markdown('')
     rmd.parsed = tokens  # type: ignore[assignment]
     return rmd
@@ -57,6 +57,7 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__()
 
@@ -68,7 +69,12 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
             parser = configure_markdown_parser()
         self._parser = parser
 
+        self._markdown_kwargs = markdown_kwargs
+
         self._lines_printed_to_scrollback = 0
+
+    def _markdown_from_tokens(self, tokens: ta.Sequence['md.token.Token']) -> 'rich.markdown.Markdown':
+        return markdown_from_tokens(tokens, **(self._markdown_kwargs or {}))
 
     _live: 'rich.live.Live'  # noqa
 
@@ -89,7 +95,7 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
         ).splitlines()
 
     def _console_render_markdown(self, src: str) -> list[str]:
-        return self._console_render(markdown_from_tokens(self._parser.parse(src)))
+        return self._console_render(self._markdown_from_tokens(self._parser.parse(src)))
 
     @abc.abstractmethod
     def feed(self, s: str) -> None:
@@ -137,10 +143,12 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            markdown_kwargs=markdown_kwargs,
         )
 
         self._inc_parser = IncrementalMarkdownParser(parser=self._parser)
@@ -150,7 +158,7 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
 
         if ip_out.new_stable:
             # Render the stable lines
-            stable_lines = self._console_render(markdown_from_tokens(ip_out.new_stable))
+            stable_lines = self._console_render(self._markdown_from_tokens(ip_out.new_stable))
 
             # Overlap Detection
             already_printed_count = min(self._lines_printed_to_scrollback, len(stable_lines))
@@ -163,7 +171,7 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
             # Adjust counter
             self._lines_printed_to_scrollback = max(0, self._lines_printed_to_scrollback - len(stable_lines))
 
-        unstable_lines = self._console_render(markdown_from_tokens(ip_out.unstable))
+        unstable_lines = self._console_render(self._markdown_from_tokens(ip_out.unstable))
 
         available_height = self._console.height - 2
         total_lines = len(unstable_lines)
@@ -199,11 +207,13 @@ class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
             scroll_step: int | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            markdown_kwargs=markdown_kwargs,
         )
 
         self._inc_parser = IncrementalMarkdownParser(parser=self._parser)
@@ -216,7 +226,7 @@ class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
         # Handle stable content
 
         if ip_out.new_stable:
-            stable_lines = self._console_render(markdown_from_tokens(ip_out.new_stable))
+            stable_lines = self._console_render(self._markdown_from_tokens(ip_out.new_stable))
 
             # Overlap Detection: Determine how many lines of this now-stable block were already pushed to scrollback
             # while they were in the "unstable" phase.
@@ -234,7 +244,7 @@ class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
         ##
         # Handle unstable content
 
-        unstable_lines = self._console_render(markdown_from_tokens(ip_out.unstable))
+        unstable_lines = self._console_render(self._markdown_from_tokens(ip_out.unstable))
         total_lines = len(unstable_lines)
         available_height = self._console.height - 2
 
@@ -279,10 +289,12 @@ class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            markdown_kwargs=markdown_kwargs,
         )
 
         from ...markdown.incparse import ClaudeIncrementalMarkdownParser  # noqa
@@ -308,7 +320,7 @@ class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
             self._live.stop()
 
             # Render and print stable content to true scrollback
-            stable_lines = self._console_render(markdown_from_tokens(ip_out.new_stable))
+            stable_lines = self._console_render(self._markdown_from_tokens(ip_out.new_stable))
             for line in stable_lines:
                 self._console.print(rich.text.Text.from_ansi(line), highlight=False)
 
@@ -320,7 +332,7 @@ class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
             self._live.start()
 
         # Render current unstable content
-        unstable_lines = self._console_render(markdown_from_tokens(ip_out.unstable))
+        unstable_lines = self._console_render(self._markdown_from_tokens(ip_out.unstable))
         current_line_count = len(unstable_lines)
 
         # Calculate available display height
@@ -361,10 +373,12 @@ class GptIncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            markdown_kwargs=markdown_kwargs,
         )
 
         from ...markdown.incparse import GptIncrementalMarkdownParser  # noqa
@@ -379,9 +393,9 @@ class GptIncrementalMarkdownLiveStream(MarkdownLiveStream):
         if ip_out.new_stable:
             # Print stable renderables directly through Rich (avoid ANSI round-tripping / splitlines). Use end="" so we
             # don't inject extra blank lines beyond what the markdown renderable produces.
-            self._live.console.print(markdown_from_tokens(ip_out.new_stable), end='')
+            self._live.console.print(self._markdown_from_tokens(ip_out.new_stable), end='')
 
         # Show the remaining (unstable) tail in the live region. We intentionally do *not* try to "spill overflow of
         # unstable to scrollback", since those lines are not provably stable and may retroactively change; printing them
         # would violate correctness.
-        self._live.update(markdown_from_tokens(ip_out.unstable))
+        self._live.update(self._markdown_from_tokens(ip_out.unstable))
