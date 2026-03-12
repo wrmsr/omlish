@@ -4,10 +4,9 @@ import typing as ta
 
 
 if ta.TYPE_CHECKING:
+    from pygments.style import Style as PygmentsStyle
     from rich.syntax import PygmentsSyntaxTheme
     from rich.themes import Theme
-
-    from pygments.style import Style as PygmentsStyle
 
 
 ##
@@ -69,12 +68,12 @@ def _parse_text_style(spec: str) -> dict[str, ta.Any]:
     """Turn a textual text-style string like "bold underline" into keyword args suitable for ``rich.style.Style()``."""
 
     mapping = {
-        'bold':      'bold',
-        'italic':    'italic',
+        'bold': 'bold',
+        'italic': 'italic',
         'underline': 'underline',
-        'strike':    'strike',
-        'reverse':   'reverse',
-        'dim':       'dim',
+        'strike': 'strike',
+        'reverse': 'reverse',
+        'dim': 'dim',
     }
     result: dict[str, bool] = {}
     for word in spec.split():

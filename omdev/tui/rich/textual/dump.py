@@ -1,6 +1,4 @@
 # @omlish-llm-author "opus-4.6"
-from mpmath import arg
-
 from .themes import DumpedTextualTheme
 from .themes import render_dumped_textual_theme_src
 
@@ -228,7 +226,7 @@ def dump_textual_theme(name: str = 'textual-dark') -> DumpedTextualTheme:
 def _main() -> None:
     import argparse  # noqa
 
-    parser = arg.ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument('name', nargs='?', default='textual-dark')
 
     args = parser.parse_args()
