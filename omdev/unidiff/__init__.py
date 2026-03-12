@@ -13,10 +13,22 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-"""
-Errors and exceptions raised by the package.
-"""
+#
+# https://github.com/matiasb/python-unidiff/tree/0f1062137b3c8d2b6b73cad3508dfb8862e66b87
 
 
-class UnidiffParseError(Exception):
-    """Exception when parsing the unified diff data."""
+from .constants import (  # noqa
+    LINE_TYPE_ADDED,
+    LINE_TYPE_CONTEXT,
+    LINE_TYPE_REMOVED,
+)
+
+from .errors import (  # noqa
+    UnidiffParseError,
+)
+
+from .patch import (  # noqa
+    Hunk,
+    PatchedFile,
+    PatchSet,
+)

@@ -29,6 +29,12 @@ class UnicodePrecheck(Precheck['UnicodePrecheck.Config']):
 
         permitted_categories: ta.AbstractSet[str] = DEFAULT_PERMITTED_CATEGORIES
 
+        DEFAULT_PERMITTED_CHARACTERS: ta.ClassVar[ta.AbstractSet[str]] = frozenset([
+            '☣',
+        ])
+
+        permitted_characters: ta.AbstractSet[str] = DEFAULT_PERMITTED_CHARACTERS
+
         DEFAULT_FILE_EXTENSIONS: ta.ClassVar[ta.AbstractSet[str]] = frozenset([
             'py',
 
@@ -67,6 +73,7 @@ class UnicodePrecheck(Precheck['UnicodePrecheck.Config']):
             for ch in src
             if ord(ch) > 255
             and unicodedata.category(ch) not in self._config.permitted_categories
+            and ch not in self._config.permitted_characters
         }
 
         if illegal_chars:

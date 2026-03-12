@@ -573,5 +573,17 @@
         "module": "omdev.tui.apps.markdown.__main__"
       }
     }
+  },
+  {
+    "module": ".unidiff.cli",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/unidiff/cli.py",
+    "line": 61,
+    "value": {
+      "!.cli.types.CliModule": {
+        "name": "unidiff",
+        "module": "omdev.unidiff.cli"
+      }
+    }
   }
 ]

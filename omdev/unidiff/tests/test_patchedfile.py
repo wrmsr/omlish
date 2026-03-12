@@ -13,24 +13,30 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-# https://github.com/matiasb/python-unidiff/tree/0f1062137b3c8d2b6b73cad3508dfb8862e66b87
+import unittest
+
+from ..patch import Hunk
+from ..patch import PatchedFile
 
 
-from .constants import (  # noqa
-    LINE_TYPE_ADDED,
-    LINE_TYPE_CONTEXT,
-    LINE_TYPE_REMOVED,
-)
+class TestPatchedFile(unittest.TestCase):
+    """Tests for PatchedFile."""
 
-from .errors import (  # noqa
-    UnidiffParseError,
-)
+    def setUp(self):
+        super().setUp()
+        self.patched_file = PatchedFile()
 
-from .patch import (  # noqa
-    Hunk,
-    PatchedFile,
-    PatchSet,
-)
+    def test_is_added_file(self):
+        hunk = Hunk(src_start=0, src_len=0, tgt_start=1, tgt_len=10)
+        self.patched_file.append(hunk)
+        self.assertTrue(self.patched_file.is_added_file)
 
+    def test_is_removed_file(self):
+        hunk = Hunk(src_start=1, src_len=10, tgt_start=0, tgt_len=0)
+        self.patched_file.append(hunk)
+        self.assertTrue(self.patched_file.is_removed_file)
 
+    def test_is_modified_file(self):
+        hunk = Hunk(src_start=1, src_len=10, tgt_start=1, tgt_len=8)
+        self.patched_file.append(hunk)
+        self.assertTrue(self.patched_file.is_modified_file)

@@ -4,6 +4,7 @@ TODO:
  - all of the below stuff
  - launch / manage compose services
  - more cache dirs
+ - --mount=type=bind,src=/host/dir,dst=/container/dir,readonly (git)
 
 ====
 

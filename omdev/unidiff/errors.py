@@ -13,30 +13,13 @@
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import unittest
+"""
+Errors and exceptions raised by the package.
+"""
 
-from ..patch import Hunk
-from ..patch import PatchedFile
+
+##
 
 
-class TestPatchedFile(unittest.TestCase):
-    """Tests for PatchedFile."""
-
-    def setUp(self):
-        super(TestPatchedFile, self).setUp()
-        self.patched_file = PatchedFile()
-
-    def test_is_added_file(self):
-        hunk = Hunk(src_start=0, src_len=0, tgt_start=1, tgt_len=10)
-        self.patched_file.append(hunk)
-        self.assertTrue(self.patched_file.is_added_file)
-
-    def test_is_removed_file(self):
-        hunk = Hunk(src_start=1, src_len=10, tgt_start=0, tgt_len=0)
-        self.patched_file.append(hunk)
-        self.assertTrue(self.patched_file.is_removed_file)
-
-    def test_is_modified_file(self):
-        hunk = Hunk(src_start=1, src_len=10, tgt_start=1, tgt_len=8)
-        self.patched_file.append(hunk)
-        self.assertTrue(self.patched_file.is_modified_file)
+class UnidiffParseError(Exception):
+    """Exception when parsing the unified diff data."""

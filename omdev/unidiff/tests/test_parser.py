@@ -24,7 +24,7 @@ class TestUnidiffParser(unittest.TestCase):
     """Tests for Unified Diff Parser."""
 
     def setUp(self):
-        super(TestUnidiffParser, self).setUp()
+        super().setUp()
         self.samples_dir = os.path.dirname(os.path.realpath(__file__))
         self.sample_file = os.path.join(
             self.samples_dir, 'samples/sample0.diff')
@@ -322,7 +322,6 @@ class TestUnidiffParser(unittest.TestCase):
         self.assertTrue(res[0].is_added_file)
         self.assertEqual(res[0].path, '"A \\303\\242 B.py"')
 
-
     def test_deleted_file(self):
         filename = os.path.join(self.samples_dir, 'samples/git_delete.diff')
         with open(filename) as f:
@@ -435,10 +434,11 @@ class TestUnidiffParser(unittest.TestCase):
         self.assertTrue(patch.is_binary_file)
         self.assertTrue(patch.is_added_file)
 
+
 class TestVCSSamples(unittest.TestCase):
     """Tests for real examples from VCS."""
 
-    samples = ['bzr.diff', 'git.diff', 'hg.diff', 'svn.diff']
+    samples = ('bzr.diff', 'git.diff', 'hg.diff', 'svn.diff')
 
     def test_samples(self):
         tests_dir = os.path.dirname(os.path.realpath(__file__))

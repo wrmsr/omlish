@@ -71,6 +71,7 @@ exclude = [
     '.omlish-manifests.json',
     'README',
     'README.md',
+    'README.rst',
     'LICENSE',
     'LICENSE.txt',
     'AUTHORS',

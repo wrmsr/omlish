@@ -58,6 +58,13 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# @omlish-manifest
+_CLI_MODULE = {'!.cli.types.CliModule': {
+    'name': 'unidiff',
+    'module': __name__,
+}}
+
+
 if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
@@ -80,18 +87,19 @@ if __name__ == '__main__':
     renamed_files = 0
     for f in patch:
         if f.is_binary_file:
-            print('%s:' % f.path, '(binary file)')
+            print(f'{f.path}:', '(binary file)')
         else:
             additions += f.added
             deletions += f.removed
-            print('%s:' % f.path, '+%d additions,' % f.added,
-                  '-%d deletions' % f.removed)
+            print(f'{f.path}:', f'+{f.added:d} additions,', f'-{f.removed:d} deletions')
         renamed_files = renamed_files + 1 if f.is_rename else renamed_files
 
     print()
-    print('%d modified file(s), %d added file(s), %d removed file(s)' % (
-        len(patch.modified_files), len(patch.added_files),
-        len(patch.removed_files)))
+    print(
+        f'{len(patch.modified_files):d} modified file(s), '
+        f'{len(patch.added_files):d} added file(s), '
+        f'{len(patch.removed_files):d} removed file(s)',
+    )
     if renamed_files:
-        print('%d file(s) renamed' % renamed_files)
-    print('Total: %d addition(s), %d deletion(s)' % (additions, deletions))
+        print(f'{renamed_files:d} file(s) renamed')
+    print(f'Total: {additions:d} addition(s), {deletions:d} deletion(s)')

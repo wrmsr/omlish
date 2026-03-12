@@ -25,7 +25,7 @@ class TestLine(unittest.TestCase):
     """Tests for Line."""
 
     def setUp(self):
-        super(TestLine, self).setUp()
+        super().setUp()
         self.context_line = Line('Sample line', line_type=LINE_TYPE_CONTEXT)
         self.added_line = Line('Sample line', line_type=LINE_TYPE_ADDED)
         self.removed_line = Line('Sample line', line_type=LINE_TYPE_REMOVED)

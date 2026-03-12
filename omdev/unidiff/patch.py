@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 # The MIT License (MIT)
 # Copyright (c) 2014-2023 Matias Bordese
 #
@@ -42,6 +43,9 @@ from .constants import RE_TARGET_FILENAME
 from .errors import UnidiffParseError
 
 
+##
+
+
 class Line:
     """A diff line."""
 
@@ -67,15 +71,24 @@ class Line:
     def __str__(self) -> str:
         return f'{self.line_type}{self.value}'
 
+    def __hash__(self) -> int:
+        return hash((
+            self.source_line_no,
+            self.target_line_no,
+            self.diff_line_no,
+            self.line_type,
+            self.value,
+        ))
+
     def __eq__(self, other: object) -> ta.Any:
         if not isinstance(other, Line):
             return NotImplemented
         return (
-                self.source_line_no == other.source_line_no and
-                self.target_line_no == other.target_line_no and
-                self.diff_line_no == other.diff_line_no and
-                self.line_type == other.line_type and
-                self.value == other.value
+            self.source_line_no == other.source_line_no and
+            self.target_line_no == other.target_line_no and
+            self.diff_line_no == other.diff_line_no and
+            self.line_type == other.line_type and
+            self.value == other.value
         )
 
     @property
@@ -219,7 +232,7 @@ class PatchedFile(list):
         self.is_binary_file = is_binary_file
 
     def __repr__(self) -> str:
-        return f'<PatchedFile: {str(self.path)}>'
+        return f'<PatchedFile: {self.path!s}>'
 
     def __str__(self) -> str:
         source = ''
@@ -227,8 +240,8 @@ class PatchedFile(list):
         # patch info is optional
         info = '' if self.patch_info is None else str(self.patch_info)
         if not self.is_binary_file and self:
-            source = '--- %s%s\n' % (self.source_file, '\t' + self.source_timestamp if self.source_timestamp else '')
-            target = '+++ %s%s\n' % (self.target_file, '\t' + self.target_timestamp if self.target_timestamp else '')
+            source = '--- %s%s\n' % (self.source_file, '\t' + self.source_timestamp if self.source_timestamp else '')  # noqa
+            target = '+++ %s%s\n' % (self.target_file, '\t' + self.target_timestamp if self.target_timestamp else '')  # noqa
         hunks = ''.join(str(hunk) for hunk in self)
         return info + source + target + hunks
 
@@ -372,11 +385,11 @@ class PatchedFile(list):
         if quoted:
             filepath = filepath[1:-1]
 
-        if filepath.startswith('a/') or filepath.startswith('b/'):
+        if filepath.startswith(('a/', 'b/')):
             filepath = filepath[2:]
 
         if quoted:
-            filepath = '"{}"'.format(filepath)
+            filepath = f'"{filepath}"'
 
         return filepath
 
@@ -395,9 +408,9 @@ class PatchedFile(list):
     @property
     def is_rename(self) -> bool:
         return (
-                self.source_file != DEV_NULL and
-                self.target_file != DEV_NULL and
-                self.source_file[2:] != self.target_file[2:]
+            self.source_file != DEV_NULL and
+            self.target_file != DEV_NULL and
+            self.source_file[2:] != self.target_file[2:]
         )
 
     @property
@@ -407,9 +420,9 @@ class PatchedFile(list):
         if self.source_file == DEV_NULL:
             return True
         return (
-                len(self) == 1 and
-                self[0].source_start == 0 and
-                self[0].source_length == 0
+            len(self) == 1 and
+            self[0].source_start == 0 and
+            self[0].source_length == 0
         )
 
     @property
@@ -420,9 +433,9 @@ class PatchedFile(list):
             return True
 
         return (
-                len(self) == 1 and
-                self[0].target_start == 0 and
-                self[0].target_length == 0
+            len(self) == 1 and
+            self[0].target_start == 0 and
+            self[0].target_length == 0
         )
 
     @property
@@ -459,12 +472,12 @@ class PatchSet(list):
         patch_info = None
 
         diff = enumerate(lines, 1)
-        for unused_diff_line_no, line in diff:
+        for _unused_diff_line_no, line in diff:
             # check for a git file rename
             is_diff_git_header = (
-                    RE_DIFF_GIT_HEADER.match(line) or
-                    RE_DIFF_GIT_HEADER_URI_LIKE.match(line) or
-                    RE_DIFF_GIT_HEADER_NO_PREFIX.match(line)
+                RE_DIFF_GIT_HEADER.match(line) or
+                RE_DIFF_GIT_HEADER_URI_LIKE.match(line) or
+                RE_DIFF_GIT_HEADER_NO_PREFIX.match(line)
             )
 
             if is_diff_git_header:
@@ -506,7 +519,7 @@ class PatchSet(list):
                 source_file = is_source_filename.group('filename')
                 source_timestamp = is_source_filename.group('timestamp')
                 # reset current file, unless we are processing a rename (in that case, source files should match)
-                if current_file is not None and not (current_file.source_file == source_file):
+                if current_file is not None and not (current_file.source_file == source_file):  # noqa
                     current_file = None
                 elif current_file is not None:
                     current_file.source_timestamp = source_timestamp
@@ -518,7 +531,7 @@ class PatchSet(list):
                 target_file = is_target_filename.group('filename')
                 target_timestamp = is_target_filename.group('timestamp')
                 if current_file is not None and not (current_file.target_file == target_file):
-                    raise UnidiffParseError('Target without source: %s' % line)
+                    raise UnidiffParseError(f'Target without source: {line}')
                 if current_file is None:
                     # add current file to PatchSet
                     current_file = PatchedFile(

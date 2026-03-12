@@ -182,6 +182,7 @@ class SetuptoolsBase:
 
             'README',
             'README.md',
+            'README.rst',
 
             'LICENSE',
             'LICENSE.txt',
