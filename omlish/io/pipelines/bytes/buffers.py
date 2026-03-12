@@ -21,8 +21,6 @@ from .buffering import OutboundBytesBufferingIoPipelineHandler
 
 @ta.final
 class OutboundBytesBufferIoPipelineHandler(OutboundBytesBufferingIoPipelineHandler):
-    """☣ vibed ☣"""
-
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:

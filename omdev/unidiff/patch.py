@@ -104,7 +104,7 @@ class Line:
         return self.line_type == LINE_TYPE_CONTEXT
 
 
-class PatchInfo(list):
+class PatchInfo(list):  # FIXME: lol
     """
     Lines with extended patch info.
 
@@ -118,7 +118,7 @@ class PatchInfo(list):
         return ''.join(str(line) for line in self)
 
 
-class Hunk(list):
+class Hunk(list):  # FIXME: lol
     """Each of the modified blocks of a file."""
 
     def __init__(
@@ -210,7 +210,7 @@ class Hunk(list):
         return [str(l) for l in self.target_lines()]
 
 
-class PatchedFile(list):
+class PatchedFile(list):  # FIXME: lol
     """Patch updated file, it is a list of Hunks."""
 
     def __init__(
@@ -445,7 +445,7 @@ class PatchedFile(list):
         return not (self.is_added_file or self.is_removed_file)
 
 
-class PatchSet(list):
+class PatchSet(list):  # FIXME: lol
     """A list of PatchedFiles."""
 
     def __init__(

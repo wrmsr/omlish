@@ -1,0 +1,84 @@
+commit e66d283fc6b0827d51191aacfbcec810b70ce2fd
+Author: wrmsr <timwilloney@gmail.com>
+Date:   Wed Mar 11 17:10:06 2026 -0700
+
+    Fix lint warnings and incorrect argparse import in textual dump
+    
+    Add flake8 ignore for spacing, remove unused mpmath import, correct parser initialization, reorder type‑checking imports, reformat style mapping, and include types-pygments in development requirements.
+
+diff --git a/omdev/tui/rich/textual/dark.py b/omdev/tui/rich/textual/dark.py
+index 1180c5347..71d2b1708 100644
+--- a/omdev/tui/rich/textual/dark.py
++++ b/omdev/tui/rich/textual/dark.py
+@@ -1,3 +1,4 @@
++# flake8: noqa: E241
+ from .themes import DumpedTextualTheme
+ 
+ 
+diff --git a/omdev/tui/rich/textual/dump.py b/omdev/tui/rich/textual/dump.py
+index 2e1de17fd..b43079e11 100644
+--- a/omdev/tui/rich/textual/dump.py
++++ b/omdev/tui/rich/textual/dump.py
+@@ -1,6 +1,4 @@
+ # @omlish-llm-author "opus-4.6"
+-from mpmath import arg
+-
+ from .themes import DumpedTextualTheme
+ from .themes import render_dumped_textual_theme_src
+ 
+@@ -228,7 +226,7 @@ def dump_textual_theme(name: str = 'textual-dark') -> DumpedTextualTheme:
+ def _main() -> None:
+     import argparse  # noqa
+ 
+-    parser = arg.ArgumentParser()
++    parser = argparse.ArgumentParser()
+     parser.add_argument('name', nargs='?', default='textual-dark')
+ 
+     args = parser.parse_args()
+diff --git a/omdev/tui/rich/textual/themes.py b/omdev/tui/rich/textual/themes.py
+index 1ab213666..00b0a7dee 100644
+--- a/omdev/tui/rich/textual/themes.py
++++ b/omdev/tui/rich/textual/themes.py
+@@ -4,11 +4,10 @@ import typing as ta
+ 
+ 
+ if ta.TYPE_CHECKING:
++    from pygments.style import Style as PygmentsStyle
+     from rich.syntax import PygmentsSyntaxTheme
+     from rich.themes import Theme
+ 
+-    from pygments.style import Style as PygmentsStyle
+-
+ 
+ ##
+ 
+@@ -69,12 +68,12 @@ def _parse_text_style(spec: str) -> dict[str, ta.Any]:
+     """Turn a textual text-style string like "bold underline" into keyword args suitable for ``rich.style.Style()``."""
+ 
+     mapping = {
+-        'bold':      'bold',
+-        'italic':    'italic',
++        'bold': 'bold',
++        'italic': 'italic',
+         'underline': 'underline',
+-        'strike':    'strike',
+-        'reverse':   'reverse',
+-        'dim':       'dim',
++        'strike': 'strike',
++        'reverse': 'reverse',
++        'dim': 'dim',
+     }
+     result: dict[str, bool] = {}
+     for word in spec.split():
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+index f636dac55..c6437f5d0 100644
+--- a/requirements-dev.txt
++++ b/requirements-dev.txt
+@@ -22,6 +22,7 @@ lxml-stubs==0.5.1
+ types-greenlet==3.3.0.20251206
+ types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
+ types-psutil==7.2.2.20260130
++types-pygments==2.19.0.20251121
+ types-pyyaml==6.0.12.20250915
+ types-regex==2026.2.28.20260301
+ types-setuptools==82.0.0.20260210
