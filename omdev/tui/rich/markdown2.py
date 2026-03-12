@@ -32,7 +32,7 @@ def configure_markdown_parser(parser: ta.Optional['md.MarkdownIt'] = None) -> 'm
 
 
 def markdown_from_tokens(tokens: ta.Sequence['md.token.Token'], **kwargs: ta.Any) -> 'rich.markdown.Markdown':
-    rmd = rich.markdown.Markdown('')
+    rmd = rich.markdown.Markdown('', **kwargs)
     rmd.parsed = tokens  # type: ignore[assignment]
     return rmd
 
@@ -57,6 +57,7 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__()
@@ -69,6 +70,7 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
             parser = configure_markdown_parser()
         self._parser = parser
 
+        self._render_console_kwargs = render_console_kwargs
         self._markdown_kwargs = markdown_kwargs
 
         self._lines_printed_to_scrollback = 0
@@ -92,6 +94,7 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
             obj,
             force_terminal=True,
             width=self._console.width,
+            **(self._render_console_kwargs or {}),
         ).splitlines()
 
     def _console_render_markdown(self, src: str) -> list[str]:
@@ -143,11 +146,13 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            render_console_kwargs=render_console_kwargs,
             markdown_kwargs=markdown_kwargs,
         )
 
@@ -207,12 +212,14 @@ class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
             scroll_step: int | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            render_console_kwargs=render_console_kwargs,
             markdown_kwargs=markdown_kwargs,
         )
 
@@ -289,11 +296,13 @@ class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            render_console_kwargs=render_console_kwargs,
             markdown_kwargs=markdown_kwargs,
         )
 
@@ -373,11 +382,13 @@ class GptIncrementalMarkdownLiveStream(MarkdownLiveStream):
             *,
             parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
+            render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__(
             parser=parser,
             console=console,
+            render_console_kwargs=render_console_kwargs,
             markdown_kwargs=markdown_kwargs,
         )
 
