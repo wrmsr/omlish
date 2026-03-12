@@ -20,7 +20,7 @@ from rich.console import Console
 
 from omlish import lang
 
-from ....unidiff import PatchSet
+from ....diffs.parsing import parse_patch
 from .rendering import THEME
 from .rendering import render_diff
 
@@ -79,7 +79,7 @@ def _main() -> None:
             input = sys.stdin.readlines()  # noqa
             diff = ''.join(input)
 
-        patch_set: PatchSet = PatchSet(diff.splitlines(keepends=True))
+        patch_set = parse_patch(diff)
 
         render_diff(
             console(),

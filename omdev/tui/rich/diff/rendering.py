@@ -33,10 +33,13 @@ from rich.theme import Theme
 
 from omlish import check
 
-from ....unidiff import PatchSet
-from ....unidiff.patch import Hunk
-from ....unidiff.patch import Line
-from ....unidiff.patch import PatchedFile
+from ....diffs.types import PatchSet
+from ._compat import _added_files
+from ._compat import _compat_patch_files
+from ._compat import _CompatHunk
+from ._compat import _CompatLine
+from ._compat import _modified_files
+from ._compat import _removed_files
 from .renderables import BinaryFileBody
 from .renderables import OnlyRenamedFileBody
 from .renderables import PatchedFileHeader
@@ -63,10 +66,10 @@ THEME = Theme({
 ##
 
 
-def highlight_and_align_lines_in_hunk(
+def _highlight_and_align_lines_in_hunk(
         console: Console,
         start_lineno: int,
-        highlight_linenos: set[int | None],
+        highlight_linenos: set[int],
         syntax_hunk_lines: list[list[Segment]],
         blend_colour: ColorTriplet,
         lines_to_pad_above: dict[int, int],
@@ -205,18 +208,22 @@ def render_diff(
         patch_set: PatchSet,
         project_root: pathlib.Path,
 ) -> None:
+    compat_files = _compat_patch_files(patch_set)
+    modified_files = _modified_files(compat_files)
+    added_files = _added_files(compat_files)
+    removed_files = _removed_files(compat_files)
+
     console.print(
         PatchSetHeader(
-            file_modifications=len(patch_set.modified_files),
-            file_additions=len(patch_set.added_files),
-            file_removals=len(patch_set.removed_files),
-            line_additions=patch_set.added,
-            line_removals=patch_set.removed,
+            file_modifications=len(modified_files),
+            file_additions=len(added_files),
+            file_removals=len(removed_files),
+            line_additions=sum(fp.added for fp in compat_files),
+            line_removals=sum(fp.removed for fp in compat_files),
         ),
     )
 
-    for patch in patch_set:
-        patch = ta.cast(PatchedFile, patch)
+    for patch in compat_files:
         console.print(PatchedFileHeader(patch))
 
         if patch.is_removed_file:
@@ -240,7 +247,7 @@ def render_diff(
         target_lines = target_code.splitlines(keepends=True)
         source_lineno_max = len(target_lines) - patch.added + patch.removed
 
-        source_hunk_cache: dict[int, Hunk] = {hunk.source_start: hunk for hunk in patch}
+        source_hunk_cache: dict[int, _CompatHunk] = {hunk.source_start: hunk for hunk in patch}
         source_reconstructed: list[str] = []
 
         while source_lineno <= source_lineno_max:
@@ -257,8 +264,7 @@ def render_diff(
                 # The line isn't in the diff, pull over current target lines
                 target_line_index = target_lineno - 1
 
-                line = target_lines[target_line_index]
-                source_reconstructed.append(line)
+                source_reconstructed.append(target_lines[target_line_index])
 
                 source_lineno += 1
                 target_lineno += 1
@@ -298,17 +304,15 @@ def render_diff(
             target_added_linenos = set()
 
             context_linenos = []
-            for line in hunk:
-                line = ta.cast(Line, line)  # type: ignore[assignment]  # FIXME: lol
+            for hunk_line in hunk:
+                if hunk_line.source_line_no and hunk_line.is_removed:
+                    source_removed_linenos.add(hunk_line.source_line_no)
 
-                if line.source_line_no and line.is_removed:
-                    source_removed_linenos.add(line.source_line_no)
+                elif hunk_line.target_line_no and hunk_line.is_added:
+                    target_added_linenos.add(hunk_line.target_line_no)
 
-                elif line.target_line_no and line.is_added:
-                    target_added_linenos.add(line.target_line_no)
-
-                elif line.is_context:
-                    context_linenos.append((line.source_line_no, line.target_line_no))
+                elif hunk_line.is_context:
+                    context_linenos.append((hunk_line.source_line_no, hunk_line.target_line_no))
 
             # To ensure that lines are aligned on the left and right in the split diff, we need to add some padding
             # above the lines the amount of padding can be calculated by *changes* in the difference in offset between
@@ -319,8 +323,10 @@ def render_diff(
             target_lineno_to_padding = {}
 
             first_source_context, first_target_context = next(iter(context_linenos), (0, 0))
-            current_delta = first_source_context - first_target_context
-            for source_lineno, target_lineno in context_linenos:
+            current_delta = check.not_none(first_source_context) - check.not_none(first_target_context)
+            for source_lineno_, target_lineno_ in context_linenos:
+                source_lineno = check.not_none(source_lineno_)
+                target_lineno = check.not_none(target_lineno_)
                 delta = source_lineno - target_lineno
                 change_in_delta = current_delta - delta
                 pad_amount = abs(change_in_delta)
@@ -337,8 +343,8 @@ def render_diff(
             # padding above rows to ensure the source and target diffs are aligned with each other.
 
             # Map row numbers to lines
-            source_lines_by_row_index: dict[int, Line] = {}
-            target_lines_by_row_index: dict[int, Line] = {}
+            source_lines_by_row_index: dict[int, _CompatLine] = {}
+            target_lines_by_row_index: dict[int, _CompatLine] = {}
 
             # We have to track the length of contiguous streaks of altered lines, as we can only provide intraline
             # diffing to aligned streaks of identical length. If they are different lengths it is almost impossible to
@@ -350,8 +356,9 @@ def render_diff(
 
             contiguous_streak_row_start = 0
             contiguous_streak_length = 0
-            for i, line in enumerate(hunk.source_lines()):
-                if line.is_removed:
+            source_hunk_lines = hunk.source_lines()
+            for i, hunk_source_line in enumerate(source_hunk_lines):
+                if hunk_source_line.is_removed:
                     if contiguous_streak_length == 0:
                         contiguous_streak_row_start = i
                     contiguous_streak_length += 1
@@ -373,7 +380,17 @@ def render_diff(
                 this_line_padding = source_lineno_to_padding.get(lineno, 0)
                 accumulated_source_padding += this_line_padding
                 row_number = i + accumulated_source_padding
-                source_lines_by_row_index[row_number] = line
+                source_lines_by_row_index[row_number] = hunk_source_line
+
+            if contiguous_streak_length:
+                for row_index in range(
+                        contiguous_streak_row_start,
+                        contiguous_streak_row_start + contiguous_streak_length,
+                ):
+                    source_row_to_contiguous_streak_length[row_index] = ContiguousStreak(
+                        streak_row_start=contiguous_streak_row_start,
+                        streak_length=contiguous_streak_length,
+                    )
 
             # TODO: Factor out this code into a function, we're doing the same thing
             #  for all lines in both source and target hunks.
@@ -383,8 +400,9 @@ def render_diff(
 
             target_streak_row_start = 0
             target_streak_length = 0
-            for i, line in enumerate(hunk.target_lines()):
-                if line.is_added:
+            target_hunk_lines = hunk.target_lines()
+            for i, target_hunk_line in enumerate(target_hunk_lines):
+                if target_hunk_line.is_added:
                     if target_streak_length == 0:
                         target_streak_row_start = i
                     target_streak_length += 1
@@ -405,7 +423,17 @@ def render_diff(
                 this_line_padding = target_lineno_to_padding.get(lineno, 0)
                 accumulated_target_padding += this_line_padding
                 row_number = i + accumulated_target_padding
-                target_lines_by_row_index[row_number] = line
+                target_lines_by_row_index[row_number] = target_hunk_line
+
+            if target_streak_length:
+                for row_index in range(
+                        target_streak_row_start,
+                        target_streak_row_start + target_streak_length,
+                ):
+                    target_row_to_contiguous_streak_length[row_index] = ContiguousStreak(
+                        streak_row_start=target_streak_row_start,
+                        streak_length=target_streak_length,
+                    )
 
             row_number_to_deletion_ranges = collections.defaultdict(list)
             row_number_to_insertion_ranges = collections.defaultdict(list)
@@ -415,22 +443,12 @@ def render_diff(
                 source_streak = source_row_to_contiguous_streak_length.get(row_number)
                 target_streak = target_row_to_contiguous_streak_length.get(row_number)
 
-                # TODO: We need to work out the offsets to ensure that we look up the correct target and source row
-                #  streaks to compare. Will probably need to append accumulated padding to row numbers
-
-                # print(padded_source_row, padded_target_row, source_line.value)
-                # if source_streak:
-                #     print(f"sourcestreak {row_number}", source_streak)
-                # if target_streak:
-                #     print(f"targetstreak {row_number}", target_streak)
-
                 intraline_enabled = (
                     source_streak is not None and
                     target_streak is not None and
                     source_streak.streak_length == target_streak.streak_length
                 )
                 if not intraline_enabled:
-                    # print(f"skipping row {row_number}")
                     continue
 
                 target_line = target_lines_by_row_index.get(row_number)
@@ -466,7 +484,7 @@ def render_diff(
             source_syntax_lines: list[list[Segment]] = console.render_lines(source_syntax)
             target_syntax_lines = console.render_lines(target_syntax)
 
-            highlighted_source_lines = highlight_and_align_lines_in_hunk(
+            highlighted_source_lines = _highlight_and_align_lines_in_hunk(
                 console,
                 hunk.source_start,
                 source_removed_linenos,
@@ -476,7 +494,8 @@ def render_diff(
                 dict(row_number_to_deletion_ranges),
                 gutter_size=len(str(source_lineno_max)) + 2,
             )
-            highlighted_target_lines = highlight_and_align_lines_in_hunk(
+
+            highlighted_target_lines = _highlight_and_align_lines_in_hunk(
                 console,
                 hunk.target_start,
                 target_added_linenos,

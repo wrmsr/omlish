@@ -72,6 +72,18 @@
     }
   },
   {
+    "module": ".diffs.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/diffs/__main__.py",
+    "line": 4,
+    "value": {
+      "!.cli.types.CliModule": {
+        "name": "diffs",
+        "module": "omdev.diffs.__main__"
+      }
+    }
+  },
+  {
     "module": ".dockerdev.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/dockerdev/__main__.py",
@@ -583,18 +595,6 @@
       "!.cli.types.CliModule": {
         "name": "tui/diff",
         "module": "omdev.tui.rich.diff.__main__"
-      }
-    }
-  },
-  {
-    "module": ".unidiff.cli",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/unidiff/cli.py",
-    "line": 61,
-    "value": {
-      "!.cli.types.CliModule": {
-        "name": "unidiff",
-        "module": "omdev.unidiff.cli"
       }
     }
   }
