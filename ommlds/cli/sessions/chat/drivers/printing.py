@@ -34,7 +34,7 @@ class AiMessagesEventPrinter:
                     await self._printer.print_content(c)
 
 
-class AiDeltaEventPrinter:
+class AiStreamEventPrinter:
     def __init__(
             self,
             *,

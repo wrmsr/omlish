@@ -20,4 +20,4 @@ class DriverConfig(mc.drivers.DriverConfig):
     state: StateConfig = StateConfig()
 
     print_ai_responses: bool = False
-    print_tool_executions: bool = False
+    print_tool_use: bool = False

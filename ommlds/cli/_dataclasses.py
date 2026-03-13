@@ -960,36 +960,35 @@ def _process_dataclass__a2d69e46420cdff0ccbcc948ae114831a3bb2e5b():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_responses', 'print_tool_execu"
-        "tions')), EqPlan(fields=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_responses', 'print_tool_executio"
-        "ns')), FrozenPlan(fields=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_responses', 'print_tool_executi"
-        "ons'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ai', 'state', 'tools', 'user', 'back"
-        "end', 'print_ai_responses', 'print_tool_executions'), cache=False), InitPlan(fields=(InitPlan.Field(name='ai',"
-        " annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_facto"
-        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
-        "), InitPlan.Field(name='state', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fi"
-        "elds.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='tools', annotation=OpRef(name='init.fields.2.annotation"
-        "'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='user', annotation=OpRef("
-        "name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='backend', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='print_ai_responses', annotation=OpRef(name='init.fields.5.annotation'),"
-        " default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='print_tool_executions', ann"
-        "otation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), "
-        "self_param='self', std_params=(), kw_only_params=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_respons"
-        "es', 'print_tool_executions'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()),"
-        " ReprPlan(fields=(ReprPlan.Field(name='ai', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='tools', kw_only=True, fn=None), ReprPlan.Field(name='user', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='backend', kw_only=True, fn=None), ReprPlan.Field(name='print_ai_responses', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='print_tool_executions', kw_only=True, fn=None)), id=False, terse=False, "
-        "default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_responses', 'print_tool_use')"
+        "), EqPlan(fields=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_responses', 'print_tool_use')), FrozenP"
+        "lan(fields=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_responses', 'print_tool_use'), allow_dynamic_"
+        "dunder_attrs=False), HashPlan(action='add', fields=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_respo"
+        "nses', 'print_tool_use'), cache=False), InitPlan(fields=(InitPlan.Field(name='ai', annotation=OpRef(name='init"
+        ".fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='stat"
+        "e', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one), InitPlan.Field(name='tools', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init"
+        ".fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='user', annotation=OpRef(name='init.fields.3.annotati"
+        "on'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='backend', annotation=O"
+        "pRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='print_ai_responses', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fi"
+        "elds.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='print_tool_use', annotation=OpRef(name='init.fields.6.a"
+        "nnotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), k"
+        "w_only_params=('ai', 'state', 'tools', 'user', 'backend', 'print_ai_responses', 'print_tool_use'), frozen=True"
+        ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ai'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name='tools', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='user', kw_only=True, fn=None), ReprPlan.Field(name='backend', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='print_ai_responses', kw_only=True, fn=None), ReprPlan.Field(name='prin"
+        "t_tool_use', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='a00505c2733b9577f9f6ed00dfb21d22de842cb7',
+    plan_repr_sha1='6295903dedc4dfcb9a1f1863aff01491b48204f4',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -1010,7 +1009,7 @@ def _process_dataclass__a2d69e46420cdff0ccbcc948ae114831a3bb2e5b():
         ('ommlds.cli.main', 'DriverConfig'),
     ),
 )
-def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
+def _process_dataclass__6295903dedc4dfcb9a1f1863aff01491b48204f4():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1052,7 +1051,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
                 user=self.user,
                 backend=self.backend,
                 print_ai_responses=self.print_ai_responses,
-                print_tool_executions=self.print_tool_executions,
+                print_tool_use=self.print_tool_use,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1072,7 +1071,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
                 self.user == other.user and
                 self.backend == other.backend and
                 self.print_ai_responses == other.print_ai_responses and
-                self.print_tool_executions == other.print_tool_executions
+                self.print_tool_use == other.print_tool_use
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1087,7 +1086,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
             'user',
             'backend',
             'print_ai_responses',
-            'print_tool_executions',
+            'print_tool_use',
         }
 
         def __setattr__(self, name, value):
@@ -1110,7 +1109,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
             'user',
             'backend',
             'print_ai_responses',
-            'print_tool_executions',
+            'print_tool_use',
         }
 
         def __delattr__(self, name):
@@ -1134,7 +1133,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
                 self.user,
                 self.backend,
                 self.print_ai_responses,
-                self.print_tool_executions,
+                self.print_tool_use,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1149,7 +1148,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
             user: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             backend: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             print_ai_responses: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            print_tool_executions: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            print_tool_use: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'ai', ai)
             __dataclass__object_setattr(self, 'state', state)
@@ -1157,7 +1156,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
             __dataclass__object_setattr(self, 'user', user)
             __dataclass__object_setattr(self, 'backend', backend)
             __dataclass__object_setattr(self, 'print_ai_responses', print_ai_responses)
-            __dataclass__object_setattr(self, 'print_tool_executions', print_tool_executions)
+            __dataclass__object_setattr(self, 'print_tool_use', print_tool_use)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1173,7 +1172,7 @@ def _process_dataclass__a00505c2733b9577f9f6ed00dfb21d22de842cb7():
             parts.append(f"user={self.user!r}")
             parts.append(f"backend={self.backend!r}")
             parts.append(f"print_ai_responses={self.print_ai_responses!r}")
-            parts.append(f"print_tool_executions={self.print_tool_executions!r}")
+            parts.append(f"print_tool_use={self.print_tool_use!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

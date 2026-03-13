@@ -4,6 +4,9 @@ from ..... import minichain as mc
 from ....backends.types import DefaultBackendName
 from .configs import DEFAULT_BACKEND
 from .configs import DriverConfig
+from .printing import AiMessagesEventPrinter
+from .printing import AiStreamEventPrinter
+from .printing import ToolUseEventsPrinter
 from .services import ChatChoicesServiceProviderProxy
 from .services import ChatChoicesStreamServiceProviderProxy
 
@@ -60,12 +63,26 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     if cfg.print_ai_responses:
-        raise NotImplementedError
+        if cfg.ai.stream:
+            els.extend([
+                inj.bind(AiStreamEventPrinter, singleton=True),
 
-    if cfg.print_tool_executions:
-        # els.append(exec_stack.push_bind(to_ctor=_printing.ArgsPrintingToolUseExecutor, singleton=True))
-        # els.append(exec_stack.push_bind(to_ctor=_printing.ResultPrintingToolUseExecutor, singleton=True))
-        raise NotImplementedError
+                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=AiStreamEventPrinter)(lambda o: o.handle_event)),  # noqa
+            ])
+
+        else:
+            els.extend([
+                inj.bind(AiMessagesEventPrinter, singleton=True),
+
+                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=AiMessagesEventPrinter)(lambda o: o.handle_event)),  # noqa
+            ])
+
+    if cfg.print_tool_use:
+        els.extend([
+            inj.bind(ToolUseEventsPrinter, singleton=True),
+
+            mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=ToolUseEventsPrinter)(lambda o: o.handle_event)),  # noqa
+        ])
 
     #
 
