@@ -7,7 +7,7 @@ from omlish import dataclasses as dc
 ##
 
 
-class ChatPhase(enum.Enum):
+class Phase(enum.Enum):
     NEW = enum.auto()
 
     STARTING = enum.auto()
@@ -21,9 +21,9 @@ class ChatPhase(enum.Enum):
 
 
 @dc.dataclass(frozen=True)
-class ChatPhaseCallback:
-    phase: ChatPhase = dc.xfield(validate=lambda v: v != ChatPhase.NEW)
+class PhaseCallback:
+    phase: Phase = dc.xfield(validate=lambda v: v != Phase.NEW)
     fn: ta.Callable[[], ta.Awaitable[None]] = dc.xfield()
 
 
-ChatPhaseCallbacks = ta.NewType('ChatPhaseCallbacks', ta.Sequence[ChatPhaseCallback])
+PhaseCallbacks = ta.NewType('PhaseCallbacks', ta.Sequence[PhaseCallback])

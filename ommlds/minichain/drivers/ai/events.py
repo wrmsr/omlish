@@ -2,9 +2,11 @@ import typing as ta
 
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
-from ..events.manager import ChatEventsManager
-from ..events.types import AiDeltaChatEvent
-from ..events.types import AiMessagesChatEvent
+from ..events.manager import EventsManager
+from ..events.types import AiStreamBeginEvent
+from ..events.types import AiStreamDeltaEvent
+from ..events.types import AiStreamEndEvent
+from ..events.types import AiMessagesEvent
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
 
@@ -17,7 +19,7 @@ class EventEmittingAiChatGenerator(AiChatGenerator):
             self,
             *,
             wrapped: AiChatGenerator,
-            events: ChatEventsManager,
+            events: EventsManager,
     ) -> None:
         super().__init__()
 
@@ -27,7 +29,7 @@ class EventEmittingAiChatGenerator(AiChatGenerator):
     async def get_next_ai_messages(self, chat: Chat) -> Chat:
         out = await self._wrapped.get_next_ai_messages(chat)
 
-        await self._events.emit_event(AiMessagesChatEvent(out))
+        await self._events.emit_event(AiMessagesEvent(out))
 
         return out
 
@@ -37,7 +39,7 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             self,
             *,
             wrapped: StreamAiChatGenerator,
-            events: ChatEventsManager,
+            events: EventsManager,
     ) -> None:
         super().__init__()
 
@@ -49,14 +51,26 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             chat: Chat,
             delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> Chat:
+        sent_begin_event = False
+
         async def inner(delta: AiDelta) -> None:
-            await self._events.emit_event(AiDeltaChatEvent(delta))
+            nonlocal sent_begin_event
+            if not sent_begin_event:
+                await self._events.emit_event(AiStreamBeginEvent())
+                sent_begin_event = True
+                
+            await self._events.emit_event(AiStreamDeltaEvent(delta))
 
             if delta_callback is not None:
                 await delta_callback(delta)
 
-        out = await self._wrapped.get_next_ai_messages_streamed(chat, delta_callback=inner)
+        try:
+            out = await self._wrapped.get_next_ai_messages_streamed(chat, delta_callback=inner)
 
-        await self._events.emit_event(AiMessagesChatEvent(out, streamed=True))
+        finally:
+            if sent_begin_event:
+                await self._events.emit_event(AiStreamEndEvent())
+
+        await self._events.emit_event(AiMessagesEvent(out, streamed=True))
 
         return out

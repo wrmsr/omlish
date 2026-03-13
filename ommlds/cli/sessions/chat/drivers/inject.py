@@ -1,31 +1,11 @@
-"""
-TODO:
- - private + expose(ChatDriver)
-"""
-import uuid
-
 from omlish import inject as inj
-from omlish import lang
 
 from ..... import minichain as mc
 from ....backends.types import DefaultBackendName
 from .configs import DEFAULT_BACKEND
 from .configs import DriverConfig
-from .injection import placeholder_contents_providers
-from .injection import system_message_providers
-
-
-with lang.auto_proxy_import(globals()):
-    from ....backends import inject as _backends
-    from . import impl as _impl
-    from . import types as _types
-    from .ai import inject as _ai
-    from .events import inject as _events
-    from .phases import inject as _phases
-    from .preparing import inject as _preparing
-    from .state import inject as _state
-    from .tools import inject as _tools
-    from .user import inject as _user
+from .services import ChatChoicesServiceProviderProxy
+from .services import ChatChoicesStreamServiceProviderProxy
 
 
 ##
@@ -36,39 +16,37 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     #
 
+    els.append(mc.drivers.inject.bind_driver(cfg))
+
+    #
+
+    from .state.inject import bind_state
+
+    els.append(bind_state(cfg.state))
+
+    #
+
+    from ....backends.inject import bind_backends
+
     els.extend([
-        _backends.bind_backends(cfg.backend),
-
-        _ai.bind_ai(cfg.ai),
-
-        _events.bind_events(),
-
-        _phases.bind_phases(),
-
-        _preparing.bind_preparing(),
-
-        _state.bind_state(cfg.state),
-
-        _tools.bind_tools(cfg.tools),
-
-        _user.bind_user(cfg.user),
+        bind_backends(cfg.backend),
     ])
 
     #
 
-    els.extend([
-        system_message_providers().bind_items_provider(singleton=True),
-        placeholder_contents_providers().bind_items_provider(singleton=True),
-    ])
+    if cfg.ai.stream:
+        els.extend([
+            inj.bind(ChatChoicesStreamServiceProviderProxy, singleton=True),
+            inj.bind(mc.ChatChoicesStreamService, to_key=ChatChoicesStreamServiceProviderProxy),
+            inj.bind(mc.drivers.StreamAiChatGenerator, to_ctor=mc.drivers.ChatChoicesStreamServiceStreamAiChatGenerator),
+        ])
 
-    #
-
-    els.extend([
-        inj.bind(_impl.ChatDriverImpl, singleton=True),
-        inj.bind(_types.ChatDriver, to_key=_impl.ChatDriverImpl),
-
-        inj.bind_async_late(_types.ChatDriver, _types.ChatDriverGetter),
-    ])
+    else:
+        els.extend([
+            inj.bind(ChatChoicesServiceProviderProxy, singleton=True),
+            inj.bind(mc.ChatChoicesService, to_key=ChatChoicesServiceProviderProxy),
+            inj.bind(mc.drivers.AiChatGenerator, to_ctor=mc.drivers.ChatChoicesServiceAiChatGenerator),
+        ])
 
     #
 
@@ -81,9 +59,16 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     els.append(inj.bind(DefaultBackendName, to_const=DEFAULT_BACKEND))
 
+
     #
 
-    els.append(inj.bind(_types.ChatDriverId(uuid.uuid4())))
+    if cfg.print_ai_responses:
+        raise NotImplementedError
+
+    if cfg.print_tool_executions:
+        # els.append(exec_stack.push_bind(to_ctor=_printing.ArgsPrintingToolUseExecutor, singleton=True))
+        # els.append(exec_stack.push_bind(to_ctor=_printing.ResultPrintingToolUseExecutor, singleton=True))
+        raise NotImplementedError
 
     #
 

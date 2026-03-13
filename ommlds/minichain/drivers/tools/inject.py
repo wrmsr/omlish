@@ -9,6 +9,7 @@ from .execution import ToolContextProvider
 from .execution import ToolContextProviders
 from .execution import ToolUseExecutor
 from .execution import ToolUseExecutorImpl
+from .events import EventEmittingToolUseExecutor
 from .injection import ToolSetBinder
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
@@ -47,6 +48,8 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     els.append(exec_stack.push_bind(to_ctor=ToolUseExecutorImpl, singleton=True))
 
     els.append(exec_stack.push_bind(to_ctor=ErrorHandlingToolUseExecutor, singleton=True))
+
+    els.append(exec_stack.push_bind(to_ctor=EventEmittingToolUseExecutor, singleton=True))
 
     els.extend([
         inj.bind(ToolUseExecutor, to_key=exec_stack.top),

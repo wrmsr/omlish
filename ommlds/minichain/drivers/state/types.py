@@ -21,7 +21,7 @@ class ChatId(tv.UniqueScalarTypedValue[uuid.UUID]):
 
 
 @dc.dataclass(frozen=True)
-class ChatState:
+class State:
     name: str | None = None
 
     created_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
@@ -35,11 +35,11 @@ class ChatState:
 ##
 
 
-class ChatStateManager(lang.Abstract):
+class StateManager(lang.Abstract):
     @abc.abstractmethod
-    def get_state(self) -> ta.Awaitable[ChatState]:
+    def get_state(self) -> ta.Awaitable[State]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def extend_chat(self, chat_additions: Chat) -> ta.Awaitable[ChatState]:
+    def extend_chat(self, chat_additions: Chat) -> ta.Awaitable[State]:
         raise NotImplementedError

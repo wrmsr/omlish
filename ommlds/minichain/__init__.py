@@ -414,6 +414,10 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from . import drivers  # noqa
+
+    ##
+
     from .llms.tokens import (  # noqa
         Token,
         Tokens,

@@ -1,7 +1,6 @@
 import uuid
 
 from ..... import minichain as mc
-from ..drivers.types import ChatDriver
 from .commands.manager import CommandsManager
 
 
@@ -12,7 +11,7 @@ class ChatFacade:
     def __init__(
             self,
             *,
-            driver: ChatDriver,
+            driver: 'mc.drivers.Driver',
             commands: CommandsManager,
     ) -> None:
         super().__init__()

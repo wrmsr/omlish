@@ -1,15 +1,13 @@
 from omlish.formats import json
 
 from ...... import minichain as mc
-from ...drivers.tools.confirmation import ToolExecutionConfirmation
-from ...drivers.tools.confirmation import ToolExecutionRequestDeniedError
 from .types import ChatAppGetter
 
 
 ##
 
 
-class ChatAppToolExecutionConfirmation(ToolExecutionConfirmation):
+class ChatAppToolExecutionConfirmation(mc.drivers.ToolExecutionConfirmation):
     def __init__(
             self,
             *,
@@ -35,4 +33,4 @@ class ChatAppToolExecutionConfirmation(ToolExecutionConfirmation):
                 'Execute requested tool?',
                 json.dumps_pretty(tr_dct),
         ):
-            raise ToolExecutionRequestDeniedError
+            raise mc.drivers.ToolExecutionRequestDeniedError

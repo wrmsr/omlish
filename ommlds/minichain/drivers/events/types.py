@@ -5,33 +5,38 @@ from omlish import lang
 
 from ...chat.messages import Chat
 from ...chat.messages import UserChat
+from ...chat.messages import ToolUseResultMessage
 from ...chat.stream.types import AiDelta
+from ...tools.types import ToolUse
 
 
 ##
 
 
-class ChatEvent(lang.Abstract, lang.Sealed):
+class Event(lang.Abstract, lang.Sealed):
     pass
 
 
-class ChatEventCallback(lang.Func1[ChatEvent, ta.Awaitable[None]]):
+class EventCallback(lang.Func1[Event, ta.Awaitable[None]]):
     pass
 
 
-ChatEventCallbacks = ta.NewType('ChatEventCallbacks', ta.Sequence[ChatEventCallback])
+EventCallbacks = ta.NewType('EventCallbacks', ta.Sequence[EventCallback])
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class UserMessagesChatEvent(ChatEvent, lang.Final):
+class UserMessagesEvent(Event, lang.Final):
     chat: UserChat
 
 
+#
+
+
 @dc.dataclass(frozen=True)
-class AiMessagesChatEvent(ChatEvent, lang.Final):
+class AiMessagesEvent(Event, lang.Final):
     chat: Chat
 
     _: dc.KW_ONLY
@@ -39,12 +44,41 @@ class AiMessagesChatEvent(ChatEvent, lang.Final):
     streamed: bool = False
 
 
+#
+
+
 @dc.dataclass(frozen=True)
-class AiDeltaChatEvent(ChatEvent, lang.Final):
+class AiStreamBeginEvent(Event, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class AiStreamDeltaEvent(Event, lang.Final):
     delta: AiDelta
 
 
 @dc.dataclass(frozen=True)
-class ErrorChatEvent(ChatEvent, lang.Final):
+class AiStreamEndEvent(Event, lang.Final):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ErrorEvent(Event, lang.Final):
     message: str | None = None
     error: BaseException | None = None
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ToolUseEvent(Event, lang.Final):
+    use: ToolUse
+
+
+@dc.dataclass(frozen=True)
+class ToolUseResultEvent(Event, lang.Final):
+    message: ToolUseResultMessage

@@ -1,16 +1,16 @@
-from .types import ChatEvent
-from .types import ChatEventCallbacks
+from .types import Event
+from .types import EventCallbacks
 
 
 ##
 
 
-class ChatEventsManager:
-    def __init__(self, callbacks: ChatEventCallbacks) -> None:
+class EventsManager:
+    def __init__(self, callbacks: EventCallbacks) -> None:
         super().__init__()
 
         self._callbacks = callbacks
 
-    async def emit_event(self, event: ChatEvent) -> None:
+    async def emit_event(self, event: Event) -> None:
         for cb in self._callbacks:
             await cb(event)

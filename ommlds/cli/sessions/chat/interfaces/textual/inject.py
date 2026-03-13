@@ -8,7 +8,7 @@ import contextlib
 from omlish import inject as inj
 from omlish import lang
 
-from ...drivers.events.injection import event_callbacks
+from ...... import minichain as mc
 from ..base import ChatInterface
 from .configs import TextualInterfaceConfig
 from .types import ChatAppGetter
@@ -17,7 +17,6 @@ from .types import ChatAppGetter
 with lang.auto_proxy_import(globals()):
     from omdev.tui import textual as tx
 
-    from ...drivers.tools import confirmation as _tools_confirmation
     from ...facades import ui as _facades_ui
     from . import app as _app
     from . import facades as _facades
@@ -48,7 +47,7 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     els.extend([
         inj.bind(_app.ChatEventQueue, to_const=asyncio.Queue()),
 
-        event_callbacks().bind_item(to_fn=inj.target(eq=_app.ChatEventQueue)(lambda eq: lambda ev: eq.put(ev))),
+        mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(eq=_app.ChatEventQueue)(lambda eq: lambda ev: eq.put(ev))),  # noqa
     ])
 
     #
@@ -56,14 +55,14 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     if cfg.enable_tools:
         if cfg.dangerous_no_tool_confirmation:
             els.append(inj.bind(
-                _tools_confirmation.ToolExecutionConfirmation,
-                to_ctor=_tools_confirmation.UnsafeAlwaysAllowToolExecutionConfirmation,
+                mc.drivers.ToolExecutionConfirmation,
+                to_ctor=mc.drivers.UnsafeAlwaysAllowToolExecutionConfirmation,
                 singleton=True,
             ))
 
         else:
             els.append(inj.bind(
-                _tools_confirmation.ToolExecutionConfirmation,
+                mc.drivers.ToolExecutionConfirmation,
                 to_ctor=_tools.ChatAppToolExecutionConfirmation,
                 singleton=True,
             ))
@@ -78,7 +77,7 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
             singleton=True,
             to_async_fn=inj.make_async_managed_provider(
                 tx.DevtoolsManager,
-                contextlib.aclosing,
+                contextlib.aclosing,  # noqa
             ),
         ),
 

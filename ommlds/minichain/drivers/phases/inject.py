@@ -1,7 +1,7 @@
 from omlish import inject as inj
 
 from .injection import phase_callbacks
-from .manager import ChatPhaseManager
+from .manager import PhaseManager
 
 
 ##
@@ -16,7 +16,7 @@ def bind_phases() -> inj.Elements:
 
     #
 
-    els.append(inj.bind(ChatPhaseManager, singleton=True))
+    els.append(inj.bind(PhaseManager, singleton=True))
 
     #
 

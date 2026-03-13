@@ -162,10 +162,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                     cfg,
                     driver=dc.replace(
                         cfg.driver,
-                        ai=dc.replace(
-                            cfg.driver.ai,
-                            print_responses=True,
-                        ),
+                        print_ai_responses=True,
                     ),
                     interface=dc.replace(
                         check.isinstance(cfg.interface, BareInterfaceConfig),

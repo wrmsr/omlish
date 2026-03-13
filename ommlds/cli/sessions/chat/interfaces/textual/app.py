@@ -13,10 +13,6 @@ from omlish.logs import all as logs
 from ...... import minichain as mc
 from .....backends.types import BackendName
 from ....types import SessionProfileName
-from ...drivers.events.types import AiDeltaChatEvent
-from ...drivers.events.types import AiMessagesChatEvent
-from ...drivers.events.types import UserMessagesChatEvent
-from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
@@ -99,7 +95,7 @@ class ChatApp(
             self,
             *,
             chat_facade: ChatFacade,
-            chat_driver: ChatDriver,
+            chat_driver: mc.drivers.Driver,
             chat_event_queue: ChatEventQueue,
             backend_name: BackendName | None = None,
             devtools_setup: tx.DevtoolsSetup | None = None,
@@ -261,7 +257,7 @@ class ChatApp(
 
             await alog.debug(lambda: f'Got chat event: {ev!r}')
 
-            if isinstance(ev, AiMessagesChatEvent):
+            if isinstance(ev, mc.drivers.AiMessagesEvent):
                 if ev.streamed:
                     await self._finalize_stream_ai_message()
                     await self._background_render_chat(ev.chat)
@@ -282,7 +278,7 @@ class ChatApp(
                         await self._enqueue_mount_messages(*wx)
                         self.call_later(self._mount_messages)
 
-            elif isinstance(ev, AiDeltaChatEvent):
+            elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
                 if isinstance(ev.delta, mc.ContentAiDelta):
                     cc = check.isinstance(ev.delta.c, str)
                     self.call_later(self._append_stream_ai_message_content, cc)
@@ -290,7 +286,7 @@ class ChatApp(
                 elif isinstance(ev.delta, mc.ToolUseAiDelta):
                     pass
 
-            elif isinstance(ev, UserMessagesChatEvent):
+            elif isinstance(ev, mc.drivers.UserMessagesEvent):
                 await self._background_render_chat(ev.chat)
 
     ##

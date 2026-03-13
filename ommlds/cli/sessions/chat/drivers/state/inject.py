@@ -6,29 +6,22 @@ TODO:
 import uuid
 
 from omlish import inject as inj
-from omlish import lang
 
-from ..phases.injection import phase_callbacks
-from ..phases.types import ChatPhase
-from ..phases.types import ChatPhaseCallback
+from ...... import minichain as mc
 from .configs import StateConfig
-
-
-with lang.auto_proxy_import(globals()):
-    from . import ids as _ids
-    from . import inmemory as _inmemory
-    from . import storage as _storage
-    from . import types as _types
+from .ids import LastChatIdManager
+from .storage import build_driver_storage_key
+from .storage import StateStorageDriverStateManager
 
 
 ##
 
 
-def _new_chat_id() -> '_types.ChatId':
-    return _types.ChatId(uuid.uuid4())
+def _new_chat_id() -> mc.drivers.ChatId:
+    return mc.drivers.ChatId(uuid.uuid4())
 
 
-async def _get_last_or_new_chat_id(lcim: '_ids.LastChatIdManager') -> '_types.ChatId':
+async def _get_last_or_new_chat_id(lcim: LastChatIdManager) -> mc.drivers.ChatId:
     return lcid if (lcid := await lcim.get_last_chat_id()) is not None else _new_chat_id()
 
 
@@ -40,29 +33,28 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
 
     if cfg.state in ('continue', 'new'):
         if cfg.state == 'new':
-            els.append(inj.bind(_types.ChatId(uuid.UUID(cfg.chat_id)) if cfg.chat_id is not None else _new_chat_id()))
+            els.append(inj.bind(mc.drivers.ChatId(uuid.UUID(cfg.chat_id)) if cfg.chat_id is not None else _new_chat_id()))  # noqa
 
         elif cfg.chat_id is not None:
-            els.append(inj.bind(_types.ChatId(uuid.UUID(cfg.chat_id))))
+            els.append(inj.bind(mc.drivers.ChatId(uuid.UUID(cfg.chat_id))))
 
         else:
-            els.append(inj.bind(_types.ChatId, to_async_fn=_get_last_or_new_chat_id, singleton=True))
+            els.append(inj.bind(mc.drivers.ChatId, to_async_fn=_get_last_or_new_chat_id, singleton=True))
 
         els.extend([
-            inj.bind(_storage.build_chat_storage_key),
-
-            inj.bind(_types.ChatStateManager, to_ctor=_storage.StateStorageChatStateManager, singleton=True),
+            inj.bind(build_driver_storage_key),
+            inj.bind(mc.drivers.StateManager, to_ctor=StateStorageDriverStateManager, singleton=True),
         ])
 
         #
 
         els.extend([
-            inj.bind(_ids.LastChatIdManager, singleton=True),
+            inj.bind(LastChatIdManager, singleton=True),
 
-            phase_callbacks().bind_item(to_fn=inj.target(
-                lcim=_ids.LastChatIdManager,
-                cid=_types.ChatId,
-            )(lambda lcim, cid: ChatPhaseCallback(ChatPhase.STARTED, lambda: lcim.set_last_chat_id(cid)))),
+            mc.drivers.injection.phase_callbacks().bind_item(to_fn=inj.target(
+                lcim=LastChatIdManager,
+                cid=mc.drivers.ChatId,
+            )(lambda lcim, cid: mc.drivers.PhaseCallback(mc.drivers.Phase.STARTED, lambda: lcim.set_last_chat_id(cid)))),  # noqa
         ])
 
     elif cfg.state == 'ephemeral':
@@ -71,8 +63,7 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
 
         els.extend([
             inj.bind(_new_chat_id()),
-
-            inj.bind(_types.ChatStateManager, to_ctor=_inmemory.InMemoryChatStateManager, singleton=True),
+            inj.bind(mc.drivers.StateManager, to_ctor=mc.drivers.InMemoryStateManager, singleton=True),
         ])
 
     else:

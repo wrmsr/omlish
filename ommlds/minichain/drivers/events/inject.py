@@ -1,7 +1,7 @@
 from omlish import inject as inj
 
 from .injection import event_callbacks
-from .manager import ChatEventsManager
+from .manager import EventsManager
 
 
 ##
@@ -16,7 +16,7 @@ def bind_events() -> inj.Elements:
 
     #
 
-    els.append(inj.bind(ChatEventsManager, singleton=True))
+    els.append(inj.bind(EventsManager, singleton=True))
 
     #
 

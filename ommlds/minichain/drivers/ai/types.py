@@ -27,12 +27,3 @@ class StreamAiChatGenerator(AiChatGenerator, lang.Abstract):
             delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> ta.Awaitable[Chat]:
         raise NotImplementedError
-
-
-##
-
-
-class AiChatOutput(lang.Abstract):
-    @abc.abstractmethod
-    def output_ai_chat(self, chat: Chat) -> ta.Awaitable[None]:
-        raise NotImplementedError

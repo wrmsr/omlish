@@ -5,16 +5,16 @@ from omlish import inject as inj
 from .ai.inject import bind_ai
 from .configs import DriverConfig
 from .events.inject import bind_events
-from .impl import ChatDriverImpl
+from .impl import DriverImpl
 from .injection import placeholder_contents_providers
 from .injection import system_message_providers
 from .phases.inject import bind_phases
 from .preparing.inject import bind_preparing
 from .state.inject import bind_state
 from .tools.inject import bind_tools
-from .types import ChatDriver
-from .types import ChatDriverGetter
-from .types import ChatDriverId
+from .types import Driver
+from .types import DriverGetter
+from .types import DriverId
 from .user.inject import bind_user
 
 
@@ -52,15 +52,15 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(ChatDriverImpl, singleton=True),
-        inj.bind(ChatDriver, to_key=ChatDriverImpl),
+        inj.bind(DriverImpl, singleton=True),
+        inj.bind(Driver, to_key=DriverImpl),
 
-        inj.bind_async_late(ChatDriver, ChatDriverGetter),
+        inj.bind_async_late(Driver, DriverGetter),
     ])
 
     #
 
-    els.append(inj.bind(ChatDriverId(uuid.uuid4())))
+    els.append(inj.bind(DriverId(uuid.uuid4())))
 
     #
 

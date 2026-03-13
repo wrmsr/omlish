@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from ...... import minichain as mc
 from ..base import ChatInterface
 from .configs import BareInterfaceConfig
 
@@ -8,7 +9,6 @@ from .configs import BareInterfaceConfig
 with lang.auto_proxy_import(globals()):
     from .....interfaces.bare.inputs import asyncs as _inputs_asyncs
     from .....interfaces.bare.inputs import sync as _inputs_sync
-    from ...drivers.tools import confirmation as _tools_confirmation
     from ...facades import ui as _facades_ui
     from . import interactive as _interactive
     from . import oneshot as _oneshot
@@ -45,14 +45,14 @@ def bind_bare(cfg: BareInterfaceConfig = BareInterfaceConfig()) -> inj.Elements:
     if cfg.enable_tools:
         if cfg.dangerous_no_tool_confirmation:
             els.append(inj.bind(
-                _tools_confirmation.ToolExecutionConfirmation,
-                to_ctor=_tools_confirmation.UnsafeAlwaysAllowToolExecutionConfirmation,
+                mc.drivers.ToolExecutionConfirmation,
+                to_ctor=mc.drivers.UnsafeAlwaysAllowToolExecutionConfirmation,
                 singleton=True,
             ))
 
         else:
             els.append(inj.bind(
-                _tools_confirmation.ToolExecutionConfirmation,
+                mc.drivers.ToolExecutionConfirmation,
                 to_ctor=_tools.InteractiveToolExecutionConfirmation,
                 singleton=True,
             ))

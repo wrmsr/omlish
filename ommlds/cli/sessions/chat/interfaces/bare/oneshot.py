@@ -1,4 +1,4 @@
-from ...drivers.types import ChatDriver
+from ...... import minichain as mc
 from ..base import ChatInterface
 
 
@@ -9,7 +9,7 @@ class OneshotBareChatInterface(ChatInterface):
     def __init__(
             self,
             *,
-            driver: ChatDriver,
+            driver: 'mc.drivers.Driver',
     ) -> None:
         super().__init__()
 

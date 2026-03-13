@@ -1,21 +1,18 @@
 import typing as ta
 
 from ..... import minichain as mc
-from ...chat.drivers.types import PlaceholderContentsProvider
-from ...chat.drivers.types import ProvidedSystemMessage
-from ...chat.drivers.types import SystemMessageProvider
 
 
 ##
 
 
-class CodeSystemMessageProvider(SystemMessageProvider):
-    async def provide_system_messages(self) -> ta.Sequence[ProvidedSystemMessage]:
+class CodeSystemMessageProvider(mc.drivers.SystemMessageProvider):
+    async def provide_system_messages(self) -> ta.Sequence[mc.drivers.ProvidedSystemMessage]:
         from .....minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
-        return [ProvidedSystemMessage(CODE_AGENT_SYSTEM_PROMPT, priority=-1)]
+        return [mc.drivers.ProvidedSystemMessage(CODE_AGENT_SYSTEM_PROMPT, priority=-1)]
 
 
-class CodePlaceholderContentsProvider(PlaceholderContentsProvider):
+class CodePlaceholderContentsProvider(mc.drivers.PlaceholderContentsProvider):
     async def provide_placeholder_contents(self) -> 'mc.PlaceholderContents':
         from .....minichain.lib.code import prompts
         k = prompts.CodeAgentSystemPromptEnvironmentPlaceholder

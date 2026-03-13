@@ -1,9 +1,9 @@
 import typing as ta
 
+from ...... import minichain as mc
 from .....interfaces.bare.inputs.asyncs import AsyncStringInput
 from .....interfaces.bare.inputs.asyncs import SyncAsyncStringInput
 from .....interfaces.bare.inputs.sync import InputSyncStringInput
-from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
 from ..base import ChatInterface
 
@@ -17,7 +17,7 @@ class InteractiveBareChatInterface(ChatInterface):
     def __init__(
             self,
             *,
-            driver: ChatDriver,
+            driver: 'mc.drivers.Driver',
             facade: ChatFacade,
             string_input: AsyncStringInput | None = None,
     ) -> None:

@@ -5,55 +5,52 @@ from omlish import typedvalues as tv
 
 from ...... import minichain as mc
 from .....state.storage import StateStorage
-from .types import ChatId
-from .types import ChatState
-from .types import ChatStateManager
 
 
 ##
 
 
-class ChatStateStorageKey(tv.UniqueScalarTypedValue[str]):
+class DriverStateStorageKey(tv.UniqueScalarTypedValue[str]):
     pass
 
 
-def build_chat_storage_key(chat_id: ChatId) -> ChatStateStorageKey:
-    return ChatStateStorageKey(f'chat:{chat_id.v}')
+def build_driver_storage_key(chat_id: mc.drivers.ChatId) -> DriverStateStorageKey:
+    return DriverStateStorageKey(f'chat:{chat_id.v}')
 
 
 ##
 
 
-class StateStorageChatStateManager(ChatStateManager):
+class StateStorageDriverStateManager(mc.drivers.StateManager):
     def __init__(
             self,
             *,
             storage: StateStorage,
-            key: ChatStateStorageKey,
+            key: DriverStateStorageKey,
     ) -> None:
         super().__init__()
 
         self._storage = storage
-        self._key = check.isinstance(key, ChatStateStorageKey)
+        self._key = check.isinstance(key, DriverStateStorageKey)
 
-        self._state: ChatState | None = None
+        self._state: mc.drivers.State | None = None
 
-    async def get_state(self) -> ChatState:
+    async def get_state(self) -> mc.drivers.State:
         if self._state is not None:
             return self._state
-        state: ChatState | None = await self._storage.load_state(self._key.v, ChatState)
+        state: mc.drivers.State | None = await self._storage.load_state(self._key.v, mc.drivers.State)
         if state is None:
-            state = ChatState()
+            state = mc.drivers.State()
         self._state = state
         return state
 
-    async def extend_chat(self, chat_additions: 'mc.Chat') -> ChatState:
+    async def extend_chat(self, chat_additions: mc.Chat) -> mc.drivers.State:
         state = await self.get_state()
         state = dc.replace(
             state,
             chat=[*state.chat, *chat_additions],
             updated_at=lang.utcnow(),
         )
-        await self._storage.save_state(self._key.v, state, ChatState)
+        await self._storage.save_state(self._key.v, state, mc.drivers.State)
         self._state = state
         return state

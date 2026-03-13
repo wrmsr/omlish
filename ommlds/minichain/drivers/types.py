@@ -47,15 +47,15 @@ PlaceholderContentsProviders = ta.NewType('PlaceholderContentsProviders', ta.Seq
 ##
 
 
-class ChatDriverId(tv.UniqueScalarTypedValue[uuid.UUID]):
+class DriverId(tv.UniqueScalarTypedValue[uuid.UUID]):
     pass
 
 
-class ChatDriverGetter(lang.Func0[ta.Awaitable['ChatDriver']]):
+class DriverGetter(lang.Func0[ta.Awaitable['Driver']]):
     pass
 
 
-class ChatDriver(lang.Abstract):
+class Driver(lang.Abstract):
     async def start(self) -> None:
         pass
 

@@ -6,26 +6,26 @@ TODO:
 from ..chat.messages import Chat
 from ..chat.messages import UserChat
 from .ai.types import AiChatGenerator
-from .events.manager import ChatEventsManager
-from .events.types import UserMessagesChatEvent
-from .phases.manager import ChatPhaseManager
-from .phases.types import ChatPhase
+from .events.manager import EventsManager
+from .events.types import UserMessagesEvent
+from .phases.manager import PhaseManager
+from .phases.types import Phase
 from .preparing.types import ChatPreparer
-from .state.types import ChatStateManager
-from .types import ChatDriver
+from .state.types import StateManager
+from .types import Driver
 
 
 ##
 
 
-class ChatDriverImpl(ChatDriver):
+class DriverImpl(Driver):
     def __init__(
             self,
             *,
-            phases: ChatPhaseManager,
+            phases: PhaseManager,
             ai_chat_generator: AiChatGenerator,
-            chat_state_manager: ChatStateManager,
-            events: ChatEventsManager,
+            chat_state_manager: StateManager,
+            events: EventsManager,
             chat_preparer: ChatPreparer | None = None,
     ) -> None:
         super().__init__()
@@ -37,15 +37,15 @@ class ChatDriverImpl(ChatDriver):
         self._chat_preparer = chat_preparer
 
     async def start(self) -> None:
-        await self._phases.set_phase(ChatPhase.STARTING)
-        await self._phases.set_phase(ChatPhase.STARTED)
+        await self._phases.set_phase(Phase.STARTING)
+        await self._phases.set_phase(Phase.STARTED)
 
     async def stop(self) -> None:
-        await self._phases.set_phase(ChatPhase.STOPPING)
-        await self._phases.set_phase(ChatPhase.STOPPED)
+        await self._phases.set_phase(Phase.STOPPING)
+        await self._phases.set_phase(Phase.STOPPED)
 
     async def send_user_messages(self, next_user_chat: UserChat) -> None:
-        await self._events.emit_event(UserMessagesChatEvent(next_user_chat))
+        await self._events.emit_event(UserMessagesEvent(next_user_chat))
 
         prev_chat = (await self._chat_state_manager.get_state()).chat
 

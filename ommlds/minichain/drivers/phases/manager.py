@@ -1,29 +1,29 @@
 from omlish import check
 from omlish import collections as col
 
-from .types import ChatPhase
-from .types import ChatPhaseCallbacks
+from .types import Phase
+from .types import PhaseCallbacks
 
 
 ##
 
 
-class ChatPhaseManager:
-    def __init__(self, callbacks: ChatPhaseCallbacks) -> None:
+class PhaseManager:
+    def __init__(self, callbacks: PhaseCallbacks) -> None:
         super().__init__()
 
         self._callbacks = callbacks
         self._callbacks_by_phase = col.multi_map_by(lambda cb: cb.phase, callbacks)
 
-        check.state(not self._callbacks_by_phase.get(ChatPhase.NEW))
+        check.state(not self._callbacks_by_phase.get(Phase.NEW))
 
-        self._phase = ChatPhase.NEW
+        self._phase = Phase.NEW
 
     @property
-    def phase(self) -> ChatPhase:
+    def phase(self) -> Phase:
         return self._phase
 
-    async def set_phase(self, phase: ChatPhase) -> None:
+    async def set_phase(self, phase: Phase) -> None:
         self._phase = phase
         for cb in self._callbacks_by_phase.get(phase, ()):
             await cb.fn()

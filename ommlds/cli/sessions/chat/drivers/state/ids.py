@@ -1,5 +1,5 @@
+from ...... import minichain as mc
 from .storage import StateStorage
-from .types import ChatId
 
 
 ##
@@ -18,8 +18,8 @@ class LastChatIdManager:
 
         self._state_storage = state_storage
 
-    async def get_last_chat_id(self) -> ChatId | None:
-        return await self._state_storage.load_state(_LAST_CHAT_ID_STATE_KEY, ChatId)
+    async def get_last_chat_id(self) -> mc.drivers.ChatId | None:
+        return await self._state_storage.load_state(_LAST_CHAT_ID_STATE_KEY, mc.drivers.ChatId)
 
-    async def set_last_chat_id(self, chat_id: ChatId | None) -> None:
-        await self._state_storage.save_state(_LAST_CHAT_ID_STATE_KEY, chat_id, ChatId)
+    async def set_last_chat_id(self, chat_id: mc.drivers.ChatId | None) -> None:
+        await self._state_storage.save_state(_LAST_CHAT_ID_STATE_KEY, chat_id, mc.drivers.ChatId)
