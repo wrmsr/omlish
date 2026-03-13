@@ -1,9 +1,22 @@
-"""
+r"""
 https://docs.anthropic.com/en/docs/about-claude/models#model-comparison-table
 
 curl -s https://api.anthropic.com/v1/models -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01" | \
-  om j -FR -x 'data[].id' | sort
-"""
+    om j -FR -x 'data[].id' | sort
+
+====
+
+claude-3-haiku-20240307
+claude-haiku-4-5-20251001
+claude-opus-4-1-20250805
+claude-opus-4-20250514
+claude-opus-4-5-20251101
+claude-opus-4-6
+claude-sonnet-4-20250514
+claude-sonnet-4-5-20250929
+claude-sonnet-4-6
+
+"""  # noqa
 from ....models.names import ModelNameCollection
 from ...strings.manifests import BackendStringsManifest
 
