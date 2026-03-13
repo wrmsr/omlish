@@ -1,8 +1,11 @@
+from omlish import dataclasses as dc
+
 from ...chat.messages import Chat
 from ...chat.messages import Message
 from ...chat.messages import ToolUseMessage
 from ..tools.execution import ToolUseExecutor
 from .types import AiChatGenerator
+from .types import GenerateAiChatArgs
 
 
 ##
@@ -20,11 +23,13 @@ class ToolExecutingAiChatGenerator(AiChatGenerator):
         self._wrapped = wrapped
         self._executor = executor
 
-    async def get_next_ai_messages(self, chat: Chat) -> Chat:
+    async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
         out: list[Message] = []
 
         while True:
-            new = await self._wrapped.get_next_ai_messages([*chat, *out])
+            new = await self._wrapped.generate_ai_chat(
+                dc.replace(args, chat=[*args.chat, *out]),
+            )
 
             cont = False
 

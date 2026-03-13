@@ -13,6 +13,7 @@ from ...chat.messages import AiChat
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
 from .types import AiChatGenerator
+from .types import GenerateAiChatArgs
 from .types import StreamAiChatGenerator
 
 
@@ -41,10 +42,10 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
         self._service = service
         self._options = options
 
-    async def get_next_ai_messages(self, chat: Chat) -> Chat:
+    async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
         opts = self._options() if self._options is not None else []
 
-        resp = await self._service.invoke(ChatChoicesRequest(chat, opts))
+        resp = await self._service.invoke(ChatChoicesRequest(args.chat, opts))
 
         return check.single(resp.v).ms
 
@@ -61,16 +62,16 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
         self._service = service
         self._options = options
 
-    async def get_next_ai_messages_streamed(
+    async def generate_ai_chat_streamed(
             self,
-            chat: Chat,
+            args: GenerateAiChatArgs,
             delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> AiChat:
         opts = self._options() if self._options is not None else []
 
         joiner = AiChoicesDeltaJoiner()
 
-        async with (await self._service.invoke(ChatChoicesStreamRequest(chat, opts))).v as st_resp:
+        async with (await self._service.invoke(ChatChoicesStreamRequest(args.chat, opts))).v as st_resp:
             async for o in st_resp:
                 joiner.add(o.choices)
 

@@ -8,6 +8,7 @@ from ..events.types import AiStreamBeginEvent
 from ..events.types import AiStreamDeltaEvent
 from ..events.types import AiStreamEndEvent
 from .types import AiChatGenerator
+from .types import GenerateAiChatArgs
 from .types import StreamAiChatGenerator
 
 
@@ -26,8 +27,8 @@ class EventEmittingAiChatGenerator(AiChatGenerator):
         self._wrapped = wrapped
         self._events = events
 
-    async def get_next_ai_messages(self, chat: Chat) -> Chat:
-        out = await self._wrapped.get_next_ai_messages(chat)
+    async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
+        out = await self._wrapped.generate_ai_chat(args)
 
         await self._events.emit_event(AiMessagesEvent(out))
 
@@ -46,9 +47,9 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
         self._wrapped = wrapped
         self._events = events
 
-    async def get_next_ai_messages_streamed(
+    async def generate_ai_chat_streamed(
             self,
-            chat: Chat,
+            args: GenerateAiChatArgs,
             delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> Chat:
         sent_begin_event = False
@@ -65,7 +66,7 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
                 await delta_callback(delta)
 
         try:
-            out = await self._wrapped.get_next_ai_messages_streamed(chat, delta_callback=inner)
+            out = await self._wrapped.generate_ai_chat_streamed(args, delta_callback=inner)
 
         finally:
             if sent_begin_event:
