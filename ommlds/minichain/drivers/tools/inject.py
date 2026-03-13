@@ -5,11 +5,11 @@ from omlish import lang
 from ...tools.execution.catalog import ToolCatalog
 from ..configs import ToolsConfig
 from .errorhandling import ErrorHandlingToolUseExecutor
+from .events import EventEmittingToolUseExecutor
 from .execution import ToolContextProvider
 from .execution import ToolContextProviders
 from .execution import ToolUseExecutor
 from .execution import ToolUseExecutorImpl
-from .events import EventEmittingToolUseExecutor
 from .injection import ToolSetBinder
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers

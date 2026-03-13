@@ -1,5 +1,3 @@
-import typing as ta
-
 from ..... import minichain as mc
 from ....backends.types import ChatChoicesServiceBackendProvider
 from ....backends.types import ChatChoicesStreamServiceBackendProvider

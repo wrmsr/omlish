@@ -4,8 +4,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ...chat.messages import Chat
-from ...chat.messages import UserChat
 from ...chat.messages import ToolUseResultMessage
+from ...chat.messages import UserChat
 from ...chat.stream.types import AiDelta
 from ...tools.types import ToolUse
 

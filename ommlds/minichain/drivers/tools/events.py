@@ -1,11 +1,11 @@
 import typing as ta
 
-from ..events.manager import EventsManager
 from ...chat.messages import ToolUseResultMessage
-from .execution import ToolUseExecutor
 from ...tools.types import ToolUse
+from ..events.manager import EventsManager
 from ..events.types import ToolUseEvent
 from ..events.types import ToolUseResultEvent
+from .execution import ToolUseExecutor
 
 
 ##

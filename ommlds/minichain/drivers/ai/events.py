@@ -3,10 +3,10 @@ import typing as ta
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
 from ..events.manager import EventsManager
+from ..events.types import AiMessagesEvent
 from ..events.types import AiStreamBeginEvent
 from ..events.types import AiStreamDeltaEvent
 from ..events.types import AiStreamEndEvent
-from ..events.types import AiMessagesEvent
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
 
@@ -58,7 +58,7 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             if not sent_begin_event:
                 await self._events.emit_event(AiStreamBeginEvent())
                 sent_begin_event = True
-                
+
             await self._events.emit_event(AiStreamDeltaEvent(delta))
 
             if delta_callback is not None:

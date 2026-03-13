@@ -5,21 +5,19 @@ import pytest  # noqa
 from omlish import inject as inj
 from omlish import lang
 
-from ..state.types import ChatId
-from ..ai.types import AiChatGenerator
-from ..ai.services import ChatChoicesServiceAiChatGenerator
-from ...chat.choices.services import ChatChoicesService
-from ...chat.choices.types import AiChoice
-from ..state.types import StateManager
-from ..state.inmemory import InMemoryStateManager
-from ...chat.messages import AiMessage
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.services import static_check_is_chat_choices_service
+from ...chat.choices.types import AiChoice
+from ...chat.messages import AiMessage
 from ..configs import DriverConfig
+from ..inject import bind_driver
+from ..state.inmemory import InMemoryStateManager
+from ..state.types import ChatId
+from ..state.types import StateManager
 from ..types import Driver
 from ..user.configs import UserConfig
-from ..inject import bind_driver
 
 
 @static_check_is_chat_choices_service
@@ -35,7 +33,6 @@ def make_driver(
         bind_driver(cfg),
 
         inj.bind(ChatChoicesService, to_ctor=DummyChatChoicesService),
-        inj.bind(AiChatGenerator, to_ctor=ChatChoicesServiceAiChatGenerator),
 
         inj.bind(InMemoryStateManager, singleton=True),
         inj.bind(StateManager, to_key=InMemoryStateManager),

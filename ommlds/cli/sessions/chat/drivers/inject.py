@@ -38,14 +38,12 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         els.extend([
             inj.bind(ChatChoicesStreamServiceProviderProxy, singleton=True),
             inj.bind(mc.ChatChoicesStreamService, to_key=ChatChoicesStreamServiceProviderProxy),
-            inj.bind(mc.drivers.StreamAiChatGenerator, to_ctor=mc.drivers.ChatChoicesStreamServiceStreamAiChatGenerator),
         ])
 
     else:
         els.extend([
             inj.bind(ChatChoicesServiceProviderProxy, singleton=True),
             inj.bind(mc.ChatChoicesService, to_key=ChatChoicesServiceProviderProxy),
-            inj.bind(mc.drivers.AiChatGenerator, to_ctor=mc.drivers.ChatChoicesServiceAiChatGenerator),
         ])
 
     #
@@ -58,7 +56,6 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.append(inj.bind(DefaultBackendName, to_const=DEFAULT_BACKEND))
-
 
     #
 
