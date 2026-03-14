@@ -13,43 +13,11 @@ TODO:
 
 ====
 
-if [ -t 1 ] ; then
-   TTY_ENV_ARGS="-e LINES=$(tput lines) -e COLUMNS=$(tput cols)"
-else
-   TTY_ENV_ARGS=""
-fi
-
-SERVICE_NAME="$(basename "$SCRIPT_DIR")-dev"
-if ! [ $# -eq 0 ] ; then
-    if [ "$1" = "--amd64" ] ; then
-        SERVICE_NAME="$SERVICE_NAME-amd64"
-        shift
-    fi
-fi
-
-CONTAINER_ID=$(docker-compose -f 'docker/compose.yml' ps -q "$SERVICE_NAME")
-if [ -z "$CONTAINER_ID" ] ; then
-    echo "$SERVICE_NAME not running" 1>&2
-    exit 1
-fi
-
-if [ -z "$DOCKER_HOST_PLATFORM" ] ; then
-    if [ $(uname) = "Linux" ] ; then
-        DOCKER_HOST_PLATFORM=linux
-    elif [ $(uname) = "Darwin" ] ; then
-        DOCKER_HOST_PLATFORM=darwin
-    fi
-fi
-
-exec docker exec \
-    $TTY_ENV_ARGS \
-    -e DOCKER_HOST_PLATFORM="$DOCKER_HOST_PLATFORM" \
-    --privileged \
-    --detach-keys 'ctrl-o,ctrl-d' \
-    -it "$CONTAINER_ID" \
-    "$@"
+if [ -t 1 ] ; then TTY_ENV_ARGS="-e LINES=$(tput lines) -e COLUMNS=$(tput cols)" ; fi
+--detach-keys 'ctrl-o,ctrl-d' \
 """
 import os.path
+import platform
 import re
 import shutil
 import subprocess
@@ -155,8 +123,15 @@ class Cli(ap.Cli):
 
     @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
+
         ap.arg('-C', '--mount-caches', action='store_true'),
+        ap.arg('-D', '--mount-docker-sock', action='store_true'),
+        ap.arg('-P', '--privileged', action='store_true'),
+
+        ap.arg('--no-host-platform', action='store_true'),
+
         ap.arg('-x', '--autoexec', action='append'),
+
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
@@ -182,6 +157,12 @@ class Cli(ap.Cli):
                 '-it',
             ])
 
+        if self.args.privileged:
+            run_args.append('--privileged')
+
+        if self.args.mount_docker_sock:
+            run_args.append('--mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock')
+
         if self.args.mount_caches:
             cache_dir = os.path.join(get_cache_dir(), 'dockerdev')
             for cl, cr in (cfg.cache_mounts or {}).items():
@@ -189,6 +170,9 @@ class Cli(ap.Cli):
                 check.state(is_path_in_dir(cache_dir, cld))
                 os.makedirs(cld, exist_ok=True)
                 run_args.append(f'--mount=type=bind,src={cld},dst={cr}')
+
+        if not self.args.no_host_platform:
+            run_args.extend(['-e', f'DOCKER_HOST_PLATFORM={platform.system().lower()}'])
 
         if self.args.autoexec:
             tmp_dir = tempfile.mkdtemp()
