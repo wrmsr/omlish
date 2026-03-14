@@ -1,4 +1,5 @@
 from omlish import inject as inj
+from omlish import lang
 
 from ..... import minichain as mc
 from ....backends.types import DefaultBackendName
@@ -11,6 +12,11 @@ from .services import ChatChoicesServiceProviderProxy
 from .services import ChatChoicesStreamServiceProviderProxy
 
 
+with lang.auto_proxy_import(globals()):
+    from ....backends import inject as _backends
+    from .state import inject as _state
+
+
 ##
 
 
@@ -19,20 +25,12 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     #
 
-    els.append(mc.drivers.inject.bind_driver(cfg))
-
-    #
-
-    from .state.inject import bind_state
-
-    els.append(bind_state(cfg.state))
-
-    #
-
-    from ....backends.inject import bind_backends
-
     els.extend([
-        bind_backends(cfg.backend),
+        mc.drivers.inject.bind_driver(cfg),
+
+        _state.bind_state(cfg.state),
+
+        _backends.bind_backends(cfg.backend),
     ])
 
     #
