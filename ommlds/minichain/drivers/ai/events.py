@@ -1,77 +1,36 @@
-import typing as ta
+from omlish import dataclasses as dc
+from omlish import lang
 
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
-from ..events.manager import EventsManager
-from ..events.types import AiMessagesEvent
-from ..events.types import AiStreamBeginEvent
-from ..events.types import AiStreamDeltaEvent
-from ..events.types import AiStreamEndEvent
-from .types import AiChatGenerator
-from .types import GenerateAiChatArgs
-from .types import StreamAiChatGenerator
+from ..events.types import Event
 
 
 ##
 
 
-class EventEmittingAiChatGenerator(AiChatGenerator):
-    def __init__(
-            self,
-            *,
-            wrapped: AiChatGenerator,
-            events: EventsManager,
-    ) -> None:
-        super().__init__()
+@dc.dataclass(frozen=True)
+class AiMessagesEvent(Event, lang.Final):
+    chat: Chat
 
-        self._wrapped = wrapped
-        self._events = events
+    _: dc.KW_ONLY
 
-    async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
-        out = await self._wrapped.generate_ai_chat(args)
-
-        await self._events.emit_event(AiMessagesEvent(out))
-
-        return out
+    streamed: bool = False
 
 
-class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
-    def __init__(
-            self,
-            *,
-            wrapped: StreamAiChatGenerator,
-            events: EventsManager,
-    ) -> None:
-        super().__init__()
+#
 
-        self._wrapped = wrapped
-        self._events = events
 
-    async def generate_ai_chat_streamed(
-            self,
-            args: GenerateAiChatArgs,
-            delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
-    ) -> Chat:
-        sent_begin_event = False
+@dc.dataclass(frozen=True)
+class AiStreamBeginEvent(Event, lang.Final):
+    pass
 
-        async def inner(delta: AiDelta) -> None:
-            nonlocal sent_begin_event
-            if not sent_begin_event:
-                await self._events.emit_event(AiStreamBeginEvent())
-                sent_begin_event = True
 
-            await self._events.emit_event(AiStreamDeltaEvent(delta))
+@dc.dataclass(frozen=True)
+class AiStreamDeltaEvent(Event, lang.Final):
+    delta: AiDelta
 
-            if delta_callback is not None:
-                await delta_callback(delta)
 
-        try:
-            out = await self._wrapped.generate_ai_chat_streamed(args, delta_callback=inner)
-
-        finally:
-            if sent_begin_event:
-                await self._events.emit_event(AiStreamEndEvent())
-
-        await self._events.emit_event(AiMessagesEvent(out, streamed=True))
-
-        return out
+@dc.dataclass(frozen=True)
+class AiStreamEndEvent(Event, lang.Final):
+    pass

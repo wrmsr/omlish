@@ -1,37 +1,19 @@
-import typing as ta
+from omlish import dataclasses as dc
+from omlish import lang
 
 from ...chat.messages import ToolUseResultMessage
 from ...tools.types import ToolUse
-from ..events.manager import EventsManager
-from ..events.types import ToolUseEvent
-from ..events.types import ToolUseResultEvent
-from .execution import ToolUseExecutor
+from ..events.types import Event
 
 
 ##
 
 
-class EventEmittingToolUseExecutor(ToolUseExecutor):
-    def __init__(
-            self,
-            *,
-            wrapped: ToolUseExecutor,
-            events: EventsManager,
-    ) -> None:
-        super().__init__()
+@dc.dataclass(frozen=True)
+class ToolUseEvent(Event, lang.Final):
+    use: ToolUse
 
-        self._wrapped = wrapped
-        self._events = events
 
-    async def execute_tool_use(
-            self,
-            use: ToolUse,
-            *ctx_items: ta.Any,
-    ) -> ToolUseResultMessage:
-        await self._events.emit_event(ToolUseEvent(use))
-
-        out = await self._wrapped.execute_tool_use(use, *ctx_items)
-
-        await self._events.emit_event(ToolUseResultEvent(out))
-
-        return out
+@dc.dataclass(frozen=True)
+class ToolUseResultEvent(Event, lang.Final):
+    message: ToolUseResultMessage

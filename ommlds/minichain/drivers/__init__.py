@@ -1,5 +1,17 @@
 # fmt: off
 # ruff: noqa: I001
+from omlish import dataclasses as _dc  # noqa
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
+
+
 from omlish import lang as _lang  # noqa
 
 
@@ -8,6 +20,14 @@ with _lang.auto_proxy_init(globals()):
 
     from .ai.configs import (  # noqa
         AiConfig,
+    )
+
+    from .ai.events import (  # noqa
+        AiMessagesEvent,
+
+        AiStreamBeginEvent,
+        AiStreamDeltaEvent,
+        AiStreamEndEvent,
     )
 
     from .ai.services import (  # noqa
@@ -35,18 +55,7 @@ with _lang.auto_proxy_init(globals()):
         EventCallback,
         EventCallbacks,
 
-        UserMessagesEvent,
-
-        AiMessagesEvent,
-
-        AiStreamBeginEvent,
-        AiStreamDeltaEvent,
-        AiStreamEndEvent,
-
         ErrorEvent,
-
-        ToolUseEvent,
-        ToolUseResultEvent,
     )
 
     #
@@ -99,6 +108,11 @@ with _lang.auto_proxy_init(globals()):
         UnsafeAlwaysAllowToolExecutionConfirmation,
     )
 
+    from .tools.eventemit import (  # noqa
+        ToolUseEvent,
+        ToolUseResultEvent,
+    )
+
     from .tools.execution import (  # noqa
         ToolContextProvider,
 
@@ -109,6 +123,10 @@ with _lang.auto_proxy_init(globals()):
 
     from .user.configs import (  # noqa
         UserConfig,
+    )
+
+    from .user.events import (  # noqa
+        UserMessagesEvent,
     )
 
     #

@@ -3,8 +3,8 @@ from omlish import inject as inj
 from ...chat.tools.types import Tool
 from ...tools.execution.catalog import ToolCatalog
 from .configs import AiConfig
-from .events import EventEmittingAiChatGenerator
-from .events import EventEmittingStreamAiChatGenerator
+from .eventemit import EventEmittingAiChatGenerator
+from .eventemit import EventEmittingStreamAiChatGenerator
 from .injection import chat_options_providers
 from .services import ChatChoicesServiceAiChatGenerator
 from .services import ChatChoicesServiceOptionsProvider

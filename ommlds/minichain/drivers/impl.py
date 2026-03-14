@@ -8,12 +8,12 @@ from ..chat.messages import UserChat
 from .ai.types import AiChatGenerator
 from .ai.types import GenerateAiChatArgs
 from .events.manager import EventsManager
-from .events.types import UserMessagesEvent
 from .phases.manager import PhaseManager
 from .phases.types import Phase
 from .preparing.types import ChatPreparer
 from .state.types import StateManager
 from .types import Driver
+from .user.events import UserMessagesEvent
 
 
 ##

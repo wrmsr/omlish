@@ -5,7 +5,7 @@ from omlish import lang
 from ...tools.execution.catalog import ToolCatalog
 from ..configs import ToolsConfig
 from .errorhandling import ErrorHandlingToolUseExecutor
-from .events import EventEmittingToolUseExecutor
+from .eventemit import EventEmittingToolUseExecutor
 from .execution import ToolContextProvider
 from .execution import ToolContextProviders
 from .execution import ToolUseExecutor
