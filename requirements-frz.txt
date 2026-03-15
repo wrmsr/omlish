@@ -48,7 +48,7 @@ cryptography==46.0.5
 cycler==0.12.1
 Cython==3.2.4
 datasets==4.7.0
-ddgs==9.11.3
+ddgs==9.11.4
 debugpy==1.8.20
 decorator==5.2.1
 defusedxml==0.7.1

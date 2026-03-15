@@ -35,7 +35,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-ddgs==9.11.3
+ddgs==9.11.4
 
 gguf==0.18.0
 
