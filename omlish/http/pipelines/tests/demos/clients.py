@@ -32,35 +32,35 @@ from ...responses import IoPipelineHttpResponseObject
 ##
 
 
-HttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+PipelineHttpClientRequestOutput = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
     IoPipelineHttpResponseObject,
     IoPipelineMessages.FinalInput,
-    'HttpClientClose',
+    'PipelineHttpClientClose',
 ]
 
 
 @dc.dataclass(frozen=True)
-class HttpClientRequest:
+class PipelineHttpClientRequest:
     request: FullIoPipelineHttpRequest
 
-    on_output: IoPipelineHandlerFn[HttpClientRequestOutput, None]
+    on_output: IoPipelineHandlerFn[PipelineHttpClientRequestOutput, None]
 
     stream: bool = False
 
 
 @dc.dataclass(frozen=True)
-class HttpClientClose:
+class PipelineHttpClientClose:
     pass
 
 
 #
 
 
-class HttpClientHandler(IoPipelineHandler):
-    _request: ta.Optional[HttpClientRequest] = None
+class PipelineHttpClientHandler(IoPipelineHandler):
+    _request: ta.Optional[PipelineHttpClientRequest] = None
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, HttpClientRequest):
+        if isinstance(msg, PipelineHttpClientRequest):
             check.none(self._request)
             self._request = msg
 
@@ -87,7 +87,7 @@ class HttpClientHandler(IoPipelineHandler):
 
             return
 
-        if isinstance(msg, (IoPipelineMessages.FinalInput, HttpClientClose)):
+        if isinstance(msg, (IoPipelineMessages.FinalInput, PipelineHttpClientClose)):
             if (request2 := self._request) is not None:
                 self._request = None
 
@@ -106,7 +106,7 @@ class HttpClientHandler(IoPipelineHandler):
 #
 
 
-def build_http_client(
+def build_pipeline_http_client_spec(
         outermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
         innermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
 
@@ -137,7 +137,7 @@ def build_http_client(
             IoPipelineHttpRequestEncoder(),
             IoPipelineHttpRequestCompressor(),
 
-            HttpClientHandler(),
+            PipelineHttpClientHandler(),
 
             *(innermost_handlers or []),
         ],
@@ -249,7 +249,7 @@ def _prepare_url_fetch(
         },
     )
 
-    pipeline_spec = build_http_client(
+    pipeline_spec = build_pipeline_http_client_spec(
         **(dict(  # type: ignore[arg-type]
             with_ssl=True,
             ssl_kwargs=dict(
@@ -281,13 +281,13 @@ async def asyncio_fetch_url(
 
     response: ta.Optional[FullIoPipelineHttpResponse] = None
 
-    def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
+    def on_output(ctx: IoPipelineHandlerContext, msg: PipelineHttpClientRequestOutput) -> None:
         if isinstance(msg, FullIoPipelineHttpResponse):
             nonlocal response
             check.none(response)
             response = msg
 
-            ctx.pipeline.feed_in(HttpClientClose())
+            ctx.pipeline.feed_in(PipelineHttpClientClose())
 
     #
 
@@ -304,7 +304,7 @@ async def asyncio_fetch_url(
 
         drv_run_task = asyncio.create_task(drv.run())
 
-        await drv.feed_in(HttpClientRequest(
+        await drv.feed_in(PipelineHttpClientRequest(
             puf.request,
             on_output,
         ))
@@ -331,7 +331,7 @@ def sync_fetch_url(
 
     response: ta.Optional[FullIoPipelineHttpResponse] = None
 
-    def on_output(ctx: IoPipelineHandlerContext, msg: HttpClientRequestOutput) -> None:
+    def on_output(ctx: IoPipelineHandlerContext, msg: PipelineHttpClientRequestOutput) -> None:
         if isinstance(msg, FullIoPipelineHttpResponse):
             nonlocal response
             check.none(response)
@@ -361,7 +361,7 @@ def sync_fetch_url(
             sock,
         )
 
-        drv.enqueue(HttpClientRequest(
+        drv.enqueue(PipelineHttpClientRequest(
             puf.request,
             on_output,
         ))
