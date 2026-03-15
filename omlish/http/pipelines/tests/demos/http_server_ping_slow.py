@@ -15,8 +15,8 @@ from ....versions import HttpVersions
 from ...requests import IoPipelineHttpRequestHead
 from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseHead
-from ...server.requests import IoPipelineHttpRequestDecoder
-from ...server.responses import IoPipelineHttpResponseEncoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
+from ...servers.responses import IoPipelineHttpResponseEncoder
 
 
 ##

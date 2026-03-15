@@ -13,8 +13,8 @@ from .....io.streams.utils import ByteStreamBuffers
 from .....logs.modules import get_module_loggers
 from .....logs.std.standard import configure_standard_logging
 from ...requests import FullIoPipelineHttpRequest
-from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
-from ...server.requests import IoPipelineHttpRequestDecoder
+from ...servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
 
 
 log, alog = get_module_loggers(globals())

@@ -5,11 +5,11 @@ import typing as ta
 
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from ...server.apps.wsgi import WsgiHandler
-from ...server.apps.wsgi import WsgiSpec
-from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
-from ...server.requests import IoPipelineHttpRequestDecoder
-from ...server.responses import IoPipelineHttpResponseEncoder
+from ...servers.apps.wsgi import WsgiHandler
+from ...servers.apps.wsgi import WsgiSpec
+from ...servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
+from ...servers.responses import IoPipelineHttpResponseEncoder
 
 
 ##

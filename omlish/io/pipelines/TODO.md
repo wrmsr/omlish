@@ -35,6 +35,7 @@
 - ensure parity with urllib/http.server in general
 - ensure parity with netty security wise
 - request pipelining
+- keepalive
 - proxy/tunnel connect
 - wire into omlish.http.client/server
 - Date default server header

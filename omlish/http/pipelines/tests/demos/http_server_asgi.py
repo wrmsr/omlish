@@ -8,11 +8,11 @@ from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from ...responses import FullIoPipelineHttpResponse  # noqa
 from ...responses import IoPipelineHttpResponseHead  # noqa
-from ...server.apps.asgi import AsgiHandler
-from ...server.apps.asgi import AsgiSpec
-from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
-from ...server.requests import IoPipelineHttpRequestDecoder
-from ...server.responses import IoPipelineHttpResponseEncoder
+from ...servers.apps.asgi import AsgiHandler
+from ...servers.apps.asgi import AsgiSpec
+from ...servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
+from ...servers.responses import IoPipelineHttpResponseEncoder
 
 
 ##

@@ -10,8 +10,8 @@ from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDrive
 from ...requests import IoPipelineHttpRequestHead
 from ...requests import IoPipelineHttpRequestObject
 from ...responses import FullIoPipelineHttpResponse
-from ...server.requests import IoPipelineHttpRequestDecoder
-from ...server.responses import IoPipelineHttpResponseEncoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
+from ...servers.responses import IoPipelineHttpResponseEncoder
 
 
 ##

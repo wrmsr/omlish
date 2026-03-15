@@ -18,8 +18,8 @@ from ...requests import IoPipelineHttpRequestBodyData
 from ...requests import IoPipelineHttpRequestEnd
 from ...requests import IoPipelineHttpRequestHead
 from ...responses import FullIoPipelineHttpResponse
-from ...server.requests import IoPipelineHttpRequestDecoder
-from ...server.responses import IoPipelineHttpResponseEncoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
+from ...servers.responses import IoPipelineHttpResponseEncoder
 
 
 ##

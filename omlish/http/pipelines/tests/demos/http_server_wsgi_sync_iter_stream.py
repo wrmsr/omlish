@@ -33,10 +33,10 @@ from ...responses import IoPipelineHttpResponseEnd
 from ...responses import IoPipelineHttpResponseEndChunk
 from ...responses import IoPipelineHttpResponseHead
 from ...responses import IoPipelineHttpResponseLastChunk
-from ...server.apps.wsgi import WsgiSpec
-from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
-from ...server.requests import IoPipelineHttpRequestDecoder
-from ...server.responses import IoPipelineHttpResponseEncoder
+from ...servers.apps.wsgi import WsgiSpec
+from ...servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
+from ...servers.responses import IoPipelineHttpResponseEncoder
 
 
 log = get_module_logger(globals())

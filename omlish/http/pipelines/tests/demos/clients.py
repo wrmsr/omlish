@@ -18,11 +18,11 @@ from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from .....lite.check import check
-from ...client.requests import IoPipelineHttpRequestCompressor
-from ...client.requests import IoPipelineHttpRequestEncoder
-from ...client.responses import IoPipelineHttpResponseAggregatorDecoder
-from ...client.responses import IoPipelineHttpResponseDecoder
-from ...client.responses import IoPipelineHttpResponseDecompressor
+from ...clients.requests import IoPipelineHttpRequestCompressor
+from ...clients.requests import IoPipelineHttpRequestEncoder
+from ...clients.responses import IoPipelineHttpResponseAggregatorDecoder
+from ...clients.responses import IoPipelineHttpResponseDecoder
+from ...clients.responses import IoPipelineHttpResponseDecompressor
 from ...requests import FullIoPipelineHttpRequest
 from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseEnd

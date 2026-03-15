@@ -6,8 +6,8 @@ from .....io.pipelines.bytes.decoders import DelimiterFrameDecoderIoPipelineHand
 from .....io.pipelines.bytes.decoders import UnicodeDecoderIoPipelineHandler
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
-from ...client.responses import IoPipelineHttpResponseDecoder
-from ...client.responses import IoPipelineHttpResponseDecompressor
+from ...clients.responses import IoPipelineHttpResponseDecoder
+from ...clients.responses import IoPipelineHttpResponseDecompressor
 from ...sse import IoPipelineSseDecoder
 
 

@@ -14,10 +14,10 @@ from ....headers import HttpHeaders
 from ...requests import FullIoPipelineHttpRequest
 from ...responses import FullIoPipelineHttpResponse
 from ...responses import IoPipelineHttpResponseHead
-from ...server.apps.wsgi import WsgiSpec
-from ...server.requests import IoPipelineHttpRequestAggregatorDecoder
-from ...server.requests import IoPipelineHttpRequestDecoder
-from ...server.responses import IoPipelineHttpResponseEncoder
+from ...servers.apps.wsgi import WsgiSpec
+from ...servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...servers.requests import IoPipelineHttpRequestDecoder
+from ...servers.responses import IoPipelineHttpResponseEncoder
 
 
 ##
