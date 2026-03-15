@@ -398,6 +398,8 @@ class SslIoPipelineHandler(
         if established:
             # If we had buffered outbound plaintext while handshaking, try it now.
             self._drain_pending_plaintext_out(ctx)
+            if self._fc(ctx) is not None:
+                ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
 
         # Always pump: decrypted plaintext inbound, then any TLS output outbound.
         self._pump_plaintext_in(ctx)
