@@ -85,6 +85,9 @@ class DriverImpl(Driver):
         if self._chat_preparer is not None:
             prepared_chat = await self._chat_preparer.prepare_chat(prepared_chat)
 
-        next_ai_chat = await self._ai_chat_generator.generate_ai_chat(GenerateAiChatArgs(prepared_chat))
+        next_ai_chat = await self._ai_chat_generator.generate_ai_chat(GenerateAiChatArgs(
+            prepared_chat,
+            message_uuid=action.ai_message_uuid,
+        ))
 
         await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])

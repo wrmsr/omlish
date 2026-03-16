@@ -4,6 +4,7 @@ from ... import cached
 from ... import dataclasses as dc
 from ..binder import bind
 from ..elements import Elemental
+from ..elements import as_elements
 from ..keys import Key
 from ..keys import as_key
 from ..privates import private
@@ -47,7 +48,7 @@ class WrapperBinderHelper:
     def top(self) -> Key:
         return self._top.key
 
-    def push_bind(self, with_: ta.Any | None = None, **kwargs: ta.Any) -> Elemental:
+    def push_bind(self, with_: ta.Sequence[Elemental] | None = None, **kwargs: ta.Any) -> Elemental:
         prv = self._top
         nxt = prv.next()
         out = private(
@@ -56,7 +57,7 @@ class WrapperBinderHelper:
                 *([bind(suk, to_key=sk)] if (suk := self._unwrapped_key) is not None else []),
             ] if prv.level else []),
             bind(nxt.key, **kwargs, expose=True),
-            *([with_] if with_ is not None else []),
+            *([as_elements(*with_)] if with_ is not None else []),
         )
         self._top = nxt
         return out

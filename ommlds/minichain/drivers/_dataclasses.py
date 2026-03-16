@@ -300,34 +300,42 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('uuid', 'next_user_chat')), EqPlan(fields=('uuid', 'next_user_chat')), FrozenPlan("
-        "fields=('uuid', 'next_user_chat'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('uuid', '"
-        "next_user_chat'), cache=False), InitPlan(fields=(InitPlan.Field(name='uuid', annotation=OpRef(name='init.field"
-        "s.0.annotation'), default=None, default_factory=OpRef(name='init.fields.0.default_factory'), init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ne"
-        "xt_user_chat', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='s"
-        "elf', std_params=('next_user_chat',), kw_only_params=('uuid',), frozen=True, slots=False, post_init_params=Non"
-        "e, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='next_user_chat', kw_only=False, fn=Non"
-        "e),), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('uuid', 'next_user_chat', 'ai_message_uuid')), EqPlan(fields=('uuid', 'next_user_c"
+        "hat', 'ai_message_uuid')), FrozenPlan(fields=('uuid', 'next_user_chat', 'ai_message_uuid'), allow_dynamic_dund"
+        "er_attrs=False), HashPlan(action='add', fields=('uuid', 'next_user_chat', 'ai_message_uuid'), cache=False), In"
+        "itPlan(fields=(InitPlan.Field(name='uuid', annotation=OpRef(name='init.fields.0.annotation'), default=None, de"
+        "fault_factory=OpRef(name='init.fields.0.default_factory'), init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_user_chat', annotation=OpRef(na"
+        "me='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ai_message_uuid', annotatio"
+        "n=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_p"
+        "aram='self', std_params=('next_user_chat',), kw_only_params=('uuid', 'ai_message_uuid'), frozen=True, slots=Fa"
+        "lse, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='next_user_cha"
+        "t', kw_only=False, fn=None), ReprPlan.Field(name='ai_message_uuid', kw_only=True, fn=None)), id=False, terse=F"
+        "alse, default_fn=None)))"
     ),
-    plan_repr_sha1='27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a',
+    plan_repr_sha1='5ae911579a302ec25da3d7b43e804daf3dbd8292',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default_factory',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
     ),
     cls_names=(
         ('ommlds.minichain.drivers.actions', 'SendUserMessagesAction'),
     ),
 )
-def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
+def _process_dataclass__5ae911579a302ec25da3d7b43e804daf3dbd8292():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default_factory,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -348,6 +356,7 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
             return __dataclass__cls(  # noqa
                 uuid=self.uuid,
                 next_user_chat=self.next_user_chat,
+                ai_message_uuid=self.ai_message_uuid,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -362,7 +371,8 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
                 return NotImplemented
             return (
                 self.uuid == other.uuid and
-                self.next_user_chat == other.next_user_chat
+                self.next_user_chat == other.next_user_chat and
+                self.ai_message_uuid == other.ai_message_uuid
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -373,6 +383,7 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
         __dataclass___setattr_frozen_fields = {
             'uuid',
             'next_user_chat',
+            'ai_message_uuid',
         }
 
         def __setattr__(self, name, value):
@@ -391,6 +402,7 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
         __dataclass___delattr_frozen_fields = {
             'uuid',
             'next_user_chat',
+            'ai_message_uuid',
         }
 
         def __delattr__(self, name):
@@ -410,6 +422,7 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
             return hash((
                 self.uuid,
                 self.next_user_chat,
+                self.ai_message_uuid,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -420,11 +433,13 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
             next_user_chat: __dataclass__init__fields__1__annotation,
             *,
             uuid: __dataclass__init__fields__0__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+            ai_message_uuid: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             if uuid is __dataclass__HAS_DEFAULT_FACTORY:
                 uuid = __dataclass__init__fields__0__default_factory()
             __dataclass__object_setattr(self, 'uuid', uuid)
             __dataclass__object_setattr(self, 'next_user_chat', next_user_chat)
+            __dataclass__object_setattr(self, 'ai_message_uuid', ai_message_uuid)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -435,6 +450,7 @@ def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
         def __repr__(self):
             parts = []
             parts.append(f"next_user_chat={self.next_user_chat!r}")
+            parts.append(f"ai_message_uuid={self.ai_message_uuid!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

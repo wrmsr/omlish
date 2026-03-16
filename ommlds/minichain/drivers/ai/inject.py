@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import inject as inj
 
 from ...chat.choices.services import ChatChoicesService
@@ -13,18 +15,22 @@ from .configs import AiConfig
 from .eventemit import EventEmittingAiChatGenerator
 from .eventemit import EventEmittingStreamAiChatGenerator
 from .injection import chat_options_providers
+from .metadata import UuidAddingAiChatGenerator
+from .metadata import UuidAddingStreamAiChatGenerator
 from .services import ChatChoicesServiceAiChatGenerator
 from .services import ChatChoicesServiceOptionsProvider
 from .services import ChatChoicesServiceOptionsProviders
 from .services import ChatChoicesStreamServiceStreamAiChatGenerator
-from .services import InternalChatChoicesService
-from .services import InternalChatChoicesStreamService
 from .tools import ToolExecutingAiChatGenerator
 from .transforms import AiChatChatTransform
 from .transforms import ChatTransformAiChatGenerator
 from .transforms import ChatTransformStreamAiChatGenerator
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
+
+
+InternalChatChoicesService = ta.NewType('InternalChatChoicesService', ChatChoicesService)  # type: ignore[misc]
+InternalChatChoicesStreamService = ta.NewType('InternalChatChoicesStreamService', ChatChoicesStreamService)  # type: ignore[misc]  # noqa
 
 
 ##
@@ -73,10 +79,12 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
 
         stream_ai_stack = inj.wrapper_binder_helper(StreamAiChatGenerator)
 
-        els.append(stream_ai_stack.push_bind(to_ctor=ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
+        els.append(stream_ai_stack.push_bind(to_ctor=ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True, with_=[  # noqa
+            inj.bind(ChatChoicesStreamService, to_key=InternalChatChoicesStreamService),
+        ]))
 
+        els.append(stream_ai_stack.push_bind(to_ctor=UuidAddingStreamAiChatGenerator, singleton=True))
         els.append(stream_ai_stack.push_bind(to_ctor=ChatTransformStreamAiChatGenerator, singleton=True))
-
         els.append(stream_ai_stack.push_bind(to_ctor=EventEmittingStreamAiChatGenerator, singleton=True))
 
         els.extend([
@@ -100,10 +108,12 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
 
         #
 
-        els.append(ai_stack.push_bind(to_ctor=ChatChoicesServiceAiChatGenerator, singleton=True))
+        els.append(ai_stack.push_bind(to_ctor=ChatChoicesServiceAiChatGenerator, singleton=True, with_=[
+            inj.bind(ChatChoicesService, to_key=InternalChatChoicesService),
+        ]))
 
+        els.append(ai_stack.push_bind(to_ctor=UuidAddingAiChatGenerator, singleton=True))
         els.append(ai_stack.push_bind(to_ctor=ChatTransformAiChatGenerator, singleton=True))
-
         els.append(ai_stack.push_bind(to_ctor=EventEmittingAiChatGenerator, singleton=True))
 
     #
