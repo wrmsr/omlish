@@ -68,11 +68,12 @@ class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
     def metadata(self) -> tv.TypedValues[MetadataT]:
         return check.isinstance(getattr(self, '_metadata'), tv.TypedValues)
 
-    def with_metadata(
+    def _with_metadata(
             self,
             *add: MetadataT,
             discard: ta.Iterable[type] | None = None,
             override: bool = False,
+            _replace: ta.Callable[..., ta.Any] | None = None,
     ) -> ta.Self:
         new = (old := self.metadata).update(
             *add,
@@ -83,7 +84,21 @@ class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
         if new is old:
             return self
 
-        return dc.replace(self, _metadata=new)  # type: ignore[call-arg]  # noqa
+        if _replace is None:
+            _replace = dc.replace
+        return _replace(self, _metadata=new)
+
+    def with_metadata(
+            self,
+            *add: MetadataT,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> ta.Self:
+        return self._with_metadata(
+            *add,
+            discard=discard,
+            override=override,
+        )
 
 
 ##

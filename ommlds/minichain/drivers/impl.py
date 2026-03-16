@@ -3,9 +3,16 @@ TODO:
  - lifecycles
  - StreamService
 """
+import typing as ta
+
 from omlish.asyncs.asyncio import all as au
 
 from ..chat.messages import Chat
+from ..chat.messages import UserChat
+from ..chat.transform.chats import MessageTransformChatTransform
+from ..chat.transform.messages import CompositeMessageTransform
+from ..chat.transform.metadata import CreatedAtAddingMessageTransform
+from ..chat.transform.metadata import UuidAddingMessageTransform
 from .actions import SendUserMessagesAction
 from .ai.types import AiChatGenerator
 from .ai.types import GenerateAiChatArgs
@@ -67,6 +74,12 @@ class DriverImpl(Driver):
 
     async def _do_action_send_user_messages(self, action: SendUserMessagesAction) -> None:
         next_user_chat = action.next_user_chat
+
+        next_user_chat = ta.cast(UserChat, MessageTransformChatTransform(CompositeMessageTransform([
+            UuidAddingMessageTransform(),
+            CreatedAtAddingMessageTransform(),
+        ])).transform(next_user_chat))
+
         await self._events.emit_event(UserMessagesEvent(next_user_chat))
 
         prev_chat = (await self._chat_state_manager.get_state()).chat

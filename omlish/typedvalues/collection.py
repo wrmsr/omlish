@@ -170,6 +170,12 @@ class TypedValues(
 
     #
 
+    @property
+    def debug(self) -> ta.Sequence[TypedValueT]:
+        return self._tup
+
+    #
+
     def without(self, *tys: type) -> ta.Iterator[TypedValueT]:
         for o in self._tup:
             if tys and isinstance(o, tys):

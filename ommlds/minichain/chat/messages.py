@@ -33,6 +33,19 @@ class Message(MetadataContainerDataclass[MessageMetadatas], lang.Abstract, lang.
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, MessageMetadatas)  # noqa
 
+    def with_metadata(
+            self,
+            *add: MessageMetadatas,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> ta.Self:
+        return self._with_metadata(
+            *add,
+            discard=discard,
+            override=override,
+            _replace=type(self).replace,
+        )
+
     #
 
     def replace(self, **kwargs: ta.Any) -> ta.Self:
@@ -57,7 +70,13 @@ class MessageOriginal(MessageMetadata, lang.Final):
 def with_message_original(m: MessageT, *, original: Message | ta.Sequence[Message]) -> MessageT:
     if not isinstance(original, ta.Sequence):
         original = [original]
-    return m.with_metadata(MessageOriginal(original), discard=[MessageOriginal], override=True)
+
+    return m._with_metadata(  # noqa
+        MessageOriginal(original),
+        discard=[MessageOriginal],
+        override=True,
+        _replace=dc.replace,
+    )
 
 
 ##

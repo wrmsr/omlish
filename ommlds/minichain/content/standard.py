@@ -18,6 +18,19 @@ class StandardContent(MetadataContainerDataclass[ContentMetadatas], ContentBase,
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, ContentMetadatas)  # noqa
 
+    def with_metadata(
+            self,
+            *add: ContentMetadatas,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> ta.Self:
+        return self._with_metadata(
+            *add,
+            discard=discard,
+            override=override,
+            _replace=type(self).replace,
+        )
+
     #
 
     def replace(self, **kwargs: ta.Any) -> ta.Self:

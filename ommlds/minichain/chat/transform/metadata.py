@@ -43,7 +43,7 @@ class UuidAddingMessageTransform(MessageTransform):
 
 @dc.dataclass(frozen=True)
 class CreatedAtAddingMessageTransform(MessageTransform):
-    clock: ta.Callable[[], datetime.datetime] = dc.field(default=datetime.datetime.now)
+    clock: ta.Callable[[], datetime.datetime] = dc.field(default=lang.utcnow)
 
     def transform(self, m: Message) -> Chat:
         if CreatedAt not in m.metadata:

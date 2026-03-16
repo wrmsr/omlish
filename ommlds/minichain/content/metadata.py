@@ -43,4 +43,9 @@ class ContentOriginal(ContentMetadata, lang.Final):
 
 
 def with_content_original(c: StandardContentT, *, original: Content) -> StandardContentT:
-    return c.with_metadata(ContentOriginal(original), discard=[ContentOriginal], override=True)
+    return c._with_metadata(  # noqa
+        ContentOriginal(original),
+        discard=[ContentOriginal],
+        override=True,
+        _replace=dc.replace,
+    )
