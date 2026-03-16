@@ -18,7 +18,7 @@ class GenerateAiChatArgs:
 
     _: dc.KW_ONLY
 
-    message_uuid: uuid_.UUID | None = None
+    message_uuid: uuid_.UUID = dc.field(default_factory=uuid_.uuid4)
 
 
 class AiChatGenerator(lang.Abstract):

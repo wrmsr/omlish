@@ -1,5 +1,4 @@
 import typing as ta
-import uuid
 
 from omlish import check
 
@@ -25,14 +24,11 @@ class UuidAddingAiChatGenerator(AiChatGenerator):
         self._wrapped = wrapped
 
     async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
-        if (mu := args.message_uuid) is None:
-            mu = uuid.uuid4()
-
         out = await self._wrapped.generate_ai_chat(args)
 
         msg = check.single(out)
         check.not_in(MessageUuid, msg.metadata)
-        msg = msg.with_metadata(MessageUuid(mu))
+        msg = msg.with_metadata(MessageUuid(args.message_uuid))
         out = [msg]
 
         return out
@@ -53,12 +49,9 @@ class UuidAddingStreamAiChatGenerator(StreamAiChatGenerator):
             args: GenerateAiChatArgs,
             delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> Chat:
-        if (mu := args.message_uuid) is None:
-            mu = uuid.uuid4()
-
         async def inner(delta: AiDelta) -> None:
             check.not_in(MessageUuid, delta.metadata)
-            delta = delta.with_metadata(MessageUuid(mu))
+            delta = delta.with_metadata(MessageUuid(args.message_uuid))
 
             if delta_callback is not None:
                 await delta_callback(delta)
@@ -67,7 +60,7 @@ class UuidAddingStreamAiChatGenerator(StreamAiChatGenerator):
 
         msg = check.single(out)
         check.not_in(MessageUuid, msg.metadata)
-        msg = msg.with_metadata(MessageUuid(mu))
+        msg = msg.with_metadata(MessageUuid(args.message_uuid))
         out = [msg]
 
         return out

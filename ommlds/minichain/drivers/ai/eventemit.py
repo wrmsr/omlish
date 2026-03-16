@@ -30,7 +30,7 @@ class EventEmittingAiChatGenerator(AiChatGenerator):
     async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
         out = await self._wrapped.generate_ai_chat(args)
 
-        await self._events.emit_event(AiMessagesEvent(out))
+        await self._events.emit_event(AiMessagesEvent(out, message_uuid=args.message_uuid))
 
         return out
 
@@ -57,10 +57,10 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
         async def inner(delta: AiDelta) -> None:
             nonlocal sent_begin_event
             if not sent_begin_event:
-                await self._events.emit_event(AiStreamBeginEvent())
+                await self._events.emit_event(AiStreamBeginEvent(message_uuid=args.message_uuid))
                 sent_begin_event = True
 
-            await self._events.emit_event(AiStreamDeltaEvent(delta))
+            await self._events.emit_event(AiStreamDeltaEvent(delta, message_uuid=args.message_uuid))
 
             if delta_callback is not None:
                 await delta_callback(delta)
@@ -70,8 +70,8 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
 
         finally:
             if sent_begin_event:
-                await self._events.emit_event(AiStreamEndEvent())
+                await self._events.emit_event(AiStreamEndEvent(message_uuid=args.message_uuid))
 
-        await self._events.emit_event(AiMessagesEvent(out, streamed=True))
+        await self._events.emit_event(AiMessagesEvent(out, streamed=True, message_uuid=args.message_uuid))
 
         return out

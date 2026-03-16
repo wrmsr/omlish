@@ -16,4 +16,4 @@ class SendUserMessagesAction(Action, lang.Final):
 
     _: dc.KW_ONLY
 
-    ai_message_uuid: uuid.UUID | None = None
+    ai_message_uuid: uuid.UUID = dc.field(default_factory=uuid.uuid4)

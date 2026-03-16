@@ -25,6 +25,7 @@ with _lang.auto_proxy_init(globals()):
     from .ai.events import (  # noqa
         AiMessagesEvent,
 
+        AiStreamEvent,
         AiStreamBeginEvent,
         AiStreamDeltaEvent,
         AiStreamEndEvent,

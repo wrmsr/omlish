@@ -14,14 +14,14 @@ from omlish import typedvalues as tv
 class Event(lang.Abstract):
     _: dc.KW_ONLY
 
-    uuid: uuid_.UUID | None = dc.field(default_factory=uuid_.uuid4, repr=False)
+    uuid: uuid_.UUID = dc.field(default_factory=uuid_.uuid4, repr=False)
 
 
 @dc.dataclass(frozen=True)
 class Action(lang.Abstract, lang.PackageSealed):
     _: dc.KW_ONLY
 
-    uuid: uuid_.UUID | None = dc.field(default_factory=uuid_.uuid4, repr=False)
+    uuid: uuid_.UUID = dc.field(default_factory=uuid_.uuid4, repr=False)
 
 
 ##
