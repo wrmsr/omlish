@@ -129,6 +129,7 @@ class ChatApp(
         )
 
         self._input_container = InputContainer(
+            input_history_manager=input_history_manager,
             suggestions_manager=suggestions_manager,
         )
 
@@ -279,7 +280,7 @@ class ChatApp(
         check.state(self._chat_action_queue_task is None)
         self._chat_action_queue_task = asyncio.create_task(self._chat_action_queue_task_main())
 
-        self._get_input_text_area().focus()
+        self._input_container.input_text_area.focus()
 
         await self._messages_container.mount_messages(
             WelcomeMessage('\n'.join([
@@ -305,7 +306,7 @@ class ChatApp(
 
     @tx.on(InputTextArea.Submitted)
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
-        self._get_input_text_area().clear()
+        self._input_container.input_text_area.clear()
 
         await self._messages_container.finalize_stream_ai_message()
 
@@ -327,43 +328,15 @@ class ChatApp(
             ),
         )
 
-    def _move_input_cursor_to_end(self) -> None:
-        ita = self._get_input_text_area()
-        ln = ita.document.line_count - 1
-        lt = ita.document.lines[ln]
-        ita.move_cursor((ln, len(lt)))
-
-    @tx.on(InputTextArea.HistoryPrevious)
-    async def on_input_text_area_history_previous(self, event: InputTextArea.HistoryPrevious) -> None:
-        await self._input_history_manager.load_if_necessary()
-        if (entry := self._input_history_manager.get_previous(event.text)) is not None:
-            self._get_input_text_area().text = entry
-            self._move_input_cursor_to_end()
-
-    @tx.on(InputTextArea.HistoryNext)
-    async def on_input_text_area_history_next(self, event: InputTextArea.HistoryNext) -> None:
-        await self._input_history_manager.load_if_necessary()
-        if (entry := self._input_history_manager.get_next(event.text)) is not None:
-            ita = self._get_input_text_area()
-            ita.text = entry
-            self._move_input_cursor_to_end()
-        else:
-            # At the end of history, clear the input
-            ita = self._get_input_text_area()
-            ita.clear()
-            self._input_history_manager.reset_position()
-
     @tx.on(tx.Key)
     async def on_key(self, event: tx.Key) -> None:
         if event in self._input_focused_key_events:
             return
 
-        chat_input = self._get_input_text_area()
-
-        if not chat_input.has_focus:
+        if not (ita := self._input_container.input_text_area).has_focus:
             self._input_focused_key_events.add(event)
 
-            chat_input.focus()
+            ita.focus()
 
             self.screen.post_message(tx.Key(event.key, event.character))
 

@@ -6,6 +6,7 @@ from textual import events
 from omdev.tui import textual as tx
 from omlish import dataclasses as dc
 
+from ..inputhistory import InputHistoryManager
 from ..suggestions import SuggestionItem
 from ..suggestions import SuggestionsManager
 
@@ -176,16 +177,24 @@ class InputContainer(tx.InitAddClass, tx.ComposeOnce, tx.Static):
     def __init__(
             self,
             *,
+            input_history_manager: InputHistoryManager,
             suggestions_manager: SuggestionsManager,
             **kwargs: ta.Any,
     ) -> None:
         super().__init__(**kwargs)
 
+        self._input_history_manager = input_history_manager
         self._suggestions_manager = suggestions_manager
 
         self._input_text_area = InputTextArea(self)
         self._input_glyph = tx.Static('>', classes='input-glyph')
         self._suggestions_popup = SuggestionsPopup(self)
+
+    @property
+    def input_text_area(self) -> InputTextArea:
+        return self._input_text_area
+
+    #
 
     def _compose_once(self) -> tx.ComposeResult:
         with tx.Vertical(classes='input-vertical'):
@@ -194,3 +203,31 @@ class InputContainer(tx.InitAddClass, tx.ComposeOnce, tx.Static):
                 with tx.Horizontal(classes='input-horizontal'):
                     yield self._input_glyph
                     yield self._input_text_area
+
+    #
+
+    def _move_input_cursor_to_end(self) -> None:
+        ita = self._input_text_area
+        ln = ita.document.line_count - 1
+        lt = ita.document.lines[ln]
+        ita.move_cursor((ln, len(lt)))
+
+    @tx.on(InputTextArea.HistoryPrevious)
+    async def on_input_text_area_history_previous(self, event: InputTextArea.HistoryPrevious) -> None:
+        await self._input_history_manager.load_if_necessary()
+        if (entry := self._input_history_manager.get_previous(event.text)) is not None:
+            self._input_text_area.text = entry
+            self._move_input_cursor_to_end()
+
+    @tx.on(InputTextArea.HistoryNext)
+    async def on_input_text_area_history_next(self, event: InputTextArea.HistoryNext) -> None:
+        await self._input_history_manager.load_if_necessary()
+        if (entry := self._input_history_manager.get_next(event.text)) is not None:
+            ita = self._input_text_area
+            ita.text = entry
+            self._move_input_cursor_to_end()
+        else:
+            # At the end of history, clear the input
+            ita = self._input_text_area
+            ita.clear()
+            self._input_history_manager.reset_position()
