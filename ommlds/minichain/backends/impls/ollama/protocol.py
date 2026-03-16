@@ -104,7 +104,7 @@ def build_mc_choices_response(ol_resp: pt.ChatResponse) -> ChatChoicesResponse:
     lst: list[AnyAiMessage] = []
 
     if ol_msg.role in (None, 'assistant'):
-        if ol_msg.content is not None:
+        if ol_msg.content:
             lst.append(AiMessage(
                 check.isinstance(ol_msg.content, str),
             ))
@@ -128,7 +128,7 @@ def build_mc_ai_choice_deltas(ol_resp: pt.ChatResponse) -> AiChoiceDeltas:
     if ol_msg.role in (None, 'assistant'):
         lst: list[AiDelta] = []
 
-        if ol_msg.content is not None:
+        if ol_msg.content:
             lst.append(ContentAiDelta(ol_msg.content))
 
         for tc in ol_msg.tool_calls or []:

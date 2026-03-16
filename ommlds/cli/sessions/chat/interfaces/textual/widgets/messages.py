@@ -9,9 +9,6 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ....... import minichain as mc
-from ..termrender import BackgroundTerminalRenderer
-
 
 ##
 
@@ -85,11 +82,26 @@ class Message(tx.InitAddClass, tx.Static, lang.Abstract):
     def message_uuid(self) -> uuid.UUID | None:
         return self._message_uuid
 
+    @dc.dataclass()
+    class Finalized(tx.Event):
+        m: 'Message'
+
+
+class StaticMessage(Message, lang.Abstract):
+    _has_static_message_finalized = False
+
+    @tx.on(tx.Mount)
+    async def on_static_message_mount(self, event: tx.Mount) -> None:
+        if not self._has_static_message_finalized:
+            self._has_static_message_finalized = True
+
+            self.post_message(self.Finalized(self))
+
 
 #
 
 
-class WelcomeMessage(Message):
+class WelcomeMessage(StaticMessage):
     init_add_class = 'welcome-message'
 
     def __init__(
@@ -112,7 +124,7 @@ class WelcomeMessage(Message):
 #
 
 
-class UserMessage(Message):
+class UserMessage(StaticMessage):
     init_add_class = 'user-message'
 
     def __init__(
@@ -151,7 +163,7 @@ class AiMessage(Message, lang.Abstract):
         raise NotImplementedError
 
 
-class StaticAiMessage(AiMessage):
+class StaticAiMessage(StaticMessage, AiMessage):
     init_add_class = 'static-ai-message'
 
     def __init__(
@@ -207,10 +219,6 @@ class StreamAiMessage(AiMessage):
         yield tx.Markdown('')
 
     #
-
-    @dc.dataclass()
-    class Finalized(tx.Message):
-        m: 'StreamAiMessage'
 
     _final_content: str
 
@@ -353,6 +361,8 @@ class ToolConfirmationMessage(Message):
 
         self._fut.set_result(allowed)
 
+        self.post_message(self.Finalized(self))
+
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
             yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
@@ -412,14 +422,8 @@ class UiMessage(Message):
 class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
     init_add_class = 'messages-container'
 
-    def __init__(
-            self,
-            *,
-            background_terminal_renderer: BackgroundTerminalRenderer,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
-
-        self._background_terminal_renderer = background_terminal_renderer
 
         self._messages_by_uuid: dict[uuid.UUID, Message] = {}
 
@@ -529,18 +533,3 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
 
         if was_at_bottom:
             self.call_after_refresh(self._anchor_messages)
-
-    #
-
-    @tx.on(StreamAiMessage.Finalized)
-    async def on_stream_ai_message_finalized(self, event: StreamAiMessage.Finalized) -> None:
-        event.prevent_default()
-        event.stop()
-
-    async def background_render_chat(self, chat: mc.Chat) -> None:
-        async def inner() -> None:
-            msg_ctrl = self.children[-1]  # FIXME: lol do better
-            await self._background_terminal_renderer.background_render_widget(msg_ctrl)
-
-        self.refresh(layout=True)
-        self.call_after_refresh(inner)

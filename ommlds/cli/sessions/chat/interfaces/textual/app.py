@@ -124,9 +124,7 @@ class ChatApp(
 
         #
 
-        self._messages_container = MessagesContainer(
-            background_terminal_renderer=background_terminal_renderer,
-        )
+        self._messages_container = MessagesContainer()
 
         self._input_container = InputContainer(
             input_history_manager=input_history_manager,
@@ -159,6 +157,14 @@ class ChatApp(
 
     ##
     # Messages
+
+    async def _on_message_finalized(self, event: Message.Finalized) -> None:
+        async def inner() -> None:
+            await self._background_terminal_renderer.background_render_widget(event.m)
+
+        self.refresh(layout=True)
+        self.call_after_refresh(inner)
+
     ##
     # Chat events
 
@@ -174,10 +180,7 @@ class ChatApp(
             await alog.debug(lambda: f'Got chat event: {ev!r}')
 
             if isinstance(ev, mc.drivers.AiMessagesEvent):
-                if ev.streamed:
-                    await self._messages_container.background_render_chat(ev.chat)
-
-                else:
+                if not ev.streamed:
                     wx: list[Message] = []
 
                     for ai_msg in ev.chat:
@@ -208,9 +211,6 @@ class ChatApp(
 
             elif isinstance(ev, mc.drivers.AiStreamEndEvent):
                 self.call_later(self._messages_container.finalize_stream_ai_message, ev.message_uuid)
-
-            elif isinstance(ev, mc.drivers.UserMessagesEvent):
-                await self._messages_container.background_render_chat(ev.chat)
 
     ##
     # Chat actions

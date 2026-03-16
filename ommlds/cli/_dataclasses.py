@@ -3565,7 +3565,7 @@ def _process_dataclass__d8b7f224596d6b56ca61048e31a647b16a3fb3fe():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'StreamAiMessage.Finalized'),
+        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'Message.Finalized'),
     ),
 )
 def _process_dataclass__ab613ad45ff72bdfc64fbee942ee2c0d0668f894():
