@@ -38,12 +38,13 @@ class Message(MetadataContainerDataclass[MessageMetadatas], lang.Abstract, lang.
             *add: MessageMetadatas,
             discard: ta.Iterable[type] | None = None,
             override: bool = False,
+            no_original: bool = False,
     ) -> ta.Self:
         return self._with_metadata(
             *add,
             discard=discard,
             override=override,
-            _replace=type(self).replace,
+            _replace=type(self).replace if not no_original else None,
         )
 
     #
