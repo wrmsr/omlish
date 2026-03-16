@@ -21,7 +21,7 @@ from .messages import MessageTransform
 
 class OriginalMetadataStrippingMessageTransform(MessageTransform):
     def transform(self, m: Message) -> ta.Sequence[Message]:
-        return [m.with_metadata(discard=[MessageOriginal])]
+        return [m._with_metadata(discard=[MessageOriginal])]  # noqa
 
 
 def strip_message_original_metadata(c: Message) -> Message:

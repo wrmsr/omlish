@@ -75,7 +75,6 @@ def with_message_original(m: MessageT, *, original: Message | ta.Sequence[Messag
         MessageOriginal(original),
         discard=[MessageOriginal],
         override=True,
-        _replace=dc.replace,
     )
 
 

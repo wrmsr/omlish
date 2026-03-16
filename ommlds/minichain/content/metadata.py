@@ -47,5 +47,4 @@ def with_content_original(c: StandardContentT, *, original: Content) -> Standard
         ContentOriginal(original),
         discard=[ContentOriginal],
         override=True,
-        _replace=dc.replace,
     )

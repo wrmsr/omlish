@@ -68,6 +68,7 @@ class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
     def metadata(self) -> tv.TypedValues[MetadataT]:
         return check.isinstance(getattr(self, '_metadata'), tv.TypedValues)
 
+    @ta.final
     def _with_metadata(
             self,
             *add: MetadataT,
