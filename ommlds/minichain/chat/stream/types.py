@@ -5,10 +5,12 @@ from omlish import lang
 from omlish import marshal as msh
 
 from ...content.content import Content
+from ...metadata import MetadataContainerDataclass
 from ...stream.services import StreamOptions
 from ...types import Option
 from ...types import Output
 from ..types import ChatOptions
+from .metadata import AiDeltaMetadatas
 
 
 msh.register_global_module_import('._marshal', __package__)
@@ -38,8 +40,10 @@ ChatStreamOutputs: ta.TypeAlias = ChatStreamOutput
 
 
 @dc.dataclass(frozen=True)
-class AiDelta(lang.Sealed, lang.Abstract):
-    pass
+class AiDelta(MetadataContainerDataclass[AiDeltaMetadatas], lang.Abstract, lang.Sealed):
+    _metadata: ta.Sequence[AiDeltaMetadatas] = dc.field(default=(), kw_only=True, repr=False)
+
+    MetadataContainerDataclass._configure_metadata_field(_metadata, AiDeltaMetadatas)  # noqa
 
 
 AiDeltas: ta.TypeAlias = ta.Sequence[AiDelta]

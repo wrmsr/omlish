@@ -13,18 +13,12 @@ from .metadata import with_content_original
 
 
 @dc.dataclass(frozen=True)
-class StandardContent(  # noqa
-    MetadataContainerDataclass[ContentMetadatas],
-    ContentBase,
-    lang.Abstract,
-):
-    _metadata: ta.Sequence[ContentMetadatas] = dc.field(
-        default=(),
-        kw_only=True,
-        repr=False,
-    )
+class StandardContent(MetadataContainerDataclass[ContentMetadatas], ContentBase, lang.Abstract):
+    _metadata: ta.Sequence[ContentMetadatas] = dc.field(default=(), kw_only=True, repr=False)
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, ContentMetadatas)  # noqa
+
+    #
 
     def replace(self, **kwargs: ta.Any) -> ta.Self:
         if (n := dc.replace_is_not(self, **kwargs)) is self:

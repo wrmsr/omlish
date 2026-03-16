@@ -28,18 +28,12 @@ msh.register_global_module_import('._marshal', __package__)
 
 
 @dc.dataclass(frozen=True)
-class Message(  # noqa
-    MetadataContainerDataclass[MessageMetadatas],
-    lang.Abstract,
-    lang.Sealed,
-):
-    _metadata: ta.Sequence[MessageMetadatas] = dc.field(
-        default=(),
-        kw_only=True,
-        repr=False,
-    )
+class Message(MetadataContainerDataclass[MessageMetadatas], lang.Abstract, lang.Sealed):
+    _metadata: ta.Sequence[MessageMetadatas] = dc.field(default=(), kw_only=True, repr=False)
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, MessageMetadatas)  # noqa
+
+    #
 
     def replace(self, **kwargs: ta.Any) -> ta.Self:
         if (n := dc.replace_is_not(self, **kwargs)) is self:

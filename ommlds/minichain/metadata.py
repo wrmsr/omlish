@@ -48,10 +48,7 @@ class MetadataContainer(
 
 
 @dc.dataclass(frozen=True)
-class MetadataContainerDataclass(  # noqa
-    MetadataContainer[MetadataT],
-    lang.Abstract,
-):
+class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
