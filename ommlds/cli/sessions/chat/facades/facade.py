@@ -32,7 +32,7 @@ class ChatFacade:
             await self._commands.run_command_text(text[1:])
 
         else:
-            msg = mc.UserMessage(text).with_metadata(mc.Uuid(input_uuid))
+            msg = mc.UserMessage(text).with_metadata(mc.MessageUuid(input_uuid))
 
             await self._driver.do_action(mc.drivers.SendUserMessagesAction(
                 [msg],

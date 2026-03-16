@@ -103,10 +103,6 @@ class CreatedAt(tv.UniqueScalarTypedValue[datetime.datetime], CommonMetadata, la
 #
 
 
-class Uuid(tv.UniqueScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
-    pass
-
-
 class RequestUuid(tv.UniqueScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
     pass
 

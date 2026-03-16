@@ -5,12 +5,12 @@ from omlish import marshal as msh
 
 from ...content.placeholders import ContentPlaceholder
 from ...content.placeholders import PlaceholderContent
-from ...metadata import Uuid
 from .._marshal import MarshalContent
 from .._marshal import MarshalRawContent
 from .._marshal import MarshalSingleRawContent
 from ..containers import ConcatContent
 from ..content import Content
+from ..metadata import ContentUuid
 from ..raw import RawContent
 from ..raw import SingleRawContent
 from ..text import TextContent
@@ -30,7 +30,7 @@ def test_marshal():
     assert msh.marshal(ConcatContent(['hi', [TextContent('bye')]]), Content) == {'concat': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), Content) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u)), Content) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
 
 @dc.dataclass(frozen=True)
@@ -46,7 +46,7 @@ def test_single_raw_marshal():
     assert msh.marshal(TextContent('hi'), SingleRawContent) == {'text': {'s': 'hi'}}
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), SingleRawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u)), SingleRawContent) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
 
 @dc.dataclass(frozen=True)
@@ -63,7 +63,7 @@ def test_raw_marshal():
     assert msh.marshal([TextContent('hi'), 'bye'], RawContent) == [{'text': {'s': 'hi'}}, 'bye']
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), RawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u)), RawContent) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
 
 class FooPlaceholder(ContentPlaceholder):

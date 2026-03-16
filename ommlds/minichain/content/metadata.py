@@ -1,7 +1,9 @@
 import typing as ta
+import uuid
 
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ..metadata import CommonMetadata
 from ..metadata import Metadata
@@ -23,6 +25,13 @@ class ContentMetadata(Metadata, lang.Abstract):
 
 
 ContentMetadatas: ta.TypeAlias = ContentMetadata | CommonMetadata
+
+
+##
+
+
+class ContentUuid(tv.UniqueScalarTypedValue[uuid.UUID], ContentMetadata, lang.Final):
+    pass
 
 
 ##

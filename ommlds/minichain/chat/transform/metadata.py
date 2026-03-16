@@ -8,11 +8,11 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ...metadata import CreatedAt
-from ...metadata import Uuid
 from ..messages import Chat
 from ..messages import Message
 from ..messages import MessageOriginal
 from ..metadata import MessageMetadata
+from ..metadata import MessageUuid
 from .messages import MessageTransform
 
 
@@ -36,8 +36,8 @@ class UuidAddingMessageTransform(MessageTransform):
     uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid4)
 
     def transform(self, m: Message) -> Chat:
-        if Uuid not in m.metadata:
-            m = m.with_metadata(Uuid(self.uuid_factory()))
+        if MessageUuid not in m.metadata:
+            m = m.with_metadata(MessageUuid(self.uuid_factory()))
         return [m]
 
 

@@ -204,6 +204,13 @@ with _lang.auto_proxy_init(
         ToolUseResultMessage,
     )
 
+    from .chat.metadata import (  # noqa
+        MessageMetadata,
+        MessageMetadatas,
+
+        MessageUuid,
+    )
+
     from .chat.services import (  # noqa
         ChatRequest,
         ChatResponse,
@@ -335,6 +342,8 @@ with _lang.auto_proxy_init(
     from .content.metadata import (  # noqa
         ContentMetadata,
         ContentMetadatas,
+
+        ContentUuid,
 
         ContentOriginal,
     )
@@ -734,7 +743,6 @@ with _lang.auto_proxy_init(
 
         CreatedAt,
 
-        Uuid,
         RequestUuid,
         ParentRequestUuid,
         ResponseUuid,

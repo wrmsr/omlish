@@ -2,7 +2,7 @@ import uuid
 
 from omlish import marshal as msh
 
-from ...metadata import Uuid
+from ...metadata import RequestUuid
 from .chat import ChatRequest
 from .chat import MaxTokens
 from .chat import Message
@@ -23,8 +23,8 @@ def test_marshal():
             {'v': [{'role': 'user', 'message': 'hi'}], 'options': [{'max_tokens': 10}]},
         ),
         (
-            ChatRequest((Message('user', 'hi'),), [MaxTokens(10)]).with_metadata(Uuid(uid := uuid.uuid4())),
-            {'v': [{'role': 'user', 'message': 'hi'}], 'options': [{'max_tokens': 10}], 'metadata': [{'uuid': str(uid)}]},  # noqa
+            ChatRequest((Message('user', 'hi'),), [MaxTokens(10)]).with_metadata(RequestUuid(uid := uuid.uuid4())),
+            {'v': [{'role': 'user', 'message': 'hi'}], 'options': [{'max_tokens': 10}], 'metadata': [{'request_uuid': str(uid)}]},  # noqa
         ),
     ]:
         mv = msh.marshal(cr, ChatRequest)
