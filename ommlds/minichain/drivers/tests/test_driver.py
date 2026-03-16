@@ -3,7 +3,6 @@ import uuid
 import pytest  # noqa
 
 from omlish import inject as inj
-from omlish import lang
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
@@ -26,10 +25,12 @@ class DummyChatChoicesService:
         return ChatChoicesResponse([AiChoice([AiMessage(f'*Ai Message {len(request.v) + 1}*')])])
 
 
-def make_driver(
+def bind_test_driver(
         cfg: DriverConfig = DriverConfig(),
-) -> Driver:
-    injector = inj.create_injector(
+) -> inj.Elements:
+    els: list[inj.Elemental] = []
+
+    els.extend([
         bind_driver(cfg),
 
         inj.bind(ChatChoicesService, to_ctor=DummyChatChoicesService),
@@ -38,28 +39,34 @@ def make_driver(
         inj.bind(StateManager, to_key=InMemoryStateManager),
 
         inj.bind(ChatId(uuid.uuid4())),
-    )
+    ])
 
-    return injector[Driver]
+    return inj.as_elements(*els)
 
 
-def test_inject():
-    assert make_driver(
+@pytest.mark.asyncs('asyncio')
+async def test_inject():
+    async with inj.create_async_managed_injector(bind_test_driver(
         cfg=DriverConfig(
             user=UserConfig(
                 initial_user_content='Hi!',
             ),
         ),
-    )
+    )) as injector:
+        driver = await injector[Driver]
+        assert driver
 
 
-def test_driver():
-    driver = make_driver(
+@pytest.mark.asyncs('asyncio')
+async def test_driver():
+    async with inj.create_async_managed_injector(bind_test_driver(
         cfg=DriverConfig(
             user=UserConfig(
                 initial_user_content='Hi!',
             ),
         ),
-    )
-    lang.sync_await(driver.start())
-    lang.sync_await(driver.stop())
+    )) as injector:
+        driver = await injector[Driver]
+
+        await driver.start()
+        await driver.stop()
