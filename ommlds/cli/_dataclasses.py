@@ -3553,22 +3553,22 @@ def _process_dataclass__d8b7f224596d6b56ca61048e31a647b16a3fb3fe():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('m',)), EqPlan(fields=('m',)), HashPlan(action='set_none', fields=None, cache=None"
-        "), InitPlan(fields=(InitPlan.Field(name='m', annotation=OpRef(name='init.fields.0.annotation'), default=None, "
-        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
-        "eck_type=None),), self_param='self', std_params=('m',), kw_only_params=(), frozen=False, slots=False, post_ini"
-        "t_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='m', kw_only=False, fn=None),"
-        "), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('widget',)), EqPlan(fields=('widget',)), HashPlan(action='set_none', fields=None, "
+        "cache=None), InitPlan(fields=(InitPlan.Field(name='widget', annotation=OpRef(name='init.fields.0.annotation'),"
+        " default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None),), self_param='self', std_params=('widget',), kw_only_params=(), frozen=False, s"
+        "lots=False, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='widget',"
+        " kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='ab613ad45ff72bdfc64fbee942ee2c0d0668f894',
+    plan_repr_sha1='95d0b95631fc69464dd20fa9e5c73baceb4022ef',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'Message.Finalized'),
+        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'MessageFinalized'),
     ),
 )
-def _process_dataclass__ab613ad45ff72bdfc64fbee942ee2c0d0668f894():
+def _process_dataclass__95d0b95631fc69464dd20fa9e5c73baceb4022ef():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3591,7 +3591,7 @@ def _process_dataclass__ab613ad45ff72bdfc64fbee942ee2c0d0668f894():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                m=self.m,
+                widget=self.widget,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -3605,7 +3605,7 @@ def _process_dataclass__ab613ad45ff72bdfc64fbee942ee2c0d0668f894():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.m == other.m
+                self.widget == other.widget
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -3617,9 +3617,9 @@ def _process_dataclass__ab613ad45ff72bdfc64fbee942ee2c0d0668f894():
 
         def __init__(
             self,
-            m: __dataclass__init__fields__0__annotation,
+            widget: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
-            self.m = m
+            self.widget = widget
             self.__post_init__()
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -3630,7 +3630,7 @@ def _process_dataclass__ab613ad45ff72bdfc64fbee942ee2c0d0668f894():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"m={self.m!r}")
+            parts.append(f"widget={self.widget!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

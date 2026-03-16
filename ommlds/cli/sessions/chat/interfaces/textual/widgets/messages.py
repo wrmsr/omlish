@@ -13,7 +13,26 @@ from omlish import lang
 ##
 
 
-class MessageDivider(tx.InitAddClass, tx.Static):
+@dc.dataclass()
+class MessageFinalized(tx.Event):
+    widget: tx.Widget
+
+
+class OnMountMessageFinalized(tx.Widget, lang.Abstract):
+    __has_finalized = False
+
+    @tx.on(tx.Mount)
+    async def _on_mount_message_finalize(self, event: tx.Mount) -> None:
+        if not self.__has_finalized:
+            self.__has_finalized = True
+
+            self.post_message(MessageFinalized(self))
+
+
+##
+
+
+class MessageDivider(OnMountMessageFinalized, tx.InitAddClass, tx.Static):
     init_add_class = 'message-divider'
 
     def __init__(
@@ -82,20 +101,9 @@ class Message(tx.InitAddClass, tx.Static, lang.Abstract):
     def message_uuid(self) -> uuid.UUID | None:
         return self._message_uuid
 
-    @dc.dataclass()
-    class Finalized(tx.Event):
-        m: 'Message'
 
-
-class StaticMessage(Message, lang.Abstract):
-    _has_static_message_finalized = False
-
-    @tx.on(tx.Mount)
-    async def on_static_message_mount(self, event: tx.Mount) -> None:
-        if not self._has_static_message_finalized:
-            self._has_static_message_finalized = True
-
-            self.post_message(self.Finalized(self))
+class StaticMessage(OnMountMessageFinalized, Message, lang.Abstract):
+    pass
 
 
 #
@@ -275,7 +283,7 @@ class StreamAiMessage(AiMessage):
         self._final_content = self._stream_content.getvalue()
         del self._stream_content
 
-        self.post_message(self.Finalized(self))
+        self.post_message(MessageFinalized(self))
 
     async def finalize_stream(self) -> None:
         if self._state == 'new':
@@ -361,7 +369,7 @@ class ToolConfirmationMessage(Message):
 
         self._fut.set_result(allowed)
 
-        self.post_message(self.Finalized(self))
+        self.post_message(MessageFinalized(self))
 
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):

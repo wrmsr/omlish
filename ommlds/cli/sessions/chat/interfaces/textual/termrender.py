@@ -25,7 +25,7 @@ class BackgroundTerminalRenderer:
         ansi = tx.render_full_widget_ansi(widget, app.console, strip=True, reset=True)
 
         pwd = check.isinstance(app._driver, tx.PendingWritesDriverMixin)  # noqa
-        pwd.queue_primary_buffer_write(render_write_from_alt(ansi, '\n\n'))
+        pwd.queue_primary_buffer_write(render_write_from_alt(ansi, '\n'))
 
         if not no_refresh:
             app.refresh(layout=True)

@@ -20,6 +20,7 @@ from .termrender import BackgroundTerminalRenderer
 from .widgets.input import InputContainer
 from .widgets.input import InputTextArea
 from .widgets.messages import Message
+from .widgets.messages import MessageFinalized
 from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
 from .widgets.messages import ToolConfirmationMessage
@@ -158,9 +159,12 @@ class ChatApp(
     ##
     # Messages
 
-    async def _on_message_finalized(self, event: Message.Finalized) -> None:
+    async def _on_message_finalized(self, event: MessageFinalized) -> None:
+        if isinstance(event.widget, WelcomeMessage):
+            return
+
         async def inner() -> None:
-            await self._background_terminal_renderer.background_render_widget(event.m)
+            await self._background_terminal_renderer.background_render_widget(event.widget)
 
         self.refresh(layout=True)
         self.call_after_refresh(inner)
