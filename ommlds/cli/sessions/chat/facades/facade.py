@@ -25,12 +25,16 @@ class ChatFacade:
             *,
             input_uuid: uuid.UUID | None = None,
     ) -> None:
+        if input_uuid is None:
+            input_uuid = uuid.uuid4()
+
         if text.startswith('/'):
             await self._commands.run_command_text(text[1:])
 
         else:
-            msg = mc.UserMessage(text)
-            if input_uuid is not None:
-                msg = msg.with_metadata(mc.Uuid(input_uuid))
+            msg = mc.UserMessage(text).with_metadata(mc.Uuid(input_uuid))
 
-            await self._driver.do_action(mc.drivers.SendUserMessagesAction([msg]))
+            await self._driver.do_action(mc.drivers.SendUserMessagesAction(
+                [msg],
+                uuid=input_uuid,
+            ))

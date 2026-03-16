@@ -393,11 +393,23 @@ class ChatApp(
 
         await self._finalize_stream_ai_message()
 
-        await self._mount_messages(UserMessage(event.text))
+        input_uuid = uuid.uuid4()
+
+        await self._mount_messages(
+            UserMessage(
+                event.text,
+                message_uuid=input_uuid,
+            ),
+        )
 
         await self._input_history_manager.add(event.text)
 
-        await self._chat_action_queue.put(ChatApp.UserInput(event.text))
+        await self._chat_action_queue.put(
+            ChatApp.UserInput(
+                event.text,
+                input_uuid=input_uuid,
+            ),
+        )
 
     def _move_input_cursor_to_end(self) -> None:
         ita = self._get_input_text_area()
