@@ -1,6 +1,6 @@
 import abc
 import typing as ta
-import uuid
+import uuid as uuid_
 
 from omlish import dataclasses as dc
 from omlish import lang
@@ -12,18 +12,22 @@ from omlish import typedvalues as tv
 
 @dc.dataclass(frozen=True)
 class Event(lang.Abstract):
-    pass
+    _: dc.KW_ONLY
+
+    uuid: uuid_.UUID | None = dc.field(default_factory=uuid_.uuid4, repr=False)
 
 
 @dc.dataclass(frozen=True)
 class Action(lang.Abstract, lang.PackageSealed):
-    pass
+    _: dc.KW_ONLY
+
+    uuid: uuid_.UUID | None = dc.field(default_factory=uuid_.uuid4, repr=False)
 
 
 ##
 
 
-class DriverId(tv.UniqueScalarTypedValue[uuid.UUID]):
+class DriverId(tv.UniqueScalarTypedValue[uuid_.UUID]):
     pass
 
 
