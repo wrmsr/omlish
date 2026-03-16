@@ -21,6 +21,7 @@ from .termrender import BackgroundTerminalRenderer
 from .widgets.input import InputContainer
 from .widgets.input import InputTextArea
 from .widgets.messages import AiMessage
+from .widgets.messages import Message
 from .widgets.messages import MessageDivider
 from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
@@ -177,9 +178,9 @@ class ChatApp(
 
     #
 
-    _pending_mount_messages: list[tx.Widget] | None = None
+    _pending_mount_messages: list[Message] | None = None
 
-    async def _enqueue_mount_messages(self, *messages: tx.Widget) -> None:
+    async def _enqueue_mount_messages(self, *messages: Message) -> None:
         if (lst := self._pending_mount_messages) is None:
             lst = self._pending_mount_messages = []
 
@@ -208,7 +209,7 @@ class ChatApp(
 
     _num_mounted_messages = 0
 
-    async def _mount_messages(self, *messages: tx.Widget) -> None:
+    async def _mount_messages(self, *messages: Message) -> None:
         was_at_bottom = self._is_messages_at_bottom()
 
         for msg in [*(self._pending_mount_messages or []), *messages]:
@@ -263,7 +264,7 @@ class ChatApp(
                     await self._background_render_chat(ev.chat)
 
                 else:
-                    wx: list[tx.Widget] = []
+                    wx: list[Message] = []
 
                     for ai_msg in ev.chat:
                         if isinstance(ai_msg, mc.AiMessage):
