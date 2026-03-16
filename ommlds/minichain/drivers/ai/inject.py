@@ -8,6 +8,7 @@ from ...chat.tools.types import Tool
 from ...chat.transform.chats import MessageTransformChatTransform
 from ...chat.transform.messages import CompositeMessageTransform
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
+from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
 from ...chat.transform.metadata import UuidAddingMessageTransform
 from ...tools.execution.catalog import ToolCatalog
 from ...wrappers.uuids import RequestResponseUuidAddingService
@@ -56,6 +57,7 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
         CompositeMessageTransform([
             UuidAddingMessageTransform(),
             CreatedAtAddingMessageTransform(),
+            OriginalMetadataStrippingMessageTransform(),
         ]),
     )))
 

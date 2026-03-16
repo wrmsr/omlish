@@ -24,9 +24,12 @@ class ChatFacade:
             text: str,
             *,
             input_uuid: uuid.UUID | None = None,
+            output_uuid: uuid.UUID | None = None,
     ) -> None:
         if input_uuid is None:
             input_uuid = uuid.uuid4()
+        if output_uuid is None:
+            output_uuid = uuid.uuid4()
 
         if text.startswith('/'):
             await self._commands.run_command_text(text[1:])
@@ -36,5 +39,6 @@ class ChatFacade:
 
             await self._driver.do_action(mc.drivers.SendUserMessagesAction(
                 [msg],
+                ai_message_uuid=output_uuid,
                 uuid=input_uuid,
             ))

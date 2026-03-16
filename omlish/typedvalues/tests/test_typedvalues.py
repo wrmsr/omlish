@@ -136,6 +136,7 @@ def test_typed_values():
 
     assert list(TypedValues(*opts.without(ResponseFormat))) == [Tool(foo_tool), TopK(10), Tool(bar_tool)]
     assert list(TypedValues(*opts.without(Tool))) == [JSON_RESPONSE_FORMAT, TopK(10)]
+    assert list(TypedValues(*opts.update(discard=[Tool]))) == [JSON_RESPONSE_FORMAT, TopK(10)]
 
 
 def test_mro_check():

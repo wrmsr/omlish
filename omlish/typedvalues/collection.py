@@ -198,7 +198,7 @@ class TypedValues(
             discard: ta.Iterable[type] | None = None,
             override: bool = False,
     ) -> 'TypedValues':
-        if not tvs:
+        if not tvs and not discard:
             return self
 
         n = TypedValues(

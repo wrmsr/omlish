@@ -5,6 +5,7 @@ from ...chat.messages import UserMessage
 from ...chat.transform.chats import MessageTransformChatTransform
 from ...chat.transform.messages import CompositeMessageTransform
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
+from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
 from ...chat.transform.metadata import UuidAddingMessageTransform
 from ..actions import SendUserMessagesAction
 from ..inject import system_message_providers
@@ -29,6 +30,7 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
         CompositeMessageTransform([
             UuidAddingMessageTransform(),
             CreatedAtAddingMessageTransform(),
+            OriginalMetadataStrippingMessageTransform(),
         ]),
     )))
 
