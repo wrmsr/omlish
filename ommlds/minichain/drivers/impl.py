@@ -9,10 +9,6 @@ from omlish.asyncs.asyncio import all as au
 
 from ..chat.messages import Chat
 from ..chat.messages import UserChat
-from ..chat.transform.chats import MessageTransformChatTransform
-from ..chat.transform.messages import CompositeMessageTransform
-from ..chat.transform.metadata import CreatedAtAddingMessageTransform
-from ..chat.transform.metadata import UuidAddingMessageTransform
 from .actions import SendUserMessagesAction
 from .ai.types import AiChatGenerator
 from .ai.types import GenerateAiChatArgs
@@ -24,6 +20,7 @@ from .state.types import StateManager
 from .types import Action
 from .types import Driver
 from .user.events import UserMessagesEvent
+from .user.transforms import UserChatChatTransform
 
 
 ##
@@ -38,6 +35,7 @@ class DriverImpl(Driver):
             chat_state_manager: StateManager,
             events: EventsManager,
             chat_preparer: ChatPreparer | None = None,
+            user_chat_transform: UserChatChatTransform | None = None,
     ) -> None:
         super().__init__()
 
@@ -46,6 +44,7 @@ class DriverImpl(Driver):
         self._chat_state_manager = chat_state_manager
         self._events = events
         self._chat_preparer = chat_preparer
+        self._user_chat_transform = user_chat_transform
 
         self._lock = au.RLock()
 
@@ -75,10 +74,8 @@ class DriverImpl(Driver):
     async def _do_action_send_user_messages(self, action: SendUserMessagesAction) -> None:
         next_user_chat = action.next_user_chat
 
-        next_user_chat = ta.cast(UserChat, MessageTransformChatTransform(CompositeMessageTransform([
-            UuidAddingMessageTransform(),
-            CreatedAtAddingMessageTransform(),
-        ])).transform(next_user_chat))
+        if (uct := self._user_chat_transform) is not None:
+            next_user_chat = ta.cast(UserChat, uct.transform(next_user_chat))
 
         await self._events.emit_event(UserMessagesEvent(next_user_chat))
 

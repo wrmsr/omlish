@@ -2,6 +2,10 @@ from omlish import check
 from omlish import inject as inj
 
 from ...chat.messages import UserMessage
+from ...chat.transform.chats import MessageTransformChatTransform
+from ...chat.transform.messages import CompositeMessageTransform
+from ...chat.transform.metadata import CreatedAtAddingMessageTransform
+from ...chat.transform.metadata import UuidAddingMessageTransform
 from ..actions import SendUserMessagesAction
 from ..inject import system_message_providers
 from ..phases.injection import phase_callbacks
@@ -10,6 +14,7 @@ from ..phases.types import PhaseCallback
 from ..types import DriverGetter
 from .configs import UserConfig
 from .preparing import InitialSystemMessageProvider
+from .transforms import UserChatChatTransform
 
 
 ##
@@ -17,6 +22,17 @@ from .preparing import InitialSystemMessageProvider
 
 def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
+
+    #
+
+    els.append(inj.bind(UserChatChatTransform, to_const=MessageTransformChatTransform(
+        CompositeMessageTransform([
+            UuidAddingMessageTransform(),
+            CreatedAtAddingMessageTransform(),
+        ]),
+    )))
+
+    #
 
     if cfg.initial_system_content is not None:
         els.extend([
@@ -34,5 +50,7 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
             lambda cdg: PhaseCallback(Phase.STARTED, lambda: add_initial_user_content(cdg)),
             cdg=DriverGetter,
         )))
+
+    #
 
     return inj.as_elements(*els)
