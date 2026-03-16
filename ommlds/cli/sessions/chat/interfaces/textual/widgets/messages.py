@@ -1,10 +1,12 @@
 import abc
 import asyncio
+import io
 import typing as ta
 import uuid
 
 from omdev.tui import textual as tx
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 from ....... import minichain as mc
@@ -178,7 +180,7 @@ class StreamAiMessage(AiMessage):
 
     def __init__(
             self,
-            content: str,
+            initial_content: str = '',
             *,
             message_uuid: uuid.UUID | None = None,
     ) -> None:
@@ -186,35 +188,74 @@ class StreamAiMessage(AiMessage):
             message_uuid=message_uuid,
         )
 
-        self._content = content
+        self._initial_content = initial_content
+
+        self._stream_content = io.StringIO()
+        self._state: ta.Literal['new', 'streaming', 'finalized'] = 'new'
 
     def _compose_content(self) -> ta.Generator:
         yield tx.Markdown('')
+
+    #
 
     _stream_: tx.MarkdownStream | None = None
 
     def _stream(self) -> tx.MarkdownStream:
         if self._stream_ is None:
             self._stream_ = tx.Markdown.get_stream(self.query_one(tx.Markdown))
+
         return self._stream_
 
-    async def write_initial_content(self) -> None:
-        if self._content:
-            await self._stream().write(self._content)
+    #
 
-    async def append_content(self, content: str) -> None:
+    async def start_stream(self) -> None:
+        check.state(self._state == 'new')
+
+        self._state = 'streaming'
+
+        if (ic := self._initial_content):
+            self._stream_content.write(ic)
+            await self._stream().write(ic)
+
+        del self._initial_content
+
+    #
+
+    async def append_stream_content(self, content: str) -> None:
+        check.state(self._state == 'streaming')
+
         if not content:
             return
 
-        self._content += content
+        self._stream_content.write(content)
         await self._stream().write(content)
 
-    async def stop_stream(self) -> None:
-        if (stream := self._stream_) is None:
-            return
+    #
 
-        await stream.stop()
-        self._stream_ = None
+    @dc.dataclass()
+    class Finalized(tx.Message):
+        m: 'StreamAiMessage'
+
+    _final_content: str
+
+    @property
+    def final_content(self) -> str:
+        check.state(self._state == 'finalized')
+        return self._final_content
+
+    async def finalize_stream(self) -> None:
+        check.state(self._state == 'streaming')
+
+        self._state = 'finalized'
+
+        if (stream := self._stream_) is not None:
+            await stream.stop()
+            self._stream_ = None
+
+        self._final_content = self._stream_content.getvalue()
+        del self._stream_content
+
+        self.post_message(self.Finalized(self))
 
 
 #
@@ -358,6 +399,8 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
 
         self._background_terminal_renderer = background_terminal_renderer
 
+        self._messages_by_uuid: dict[uuid.UUID, Message] = {}
+
     #
 
     def _compose_once(self) -> tx.ComposeResult:
@@ -392,26 +435,20 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
 
     #
 
-    _stream_ai_message: StreamAiMessage | None = None
+    async def finalize_stream_ai_message(self, message_uuid: uuid.UUID) -> None:
+        aim = check.isinstance(self._messages_by_uuid[message_uuid], StreamAiMessage)
 
-    async def finalize_stream_ai_message(self) -> None:
-        if (aim := self._stream_ai_message) is None:
-            return
+        await aim.finalize_stream()
 
-        await aim.stop_stream()
-        self._stream_ai_message = None
+    async def append_stream_ai_message_content(self, message_uuid: uuid.UUID, content: str) -> None:
+        aim = check.isinstance(self._messages_by_uuid[message_uuid], StreamAiMessage)
 
-    async def append_stream_ai_message_content(self, content: str) -> None:
-        if (sam := self._stream_ai_message) is not None:
-            was_at_bottom = self._is_messages_at_bottom()
+        was_at_bottom = self._is_messages_at_bottom()
 
-            await sam.append_content(content)
+        await aim.append_stream_content(content)
 
-            if was_at_bottom:
-                self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
-
-        else:
-            await self.mount_messages(StreamAiMessage(content))
+        if was_at_bottom:
+            self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
 
     #
 
@@ -421,8 +458,8 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
         was_at_bottom = self._is_messages_at_bottom()
 
         for msg in [*(self._pending_mount_messages or []), *messages]:
-            if isinstance(msg, (AiMessage, ToolConfirmationMessage)):
-                await self.finalize_stream_ai_message()
+            if (mu := msg.message_uuid) is not None:
+                check.not_in(mu, self._messages_by_uuid)
 
             if self._num_mounted_messages:
                 await self.mount(MessageDivider(lang.localnow().strftime('%Y-%m-%d %H:%M:%S')))
@@ -431,9 +468,11 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
 
             self._num_mounted_messages += 1
 
+            if mu is not None:
+                self._messages_by_uuid[mu] = msg
+
             if isinstance(msg, StreamAiMessage):
-                self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
-                await msg.write_initial_content()
+                await msg.start_stream()
 
         self._pending_mount_messages = None
 
@@ -443,6 +482,11 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
             self.call_after_refresh(self._anchor_messages)
 
     #
+
+    @tx.on(StreamAiMessage.Finalized)
+    async def on_stream_ai_message_finalized(self, event: StreamAiMessage.Finalized) -> None:
+        event.prevent_default()
+        event.stop()
 
     async def background_render_chat(self, chat: mc.Chat) -> None:
         async def inner() -> None:

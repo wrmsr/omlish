@@ -22,6 +22,7 @@ from .widgets.input import InputTextArea
 from .widgets.messages import Message
 from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
+from .widgets.messages import StreamAiMessage
 from .widgets.messages import ToolConfirmationMessage
 from .widgets.messages import UiMessage
 from .widgets.messages import UserMessage
@@ -175,7 +176,6 @@ class ChatApp(
 
             if isinstance(ev, mc.drivers.AiMessagesEvent):
                 if ev.streamed:
-                    await self._messages_container.finalize_stream_ai_message()
                     await self._messages_container.background_render_chat(ev.chat)
 
                 else:
@@ -195,13 +195,19 @@ class ChatApp(
                         await self._messages_container.enqueue_mount_messages(*wx)
                         self.call_later(self._messages_container.mount_messages)
 
+            elif isinstance(ev, mc.drivers.AiStreamBeginEvent):
+                self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa
+
             elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
                 if isinstance(ev.delta, mc.ContentAiDelta):
                     cc = check.isinstance(ev.delta.c, str)
-                    self.call_later(self._messages_container.append_stream_ai_message_content, cc)
+                    self.call_later(self._messages_container.append_stream_ai_message_content, ev.message_uuid, cc)  # noqa
 
                 elif isinstance(ev.delta, mc.ToolUseAiDelta):
                     pass
+
+            elif isinstance(ev, mc.drivers.AiStreamEndEvent):
+                self.call_later(self._messages_container.finalize_stream_ai_message, ev.message_uuid)
 
             elif isinstance(ev, mc.drivers.UserMessagesEvent):
                 await self._messages_container.background_render_chat(ev.chat)
@@ -307,8 +313,6 @@ class ChatApp(
     @tx.on(InputTextArea.Submitted)
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._input_container.input_text_area.clear()
-
-        await self._messages_container.finalize_stream_ai_message()
 
         input_uuid = uuid.uuid4()
 
