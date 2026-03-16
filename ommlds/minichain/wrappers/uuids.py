@@ -1,3 +1,4 @@
+import typing as ta
 import uuid
 
 from omlish import check
@@ -10,6 +11,7 @@ from .services import WrappedRequest
 from .services import WrappedRequestV
 from .services import WrappedResponse
 from .services import WrappedResponseV
+from .services import WrappedService
 from .services import WrapperService
 
 
@@ -24,11 +26,23 @@ class RequestResponseUuidAddingService(
         WrappedOutputT,
     ],
 ):
+    def __init__(
+            self,
+            service: WrappedService,
+            *,
+            uuid_factory: ta.Callable[[], uuid.UUID] | None = None,
+    ) -> None:
+        super().__init__(service)
+
+        if uuid_factory is None:
+            uuid_factory = uuid.uuid4
+        self._uuid_factory = uuid_factory
+
     async def invoke(self, request: WrappedRequest) -> WrappedResponse:
         try:
             req_um = request.metadata[RequestUuid]
         except KeyError:
-            req_um = RequestUuid(uuid.uuid4())
+            req_um = RequestUuid(self._uuid_factory())
             request = request.with_metadata(req_um)
 
         response = await self._service.invoke(request)
@@ -43,6 +57,6 @@ class RequestResponseUuidAddingService(
         try:
             res_um = response.metadata[ResponseUuid]  # noqa
         except KeyError:
-            response = response.with_metadata(ResponseUuid(uuid.uuid4()))
+            response = response.with_metadata(ResponseUuid(self._uuid_factory()))
 
         return response
