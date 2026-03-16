@@ -3,7 +3,7 @@ from omlish import lang
 
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
-from ..events.types import Event
+from ..types import Event
 
 
 ##

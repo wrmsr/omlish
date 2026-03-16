@@ -3,7 +3,7 @@ from omlish import lang
 
 from ...chat.messages import ToolUseResultMessage
 from ...tools.types import ToolUse
-from ..events.types import Event
+from ..types import Event
 
 
 ##

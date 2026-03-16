@@ -2,7 +2,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ...chat.messages import UserChat
-from ..events.types import Event
+from ..types import Event
 
 
 ##

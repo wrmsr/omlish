@@ -51,7 +51,6 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .events.types import (  # noqa
-        Event,
         EventCallback,
         EventCallbacks,
 
@@ -74,6 +73,13 @@ with _lang.auto_proxy_init(globals()):
     #
 
     from .preparing.types import (  # noqa
+        ProvidedSystemMessage,
+        SystemMessageProvider,
+        SystemMessageProviders,
+
+        PlaceholderContentsProvider,
+        PlaceholderContentsProviders,
+
         ChatPreparer,
     )
 
@@ -131,17 +137,18 @@ with _lang.auto_proxy_init(globals()):
 
     #
 
+    from .actions import (  # noqa
+        SendUserMessagesAction,
+    )
+
     from .configs import (  # noqa
         DriverConfig,
     )
 
     from .types import (  # noqa
-        ProvidedSystemMessage,
-        SystemMessageProvider,
-        SystemMessageProviders,
+        Action,
 
-        PlaceholderContentsProvider,
-        PlaceholderContentsProviders,
+        Event,
 
         DriverId,
         DriverGetter,

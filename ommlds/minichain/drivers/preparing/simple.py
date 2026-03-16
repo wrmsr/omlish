@@ -5,10 +5,10 @@ from ...chat.transform.content import ContentTransformMessageTransform
 from ...content.placeholders import PlaceholderContents
 from ...content.render.standard import StandardContentRenderer
 from ...content.transform.types import FnContentTransform
-from ..types import PlaceholderContentsProviders
-from ..types import ProvidedSystemMessage
-from ..types import SystemMessageProviders
 from .types import ChatPreparer
+from .types import PlaceholderContentsProviders
+from .types import ProvidedSystemMessage
+from .types import SystemMessageProviders
 
 
 ##

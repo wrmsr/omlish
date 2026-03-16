@@ -33,4 +33,4 @@ class ChatFacade:
             if input_uuid is not None:
                 msg = msg.with_metadata(mc.Uuid(input_uuid))
 
-            await self._driver.send_user_messages([msg])
+            await self._driver.do_action(mc.drivers.SendUserMessagesAction([msg]))

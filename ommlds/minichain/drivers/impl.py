@@ -4,7 +4,7 @@ TODO:
  - StreamService
 """
 from ..chat.messages import Chat
-from ..chat.messages import UserChat
+from .actions import SendUserMessagesAction
 from .ai.types import AiChatGenerator
 from .ai.types import GenerateAiChatArgs
 from .events.manager import EventsManager
@@ -12,6 +12,7 @@ from .phases.manager import PhaseManager
 from .phases.types import Phase
 from .preparing.types import ChatPreparer
 from .state.types import StateManager
+from .types import Action
 from .types import Driver
 from .user.events import UserMessagesEvent
 
@@ -45,15 +46,20 @@ class DriverImpl(Driver):
         await self._phases.set_phase(Phase.STOPPING)
         await self._phases.set_phase(Phase.STOPPED)
 
-    async def send_user_messages(self, next_user_chat: UserChat) -> None:
-        await self._events.emit_event(UserMessagesEvent(next_user_chat))
+    async def do_action(self, action: Action) -> None:
+        if isinstance(action, SendUserMessagesAction):
+            next_user_chat = action.next_user_chat
+            await self._events.emit_event(UserMessagesEvent(next_user_chat))
 
-        prev_chat = (await self._chat_state_manager.get_state()).chat
+            prev_chat = (await self._chat_state_manager.get_state()).chat
 
-        prepared_chat: Chat = [*prev_chat, *next_user_chat]
-        if self._chat_preparer is not None:
-            prepared_chat = await self._chat_preparer.prepare_chat(prepared_chat)
+            prepared_chat: Chat = [*prev_chat, *next_user_chat]
+            if self._chat_preparer is not None:
+                prepared_chat = await self._chat_preparer.prepare_chat(prepared_chat)
 
-        next_ai_chat = await self._ai_chat_generator.generate_ai_chat(GenerateAiChatArgs(prepared_chat))
+            next_ai_chat = await self._ai_chat_generator.generate_ai_chat(GenerateAiChatArgs(prepared_chat))
 
-        await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])
+            await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])
+
+        else:
+            raise TypeError(action)

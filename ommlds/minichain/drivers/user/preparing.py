@@ -1,8 +1,8 @@
 import typing as ta
 
 from ...content.content import Content
-from ..types import ProvidedSystemMessage
-from ..types import SystemMessageProvider
+from ..preparing.types import ProvidedSystemMessage
+from ..preparing.types import SystemMessageProvider
 
 
 ##

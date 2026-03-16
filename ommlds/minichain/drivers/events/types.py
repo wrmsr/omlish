@@ -3,12 +3,10 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ..types import Event
+
 
 ##
-
-
-class Event(lang.Abstract):
-    pass
 
 
 class EventCallback(lang.Func1[Event, ta.Awaitable[None]]):
