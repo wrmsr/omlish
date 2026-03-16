@@ -93,9 +93,9 @@ class CommonMetadata(Metadata, lang.Abstract):
     pass
 
 
-class Uuid(tv.ScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
+class Uuid(tv.UniqueScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
     pass
 
 
-class CreatedAt(tv.ScalarTypedValue[datetime.datetime], CommonMetadata, lang.Final):
+class CreatedAt(tv.UniqueScalarTypedValue[datetime.datetime], CommonMetadata, lang.Final):
     pass
