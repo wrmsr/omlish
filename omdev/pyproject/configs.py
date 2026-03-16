@@ -13,7 +13,7 @@ from ..interp.venvs import InterpVenvConfig
 @dc.dataclass(frozen=True)
 class VenvConfig(InterpVenvConfig):
     inherits: ta.Optional[ta.Sequence[str]] = None
-    docker: ta.Optional[str] = None
+    docker_service: ta.Optional[str] = None
     srcs: ta.Optional[ta.List[str]] = None
 
 

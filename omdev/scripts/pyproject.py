@@ -156,9 +156,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/inject.py', sha1='b039abbadf0b096d2724182af2e0ebda2a230852'),
             dict(path='../interp/default.py', sha1='a799969a0d3f4b57538587b13ceb08f6334ebc16'),
             dict(path='../interp/venvs.py', sha1='9ba8f2c3131d7d519d5cf36ca69b75f9c6fe2b27'),
-            dict(path='configs.py', sha1='9e93e810184f9d6c7efd4a149dd5fbc9ad50d611'),
+            dict(path='configs.py', sha1='d2a324772cff23b10a7ba0037703f9938a9cff12'),
             dict(path='venvs.py', sha1='9f1935171017aeb802da56e14d7f41d632a7aa25'),
-            dict(path='cli.py', sha1='ecf31ccef6b0e1d1505b46d24faf076b6be32760'),
+            dict(path='cli.py', sha1='f30e9b2ffc657899163dc3cc213c5fbf64a0b94f'),
         ],
     )
 
@@ -12764,7 +12764,7 @@ class InterpVenv:
 @dc.dataclass(frozen=True)
 class VenvConfig(InterpVenvConfig):
     inherits: ta.Optional[ta.Sequence[str]] = None
-    docker: ta.Optional[str] = None
+    docker_service: ta.Optional[str] = None
     srcs: ta.Optional[ta.List[str]] = None
 
 
@@ -12990,7 +12990,7 @@ class Run:
 
 
 class PyprojectCli(ArgparseCli):
-    _docker_container = argparse_arg('--_docker_container', help=argparse.SUPPRESS)
+    _current_docker_service = argparse_arg('--_current_docker_service', help=argparse.SUPPRESS)
 
     @argparse_cmd(
         argparse_arg('name'),
@@ -13000,11 +13000,11 @@ class PyprojectCli(ArgparseCli):
     )
     async def venv(self) -> None:
         venv = Run().venvs()[self.args.name]
-        if (sd := venv.cfg.docker) is not None and sd != (cd := self.args._docker_container):  # noqa
+        if (sd := venv.cfg.docker_service) is not None and sd != (cd := self.args._current_docker_service):  # noqa
             script = ' '.join([
                 'python3',
                 shlex.quote(_script_rel_path()),
-                f'--_docker_container={shlex.quote(sd)}',
+                f'--_current_docker_service={shlex.quote(sd)}',
                 *map(shlex.quote, sys.argv[1:]),
             ])
 

@@ -104,7 +104,7 @@ class Run:
 
 
 class PyprojectCli(ArgparseCli):
-    _docker_container = argparse_arg('--_docker_container', help=argparse.SUPPRESS)
+    _current_docker_service = argparse_arg('--_current_docker_service', help=argparse.SUPPRESS)
 
     @argparse_cmd(
         argparse_arg('name'),
@@ -114,11 +114,11 @@ class PyprojectCli(ArgparseCli):
     )
     async def venv(self) -> None:
         venv = Run().venvs()[self.args.name]
-        if (sd := venv.cfg.docker) is not None and sd != (cd := self.args._docker_container):  # noqa
+        if (sd := venv.cfg.docker_service) is not None and sd != (cd := self.args._current_docker_service):  # noqa
             script = ' '.join([
                 'python3',
                 shlex.quote(_script_rel_path()),
-                f'--_docker_container={shlex.quote(sd)}',
+                f'--_current_docker_service={shlex.quote(sd)}',
                 *map(shlex.quote, sys.argv[1:]),
             ])
 
