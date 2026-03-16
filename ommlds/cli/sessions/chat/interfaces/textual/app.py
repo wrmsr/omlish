@@ -22,7 +22,6 @@ from .widgets.input import InputTextArea
 from .widgets.messages import Message
 from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
-from .widgets.messages import StreamAiMessage
 from .widgets.messages import ToolConfirmationMessage
 from .widgets.messages import UiMessage
 from .widgets.messages import UserMessage
@@ -196,7 +195,8 @@ class ChatApp(
                         self.call_later(self._messages_container.mount_messages)
 
             elif isinstance(ev, mc.drivers.AiStreamBeginEvent):
-                self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa
+                # self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa
+                pass
 
             elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
                 if isinstance(ev.delta, mc.ContentAiDelta):

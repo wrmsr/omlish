@@ -165,8 +165,9 @@ with _lang.auto_proxy_init(
     )
 
     from .chat.transform.metadata import (  # noqa
-        UuidAddingMessageTransform,
         CreatedAtAddingMessageTransform,
+        MessageUuidAddingMessageTransform,
+        TurnUuidAddingMessageTransform,
     )
 
     from .chat.formats import (  # noqa
@@ -209,6 +210,7 @@ with _lang.auto_proxy_init(
         MessageMetadatas,
 
         MessageUuid,
+        TurnUuid,
     )
 
     from .chat.services import (  # noqa

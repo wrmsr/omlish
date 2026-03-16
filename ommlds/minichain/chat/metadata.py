@@ -23,3 +23,7 @@ MessageMetadatas: ta.TypeAlias = MessageMetadata | CommonMetadata
 
 class MessageUuid(tv.UniqueScalarTypedValue[uuid.UUID], MessageMetadata, lang.Final):
     pass
+
+
+class TurnUuid(tv.UniqueScalarTypedValue[uuid.UUID], MessageMetadata, lang.Final):
+    pass

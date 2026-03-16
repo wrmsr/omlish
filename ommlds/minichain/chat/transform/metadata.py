@@ -13,6 +13,7 @@ from ..messages import Message
 from ..messages import MessageOriginal
 from ..metadata import MessageMetadata
 from ..metadata import MessageUuid
+from ..metadata import TurnUuid
 from .messages import MessageTransform
 
 
@@ -32,7 +33,17 @@ def strip_message_original_metadata(c: Message) -> Message:
 
 
 @dc.dataclass(frozen=True)
-class UuidAddingMessageTransform(MessageTransform):
+class CreatedAtAddingMessageTransform(MessageTransform):
+    clock: ta.Callable[[], datetime.datetime] = dc.field(default=lang.utcnow)
+
+    def transform(self, m: Message) -> Chat:
+        if CreatedAt not in m.metadata:
+            m = m.with_metadata(CreatedAt(self.clock()))
+        return [m]
+
+
+@dc.dataclass(frozen=True)
+class MessageUuidAddingMessageTransform(MessageTransform):
     uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid4)
 
     def transform(self, m: Message) -> Chat:
@@ -42,12 +53,21 @@ class UuidAddingMessageTransform(MessageTransform):
 
 
 @dc.dataclass(frozen=True)
-class CreatedAtAddingMessageTransform(MessageTransform):
-    clock: ta.Callable[[], datetime.datetime] = dc.field(default=lang.utcnow)
+class TurnUuidAddingMessageTransform(MessageTransform):
+    turn_uuid: uuid.UUID | None = dc.field(default_factory=uuid.uuid4)
+
+    _: dc.KW_ONLY
+
+    no_check: bool = False
 
     def transform(self, m: Message) -> Chat:
-        if CreatedAt not in m.metadata:
-            m = m.with_metadata(CreatedAt(self.clock()))
+        try:
+            tu = m.metadata[TurnUuid]
+        except KeyError:
+            m = m.with_metadata(TurnUuid(self.turn_uuid))
+        else:
+            if not self.no_check:
+                check.equal(tu.v, self.turn_uuid)
         return [m]
 
 
