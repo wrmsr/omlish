@@ -7,7 +7,6 @@ import weakref
 from omdev.tui import textual as tx
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import lang
 from omlish.logs import all as logs
 
 from ...... import minichain as mc
@@ -20,12 +19,9 @@ from .suggestions import SuggestionsManager
 from .termrender import BackgroundTerminalRenderer
 from .widgets.input import InputContainer
 from .widgets.input import InputTextArea
-from .widgets.messages import AiMessage
 from .widgets.messages import Message
-from .widgets.messages import MessageDivider
 from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
-from .widgets.messages import StreamAiMessage
 from .widgets.messages import ToolConfirmationMessage
 from .widgets.messages import UiMessage
 from .widgets.messages import UserMessage
@@ -116,7 +112,6 @@ class ChatApp(
         self._backend_name = backend_name
         self._input_history_manager = input_history_manager
         self._session_profile_name = session_profile_name
-        self._suggestions_manager = suggestions_manager
         self._background_terminal_renderer = background_terminal_renderer
 
         #
@@ -129,10 +124,12 @@ class ChatApp(
 
         #
 
-        self._messages_container = MessagesContainer()
+        self._messages_container = MessagesContainer(
+            background_terminal_renderer=background_terminal_renderer,
+        )
 
         self._input_container = InputContainer(
-            suggestions_manager=self._suggestions_manager,
+            suggestions_manager=suggestions_manager,
         )
 
         self._status_container = StatusContainer()
@@ -161,89 +158,6 @@ class ChatApp(
 
     ##
     # Messages
-
-    def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
-        return (ms := self._messages_container).scroll_y >= (ms.max_scroll_y - threshold)
-
-    def _scroll_messages_to_bottom(self) -> None:
-        self._messages_container.scroll_end(animate=False)
-
-    def _anchor_messages(self) -> None:
-        if (ms := self._messages_container).max_scroll_y:
-            ms.anchor()
-
-    def _scroll_messages_to_bottom_and_anchor(self) -> None:
-        self._scroll_messages_to_bottom()
-        self._anchor_messages()
-
-    #
-
-    _pending_mount_messages: list[Message] | None = None
-
-    async def _enqueue_mount_messages(self, *messages: Message) -> None:
-        if (lst := self._pending_mount_messages) is None:
-            lst = self._pending_mount_messages = []
-
-        lst.extend(messages)
-
-    _stream_ai_message: StreamAiMessage | None = None
-
-    async def _finalize_stream_ai_message(self) -> None:
-        if (aim := self._stream_ai_message) is None:
-            return
-
-        await aim.stop_stream()
-        self._stream_ai_message = None
-
-    async def _append_stream_ai_message_content(self, content: str) -> None:
-        if (sam := self._stream_ai_message) is not None:
-            was_at_bottom = self._is_messages_at_bottom()
-
-            await sam.append_content(content)
-
-            if was_at_bottom:
-                self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
-
-        else:
-            await self._mount_messages(StreamAiMessage(content))
-
-    _num_mounted_messages = 0
-
-    async def _mount_messages(self, *messages: Message) -> None:
-        was_at_bottom = self._is_messages_at_bottom()
-
-        for msg in [*(self._pending_mount_messages or []), *messages]:
-            if isinstance(msg, (AiMessage, ToolConfirmationMessage)):
-                await self._finalize_stream_ai_message()
-
-            if self._num_mounted_messages:
-                await self._messages_container.mount(MessageDivider(lang.localnow().strftime('%Y-%m-%d %H:%M:%S')))
-
-            await self._messages_container.mount(msg)
-
-            self._num_mounted_messages += 1
-
-            if isinstance(msg, StreamAiMessage):
-                self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
-                await msg.write_initial_content()
-
-        self._pending_mount_messages = None
-
-        self.call_after_refresh(self._scroll_messages_to_bottom)
-
-        if was_at_bottom:
-            self.call_after_refresh(self._anchor_messages)
-
-    #
-
-    async def _background_render_chat(self, chat: mc.Chat) -> None:
-        async def inner() -> None:
-            msg_ctrl = self._messages_container.children[-1]  # FIXME: lol do better
-            await self._background_terminal_renderer.background_render_widget(msg_ctrl)
-
-        self.refresh(layout=True)
-        self.call_after_refresh(inner)
-
     ##
     # Chat events
 
@@ -260,8 +174,8 @@ class ChatApp(
 
             if isinstance(ev, mc.drivers.AiMessagesEvent):
                 if ev.streamed:
-                    await self._finalize_stream_ai_message()
-                    await self._background_render_chat(ev.chat)
+                    await self._messages_container.finalize_stream_ai_message()
+                    await self._messages_container.background_render_chat(ev.chat)
 
                 else:
                     wx: list[Message] = []
@@ -277,19 +191,19 @@ class ChatApp(
                             )
 
                     if wx:
-                        await self._enqueue_mount_messages(*wx)
-                        self.call_later(self._mount_messages)
+                        await self._messages_container.enqueue_mount_messages(*wx)
+                        self.call_later(self._messages_container.mount_messages)
 
             elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
                 if isinstance(ev.delta, mc.ContentAiDelta):
                     cc = check.isinstance(ev.delta.c, str)
-                    self.call_later(self._append_stream_ai_message_content, cc)
+                    self.call_later(self._messages_container.append_stream_ai_message_content, cc)
 
                 elif isinstance(ev.delta, mc.ToolUseAiDelta):
                     pass
 
             elif isinstance(ev, mc.drivers.UserMessagesEvent):
-                await self._background_render_chat(ev.chat)
+                await self._messages_container.background_render_chat(ev.chat)
 
     ##
     # Chat actions
@@ -367,7 +281,7 @@ class ChatApp(
 
         self._get_input_text_area().focus()
 
-        await self._mount_messages(
+        await self._messages_container.mount_messages(
             WelcomeMessage('\n'.join([
                 *([f'Profile: {self._session_profile_name}'] if self._session_profile_name is not None else []),
                 f'Backend: {self._backend_name or "?"}',
@@ -393,11 +307,11 @@ class ChatApp(
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._get_input_text_area().clear()
 
-        await self._finalize_stream_ai_message()
+        await self._messages_container.finalize_stream_ai_message()
 
         input_uuid = uuid.uuid4()
 
-        await self._mount_messages(
+        await self._messages_container.mount_messages(
             UserMessage(
                 event.text,
                 message_uuid=input_uuid,
@@ -474,7 +388,7 @@ class ChatApp(
         self._pending_tool_confirmations.add(tcm)
 
         async def inner() -> None:
-            await self._mount_messages(tcm)
+            await self._messages_container.mount_messages(tcm)
 
         self.call_later(inner)
 
@@ -486,7 +400,7 @@ class ChatApp(
             self,
             content: tx.VisualType,
     ) -> None:
-        await self._mount_messages(UiMessage(content))
+        await self._messages_container.mount_messages(UiMessage(content))
 
     async def action_cancel(self) -> None:
         if (cat := self._cur_chat_action) is not None:

@@ -7,6 +7,9 @@ from omdev.tui import textual as tx
 from omlish import check
 from omlish import lang
 
+from ....... import minichain as mc
+from ..termrender import BackgroundTerminalRenderer
+
 
 ##
 
@@ -346,8 +349,105 @@ class UiMessage(Message):
 class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
     init_add_class = 'messages-container'
 
+    def __init__(
+            self,
+            *,
+            background_terminal_renderer: BackgroundTerminalRenderer,
+    ) -> None:
+        super().__init__()
+
+        self._background_terminal_renderer = background_terminal_renderer
+
     #
 
     def _compose_once(self) -> tx.ComposeResult:
         return
         yield  # noqa
+
+    #
+
+    def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
+        return self.scroll_y >= (self.max_scroll_y - threshold)
+
+    def _scroll_messages_to_bottom(self) -> None:
+        self.scroll_end(animate=False)
+
+    def _anchor_messages(self) -> None:
+        if self.max_scroll_y:
+            self.anchor()
+
+    def _scroll_messages_to_bottom_and_anchor(self) -> None:
+        self._scroll_messages_to_bottom()
+        self._anchor_messages()
+
+    #
+
+    _pending_mount_messages: list[Message] | None = None
+
+    async def enqueue_mount_messages(self, *messages: Message) -> None:
+        if (lst := self._pending_mount_messages) is None:
+            lst = self._pending_mount_messages = []
+
+        lst.extend(messages)
+
+    #
+
+    _stream_ai_message: StreamAiMessage | None = None
+
+    async def finalize_stream_ai_message(self) -> None:
+        if (aim := self._stream_ai_message) is None:
+            return
+
+        await aim.stop_stream()
+        self._stream_ai_message = None
+
+    async def append_stream_ai_message_content(self, content: str) -> None:
+        if (sam := self._stream_ai_message) is not None:
+            was_at_bottom = self._is_messages_at_bottom()
+
+            await sam.append_content(content)
+
+            if was_at_bottom:
+                self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
+
+        else:
+            await self.mount_messages(StreamAiMessage(content))
+
+    #
+
+    _num_mounted_messages = 0
+
+    async def mount_messages(self, *messages: Message) -> None:
+        was_at_bottom = self._is_messages_at_bottom()
+
+        for msg in [*(self._pending_mount_messages or []), *messages]:
+            if isinstance(msg, (AiMessage, ToolConfirmationMessage)):
+                await self.finalize_stream_ai_message()
+
+            if self._num_mounted_messages:
+                await self.mount(MessageDivider(lang.localnow().strftime('%Y-%m-%d %H:%M:%S')))
+
+            await self.mount(msg)
+
+            self._num_mounted_messages += 1
+
+            if isinstance(msg, StreamAiMessage):
+                self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
+                await msg.write_initial_content()
+
+        self._pending_mount_messages = None
+
+        self.call_after_refresh(self._scroll_messages_to_bottom)
+
+        if was_at_bottom:
+            self.call_after_refresh(self._anchor_messages)
+
+    #
+
+    async def background_render_chat(self, chat: mc.Chat) -> None:
+        async def inner() -> None:
+            msg_ctrl = self.children[-1]  # FIXME: lol do better
+            await self._background_terminal_renderer.background_render_widget(msg_ctrl)
+
+        self.refresh(layout=True)
+        self.call_after_refresh(inner)
