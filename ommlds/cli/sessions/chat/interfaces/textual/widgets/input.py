@@ -1,6 +1,8 @@
 # ruff: noqa: SLF001
 import typing as ta
 
+from textual import events
+
 from omdev.tui import textual as tx
 from omlish import dataclasses as dc
 
@@ -88,17 +90,25 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
     def mode(self) -> InputMode:
         return self._mode
 
-    def set_mode(self, mode: InputMode) -> None:
+    def set_mode(self, mode: InputMode) -> bool:
+        """Returns if changed."""
+
         if self._mode == mode:
-            return
+            return False
 
         self._mode = mode
 
         self._ic._input_glyph.content = mode
 
-        if mode == '/':
-            sis = self._ic._suggestions_manager.get_suggestions()
+        self._update_suggestions()
+
+        return True
+
+    def _update_suggestions(self) -> None:
+        if self.mode == '/':
+            sis = self._ic._suggestions_manager.update_suggestions(self.text)
             self._ic._suggestions_popup.update_suggestions(sis)
+
         else:
             self._ic._suggestions_popup.hide()
 
@@ -140,8 +150,24 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
 
         if not text:
             self.set_mode('>')
+
         elif text[0] == '/':
-            self.set_mode('/')
+            if not self.set_mode('/'):
+                self._update_suggestions()
+
+    async def on_key(self, event: events.Key) -> None:
+        if event.key == 'tab':
+            if self._mode == '/':
+                if (sgs := self._ic._suggestions_manager.get_suggestions()) is not None:
+                    for sg in sgs:
+                        if sg.selected:
+                            if not self.text.startswith(sg.label):
+                                self.text = sg.label + ' '
+                                end = self.document.end
+                                self.selection = tx.Selection(end, end)
+                            event.prevent_default()
+                            event.stop()
+                            break
 
 
 class InputContainer(tx.InitAddClass, tx.ComposeOnce, tx.Static):

@@ -19,6 +19,7 @@ ruff==0.15.6
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
+types-docutils==0.22.3.20260316
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
 types-psutil==7.2.2.20260130
@@ -79,7 +80,7 @@ markupsafe==3.0.3
 redis==7.3.0
 
 asgiref==3.11.1
-uvicorn==0.41.0
+uvicorn==0.42.0
 
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
