@@ -91,7 +91,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../magic/styles.py', sha1='60fc56d089669eaad72c5c134b91bc69d4bc107e'),
             dict(path='../packaging/versions.py', sha1='71627ad600b3529b829b0e227b0952f2c63c7271'),
             dict(path='../packaging/wheelfile.py', sha1='2e1113819aa85ed00e1fe25c71a2b3dbc0a383f5'),
-            dict(path='../../omlish/formats/toml/parser.py', sha1='73dac82289350ab951c4bcdbfe61167fa221f26f'),
+            dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
@@ -1033,6 +1033,12 @@ class WheelFile(zipfile.ZipFile):
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/9ce90206b7a4649600218cf0bd4826db79c9a312/Lib/tomllib/_parser.py
+#
+# TODO:
+#  - 1.1:
+#    - https://github.com/python/cpython/commit/bb917d83b16231ad5193731f0405fbc53122d68b
+#    - https://github.com/toml-lang/toml/blob/main/CHANGELOG.md#110--2025-12-18
+#  - emit wrapped tokens / preserve whitespace / rewriting
 
 
 ##

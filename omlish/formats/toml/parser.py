@@ -41,6 +41,12 @@
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/9ce90206b7a4649600218cf0bd4826db79c9a312/Lib/tomllib/_parser.py
+#
+# TODO:
+#  - 1.1:
+#    - https://github.com/python/cpython/commit/bb917d83b16231ad5193731f0405fbc53122d68b
+#    - https://github.com/toml-lang/toml/blob/main/CHANGELOG.md#110--2025-12-18
+#  - emit wrapped tokens / preserve whitespace / rewriting
 import datetime
 import functools
 import re

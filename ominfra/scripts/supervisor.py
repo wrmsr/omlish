@@ -111,7 +111,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/strings.py', sha1='c4ced4877e366a64b7d366353ab9e5691c587f38'),
             dict(path='../../omlish/configs/types.py', sha1='f7a5584cd6eccb77d18d729796072a162e9a8790'),
             dict(path='../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
-            dict(path='../../omlish/formats/toml/parser.py', sha1='73dac82289350ab951c4bcdbfe61167fa221f26f'),
+            dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
             dict(path='../../omlish/io/readers.py', sha1='8bcedaa1bf77f2ac54c97bf5144e87cf5738cf00'),
@@ -784,6 +784,12 @@ def render_ini_sections(
 # License Agreement.
 #
 # https://github.com/python/cpython/blob/9ce90206b7a4649600218cf0bd4826db79c9a312/Lib/tomllib/_parser.py
+#
+# TODO:
+#  - 1.1:
+#    - https://github.com/python/cpython/commit/bb917d83b16231ad5193731f0405fbc53122d68b
+#    - https://github.com/toml-lang/toml/blob/main/CHANGELOG.md#110--2025-12-18
+#  - emit wrapped tokens / preserve whitespace / rewriting
 
 
 ##
