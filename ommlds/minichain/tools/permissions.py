@@ -62,6 +62,10 @@ def _check_standard_tool_permission_names() -> None:
 
 class ToolPermissions(lang.Abstract):
     @abc.abstractmethod
+    def get_tool_permissions(self) -> ta.Mapping[str, ToolPermission]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def get_tool_permission_states(self) -> ta.Mapping[ToolPermission, ToolPermissionState]:
         raise NotImplementedError
 
@@ -80,13 +84,21 @@ class DictToolPermissions(ToolPermissions):
     def __init__(self) -> None:
         super().__init__()
 
-        self._dct: dict[ToolPermission, ToolPermissionState] = {
+        self._by_name: dict[str, ToolPermission] = {
+            p.name: p
+            for _, p in StandardToolPermissions
+        }
+
+        self._states: dict[ToolPermission, ToolPermissionState] = {
             p: ToolPermissionState.DENIED
             for _, p in StandardToolPermissions
         }
 
+    def get_tool_permissions(self) -> ta.Mapping[str, ToolPermission]:
+        return self._by_name
+
     def get_tool_permission_states(self) -> ta.Mapping[ToolPermission, ToolPermissionState]:
-        return self._dct
+        return self._states
 
     def set_tool_permission_state(self, tp: ToolPermission, state: ToolPermissionState) -> None:
-        self._dct[tp] = state
+        self._states[tp] = state
