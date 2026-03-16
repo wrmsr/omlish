@@ -3,7 +3,7 @@ import uuid
 
 from omlish import marshal as msh
 
-from ..metadata import AiDeltaMessageUuid
+from ...metadata import MessageUuid
 from ..types import AiDeltas
 from ..types import ContentAiDelta
 
@@ -12,7 +12,7 @@ def test_marshal():
     o = [
         ContentAiDelta('hi'),
         ContentAiDelta('bye').with_metadata(
-            AiDeltaMessageUuid(uuid.uuid4()),
+            MessageUuid(uuid.uuid4()),
         ),
     ]
     v = msh.marshal(o, AiDeltas)
@@ -20,4 +20,4 @@ def test_marshal():
     j = json.loads(s)
     u = msh.unmarshal(j, AiDeltas)
     assert list(u) == o
-    assert o[1].metadata[AiDeltaMessageUuid].v == u[1].metadata[AiDeltaMessageUuid].v
+    assert o[1].metadata[MessageUuid].v == u[1].metadata[MessageUuid].v

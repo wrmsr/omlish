@@ -271,6 +271,7 @@ class ChatApp(
                                 StaticAiMessage(
                                     check.isinstance(ai_msg.c, str),
                                     markdown=True,
+                                    message_uuid=ai_msg.metadata[mc.MessageUuid].v,
                                 ),
                             )
 

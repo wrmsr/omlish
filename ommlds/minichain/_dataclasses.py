@@ -515,7 +515,6 @@ def _process_dataclass__65a4fe67fac0748cfb55c6f5820bf0837c939b9d():
     cls_names=(
         ('ommlds.minichain.backends.catalogs.strings', 'ModelName'),
         ('ommlds.minichain.backends.catalogs.strings', 'ModelPath'),
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'AiDeltaMessageUuid'),
         ('ommlds.minichain.backends.impls.mistral', 'ContentUuid'),
         ('ommlds.minichain.backends.impls.mistral', 'MessageUuid'),
         ('ommlds.minichain.backends.impls.sentencepiece.tokens', 'TokenStr'),
