@@ -30,10 +30,14 @@ ChatChoicesServiceOptionsProviders = ta.NewType('ChatChoicesServiceOptionsProvid
 ##
 
 
+InternalChatChoicesService = ta.NewType('InternalChatChoicesService', ChatChoicesService)  # type: ignore[misc]
+InternalChatChoicesStreamService = ta.NewType('InternalChatChoicesStreamService', ChatChoicesStreamService)  # type: ignore[misc]  # noqa
+
+
 class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
     def __init__(
             self,
-            service: ChatChoicesService,
+            service: InternalChatChoicesService,
             *,
             options: ChatChoicesServiceOptionsProvider | None = None,
     ) -> None:
@@ -47,13 +51,15 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
 
         resp = await self._service.invoke(ChatChoicesRequest(args.chat, opts))
 
-        return check.single(resp.v).ms
+        msg = check.single(resp.v).ms
+
+        return msg
 
 
 class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
     def __init__(
             self,
-            service: ChatChoicesStreamService,
+            service: InternalChatChoicesStreamService,
             *,
             options: ChatChoicesServiceOptionsProvider | None = None,
     ) -> None:
@@ -81,4 +87,9 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
                     if delta_callback is not None:
                         await delta_callback(delta)
 
-        return check.single(joiner.build())
+        msg = check.single(joiner.build())
+
+        # if (mu := args.message_uuid) is not None:
+        #     msg = msg.
+
+        return msg

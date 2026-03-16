@@ -93,9 +93,27 @@ class CommonMetadata(Metadata, lang.Abstract):
     pass
 
 
+#
+
+
+class CreatedAt(tv.UniqueScalarTypedValue[datetime.datetime], CommonMetadata, lang.Final):
+    pass
+
+
+#
+
+
 class Uuid(tv.UniqueScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
     pass
 
 
-class CreatedAt(tv.UniqueScalarTypedValue[datetime.datetime], CommonMetadata, lang.Final):
+class RequestUuid(tv.UniqueScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
+    pass
+
+
+class ParentRequestUuid(tv.UniqueScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
+    pass
+
+
+class ResponseUuid(tv.UniqueScalarTypedValue[uuid.UUID], CommonMetadata, lang.Final):
     pass

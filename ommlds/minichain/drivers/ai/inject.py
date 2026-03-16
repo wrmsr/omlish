@@ -1,5 +1,7 @@
 from omlish import inject as inj
 
+from ...chat.choices.services import ChatChoicesService
+from ...chat.choices.stream.services import ChatChoicesStreamService
 from ...chat.tools.types import Tool
 from ...tools.execution.catalog import ToolCatalog
 from .configs import AiConfig
@@ -10,6 +12,8 @@ from .services import ChatChoicesServiceAiChatGenerator
 from .services import ChatChoicesServiceOptionsProvider
 from .services import ChatChoicesServiceOptionsProviders
 from .services import ChatChoicesStreamServiceStreamAiChatGenerator
+from .services import InternalChatChoicesService
+from .services import InternalChatChoicesStreamService
 from .tools import ToolExecutingAiChatGenerator
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
@@ -37,6 +41,8 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
     ai_stack = inj.wrapper_binder_helper(AiChatGenerator)
 
     if cfg.stream:
+        els.append(inj.bind(InternalChatChoicesStreamService, to_key=ChatChoicesStreamService))
+
         stream_ai_stack = inj.wrapper_binder_helper(StreamAiChatGenerator)
 
         els.append(stream_ai_stack.push_bind(to_ctor=ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
@@ -49,6 +55,8 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
         ])
 
     else:
+        els.append(inj.bind(InternalChatChoicesService, to_key=ChatChoicesService))
+
         els.append(ai_stack.push_bind(to_ctor=ChatChoicesServiceAiChatGenerator, singleton=True))
 
         els.append(ai_stack.push_bind(to_ctor=EventEmittingAiChatGenerator, singleton=True))

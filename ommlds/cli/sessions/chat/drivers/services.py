@@ -6,7 +6,7 @@ from ....backends.types import ChatChoicesStreamServiceBackendProvider
 ##
 
 
-class ChatChoicesServiceProviderProxy:
+class ChatChoicesServiceBackendProviderProxy:
     def __init__(
             self,
             service_provider: ChatChoicesServiceBackendProvider,
@@ -20,7 +20,7 @@ class ChatChoicesServiceProviderProxy:
             return await service.invoke(request)
 
 
-class ChatChoicesStreamServiceProviderProxy:
+class ChatChoicesStreamServiceBackendProviderProxy:
     def __init__(
             self,
             service_provider: ChatChoicesStreamServiceBackendProvider,

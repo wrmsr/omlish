@@ -691,6 +691,10 @@ with _lang.auto_proxy_init(
         WrapperStreamService,
     )
 
+    from .wrappers.uuids import (  # noqa
+        RequestResponseUuidAddingService,
+    )
+
     ##
 
     from .completion import (  # noqa
@@ -727,8 +731,13 @@ with _lang.auto_proxy_init(
         MetadataContainer,
 
         CommonMetadata,
-        Uuid,
+
         CreatedAt,
+
+        Uuid,
+        RequestUuid,
+        ParentRequestUuid,
+        ResponseUuid,
     )
 
     from .resources import (  # noqa

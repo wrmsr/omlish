@@ -1359,27 +1359,34 @@ def _process_dataclass__b7e32a7dbf5f05a83fc427c50ebb80be7b556fc1():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('chat',)), EqPlan(fields=('chat',)), FrozenPlan(fields=('chat',), allow_dynamic_du"
-        "nder_attrs=False), HashPlan(action='add', fields=('chat',), cache=False), InitPlan(fields=(InitPlan.Field(name"
-        "='chat', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self',"
-        " std_params=('chat',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), valida"
-        "te_fns=()), ReprPlan(fields=(ReprPlan.Field(name='chat', kw_only=False, fn=None),), id=False, terse=False, def"
-        "ault_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('chat', 'message_uuid')), EqPlan(fields=('chat', 'message_uuid')), FrozenPlan(fiel"
+        "ds=('chat', 'message_uuid'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('chat', 'messag"
+        "e_uuid'), cache=False), InitPlan(fields=(InitPlan.Field(name='chat', annotation=OpRef(name='init.fields.0.anno"
+        "tation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='message_uuid', annotation=OpRef(name='init.fields"
+        ".1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
+        "'chat',), kw_only_params=('message_uuid',), frozen=True, slots=False, post_init_params=None, init_fns=(), vali"
+        "date_fns=()), ReprPlan(fields=(ReprPlan.Field(name='chat', kw_only=False, fn=None), ReprPlan.Field(name='messa"
+        "ge_uuid', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9',
+    plan_repr_sha1='0a2e4537a92e0735daaa16bd1d799e76661fa9ea',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
     cls_names=(
         ('ommlds.minichain.drivers.impl', 'GenerateAiChatArgs'),
     ),
 )
-def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
+def _process_dataclass__0a2e4537a92e0735daaa16bd1d799e76661fa9ea():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1399,6 +1406,7 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 chat=self.chat,
+                message_uuid=self.message_uuid,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1412,7 +1420,8 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.chat == other.chat
+                self.chat == other.chat and
+                self.message_uuid == other.message_uuid
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1422,6 +1431,7 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
 
         __dataclass___setattr_frozen_fields = {
             'chat',
+            'message_uuid',
         }
 
         def __setattr__(self, name, value):
@@ -1439,6 +1449,7 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
 
         __dataclass___delattr_frozen_fields = {
             'chat',
+            'message_uuid',
         }
 
         def __delattr__(self, name):
@@ -1457,6 +1468,7 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
         def __hash__(self):
             return hash((
                 self.chat,
+                self.message_uuid,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1465,8 +1477,11 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
         def __init__(
             self,
             chat: __dataclass__init__fields__0__annotation,
+            *,
+            message_uuid: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'chat', chat)
+            __dataclass__object_setattr(self, 'message_uuid', message_uuid)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1477,6 +1492,7 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
         def __repr__(self):
             parts = []
             parts.append(f"chat={self.chat!r}")
+            parts.append(f"message_uuid={self.message_uuid!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
