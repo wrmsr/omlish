@@ -14,8 +14,15 @@ from ..privates import private
 
 @ta.final
 class WrapperBinderHelper:
-    def __init__(self, key: ta.Any) -> None:
+    def __init__(
+            self,
+            key: ta.Any,
+            *,
+            unwrapped_key: ta.Any | None = None,
+    ) -> None:
         self._key = as_key(key)
+        self._unwrapped_key = unwrapped_key
+
         self._root = WrapperBinderHelper._Root()
         self._top = WrapperBinderHelper._Level(self._root, 0)
 
@@ -40,12 +47,16 @@ class WrapperBinderHelper:
     def top(self) -> Key:
         return self._top.key
 
-    def push_bind(self, **kwargs: ta.Any) -> Elemental:
+    def push_bind(self, with_: ta.Any | None = None, **kwargs: ta.Any) -> Elemental:
         prv = self._top
         nxt = prv.next()
         out = private(
-            *([bind(self._key, to_key=prv.key)] if prv.level else []),
+            *([
+                bind(sk := self._key, to_key=prv.key),
+                *([bind(suk, to_key=sk)] if (suk := self._unwrapped_key) is not None else []),
+            ] if prv.level else []),
             bind(nxt.key, **kwargs, expose=True),
+            *([with_] if with_ is not None else []),
         )
         self._top = nxt
         return out

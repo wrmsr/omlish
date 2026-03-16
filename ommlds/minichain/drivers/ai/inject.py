@@ -4,6 +4,7 @@ from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.stream.services import ChatChoicesStreamService
 from ...chat.tools.types import Tool
 from ...tools.execution.catalog import ToolCatalog
+from ...wrappers.uuids import RequestResponseUuidAddingService
 from .configs import AiConfig
 from .eventemit import EventEmittingAiChatGenerator
 from .eventemit import EventEmittingStreamAiChatGenerator
@@ -25,7 +26,7 @@ from .types import StreamAiChatGenerator
 def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
-    #
+    ##
 
     els.append(chat_options_providers().bind_items_provider(singleton=True))
 
@@ -36,12 +37,23 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
 
     els.append(inj.bind(_provide_chat_choices_options_provider, singleton=True))
 
-    #
+    ##
 
     ai_stack = inj.wrapper_binder_helper(AiChatGenerator)
 
     if cfg.stream:
-        els.append(inj.bind(InternalChatChoicesStreamService, to_key=ChatChoicesStreamService))
+        stream_service_stack = inj.wrapper_binder_helper(InternalChatChoicesStreamService, unwrapped_key=ChatChoicesStreamService)  # noqa
+
+        els.append(stream_service_stack.push_bind(to_key=ChatChoicesStreamService))
+
+        els.append(stream_service_stack.push_bind(
+            to_fn=inj.target(svc=ChatChoicesStreamService)(lambda svc: RequestResponseUuidAddingService(svc)),
+            singleton=True,
+        ))
+
+        els.append(inj.bind(InternalChatChoicesStreamService, to_key=stream_service_stack.top))
+
+        #
 
         stream_ai_stack = inj.wrapper_binder_helper(StreamAiChatGenerator)
 
@@ -54,19 +66,34 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
             ai_stack.push_bind(to_key=StreamAiChatGenerator),
         ])
 
+    #
+
     else:
-        els.append(inj.bind(InternalChatChoicesService, to_key=ChatChoicesService))
+        service_stack = inj.wrapper_binder_helper(InternalChatChoicesService, unwrapped_key=ChatChoicesService)
+
+        els.append(service_stack.push_bind(to_key=ChatChoicesService))
+
+        els.append(service_stack.push_bind(
+            to_fn=inj.target(svc=ChatChoicesService)(lambda svc: RequestResponseUuidAddingService(svc)),
+            singleton=True,
+        ))
+
+        els.append(inj.bind(InternalChatChoicesService, to_key=service_stack.top))
+
+        #
 
         els.append(ai_stack.push_bind(to_ctor=ChatChoicesServiceAiChatGenerator, singleton=True))
 
         els.append(ai_stack.push_bind(to_ctor=EventEmittingAiChatGenerator, singleton=True))
+
+    #
 
     if cfg.enable_tools:
         els.append(ai_stack.push_bind(to_ctor=ToolExecutingAiChatGenerator, singleton=True))
 
     els.append(inj.bind(AiChatGenerator, to_key=ai_stack.top))
 
-    #
+    ##
 
     if cfg.enable_tools:
         def _provide_tools_chat_choices_options_provider(
@@ -79,6 +106,6 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
 
         els.append(chat_options_providers().bind_item(to_fn=_provide_tools_chat_choices_options_provider, singleton=True))  # noqa
 
-    #
+    ##
 
     return inj.as_elements(*els)

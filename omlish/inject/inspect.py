@@ -66,8 +66,21 @@ def tag(obj: T, **kwargs: ta.Any) -> T:
     return _inspect.tag(obj, **kwargs)
 
 
-def build_kwargs_target(obj: ta.Any, **kwargs: ta.Any) -> KwargsTarget:
-    return _inspect.build_kwargs_target(obj, **kwargs)
+def build_kwargs_target(
+        obj: ta.Any,
+        *,
+        skip_args: int = 0,
+        skip_kwargs: ta.Iterable[str] | None = None,
+        raw_optional: bool = False,
+        non_strict: bool = False,
+) -> KwargsTarget:
+    return _inspect.build_kwargs_target(
+        obj,
+        skip_args=skip_args,
+        skip_kwargs=skip_kwargs,
+        raw_optional=raw_optional,
+        non_strict=non_strict,
+    )
 
 
 ##
