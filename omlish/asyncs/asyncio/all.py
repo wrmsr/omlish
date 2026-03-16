@@ -17,4 +17,6 @@ from .utils import (  # noqa
 
     asyncio_wait_concurrent as wait_concurrent,
     asyncio_wait_maybe_concurrent as wait_maybe_concurrent,
+
+    asyncio_shielded_finally as shielded_finally,
 )

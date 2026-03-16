@@ -93,7 +93,7 @@ def __omlish_amalg__():  # noqa
             dict(path='github/env.py', sha1='c7a2389048f008f46f59f6bcc11e0d15655f2b1c'),
             dict(path='shell.py', sha1='a59e59b812394d0502837f4c198e1cf604f90227'),
             dict(path='../oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
-            dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='34691d4d0e5bab68f14e193a6200df040cfd0136'),
+            dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='1ab917e62b40dae3744ba2eb3d10c85ddffe08a4'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
@@ -492,6 +492,46 @@ async def asyncio_wait_maybe_concurrent(
 
     else:
         return await asyncio_wait_concurrent(awaitables, concurrency)
+
+
+##
+
+
+@contextlib.asynccontextmanager
+async def asyncio_shielded_finally(
+    fn: ta.Callable[[], ta.Awaitable[ta.Any]],
+    *,
+    timeout: ta.Optional[float] = 5,
+) -> ta.AsyncIterator[None]:
+    try:
+        yield
+
+    finally:
+        end_task = asyncio.create_task(fn())  # type: ignore  # noqa
+
+        if timeout is None:
+            try:
+                await asyncio.shield(end_task)
+
+            except asyncio.CancelledError:
+                try:
+                    await end_task
+
+                finally:
+                    raise
+
+        else:
+            dl = time.monotonic() + timeout
+
+            try:
+                await asyncio.wait_for(asyncio.shield(end_task), timeout=time.monotonic() - dl)
+
+            except asyncio.CancelledError:
+                try:
+                    await asyncio.wait_for(end_task, timeout=time.monotonic() - dl)
+
+                finally:
+                    raise
 
 
 ########################################

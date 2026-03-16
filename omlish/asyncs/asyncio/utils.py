@@ -7,6 +7,7 @@ TODO:
 import asyncio
 import contextlib
 import functools
+import time
 import typing as ta
 
 
@@ -109,3 +110,43 @@ async def asyncio_wait_maybe_concurrent(
 
     else:
         return await asyncio_wait_concurrent(awaitables, concurrency)
+
+
+##
+
+
+@contextlib.asynccontextmanager
+async def asyncio_shielded_finally(
+    fn: ta.Callable[[], ta.Awaitable[ta.Any]],
+    *,
+    timeout: ta.Optional[float] = 5,
+) -> ta.AsyncIterator[None]:
+    try:
+        yield
+
+    finally:
+        end_task = asyncio.create_task(fn())  # type: ignore  # noqa
+
+        if timeout is None:
+            try:
+                await asyncio.shield(end_task)
+
+            except asyncio.CancelledError:
+                try:
+                    await end_task
+
+                finally:
+                    raise
+
+        else:
+            dl = time.monotonic() + timeout
+
+            try:
+                await asyncio.wait_for(asyncio.shield(end_task), timeout=time.monotonic() - dl)
+
+            except asyncio.CancelledError:
+                try:
+                    await asyncio.wait_for(end_task, timeout=time.monotonic() - dl)
+
+                finally:
+                    raise

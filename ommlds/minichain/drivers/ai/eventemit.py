@@ -1,4 +1,7 @@
+import asyncio
 import typing as ta
+
+from omlish.asyncs.asyncio import all as au
 
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
@@ -53,6 +56,7 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> Chat:
         sent_begin_event = False
+        end_exception: BaseException | None = None
 
         async def inner(delta: AiDelta) -> None:
             nonlocal sent_begin_event
@@ -65,12 +69,16 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             if delta_callback is not None:
                 await delta_callback(delta)
 
-        try:
-            out = await self._wrapped.generate_ai_chat_streamed(args, delta_callback=inner)
-
-        finally:
+        async def emit_end() -> None:
             if sent_begin_event:
-                await self._events.emit_event(AiStreamEndEvent(message_uuid=args.message_uuid))
+                await self._events.emit_event(AiStreamEndEvent(message_uuid=args.message_uuid, exception=end_exception))
+
+        async with au.shielded_finally(emit_end):
+            try:
+                out = await self._wrapped.generate_ai_chat_streamed(args, delta_callback=inner)
+            except (Exception, asyncio.CancelledError) as e:
+                end_exception = e
+                raise
 
         await self._events.emit_event(AiMessagesEvent(out, streamed=True, message_uuid=args.message_uuid))
 

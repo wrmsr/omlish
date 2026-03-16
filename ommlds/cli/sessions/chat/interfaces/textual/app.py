@@ -151,12 +151,6 @@ class ChatApp(
         yield self._status_container
 
     ##
-    # Widget getters
-
-    def _get_input_text_area(self) -> InputTextArea:
-        return self.query_one('.input', InputTextArea)
-
-    ##
     # Messages
 
     async def _on_message_finalized(self, event: MessageFinalized) -> None:

@@ -44,4 +44,6 @@ class AiStreamDeltaEvent(AiStreamEvent, lang.Final):
 
 @dc.dataclass(frozen=True)
 class AiStreamEndEvent(AiStreamEvent, lang.Final):
-    pass
+    _: dc.KW_ONLY
+
+    exception: BaseException | None = None
