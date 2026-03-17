@@ -137,7 +137,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
-            dict(path='../../omlish/io/buffers.py', sha1='adfc7e933b5a8a2dc145f9bfb83dca6e373bc2f8'),
+            dict(path='../../omlish/io/buffers.py', sha1='0494ce888a1f4ff6ae0ac118a5a6d04a00f8d661'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
@@ -6276,8 +6276,11 @@ def parse_http_trailers(
 ########################################
 # ../../../omlish/io/buffers.py
 """
-TODO:
- - overhaul and just coro-ify pyio?
+*** THIS FILE IS DEPRECATED ***
+
+This is now only used by the http 'coro' stuff, which is also about to be deleted.
+
+Anything that would have used this should now use `omlish.io.streams`.
 """
 
 

@@ -1,8 +1,11 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
 """
-TODO:
- - overhaul and just coro-ify pyio?
+*** THIS FILE IS DEPRECATED ***
+
+This is now only used by the http 'coro' stuff, which is also about to be deleted.
+
+Anything that would have used this should now use `omlish.io.streams`.
 """
 import io
 import typing as ta

@@ -8,7 +8,9 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
-from ...io.buffers import ReadableListBuffer
+from ...io.streams.adapters import ByteStreamBufferAsyncBytesReaderAdapter
+from ...io.streams.adapters import ByteStreamBufferBytesReaderAdapter
+from ...io.streams.segmented import SegmentedByteStreamBuffer
 from ..headers import HttpHeaders
 from .asyncs import AsyncHttpClient
 from .asyncs import AsyncStreamHttpClientResponse
@@ -61,7 +63,10 @@ class HttpxHttpClient(HttpClient):
                 headers=HttpHeaders(resp.headers.raw),
                 request=req,
                 underlying=resp,
-                _stream=ReadableListBuffer().new_bytes_reader(self._StreamAdapter(resp.iter_bytes())),
+                _stream=ByteStreamBufferBytesReaderAdapter.wrap(
+                    self._StreamAdapter(resp.iter_bytes()),
+                    SegmentedByteStreamBuffer(chunk_size=16 * 1024),
+                ),
                 _closer=resp_close,  # type: ignore
             )
 
@@ -120,7 +125,10 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
                 headers=HttpHeaders(resp.headers.raw),
                 request=req,
                 underlying=resp,
-                _stream=ReadableListBuffer().new_async_bytes_reader(self._StreamAdapter(it)),
+                _stream=ByteStreamBufferAsyncBytesReaderAdapter.wrap(
+                    self._StreamAdapter(it),
+                    SegmentedByteStreamBuffer(chunk_size=16 * 1024),
+                ),
                 _closer=es.aclose,
             )
 
