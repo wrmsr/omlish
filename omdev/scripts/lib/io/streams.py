@@ -9,7 +9,6 @@
 import abc
 import io
 import sys
-import time
 import typing as ta
 
 
@@ -33,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
             dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
-            dict(path='adapters.py', sha1='f38f33ef312c68ecda06ddee928e679fc86bd49e'),
+            dict(path='adapters.py', sha1='53b05dd04034a3b4448a73822d7e79a3cdc20102'),
             dict(path='linear.py', sha1='82d8d806abd708e8d471f32cb49813be150bcf6a'),
             dict(path='segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
@@ -1522,103 +1521,114 @@ class ByteStreamBufferReaderAdapter:
     bytes into the buffer.
 
     `policy`:
-      - 'raise': raise NeedMoreDataByteStreamBufferError if fewer than `n` bytes are available (for n >= 0).
+      - 'raise': raise `NeedMoreDataByteStreamBufferError` if fewer than `n` bytes are available (for `n >= 0`).
       - 'return_partial': return whatever is available (possibly b'') up to `n`.
-      - 'block': repeatedly call `fill()` until satisfied or until `fill()` signals EOF.
+      - 'fill': repeatedly call `fill()` until satisfied or until `fill()` signals EOF - effectively blocking mode.
 
     `fill`:
-      - Callable that writes more bytes into the underlying MutableByteStreamBuffer and returns:
-          * True  -> made progress / more data may be available
-          * False -> EOF / no more data will arrive
-      - Only used when policy == 'block'.
+      - Callable that writes more bytes into the underlying buffer.
 
     This adapter exists for interop with legacy code that expects file-like objects, but the core design remains
     independent from `io` and blocking semantics.
     """
 
+    DEFAULT_POLICY: ta.Final = 'raise'
+
+    class Filler(ta.Protocol):
+        def __call__(self, n: int, single: bool) -> bool:
+            """
+            Called when more data needs to be written into the underlying buffer.
+
+            - If `n > 0` then at least `n` bytes are requested - extra bytes will be buffered.
+            - If `single` then the user has requested that at most one underlying read operation should be performed.
+            - If `n < 1` and `single` then any amount of data is requested.
+            - If `n < 1` and not `single` then all remaining data is requested.
+
+            Returns `True` if it made progress or more data may be available, or `False` if no more data will arrive.
+
+            If not `single` returning `True` then at least 1 new byte mut have been written to the buffer (otherwise
+            it would infinite loop).
+
+            This function may or may not sleep / loop / block / etc. as it sees fit.
+            """
+
     def __init__(
             self,
             buf: ByteStreamBuffer,
             *,
-            policy: ta.Literal['raise', 'return_partial', 'block'] = 'raise',
-            fill: ta.Optional[ta.Callable[[], bool]] = None,
-            block_sleep: ta.Union[ta.Callable[[], None], float, None] = None,
+            policy: ta.Literal['raise', 'return_partial', 'fill', None] = None,
+            fill: ta.Optional[Filler] = None,
     ) -> None:
         super().__init__()
 
         self._buf = buf
+        if fill is not None:
+            if policy is None:
+                policy = 'fill'
+            elif policy != 'fill':
+                raise ValueError('fill callback only valid with policy=fill')
+        elif policy is None:
+            policy = self.DEFAULT_POLICY
         self._policy = policy
         self._fill = fill
-        self._block_sleep = block_sleep
-
-        if self._policy == 'block' and self._fill is None:
-            raise ValueError('policy=block requires fill')
-
-    def _on_block(self) -> None:
-        if (bs := self._block_sleep) is None:
-            return
-        elif callable(bs):
-            bs()
-        else:
-            time.sleep(bs)
 
     def read1(self, n: int = -1, /) -> bytes:
-        return self.read(n)
+        if not n:
+            return b''
+
+        buf = self._buf
+        if not (ln := len(buf)):
+            if (fill := self._fill) is None:
+                return b''
+
+            fill(n, True)
+            ln = len(buf)
+
+        if not ln:
+            return b''
+
+        return buf.split_to(min(n, ln) if n > 0 else ln).tobytes()
 
     def read(self, n: int = -1, /) -> bytes:
-        buf = self._buf
-
-        if n is None or n < 0:
+        if n < 0:
             return self.readall()
 
         if not n:
             return b''
 
+        buf = self._buf
+        pol = self._policy
         while True:
-            ln = len(buf)
-            if ln >= n:
-                v = buf.split_to(n)
-                return v.tobytes()
+            if (ln := len(buf)) >= n:
+                return buf.split_to(n).tobytes()
 
-            if self._policy == 'return_partial':
+            if pol == 'return_partial':
                 if not ln:
                     return b''
-                v = buf.split_to(ln)
-                return v.tobytes()
+                return buf.split_to(ln).tobytes()
 
-            if self._policy == 'raise':
+            elif pol == 'raise':
                 raise NeedMoreDataByteStreamBufferError
 
-            # block
-            if not ta.cast('ta.Callable[[], bool]', self._fill)():
-                # EOF
-                if not ln:
-                    return b''
-                v = buf.split_to(ln)
-                return v.tobytes()
+            elif pol == 'fill':
+                if not self._fill(n - ln, False):  # type: ignore[misc]
+                    # EOF
+                    if not ln:
+                        return b''
+                    return buf.split_to(ln).tobytes()
 
-            self._on_block()
+                if len(buf) == ln:
+                    raise RuntimeError('fill did not produce data')
+
+            else:
+                raise RuntimeError(f'invalid policy: {pol!r}')
 
     def readall(self) -> bytes:
+        if (fill := self._fill) is not None:
+            fill(-1, False)
+
         buf = self._buf
-        parts: ta.List[bytes] = []
-
-        while True:
-            ln = len(buf)
-            if ln:
-                v = buf.split_to(ln)
-                parts.append(v.tobytes())
-                continue
-
-            if self._policy == 'block':
-                if not ta.cast('ta.Callable[[], bool]', self._fill)():
-                    break
-                self._on_block()
-                continue
-
-            break
-
-        return b''.join(parts)
+        return buf.split_to(len(buf)).tobytes()
 
 
 class ByteStreamBufferWriterAdapter:

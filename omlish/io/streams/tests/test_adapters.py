@@ -1,4 +1,4 @@
-# ruff: noqa: PT009 PT027
+# ruff: noqa: UP007 PT009 PT027
 # @omlish-lite
 import io
 import unittest
@@ -41,7 +41,7 @@ class TestIoAdapters(unittest.TestCase):
         chunks = [b'ab', b'cd', b'']  # last indicates EOF
         it = iter(chunks)
 
-        def fill() -> bool:
+        def fill(n: int, single: bool) -> bool:
             try:
                 c = next(it)
             except StopIteration:
@@ -51,7 +51,7 @@ class TestIoAdapters(unittest.TestCase):
             b.write(c)
             return True
 
-        a = ByteStreamBufferReaderAdapter(b, policy='block', fill=fill)
+        a = ByteStreamBufferReaderAdapter(b, fill=fill)
 
         self.assertEqual(a.read(3), b'abc')
         self.assertEqual(a.read(2), b'd')  # EOF, partial remaining
@@ -62,18 +62,42 @@ class TestIoAdapters(unittest.TestCase):
         chunks = [b'aa', b'bb', b'cc', b'']
         it = iter(chunks)
 
-        def fill() -> bool:
-            try:
-                c = next(it)
-            except StopIteration:
-                return False
-            if not c:
-                return False
-            b.write(c)
-            return True
+        def fill(n: int, single: bool) -> bool:
+            while True:
+                try:
+                    c = next(it)
+                except StopIteration:
+                    return False
+                if not c:
+                    return False
+                b.write(c)
+                if single or n > 0:
+                    return True
 
-        a = ByteStreamBufferReaderAdapter(b, policy='block', fill=fill)
+        a = ByteStreamBufferReaderAdapter(b, fill=fill)
         self.assertEqual(a.readall(), b'aabbcc')
+        self.assertEqual(a.readall(), b'')
+
+    def test_bytesbuffer_reader_adapter_read_then_readall_block(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        chunks = [b'aa', b'bb', b'cc', b'']
+        it = iter(chunks)
+
+        def fill(n: int, single: bool) -> bool:
+            while True:
+                try:
+                    c = next(it)
+                except StopIteration:
+                    return False
+                if not c:
+                    return False
+                b.write(c)
+                if single or n > 0:
+                    return True
+
+        a = ByteStreamBufferReaderAdapter(b, fill=fill)
+        self.assertEqual(a.read(3), b'aab')
+        self.assertEqual(a.readall(), b'bcc')
         self.assertEqual(a.readall(), b'')
 
     def test_bytesbuffer_writer_adapter_bytes_and_view(self) -> None:
