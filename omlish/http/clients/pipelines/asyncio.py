@@ -9,7 +9,6 @@ import typing as ta
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
-from ....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from ....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from ....io.streams.types import BytesLike
 from ....lite.abstract import Abstract
@@ -59,7 +58,7 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
     class _DriverStreamReader(_StreamReader):
         def __init__(
                 self,
-                drv: SyncSocketIoPipelineDriver,
+                drv: SimpleAsyncioStreamIoPipelineDriver,
         ) -> None:
             super().__init__()
 
@@ -74,7 +73,8 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
             raise NotImplementedError
 
         async def close(self) -> None:
-            self._drv.close()
+            # await self._drv.close()
+            raise NotImplementedError
 
     #
 

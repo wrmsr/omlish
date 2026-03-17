@@ -1,0 +1,3 @@
+- client streaming io lol
+- keepalive ffs
+- chunked compression ffs
