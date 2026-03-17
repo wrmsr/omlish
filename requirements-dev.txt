@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.46.2
 
-uv>=0.10.9
+uv>=0.10.11
 
 pytest==9.0.2
 pytest-benchmark==5.2.3
@@ -126,7 +126,7 @@ hf-xet==1.4.2  # @omlish-venv !14t !14dt
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==4.7.0  # !! includes arrow and pandas and shit
+datasets==4.8.2  # !! includes arrow and pandas and shit
 
 transformers==5.3.0  # @omlish-venv !14t !14dt
 sentence-transformers==5.3.0  # @omlish-venv !14t !14dt
