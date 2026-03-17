@@ -68,6 +68,10 @@ class SyncSocketIoPipelineDriver:
     def config(self) -> Config:
         return self._config
 
+    @property
+    def pipeline(self) -> IoPipeline:
+        return self._pipeline
+
     #
 
     _pipeline: IoPipeline
@@ -251,7 +255,7 @@ class SyncSocketIoPipelineDriver:
     def enqueue(self, *in_msgs: ta.Any) -> None:
         self._input_q.extend(in_msgs)
 
-    def _next(self) -> ta.Union[
+    def poll(self) -> ta.Union[
         ta.Tuple[ta.Literal['unhandled'], ta.Any],
         ta.Literal['read', 'stop'],
         None,
@@ -294,7 +298,7 @@ class SyncSocketIoPipelineDriver:
         check.state(pipeline.is_ready)
 
         while True:
-            out = self._next()
+            out = self.poll()
 
             if isinstance(out, tuple):
                 ok, ov = out

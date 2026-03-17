@@ -22,7 +22,7 @@ asyncpg==0.31.0
 asyncssh==2.22.0
 attrs==25.4.0
 babel==2.18.0
-basedpyright==1.38.2
+basedpyright==1.38.3
 bcrypt==5.0.0
 beautifulsoup4==4.14.3
 bitsandbytes==0.49.2
@@ -275,7 +275,7 @@ sortedcontainers==2.4.0
 soupsieve==2.8.3
 SQLAlchemy==2.0.48
 sqlean.py==3.50.4.5
-sqlite-vec==0.1.6
+sqlite-vec==0.1.7
 stack-data==0.6.3
 sympy==1.14.0
 tavily-python==0.7.23
@@ -352,7 +352,7 @@ wikitextparser==0.56.4
 wrapt==2.1.2
 wsproto==1.3.2
 xxhash==3.6.0
-yappi==1.7.3
+yappi==1.7.5
 yarl==1.23.0
 zipp==3.23.0
 zstandard==0.25.0

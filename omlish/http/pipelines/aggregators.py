@@ -66,6 +66,7 @@ class IoIoPipelineHttpObjectAggregator(
         self._handled_types: ta.Tuple[type, ...] = (
             self._head_type,
             self._chunk_type,
+            self._end_chunk_type,
             self._last_chunk_type,
             self._chunked_trailers_type,
             self._body_data_type,
@@ -247,6 +248,7 @@ class IoIoPipelineHttpObjectAggregator(
 
             elif isinstance(msg, (
                     self._a._chunk_type,  # noqa
+                    self._a._end_chunk_type,  # noqa
                     self._a._last_chunk_type,  # noqa
                     self._a._chunked_trailers_type,  # noqa
             )):

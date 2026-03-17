@@ -93,7 +93,7 @@ def __omlish_amalg__():  # noqa
             dict(path='github/env.py', sha1='c7a2389048f008f46f59f6bcc11e0d15655f2b1c'),
             dict(path='shell.py', sha1='a59e59b812394d0502837f4c198e1cf604f90227'),
             dict(path='../oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
-            dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='1ab917e62b40dae3744ba2eb3d10c85ddffe08a4'),
+            dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='a093aa6b49e25b3206f59b703b281d569c386838'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
@@ -497,41 +497,74 @@ async def asyncio_wait_maybe_concurrent(
 ##
 
 
+async def _asyncio_await_finalizer_shielded(
+        awaitable: ta.Awaitable[ta.Any],
+        *,
+        timeout: ta.Optional[float] = None,
+) -> None:
+    task = asyncio.create_task(awaitable)  # type: ignore  # noqa
+
+    if timeout is None:
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            try:
+                await task
+            finally:
+                raise
+
+    else:
+        deadline = time.monotonic() + timeout
+
+        def remaining() -> float:
+            return max(0., deadline - time.monotonic())
+
+        try:
+            await asyncio.wait_for(asyncio.shield(task), timeout=remaining())
+        except asyncio.CancelledError:
+            try:
+                await asyncio.wait_for(task, timeout=remaining())
+            finally:
+                raise
+
+
+@dc.dataclass()
+class AsyncioShieldedFinallyCancelledError(asyncio.CancelledError):
+    cleanup_exc: BaseException
+
+
 @contextlib.asynccontextmanager
 async def asyncio_shielded_finally(
-    fn: ta.Callable[[], ta.Awaitable[ta.Any]],
-    *,
-    timeout: ta.Optional[float] = 5,
+        fn: ta.Callable[[], ta.Awaitable[ta.Any]],
+        *,
+        timeout: ta.Optional[float] = None,
 ) -> ta.AsyncIterator[None]:
+    raised = False
+
     try:
         yield
 
-    finally:
-        end_task = asyncio.create_task(fn())  # type: ignore  # noqa
-
-        if timeout is None:
-            try:
-                await asyncio.shield(end_task)
-
-            except asyncio.CancelledError:
-                try:
-                    await end_task
-
-                finally:
-                    raise
-
+    except asyncio.CancelledError as e:
+        raised = True
+        try:
+            await _asyncio_await_finalizer_shielded(fn(), timeout=timeout)
+        except BaseException as e2:  # noqa
+            raise AsyncioShieldedFinallyCancelledError(e2) from e
         else:
-            dl = time.monotonic() + timeout
+            raise
 
-            try:
-                await asyncio.wait_for(asyncio.shield(end_task), timeout=time.monotonic() - dl)
+    except Exception as e:  # noqa
+        raised = True
+        try:
+            await _asyncio_await_finalizer_shielded(fn(), timeout=timeout)
+        except BaseException as e2:  # noqa
+            raise e2 from e
+        else:
+            raise
 
-            except asyncio.CancelledError:
-                try:
-                    await asyncio.wait_for(end_task, timeout=time.monotonic() - dl)
-
-                finally:
-                    raise
+    finally:
+        if not raised:
+            await _asyncio_await_finalizer_shielded(fn(), timeout=timeout)
 
 
 ########################################

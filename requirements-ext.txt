@@ -31,7 +31,7 @@ safetensors==0.7.0
 
 tavily-python==0.7.23
 
-sqlite-vec==0.1.6
+sqlite-vec==0.1.7
 
 pytesseract==0.3.13
 
@@ -52,7 +52,7 @@ tree-sitter-python==0.25.0  # @omlish-venv !13t !13dt !14t
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.408
-basedpyright==1.38.2
+basedpyright==1.38.3
 
 blobfile==3.2.0
 
@@ -68,7 +68,7 @@ ripgrep==15.0.0
 ##
 # diag
 
-yappi==1.7.3
+yappi==1.7.5
 pyinstrument==5.1.2
 
 debugpy==1.8.20

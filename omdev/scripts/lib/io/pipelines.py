@@ -61,7 +61,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='bytes/queues.py', sha1='ea3b53a155622376836ba9e3499b85220f37b1fd'),
-            dict(path='handlers/flatmap.py', sha1='7c9957c9e5136d1fa8ca51997914b4e9a5065843'),
+            dict(path='handlers/flatmap.py', sha1='118478ac94449a9a0b5ba44f5f3e8a5d69bb6f65'),
             dict(path='../streams/direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='../streams/scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
             dict(path='../../logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
@@ -71,7 +71,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='59e80c4ac127e727676f17e956783f3aa39b4088'),
+            dict(path='drivers/asyncio.py', sha1='44e86ab5b903ea2780fc586aed267f72d501d21f'),
             dict(path='_amalg.py', sha1='14b67747b1e3b3c1483050a7948a29888d732ed9'),
         ],
     )
@@ -5521,12 +5521,13 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
     )
 
     @classmethod
-    def _add_drop_filters(
+    def add_filters(
             cls,
             fn: FlatMapIoPipelineHandlerFn,
             *,
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+            not_must_propagate: bool = False,
     ) -> FlatMapIoPipelineHandlerFn:
         if filter is not None:
             fn = FlatMapIoPipelineHandlerFns.filter(filter, fn)
@@ -5534,9 +5535,12 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
         if filter_type is not None:
             fn = FlatMapIoPipelineHandlerFns.filter_type(filter_type, fn)
 
-        fn = FlatMapIoPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
+        if not_must_propagate:
+            fn = FlatMapIoPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
 
         return fn
+
+    #
 
     @classmethod
     def drop(
@@ -5548,10 +5552,33 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
     ) -> IoPipelineHandler:
         return cls.new(
             direction,
-            cls._add_drop_filters(
+            cls.add_filters(
                 FlatMapIoPipelineHandlerFns.drop(),
                 filter=filter,
                 filter_type=filter_type,
+                not_must_propagate=True,
+            ),
+        )
+
+    @classmethod
+    def apply_and_drop(
+            cls,
+            direction: IoPipelineDirectionOrDuplex,
+            fn: IoPipelineHandlerFn[ta.Any, None],
+            *,
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
+            filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> IoPipelineHandler:
+        return cls.new(
+            direction,
+            cls.add_filters(
+                FlatMapIoPipelineHandlerFns.compose(
+                    FlatMapIoPipelineHandlerFns.apply(fn),
+                    FlatMapIoPipelineHandlerFns.drop(),
+                ),
+                filter=filter,
+                filter_type=filter_type,
+                not_must_propagate=True,
             ),
         )
 
@@ -5564,13 +5591,14 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
     ) -> IoPipelineHandler:
         return cls.new(
             'inbound',
-            cls._add_drop_filters(
+            cls.add_filters(
                 FlatMapIoPipelineHandlerFns.compose(
                     FlatMapIoPipelineHandlerFns.feed_out(),
                     FlatMapIoPipelineHandlerFns.drop(),
                 ),
                 filter=filter,
                 filter_type=filter_type,
+                not_must_propagate=True,
             ),
         )
 
@@ -8169,14 +8197,14 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             fut.set_exception(e)
             raise
 
-    async def feed_in(self, *msgs: ta.Any) -> None:
+    def enqueue_waitable(self, *msgs: ta.Any) -> 'asyncio.Future[None]':
         check.state(not self._shutdown_event.is_set())
 
         fut: asyncio.Future[None] = asyncio.Future()
         self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs, fut=fut))
-        await fut
+        return fut
 
-    def feed_in_nowait(self, *msgs: ta.Any) -> None:
+    def enqueue(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
         self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs))

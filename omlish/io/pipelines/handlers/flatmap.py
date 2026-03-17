@@ -306,12 +306,13 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
     )
 
     @classmethod
-    def _add_drop_filters(
+    def add_filters(
             cls,
             fn: FlatMapIoPipelineHandlerFn,
             *,
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+            not_must_propagate: bool = False,
     ) -> FlatMapIoPipelineHandlerFn:
         if filter is not None:
             fn = FlatMapIoPipelineHandlerFns.filter(filter, fn)
@@ -319,9 +320,12 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
         if filter_type is not None:
             fn = FlatMapIoPipelineHandlerFns.filter_type(filter_type, fn)
 
-        fn = FlatMapIoPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
+        if not_must_propagate:
+            fn = FlatMapIoPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
 
         return fn
+
+    #
 
     @classmethod
     def drop(
@@ -333,10 +337,33 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
     ) -> IoPipelineHandler:
         return cls.new(
             direction,
-            cls._add_drop_filters(
+            cls.add_filters(
                 FlatMapIoPipelineHandlerFns.drop(),
                 filter=filter,
                 filter_type=filter_type,
+                not_must_propagate=True,
+            ),
+        )
+
+    @classmethod
+    def apply_and_drop(
+            cls,
+            direction: IoPipelineDirectionOrDuplex,
+            fn: IoPipelineHandlerFn[ta.Any, None],
+            *,
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
+            filter: ta.Optional[IoPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> IoPipelineHandler:
+        return cls.new(
+            direction,
+            cls.add_filters(
+                FlatMapIoPipelineHandlerFns.compose(
+                    FlatMapIoPipelineHandlerFns.apply(fn),
+                    FlatMapIoPipelineHandlerFns.drop(),
+                ),
+                filter=filter,
+                filter_type=filter_type,
+                not_must_propagate=True,
             ),
         )
 
@@ -349,12 +376,13 @@ class FlatMapIoPipelineHandlers(NamespaceClass):
     ) -> IoPipelineHandler:
         return cls.new(
             'inbound',
-            cls._add_drop_filters(
+            cls.add_filters(
                 FlatMapIoPipelineHandlerFns.compose(
                     FlatMapIoPipelineHandlerFns.feed_out(),
                     FlatMapIoPipelineHandlerFns.drop(),
                 ),
                 filter=filter,
                 filter_type=filter_type,
+                not_must_propagate=True,
             ),
         )

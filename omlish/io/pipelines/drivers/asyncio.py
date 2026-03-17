@@ -193,14 +193,14 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             fut.set_exception(e)
             raise
 
-    async def feed_in(self, *msgs: ta.Any) -> None:
+    def enqueue_waitable(self, *msgs: ta.Any) -> 'asyncio.Future[None]':
         check.state(not self._shutdown_event.is_set())
 
         fut: asyncio.Future[None] = asyncio.Future()
         self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs, fut=fut))
-        await fut
+        return fut
 
-    def feed_in_nowait(self, *msgs: ta.Any) -> None:
+    def enqueue(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
         self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs))
