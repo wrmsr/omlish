@@ -1,8 +1,14 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
+import collections
 import dataclasses as dc
 import typing as ta
 
+from ....clients.base import HttpClientContext
+from ....headers import HttpHeaders
+from ....clients.base import HttpRequest
+from ....clients.sync import HttpClient
+from ....clients.sync import StreamHttpResponse
 from .....io.pipelines.bytes.buffers import OutboundBytesBufferIoPipelineHandler
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
@@ -236,6 +242,9 @@ class _PreparedUrlFetch(ta.NamedTuple):
 
 def _prepare_url_fetch(
         url: str,
+        *,
+        method: str = 'GET',
+        headers: ta.Optional[HttpHeaders] = None,
         **client_kwargs: ta.Any,
 ) -> _PreparedUrlFetch:
     parsed_url = parse_url(url)
@@ -243,9 +252,13 @@ def _prepare_url_fetch(
     request = FullIoPipelineHttpRequest.simple(
         parsed_url.host,
         parsed_url.path,
+        method=method,
         headers={
-            'User-Agent': 'omlish-http-client/0.1',
-            # 'Connection': 'close',
+            **{
+                'User-Agent': 'omlish-http-client/0.1',
+                # 'Connection': 'close',
+            },
+            **(headers or {}),
         },
     )
 
@@ -347,14 +360,14 @@ def sync_fetch_url(
     sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
 
     try:
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-    except OSError as e:
-        if e.errno != errno.ENOPROTOOPT:
-            raise
+        try:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno != errno.ENOPROTOOPT:
+                raise
 
-    #
+        #
 
-    try:
         # Run driver to process request/response
         drv = SyncSocketIoPipelineDriver(
             puf.pipeline_spec,
@@ -370,6 +383,64 @@ def sync_fetch_url(
     finally:
         sock.close()
 
-    #
-
     return check.not_none(response)
+
+
+##
+
+
+class PipelineHttpClient(HttpClient):
+    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
+        puf = _prepare_url_fetch(
+            req.url,
+            method=req.method,
+            headers=req.headers_,
+        )
+
+        #
+
+        import errno
+        import socket
+
+        sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
+
+        try:
+            try:
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except OSError as e:
+                if e.errno != errno.ENOPROTOOPT:
+                    raise
+
+            #
+
+            # Run driver to process request/response
+            drv = SyncSocketIoPipelineDriver(
+                puf.pipeline_spec,
+                sock,
+            )
+
+            out_q = collections.deque()
+
+            def on_output(h_ctx: IoPipelineHandlerContext, msg: PipelineHttpClientRequestOutput) -> None:
+                out_q.append(msg)
+
+            drv.enqueue(PipelineHttpClientRequest(
+                puf.request,
+                on_output,
+            ))
+
+            out = drv.next()
+
+            return StreamHttpResponse(
+                status=resp.status,
+                headers=HttpHeaders(resp.headers.items()),
+                request=req,
+                underlying=resp,
+                _stream=ReadableListBuffer().new_buffered_reader(resp),
+                _closer=sock.close,
+            )
+
+        except BaseException:
+            sock.close()
+
+            raise
