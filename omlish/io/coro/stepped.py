@@ -2,7 +2,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ..buffers import ReadableListBuffer
+from ..streams.segmented import SegmentedByteStreamBuffer
 from .consts import DEFAULT_BUFFER_SIZE
 from .direct import BytesDirectCoro
 from .direct import StrDirectCoro
@@ -149,34 +149,37 @@ def read_into_str_stepped_coro(
 
 
 @lang.autostart
-def buffer_bytes_stepped_reader_coro(g: BytesSteppedReaderCoro) -> BytesSteppedCoro:
+def buffer_bytes_stepped_reader_coro(
+        g: BytesSteppedReaderCoro,
+        *,
+        buffer_chunk_size: int = 16 * 1024,
+) -> BytesSteppedCoro:
     i: bytes | None
     o = g.send(None)
-    rlb = ReadableListBuffer()
+    buf = SegmentedByteStreamBuffer(chunk_size=buffer_chunk_size)
     eof = False
 
     while True:
         if eof:
             raise EOFError
 
-        if not len(rlb):
+        if not len(buf):
             if (more := check.isinstance((yield None), bytes)):
-                rlb.feed(more)
+                buf.write(more)
             else:
                 eof = True
 
         if o is None:
-            i = check.not_none(rlb.read())
+            i = buf.split_to(len(buf)).tobytes()
 
         elif isinstance(o, int):
-            while len(rlb) < o:
+            while len(buf) < o:
                 more = check.isinstance((yield None), bytes)
                 if not more:
                     raise EOFError
-                # FIXME: lol - share guts with readers
-                rlb.feed(more)
+                buf.write(more)
 
-            i = check.not_none(rlb.read(o))
+            i = buf.split_to(min(o, len(buf))).tobytes()
 
         else:
             raise TypeError(o)
