@@ -1,5 +1,5 @@
 from .adapters import (  # noqa
-    ByteStreamBufferReaderAdapter,
+    ByteStreamBufferBytesReaderAdapter,
     ByteStreamBufferWriterAdapter,
     BytesIoByteStreamBuffer,
 )

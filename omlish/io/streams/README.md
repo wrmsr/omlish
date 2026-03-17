@@ -179,14 +179,14 @@ pos = buf.find(b'bc')  # Returns 1 (correctly finds cross-segment match)
 Bridge buffers to/from file-like objects:
 
 ```python
-from omlish.io.streams.adapters import ByteStreamBufferReaderAdapter
+from omlish.io.streams.adapters import ByteStreamBufferBytesReaderAdapter
 from omlish.io.streams.linear import LinearByteStreamBuffer
 
 buf = LinearByteStreamBuffer()
 buf.write(b'Hello, World!')
 
 # Wrap as file-like reader
-reader = ByteStreamBufferReaderAdapter(buf, policy='return_partial')
+reader = ByteStreamBufferBytesReaderAdapter(buf, policy='return_partial')
 data = reader.read(5)  # b'Hello'
 ```
 

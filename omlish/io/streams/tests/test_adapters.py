@@ -4,7 +4,7 @@ import io
 import unittest
 
 from ..adapters import BytesIoByteStreamBuffer
-from ..adapters import ByteStreamBufferReaderAdapter
+from ..adapters import ByteStreamBufferBytesReaderAdapter
 from ..adapters import ByteStreamBufferWriterAdapter
 from ..errors import NeedMoreDataByteStreamBufferError
 from ..segmented import SegmentedByteStreamBuffer
@@ -13,7 +13,7 @@ from ..segmented import SegmentedByteStreamBuffer
 class TestIoAdapters(unittest.TestCase):
     def test_bytesbuffer_reader_adapter_raise(self) -> None:
         b = SegmentedByteStreamBuffer()
-        a = ByteStreamBufferReaderAdapter(b, policy='raise')
+        a = ByteStreamBufferBytesReaderAdapter(b, policy='raise')
 
         with self.assertRaises(NeedMoreDataByteStreamBufferError):
             a.read(1)
@@ -27,7 +27,7 @@ class TestIoAdapters(unittest.TestCase):
 
     def test_bytesbuffer_reader_adapter_return_partial(self) -> None:
         b = SegmentedByteStreamBuffer()
-        a = ByteStreamBufferReaderAdapter(b, policy='return_partial')
+        a = ByteStreamBufferBytesReaderAdapter(b, policy='return_partial')
 
         self.assertEqual(a.read(3), b'')  # nothing available
 
@@ -51,7 +51,7 @@ class TestIoAdapters(unittest.TestCase):
             b.write(c)
             return True
 
-        a = ByteStreamBufferReaderAdapter(b, fill=fill)
+        a = ByteStreamBufferBytesReaderAdapter(b, fill=fill)
 
         self.assertEqual(a.read(3), b'abc')
         self.assertEqual(a.read(2), b'd')  # EOF, partial remaining
@@ -74,7 +74,7 @@ class TestIoAdapters(unittest.TestCase):
                 if single or n > 0:
                     return True
 
-        a = ByteStreamBufferReaderAdapter(b, fill=fill)
+        a = ByteStreamBufferBytesReaderAdapter(b, fill=fill)
         self.assertEqual(a.readall(), b'aabbcc')
         self.assertEqual(a.readall(), b'')
 
@@ -95,7 +95,7 @@ class TestIoAdapters(unittest.TestCase):
                 if single or n > 0:
                     return True
 
-        a = ByteStreamBufferReaderAdapter(b, fill=fill)
+        a = ByteStreamBufferBytesReaderAdapter(b, fill=fill)
         self.assertEqual(a.read(3), b'aab')
         self.assertEqual(a.readall(), b'bcc')
         self.assertEqual(a.readall(), b'')

@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
             dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
-            dict(path='adapters.py', sha1='53b05dd04034a3b4448a73822d7e79a3cdc20102'),
+            dict(path='adapters.py', sha1='53c8d8e894cb58a8cd4ca3e4f1acfba71d8bffab'),
             dict(path='linear.py', sha1='82d8d806abd708e8d471f32cb49813be150bcf6a'),
             dict(path='segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
@@ -51,6 +51,11 @@ BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
+
+# adapters.py
+BytesOrAwaitableBytes = ta.TypeVar('BytesOrAwaitableBytes', bound=ta.Union[bytes, ta.Awaitable[bytes]])
+BoolOrAwaitableBool = ta.TypeVar('BoolOrAwaitableBool', bound=ta.Union[bool, ta.Awaitable[bool]])
+BoolOrAwaitableBool_co = ta.TypeVar('BoolOrAwaitableBool_co', bound=ta.Union[bool, ta.Awaitable[bool]], covariant=True)
 
 
 ########################################
@@ -1512,7 +1517,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 ##
 
 
-class ByteStreamBufferReaderAdapter:
+class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitableBytes, BoolOrAwaitableBool]):
     """
     Adapter: ByteStreamBuffer -> file-like reader methods (`read1`, `read`, `readall`).
 
@@ -1534,8 +1539,8 @@ class ByteStreamBufferReaderAdapter:
 
     DEFAULT_POLICY: ta.Final = 'raise'
 
-    class Filler(ta.Protocol):
-        def __call__(self, n: int, single: bool) -> bool:
+    class Filler(ta.Protocol[BoolOrAwaitableBool_co]):
+        def __call__(self, n: int, single: bool) -> BoolOrAwaitableBool_co:
             """
             Called when more data needs to be written into the underlying buffer.
 
@@ -1557,7 +1562,7 @@ class ByteStreamBufferReaderAdapter:
             buf: ByteStreamBuffer,
             *,
             policy: ta.Literal['raise', 'return_partial', 'fill', None] = None,
-            fill: ta.Optional[Filler] = None,
+            fill: ta.Optional[Filler[BoolOrAwaitableBool]] = None,
     ) -> None:
         super().__init__()
 
@@ -1572,6 +1577,43 @@ class ByteStreamBufferReaderAdapter:
         self._policy = policy
         self._fill = fill
 
+    @abc.abstractmethod
+    def read1(self, n: int = -1, /) -> BytesOrAwaitableBytes:
+        raise NotImplementedError
+
+    def _inner_read(self, n: int) -> ta.Union[bytes, ta.Literal['fill']]:
+        buf = self._buf
+        if (ln := len(buf)) >= n:
+            return buf.split_to(n).tobytes()
+
+        pol = self._policy
+        if pol == 'return_partial':
+            if not ln:
+                return b''
+            return buf.split_to(ln).tobytes()
+
+        elif pol == 'raise':
+            raise NeedMoreDataByteStreamBufferError
+
+        elif pol == 'fill':
+            return 'fill'
+
+        else:
+            raise RuntimeError(f'invalid policy: {pol!r}')
+
+    @abc.abstractmethod
+    def read(self, n: int = -1, /) -> BytesOrAwaitableBytes:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def readall(self) -> BytesOrAwaitableBytes:
+        raise NotImplementedError
+
+
+#
+
+
+class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[bytes, bool]):
     def read1(self, n: int = -1, /) -> bytes:
         if not n:
             return b''
@@ -1597,31 +1639,19 @@ class ByteStreamBufferReaderAdapter:
             return b''
 
         buf = self._buf
-        pol = self._policy
         while True:
-            if (ln := len(buf)) >= n:
-                return buf.split_to(n).tobytes()
+            if (out := self._inner_read(n)) != 'fill':
+                return out
 
-            if pol == 'return_partial':
-                if not ln:
+            ln = len(buf)
+            if not self._fill(n - ln, False):  # type: ignore[misc]
+                # EOF
+                if not (ln := len(buf)):
                     return b''
                 return buf.split_to(ln).tobytes()
 
-            elif pol == 'raise':
-                raise NeedMoreDataByteStreamBufferError
-
-            elif pol == 'fill':
-                if not self._fill(n - ln, False):  # type: ignore[misc]
-                    # EOF
-                    if not ln:
-                        return b''
-                    return buf.split_to(ln).tobytes()
-
-                if len(buf) == ln:
-                    raise RuntimeError('fill did not produce data')
-
-            else:
-                raise RuntimeError(f'invalid policy: {pol!r}')
+            if len(buf) == ln:
+                raise RuntimeError('fill did not produce data')
 
     def readall(self) -> bytes:
         if (fill := self._fill) is not None:
@@ -1629,6 +1659,60 @@ class ByteStreamBufferReaderAdapter:
 
         buf = self._buf
         return buf.split_to(len(buf)).tobytes()
+
+
+#
+
+
+class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[bytes], ta.Awaitable[bool]]):  # noqa
+    async def read1(self, n: int = -1, /) -> bytes:
+        if not n:
+            return b''
+
+        buf = self._buf
+        if not (ln := len(buf)):
+            if (fill := self._fill) is None:
+                return b''
+
+            await fill(n, True)
+            ln = len(buf)
+
+        if not ln:
+            return b''
+
+        return buf.split_to(min(n, ln) if n > 0 else ln).tobytes()
+
+    async def read(self, n: int = -1, /) -> bytes:
+        if n < 0:
+            return await self.readall()
+
+        if not n:
+            return b''
+
+        buf = self._buf
+        while True:
+            if (out := self._inner_read(n)) != 'fill':
+                return out
+
+            ln = len(buf)
+            if not await self._fill(n - ln, False):  # type: ignore[misc]
+                # EOF
+                if not (ln := len(buf)):
+                    return b''
+                return buf.split_to(ln).tobytes()
+
+            if len(buf) == ln:
+                raise RuntimeError('fill did not produce data')
+
+    async def readall(self) -> bytes:
+        if (fill := self._fill) is not None:
+            await fill(-1, False)
+
+        buf = self._buf
+        return buf.split_to(len(buf)).tobytes()
+
+
+##
 
 
 class ByteStreamBufferWriterAdapter:

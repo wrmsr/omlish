@@ -249,11 +249,11 @@ remains in the buffer.
 ## 11. File-Like Adapters & Interop
 
 Adapters exist to bridge:
-- Buffers → file-like readers: `ByteStreamBufferReaderAdapter`
+- Buffers → file-like readers: `ByteStreamBufferBytesReaderAdapter`
 - Buffers → file-like writers: `ByteStreamBufferWriterAdapter`
 - BytesIO → buffers: `BytesIoByteStreamBuffer`
 
-**ByteStreamBufferReaderAdapter** properties:
+**ByteStreamBufferBytesReaderAdapter** properties:
 - Policy-driven behavior (`raise`, `return_partial`, `block`)
 - Implements `read(n)`, `read1(n)`, `readall()`
 - Optional `fill()` callback for blocking mode
@@ -301,7 +301,7 @@ With the buffer layer stabilized and core framers implemented, higher-level work
 - Length-prefixed framing (`LengthFieldByteStreamFrameDecoder`)
 - Delimiter-based framing with overlap handling (`LongestMatchDelimiterByteStreamFrameDecoder`)
 - Binary read helpers (`ByteStreamBufferReader`)
-- File-like adapters (`ByteStreamBufferReaderAdapter`, `ByteStreamBufferWriterAdapter`)
+- File-like adapters (`ByteStreamBufferBytesReaderAdapter`, `ByteStreamBufferWriterAdapter`)
 - Trickle-data optimization (`ScanningByteStreamBuffer`)
 
 The buffer layer is now considered **foundationally complete**: additional features should be justified by concrete
