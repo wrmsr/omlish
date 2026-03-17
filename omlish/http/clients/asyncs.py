@@ -5,7 +5,7 @@ import contextlib
 import dataclasses as dc
 import typing as ta
 
-from ...io.readers import AsyncBufferedBytesReader
+from ...io.readers import AsyncBytesReader
 from ...lite.abstract import Abstract
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpClient
@@ -27,10 +27,10 @@ AsyncHttpClientT = ta.TypeVar('AsyncHttpClientT', bound='AsyncHttpClient')
 @ta.final
 @dc.dataclass(frozen=True)  # kw_only=True
 class AsyncStreamHttpClientResponse(BaseHttpClientResponse):
-    _stream: ta.Optional[AsyncBufferedBytesReader] = None
+    _stream: ta.Optional[AsyncBytesReader] = None
 
     @property
-    def stream(self) -> 'AsyncBufferedBytesReader':
+    def stream(self) -> 'AsyncBytesReader':
         if (st := self._stream) is None:
             raise TypeError('No data')
         return st

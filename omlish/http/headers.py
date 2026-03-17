@@ -3,6 +3,9 @@
 """
 TODO:
  - handle secrets (but they're strs..)
+ - *enforce* lower case access keys? `if not k.islower(): raise KeysMustBeLowerCaseHttpHeadersError(k)` ?
+   - `(s := 'abcd').lower() is s` == `False`
+ - kill `__new__` self hack, use (require?) `.of()`
 """
 import collections.abc
 import dataclasses as dc
@@ -36,6 +39,7 @@ class DuplicateHttpHeaderError(Exception):
     key: str
 
 
+@ta.final
 class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
     def __init__(self, src: CanHttpHeaders) -> None:
         super().__init__()
@@ -43,6 +47,23 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
         if isinstance(src, HttpHeaders):
             check.is_(src, self)
             return
+
+        self._raw = self.unpack(src)
+
+        self._all = tuple((self._as_key(k), v) for k, v in self._raw)
+
+        dct: ta.Dict[str, ta.List[str]] = {}
+        for k, v in self._all:
+            dct.setdefault(k, []).append(v)
+        self._dct = {k: tuple(v) for k, v in dct.items()}
+
+    @classmethod
+    def unpack(cls, src: ta.Optional[CanHttpHeaders]) -> ta.Sequence[ta.Tuple[str, str]]:
+        if src is None:
+            return ()
+
+        if isinstance(src, HttpHeaders):
+            return src.raw
 
         raw: ta.List[ta.Tuple[str, str]] = []
 
@@ -52,10 +73,10 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
         elif isinstance(src, collections.abc.Mapping):
             for k, v in src.items():
                 if isinstance(v, (str, bytes)):
-                    raw.append((self._decode(k), self._decode(v)))
+                    raw.append((cls._decode(k), cls._decode(v)))
                 else:
                     for e in v:
-                        raw.append((self._decode(k), self._decode(e)))
+                        raw.append((cls._decode(k), cls._decode(e)))
 
         elif isinstance(src, (str, bytes)):  # type: ignore
             raise TypeError(src)
@@ -66,25 +87,35 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
                     raise TypeError(t)
 
                 k, v = t
-                raw.append((self._decode(k), self._decode(v)))
+                raw.append((cls._decode(k), cls._decode(v)))
 
         else:
             raise TypeError(src)
 
-        self._raw = raw
-
-        self._all = tuple((self._as_key(k), v) for k, v in self._raw)
-
-        dct: ta.Dict[str, ta.List[str]] = {}
-        for k, v in self._all:
-            dct.setdefault(k, []).append(v)
-        self._dct = {k: tuple(v) for k, v in dct.items()}
+        return raw
 
     def __new__(cls, obj: CanHttpHeaders) -> 'HttpHeaders':
         if isinstance(obj, HttpHeaders):
             return obj
 
         return super().__new__(cls)
+
+    @classmethod
+    def of(cls, obj: ta.Optional[CanHttpHeaders]) -> 'HttpHeaders':
+        if isinstance(obj, HttpHeaders):
+            return obj
+
+        elif not obj:
+            return cls._EMPTY
+
+        else:
+            return cls(obj)
+
+    _EMPTY: ta.ClassVar['HttpHeaders']
+
+    @classmethod
+    def empty(cls) -> 'HttpHeaders':
+        return cls._EMPTY
 
     #
 
@@ -114,7 +145,7 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
     #
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._raw!r})'
+        return f'{self.__class__.__name__}<{", ".join(map(repr, self._dct))}>'
 
     #
 
@@ -131,6 +162,24 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
 
     def __getitem__(self, key: str) -> ta.Sequence[str]:
         return self._dct[key.lower()]
+
+    def __contains__(self, key: str) -> bool:  # type: ignore[override]
+        return check.isinstance(key, str).lower() in self._dct
+
+    #
+
+    _raw_by_key: ta.Mapping[str, ta.Sequence[ta.Tuple[str, str]]]
+
+    @property
+    def raw_by_key(self) -> ta.Mapping[str, ta.Sequence[ta.Tuple[str, str]]]:
+        try:
+            return self._raw_by_key
+        except AttributeError:
+            pass
+        dct: ta.Dict[str, ta.List[ta.Tuple[str, str]]] = {}
+        for k, v in self._raw:
+            dct.setdefault(self._as_key(k), []).append((k, v))
+        return {k: tuple(vs) for k, vs in dct.items()}
 
     #
 
@@ -228,15 +277,39 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
 
     def update(
             self,
-            *items: ta.Tuple[str, str],
-            override: bool = False,
+            *items: ta.Tuple[str, ta.Union[str, ta.Callable[[], ta.Optional[str]], None]],
+            if_present: ta.Literal['append', 'override', 'skip', 'raise'],
+            # preserve_raw: bool = False,  # TODO: less wasteful
     ) -> 'HttpHeaders':
-        if override:
-            nks = {self._as_key(k) for k, v in items}
-            src = [(k, v) for k, v in self._raw if k.lower() not in nks]
-        else:
-            src = list(self._raw)
-        return HttpHeaders([
-            *src,
-            *items,
-        ])
+        if not items:
+            return self
+
+        v: ta.Any
+        if if_present == 'append':
+            return HttpHeaders([
+                *self._raw,
+                *[(k, v) for k, rv in items if (v := (rv() if callable(rv) else rv)) is not None]],
+            )
+
+        dct: ta.Dict[str, ta.Sequence[ta.Tuple[str, str]]] = dict(self.raw_by_key)
+
+        for k, v in items:
+            if (lk := k.lower()) in dct and if_present != 'override':
+                if (v := (v() if callable(v) else v)) is None:
+                    continue
+
+                if if_present == 'skip':
+                    continue
+                elif if_present == 'raise':
+                    raise DuplicateHttpHeaderError(k)
+                else:
+                    raise RuntimeError(f'unknown if_present: {if_present!r}')
+
+            if (v := (v() if callable(v) else v)) is None:
+                continue
+            dct[lk] = [(k, v)]
+
+        return HttpHeaders([kv for kvs in dct.values() for kv in kvs])
+
+
+HttpHeaders._EMPTY = HttpHeaders([])  # noqa

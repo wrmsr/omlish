@@ -1,8 +1,10 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+import abc
 import collections  # noqa
 import dataclasses as dc
 import errno
+import io
 import socket
 import typing as ta
 
@@ -11,14 +13,16 @@ from .....io.pipelines.bytes.buffers import OutboundBytesBufferIoPipelineHandler
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
-from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from .....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from .....io.pipelines.flow.stub import StubIoPipelineFlowService
+from .....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
+from .....io.streams.types import BytesLike
 from .....io.streams.utils import ByteStreamBuffers
+from .....lite.abstract import Abstract
 from .....lite.check import check
 from ....clients.base import HttpClientContext  # noqa
 from ....clients.base import HttpClientRequest  # noqa
@@ -302,7 +306,6 @@ def sync_fetch_url(
 
         #
 
-        # Run driver to process request/response
         drv = SyncSocketIoPipelineDriver(
             puf.pipeline_spec,
             sock,
@@ -346,143 +349,146 @@ def sync_fetch_url(
 ##
 
 
-# class PipelineHttpClient(HttpClient):
-#     class _ResponseStream:
-#         """Adapter that reads response body data from the pipeline driver."""
-#
-#         def __init__(
-#                 self,
-#                 drv: SyncSocketIoPipelineDriver,
-#                 sock: 'socket.socket',
-#                 out_q: 'collections.deque[IoPipelineHttpClientRequestOutput]',
-#         ) -> None:
-#             super().__init__()
-#
-#             self._drv = drv
-#             self._sock = sock
-#             self._out_q = out_q
-#             self._done = False
-#
-#         def read1(self, n: int = -1, /) -> bytes:
-#             if self._done:
-#                 return b''
-#
-#             # First check if we have any queued messages from the on_output callback
-#             while self._out_q:
-#                 msg = self._out_q.popleft()
-#
-#                 if isinstance(msg, FullIoPipelineHttpResponse):
-#                     # Full response - return entire body and mark done
-#                     self._done = True
-#                     return ByteStreamBuffers.to_bytes(msg.body)
-#
-#                 elif isinstance(msg, IoPipelineHttpResponseBodyData):
-#                     return msg.data
-#
-#                 elif isinstance(msg, (IoPipelineHttpResponseEnd, IoPipelineMessages.FinalInput)):
-#                     self._done = True
-#                     return b''
-#
-#                 # Skip other message types (chunks, trailers, etc.)
-#
-#             # If no queued messages, pump the driver to get more
-#             while (out := self._drv.next()) is not None:
-#                 if isinstance(out, FullIoPipelineHttpResponse):
-#                     # Full response - return entire body and mark done
-#                     self._done = True
-#                     return ByteStreamBuffers.to_bytes(out.body)
-#
-#                 elif isinstance(out, IoPipelineHttpResponseBodyData):
-#                     return out.data
-#
-#                 elif isinstance(out, (IoPipelineHttpResponseEnd, IoPipelineMessages.FinalInput)):
-#                     self._done = True
-#                     return b''
-#
-#                 # Skip other message types (chunks, trailers, etc.)
-#
-#             # Pipeline stalled or ended
-#             self._done = True
-#             return b''
-#
-#         def close(self) -> None:
-#             try:
-#                 self._drv.close()
-#             finally:
-#                 self._sock.close()
-#
-#     def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
-#         puf = _prepare_url_fetch(
-#             req.url,
-#             method=req.method or 'GET',
-#             headers=req.headers_,
-#         )
-#
-#         #
-#
-#         sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
-#
-#         try:
-#             try:
-#                 sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-#             except OSError as e:
-#                 if e.errno != errno.ENOPROTOOPT:
-#                     raise
-#
-#             #
-#
-#             # Run driver to process request/response
-#             drv = SyncSocketIoPipelineDriver(
-#                 puf.pipeline_spec,
-#                 sock,
-#             )
-#
-#             out_q: collections.deque[IoPipelineHttpClientRequestOutput] = collections.deque()
-#
-#             def on_output(h_ctx: IoPipelineHandlerContext, msg: IoPipelineHttpClientRequestOutput) -> None:
-#                 out_q.append(msg)
-#
-#             drv.enqueue(IoPipelineHttpClientRequest(
-#                 puf.request,
-#                 on_output,
-#                 stream=True,
-#             ))
-#
-#             # Get the first message - should be either FullIoPipelineHttpResponse or IoPipelineHttpResponseHead
-#             while True:
-#                 while not out_q:
-#                     if (out := drv.next()) is not None:
-#                         out_q.append(out)
-#
-#                 out = out_q.popleft()
-#
-#                 if isinstance(out, FullIoPipelineHttpResponse):
-#                     # Full response received - put it back in queue for stream to read
-#                     out_q.append(out)
-#                     head = out.head
-#                     break
-#
-#                 elif isinstance(out, IoPipelineHttpResponseHead):
-#                     # Streaming response - head only
-#                     head = out
-#                     break
-#
-#                 else:
-#                     raise TypeError(out)  # noqa
-#
-#             # Create streaming adapter
-#             stream_adapter = self._ResponseStream(drv, sock, out_q)
-#
-#             return StreamHttpClientResponse(
-#                 status=head.status,
-#                 headers=head.headers,
-#                 request=req,
-#                 underlying=drv,
-#                 _stream=ReadableListBuffer().new_buffered_reader(stream_adapter),
-#                 _closer=stream_adapter.close,
-#             )
-#
-#         except BaseException:
-#             sock.close()
-#
-#             raise
+class PipelineHttpClient(HttpClient):
+    class _ResponseStream(Abstract):
+        @abc.abstractmethod
+        def read1(self, n: int = -1, /) -> bytes:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def read(self, n: int = -1, /) -> bytes:
+            raise NotImplementedError
+
+        def readall(self) -> bytes:
+            return self.read()
+
+        def close(self) -> None:
+            pass
+
+    class _EmptyResponseStream(_ResponseStream):
+        def read1(self, n: int = -1, /) -> bytes:
+            return b''
+
+        def read(self, n: int = -1, /) -> bytes:
+            return b''
+
+    class _StaticResponseStream(_ResponseStream):
+        def __init__(self, b: BytesLike) -> None:
+            self._r = io.BytesIO(b)
+
+        def read1(self, n: int = -1, /) -> bytes:
+            return self._r.read1(n)
+
+        def read(self, n: int = -1, /) -> bytes:
+            return self._r.read1(n)
+
+    class _DriverResponseStream(_ResponseStream):
+        def __init__(
+                self,
+                drv: SyncSocketIoPipelineDriver,
+                sock: 'socket.socket',
+        ) -> None:
+            super().__init__()
+
+            self._drv = drv
+            self._sock = sock
+
+            self._done = False
+
+        def read1(self, n: int = -1, /) -> bytes:
+            raise NotImplementedError
+
+        def read(self, n: int = -1, /) -> bytes:
+            raise NotImplementedError
+
+        def readall(self) -> bytes:
+            raise NotImplementedError
+
+        def close(self) -> None:
+            try:
+                self._drv.close()
+            finally:
+                self._sock.close()
+
+    #
+
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
+        puf = _prepare_url_fetch(
+            req.url,
+            method=req.method or 'GET',
+            headers=req.headers_,
+        )
+
+        #
+
+        sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
+
+        try:
+            try:
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except OSError as e:
+                if e.errno != errno.ENOPROTOOPT:
+                    raise
+
+            #
+
+            drv = SyncSocketIoPipelineDriver(
+                puf.pipeline_spec,
+                sock,
+            )
+
+            drv.enqueue(IoPipelineHttpClientMessages.Request(
+                puf.request,
+            ))
+
+            response: ta.Optional[FullIoPipelineHttpResponse] = None
+
+            while True:
+                if (out := drv.next()) is not None:
+                    if isinstance(out, IoPipelineHttpClientMessages.Output):
+                        msg = out.msg
+
+                        if isinstance(msg, FullIoPipelineHttpResponse):
+                            check.none(response)
+                            response = msg
+
+                            drv.enqueue(IoPipelineHttpClientMessages.Close())
+
+                        elif isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
+                            pass
+
+                        else:
+                            raise TypeError(out)  # noqa
+
+                    else:
+                        raise TypeError(out)  # noqa
+
+                if not drv.pipeline.is_ready:
+                    break
+
+            response = check.not_none(response)
+
+            response_stream: PipelineHttpClient._ResponseStream
+            if isinstance(response, FullIoPipelineHttpResponse):
+                if response.body:
+                    response_stream = self._StaticResponseStream(response.body)
+                else:
+                    response_stream = self._EmptyResponseStream()
+            else:
+                response_stream = self._DriverResponseStream(drv, sock)  # type: ignore[unreachable]
+
+            head = check.not_none(response).head
+
+            return StreamHttpClientResponse(
+                status=head.status,
+                headers=head.headers,
+                request=req,
+                underlying=drv,
+                _stream=response_stream,
+                _closer=response_stream.close,
+            )
+
+        except BaseException:
+            sock.close()
+
+            raise

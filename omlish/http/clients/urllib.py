@@ -74,7 +74,7 @@ class UrllibHttpClient(HttpClient):
                 headers=HttpHeaders(resp.headers.items()),
                 request=req,
                 underlying=resp,
-                _stream=ReadableListBuffer().new_buffered_reader(resp),
+                _stream=ReadableListBuffer().new_bytes_reader(resp),
                 _closer=resp.close,
             )
 

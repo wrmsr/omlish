@@ -5,7 +5,7 @@ import contextlib
 import dataclasses as dc
 import typing as ta
 
-from ...io.readers import BufferedBytesReader
+from ...io.readers import BytesReader
 from ...lite.abstract import Abstract
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpClient
@@ -27,10 +27,10 @@ HttpClientT = ta.TypeVar('HttpClientT', bound='HttpClient')
 @ta.final
 @dc.dataclass(frozen=True)  # kw_only=True
 class StreamHttpClientResponse(BaseHttpClientResponse):
-    _stream: ta.Optional[BufferedBytesReader] = None
+    _stream: ta.Optional[BytesReader] = None
 
     @property
-    def stream(self) -> 'BufferedBytesReader':
+    def stream(self) -> 'BytesReader':
         if (st := self._stream) is None:
             raise TypeError('No data')
         return st

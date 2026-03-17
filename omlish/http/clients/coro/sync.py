@@ -93,7 +93,7 @@ class CoroHttpClient(HttpClient):
                     headers=HttpHeaders(resp._state.headers.items()),  # noqa
                     request=self._req,
                     underlying=self,
-                    _stream=ReadableListBuffer().new_buffered_reader(self),
+                    _stream=ReadableListBuffer().new_bytes_reader(self),
                     _closer=self.close,
                 )
 

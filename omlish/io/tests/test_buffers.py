@@ -47,7 +47,7 @@ class TestReadableListBuffer(unittest.TestCase):
                 return self._parts.pop(0)
 
         buf = Rlb()
-        r = buf.new_buffered_reader(Raw([b'abc', b'']), chunk_size=8)
+        r = buf.new_bytes_reader(Raw([b'abc', b'']), chunk_size=8)
 
         # Ask for more than available; should return the partial bytes at EOF, not b''.
         assert r.read(5) == b'abc'
@@ -113,7 +113,7 @@ class TestAsyncBufferedReader(unittest.IsolatedAsyncioTestCase):
                 return self._parts.pop(0)
 
         buf = Rlb()
-        r = buf.new_async_buffered_reader(Raw([b'abc', b'']), chunk_size=8)
+        r = buf.new_async_bytes_reader(Raw([b'abc', b'']), chunk_size=8)
 
         assert await r.read(5) == b'abc'
         assert await r.read(1) == b''

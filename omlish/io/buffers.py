@@ -8,9 +8,9 @@ import io
 import typing as ta
 
 from ..lite.check import check
-from .readers import AsyncBufferedBytesReader
+from .readers import AsyncBytesReader
 from .readers import AsyncRawBytesReader
-from .readers import BufferedBytesReader
+from .readers import BytesReader
 from .readers import RawBytesReader
 
 
@@ -103,10 +103,10 @@ class ReadableListBuffer:
 
     #
 
-    DEFAULT_BUFFERED_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
+    DEFAULT_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     @ta.final
-    class _BufferedBytesReader(BufferedBytesReader):
+    class _BytesReader(BytesReader):
         def __init__(
                 self,
                 raw: RawBytesReader,
@@ -116,7 +116,7 @@ class ReadableListBuffer:
         ) -> None:
             self._raw = raw
             self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
 
         def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
@@ -148,20 +148,20 @@ class ReadableListBuffer:
                 buf.write(b)
             return buf.getvalue()
 
-    def new_buffered_reader(
+    def new_bytes_reader(
             self,
             raw: RawBytesReader,
             *,
             chunk_size: ta.Optional[int] = None,
-    ) -> BufferedBytesReader:
-        return self._BufferedBytesReader(
+    ) -> BytesReader:
+        return self._BytesReader(
             raw,
             self,
             chunk_size=chunk_size,
         )
 
     @ta.final
-    class _AsyncBufferedBytesReader(AsyncBufferedBytesReader):
+    class _AsyncBytesReader(AsyncBytesReader):
         def __init__(
                 self,
                 raw: AsyncRawBytesReader,
@@ -171,7 +171,7 @@ class ReadableListBuffer:
         ) -> None:
             self._raw = raw
             self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
 
         async def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
@@ -203,13 +203,13 @@ class ReadableListBuffer:
                 buf.write(b)
             return buf.getvalue()
 
-    def new_async_buffered_reader(
+    def new_async_bytes_reader(
             self,
             raw: AsyncRawBytesReader,
             *,
             chunk_size: ta.Optional[int] = None,
-    ) -> AsyncBufferedBytesReader:
-        return self._AsyncBufferedBytesReader(
+    ) -> AsyncBytesReader:
+        return self._AsyncBytesReader(
             raw,
             self,
             chunk_size=chunk_size,

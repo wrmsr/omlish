@@ -61,7 +61,7 @@ class HttpxHttpClient(HttpClient):
                 headers=HttpHeaders(resp.headers.raw),
                 request=req,
                 underlying=resp,
-                _stream=ReadableListBuffer().new_buffered_reader(self._StreamAdapter(resp.iter_bytes())),
+                _stream=ReadableListBuffer().new_bytes_reader(self._StreamAdapter(resp.iter_bytes())),
                 _closer=resp_close,  # type: ignore
             )
 
@@ -120,7 +120,7 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
                 headers=HttpHeaders(resp.headers.raw),
                 request=req,
                 underlying=resp,
-                _stream=ReadableListBuffer().new_async_buffered_reader(self._StreamAdapter(it)),
+                _stream=ReadableListBuffer().new_async_bytes_reader(self._StreamAdapter(it)),
                 _closer=es.aclose,
             )
 

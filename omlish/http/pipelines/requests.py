@@ -7,6 +7,7 @@ from ...io.streams.types import BytesLike
 from ...lite.abstract import Abstract
 from ...lite.check import check
 from ...lite.dataclasses import install_dataclass_kw_only_init
+from ..headers import CanHttpHeaders
 from ..headers import HttpHeaders
 from ..parsing import ParsedHttpMessage
 from ..versions import HttpVersion
@@ -67,20 +68,22 @@ class FullIoPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequest
             body: bytes = b'',
             connection: str = 'close',
 
-            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            headers: ta.Optional[CanHttpHeaders] = None,
     ) -> 'FullIoPipelineHttpRequest':
+        headers = HttpHeaders.of(headers).update(
+            ('Host', host),
+            ('Content-Type', content_type),
+            ('Content-Length', lambda: str(len(body) if body else None)),
+            ('Connection', connection),
+            if_present='skip',
+        )
+
         return cls(
             head=IoPipelineHttpRequestHead(
                 method=method,
                 target=target,
                 version=version,
-                headers=HttpHeaders([
-                    ('Host', host),
-                    *([('Content-Type', content_type)] if content_type is not None else []),
-                    *([('Content-Length', str(len(body)))] if body else []),
-                    ('Connection', connection),
-                    *(headers.items() if headers else []),
-                ]),
+                headers=headers,
             ),
             body=body,
         )

@@ -114,7 +114,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
-            dict(path='../../omlish/io/readers.py', sha1='8bcedaa1bf77f2ac54c97bf5144e87cf5738cf00'),
+            dict(path='../../omlish/io/readers.py', sha1='e72f427d9adc80fa9ca3392358670128da1d97de'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
@@ -137,7 +137,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
-            dict(path='../../omlish/io/buffers.py', sha1='8af0f85905358b48be8df8596d30e201d5d0d700'),
+            dict(path='../../omlish/io/buffers.py', sha1='c97a0a3b20d412af1ee7e3c1f88d6fab079f0646'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
@@ -1900,7 +1900,7 @@ class RawBytesReader(ta.Protocol):
     def read1(self, n: int = -1, /) -> bytes: ...
 
 
-class BufferedBytesReader(RawBytesReader, ta.Protocol):
+class BytesReader(RawBytesReader, ta.Protocol):
     def read(self, n: int = -1, /) -> bytes: ...
 
     def readall(self) -> bytes: ...
@@ -1913,7 +1913,7 @@ class AsyncRawBytesReader(ta.Protocol):
     def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
 
 
-class AsyncBufferedBytesReader(AsyncRawBytesReader, ta.Protocol):
+class AsyncBytesReader(AsyncRawBytesReader, ta.Protocol):
     def read(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
 
     def readall(self) -> ta.Awaitable[bytes]: ...
@@ -6368,10 +6368,10 @@ class ReadableListBuffer:
 
     #
 
-    DEFAULT_BUFFERED_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
+    DEFAULT_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     @ta.final
-    class _BufferedBytesReader(BufferedBytesReader):
+    class _BytesReader(BytesReader):
         def __init__(
                 self,
                 raw: RawBytesReader,
@@ -6381,7 +6381,7 @@ class ReadableListBuffer:
         ) -> None:
             self._raw = raw
             self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
 
         def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
@@ -6413,20 +6413,20 @@ class ReadableListBuffer:
                 buf.write(b)
             return buf.getvalue()
 
-    def new_buffered_reader(
+    def new_bytes_reader(
             self,
             raw: RawBytesReader,
             *,
             chunk_size: ta.Optional[int] = None,
-    ) -> BufferedBytesReader:
-        return self._BufferedBytesReader(
+    ) -> BytesReader:
+        return self._BytesReader(
             raw,
             self,
             chunk_size=chunk_size,
         )
 
     @ta.final
-    class _AsyncBufferedBytesReader(AsyncBufferedBytesReader):
+    class _AsyncBytesReader(AsyncBytesReader):
         def __init__(
                 self,
                 raw: AsyncRawBytesReader,
@@ -6436,7 +6436,7 @@ class ReadableListBuffer:
         ) -> None:
             self._raw = raw
             self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
 
         async def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
@@ -6468,13 +6468,13 @@ class ReadableListBuffer:
                 buf.write(b)
             return buf.getvalue()
 
-    def new_async_buffered_reader(
+    def new_async_bytes_reader(
             self,
             raw: AsyncRawBytesReader,
             *,
             chunk_size: ta.Optional[int] = None,
-    ) -> AsyncBufferedBytesReader:
-        return self._AsyncBufferedBytesReader(
+    ) -> AsyncBytesReader:
+        return self._AsyncBytesReader(
             raw,
             self,
             chunk_size=chunk_size,
