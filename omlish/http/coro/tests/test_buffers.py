@@ -3,8 +3,8 @@
 import asyncio
 import unittest
 
-from ..buffers import IncrementalWriteBuffer as Iwb
-from ..buffers import ReadableListBuffer as Rlb
+from .._buffers import IncrementalWriteBuffer as Iwb
+from .._buffers import ReadableListBuffer as Rlb
 
 
 class TestReadableListBuffer(unittest.TestCase):

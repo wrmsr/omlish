@@ -5,8 +5,8 @@ import socket
 import typing as ta
 import urllib.parse
 
-from ....io.buffers import ReadableListBuffer
 from ....lite.check import check
+from ...coro._buffers import ReadableListBuffer
 from ...coro.client.connection import CoroHttpClientConnection
 from ...coro.client.response import CoroHttpClientResponse
 from ...coro.io import CoroHttpIo

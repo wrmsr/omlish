@@ -95,9 +95,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
             dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='a093aa6b49e25b3206f59b703b281d569c386838'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
+            dict(path='../../omlish/http/coro/_pushback.py', sha1='783fe8a40fa9f2febf035f4553c53c73b9bd58e1'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
-            dict(path='../../omlish/io/pushback.py', sha1='783fe8a40fa9f2febf035f4553c53c73b9bd58e1'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
@@ -173,7 +173,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='c92e4772e2d50f080bc1ca8a317d0c7aea5b710a'),
-            dict(path='../../omlish/http/coro/server/sockets.py', sha1='512e6fdd4ad9a533b81a584e45c7d7e9b0188c15'),
+            dict(path='../../omlish/http/coro/server/sockets.py', sha1='bb0915b307622067c5460387ed0014f954167eb5'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
@@ -636,128 +636,7 @@ class DockerPortRelay:
 
 
 ########################################
-# ../../../omlish/http/urllib.py
-
-
-##
-
-
-class NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
-    """
-    https://stackoverflow.com/a/74844056
-
-    Usage:
-
-        opener = urllib.request.build_opener(NonRaisingUrllibErrorProcessor)
-        with opener.open(req) as resp:
-            ...
-    """
-
-    def http_response(self, request, response):
-        return response
-
-    def https_response(self, request, response):
-        return response
-
-
-########################################
-# ../../../omlish/http/versions.py
-
-
-##
-
-
-class UnknownHttpVersionError(Exception):
-    pass
-
-
-@ta.final
-@functools.total_ordering
-class HttpVersion:
-    def __init__(self, major: int, minor: int) -> None:
-        self._major = major
-        self._minor = minor
-
-        self._parts = parts = (major, minor)
-
-        self._hash = hash(parts)
-
-        self._str = f'HTTP/{major}.{minor}'
-        self._short_str = f'{major}.{minor}'
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self.major}, {self.minor})'
-
-    def __hash__(self) -> int:
-        return self._hash
-
-    def __eq__(self, other: object) -> ta.Any:
-        if not isinstance(other, HttpVersion):
-            return NotImplemented
-        return self._parts == other._parts
-
-    def __lt__(self, other: object) -> ta.Any:
-        if not isinstance(other, HttpVersion):
-            return NotImplemented
-        return self._parts < other._parts
-
-    @property
-    def major(self) -> int:
-        return self._major
-
-    @property
-    def minor(self) -> int:
-        return self._minor
-
-    def __str__(self) -> str:
-        return self._str
-
-    @property
-    def short_str(self) -> str:
-        return self._short_str
-
-    def __iter__(self) -> ta.Iterator[int]:
-        return iter(self._parts)
-
-
-@ta.final
-class HttpVersions:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    HTTP_0_9 = HttpVersion(0, 9)
-    HTTP_1_0 = HttpVersion(1, 0)
-    HTTP_1_1 = HttpVersion(1, 1)
-    HTTP_2_0 = HttpVersion(2, 0)
-
-    _FROM_STR: ta.ClassVar[ta.Mapping[str, HttpVersion]] = {
-        str(v): v for v in [
-            HTTP_0_9,
-            HTTP_1_0,
-            HTTP_1_1,
-            HTTP_2_0,
-        ]
-    }
-
-    @classmethod
-    def from_str(cls, s: str) -> HttpVersion:
-        try:
-            return cls._FROM_STR[s]
-        except KeyError:
-            raise UnknownHttpVersionError(s) from None
-
-    @classmethod
-    def of(cls, o: ta.Union[HttpVersion, str]) -> HttpVersion:
-        if isinstance(o, HttpVersion):
-            return o
-        elif isinstance(o, str):
-            return cls.from_str(o)
-        else:
-            raise TypeError(o)
-
-
-########################################
-# ../../../omlish/io/pushback.py
+# ../../../omlish/http/coro/_pushback.py
 
 
 ##
@@ -895,6 +774,127 @@ class PushbackReader:
             if not chunk:
                 raise EOFError('EOF reached before delimiter was found')
             buf += chunk
+
+
+########################################
+# ../../../omlish/http/urllib.py
+
+
+##
+
+
+class NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
+    """
+    https://stackoverflow.com/a/74844056
+
+    Usage:
+
+        opener = urllib.request.build_opener(NonRaisingUrllibErrorProcessor)
+        with opener.open(req) as resp:
+            ...
+    """
+
+    def http_response(self, request, response):
+        return response
+
+    def https_response(self, request, response):
+        return response
+
+
+########################################
+# ../../../omlish/http/versions.py
+
+
+##
+
+
+class UnknownHttpVersionError(Exception):
+    pass
+
+
+@ta.final
+@functools.total_ordering
+class HttpVersion:
+    def __init__(self, major: int, minor: int) -> None:
+        self._major = major
+        self._minor = minor
+
+        self._parts = parts = (major, minor)
+
+        self._hash = hash(parts)
+
+        self._str = f'HTTP/{major}.{minor}'
+        self._short_str = f'{major}.{minor}'
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.major}, {self.minor})'
+
+    def __hash__(self) -> int:
+        return self._hash
+
+    def __eq__(self, other: object) -> ta.Any:
+        if not isinstance(other, HttpVersion):
+            return NotImplemented
+        return self._parts == other._parts
+
+    def __lt__(self, other: object) -> ta.Any:
+        if not isinstance(other, HttpVersion):
+            return NotImplemented
+        return self._parts < other._parts
+
+    @property
+    def major(self) -> int:
+        return self._major
+
+    @property
+    def minor(self) -> int:
+        return self._minor
+
+    def __str__(self) -> str:
+        return self._str
+
+    @property
+    def short_str(self) -> str:
+        return self._short_str
+
+    def __iter__(self) -> ta.Iterator[int]:
+        return iter(self._parts)
+
+
+@ta.final
+class HttpVersions:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    HTTP_0_9 = HttpVersion(0, 9)
+    HTTP_1_0 = HttpVersion(1, 0)
+    HTTP_1_1 = HttpVersion(1, 1)
+    HTTP_2_0 = HttpVersion(2, 0)
+
+    _FROM_STR: ta.ClassVar[ta.Mapping[str, HttpVersion]] = {
+        str(v): v for v in [
+            HTTP_0_9,
+            HTTP_1_0,
+            HTTP_1_1,
+            HTTP_2_0,
+        ]
+    }
+
+    @classmethod
+    def from_str(cls, s: str) -> HttpVersion:
+        try:
+            return cls._FROM_STR[s]
+        except KeyError:
+            raise UnknownHttpVersionError(s) from None
+
+    @classmethod
+    def of(cls, o: ta.Union[HttpVersion, str]) -> HttpVersion:
+        if isinstance(o, HttpVersion):
+            return o
+        elif isinstance(o, str):
+            return cls.from_str(o)
+        else:
+            raise TypeError(o)
 
 
 ########################################
