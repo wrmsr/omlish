@@ -27,13 +27,13 @@ from ..types import Output
 @dc.dataclass()
 @dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class HttpStreamResponseError(Exception):
-    response: http.BaseHttpResponse
+    response: http.BaseHttpClientResponse
 
     data: bytes | None = None
     data_exception: Exception | None = None
 
     @classmethod
-    async def from_response(cls, response: http.AsyncStreamHttpResponse) -> 'HttpStreamResponseError':
+    async def from_response(cls, response: http.AsyncStreamHttpClientResponse) -> 'HttpStreamResponseError':
         data: bytes | None = None
         data_exception: Exception | None = None
 
@@ -72,7 +72,7 @@ class BytesHttpStreamResponseBuilder:
     def __init__(
             self,
             http_client: http.AsyncHttpClient | None,
-            handling: ta.Callable[[http.AsyncStreamHttpResponse], BytesHttpStreamResponseHandler],
+            handling: ta.Callable[[http.AsyncStreamHttpClientResponse], BytesHttpStreamResponseHandler],
             *,
             read_chunk_size: int = -1,
     ) -> None:
@@ -84,7 +84,7 @@ class BytesHttpStreamResponseBuilder:
 
     async def new_stream_response(
             self,
-            http_request: http.HttpRequest,
+            http_request: http.HttpClientRequest,
             options: ta.Sequence[Option],
     ) -> StreamResponse:
         async with UseResources.or_new(options) as rs:

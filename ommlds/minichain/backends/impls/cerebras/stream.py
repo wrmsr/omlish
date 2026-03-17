@@ -94,7 +94,7 @@ class CerebrasChatChoicesStreamService:
 
         raw_request = msh.marshal(cer_request)
 
-        http_request = http.HttpRequest(
+        http_request = http.HttpClientRequest(
             'https://api.cerebras.ai/v1/chat/completions',
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,

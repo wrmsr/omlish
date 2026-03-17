@@ -11,12 +11,12 @@ from ... import lang
 from ...io.buffers import ReadableListBuffer
 from ..headers import HttpHeaders
 from .asyncs import AsyncHttpClient
-from .asyncs import AsyncStreamHttpResponse
+from .asyncs import AsyncStreamHttpClientResponse
 from .base import HttpClientContext
 from .base import HttpClientError
-from .base import HttpRequest
+from .base import HttpClientRequest
 from .sync import HttpClient
-from .sync import StreamHttpResponse
+from .sync import StreamHttpClientResponse
 
 
 if ta.TYPE_CHECKING:
@@ -39,7 +39,7 @@ class HttpxHttpClient(HttpClient):
             except StopIteration:
                 return b''
 
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
         try:
             resp_cm = httpx.stream(
                 method=req.method_or_default,
@@ -56,7 +56,7 @@ class HttpxHttpClient(HttpClient):
 
         try:
             resp = resp_cm.__enter__()
-            return StreamHttpResponse(
+            return StreamHttpClientResponse(
                 status=resp.status_code,
                 headers=HttpHeaders(resp.headers.raw),
                 request=req,
@@ -88,7 +88,7 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
             except StopAsyncIteration:
                 return b''
 
-    async def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> AsyncStreamHttpResponse:
+    async def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> AsyncStreamHttpClientResponse:
         es = contextlib.AsyncExitStack()
 
         try:
@@ -115,7 +115,7 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
             #   https://gist.github.com/wrmsr/a0578ee5d5371b53804cfb56aeb84cdf .
             es.push_async_callback(it.aclose)  # type: ignore[attr-defined]
 
-            return AsyncStreamHttpResponse(
+            return AsyncStreamHttpClientResponse(
                 status=resp.status_code,
                 headers=HttpHeaders(resp.headers.raw),
                 request=req,

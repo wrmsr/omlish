@@ -23,9 +23,9 @@ from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from .....lite.check import check
 from ....clients.base import HttpClientContext
-from ....clients.base import HttpRequest
+from ....clients.base import HttpClientRequest
 from ....clients.sync import HttpClient
-from ....clients.sync import StreamHttpResponse
+from ....clients.sync import StreamHttpClientResponse
 from ....headers import HttpHeaders
 from ...clients.requests import IoPipelineHttpRequestCompressor
 from ...clients.requests import IoPipelineHttpRequestEncoder
@@ -261,7 +261,7 @@ def _prepare_url_fetch(
         headers={
             'User-Agent': 'omlish-http-client/0.1',
             # 'Connection': 'close',
-            **(headers or {}),
+            **{k: v for k, vs in (headers or {}).items() for v in vs},
         },
     )
 
@@ -459,7 +459,7 @@ class PipelineHttpClient(HttpClient):
 
             self._sock.close()
 
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
         puf = _prepare_url_fetch(
             req.url,
             method=req.method or 'GET',
@@ -520,7 +520,7 @@ class PipelineHttpClient(HttpClient):
             # Create streaming adapter
             stream_adapter = self._ResponseStream(drv, sock, out_q)
 
-            return StreamHttpResponse(
+            return StreamHttpClientResponse(
                 status=head.status,
                 headers=head.headers,
                 request=req,

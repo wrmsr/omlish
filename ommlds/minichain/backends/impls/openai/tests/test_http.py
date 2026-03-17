@@ -80,7 +80,7 @@ def test_openai_http(harness, cli_cls):
     )
 
     with cli_cls() as cli:
-        print(cli.request(hu.HttpRequest(
+        print(cli.request(hu.HttpClientRequest(
             'https://api.openai.com/v1/chat/completions',
             headers={
                 hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,
@@ -111,7 +111,7 @@ def test_openai_http_stream(harness, cli_cls):
     )
 
     with cli_cls() as cli:
-        with cli.stream_request(hu.HttpRequest(
+        with cli.stream_request(hu.HttpClientRequest(
             'https://api.openai.com/v1/chat/completions',
             headers={
                 hu.consts.HEADER_CONTENT_TYPE: hu.consts.CONTENT_TYPE_JSON,

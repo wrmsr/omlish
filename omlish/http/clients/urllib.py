@@ -8,23 +8,23 @@ import urllib.request
 from ...io.buffers import ReadableListBuffer
 from ...lite.check import check
 from ..headers import HttpHeaders
-from .base import DEFAULT_ENCODING
+from .base import DEFAULT_HTTP_CLIENT_ENCODING
 from .base import HttpClientContext
 from .base import HttpClientError
-from .base import HttpRequest
+from .base import HttpClientRequest
 from .sync import HttpClient
-from .sync import StreamHttpResponse
+from .sync import StreamHttpClientResponse
 
 
 ##
 
 
 class UrllibHttpClient(HttpClient):
-    def _build_request(self, req: HttpRequest) -> urllib.request.Request:
+    def _build_request(self, req: HttpClientRequest) -> urllib.request.Request:
         d: ta.Any
         if (d := req.data) is not None:
             if isinstance(d, str):
-                d = d.encode(DEFAULT_ENCODING)
+                d = d.encode(DEFAULT_HTTP_CLIENT_ENCODING)
 
         # urllib headers are dumb dicts [1], and keys *must* be strings or it will automatically add problematic default
         # headers because it doesn't see string keys in its header dict [2]. frustratingly it has no problem accepting
@@ -44,7 +44,7 @@ class UrllibHttpClient(HttpClient):
             data=d,
         )
 
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
         try:
             resp = urllib.request.urlopen(  # noqa
                 self._build_request(req),
@@ -53,7 +53,7 @@ class UrllibHttpClient(HttpClient):
 
         except urllib.error.HTTPError as e:
             try:
-                return StreamHttpResponse(
+                return StreamHttpClientResponse(
                     status=e.code,
                     headers=HttpHeaders(e.headers.items()),
                     request=req,
@@ -69,7 +69,7 @@ class UrllibHttpClient(HttpClient):
             raise HttpClientError from e
 
         try:
-            return StreamHttpResponse(
+            return StreamHttpClientResponse(
                 status=resp.status,
                 headers=HttpHeaders(resp.headers.items()),
                 request=req,

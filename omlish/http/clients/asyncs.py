@@ -9,15 +9,15 @@ from ...io.readers import AsyncBufferedBytesReader
 from ...lite.abstract import Abstract
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpClient
-from .base import BaseHttpResponse
-from .base import BaseHttpResponseT
+from .base import BaseHttpClientResponse
+from .base import BaseHttpClientResponseT
 from .base import HttpClientContext
-from .base import HttpRequest
-from .base import HttpResponse
-from .base import HttpStatusError
+from .base import HttpClientRequest
+from .base import HttpClientResponse
+from .base import StatusHttpClientError
 
 
-AsyncStreamHttpResponseT = ta.TypeVar('AsyncStreamHttpResponseT', bound='AsyncStreamHttpResponse')
+AsyncStreamHttpClientResponseT = ta.TypeVar('AsyncStreamHttpClientResponseT', bound='AsyncStreamHttpClientResponse')
 AsyncHttpClientT = ta.TypeVar('AsyncHttpClientT', bound='AsyncHttpClient')
 
 
@@ -26,7 +26,7 @@ AsyncHttpClientT = ta.TypeVar('AsyncHttpClientT', bound='AsyncHttpClient')
 
 @ta.final
 @dc.dataclass(frozen=True)  # kw_only=True
-class AsyncStreamHttpResponse(BaseHttpResponse):
+class AsyncStreamHttpClientResponse(BaseHttpClientResponse):
     _stream: ta.Optional[AsyncBufferedBytesReader] = None
 
     @property
@@ -43,7 +43,7 @@ class AsyncStreamHttpResponse(BaseHttpResponse):
 
     _closer: ta.Optional[ta.Callable[[], ta.Awaitable[None]]] = None
 
-    async def __aenter__(self: AsyncStreamHttpResponseT) -> AsyncStreamHttpResponseT:
+    async def __aenter__(self: AsyncStreamHttpClientResponseT) -> AsyncStreamHttpClientResponseT:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -57,11 +57,11 @@ class AsyncStreamHttpResponse(BaseHttpResponse):
 #
 
 
-async def async_close_http_client_response(resp: BaseHttpResponse) -> None:
-    if isinstance(resp, HttpResponse):
+async def async_close_http_client_response(resp: BaseHttpClientResponse) -> None:
+    if isinstance(resp, HttpClientResponse):
         pass
 
-    elif isinstance(resp, AsyncStreamHttpResponse):
+    elif isinstance(resp, AsyncStreamHttpClientResponse):
         await resp.close()
 
     else:
@@ -69,12 +69,12 @@ async def async_close_http_client_response(resp: BaseHttpResponse) -> None:
 
 
 @contextlib.asynccontextmanager
-async def async_closing_http_client_response(resp: BaseHttpResponseT) -> ta.AsyncGenerator[BaseHttpResponseT, None]:
-    if isinstance(resp, HttpResponse):
+async def async_closing_http_client_response(resp: BaseHttpClientResponseT) -> ta.AsyncGenerator[BaseHttpClientResponseT, None]:  # noqa
+    if isinstance(resp, HttpClientResponse):
         yield resp
         return
 
-    elif isinstance(resp, AsyncStreamHttpResponse):
+    elif isinstance(resp, AsyncStreamHttpClientResponse):
         try:
             yield resp
         finally:
@@ -84,12 +84,12 @@ async def async_closing_http_client_response(resp: BaseHttpResponseT) -> ta.Asyn
         raise TypeError(resp)
 
 
-async def async_read_http_client_response(resp: BaseHttpResponse) -> HttpResponse:
-    if isinstance(resp, HttpResponse):
+async def async_read_http_client_response(resp: BaseHttpClientResponse) -> HttpClientResponse:
+    if isinstance(resp, HttpClientResponse):
         return resp
 
-    elif isinstance(resp, AsyncStreamHttpResponse):
-        return HttpResponse(**{
+    elif isinstance(resp, AsyncStreamHttpClientResponse):
+        return HttpClientResponse(**{
             **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('_stream', '_closer')},
             **({'data': await resp.stream.readall()} if resp.has_data else {}),
         })
@@ -110,11 +110,11 @@ class AsyncHttpClient(BaseHttpClient, Abstract):
 
     async def request(
             self,
-            req: HttpRequest,
+            req: HttpClientRequest,
             *,
             context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
-    ) -> HttpResponse:
+    ) -> HttpClientResponse:
         async with async_closing_http_client_response(await self.stream_request(
                 req,
                 context=context,
@@ -124,11 +124,11 @@ class AsyncHttpClient(BaseHttpClient, Abstract):
 
     async def stream_request(
             self,
-            req: HttpRequest,
+            req: HttpClientRequest,
             *,
             context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
-    ) -> AsyncStreamHttpResponse:
+    ) -> AsyncStreamHttpClientResponse:
         if context is None:
             context = HttpClientContext()
 
@@ -140,7 +140,7 @@ class AsyncHttpClient(BaseHttpClient, Abstract):
                     cause = resp.underlying
                 else:
                     cause = None
-                raise HttpStatusError(await async_read_http_client_response(resp)) from cause  # noqa
+                raise StatusHttpClientError(await async_read_http_client_response(resp)) from cause  # noqa
 
         except Exception:
             await async_close_http_client_response(resp)
@@ -149,5 +149,5 @@ class AsyncHttpClient(BaseHttpClient, Abstract):
         return resp
 
     @abc.abstractmethod
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> ta.Awaitable[AsyncStreamHttpResponse]:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> ta.Awaitable[AsyncStreamHttpClientResponse]:  # noqa
         raise NotImplementedError

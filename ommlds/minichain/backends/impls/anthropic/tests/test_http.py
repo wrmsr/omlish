@@ -21,7 +21,7 @@ def test_anthropic_http(harness, cli_cls):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
 
     with cli_cls() as cli:
-        print(cli.request(http.HttpRequest(
+        print(cli.request(http.HttpClientRequest(
             'https://api.anthropic.com/v1/messages',
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,

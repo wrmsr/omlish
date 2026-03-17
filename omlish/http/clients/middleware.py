@@ -15,14 +15,14 @@ from ...lite.abstract import Abstract
 from ...lite.check import check
 from ..urls import parsed_url_replace
 from .asyncs import AsyncHttpClient
-from .asyncs import AsyncStreamHttpResponse
+from .asyncs import AsyncStreamHttpClientResponse
 from .base import BaseHttpClient
-from .base import BaseHttpResponse
+from .base import BaseHttpClientResponse
 from .base import HttpClientContext
 from .base import HttpClientError
-from .base import HttpRequest
+from .base import HttpClientRequest
 from .sync import HttpClient
-from .sync import StreamHttpResponse
+from .sync import StreamHttpClientResponse
 from .sync import close_http_client_response
 
 
@@ -36,16 +36,16 @@ class HttpClientMiddleware(Abstract):
     def process_request(
             self,
             ctx: HttpClientContext,
-            req: HttpRequest,
-    ) -> HttpRequest:
+            req: HttpClientRequest,
+    ) -> HttpClientRequest:
         return req
 
     def process_response(
             self,
             ctx: HttpClientContext,
-            req: HttpRequest,
-            resp: BaseHttpResponse,
-    ) -> ta.Union[BaseHttpResponse, HttpRequest]:
+            req: HttpClientRequest,
+            resp: BaseHttpClientResponse,
+    ) -> ta.Union[BaseHttpClientResponse, HttpClientRequest]:
         return resp
 
 
@@ -63,8 +63,8 @@ class AbstractMiddlewareHttpClient(Abstract, ta.Generic[BaseHttpClientT]):
     def _process_request(
             self,
             ctx: HttpClientContext,
-            req: HttpRequest,
-    ) -> HttpRequest:
+            req: HttpClientRequest,
+    ) -> HttpClientRequest:
         for mw in self._middlewares:
             req = mw.process_request(ctx, req)
         return req
@@ -72,12 +72,12 @@ class AbstractMiddlewareHttpClient(Abstract, ta.Generic[BaseHttpClientT]):
     def _process_response(
             self,
             ctx: HttpClientContext,
-            req: HttpRequest,
-            resp: BaseHttpResponse,
-    ) -> ta.Union[BaseHttpResponse, HttpRequest]:
+            req: HttpClientRequest,
+            resp: BaseHttpClientResponse,
+    ) -> ta.Union[BaseHttpClientResponse, HttpClientRequest]:
         for mw in self._middlewares:
             nxt = mw.process_response(ctx, req, resp)
-            if isinstance(nxt, HttpRequest):
+            if isinstance(nxt, HttpClientRequest):
                 return nxt
             else:
                 resp = nxt
@@ -88,7 +88,7 @@ class AbstractMiddlewareHttpClient(Abstract, ta.Generic[BaseHttpClientT]):
 
 
 class MiddlewareHttpClient(AbstractMiddlewareHttpClient[HttpClient], HttpClient):
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
         while True:
             req = self._process_request(ctx, req)
 
@@ -97,12 +97,12 @@ class MiddlewareHttpClient(AbstractMiddlewareHttpClient[HttpClient], HttpClient)
             try:
                 out = self._process_response(ctx, req, resp)
 
-                if isinstance(out, HttpRequest):
+                if isinstance(out, HttpClientRequest):
                     close_http_client_response(resp)
                     req = out
                     continue
 
-                elif isinstance(out, StreamHttpResponse):
+                elif isinstance(out, StreamHttpClientResponse):
                     return out
 
                 else:
@@ -116,7 +116,7 @@ class MiddlewareHttpClient(AbstractMiddlewareHttpClient[HttpClient], HttpClient)
 
 
 class MiddlewareAsyncHttpClient(AbstractMiddlewareHttpClient[AsyncHttpClient], AsyncHttpClient):
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> ta.Awaitable[AsyncStreamHttpResponse]:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> ta.Awaitable[AsyncStreamHttpClientResponse]:  # noqa
         return self._client.stream_request(self._process_request(ctx, req))
 
 
@@ -155,9 +155,9 @@ class RedirectHandlingHttpClientMiddleware(HttpClientMiddleware):
     def process_response(
             self,
             ctx: HttpClientContext,
-            req: HttpRequest,
-            resp: BaseHttpResponse,
-    ) -> ta.Union[BaseHttpResponse, HttpRequest]:  # noqa
+            req: HttpClientRequest,
+            resp: BaseHttpClientResponse,
+    ) -> ta.Union[BaseHttpClientResponse, HttpClientRequest]:  # noqa
         if resp.status == 302:
             st = self._get_state(ctx)
             if st.num_redirects >= self._max_redirects:

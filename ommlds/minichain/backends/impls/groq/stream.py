@@ -94,7 +94,7 @@ class GroqChatChoicesStreamService:
 
         raw_request = msh.marshal(gq_request)
 
-        http_request = http.HttpRequest(
+        http_request = http.HttpClientRequest(
             self.URL,
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,

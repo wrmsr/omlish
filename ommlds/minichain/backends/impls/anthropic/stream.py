@@ -81,7 +81,7 @@ class AnthropicChatChoicesStreamService:
 
         raw_request = msh.marshal(a_req)
 
-        http_request = http.HttpRequest(
+        http_request = http.HttpClientRequest(
             'https://api.anthropic.com/v1/messages',
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,

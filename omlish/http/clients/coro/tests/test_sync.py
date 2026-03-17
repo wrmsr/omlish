@@ -1,6 +1,6 @@
 import pytest
 
-from ...base import HttpRequest
+from ...base import HttpClientRequest
 from ..sync import CoroHttpClient
 
 
@@ -10,7 +10,7 @@ from ..sync import CoroHttpClient
 @pytest.mark.parametrize('readall', [False, True])
 def test_clients_stream(data, readall):
     with CoroHttpClient() as cli:
-        with cli.stream_request(HttpRequest(
+        with cli.stream_request(HttpClientRequest(
                 'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
                 'POST' if data is not None else 'GET',
                 headers={'User-Agent': 'omlish'},

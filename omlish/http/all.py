@@ -5,7 +5,7 @@ with _lang.auto_proxy_init(globals()):
     ##
 
     from .clients.asyncs import (  # noqa
-        AsyncStreamHttpResponse,
+        AsyncStreamHttpClientResponse,
 
         async_close_http_client_response,
         async_closing_http_client_response,
@@ -15,18 +15,18 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .clients.base import (  # noqa
-        DEFAULT_ENCODING,
-        is_success_status,
+        DEFAULT_HTTP_CLIENT_ENCODING,
+        is_success_http_status,
 
-        HttpRequest,
+        HttpClientRequest,
 
-        BaseHttpResponse,
-        HttpResponse,
+        BaseHttpClientResponse,
+        HttpClientResponse,
 
         HttpClientContext,
 
         HttpClientError,
-        HttpStatusError,
+        StatusHttpClientError,
 
         BaseHttpClient,
     )
@@ -61,7 +61,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .clients.sync import (  # noqa
-        StreamHttpResponse,
+        StreamHttpClientResponse,
 
         close_http_client_response,
         closing_http_client_response,

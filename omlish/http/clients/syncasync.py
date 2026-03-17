@@ -3,11 +3,11 @@
 import dataclasses as dc
 
 from .asyncs import AsyncHttpClient
-from .asyncs import AsyncStreamHttpResponse
+from .asyncs import AsyncStreamHttpClientResponse
 from .base import HttpClientContext
-from .base import HttpRequest
+from .base import HttpClientRequest
 from .sync import HttpClient
-from .sync import StreamHttpResponse
+from .sync import StreamHttpClientResponse
 
 
 ##
@@ -21,7 +21,7 @@ class SyncAsyncHttpClient(AsyncHttpClient):
 
     @dc.dataclass(frozen=True)
     class _StreamAdapter:
-        ul: StreamHttpResponse
+        ul: StreamHttpClientResponse
 
         async def read1(self, n: int = -1, /) -> bytes:
             return self.ul.stream.read1(n)
@@ -35,9 +35,9 @@ class SyncAsyncHttpClient(AsyncHttpClient):
         async def close(self) -> None:
             self.ul.close()
 
-    async def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> AsyncStreamHttpResponse:
+    async def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> AsyncStreamHttpClientResponse:
         resp = self._client.stream_request(req, context=ctx)
-        return AsyncStreamHttpResponse(
+        return AsyncStreamHttpClientResponse(
             status=resp.status,
             headers=resp.headers,
             request=req,

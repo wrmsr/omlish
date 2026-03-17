@@ -6,8 +6,8 @@ import pytest
 
 from .. import default
 from ..base import HttpClientError
-from ..base import HttpRequest
-from ..base import HttpStatusError
+from ..base import HttpClientRequest
+from ..base import StatusHttpClientError
 from ..executor import ExecutorAsyncHttpClient
 from ..httpx import HttpxAsyncHttpClient
 from ..syncasync import SyncAsyncHttpClient
@@ -45,7 +45,7 @@ CLIENTS: list = [
 @pytest.mark.parametrize('data', [None, '{}', b'{}'])
 async def test_clients(cls, data):
     async with cls() as cli:
-        resp = await cli.request(HttpRequest(
+        resp = await cli.request(HttpClientRequest(
             f'https://httpbingo.org/{"post" if data else "get"}',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
@@ -62,7 +62,7 @@ async def test_clients(cls, data):
 @pytest.mark.parametrize('readall', [False, True])
 async def test_clients_stream(cls, data, readall):
     async with cls() as cli:
-        async with (await cli.stream_request(HttpRequest(
+        async with (await cli.stream_request(HttpClientRequest(
                 'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
                 'POST' if data is not None else 'GET',
                 headers={'User-Agent': 'omlish'},
@@ -88,7 +88,7 @@ async def test_clients_stream(cls, data, readall):
 async def test_clients_error(cls):
     data = None
     async with cls() as cli:
-        resp = await cli.request(HttpRequest(
+        resp = await cli.request(HttpClientRequest(
             'https://httpbingo.org/basic-auth/foo/bar',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
@@ -104,9 +104,9 @@ async def test_clients_error(cls):
 async def test_clients_error_check(cls):
     data = None
     async with cls() as cli:
-        with pytest.raises(HttpStatusError) as ex:
+        with pytest.raises(StatusHttpClientError) as ex:
             await cli.request(
-                HttpRequest(
+                HttpClientRequest(
                     'https://httpbingo.org/basic-auth/foo/bar',
                     'POST' if data is not None else 'GET',
                     headers={'User-Agent': 'omlish'},
@@ -124,7 +124,7 @@ async def test_clients_error_url(cls):
     data = None
     async with cls() as cli:
         with pytest.raises(HttpClientError):
-            await cli.request(HttpRequest(
+            await cli.request(HttpClientRequest(
                 'https://foo.notarealtld/',
                 'POST' if data is not None else 'GET',
                 headers={'User-Agent': 'omlish'},

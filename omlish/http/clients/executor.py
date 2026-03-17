@@ -4,11 +4,11 @@ import dataclasses as dc
 import typing as ta
 
 from .asyncs import AsyncHttpClient
-from .asyncs import AsyncStreamHttpResponse
+from .asyncs import AsyncStreamHttpClientResponse
 from .base import HttpClientContext
-from .base import HttpRequest
+from .base import HttpClientRequest
 from .sync import HttpClient
-from .sync import StreamHttpResponse
+from .sync import StreamHttpClientResponse
 
 
 ##
@@ -28,7 +28,7 @@ class ExecutorAsyncHttpClient(AsyncHttpClient):
     @dc.dataclass(frozen=True)
     class _StreamAdapter:
         owner: 'ExecutorAsyncHttpClient'
-        resp: StreamHttpResponse
+        resp: StreamHttpClientResponse
 
         async def read1(self, n: int = -1, /) -> bytes:
             return await self.owner._run_in_executor(self.resp.stream.read1, n)  # noqa
@@ -42,9 +42,9 @@ class ExecutorAsyncHttpClient(AsyncHttpClient):
         async def close(self) -> None:
             return await self.owner._run_in_executor(self.resp.close)  # noqa
 
-    async def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> AsyncStreamHttpResponse:
-        resp: StreamHttpResponse = await self._run_in_executor(lambda: self._client.stream_request(req, context=ctx))
-        return AsyncStreamHttpResponse(
+    async def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> AsyncStreamHttpClientResponse:
+        resp: StreamHttpClientResponse = await self._run_in_executor(lambda: self._client.stream_request(req, context=ctx))  # noqa
+        return AsyncStreamHttpClientResponse(
             status=resp.status,
             headers=resp.headers,
             request=req,

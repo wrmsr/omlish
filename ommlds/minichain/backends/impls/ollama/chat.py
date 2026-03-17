@@ -123,7 +123,7 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
         raw_request = msh.marshal(a_req)
 
         async with http.manage_async_client(self._http_client) as http_client:
-            raw_response = await http_client.request(http.HttpRequest(
+            raw_response = await http_client.request(http.HttpClientRequest(
                 self._api_url.v.removesuffix('/') + '/chat',
                 data=json.dumps(raw_request).encode('utf-8'),
             ))
@@ -167,7 +167,7 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
 
         raw_request = msh.marshal(a_req)
 
-        http_request = http.HttpRequest(
+        http_request = http.HttpClientRequest(
             self._api_url.v.removesuffix('/') + '/chat',
             data=json.dumps(raw_request).encode('utf-8'),
         )

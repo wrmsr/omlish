@@ -19,16 +19,16 @@ from ..headers import CanHttpHeaders
 from ..headers import HttpHeaders
 
 
-BaseHttpResponseT = ta.TypeVar('BaseHttpResponseT', bound='BaseHttpResponse')
+BaseHttpClientResponseT = ta.TypeVar('BaseHttpClientResponseT', bound='BaseHttpClientResponse')
 
 
 ##
 
 
-DEFAULT_ENCODING = 'utf-8'
+DEFAULT_HTTP_CLIENT_ENCODING = 'utf-8'
 
 
-def is_success_status(status: int) -> bool:
+def is_success_http_status(status: int) -> bool:
     return 200 <= status < 300
 
 
@@ -37,7 +37,7 @@ def is_success_status(status: int) -> bool:
 
 @ta.final
 @dc.dataclass(frozen=True)
-class HttpRequest:
+class HttpClientRequest:
     url: str
     method: ta.Optional[str] = None  # noqa
 
@@ -50,7 +50,7 @@ class HttpRequest:
 
     #
 
-    __repr__ = AttrOps['HttpRequest'](lambda o: (
+    __repr__ = AttrOps['HttpClientRequest'](lambda o: (
         o.url,
         o.method,
         (o.headers, dict(repr_fn=AttrOps.truthy_repr)),
@@ -77,8 +77,8 @@ class HttpRequest:
 
 
 @dc.dataclass(frozen=True)  # kw_only=True
-class BaseHttpResponse(Abstract):
-    request: HttpRequest
+class BaseHttpClientResponse(Abstract):
+    request: HttpClientRequest
 
     status: int
 
@@ -88,7 +88,7 @@ class BaseHttpResponse(Abstract):
 
     #
 
-    __repr__ = AttrOps['BaseHttpResponse'](lambda o: (
+    __repr__ = AttrOps['BaseHttpClientResponse'](lambda o: (
         o.status,
         (o.headers, dict(repr_fn=AttrOps.truthy_repr)),
         o.request,
@@ -98,17 +98,17 @@ class BaseHttpResponse(Abstract):
 
     @property
     def is_success(self) -> bool:
-        return is_success_status(self.status)
+        return is_success_http_status(self.status)
 
 
 @ta.final
 @dc.dataclass(frozen=True)  # kw_only=True
-class HttpResponse(BaseHttpResponse):
+class HttpClientResponse(BaseHttpClientResponse):
     data: ta.Optional[bytes] = None
 
     #
 
-    __repr__ = AttrOps['HttpResponse'](lambda o: (
+    __repr__ = AttrOps['HttpClientResponse'](lambda o: (
         o.status,
         (o.headers, dict(repr_fn=AttrOps.truthy_repr)),
         (o.data, dict(repr_fn=lambda v: '...' if v is not None else None)),
@@ -135,8 +135,8 @@ class HttpClientError(Exception):
 
 
 @dc.dataclass()
-class HttpStatusError(HttpClientError):
-    response: HttpResponse
+class StatusHttpClientError(HttpClientError):
+    response: HttpClientResponse
 
 
 ##

@@ -6,8 +6,8 @@ from ... import lang
 from ..headers import CanHttpHeaders
 from .asyncs import AsyncHttpClient
 from .base import HttpClientContext
-from .base import HttpRequest
-from .base import HttpResponse
+from .base import HttpClientRequest
+from .base import HttpClientResponse
 from .sync import HttpClient
 
 
@@ -40,7 +40,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
 
             **kwargs: ta.Any,
     ) -> R:
-        request = HttpRequest(  # noqa
+        request = HttpClientRequest(  # noqa
             url,
             method=method,
 
@@ -62,7 +62,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
     @abc.abstractmethod
     def _do(
             self,
-            request: HttpRequest,  # noqa
+            request: HttpClientRequest,  # noqa
             *,
             context: HttpClientContext | None = None,
             check: bool = False,
@@ -98,7 +98,7 @@ def manage_client(client: HttpClient | None = None) -> ta.Generator[HttpClient]:
 class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], lang.Abstract, ta.Generic[R]):
     def _do(
             self,
-            request: HttpRequest,  # noqa
+            request: HttpClientRequest,  # noqa
             *,
             context: HttpClientContext | None = None,
             check: bool = False,
@@ -129,22 +129,22 @@ class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], lang.Abstract,
             self,
             client: HttpClient,  # noqa
             context: HttpClientContext,
-            request: HttpRequest,  # noqa
+            request: HttpClientRequest,  # noqa
             *,
             check: bool = False,  # noqa
     ) -> R:
         raise NotImplementedError
 
 
-class _SyncDefaultRequester(_BaseSyncDefaultRequester[HttpResponse]):
+class _SyncDefaultRequester(_BaseSyncDefaultRequester[HttpClientResponse]):
     def _do_(
             self,
             client: HttpClient,  # noqa
             context: HttpClientContext,
-            request: HttpRequest,  # noqa
+            request: HttpClientRequest,  # noqa
             *,
             check: bool = False,  # noqa
-    ) -> HttpResponse:
+    ) -> HttpClientResponse:
         return client.request(
             request,
             context=context,
@@ -182,7 +182,7 @@ async def manage_async_client(client: AsyncHttpClient | None = None) -> ta.Async
 class _BaseAsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable[R]], lang.Abstract, ta.Generic[R]):
     async def _do(
             self,
-            request: HttpRequest,  # noqa
+            request: HttpClientRequest,  # noqa
             *,
             context: HttpClientContext | None = None,
             check: bool = False,
@@ -213,22 +213,22 @@ class _BaseAsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable
             self,
             client: AsyncHttpClient,  # noqa
             context: HttpClientContext,
-            request: HttpRequest,  # noqa
+            request: HttpClientRequest,  # noqa
             *,
             check: bool = False,  # noqa
     ) -> ta.Awaitable[R]:
         raise NotImplementedError
 
 
-class _AsyncDefaultRequester(_BaseAsyncDefaultRequester[HttpResponse]):
+class _AsyncDefaultRequester(_BaseAsyncDefaultRequester[HttpClientResponse]):
     async def _do_(
             self,
             client: AsyncHttpClient,  # noqa
             context: HttpClientContext,
-            request: HttpRequest,  # noqa
+            request: HttpClientRequest,  # noqa
             *,
             check: bool = False,
-    ) -> HttpResponse:  # noqa
+    ) -> HttpClientResponse:  # noqa
         return await client.request(
             request,
             context=context,

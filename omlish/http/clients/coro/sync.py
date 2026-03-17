@@ -14,9 +14,9 @@ from ...headers import HttpHeaders
 from ...urls import unparse_url_request_path
 from ..base import HttpClientContext
 from ..base import HttpClientError
-from ..base import HttpRequest
+from ..base import HttpClientRequest
 from ..sync import HttpClient
-from ..sync import StreamHttpResponse
+from ..sync import StreamHttpClientResponse
 
 
 T = ta.TypeVar('T')
@@ -27,7 +27,7 @@ T = ta.TypeVar('T')
 
 class CoroHttpClient(HttpClient):
     class _Connection:
-        def __init__(self, req: HttpRequest) -> None:
+        def __init__(self, req: HttpClientRequest) -> None:
             super().__init__()
 
             self._req = req
@@ -64,7 +64,7 @@ class CoroHttpClient(HttpClient):
 
         #
 
-        def setup(self) -> StreamHttpResponse:
+        def setup(self) -> StreamHttpClientResponse:
             check.none(self._sock)
             check.none(self._ssl_context)
 
@@ -88,7 +88,7 @@ class CoroHttpClient(HttpClient):
 
                 self._resp = resp = self._run_coro(cc.get_response())
 
-                return StreamHttpResponse(
+                return StreamHttpClientResponse(
                     status=resp._state.status,  # noqa
                     headers=HttpHeaders(resp._state.headers.items()),  # noqa
                     request=self._req,
@@ -166,6 +166,6 @@ class CoroHttpClient(HttpClient):
             if self._sock is not None:
                 self._sock.close()
 
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
         conn = CoroHttpClient._Connection(req)
         return conn.setup()

@@ -119,7 +119,7 @@ class GoogleChatChoicesStreamService:
 
         model_name = MODEL_NAMES.resolve(self._model_name.v)
 
-        http_request = http.HttpRequest(
+        http_request = http.HttpClientRequest(
             f'{self.BASE_URL.rstrip("/")}/{model_name}:streamGenerateContent?alt=sse&key={key}',
             headers={'Content-Type': 'application/json'},
             data=json.dumps_compact(req_dct).encode('utf-8'),

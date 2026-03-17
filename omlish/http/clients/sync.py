@@ -9,15 +9,15 @@ from ...io.readers import BufferedBytesReader
 from ...lite.abstract import Abstract
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpClient
-from .base import BaseHttpResponse
-from .base import BaseHttpResponseT
+from .base import BaseHttpClientResponse
+from .base import BaseHttpClientResponseT
 from .base import HttpClientContext
-from .base import HttpRequest
-from .base import HttpResponse
-from .base import HttpStatusError
+from .base import HttpClientRequest
+from .base import HttpClientResponse
+from .base import StatusHttpClientError
 
 
-StreamHttpResponseT = ta.TypeVar('StreamHttpResponseT', bound='StreamHttpResponse')
+StreamHttpClientResponseT = ta.TypeVar('StreamHttpClientResponseT', bound='StreamHttpClientResponse')
 HttpClientT = ta.TypeVar('HttpClientT', bound='HttpClient')
 
 
@@ -26,7 +26,7 @@ HttpClientT = ta.TypeVar('HttpClientT', bound='HttpClient')
 
 @ta.final
 @dc.dataclass(frozen=True)  # kw_only=True
-class StreamHttpResponse(BaseHttpResponse):
+class StreamHttpClientResponse(BaseHttpClientResponse):
     _stream: ta.Optional[BufferedBytesReader] = None
 
     @property
@@ -43,7 +43,7 @@ class StreamHttpResponse(BaseHttpResponse):
 
     _closer: ta.Optional[ta.Callable[[], None]] = None
 
-    def __enter__(self: StreamHttpResponseT) -> StreamHttpResponseT:
+    def __enter__(self: StreamHttpClientResponseT) -> StreamHttpClientResponseT:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -57,11 +57,11 @@ class StreamHttpResponse(BaseHttpResponse):
 #
 
 
-def close_http_client_response(resp: BaseHttpResponse) -> None:
-    if isinstance(resp, HttpResponse):
+def close_http_client_response(resp: BaseHttpClientResponse) -> None:
+    if isinstance(resp, HttpClientResponse):
         pass
 
-    elif isinstance(resp, StreamHttpResponse):
+    elif isinstance(resp, StreamHttpClientResponse):
         resp.close()
 
     else:
@@ -69,12 +69,12 @@ def close_http_client_response(resp: BaseHttpResponse) -> None:
 
 
 @contextlib.contextmanager
-def closing_http_client_response(resp: BaseHttpResponseT) -> ta.Iterator[BaseHttpResponseT]:
-    if isinstance(resp, HttpResponse):
+def closing_http_client_response(resp: BaseHttpClientResponseT) -> ta.Iterator[BaseHttpClientResponseT]:
+    if isinstance(resp, HttpClientResponse):
         yield resp
         return
 
-    elif isinstance(resp, StreamHttpResponse):
+    elif isinstance(resp, StreamHttpClientResponse):
         with contextlib.closing(resp):
             yield resp
 
@@ -82,12 +82,12 @@ def closing_http_client_response(resp: BaseHttpResponseT) -> ta.Iterator[BaseHtt
         raise TypeError(resp)
 
 
-def read_http_client_response(resp: BaseHttpResponse) -> HttpResponse:
-    if isinstance(resp, HttpResponse):
+def read_http_client_response(resp: BaseHttpClientResponse) -> HttpClientResponse:
+    if isinstance(resp, HttpClientResponse):
         return resp
 
-    elif isinstance(resp, StreamHttpResponse):
-        return HttpResponse(**{
+    elif isinstance(resp, StreamHttpClientResponse):
+        return HttpClientResponse(**{
             **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('_stream', '_closer')},
             **({'data': resp.stream.readall()} if resp.has_data else {}),
         })
@@ -108,11 +108,11 @@ class HttpClient(BaseHttpClient, Abstract):
 
     def request(
             self,
-            req: HttpRequest,
+            req: HttpClientRequest,
             *,
             context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
-    ) -> HttpResponse:
+    ) -> HttpClientResponse:
         with closing_http_client_response(self.stream_request(
                 req,
                 context=context,
@@ -122,11 +122,11 @@ class HttpClient(BaseHttpClient, Abstract):
 
     def stream_request(
             self,
-            req: HttpRequest,
+            req: HttpClientRequest,
             *,
             context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
-    ) -> StreamHttpResponse:
+    ) -> StreamHttpClientResponse:
         if context is None:
             context = HttpClientContext()
 
@@ -138,7 +138,7 @@ class HttpClient(BaseHttpClient, Abstract):
                     cause = resp.underlying
                 else:
                     cause = None
-                raise HttpStatusError(read_http_client_response(resp)) from cause  # noqa
+                raise StatusHttpClientError(read_http_client_response(resp)) from cause  # noqa
 
         except Exception:
             close_http_client_response(resp)
@@ -147,5 +147,5 @@ class HttpClient(BaseHttpClient, Abstract):
         return resp
 
     @abc.abstractmethod
-    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
         raise NotImplementedError
