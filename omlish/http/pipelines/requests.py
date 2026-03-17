@@ -35,6 +35,7 @@ class IoPipelineHttpRequestObject(IoPipelineHttpMessageObject, Abstract):
 #
 
 
+@ta.final
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestHead(IoPipelineHttpMessageHead, IoPipelineHttpRequestObject):
@@ -50,6 +51,7 @@ class IoPipelineHttpRequestHead(IoPipelineHttpMessageHead, IoPipelineHttpRequest
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class FullIoPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequestObject):
     head: IoPipelineHttpRequestHead
@@ -73,7 +75,7 @@ class FullIoPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequest
         headers = HttpHeaders.of(headers).update(
             ('Host', host),
             ('Content-Type', content_type),
-            ('Content-Length', lambda: str(len(body) if body else None)),
+            ('Content-Length', lambda: str(len(body)) if body else None),
             ('Connection', connection),
             if_present='skip',
         )
@@ -92,6 +94,7 @@ class FullIoPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequest
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestChunk(IoPipelineHttpMessageChunk, IoPipelineHttpRequestObject):
     pass
@@ -100,6 +103,7 @@ class IoPipelineHttpRequestChunk(IoPipelineHttpMessageChunk, IoPipelineHttpReque
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestEndChunk(IoPipelineHttpMessageEndChunk, IoPipelineHttpRequestObject):
     pass
@@ -108,6 +112,7 @@ class IoPipelineHttpRequestEndChunk(IoPipelineHttpMessageEndChunk, IoPipelineHtt
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestLastChunk(IoPipelineHttpMessageLastChunk, IoPipelineHttpRequestObject):
     pass
@@ -116,6 +121,7 @@ class IoPipelineHttpRequestLastChunk(IoPipelineHttpMessageLastChunk, IoPipelineH
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestChunkedTrailers(IoPipelineHttpMessageChunkedTrailers, IoPipelineHttpRequestObject):
     pass
@@ -124,6 +130,7 @@ class IoPipelineHttpRequestChunkedTrailers(IoPipelineHttpMessageChunkedTrailers,
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestBodyData(IoPipelineHttpMessageBodyData, IoPipelineHttpRequestObject):
     pass
@@ -132,6 +139,7 @@ class IoPipelineHttpRequestBodyData(IoPipelineHttpMessageBodyData, IoPipelineHtt
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestEnd(IoPipelineHttpMessageEnd, IoPipelineHttpRequestObject):
     pass
@@ -140,6 +148,7 @@ class IoPipelineHttpRequestEnd(IoPipelineHttpMessageEnd, IoPipelineHttpRequestOb
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpRequestAborted(IoPipelineHttpMessageAborted, IoPipelineHttpRequestObject):
     pass

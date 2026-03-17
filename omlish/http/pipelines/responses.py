@@ -35,6 +35,7 @@ class IoPipelineHttpResponseObject(IoPipelineHttpMessageObject, Abstract):
 #
 
 
+@ta.final
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpResponseObject):
@@ -57,6 +58,7 @@ class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpRespon
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class FullIoPipelineHttpResponse(FullIoPipelineHttpMessage, IoPipelineHttpResponseObject):
     head: IoPipelineHttpResponseHead
@@ -95,6 +97,7 @@ class FullIoPipelineHttpResponse(FullIoPipelineHttpMessage, IoPipelineHttpRespon
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseChunk(IoPipelineHttpMessageChunk, IoPipelineHttpResponseObject):
     pass
@@ -103,6 +106,7 @@ class IoPipelineHttpResponseChunk(IoPipelineHttpMessageChunk, IoPipelineHttpResp
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseEndChunk(IoPipelineHttpMessageEndChunk, IoPipelineHttpResponseObject):
     pass
@@ -111,6 +115,7 @@ class IoPipelineHttpResponseEndChunk(IoPipelineHttpMessageEndChunk, IoPipelineHt
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseLastChunk(IoPipelineHttpMessageLastChunk, IoPipelineHttpResponseObject):
     pass
@@ -119,6 +124,7 @@ class IoPipelineHttpResponseLastChunk(IoPipelineHttpMessageLastChunk, IoPipeline
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseChunkedTrailers(IoPipelineHttpMessageChunkedTrailers, IoPipelineHttpResponseObject):
     pass
@@ -127,6 +133,7 @@ class IoPipelineHttpResponseChunkedTrailers(IoPipelineHttpMessageChunkedTrailers
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseBodyData(IoPipelineHttpMessageBodyData, IoPipelineHttpResponseObject):
     pass
@@ -135,6 +142,7 @@ class IoPipelineHttpResponseBodyData(IoPipelineHttpMessageBodyData, IoPipelineHt
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseEnd(IoPipelineHttpMessageEnd, IoPipelineHttpResponseObject):
     pass
@@ -143,6 +151,7 @@ class IoPipelineHttpResponseEnd(IoPipelineHttpMessageEnd, IoPipelineHttpResponse
 #
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class IoPipelineHttpResponseAborted(IoPipelineHttpMessageAborted, IoPipelineHttpResponseObject):
     pass

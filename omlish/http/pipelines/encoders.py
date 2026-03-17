@@ -32,6 +32,17 @@ class IoPipelineHttpObjectEncoder(
 
         self._streaming = False
 
+        self._outbound_dispatch_dct: ta.Mapping[type, ta.Callable[[IoPipelineHandlerContext, ta.Any], None]] = {
+            self._head_type: self._handle_request_head,
+            self._full_type: self._handle_full_request,
+            self._chunk_type: self._handle_chunk,
+            self._end_chunk_type: self._handle_end_chunk,
+            self._last_chunk_type: self._handle_last_chunk,
+            self._chunked_trailers_type: self._handle_chunked_trailers,
+            self._body_data_type: self._handle_body_data,
+            self._end_type: self._handle_request_end,
+        }
+
     #
 
     @abc.abstractmethod
@@ -41,32 +52,11 @@ class IoPipelineHttpObjectEncoder(
     #
 
     def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, self._head_type):
-            self._handle_request_head(ctx, msg)
+        if (fn := self._outbound_dispatch_dct.get(type(msg))) is not None:
+            fn(ctx, msg)
+            return
 
-        elif isinstance(msg, self._full_type):
-            self._handle_full_request(ctx, msg)
-
-        elif isinstance(msg, self._chunk_type):
-            self._handle_chunk(ctx, msg)
-
-        elif isinstance(msg, self._end_chunk_type):
-            self._handle_end_chunk(ctx, msg)
-
-        elif isinstance(msg, self._last_chunk_type):
-            self._handle_last_chunk(ctx, msg)
-
-        elif isinstance(msg, self._chunked_trailers_type):
-            self._handle_chunked_trailers(ctx, msg)
-
-        elif isinstance(msg, self._body_data_type):
-            self._handle_body_data(ctx, msg)
-
-        elif isinstance(msg, self._end_type):
-            self._handle_request_end(ctx, msg)
-
-        else:
-            ctx.feed_out(msg)
+        ctx.feed_out(msg)
 
     #
 

@@ -24,6 +24,7 @@ from .....io.streams.types import BytesLike
 from .....io.streams.utils import ByteStreamBuffers
 from .....lite.abstract import Abstract
 from .....lite.check import check
+from ....clients.base import BaseHttpClient  # noqa
 from ....clients.base import HttpClientContext  # noqa
 from ....clients.base import HttpClientRequest  # noqa
 from ....clients.sync import HttpClient  # noqa
@@ -46,98 +47,152 @@ from ...responses import IoPipelineHttpResponseHead  # noqa
 ##
 
 
-def build_io_pipeline_http_client_spec(
-        outermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
-        innermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
+class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
+    def __init__(self, **pipeline_kwargs: ta.Any) -> None:
+        super().__init__()
 
-        with_logging: bool = False,
+        self._pipeline_kwargs = pipeline_kwargs
 
-        with_ssl: bool = False,
-        ssl_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+    #
 
-        with_flow: bool = False,
-        flow_auto_read: bool = False,
+    @dc.dataclass(frozen=True)
+    class ParsedUrl:
+        host: str
+        port: int
+        path: str
 
-        raise_immediately: bool = False,
-) -> IoPipeline.Spec:
-    return IoPipeline.Spec(
-        [
-            *(outermost_handlers or []),
+        is_ssl: bool = False
 
-            *([LoggingIoPipelineHandler()] if with_logging else []),
-
-            *([OutboundBytesBufferIoPipelineHandler()] if with_flow else []),
-
-            *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
-
-            IoPipelineHttpResponseDecoder(),
-            IoPipelineHttpResponseDecompressor(),
-            IoPipelineHttpResponseAggregatorDecoder(),
-
-            IoPipelineHttpRequestEncoder(),
-            IoPipelineHttpRequestCompressor(),
-
-            IoPipelineHttpClientHandler(),
-
-            *(innermost_handlers or []),
-        ],
-
-        config=IoPipeline.Config.DEFAULT.update(
-            raise_immediately=raise_immediately,
-        ),
-
-        services=[
-            *([StubIoPipelineFlowService(auto_read=flow_auto_read)] if with_flow else []),
-        ],
-    )
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ParsedUrl:
-    host: str
-    port: int
-    path: str
-
-    is_ssl: bool = False
-
-
-def parse_url(url: str) -> ParsedUrl:
-    # Parse URL (very simple - just extract host and path)
-    if url.startswith('http://'):
-        is_ssl = False
-        url_without_scheme = url[7:]
-    elif url.startswith('https://'):
-        is_ssl = True
-        url_without_scheme = url[8:]
-    else:
-        raise ValueError(url)
-
-    if '/' in url_without_scheme:
-        host, path = url_without_scheme.split('/', 1)
-        path = '/' + path
-    else:
-        host = url_without_scheme
-        path = '/'
-
-    # Extract port if present
-    if ':' in host:
-        host, port_str = host.split(':', 1)
-        port = int(port_str)
-    else:
-        if is_ssl:
-            port = 443
+    @classmethod
+    def parse_url(cls, url: str) -> ParsedUrl:
+        # Parse URL (very simple - just extract host and path)
+        if url.startswith('http://'):
+            is_ssl = False
+            url_without_scheme = url[7:]
+        elif url.startswith('https://'):
+            is_ssl = True
+            url_without_scheme = url[8:]
         else:
-            port = 80
+            raise ValueError(url)
 
-    return ParsedUrl(
-        host,
-        port,
-        path,
-        is_ssl=is_ssl,
-    )
+        if '/' in url_without_scheme:
+            host, path = url_without_scheme.split('/', 1)
+            path = '/' + path
+        else:
+            host = url_without_scheme
+            path = '/'
+
+        # Extract port if present
+        if ':' in host:
+            host, port_str = host.split(':', 1)
+            port = int(port_str)
+        else:
+            if is_ssl:
+                port = 443
+            else:
+                port = 80
+
+        return cls.ParsedUrl(
+            host,
+            port,
+            path,
+            is_ssl=is_ssl,
+        )
+
+    #
+
+    def _build_pipeline_spec(
+            self,
+
+            outermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
+            innermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
+
+            with_logging: bool = False,
+
+            with_ssl: bool = False,
+            ssl_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+
+            with_flow: bool = False,
+            flow_auto_read: bool = False,
+
+            raise_immediately: bool = False,
+    ) -> IoPipeline.Spec:
+        return IoPipeline.Spec(
+            [
+                *(outermost_handlers or []),
+
+                *([LoggingIoPipelineHandler()] if with_logging else []),
+
+                *([OutboundBytesBufferIoPipelineHandler()] if with_flow else []),
+
+                *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
+
+                IoPipelineHttpResponseDecoder(),
+                IoPipelineHttpResponseDecompressor(),
+                IoPipelineHttpResponseAggregatorDecoder(),
+
+                IoPipelineHttpRequestEncoder(),
+                IoPipelineHttpRequestCompressor(),
+
+                IoPipelineHttpClientHandler(),
+
+                *(innermost_handlers or []),
+            ],
+
+            config=IoPipeline.Config.DEFAULT.update(
+                raise_immediately=raise_immediately,
+            ),
+
+            services=[
+                *([StubIoPipelineFlowService(auto_read=flow_auto_read)] if with_flow else []),
+            ],
+        )
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class _PreparedRequest:
+        parsed_url: 'BaseIoPipelineHttpClient.ParsedUrl'
+        full_request: FullIoPipelineHttpRequest
+        pipeline_spec: IoPipeline.Spec
+
+    def _prepare_request(
+            self,
+            req: HttpClientRequest,
+            **pipeline_kwargs: ta.Any,
+    ) -> _PreparedRequest:
+        parsed_url = self.parse_url(req.url)
+
+        full_request = FullIoPipelineHttpRequest.simple(
+            parsed_url.host,
+            parsed_url.path,
+            method=req.method_or_default,
+            headers=HttpHeaders.of(req.headers_).update(
+                ('User-Agent', 'omlish-http-client/0.1'),
+                if_present='skip',
+            ),
+        )
+
+        pipeline_spec = self._build_pipeline_spec(
+            **(dict(  # type: ignore[arg-type]
+                with_ssl=True,
+                ssl_kwargs=dict(
+                    server_side=False,
+                    server_hostname=parsed_url.host,
+                ),
+            ) if parsed_url.is_ssl else {}),
+
+            **{
+                **self._pipeline_kwargs,
+                **pipeline_kwargs,
+            },
+        )
+
+        return self._PreparedRequest(
+            parsed_url,
+            full_request,
+            pipeline_spec,
+        )
 
 
 ##
@@ -163,55 +218,6 @@ def print_full_response(response: FullIoPipelineHttpResponse) -> None:
         print(body.decode('utf-8'))
     except UnicodeDecodeError:
         print(f'<binary body: {len(body)} bytes>')
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class _PreparedUrlFetch:
-    parsed_url: ParsedUrl
-    request: FullIoPipelineHttpRequest
-    pipeline_spec: IoPipeline.Spec
-
-
-def _prepare_url_fetch(
-        url: str,
-        *,
-        method: str = 'GET',
-        headers: ta.Optional[HttpHeaders] = None,
-        **client_kwargs: ta.Any,
-) -> _PreparedUrlFetch:
-    parsed_url = parse_url(url)
-
-    request = FullIoPipelineHttpRequest.simple(
-        parsed_url.host,
-        parsed_url.path,
-        method=method,
-        headers={
-            'User-Agent': 'omlish-http-client/0.1',
-            # 'Connection': 'close',
-            **{k: v for k, vs in (headers or {}).items() for v in vs},
-        },
-    )
-
-    pipeline_spec = build_io_pipeline_http_client_spec(
-        **(dict(  # type: ignore[arg-type]
-            with_ssl=True,
-            ssl_kwargs=dict(
-                server_side=False,
-                server_hostname=parsed_url.host,
-            ),
-        ) if parsed_url.is_ssl else {}),
-
-        **client_kwargs,
-    )
-
-    return _PreparedUrlFetch(
-        parsed_url,
-        request,
-        pipeline_spec,
-    )
 
 
 ##
@@ -349,7 +355,7 @@ def sync_fetch_url(
 ##
 
 
-class PipelineHttpClient(HttpClient):
+class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
     class _ResponseStream(Abstract):
         @abc.abstractmethod
         def read1(self, n: int = -1, /) -> bytes:
@@ -412,34 +418,24 @@ class PipelineHttpClient(HttpClient):
 
     #
 
+    def _try_set_nodelay(self, sock: 'socket.socket') -> None:
+        try:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno != errno.ENOPROTOOPT:
+                raise
+
     def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
-        puf = _prepare_url_fetch(
-            req.url,
-            method=req.method or 'GET',
-            headers=req.headers_,
-        )
+        prepared = self._prepare_request(req)
 
-        #
-
-        sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
+        sock = socket.create_connection((prepared.parsed_url.host, prepared.parsed_url.port))
 
         try:
-            try:
-                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            except OSError as e:
-                if e.errno != errno.ENOPROTOOPT:
-                    raise
+            self._try_set_nodelay(sock)
 
-            #
+            drv = SyncSocketIoPipelineDriver(prepared.pipeline_spec, sock)
 
-            drv = SyncSocketIoPipelineDriver(
-                puf.pipeline_spec,
-                sock,
-            )
-
-            drv.enqueue(IoPipelineHttpClientMessages.Request(
-                puf.request,
-            ))
+            drv.enqueue(IoPipelineHttpClientMessages.Request(prepared.full_request))
 
             response: ta.Optional[FullIoPipelineHttpResponse] = None
 
@@ -468,7 +464,7 @@ class PipelineHttpClient(HttpClient):
 
             response = check.not_none(response)
 
-            response_stream: PipelineHttpClient._ResponseStream
+            response_stream: IoPipelineHttpClient._ResponseStream
             if isinstance(response, FullIoPipelineHttpResponse):
                 if response.body:
                     response_stream = self._StaticResponseStream(response.body)
