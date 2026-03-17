@@ -5,7 +5,8 @@ import typing as ta
 import urllib.error
 import urllib.request
 
-from ...io.buffers import ReadableListBuffer
+from ...io.streams.adapters import ByteStreamBufferBytesReaderAdapter
+from ...io.streams.segmented import SegmentedByteStreamBuffer
 from ...lite.check import check
 from ..headers import HttpHeaders
 from .base import DEFAULT_HTTP_CLIENT_ENCODING
@@ -69,12 +70,26 @@ class UrllibHttpClient(HttpClient):
             raise HttpClientError from e
 
         try:
+            # urllib responses do *not* guarantee returning exactly `n` bytes from `.read(n)`, so we need to buffer.
+            buf = SegmentedByteStreamBuffer(chunk_size=16 * 1024)
+
+            def fill(n: int, single: bool) -> bool:
+                # These are ~mostly~ the same for urllib responses, but called separately nonetheless.
+                if single:
+                    b = resp.read1(n)
+                else:
+                    b = resp.read(n)
+                if not b:
+                    return False
+                buf.write(b)
+                return True
+
             return StreamHttpClientResponse(
                 status=resp.status,
                 headers=HttpHeaders(resp.headers.items()),
                 request=req,
                 underlying=resp,
-                _stream=ReadableListBuffer().new_bytes_reader(resp),
+                _stream=ByteStreamBufferBytesReaderAdapter(buf, fill=fill),
                 _closer=resp.close,
             )
 
