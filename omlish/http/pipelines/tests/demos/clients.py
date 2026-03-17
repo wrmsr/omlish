@@ -2,13 +2,11 @@
 # @omlish-lite
 import collections
 import dataclasses as dc
+import errno
+import socket
 import typing as ta
 
-from ....clients.base import HttpClientContext
-from ....headers import HttpHeaders
-from ....clients.base import HttpRequest
-from ....clients.sync import HttpClient
-from ....clients.sync import StreamHttpResponse
+from .....io.buffers import ReadableListBuffer
 from .....io.pipelines.bytes.buffers import OutboundBytesBufferIoPipelineHandler
 from .....io.pipelines.core import IoPipeline
 from .....io.pipelines.core import IoPipelineHandler
@@ -24,6 +22,11 @@ from .....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from .....lite.check import check
+from ....clients.base import HttpClientContext
+from ....clients.base import HttpRequest
+from ....clients.sync import HttpClient
+from ....clients.sync import StreamHttpResponse
+from ....headers import HttpHeaders
 from ...clients.requests import IoPipelineHttpRequestCompressor
 from ...clients.requests import IoPipelineHttpRequestEncoder
 from ...clients.responses import IoPipelineHttpResponseAggregatorDecoder
@@ -31,7 +34,9 @@ from ...clients.responses import IoPipelineHttpResponseDecoder
 from ...clients.responses import IoPipelineHttpResponseDecompressor
 from ...requests import FullIoPipelineHttpRequest
 from ...responses import FullIoPipelineHttpResponse
+from ...responses import IoPipelineHttpResponseBodyData
 from ...responses import IoPipelineHttpResponseEnd
+from ...responses import IoPipelineHttpResponseHead
 from ...responses import IoPipelineHttpResponseObject
 
 
@@ -254,10 +259,8 @@ def _prepare_url_fetch(
         parsed_url.path,
         method=method,
         headers={
-            **{
-                'User-Agent': 'omlish-http-client/0.1',
-                # 'Connection': 'close',
-            },
+            'User-Agent': 'omlish-http-client/0.1',
+            # 'Connection': 'close',
             **(headers or {}),
         },
     )
@@ -354,9 +357,6 @@ def sync_fetch_url(
 
     #
 
-    import errno
-    import socket
-
     sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
 
     try:
@@ -390,17 +390,83 @@ def sync_fetch_url(
 
 
 class PipelineHttpClient(HttpClient):
+    class _ResponseStream:
+        """Adapter that reads response body data from the pipeline driver."""
+
+        def __init__(
+                self,
+                drv: SyncSocketIoPipelineDriver,
+                sock: 'socket.socket',
+                out_q: 'collections.deque[PipelineHttpClientRequestOutput]',
+        ) -> None:
+            super().__init__()
+
+            self._drv = drv
+            self._sock = sock
+            self._out_q = out_q
+            self._done = False
+
+        def read1(self, n: int = -1, /) -> bytes:
+            if self._done:
+                return b''
+
+            # First check if we have any queued messages from the on_output callback
+            while self._out_q:
+                msg = self._out_q.popleft()
+
+                if isinstance(msg, FullIoPipelineHttpResponse):
+                    # Full response - return entire body and mark done
+                    self._done = True
+                    from .....io.streams.utils import ByteStreamBuffers
+                    return ByteStreamBuffers.to_bytes(msg.body)
+
+                elif isinstance(msg, IoPipelineHttpResponseBodyData):
+                    return msg.data
+
+                elif isinstance(msg, (IoPipelineHttpResponseEnd, IoPipelineMessages.FinalInput)):
+                    self._done = True
+                    return b''
+
+                # Skip other message types (chunks, trailers, etc.)
+
+            # If no queued messages, pump the driver to get more
+            while (out := self._drv.next()) is not None:
+                if isinstance(out, FullIoPipelineHttpResponse):
+                    # Full response - return entire body and mark done
+                    self._done = True
+                    from .....io.streams.utils import ByteStreamBuffers
+                    return ByteStreamBuffers.to_bytes(out.body)
+
+                elif isinstance(out, IoPipelineHttpResponseBodyData):
+                    return out.data
+
+                elif isinstance(out, (IoPipelineHttpResponseEnd, IoPipelineMessages.FinalInput)):
+                    self._done = True
+                    return b''
+
+                # Skip other message types (chunks, trailers, etc.)
+
+            # Pipeline stalled or ended
+            self._done = True
+            return b''
+
+        def close(self) -> None:
+            """Drain remaining messages and close socket."""
+            if not self._done:
+                # Drain remaining messages
+                while not self._done:
+                    self.read1()
+
+            self._sock.close()
+
     def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
         puf = _prepare_url_fetch(
             req.url,
-            method=req.method,
+            method=req.method or 'GET',
             headers=req.headers_,
         )
 
         #
-
-        import errno
-        import socket
 
         sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
 
@@ -419,7 +485,7 @@ class PipelineHttpClient(HttpClient):
                 sock,
             )
 
-            out_q = collections.deque()
+            out_q: collections.deque[PipelineHttpClientRequestOutput] = collections.deque()
 
             def on_output(h_ctx: IoPipelineHandlerContext, msg: PipelineHttpClientRequestOutput) -> None:
                 out_q.append(msg)
@@ -427,17 +493,40 @@ class PipelineHttpClient(HttpClient):
             drv.enqueue(PipelineHttpClientRequest(
                 puf.request,
                 on_output,
+                stream=True,
             ))
 
-            out = drv.next()
+            # Get the first message - should be either FullIoPipelineHttpResponse or IoPipelineHttpResponseHead
+            while True:
+                while not out_q:
+                    if (out := drv.next(raise_on_stall=False)) is not None:
+                        out_q.append(out)
+                out = out_q.popleft()
+                if isinstance(out, FullIoPipelineHttpResponse):
+                    # Full response received - put it back in queue for stream to read
+                    out_q.append(out)
+                    head = out.head
+                    break
+
+                elif isinstance(out, IoPipelineHttpResponseHead):
+                    # Streaming response - head only
+                    head = out
+                    break
+
+                # Skip other messages
+                else:
+                    raise RuntimeError('No response received from pipeline')  # noqa
+
+            # Create streaming adapter
+            stream_adapter = self._ResponseStream(drv, sock, out_q)
 
             return StreamHttpResponse(
-                status=resp.status,
-                headers=HttpHeaders(resp.headers.items()),
+                status=head.status,
+                headers=head.headers,
                 request=req,
-                underlying=resp,
-                _stream=ReadableListBuffer().new_buffered_reader(resp),
-                _closer=sock.close,
+                underlying=drv,
+                _stream=ReadableListBuffer().new_buffered_reader(stream_adapter),
+                _closer=stream_adapter.close,
             )
 
         except BaseException:

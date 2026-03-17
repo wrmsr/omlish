@@ -251,7 +251,7 @@ class SyncSocketIoPipelineDriver:
     def enqueue(self, *in_msgs: ta.Any) -> None:
         self._input_q.extend(in_msgs)
 
-    def _poll(self) -> ta.Union[
+    def _next(self) -> ta.Union[
         ta.Tuple[ta.Literal['unhandled'], ta.Any],
         ta.Literal['read', 'stop'],
         None,
@@ -284,12 +284,17 @@ class SyncSocketIoPipelineDriver:
 
             return None
 
-    def poll(self, *, read: bool = False) -> ta.Optional[ta.Any]:
+    def next(
+            self,
+            *,
+            read: bool = True,
+            raise_on_stall: bool = True,
+    ) -> ta.Optional[ta.Any]:
         pipeline = self._ensure_pipeline()  # noqa
         check.state(pipeline.is_ready)
 
         while True:
-            out = self._poll()
+            out = self._next()
 
             if isinstance(out, tuple):
                 ok, ov = out
@@ -300,46 +305,21 @@ class SyncSocketIoPipelineDriver:
                     raise RuntimeError(f'Unknown output: {ok!r}')
 
             elif out == 'read':
-                if not read:
+                if read:
+                    self._input_q.extend(self._do_read())
+
+                else:
                     return None
 
-                self._input_q.extend(self._do_read())
-
             elif out == 'stop':
                 break
 
             elif out is None:
-                return None
-
-            else:
-                raise RuntimeError(f'Unknown output: {out!r}')
-
-        pipeline.destroy()
-        return None
-
-    def next(self) -> ta.Optional[ta.Any]:
-        pipeline = self._ensure_pipeline()  # noqa
-        check.state(pipeline.is_ready)
-
-        while True:
-            out = self._poll()
-
-            if isinstance(out, tuple):
-                ok, ov = out
-                if ok == 'unhandled':
-                    return ov
+                if raise_on_stall:
+                    raise RuntimeError('Pipeline stalled')
 
                 else:
-                    raise RuntimeError(f'Unknown output: {ok!r}')
-
-            elif out == 'read':
-                self._input_q.extend(self._do_read())
-
-            elif out == 'stop':
-                break
-
-            elif out is None:
-                raise RuntimeError('Pipeline stalled')
+                    return None
 
             else:
                 raise RuntimeError(f'Unknown output: {out!r}')

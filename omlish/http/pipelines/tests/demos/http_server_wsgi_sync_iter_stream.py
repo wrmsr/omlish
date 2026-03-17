@@ -134,7 +134,7 @@ class WsgiConnHandler:
             if self._o._drv._flow is not None:  # noqa
                 feed_out(IoPipelineFlowMessages.FlushOutput())
 
-            while out := self._o._drv.poll(read=False):  # noqa
+            while out := self._o._drv.next(read=False, raise_on_stall=False):  # noqa
                 raise TypeError(out)
 
             for d in body:
@@ -151,7 +151,7 @@ class WsgiConnHandler:
                 if self._o._drv._flow is not None:  # noqa
                     feed_out(IoPipelineFlowMessages.FlushOutput())
 
-                while out := self._o._drv.poll(read=False):  # noqa
+                while out := self._o._drv.next(read=False, raise_on_stall=False):  # noqa
                     raise TypeError(out)
 
             if chunked:
