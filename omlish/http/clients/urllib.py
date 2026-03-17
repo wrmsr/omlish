@@ -70,26 +70,16 @@ class UrllibHttpClient(HttpClient):
             raise HttpClientError from e
 
         try:
-            # urllib responses do *not* guarantee returning exactly `n` bytes from `.read(n)`, so we need to buffer.
-            buf = SegmentedByteStreamBuffer(chunk_size=16 * 1024)
-
-            def fill(n: int, single: bool) -> bool:
-                # These are ~mostly~ the same for urllib responses, but called separately nonetheless.
-                if single:
-                    b = resp.read1(n)
-                else:
-                    b = resp.read(n)
-                if not b:
-                    return False
-                buf.write(b)
-                return True
-
             return StreamHttpClientResponse(
                 status=resp.status,
                 headers=HttpHeaders(resp.headers.items()),
                 request=req,
                 underlying=resp,
-                _stream=ByteStreamBufferBytesReaderAdapter(buf, fill=fill),
+                # urllib responses do *not* guarantee returning exactly `n` bytes from `.read(n)`, so we need to buffer.
+                _stream=ByteStreamBufferBytesReaderAdapter.wrap(
+                    resp,
+                    SegmentedByteStreamBuffer(chunk_size=16 * 1024),
+                ),
                 _closer=resp.close,
             )
 

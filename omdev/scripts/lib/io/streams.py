@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
             dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
-            dict(path='adapters.py', sha1='1b5e2647fa6b0cb7c6f1937f23e7c52ef284211e'),
+            dict(path='adapters.py', sha1='c86a3999392fbc2ed76c0c319277b3f903b31e4c'),
             dict(path='linear.py', sha1='82d8d806abd708e8d471f32cb49813be150bcf6a'),
             dict(path='segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
@@ -54,6 +54,7 @@ CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlia
 
 # adapters.py
 BytesOrAwaitableBytes = ta.TypeVar('BytesOrAwaitableBytes', bound=ta.Union[bytes, ta.Awaitable[bytes]])
+BytesOrAwaitableBytes_co = ta.TypeVar('BytesOrAwaitableBytes_co', bound=ta.Union[bytes, ta.Awaitable[bytes]], covariant=True)  # noqa
 BoolOrAwaitableBool = ta.TypeVar('BoolOrAwaitableBool', bound=ta.Union[bool, ta.Awaitable[bool]])
 BoolOrAwaitableBool_co = ta.TypeVar('BoolOrAwaitableBool_co', bound=ta.Union[bool, ta.Awaitable[bool]], covariant=True)
 
@@ -1517,6 +1518,13 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 ##
 
 
+BaseByteStreamBufferBytesReaderAdapterPolicy = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'raise',
+    'return_partial',
+    'fill',
+]
+
+
 class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitableBytes, BoolOrAwaitableBool]):
     """
     Adapter: ByteStreamBuffer -> file-like buffered reader methods (`read1`, `read`).
@@ -1561,7 +1569,7 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
             self,
             buf: ByteStreamBuffer,
             *,
-            policy: ta.Literal['raise', 'return_partial', 'fill', None] = None,
+            policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
             fill: ta.Optional[Filler[BoolOrAwaitableBool]] = None,
     ) -> None:
         super().__init__()
@@ -1576,6 +1584,27 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
             policy = self.DEFAULT_POLICY
         self._policy = policy
         self._fill = fill
+
+    #
+
+    class RawBytesReader(ta.Protocol[BytesOrAwaitableBytes_co]):
+        def read1(self, n: ta.Any) -> BytesOrAwaitableBytes_co: ...
+
+    class BytesReader(RawBytesReader[BytesOrAwaitableBytes_co], ta.Protocol[BytesOrAwaitableBytes_co]):
+        def read(self, n: ta.Any) -> BytesOrAwaitableBytes_co: ...
+
+    @classmethod
+    @abc.abstractmethod
+    def wrap(
+            cls,
+            obj: RawBytesReader[BytesOrAwaitableBytes],
+            buf: MutableByteStreamBuffer,
+            *,
+            policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
+    ) -> 'BaseByteStreamBufferBytesReaderAdapter[BytesOrAwaitableBytes, BoolOrAwaitableBool]':
+        raise NotImplementedError
+
+    #
 
     @abc.abstractmethod
     def read1(self, n: int = -1, /) -> BytesOrAwaitableBytes:
@@ -1610,6 +1639,46 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
 
 
 class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[bytes, bool]):
+    @classmethod
+    def wrap(
+            cls,
+            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[bytes],
+            buf: MutableByteStreamBuffer,
+            *,
+            policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
+    ) -> 'BaseByteStreamBufferBytesReaderAdapter[bytes, bool]':
+        if not hasattr(obj, 'read1'):
+            raise TypeError(obj)
+
+        elif hasattr(obj, 'read'):
+            def br_fill(n: int, single: bool) -> bool:
+                if single:
+                    b = obj.read1(n)
+                else:
+                    b = obj.read(n)
+                if not b:
+                    return False
+                buf.write(b)
+                return True
+
+            fill = br_fill
+
+        else:
+            def rbr_fill(n: int, single: bool) -> bool:
+                b = obj.read1(n)
+                if not b:
+                    return False
+                buf.write(b)
+                return True
+
+            fill = rbr_fill
+
+        return cls(
+            buf,
+            policy=policy,
+            fill=fill,
+        )
+
     def read1(self, n: int = -1, /) -> bytes:
         if not n:
             return b''
@@ -1630,7 +1699,8 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
     def read(self, n: int = -1, /) -> bytes:
         if n < 0:
             if (fill := self._fill) is not None:
-                fill(-1, False)
+                while fill(-1, False):
+                    pass
 
             buf = self._buf
             return buf.split_to(len(buf)).tobytes()
@@ -1658,6 +1728,46 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
 
 
 class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[bytes], ta.Awaitable[bool]]):  # noqa
+    @classmethod
+    def wrap(
+            cls,
+            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[ta.Awaitable[bytes]],
+            buf: MutableByteStreamBuffer,
+            *,
+            policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
+    ) -> 'BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[bytes], ta.Awaitable[bool]]':
+        if not hasattr(obj, 'read1'):
+            raise TypeError(obj)
+
+        elif hasattr(obj, 'read'):
+            async def br_fill(n: int, single: bool) -> bool:
+                if single:
+                    b = await obj.read1(n)
+                else:
+                    b = await obj.read(n)
+                if not b:
+                    return False
+                buf.write(b)
+                return True
+
+            fill = br_fill
+
+        else:
+            async def rbr_fill(n: int, single: bool) -> bool:
+                b = await obj.read1(n)
+                if not b:
+                    return False
+                buf.write(b)
+                return True
+
+            fill = rbr_fill
+
+        return cls(
+            buf,
+            policy=policy,
+            fill=fill,
+        )
+
     async def read1(self, n: int = -1, /) -> bytes:
         if not n:
             return b''
@@ -1678,7 +1788,8 @@ class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAda
     async def read(self, n: int = -1, /) -> bytes:
         if n < 0:
             if (fill := self._fill) is not None:
-                await fill(-1, False)
+                while await fill(-1, False):
+                    pass
 
             buf = self._buf
             return buf.split_to(len(buf)).tobytes()
