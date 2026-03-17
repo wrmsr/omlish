@@ -72,7 +72,7 @@ async def test_clients_stream(cls, data, readall):
             assert resp.status == 200
 
             if readall:
-                data = await resp.stream.readall()
+                data = await resp.stream.read()
             else:
                 l = []
                 while (b := await resp.stream.read1(1)):

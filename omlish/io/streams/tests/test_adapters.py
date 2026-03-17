@@ -75,8 +75,8 @@ class TestIoAdapters(unittest.TestCase):
                     return True
 
         a = ByteStreamBufferBytesReaderAdapter(b, fill=fill)
-        self.assertEqual(a.readall(), b'aabbcc')
-        self.assertEqual(a.readall(), b'')
+        self.assertEqual(a.read(), b'aabbcc')
+        self.assertEqual(a.read(), b'')
 
     def test_bytesbuffer_reader_adapter_read_then_readall_block(self) -> None:
         b = SegmentedByteStreamBuffer()
@@ -97,8 +97,8 @@ class TestIoAdapters(unittest.TestCase):
 
         a = ByteStreamBufferBytesReaderAdapter(b, fill=fill)
         self.assertEqual(a.read(3), b'aab')
-        self.assertEqual(a.readall(), b'bcc')
-        self.assertEqual(a.readall(), b'')
+        self.assertEqual(a.read(), b'bcc')
+        self.assertEqual(a.read(), b'')
 
     def test_bytesbuffer_writer_adapter_bytes_and_view(self) -> None:
         out = io.BytesIO()

@@ -38,7 +38,7 @@ class HttpStreamResponseError(Exception):
         data_exception: Exception | None = None
 
         try:
-            data = await response.stream.readall()
+            data = await response.stream.read()
         except Exception as de:  # noqa
             data_exception = de
 

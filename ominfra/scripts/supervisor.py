@@ -114,7 +114,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
-            dict(path='../../omlish/io/readers.py', sha1='e72f427d9adc80fa9ca3392358670128da1d97de'),
+            dict(path='../../omlish/io/readers.py', sha1='53409e3413cb4521e4d9e710c099873b3911e32c'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
@@ -137,7 +137,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
-            dict(path='../../omlish/io/buffers.py', sha1='c97a0a3b20d412af1ee7e3c1f88d6fab079f0646'),
+            dict(path='../../omlish/io/buffers.py', sha1='adfc7e933b5a8a2dc145f9bfb83dca6e373bc2f8'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
@@ -1897,26 +1897,28 @@ class HttpVersions:
 
 
 class RawBytesReader(ta.Protocol):
-    def read1(self, n: int = -1, /) -> bytes: ...
+    """Maps to `io.BufferedIOBase`."""
+
+    def read1(self, n: int = -1, /) -> bytes:
+        """Return at most `n` bytes with at most a single underlying read."""
 
 
 class BytesReader(RawBytesReader, ta.Protocol):
-    def read(self, n: int = -1, /) -> bytes: ...
-
-    def readall(self) -> bytes: ...
+    def read(self, n: int = -1, /) -> bytes:
+        """Return exactly `n` bytes unless EOF is reached.."""
 
 
 #
 
 
 class AsyncRawBytesReader(ta.Protocol):
-    def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
+    def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]:
+        """Return at most `n` bytes with at most a single underlying read."""
 
 
 class AsyncBytesReader(AsyncRawBytesReader, ta.Protocol):
-    def read(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
-
-    def readall(self) -> ta.Awaitable[bytes]: ...
+    def read(self, n: int = -1, /) -> ta.Awaitable[bytes]:
+        """Return exactly `n` bytes unless EOF is reached.."""
 
 
 ########################################
@@ -6394,7 +6396,7 @@ class ReadableListBuffer:
 
         def read(self, /, n: int = -1) -> bytes:
             if n < 0:
-                return self.readall()
+                return self._readall()
             while len(self._buf) < n:
                 if not (b := self._raw.read1(n)):
                     break
@@ -6406,7 +6408,7 @@ class ReadableListBuffer:
             # EOF with a partial buffer: return what we have.
             return self._buf.read() or b''
 
-        def readall(self) -> bytes:
+        def _readall(self) -> bytes:
             buf = io.BytesIO()
             buf.write(self._buf.read() or b'')
             while (b := self._raw.read1(self._chunk_size)):
@@ -6449,7 +6451,7 @@ class ReadableListBuffer:
 
         async def read(self, /, n: int = -1) -> bytes:
             if n < 0:
-                return await self.readall()
+                return await self._readall()
             while len(self._buf) < n:
                 if not (b := await self._raw.read1(n)):
                     break
@@ -6461,7 +6463,7 @@ class ReadableListBuffer:
             # EOF with a partial buffer: return what we have.
             return self._buf.read() or b''
 
-        async def readall(self) -> bytes:
+        async def _readall(self) -> bytes:
             buf = io.BytesIO()
             buf.write(self._buf.read() or b'')
             while b := await self._raw.read1(self._chunk_size):

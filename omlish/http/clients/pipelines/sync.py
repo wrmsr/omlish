@@ -34,9 +34,6 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
         def read(self, n: int = -1, /) -> bytes:
             raise NotImplementedError
 
-        def readall(self) -> bytes:
-            return self.read()
-
         def close(self) -> None:
             pass
 
@@ -74,9 +71,6 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
             raise NotImplementedError
 
         def read(self, n: int = -1, /) -> bytes:
-            raise NotImplementedError
-
-        def readall(self) -> bytes:
             raise NotImplementedError
 
         def close(self) -> None:

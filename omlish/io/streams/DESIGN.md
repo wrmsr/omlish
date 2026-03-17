@@ -255,7 +255,7 @@ Adapters exist to bridge:
 
 **ByteStreamBufferBytesReaderAdapter** properties:
 - Policy-driven behavior (`raise`, `return_partial`, `block`)
-- Implements `read(n)`, `read1(n)`, `readall()`
+- Implements `read(n)`, `read1(n)`.
 - Optional `fill()` callback for blocking mode
 - Explicit handling of partial reads and EOF
 

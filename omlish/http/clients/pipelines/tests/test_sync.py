@@ -19,7 +19,7 @@ class TestSyncClient(unittest.TestCase):
                 'http://example.com/',
             )) as resp:
                 print(resp)
-                print(resp.stream.readall())
+                print(resp.stream.read())
 
     def test_ssl(self):
         with IoPipelineHttpClient() as client:
@@ -27,7 +27,7 @@ class TestSyncClient(unittest.TestCase):
                     'https://example.com/',
             )) as resp:
                 print(resp)
-                print(resp.stream.readall())
+                print(resp.stream.read())
 
     def test_gzip(self):
         with IoPipelineHttpClient() as client:
@@ -35,7 +35,7 @@ class TestSyncClient(unittest.TestCase):
                     'http://example.com/gzip',
             )) as resp:
                 print(resp)
-                print(resp.stream.readall())
+                print(resp.stream.read())
 
     def test_ssl_gzip(self):
         with IoPipelineHttpClient() as client:
@@ -43,4 +43,4 @@ class TestSyncClient(unittest.TestCase):
                     'https://example.com/gzip',
             )) as resp:
                 print(resp)
-                print(resp.stream.readall())
+                print(resp.stream.read())

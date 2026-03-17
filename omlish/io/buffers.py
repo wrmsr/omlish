@@ -129,7 +129,7 @@ class ReadableListBuffer:
 
         def read(self, /, n: int = -1) -> bytes:
             if n < 0:
-                return self.readall()
+                return self._readall()
             while len(self._buf) < n:
                 if not (b := self._raw.read1(n)):
                     break
@@ -141,7 +141,7 @@ class ReadableListBuffer:
             # EOF with a partial buffer: return what we have.
             return self._buf.read() or b''
 
-        def readall(self) -> bytes:
+        def _readall(self) -> bytes:
             buf = io.BytesIO()
             buf.write(self._buf.read() or b'')
             while (b := self._raw.read1(self._chunk_size)):
@@ -184,7 +184,7 @@ class ReadableListBuffer:
 
         async def read(self, /, n: int = -1) -> bytes:
             if n < 0:
-                return await self.readall()
+                return await self._readall()
             while len(self._buf) < n:
                 if not (b := await self._raw.read1(n)):
                     break
@@ -196,7 +196,7 @@ class ReadableListBuffer:
             # EOF with a partial buffer: return what we have.
             return self._buf.read() or b''
 
-        async def readall(self) -> bytes:
+        async def _readall(self) -> bytes:
             buf = io.BytesIO()
             buf.write(self._buf.read() or b'')
             while b := await self._raw.read1(self._chunk_size):

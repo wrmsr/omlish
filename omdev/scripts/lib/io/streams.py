@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
             dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
-            dict(path='adapters.py', sha1='53c8d8e894cb58a8cd4ca3e4f1acfba71d8bffab'),
+            dict(path='adapters.py', sha1='1b5e2647fa6b0cb7c6f1937f23e7c52ef284211e'),
             dict(path='linear.py', sha1='82d8d806abd708e8d471f32cb49813be150bcf6a'),
             dict(path='segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
@@ -1519,7 +1519,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
 class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitableBytes, BoolOrAwaitableBool]):
     """
-    Adapter: ByteStreamBuffer -> file-like reader methods (`read1`, `read`, `readall`).
+    Adapter: ByteStreamBuffer -> file-like buffered reader methods (`read1`, `read`).
 
     This adapter is policy-driven for how it behaves when insufficient bytes are available. The core buffer is
     intentionally non-blocking; blocking behavior (if desired) must be provided via a `fill` callback that supplies more
@@ -1605,10 +1605,6 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
     def read(self, n: int = -1, /) -> BytesOrAwaitableBytes:
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def readall(self) -> BytesOrAwaitableBytes:
-        raise NotImplementedError
-
 
 #
 
@@ -1633,7 +1629,11 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
 
     def read(self, n: int = -1, /) -> bytes:
         if n < 0:
-            return self.readall()
+            if (fill := self._fill) is not None:
+                fill(-1, False)
+
+            buf = self._buf
+            return buf.split_to(len(buf)).tobytes()
 
         if not n:
             return b''
@@ -1652,13 +1652,6 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
 
             if len(buf) == ln:
                 raise RuntimeError('fill did not produce data')
-
-    def readall(self) -> bytes:
-        if (fill := self._fill) is not None:
-            fill(-1, False)
-
-        buf = self._buf
-        return buf.split_to(len(buf)).tobytes()
 
 
 #
@@ -1684,7 +1677,11 @@ class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAda
 
     async def read(self, n: int = -1, /) -> bytes:
         if n < 0:
-            return await self.readall()
+            if (fill := self._fill) is not None:
+                await fill(-1, False)
+
+            buf = self._buf
+            return buf.split_to(len(buf)).tobytes()
 
         if not n:
             return b''
@@ -1703,13 +1700,6 @@ class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAda
 
             if len(buf) == ln:
                 raise RuntimeError('fill did not produce data')
-
-    async def readall(self) -> bytes:
-        if (fill := self._fill) is not None:
-            await fill(-1, False)
-
-        buf = self._buf
-        return buf.split_to(len(buf)).tobytes()
 
 
 ##

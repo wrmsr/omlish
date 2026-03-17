@@ -18,7 +18,7 @@ class TestAsyncioClient(AsyncioIsolatedAsyncTestCase):
                 'http://example.com/',
             ))) as resp:
                 print(resp)
-                print(await resp.stream.readall())
+                print(await resp.stream.read())
 
     async def test_ssl(self):
         async with AsyncioIoPipelineAsyncHttpClient() as client:
@@ -26,7 +26,7 @@ class TestAsyncioClient(AsyncioIsolatedAsyncTestCase):
                     'https://example.com/',
             ))) as resp:
                 print(resp)
-                print(await resp.stream.readall())
+                print(await resp.stream.read())
 
     async def test_gzip(self):
         async with AsyncioIoPipelineAsyncHttpClient() as client:
@@ -34,7 +34,7 @@ class TestAsyncioClient(AsyncioIsolatedAsyncTestCase):
                     'http://example.com/gzip',
             ))) as resp:
                 print(resp)
-                print(await resp.stream.readall())
+                print(await resp.stream.read())
 
     async def test_ssl_gzip(self):
         async with AsyncioIoPipelineAsyncHttpClient() as client:
@@ -42,4 +42,4 @@ class TestAsyncioClient(AsyncioIsolatedAsyncTestCase):
                     'https://example.com/gzip',
             ))) as resp:
                 print(resp)
-                print(await resp.stream.readall())
+                print(await resp.stream.read())

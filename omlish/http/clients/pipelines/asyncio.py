@@ -36,9 +36,6 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
         def read(self, n: int = -1, /) -> ta.Awaitable[bytes]:
             raise NotImplementedError
 
-        def readall(self) -> ta.Awaitable[bytes]:
-            return self.read()
-
         async def close(self) -> None:
             pass
 
@@ -74,9 +71,6 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
             raise NotImplementedError
 
         async def read(self, n: int = -1, /) -> bytes:
-            raise NotImplementedError
-
-        async def readall(self) -> bytes:
             raise NotImplementedError
 
         async def close(self) -> None:

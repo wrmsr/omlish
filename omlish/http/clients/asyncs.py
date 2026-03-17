@@ -91,7 +91,7 @@ async def async_read_http_client_response(resp: BaseHttpClientResponse) -> HttpC
     elif isinstance(resp, AsyncStreamHttpClientResponse):
         return HttpClientResponse(**{
             **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('_stream', '_closer')},
-            **({'data': await resp.stream.readall()} if resp.has_data else {}),
+            **({'data': await resp.stream.read()} if resp.has_data else {}),
         })
 
     else:
