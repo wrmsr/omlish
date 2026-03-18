@@ -558,7 +558,9 @@ with _lang.auto_proxy_init(
 
         ToolPermissionTarget,
         ToolPermissionMatcher,
+
         ToolPermissionRule,
+        ToolPermissionRules,
 
         ToolPermissions,
         ListToolPermissions,

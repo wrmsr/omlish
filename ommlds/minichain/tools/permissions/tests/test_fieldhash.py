@@ -1,6 +1,3 @@
-from omlish import marshal as msh
-from omlish.formats import json
-
 from ..fs import GlobFsToolPermissionMatcher
 from ..types import ToolPermissionRule
 from ..types import ToolPermissionRules
@@ -28,5 +25,5 @@ def test_marshal():
         ),
     ])
 
-    j = json.dumps_pretty(msh.marshal(rules))
-    print(j)
+    v = rules._field_hash()  # noqa
+    print(v)

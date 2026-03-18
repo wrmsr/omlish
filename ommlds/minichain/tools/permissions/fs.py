@@ -1,36 +1,64 @@
 import fnmatch
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
+from . import _fieldhash as fh
 from .types import ToolPermissionMatcher
 from .types import ToolPermissionTarget
-
-
-FsToolPermissionMode: ta.TypeAlias = ta.Literal['r', 'w']
 
 
 ##
 
 
+FsToolPermissionMode: ta.TypeAlias = ta.Literal['r', 'w']
+
+FS_TOOL_PERMISSION_MODES: ta.Sequence[FsToolPermissionMode] = ('r', 'w')
+
+
+@ta.final
 @dc.dataclass(frozen=True)
 class FsToolPermissionTarget(ToolPermissionTarget, lang.Final):
     path: str
 
     mode: FsToolPermissionMode
 
+    @dc.validate
+    def _validate_mode(self) -> bool:
+        return self.mode in FS_TOOL_PERMISSION_MODES
 
+    @lang.cached_function
+    def _field_hash(self) -> fh.FieldHashValue:
+        return fh.FieldHashObject('fs', (
+            fh.FieldHashField('path', self.path),
+            fh.FieldHashField('mode', self.mode),
+        ))
+
+
+@ta.final
 @dc.dataclass(frozen=True)
 class GlobFsToolPermissionMatcher(ToolPermissionMatcher, lang.Final):
     glob: str
 
-    mode: ta.Container[FsToolPermissionMode] | None = dc.field(default=None) | msh.with_field_options(
+    modes: ta.Container[FsToolPermissionMode] | None = dc.xfield(
+        default=None,
+    ) | dc.with_extra_field_params(
+        coerce=lambda v: tuple(sorted({check.in_(m.lower(), FS_TOOL_PERMISSION_MODES) for m in v})) if v is not None else None,  # noqa
+    ) | msh.with_field_options(
         omit_if=lang.is_none,
-        marshal_as=frozenset[FsToolPermissionMode] | None,
-        unmarshal_as=frozenset[FsToolPermissionMode] | None,
+        marshal_as=ta.Sequence[FsToolPermissionMode] | None,
+        unmarshal_as=ta.Sequence[FsToolPermissionMode] | None,
     )
+
+    @lang.cached_function
+    def _field_hash(self) -> fh.FieldHashValue:
+        return fh.FieldHashObject('glob_fs', (
+            fh.FieldHashField('glob', self.glob),
+            fh.FieldHashField('modes', check.isinstance(self.modes, tuple) if self.modes is not None else None),
+        ))
 
     def match(self, target: ToolPermissionTarget) -> bool:
         if not isinstance(target, FsToolPermissionTarget):
@@ -38,5 +66,5 @@ class GlobFsToolPermissionMatcher(ToolPermissionMatcher, lang.Final):
 
         return (
             fnmatch.fnmatch(target.path, self.glob) and
-            (self.mode is None or target.mode in self.mode)
+            (self.modes is None or target.mode in self.modes)
         )
