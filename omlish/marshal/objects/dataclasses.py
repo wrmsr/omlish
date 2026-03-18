@@ -187,6 +187,7 @@ def _make_field_marshal_obj(
         ty: ta.Any,
         obj: Marshaler | None,
         fac: MarshalerFactory | None,
+        as_: ta.Any | None = None,
 ):
     if obj is not None:
         return obj
@@ -194,6 +195,8 @@ def _make_field_marshal_obj(
         if (m := fac.make_marshaler(ctx, ty)) is None:
             raise UnhandledTypeError(ty)
         return m()
+    if as_ is not None:
+        return ctx.make_marshaler(as_)
     return ctx.make_marshaler(ty)
 
 
@@ -202,6 +205,7 @@ def _make_field_unmarshal_obj(
         ty: ta.Any,
         obj: Unmarshaler | None,
         fac: UnmarshalerFactory | None,
+        as_: ta.Any | None = None,
 ):
     if obj is not None:
         return obj
@@ -209,6 +213,8 @@ def _make_field_unmarshal_obj(
         if (m := fac.make_unmarshaler(ctx, ty)) is None:
             raise UnhandledTypeError(ty)
         return m()
+    if as_ is not None:
+        return ctx.make_unmarshaler(as_)
     return ctx.make_unmarshaler(ty)
 
 
@@ -264,6 +270,7 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
                         fi.type,
                         fi.options.marshaler,
                         fi.options.marshaler_factory,
+                        fi.options.marshal_as,
                     ),
                 )
                 for fi in fis
@@ -327,6 +334,7 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
                             fi.type,
                             fi.options.unmarshaler,
                             fi.options.unmarshaler_factory,
+                            fi.options.unmarshal_as,
                         ),
                     )
 

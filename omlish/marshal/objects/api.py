@@ -56,17 +56,28 @@ class FieldOptions(lang.Final):
 
     marshaler: Marshaler | None = None
     marshaler_factory: MarshalerFactory | None = None
+    marshal_as: ta.Any | None = None
 
     unmarshaler: Unmarshaler | None = None
     unmarshaler_factory: UnmarshalerFactory | None = None
+    unmarshal_as: ta.Any | None = None
 
     ##
     # Validation
 
     def __post_init__(self) -> None:
         check.isinstance(self.default, (lang.Maybe, None))
+
         check.isinstance(self.marshaler, (Marshaler, None))
         check.isinstance(self.unmarshaler, (Unmarshaler, None))
+
+        for mutex_atts in [
+            ('marshaler', 'marshaler_factory', 'marshal_as'),
+            ('unmarshaler', 'unmarshaler_factory', 'unmarshal_as'),
+        ]:
+            set_atts = [a for a in mutex_atts if getattr(self, a) is not None]
+            if len(set_atts) > 1:
+                raise ValueError(f'Cannot set {set_atts} at the same time')
 
     ##
     # Merging

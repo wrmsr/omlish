@@ -3115,6 +3115,181 @@ def _process_dataclass__d9f48cde06e7389dca07aabc1f82e684870460cf():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('default_tcp_established_timeout', 'default_udp_timeout', 'default_udp_stream_time"
+        "out')), EqPlan(fields=('default_tcp_established_timeout', 'default_udp_timeout', 'default_udp_stream_timeout')"
+        "), FrozenPlan(fields=('__shape__', 'default_tcp_established_timeout', 'default_udp_timeout', 'default_udp_stre"
+        "am_timeout'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('default_tcp_established_timeo"
+        "ut', 'default_udp_timeout', 'default_udp_stream_timeout'), cache=False), InitPlan(fields=(InitPlan.Field(name="
+        "'__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True,"
+        " override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='default_tcp_established_timeout', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name="
+        "'init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='default_udp_timeout', annotation=OpRef(name='in"
+        "it.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='de"
+        "fault_udp_stream_timeout', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields."
+        "3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('default_tcp_established_timeo"
+        "ut', 'default_udp_timeout', 'default_udp_stream_timeout'), frozen=True, slots=False, post_init_params=None, in"
+        "it_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='default_tcp_established_timeout', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='default_udp_timeout', kw_only=True, fn=None), ReprPlan.Field(name='default"
+        "_udp_stream_timeout', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='658ca8eb82387f32ff40245314800f8be7d84009',
+    op_ref_idents=(
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+    ),
+    cls_names=(
+        ('ominfra.clouds.aws.models.services.ec2', 'DefaultConnectionTrackingConfiguration'),
+    ),
+)
+def _process_dataclass__658ca8eb82387f32ff40245314800f8be7d84009():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                default_tcp_established_timeout=self.default_tcp_established_timeout,
+                default_udp_timeout=self.default_udp_timeout,
+                default_udp_stream_timeout=self.default_udp_stream_timeout,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.default_tcp_established_timeout == other.default_tcp_established_timeout and
+                self.default_udp_timeout == other.default_udp_timeout and
+                self.default_udp_stream_timeout == other.default_udp_stream_timeout
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__shape__',
+            'default_tcp_established_timeout',
+            'default_udp_timeout',
+            'default_udp_stream_timeout',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__shape__',
+            'default_tcp_established_timeout',
+            'default_udp_timeout',
+            'default_udp_stream_timeout',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.default_tcp_established_timeout,
+                self.default_udp_timeout,
+                self.default_udp_stream_timeout,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            default_tcp_established_timeout: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            default_udp_timeout: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            default_udp_stream_timeout: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'default_tcp_established_timeout', default_tcp_established_timeout)
+            __dataclass__object_setattr(self, 'default_udp_timeout', default_udp_timeout)
+            __dataclass__object_setattr(self, 'default_udp_stream_timeout', default_udp_stream_timeout)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"default_tcp_established_timeout={self.default_tcp_established_timeout!r}")
+            parts.append(f"default_udp_timeout={self.default_udp_timeout!r}")
+            parts.append(f"default_udp_stream_timeout={self.default_udp_stream_timeout!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('destination_prefix_list_id', 'dry_run', 'route_table_id', 'destination_cidr_block"
         "', 'destination_ipv6_cidr_block')), EqPlan(fields=('destination_prefix_list_id', 'dry_run', 'route_table_id', "
         "'destination_cidr_block', 'destination_ipv6_cidr_block')), FrozenPlan(fields=('__shape__', 'destination_prefix"
@@ -21416,88 +21591,93 @@ def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
         "Plans(tup=(CopyPlan(fields=('network_performance', 'maximum_network_interfaces', 'maximum_network_cards', 'def"
         "ault_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_interface', 'ip"
         "v6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'ena_srd_support"
-        "ed', 'bandwidth_weightings', 'flexible_ena_queues_support', 'secondary_network_supported', 'maximum_secondary_"
-        "network_interfaces', 'ipv4_addresses_per_secondary_interface')), EqPlan(fields=('network_performance', 'maximu"
-        "m_network_interfaces', 'maximum_network_cards', 'default_network_card_index', 'network_cards', 'ipv4_addresses"
-        "_per_interface', 'ipv6_addresses_per_interface', 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info',"
-        " 'encryption_in_transit_supported', 'ena_srd_supported', 'bandwidth_weightings', 'flexible_ena_queues_support'"
-        ", 'secondary_network_supported', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interfa"
-        "ce')), FrozenPlan(fields=('__shape__', 'network_performance', 'maximum_network_interfaces', 'maximum_network_c"
-        "ards', 'default_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_inte"
-        "rface', 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'ena_"
-        "srd_supported', 'bandwidth_weightings', 'flexible_ena_queues_support', 'secondary_network_supported', 'maximum"
-        "_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interface'), allow_dynamic_dunder_attrs=False), "
-        "HashPlan(action='add', fields=('network_performance', 'maximum_network_interfaces', 'maximum_network_cards', '"
-        "default_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_interface', "
-        "'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'ena_srd_supp"
-        "orted', 'bandwidth_weightings', 'flexible_ena_queues_support', 'secondary_network_supported', 'maximum_seconda"
-        "ry_network_interfaces', 'ipv4_addresses_per_secondary_interface'), cache=False), InitPlan(fields=(InitPlan.Fie"
-        "ld(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='network_performance', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='ini"
-        "t.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='maximum_network_interfaces', annotation=OpRef(name="
-        "'init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'maximum_network_cards', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='default_network_card_index', annotation=OpRef(name='init.field"
-        "s.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_ca"
-        "rds', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='ipv4_addresses_per_interface', annotation=OpRef(name='init.fields.6.annotation'),"
-        " default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_addresses_per_interfac"
-        "e', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_fa"
-        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
-        "one), InitPlan.Field(name='ipv6_supported', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(n"
-        "ame='init.fields.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='ena_support', annotation=OpRef(name='init.f"
-        "ields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='efa_su"
-        "pported', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None), InitPlan.Field(name='efa_info', annotation=OpRef(name='init.fields.11.annotation'), default=OpRe"
-        "f(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='encryption_in_transit_supported', annot"
-        "ation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='ena_srd_supported', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name"
-        "='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='bandwidth_weightings', annotation=OpRef(name="
-        "'init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='flexible_ena_queues_support', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init."
-        "fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='secondary_network_supported', annotation=OpRef(name="
-        "'init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='maximum_secondary_network_interfaces', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(na"
-        "me='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_addresses_per_secondary_interface', an"
-        "notation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        "), self_param='self', std_params=(), kw_only_params=('network_performance', 'maximum_network_interfaces', 'max"
-        "imum_network_cards', 'default_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addr"
-        "esses_per_interface', 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_sup"
-        "ported', 'ena_srd_supported', 'bandwidth_weightings', 'flexible_ena_queues_support', 'secondary_network_suppor"
-        "ted', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interface'), frozen=True, slots=Fa"
-        "lse, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='network_perfo"
-        "rmance', kw_only=True, fn=None), ReprPlan.Field(name='maximum_network_interfaces', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='maximum_network_cards', kw_only=True, fn=None), ReprPlan.Field(name='default_network_card_in"
-        "dex', kw_only=True, fn=None), ReprPlan.Field(name='network_cards', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='ipv4_addresses_per_interface', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_addresses_per_interface', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='ipv6_supported', kw_only=True, fn=None), ReprPlan.Field(name='ena_"
-        "support', kw_only=True, fn=None), ReprPlan.Field(name='efa_supported', kw_only=True, fn=None), ReprPlan.Field("
-        "name='efa_info', kw_only=True, fn=None), ReprPlan.Field(name='encryption_in_transit_supported', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='ena_srd_supported', kw_only=True, fn=None), ReprPlan.Field(name='bandwidth_weig"
-        "htings', kw_only=True, fn=None), ReprPlan.Field(name='flexible_ena_queues_support', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='secondary_network_supported', kw_only=True, fn=None), ReprPlan.Field(name='maximum_secondar"
-        "y_network_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_addresses_per_secondary_interface', k"
-        "w_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "ed', 'bandwidth_weightings', 'flexible_ena_queues_support', 'connection_tracking_configuration', 'secondary_ne"
+        "twork_supported', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interface')), EqPlan(f"
+        "ields=('network_performance', 'maximum_network_interfaces', 'maximum_network_cards', 'default_network_card_ind"
+        "ex', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_interface', 'ipv6_supported', 'ena_s"
+        "upport', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'ena_srd_supported', 'bandwidth_weigh"
+        "tings', 'flexible_ena_queues_support', 'connection_tracking_configuration', 'secondary_network_supported', 'ma"
+        "ximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interface')), FrozenPlan(fields=('__shape__"
+        "', 'network_performance', 'maximum_network_interfaces', 'maximum_network_cards', 'default_network_card_index',"
+        " 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_interface', 'ipv6_supported', 'ena_suppo"
+        "rt', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'ena_srd_supported', 'bandwidth_weighting"
+        "s', 'flexible_ena_queues_support', 'connection_tracking_configuration', 'secondary_network_supported', 'maximu"
+        "m_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interface'), allow_dynamic_dunder_attrs=False),"
+        " HashPlan(action='add', fields=('network_performance', 'maximum_network_interfaces', 'maximum_network_cards', "
+        "'default_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_interface',"
+        " 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'ena_srd_sup"
+        "ported', 'bandwidth_weightings', 'flexible_ena_queues_support', 'connection_tracking_configuration', 'secondar"
+        "y_network_supported', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interface'), cache"
+        "=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), "
+        "default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='network_performance', annotation=OpRef(name='init.fields.1"
+        ".annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_netwo"
+        "rk_interfaces', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='maximum_network_cards', annotation=OpRef(name='init.fields.3.annotation"
+        "'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default_network_card_ind"
+        "ex', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='network_cards', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(n"
+        "ame='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_addresses_per_interface', annotation=O"
+        "pRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='ipv6_addresses_per_interface', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(nam"
+        "e='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_supported', annotation=OpRef(name='init."
+        "fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ena_s"
+        "upport', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='efa_supported', annotation=OpRef(name='init.fields.10.annotation'), default=Op"
+        "Ref(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
+        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='efa_info', annotation=OpRef(name='ini"
+        "t.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='e"
+        "ncryption_in_transit_supported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init."
+        "fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='ena_srd_supported', annotation=OpRef(name='init.fiel"
+        "ds.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='bandwid"
+        "th_weightings', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='flexible_ena_queues_support', annotation=OpRef(name='init.fields.15.a"
+        "nnotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='connection_tra"
+        "cking_configuration', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='secondary_network_supported', annotation=OpRef(name='init.field"
+        "s.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_"
+        "secondary_network_interfaces', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fi"
+        "elds.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='ipv4_addresses_per_secondary_interface', annotation=Op"
+        "Ref(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_par"
+        "am='self', std_params=(), kw_only_params=('network_performance', 'maximum_network_interfaces', 'maximum_networ"
+        "k_cards', 'default_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_i"
+        "nterface', 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'e"
+        "na_srd_supported', 'bandwidth_weightings', 'flexible_ena_queues_support', 'connection_tracking_configuration',"
+        " 'secondary_network_supported', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interfac"
+        "e'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan"
+        ".Field(name='network_performance', kw_only=True, fn=None), ReprPlan.Field(name='maximum_network_interfaces', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='maximum_network_cards', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='default_network_card_index', kw_only=True, fn=None), ReprPlan.Field(name='network_cards', kw_only=True, fn="
+        "None), ReprPlan.Field(name='ipv4_addresses_per_interface', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_a"
+        "ddresses_per_interface', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_supported', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='ena_support', kw_only=True, fn=None), ReprPlan.Field(name='efa_supported', kw_only=True,"
+        " fn=None), ReprPlan.Field(name='efa_info', kw_only=True, fn=None), ReprPlan.Field(name='encryption_in_transit_"
+        "supported', kw_only=True, fn=None), ReprPlan.Field(name='ena_srd_supported', kw_only=True, fn=None), ReprPlan."
+        "Field(name='bandwidth_weightings', kw_only=True, fn=None), ReprPlan.Field(name='flexible_ena_queues_support', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='connection_tracking_configuration', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='secondary_network_supported', kw_only=True, fn=None), ReprPlan.Field(name='maximum_secondary_n"
+        "etwork_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_addresses_per_secondary_interface', kw_o"
+        "nly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f15780486df6a4aadab3cfeef159ea523536a37b',
+    plan_repr_sha1='d02fbeb89466560958300e0ad908fedd85ae9399',
     op_ref_idents=(
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
@@ -21517,6 +21697,8 @@ def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
         '__dataclass__init__fields__17__default',
         '__dataclass__init__fields__18__annotation',
         '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
@@ -21540,7 +21722,7 @@ def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
         ('ominfra.clouds.aws.models.services.ec2', 'NetworkInfo'),
     ),
 )
-def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
+def _process_dataclass__d02fbeb89466560958300e0ad908fedd85ae9399():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -21562,6 +21744,8 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
         __dataclass__init__fields__17__default,
         __dataclass__init__fields__18__annotation,
         __dataclass__init__fields__18__default,
+        __dataclass__init__fields__19__annotation,
+        __dataclass__init__fields__19__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
@@ -21613,6 +21797,7 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
                 ena_srd_supported=self.ena_srd_supported,
                 bandwidth_weightings=self.bandwidth_weightings,
                 flexible_ena_queues_support=self.flexible_ena_queues_support,
+                connection_tracking_configuration=self.connection_tracking_configuration,
                 secondary_network_supported=self.secondary_network_supported,
                 maximum_secondary_network_interfaces=self.maximum_secondary_network_interfaces,
                 ipv4_addresses_per_secondary_interface=self.ipv4_addresses_per_secondary_interface,
@@ -21644,6 +21829,7 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
                 self.ena_srd_supported == other.ena_srd_supported and
                 self.bandwidth_weightings == other.bandwidth_weightings and
                 self.flexible_ena_queues_support == other.flexible_ena_queues_support and
+                self.connection_tracking_configuration == other.connection_tracking_configuration and
                 self.secondary_network_supported == other.secondary_network_supported and
                 self.maximum_secondary_network_interfaces == other.maximum_secondary_network_interfaces and
                 self.ipv4_addresses_per_secondary_interface == other.ipv4_addresses_per_secondary_interface
@@ -21671,6 +21857,7 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
             'ena_srd_supported',
             'bandwidth_weightings',
             'flexible_ena_queues_support',
+            'connection_tracking_configuration',
             'secondary_network_supported',
             'maximum_secondary_network_interfaces',
             'ipv4_addresses_per_secondary_interface',
@@ -21706,6 +21893,7 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
             'ena_srd_supported',
             'bandwidth_weightings',
             'flexible_ena_queues_support',
+            'connection_tracking_configuration',
             'secondary_network_supported',
             'maximum_secondary_network_interfaces',
             'ipv4_addresses_per_secondary_interface',
@@ -21741,6 +21929,7 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
                 self.ena_srd_supported,
                 self.bandwidth_weightings,
                 self.flexible_ena_queues_support,
+                self.connection_tracking_configuration,
                 self.secondary_network_supported,
                 self.maximum_secondary_network_interfaces,
                 self.ipv4_addresses_per_secondary_interface,
@@ -21767,9 +21956,10 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
             ena_srd_supported: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
             bandwidth_weightings: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
             flexible_ena_queues_support: __dataclass__init__fields__15__annotation = __dataclass__init__fields__15__default,
-            secondary_network_supported: __dataclass__init__fields__16__annotation = __dataclass__init__fields__16__default,
-            maximum_secondary_network_interfaces: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
-            ipv4_addresses_per_secondary_interface: __dataclass__init__fields__18__annotation = __dataclass__init__fields__18__default,
+            connection_tracking_configuration: __dataclass__init__fields__16__annotation = __dataclass__init__fields__16__default,
+            secondary_network_supported: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
+            maximum_secondary_network_interfaces: __dataclass__init__fields__18__annotation = __dataclass__init__fields__18__default,
+            ipv4_addresses_per_secondary_interface: __dataclass__init__fields__19__annotation = __dataclass__init__fields__19__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'network_performance', network_performance)
             __dataclass__object_setattr(self, 'maximum_network_interfaces', maximum_network_interfaces)
@@ -21786,6 +21976,7 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
             __dataclass__object_setattr(self, 'ena_srd_supported', ena_srd_supported)
             __dataclass__object_setattr(self, 'bandwidth_weightings', bandwidth_weightings)
             __dataclass__object_setattr(self, 'flexible_ena_queues_support', flexible_ena_queues_support)
+            __dataclass__object_setattr(self, 'connection_tracking_configuration', connection_tracking_configuration)
             __dataclass__object_setattr(self, 'secondary_network_supported', secondary_network_supported)
             __dataclass__object_setattr(self, 'maximum_secondary_network_interfaces', maximum_secondary_network_interfaces)
             __dataclass__object_setattr(self, 'ipv4_addresses_per_secondary_interface', ipv4_addresses_per_secondary_interface)
@@ -21813,6 +22004,7 @@ def _process_dataclass__f15780486df6a4aadab3cfeef159ea523536a37b():
             parts.append(f"ena_srd_supported={self.ena_srd_supported!r}")
             parts.append(f"bandwidth_weightings={self.bandwidth_weightings!r}")
             parts.append(f"flexible_ena_queues_support={self.flexible_ena_queues_support!r}")
+            parts.append(f"connection_tracking_configuration={self.connection_tracking_configuration!r}")
             parts.append(f"secondary_network_supported={self.secondary_network_supported!r}")
             parts.append(f"maximum_secondary_network_interfaces={self.maximum_secondary_network_interfaces!r}")
             parts.append(f"ipv4_addresses_per_secondary_interface={self.ipv4_addresses_per_secondary_interface!r}")

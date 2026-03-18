@@ -127,6 +127,12 @@ DefaultEnaQueueCountPerInterface = _ta.NewType('DefaultEnaQueueCountPerInterface
 
 DefaultNetworkCardIndex = _ta.NewType('DefaultNetworkCardIndex', int)
 
+DefaultTcpEstablishedTimeout = _ta.NewType('DefaultTcpEstablishedTimeout', int)
+
+DefaultUdpStreamTimeout = _ta.NewType('DefaultUdpStreamTimeout', int)
+
+DefaultUdpTimeout = _ta.NewType('DefaultUdpTimeout', int)
+
 DescribeInternetGatewaysMaxResults = _ta.NewType('DescribeInternetGatewaysMaxResults', int)
 
 DescribeNetworkInterfacesMaxResults = _ta.NewType('DescribeNetworkInterfacesMaxResults', int)
@@ -2539,6 +2545,30 @@ class CreditSpecificationRequest(
     cpu_credits: str = _dc.field(metadata=_base.field_metadata(
         member_name='CpuCredits',
         shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class DefaultConnectionTrackingConfiguration(
+    _base.Shape,
+    shape_name='DefaultConnectionTrackingConfiguration',
+):
+    default_tcp_established_timeout: DefaultTcpEstablishedTimeout | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DefaultTcpEstablishedTimeout',
+        serialization_name='defaultTcpEstablishedTimeout',
+        shape_name='DefaultTcpEstablishedTimeout',
+    ))
+
+    default_udp_timeout: DefaultUdpTimeout | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DefaultUdpTimeout',
+        serialization_name='defaultUdpTimeout',
+        shape_name='DefaultUdpTimeout',
+    ))
+
+    default_udp_stream_timeout: DefaultUdpStreamTimeout | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DefaultUdpStreamTimeout',
+        serialization_name='defaultUdpStreamTimeout',
+        shape_name='DefaultUdpStreamTimeout',
     ))
 
 
@@ -6059,6 +6089,12 @@ class NetworkInfo(
         shape_name='FlexibleEnaQueuesSupport',
     ))
 
+    connection_tracking_configuration: DefaultConnectionTrackingConfiguration | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ConnectionTrackingConfiguration',
+        serialization_name='connectionTrackingConfiguration',
+        shape_name='DefaultConnectionTrackingConfiguration',
+    ))
+
     secondary_network_supported: SecondaryNetworkSupportedFlag | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SecondaryNetworkSupported',
         serialization_name='secondaryNetworkSupported',
@@ -8796,6 +8832,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     CreateSecurityGroupRequest,
     CreateSecurityGroupResult,
     CreditSpecificationRequest,
+    DefaultConnectionTrackingConfiguration,
     DeleteRouteRequest,
     DeleteRouteTableRequest,
     DeleteSecurityGroupRequest,

@@ -3,6 +3,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 from .types import ToolPermissionMatcher
 from .types import ToolPermissionTarget
@@ -26,7 +27,7 @@ class RegexUrlToolPermissionMatcher(ToolPermissionMatcher, lang.Final):
 
     _: dc.KW_ONLY
 
-    method: ta.AbstractSet[str] | None = None
+    method: ta.AbstractSet[str] | None = dc.field(default=None) | msh.with_field_options(omit_if=lang.is_none)  # noqa
 
     @lang.cached_function
     def compiled_pat(self) -> re.Pattern:
