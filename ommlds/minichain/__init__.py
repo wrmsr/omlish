@@ -546,11 +546,20 @@ with _lang.auto_proxy_init(
         reflect_tool_catalog_entry,
     )
 
+    from .tools.permissions.collection import (  # noqa
+        ToolPermissionRules,
+    )
+
     from .tools.permissions.fs import (  # noqa
         FsToolPermissionMode,
 
         FsToolPermissionTarget,
         GlobFsToolPermissionMatcher,
+    )
+
+    from .tools.permissions.managers import (  # noqa
+        ToolPermissionsManager,
+        ListToolPermissionsManager,
     )
 
     from .tools.permissions.types import (  # noqa
@@ -560,10 +569,6 @@ with _lang.auto_proxy_init(
         ToolPermissionMatcher,
 
         ToolPermissionRule,
-        ToolPermissionRules,
-
-        ToolPermissions,
-        ListToolPermissions,
     )
 
     from .tools.permissions.url import (  # noqa

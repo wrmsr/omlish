@@ -2,7 +2,6 @@ import abc
 import enum
 import typing as ta
 
-from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -46,49 +45,3 @@ class ToolPermissionRule(fh.FieldHashable, lang.Final):
             fh.FieldHashField('matcher', self.matcher),
             fh.FieldHashField('result', self.result.name),
         ))
-
-
-@ta.final
-@dc.dataclass(frozen=True)
-class ToolPermissionRules(fh.FieldHashable, ta.Sequence[ToolPermissionRule], lang.Final):
-    rules: ta.Sequence[ToolPermissionRule] = dc.xfield(coerce=tuple)
-
-    def _field_hash(self) -> fh.FieldHashValue:
-        return fh.FieldHashObject('rules', (
-            fh.FieldHashField('rules', check.isinstance(self.rules, tuple)),
-        ))
-
-    def __getitem__(self, index):
-        return self.rules[index]
-
-    def __len__(self):
-        return len(self.rules)
-
-
-##
-
-
-class ToolPermissions(lang.Abstract):
-    @abc.abstractmethod
-    def get_rules(self) -> ta.Sequence[ToolPermissionRule]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def match(self, target: ToolPermissionTarget) -> ToolPermissionRule | None:
-        raise NotImplementedError
-
-
-class ListToolPermissions(ToolPermissions):
-    def __init__(self, rules: ta.Sequence[ToolPermissionRule] | None = None) -> None:
-        super().__init__()
-
-        self._rules = list(rules or ())
-
-    def get_rules(self) -> ta.Sequence[ToolPermissionRule]:
-        return self._rules
-
-    def match(self, target: ToolPermissionTarget) -> ToolPermissionRule | None:
-        for r in self._rules:
-            if r.matcher.match(target):
-                return r
-        return None

@@ -6,9 +6,9 @@ from omlish import collections as col
 from omlish.algorithm.prefixes import min_unique_prefix_len
 
 from .... import _fieldhash as fh
+from ..collection import ToolPermissionRules
 from ..fs import GlobFsToolPermissionMatcher
 from ..types import ToolPermissionRule
-from ..types import ToolPermissionRules
 from ..types import ToolPermissionState
 from ..url import RegexUrlToolPermissionMatcher
 

@@ -1,9 +1,9 @@
 from omlish import marshal as msh
 from omlish.formats import json
 
+from ..collection import ToolPermissionRules
 from ..fs import GlobFsToolPermissionMatcher
 from ..types import ToolPermissionRule
-from ..types import ToolPermissionRules
 from ..types import ToolPermissionState
 from ..url import RegexUrlToolPermissionMatcher
 

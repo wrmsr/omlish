@@ -11,7 +11,7 @@ from .base import Command
 
 
 class PermissionsCommand(Command):
-    def __init__(self, permissions: 'mc.ToolPermissions') -> None:
+    def __init__(self, permissions: 'mc.ToolPermissionsManager') -> None:
         super().__init__()
 
         self._permissions = permissions
