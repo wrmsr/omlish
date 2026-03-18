@@ -546,6 +546,29 @@ with _lang.auto_proxy_init(
         reflect_tool_catalog_entry,
     )
 
+    from .tools.permissions.fs import (  # noqa
+        FsToolPermissionMode,
+
+        FsToolPermissionTarget,
+        GlobFsToolPermissionMatcher,
+    )
+
+    from .tools.permissions.types import (  # noqa
+        ToolPermissionState,
+
+        ToolPermissionTarget,
+        ToolPermissionMatcher,
+        ToolPermissionRule,
+
+        ToolPermissions,
+        ListToolPermissions,
+    )
+
+    from .tools.permissions.url import (  # noqa
+        UrlToolPermissionTarget,
+        RegexUrlToolPermissionMatcher,
+    )
+
     from .tools.fns import (  # noqa
         ToolFn,
 
@@ -554,19 +577,6 @@ with _lang.auto_proxy_init(
 
     from .tools.jsonschema import (  # noqa
         build_tool_spec_json_schema,
-    )
-
-    from .tools.permissions import (  # noqa
-        ToolPermissionState,
-
-        ToolPermission,
-
-        ToolPermissionNamespaceMeta,
-        StandardToolPermissions,
-
-        ToolPermissions,
-
-        DictToolPermissions,
     )
 
     from .tools.reflect import (  # noqa

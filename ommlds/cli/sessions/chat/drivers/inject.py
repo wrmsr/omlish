@@ -50,8 +50,8 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(mc.DictToolPermissions, singleton=True),
-        inj.bind(mc.ToolPermissions, to_key=mc.DictToolPermissions),
+        inj.bind(mc.ListToolPermissions, singleton=True),
+        inj.bind(mc.ToolPermissions, to_key=mc.ListToolPermissions),
     ])
 
     #

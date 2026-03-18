@@ -3,7 +3,6 @@ import typing as ta
 from omlish.argparse import all as argparse
 
 from ...... import minichain as mc
-from ...facades.text import FacadeText
 from ...facades.text import FacadeTextColor
 from .base import Command
 
@@ -28,7 +27,7 @@ class PermissionsCommand(Command):
 
         parser_set = subparsers.add_parser('set')
         parser_set.add_argument('name')
-        parser_set.add_argument('state', choices=('allowed', 'confirm', 'denied'))
+        parser_set.add_argument('state', choices=('allow', 'ask', 'deny'))
         parser_set.set_defaults(cmd='set')
 
     async def _run_args(self, ctx: Command.Context, args: argparse.Namespace) -> None:
@@ -42,32 +41,36 @@ class PermissionsCommand(Command):
     #
 
     _PERMISSION_STATE_COLORS: ta.ClassVar[ta.Mapping['mc.ToolPermissionState', FacadeTextColor]] = {  # noqa
-        mc.ToolPermissionState.DENIED: 'red',
-        mc.ToolPermissionState.CONFIRM: 'yellow',
-        mc.ToolPermissionState.ALLOWED: 'green',
+        mc.ToolPermissionState.DENY: 'red',
+        mc.ToolPermissionState.ASK: 'yellow',
+        mc.ToolPermissionState.ALLOW: 'green',
     }
 
     async def _run_list(self, ctx: Command.Context, args: argparse.Namespace) -> None:
-        dct = self._permissions.get_tool_permission_states()
-        if not dct:
+        lst = self._permissions.get_rules()
+        if not lst:
             await ctx.print('No permissions set')
             return
 
-        lj = max(len(p.name) for p in dct) + 2
-        await ctx.print(FacadeText.join('\n', [
-            [
-                f'{p.name.lower().ljust(lj)}: ',
-                FacadeText.style(
-                    ps.name.lower(),
-                    bold=True,
-                    color=self._PERMISSION_STATE_COLORS[ps],
-                ),
-            ]
-            for p, ps in dct.items()
-        ]))
+        # lj = max(len(p.name) for p in dct) + 2
+        # await ctx.print(FacadeText.join('\n', [
+        #     [
+        #         f'{p.name.lower().ljust(lj)}: ',
+        #         FacadeText.style(
+        #             ps.name.lower(),
+        #             bold=True,
+        #             color=self._PERMISSION_STATE_COLORS[ps],
+        #         ),
+        #     ]
+        #     for p, ps in dct.items()
+        # ]))
+
+        for r in lst:
+            await ctx.print(repr(r))
 
     #
 
     async def _run_set(self, ctx: Command.Context, args: argparse.Namespace) -> None:
-        tp = self._permissions.get_tool_permissions()[args.name]
-        self._permissions.set_tool_permission_state(tp, mc.ToolPermissionState[args.state.upper()])
+        # tp = self._permissions.get_tool_permissions()[args.name]
+        # self._permissions.set_tool_permission_state(tp, mc.ToolPermissionState[args.state.upper()])
+        raise NotImplementedError
