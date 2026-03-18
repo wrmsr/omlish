@@ -30,7 +30,13 @@ class BackendStringBackendCatalog(BackendCatalog):
         self._string_resolver = string_resolver
         self._model_repo_resolver = model_repo_resolver
 
-    def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> BackendCatalog.Backend:
+    def get_backend(
+            self,
+            service_cls: ta.Any,
+            name: str,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> BackendCatalog.Backend:
         ps = parse_backend_string(name)
         rba = ResolveBackendStringArgs(
             service_cls,
