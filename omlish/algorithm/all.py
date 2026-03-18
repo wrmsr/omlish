@@ -1,13 +1,23 @@
-from .distribute import (  # noqa
-    distribute_evenly,
-)
+from .. import lang as _lang
 
-from .toposort import (  # noqa
-    mut_toposort,
-    toposort,
-)
 
-from .unify import (  # noqa
-    mut_unify_sets,
-    unify_sets,
-)
+with _lang.auto_proxy_init(globals()):
+    ##
+
+    from .distribute import (  # noqa
+        distribute_evenly,
+    )
+
+    from .prefixes import (  # noqa
+        min_unique_prefix_lens,
+        min_unique_prefix_len,
+    )
+    from .toposort import (  # noqa
+        mut_toposort,
+        toposort,
+    )
+
+    from .unify import (  # noqa
+        mut_unify_sets,
+        unify_sets,
+    )
