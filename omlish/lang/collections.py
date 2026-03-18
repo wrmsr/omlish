@@ -1,6 +1,8 @@
 import collections.abc
 import typing as ta
 
+from .errors import DuplicateKeyError
+
 
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
@@ -52,7 +54,7 @@ def merge_dicts(
             k, v = k_v
             if k in out:
                 if conflict_fn is None:
-                    raise KeyError(k)
+                    raise DuplicateKeyError(k)
 
                 if (k_v := conflict_fn(k, out[k], v)) is None:  # type: ignore[assignment]
                     continue

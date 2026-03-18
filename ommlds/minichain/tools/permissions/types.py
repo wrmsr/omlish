@@ -50,13 +50,19 @@ class ToolPermissionRule(fh.FieldHashable, lang.Final):
 
 @ta.final
 @dc.dataclass(frozen=True)
-class ToolPermissionRules(fh.FieldHashable, lang.Final):
+class ToolPermissionRules(fh.FieldHashable, ta.Sequence[ToolPermissionRule], lang.Final):
     rules: ta.Sequence[ToolPermissionRule] = dc.xfield(coerce=tuple)
 
     def _field_hash(self) -> fh.FieldHashValue:
         return fh.FieldHashObject('rules', (
             fh.FieldHashField('rules', check.isinstance(self.rules, tuple)),
         ))
+
+    def __getitem__(self, index):
+        return self.rules[index]
+
+    def __len__(self):
+        return len(self.rules)
 
 
 ##
