@@ -65,6 +65,17 @@ class ConfigFileLoader(Abstract, ta.Generic[ConfigDataT]):
     def match_file(self, n: str) -> bool:
         return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
 
+    def find_file(self, p: str) -> ta.Optional[str]:
+        hits: ta.List[str] = []
+        for e in self.file_exts:
+            cur = f'{p}.{e}'
+            if os.path.exists(cur):
+                check.state(os.path.isfile(cur))
+                hits.append(cur)
+        if hits:
+            return check.single(hits)
+        return None
+
     @abc.abstractmethod
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         raise NotImplementedError
@@ -113,6 +124,9 @@ class ProxyConfigFileLoader(ConfigFileLoader[ConfigDataT]):
 
     def match_file(self, n: str) -> bool:
         return self.get_underlying().match_file(n)
+
+    def find_file(self, p: str) -> ta.Optional[str]:
+        return self.get_underlying().find_file(p)
 
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         return self.get_underlying().load_file(p, ctx)

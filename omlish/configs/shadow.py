@@ -91,15 +91,8 @@ class FileShadowConfigsImpl(FileShadowConfigs):
         if (sd := self._subdir):
             shadow = os.path.join(shadow, sd)
 
-        hits: ta.List[str] = []
-        for loader_ext in self._loader.file_exts:
-            cur = os.path.join(shadow, f'{name}.{loader_ext}')
-            if os.path.exists(cur):
-                check.state(os.path.isfile(cur))
-                hits.append(cur)
-
-        if hits:
-            return check.single(hits)
+        if (found := self._loader.find_file(os.path.join(shadow, name))) is not None:
+            return found
         elif (px := (preferred_ext if preferred_ext is not None else self._preferred_ext)) is not None:
             return os.path.join(shadow, f'{name}.{px}')
         else:

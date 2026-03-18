@@ -80,7 +80,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/subprocesses/utils.py', sha1='2210d90ab1bfc75642aa2f4caad662368900aa1c'),
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
-            dict(path='../../../../omlish/configs/formats.py', sha1='b6e7b70b0b97aa9b6755dd0d0a0a7c770c63644a'),
+            dict(path='../../../../omlish/configs/formats.py', sha1='4aceaa1f45109a58d558e803d11248ee413078d7'),
             dict(path='../../../../omlish/io/streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -3685,6 +3685,17 @@ class ConfigFileLoader(Abstract, ta.Generic[ConfigDataT]):
     def match_file(self, n: str) -> bool:
         return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
 
+    def find_file(self, p: str) -> ta.Optional[str]:
+        hits: ta.List[str] = []
+        for e in self.file_exts:
+            cur = f'{p}.{e}'
+            if os.path.exists(cur):
+                check.state(os.path.isfile(cur))
+                hits.append(cur)
+        if hits:
+            return check.single(hits)
+        return None
+
     @abc.abstractmethod
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         raise NotImplementedError
@@ -3733,6 +3744,9 @@ class ProxyConfigFileLoader(ConfigFileLoader[ConfigDataT]):
 
     def match_file(self, n: str) -> bool:
         return self.get_underlying().match_file(n)
+
+    def find_file(self, p: str) -> ta.Optional[str]:
+        return self.get_underlying().find_file(p)
 
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         return self.get_underlying().load_file(p, ctx)

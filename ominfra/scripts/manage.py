@@ -111,7 +111,7 @@ def __omlish_amalg__():  # noqa
             dict(path='targets/bestpython.py', sha1='75c16ab86397a8e81017f148a2ef711567b6ab27'),
             dict(path='targets/targets.py', sha1='d07f2d30c31bad89bd4a3b44bb6a5b6c95c05888'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
-            dict(path='../../omlish/configs/formats.py', sha1='b6e7b70b0b97aa9b6755dd0d0a0a7c770c63644a'),
+            dict(path='../../omlish/configs/formats.py', sha1='4aceaa1f45109a58d558e803d11248ee413078d7'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -6734,6 +6734,17 @@ class ConfigFileLoader(Abstract, ta.Generic[ConfigDataT]):
     def match_file(self, n: str) -> bool:
         return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
 
+    def find_file(self, p: str) -> ta.Optional[str]:
+        hits: ta.List[str] = []
+        for e in self.file_exts:
+            cur = f'{p}.{e}'
+            if os.path.exists(cur):
+                check.state(os.path.isfile(cur))
+                hits.append(cur)
+        if hits:
+            return check.single(hits)
+        return None
+
     @abc.abstractmethod
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         raise NotImplementedError
@@ -6782,6 +6793,9 @@ class ProxyConfigFileLoader(ConfigFileLoader[ConfigDataT]):
 
     def match_file(self, n: str) -> bool:
         return self.get_underlying().match_file(n)
+
+    def find_file(self, p: str) -> ta.Optional[str]:
+        return self.get_underlying().find_file(p)
 
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         return self.get_underlying().load_file(p, ctx)

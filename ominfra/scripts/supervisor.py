@@ -133,7 +133,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
-            dict(path='../../omlish/configs/formats.py', sha1='b6e7b70b0b97aa9b6755dd0d0a0a7c770c63644a'),
+            dict(path='../../omlish/configs/formats.py', sha1='4aceaa1f45109a58d558e803d11248ee413078d7'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/_buffers.py', sha1='842ebf09077a306689618a9a11ac7faba2a0a22e'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
@@ -4106,6 +4106,17 @@ class ConfigFileLoader(Abstract, ta.Generic[ConfigDataT]):
     def match_file(self, n: str) -> bool:
         return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
 
+    def find_file(self, p: str) -> ta.Optional[str]:
+        hits: ta.List[str] = []
+        for e in self.file_exts:
+            cur = f'{p}.{e}'
+            if os.path.exists(cur):
+                check.state(os.path.isfile(cur))
+                hits.append(cur)
+        if hits:
+            return check.single(hits)
+        return None
+
     @abc.abstractmethod
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         raise NotImplementedError
@@ -4154,6 +4165,9 @@ class ProxyConfigFileLoader(ConfigFileLoader[ConfigDataT]):
 
     def match_file(self, n: str) -> bool:
         return self.get_underlying().match_file(n)
+
+    def find_file(self, p: str) -> ta.Optional[str]:
+        return self.get_underlying().find_file(p)
 
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         return self.get_underlying().load_file(p, ctx)
