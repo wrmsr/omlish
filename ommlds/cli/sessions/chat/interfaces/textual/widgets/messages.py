@@ -365,7 +365,7 @@ class ToolConfirmationMessage(Message):
             return
         self._has_responded = True
 
-        inner = self.query_one(tx.Vertical)
+        inner = self.query_one('.tool-confirmation-message-inner')
 
         await inner.query_one(ToolConfirmationControls).remove()
 
