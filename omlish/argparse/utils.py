@@ -1,4 +1,5 @@
 import argparse
+import dataclasses as dc
 import typing as ta
 
 
@@ -17,5 +18,10 @@ class NoExitArgumentParser(argparse.ArgumentParser):
 
         super().__init__(*args, exit_on_error=False, **kwargs)  # type: ignore[misc]
 
+    @dc.dataclass()
+    class ExitNotSupportedError(BaseException):
+        status: int
+        message: str | None
+
     def exit(self, status=0, message=None):
-        raise TypeError('NoExitArgumentParser.exit() not supported')
+        raise self.ExitNotSupportedError(status, message)
