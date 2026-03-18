@@ -150,7 +150,7 @@ class InputHistoryManager:
             entries = self._entries
         except AttributeError:
             return None
-        if entries:
+        if not entries:
             return None
 
         # Save current draft if we're at the end
@@ -180,7 +180,7 @@ class InputHistoryManager:
             entries = self._entries
         except AttributeError:
             return None
-        if entries:
+        if not entries:
             return None
 
         # Move to next entry

@@ -414,7 +414,7 @@ class ToolConfirmationMessage(Message):
 #
 
 
-class UiMessage(Message):
+class UiMessage(StaticMessage):
     init_add_class = 'ui-message'
 
     def __init__(
