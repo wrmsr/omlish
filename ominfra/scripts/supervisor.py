@@ -133,8 +133,8 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
-            dict(path='../../omlish/configs/formats.py', sha1='b47d92e02fc7869c3246d2fddc13eed6e622489e'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
+            dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/http/coro/_buffers.py', sha1='842ebf09077a306689618a9a11ac7faba2a0a22e'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
@@ -152,14 +152,15 @@ def __omlish_amalg__():  # noqa
             dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
+            dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/http/handlers.py', sha1='2b97d76b8e2e507b5c5b6a241d077c00960ee638'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='c90ba13e9e5ee795b6af752a6f25f8bcfd7f88a0'),
-            dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
             dict(path='../../omlish/http/coro/server/server.py', sha1='7c98ff3073835079b4170c1235332f1c620cbf52'),
+            dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
@@ -232,10 +233,6 @@ ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
-# ../../omlish/configs/formats.py
-ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
-ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
-
 # ../../omlish/lite/maybes.py
 U = ta.TypeVar('U')
 
@@ -245,6 +242,10 @@ LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optiona
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
 LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 LoggingContextInfo = ta.Any  # ta.TypeAlias
+
+# ../../omlish/configs/formats.py
+ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
+ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
 
 # ../../omlish/http/handlers.py
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
@@ -4063,392 +4064,6 @@ def get_user(name: str) -> User:
 
 
 ########################################
-# ../../../omlish/configs/formats.py
-"""
-Notes:
- - necessarily string-oriented
- - single file, as this is intended to be amalg'd and thus all included anyway
-
-TODO:
- - ConfigDataMapper? to_map -> ConfigMap?
- - nginx ?
- - raw ?
-"""
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ConfigData(Abstract):
-    @abc.abstractmethod
-    def as_map(self) -> ConfigMap:
-        raise NotImplementedError
-
-
-#
-
-
-class ConfigLoaderContext:
-    pass
-
-
-class ConfigFileLoader(Abstract, ta.Generic[ConfigDataT]):
-    @property
-    @abc.abstractmethod
-    def data_cls(self) -> ta.Type[ConfigDataT]:
-        raise NotImplementedError
-
-    @property
-    def file_exts(self) -> ta.Sequence[str]:
-        return ()
-
-    def match_file(self, n: str) -> bool:
-        return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
-
-    def find_file(self, p: str) -> ta.Optional[str]:
-        hits: ta.List[str] = []
-        for e in self.file_exts:
-            cur = f'{p}.{e}'
-            if os.path.exists(cur):
-                check.state(os.path.isfile(cur))
-                hits.append(cur)
-        if hits:
-            return check.single(hits)
-        return None
-
-    @abc.abstractmethod
-    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
-        raise NotImplementedError
-
-
-class ConfigLoader(ConfigFileLoader[ConfigDataT], Abstract, ta.Generic[ConfigDataT]):
-    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
-        with open(p) as f:
-            return self.load_str(f.read(), ctx)
-
-    @abc.abstractmethod
-    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
-        raise NotImplementedError
-
-
-#
-
-
-class ProxyConfigFileLoader(ConfigFileLoader[ConfigDataT]):
-    def __init__(self, underlying: ta.Union[ConfigLoader[ConfigDataT], ta.Callable[[], ConfigLoader[ConfigDataT]]]) -> None:  # noqa
-        super().__init__()
-
-        self._underlying = underlying
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self._underlying!r})'
-
-    @property
-    def underlying(self) -> ta.Union[ConfigLoader[ConfigDataT], ta.Callable[[], ConfigLoader[ConfigDataT]]]:
-        return self._underlying
-
-    def get_underlying(self) -> ConfigLoader[ConfigDataT]:
-        if callable(ul := self._underlying):
-            ul = ul()
-        return ul
-
-    #
-
-    @property
-    def data_cls(self) -> ta.Type[ConfigDataT]:
-        return self.get_underlying().data_cls
-
-    @property
-    def file_exts(self) -> ta.Sequence[str]:
-        return self.get_underlying().file_exts
-
-    def match_file(self, n: str) -> bool:
-        return self.get_underlying().match_file(n)
-
-    def find_file(self, p: str) -> ta.Optional[str]:
-        return self.get_underlying().find_file(p)
-
-    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
-        return self.get_underlying().load_file(p, ctx)
-
-
-class ProxyConfigLoader(ProxyConfigFileLoader[ConfigDataT], ConfigLoader[ConfigDataT]):
-    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
-        return self.get_underlying().load_str(s, ctx)
-
-
-#
-
-
-class ConfigRendererContext:
-    pass
-
-
-class ConfigRenderer(Abstract, ta.Generic[ConfigDataT]):
-    @property
-    @abc.abstractmethod
-    def data_cls(self) -> ta.Type[ConfigDataT]:
-        raise NotImplementedError
-
-    def match_data(self, d: ConfigDataT) -> bool:
-        return isinstance(d, self.data_cls)
-
-    #
-
-    @abc.abstractmethod
-    def render(self, d: ConfigDataT, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
-        raise NotImplementedError
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ObjConfigData(ConfigData, Abstract):
-    obj: ta.Any
-
-    def as_map(self) -> ConfigMap:
-        return check.isinstance(self.obj, collections.abc.Mapping)
-
-
-##
-
-
-class LoadsConfigLoader(ConfigLoader[ObjConfigDataT], Abstract, ta.Generic[ObjConfigDataT]):
-    @abc.abstractmethod
-    def loads(self, s: str) -> ta.Any:
-        raise NotImplementedError
-
-    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ObjConfigDataT:
-        return self.data_cls(self.loads(s))
-
-
-class DumpsConfigRenderer(ConfigRenderer[ObjConfigDataT], Abstract, ta.Generic[ObjConfigDataT]):
-    @abc.abstractmethod
-    def dumps(self, o: ta.Any) -> str:
-        raise NotImplementedError
-
-    def render(self, d: ObjConfigDataT, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
-        return self.dumps(d.obj)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class JsonConfigData(ObjConfigData):
-    pass
-
-
-class JsonConfigLoader(LoadsConfigLoader[JsonConfigData]):
-    data_cls = JsonConfigData
-    file_exts = ('json',)
-
-    def loads(self, s: str) -> ta.Any:
-        return json.loads(s)
-
-
-class JsonConfigRenderer(DumpsConfigRenderer[JsonConfigData]):
-    data_cls = JsonConfigData
-
-    def dumps(self, o: ta.Any) -> str:
-        return json_dumps_pretty(o)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class TomlConfigData(ObjConfigData):
-    pass
-
-
-class TomlConfigLoader(LoadsConfigLoader[TomlConfigData]):
-    data_cls = TomlConfigData
-    file_exts = ('toml',)
-
-    def loads(self, s: str) -> ta.Any:
-        return toml_loads(s)
-
-
-class TomlConfigRenderer(DumpsConfigRenderer[TomlConfigData]):
-    data_cls = TomlConfigData
-
-    def dumps(self, o: ta.Any) -> str:
-        return TomlWriter.write_str(o)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class YamlConfigData(ObjConfigData):
-    pass
-
-
-class YamlConfigBackend(Abstract):
-    @abc.abstractmethod
-    def loads(self, s: str) -> ta.Any:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def dumps(self, o: ta.Any) -> str:
-        raise NotImplementedError
-
-
-class PyyamlYamlConfigBackend(YamlConfigBackend):
-    def loads(self, s: str) -> ta.Any:
-        import yaml  # noqa
-
-        return yaml.safe_load(s)
-
-    def dumps(self, o: ta.Any) -> str:
-        import yaml  # noqa
-
-        return yaml.safe_dump(o)
-
-
-@ta.final
-class DEFAULT_YAML_CONFIG_BACKEND:  # noqa
-    """This isn't just a mutable global because in amalgamated code that's not really possible."""
-
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    INSTANCE: ta.ClassVar[YamlConfigBackend] = PyyamlYamlConfigBackend()
-
-
-class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
-    data_cls = YamlConfigData
-    file_exts = ('yaml', 'yml')
-    backend: ta.Optional[YamlConfigBackend] = None
-
-    def loads(self, s: str) -> ta.Any:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).loads(s)
-
-
-class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
-    data_cls = YamlConfigData
-    backend: ta.Optional[YamlConfigBackend] = None
-
-    def dumps(self, o: ta.Any) -> str:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).dumps(o)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class IniConfigData(ConfigData):
-    sections: IniSectionSettingsMap
-
-    def as_map(self) -> ConfigMap:
-        return self.sections
-
-
-class IniConfigLoader(ConfigLoader[IniConfigData]):
-    data_cls = IniConfigData
-    file_exts = ('ini',)
-
-    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> IniConfigData:
-        cp = configparser.ConfigParser()
-        cp.read_string(s)
-        return IniConfigData(extract_ini_sections(cp))
-
-
-class IniConfigRenderer(ConfigRenderer[IniConfigData]):
-    data_cls = IniConfigData
-
-    def render(self, d: IniConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
-        return render_ini_sections(d.sections)
-
-
-##
-
-
-DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
-    JsonConfigLoader(),
-    TomlConfigLoader(),
-    YamlConfigLoader(),
-    IniConfigLoader(),
-]
-
-DEFAULT_CONFIG_LOADER: ConfigLoader = JsonConfigLoader()
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class SwitchedConfigFileLoader(ConfigFileLoader[ConfigData]):
-    loaders: ta.Sequence[ConfigLoader]
-    default: ta.Optional[ConfigLoader] = None
-
-    def __post_init__(self) -> None:
-        seen: ta.Set[str] = set()
-        for l in self.loaders:
-            for e in l.file_exts:
-                if e in seen:
-                    raise ValueError(e)
-                seen.add(e)
-
-    @property
-    def data_cls(self) -> ta.Type[ConfigData]:
-        return ConfigData
-
-    @property
-    def file_exts(self) -> ta.Sequence[str]:
-        return [e for l in self.loaders for e in l.file_exts]
-
-    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigData:
-        n = os.path.basename(p)
-
-        for l in self.loaders:
-            if l.match_file(n):
-                return l.load_file(p, ctx)
-
-        if (d := self.default) is not None:
-            return d.load_file(p, ctx)
-
-        raise NameError(n)
-
-
-DEFAULT_CONFIG_FILE_LOADER = SwitchedConfigFileLoader(
-    loaders=DEFAULT_CONFIG_LOADERS,
-    default=DEFAULT_CONFIG_LOADER,
-)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SwitchedConfigRenderer(ConfigRenderer[ConfigData]):
-    renderers: ta.Sequence[ConfigRenderer]
-
-    @property
-    def data_cls(self) -> ta.Type[ConfigData]:
-        return ConfigData
-
-    def render(self, d: ConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
-        for r in self.renderers:
-            if r.match_data(d):
-                return r.render(d, ctx)
-        raise TypeError(d)
-
-
-DEFAULT_CONFIG_RENDERERS: ta.Sequence[ConfigRenderer] = [
-    JsonConfigRenderer(),
-    TomlConfigRenderer(),
-    YamlConfigRenderer(),
-    IniConfigRenderer(),
-]
-
-DEFAULT_CONFIG_RENDERER = SwitchedConfigRenderer(DEFAULT_CONFIG_RENDERERS)
-
-
-########################################
 # ../../../omlish/configs/processing/names.py
 """
 usecase: supervisor process groups
@@ -4494,6 +4109,127 @@ def build_config_named_children(
         seen.add(n)
 
     return lst
+
+
+########################################
+# ../../../omlish/formats/yaml/backends.py
+
+
+##
+
+
+class YamlBackend(Abstract):
+    @abc.abstractmethod
+    def is_available(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def loads(self, s: str) -> ta.Any:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def dumps(self, o: ta.Any) -> str:
+        raise NotImplementedError
+
+    #
+
+    def set_as_default(self) -> None:
+        DEFAULT_YAML_BACKEND.INSTANCE = self
+
+
+#
+
+
+class NoYamlBackendAvailableError(Exception):
+    pass
+
+
+class FirstAvailableYamlBackend(YamlBackend):
+    def __init__(self, backends: ta.Sequence[YamlBackend]) -> None:
+        super().__init__()
+
+        self._backends = backends
+
+    def is_available(self) -> bool:
+        return any(b.is_available() for b in self._backends)
+
+    def loads(self, s: str) -> ta.Any:
+        for b in self._backends:
+            if b.is_available():
+                return b.loads(s)
+        raise NoYamlBackendAvailableError
+
+    def dumps(self, o: ta.Any) -> str:
+        for b in self._backends:
+            if b.is_available():
+                return b.dumps(o)
+        raise NoYamlBackendAvailableError
+
+
+#
+
+
+class PyyamlYamlBackend(YamlBackend):
+    @cached_nullary
+    def _import(self) -> ta.Optional[ta.Any]:
+        try:
+            import yaml  # noqa
+        except ImportError:
+            return None
+        else:
+            return yaml
+
+    def is_available(self) -> bool:
+        return self._import() is not None
+
+    def loads(self, s: str) -> ta.Any:
+        return check.not_none(self._import()).safe_load(s)
+
+    def dumps(self, o: ta.Any) -> str:
+        return check.not_none(self._import()).safe_dump(o)
+
+
+#
+
+
+class RelativeImportGoyamlYamlBackend(YamlBackend):
+    @cached_nullary
+    def _import(self) -> ta.Optional[ta.Any]:
+        try:
+            mod = __import__('goyaml.backend', globals=globals(), level=1)
+        except ImportError:
+            return None
+        else:
+            return mod.backend
+
+    def is_available(self) -> bool:
+        return self._import() is not None
+
+    @cached_nullary
+    def _backend(self) -> YamlBackend:
+        return check.not_none(self._import()).GoyamlYamlBackend()
+
+    def loads(self, s: str) -> ta.Any:
+        return self._backend().loads(s)
+
+    def dumps(self, o: ta.Any) -> str:
+        return self._backend().dumps(o)
+
+
+##
+
+
+@ta.final
+class DEFAULT_YAML_BACKEND:  # noqa
+    """This isn't just a mutable global because in amalgamated code that's not really possible."""
+
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    INSTANCE: ta.ClassVar[YamlBackend] = FirstAvailableYamlBackend([
+        PyyamlYamlBackend(),
+        RelativeImportGoyamlYamlBackend(),
+    ])
 
 
 ########################################
@@ -9259,6 +8995,360 @@ def waitpid(
 
 
 ########################################
+# ../../../omlish/configs/formats.py
+"""
+Notes:
+ - necessarily string-oriented
+ - single file, as this is intended to be amalg'd and thus all included anyway
+
+TODO:
+ - ConfigDataMapper? to_map -> ConfigMap?
+ - nginx ?
+ - raw ?
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ConfigData(Abstract):
+    @abc.abstractmethod
+    def as_map(self) -> ConfigMap:
+        raise NotImplementedError
+
+
+#
+
+
+class ConfigLoaderContext:
+    pass
+
+
+class ConfigFileLoader(Abstract, ta.Generic[ConfigDataT]):
+    @property
+    @abc.abstractmethod
+    def data_cls(self) -> ta.Type[ConfigDataT]:
+        raise NotImplementedError
+
+    @property
+    def file_exts(self) -> ta.Sequence[str]:
+        return ()
+
+    def match_file(self, n: str) -> bool:
+        return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
+
+    def find_file(self, p: str) -> ta.Optional[str]:
+        hits: ta.List[str] = []
+        for e in self.file_exts:
+            cur = f'{p}.{e}'
+            if os.path.exists(cur):
+                check.state(os.path.isfile(cur))
+                hits.append(cur)
+        if hits:
+            return check.single(hits)
+        return None
+
+    @abc.abstractmethod
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        raise NotImplementedError
+
+
+class ConfigLoader(ConfigFileLoader[ConfigDataT], Abstract, ta.Generic[ConfigDataT]):
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        with open(p) as f:
+            return self.load_str(f.read(), ctx)
+
+    @abc.abstractmethod
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        raise NotImplementedError
+
+
+#
+
+
+class ProxyConfigFileLoader(ConfigFileLoader[ConfigDataT]):
+    def __init__(self, underlying: ta.Union[ConfigLoader[ConfigDataT], ta.Callable[[], ConfigLoader[ConfigDataT]]]) -> None:  # noqa
+        super().__init__()
+
+        self._underlying = underlying
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._underlying!r})'
+
+    @property
+    def underlying(self) -> ta.Union[ConfigLoader[ConfigDataT], ta.Callable[[], ConfigLoader[ConfigDataT]]]:
+        return self._underlying
+
+    def get_underlying(self) -> ConfigLoader[ConfigDataT]:
+        if callable(ul := self._underlying):
+            ul = ul()
+        return ul
+
+    #
+
+    @property
+    def data_cls(self) -> ta.Type[ConfigDataT]:
+        return self.get_underlying().data_cls
+
+    @property
+    def file_exts(self) -> ta.Sequence[str]:
+        return self.get_underlying().file_exts
+
+    def match_file(self, n: str) -> bool:
+        return self.get_underlying().match_file(n)
+
+    def find_file(self, p: str) -> ta.Optional[str]:
+        return self.get_underlying().find_file(p)
+
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        return self.get_underlying().load_file(p, ctx)
+
+
+class ProxyConfigLoader(ProxyConfigFileLoader[ConfigDataT], ConfigLoader[ConfigDataT]):
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        return self.get_underlying().load_str(s, ctx)
+
+
+#
+
+
+class ConfigRendererContext:
+    pass
+
+
+class ConfigRenderer(Abstract, ta.Generic[ConfigDataT]):
+    @property
+    @abc.abstractmethod
+    def data_cls(self) -> ta.Type[ConfigDataT]:
+        raise NotImplementedError
+
+    def match_data(self, d: ConfigDataT) -> bool:
+        return isinstance(d, self.data_cls)
+
+    #
+
+    @abc.abstractmethod
+    def render(self, d: ConfigDataT, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
+        raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ObjConfigData(ConfigData, Abstract):
+    obj: ta.Any
+
+    def as_map(self) -> ConfigMap:
+        return check.isinstance(self.obj, collections.abc.Mapping)
+
+
+##
+
+
+class LoadsConfigLoader(ConfigLoader[ObjConfigDataT], Abstract, ta.Generic[ObjConfigDataT]):
+    @abc.abstractmethod
+    def loads(self, s: str) -> ta.Any:
+        raise NotImplementedError
+
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ObjConfigDataT:
+        return self.data_cls(self.loads(s))
+
+
+class DumpsConfigRenderer(ConfigRenderer[ObjConfigDataT], Abstract, ta.Generic[ObjConfigDataT]):
+    @abc.abstractmethod
+    def dumps(self, o: ta.Any) -> str:
+        raise NotImplementedError
+
+    def render(self, d: ObjConfigDataT, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
+        return self.dumps(d.obj)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class JsonConfigData(ObjConfigData):
+    pass
+
+
+class JsonConfigLoader(LoadsConfigLoader[JsonConfigData]):
+    data_cls = JsonConfigData
+    file_exts = ('json',)
+
+    def loads(self, s: str) -> ta.Any:
+        return json.loads(s)
+
+
+class JsonConfigRenderer(DumpsConfigRenderer[JsonConfigData]):
+    data_cls = JsonConfigData
+
+    def dumps(self, o: ta.Any) -> str:
+        return json_dumps_pretty(o)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class TomlConfigData(ObjConfigData):
+    pass
+
+
+class TomlConfigLoader(LoadsConfigLoader[TomlConfigData]):
+    data_cls = TomlConfigData
+    file_exts = ('toml',)
+
+    def loads(self, s: str) -> ta.Any:
+        return toml_loads(s)
+
+
+class TomlConfigRenderer(DumpsConfigRenderer[TomlConfigData]):
+    data_cls = TomlConfigData
+
+    def dumps(self, o: ta.Any) -> str:
+        return TomlWriter.write_str(o)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class YamlConfigData(ObjConfigData):
+    pass
+
+
+class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
+    data_cls = YamlConfigData
+    file_exts = ('yaml', 'yml')
+    backend: ta.Optional[YamlBackend] = None
+
+    def loads(self, s: str) -> ta.Any:
+        return (self.backend or DEFAULT_YAML_BACKEND.INSTANCE).loads(s)
+
+
+class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
+    data_cls = YamlConfigData
+    backend: ta.Optional[YamlBackend] = None
+
+    def dumps(self, o: ta.Any) -> str:
+        return (self.backend or DEFAULT_YAML_BACKEND.INSTANCE).dumps(o)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class IniConfigData(ConfigData):
+    sections: IniSectionSettingsMap
+
+    def as_map(self) -> ConfigMap:
+        return self.sections
+
+
+class IniConfigLoader(ConfigLoader[IniConfigData]):
+    data_cls = IniConfigData
+    file_exts = ('ini',)
+
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> IniConfigData:
+        cp = configparser.ConfigParser()
+        cp.read_string(s)
+        return IniConfigData(extract_ini_sections(cp))
+
+
+class IniConfigRenderer(ConfigRenderer[IniConfigData]):
+    data_cls = IniConfigData
+
+    def render(self, d: IniConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
+        return render_ini_sections(d.sections)
+
+
+##
+
+
+DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
+    JsonConfigLoader(),
+    TomlConfigLoader(),
+    YamlConfigLoader(),
+    IniConfigLoader(),
+]
+
+DEFAULT_CONFIG_LOADER: ConfigLoader = JsonConfigLoader()
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class SwitchedConfigFileLoader(ConfigFileLoader[ConfigData]):
+    loaders: ta.Sequence[ConfigLoader]
+    default: ta.Optional[ConfigLoader] = None
+
+    def __post_init__(self) -> None:
+        seen: ta.Set[str] = set()
+        for l in self.loaders:
+            for e in l.file_exts:
+                if e in seen:
+                    raise ValueError(e)
+                seen.add(e)
+
+    @property
+    def data_cls(self) -> ta.Type[ConfigData]:
+        return ConfigData
+
+    @property
+    def file_exts(self) -> ta.Sequence[str]:
+        return [e for l in self.loaders for e in l.file_exts]
+
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigData:
+        n = os.path.basename(p)
+
+        for l in self.loaders:
+            if l.match_file(n):
+                return l.load_file(p, ctx)
+
+        if (d := self.default) is not None:
+            return d.load_file(p, ctx)
+
+        raise NameError(n)
+
+
+DEFAULT_CONFIG_FILE_LOADER = SwitchedConfigFileLoader(
+    loaders=DEFAULT_CONFIG_LOADERS,
+    default=DEFAULT_CONFIG_LOADER,
+)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SwitchedConfigRenderer(ConfigRenderer[ConfigData]):
+    renderers: ta.Sequence[ConfigRenderer]
+
+    @property
+    def data_cls(self) -> ta.Type[ConfigData]:
+        return ConfigData
+
+    def render(self, d: ConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
+        for r in self.renderers:
+            if r.match_data(d):
+                return r.render(d, ctx)
+        raise TypeError(d)
+
+
+DEFAULT_CONFIG_RENDERERS: ta.Sequence[ConfigRenderer] = [
+    JsonConfigRenderer(),
+    TomlConfigRenderer(),
+    YamlConfigRenderer(),
+    IniConfigRenderer(),
+]
+
+DEFAULT_CONFIG_RENDERER = SwitchedConfigRenderer(DEFAULT_CONFIG_RENDERERS)
+
+
+########################################
 # ../../../omlish/http/handlers.py
 
 
@@ -9513,38 +9603,6 @@ if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
     KqueueFdioPoller = _KqueueFdioPoller
 else:
     KqueueFdioPoller = None
-
-
-########################################
-# ../../../omlish/lite/configs.py
-
-
-##
-
-
-def load_config_file_obj(
-        f: str,
-        cls: ta.Type[T],
-        *,
-        prepare: ta.Union[
-            ta.Callable[[ConfigMap], ConfigMap],
-            ta.Iterable[ta.Callable[[ConfigMap], ConfigMap]],
-        ] = (),
-        msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
-) -> T:
-    config_data = DEFAULT_CONFIG_FILE_LOADER.load_file(f)
-
-    config_dct = config_data.as_map()
-
-    if prepare is not None:
-        if isinstance(prepare, ta.Iterable):
-            pfs = list(prepare)
-        else:
-            pfs = [prepare]
-        for pf in pfs:
-            config_dct = pf(config_dct)
-
-    return msh.unmarshal_obj(config_dct, cls)
 
 
 ########################################
@@ -11633,6 +11691,38 @@ class CoroHttpServer:
             handler_response.close()
 
             raise
+
+
+########################################
+# ../../../omlish/lite/configs.py
+
+
+##
+
+
+def load_config_file_obj(
+        f: str,
+        cls: ta.Type[T],
+        *,
+        prepare: ta.Union[
+            ta.Callable[[ConfigMap], ConfigMap],
+            ta.Iterable[ta.Callable[[ConfigMap], ConfigMap]],
+        ] = (),
+        msh: ObjMarshalerManager = OBJ_MARSHALER_MANAGER,
+) -> T:
+    config_data = DEFAULT_CONFIG_FILE_LOADER.load_file(f)
+
+    config_dct = config_data.as_map()
+
+    if prepare is not None:
+        if isinstance(prepare, ta.Iterable):
+            pfs = list(prepare)
+        else:
+            pfs = [prepare]
+        for pf in pfs:
+            config_dct = pf(config_dct)
+
+    return msh.unmarshal_obj(config_dct, cls)
 
 
 ########################################

@@ -23,6 +23,8 @@ from ..formats.ini.sections import extract_ini_sections
 from ..formats.ini.sections import render_ini_sections
 from ..formats.toml.parser import toml_loads
 from ..formats.toml.writer import TomlWriter
+from ..formats.yaml.backends import DEFAULT_YAML_BACKEND
+from ..formats.yaml.backends import YamlBackend
 from ..lite.abstract import Abstract
 from ..lite.check import check
 from ..lite.json import json_dumps_pretty
@@ -246,53 +248,21 @@ class YamlConfigData(ObjConfigData):
     pass
 
 
-class YamlConfigBackend(Abstract):
-    @abc.abstractmethod
-    def loads(self, s: str) -> ta.Any:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def dumps(self, o: ta.Any) -> str:
-        raise NotImplementedError
-
-
-class PyyamlYamlConfigBackend(YamlConfigBackend):
-    def loads(self, s: str) -> ta.Any:
-        import yaml  # noqa
-
-        return yaml.safe_load(s)
-
-    def dumps(self, o: ta.Any) -> str:
-        import yaml  # noqa
-
-        return yaml.safe_dump(o)
-
-
-@ta.final
-class DEFAULT_YAML_CONFIG_BACKEND:  # noqa
-    """This isn't just a mutable global because in amalgamated code that's not really possible."""
-
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    INSTANCE: ta.ClassVar[YamlConfigBackend] = PyyamlYamlConfigBackend()
-
-
 class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
     data_cls = YamlConfigData
     file_exts = ('yaml', 'yml')
-    backend: ta.Optional[YamlConfigBackend] = None
+    backend: ta.Optional[YamlBackend] = None
 
     def loads(self, s: str) -> ta.Any:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).loads(s)
+        return (self.backend or DEFAULT_YAML_BACKEND.INSTANCE).loads(s)
 
 
 class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
     data_cls = YamlConfigData
-    backend: ta.Optional[YamlConfigBackend] = None
+    backend: ta.Optional[YamlBackend] = None
 
     def dumps(self, o: ta.Any) -> str:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).dumps(o)
+        return (self.backend or DEFAULT_YAML_BACKEND.INSTANCE).dumps(o)
 
 
 ##
