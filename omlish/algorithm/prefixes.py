@@ -22,11 +22,7 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
     if len(items) <= 1:
         return [0] * len(items)
 
-    def common_prefix_len(
-        item: ta.Sequence[T],
-        item_pos: int,
-        part: ta.Tuple[T, ...],
-    ) -> int:
+    def common_prefix_len(item: 'ta.Sequence[T]', item_pos: int, part: 'ta.Tuple[T, ...]') -> int:
         n = min(len(item) - item_pos, len(part))
         i = 0
         while i < n and item[item_pos + i] == part[i]:
