@@ -52,7 +52,7 @@ ddgs==9.11.4
 debugpy==1.8.20
 decorator==5.2.1
 defusedxml==0.7.1
-deno==2.7.5
+deno==2.7.6
 diffusers==0.37.0
 dill==0.4.1
 diskcache==5.6.3

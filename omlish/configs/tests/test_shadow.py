@@ -1,9 +1,11 @@
+import os.path
 import tempfile
 
-from ..shadow import MangledFilesShadowConfigs
+from ...os.shadow import ManglingShadowPaths
+from ..shadow import FileShadowConfigsImpl
 
 
 def test_mangled() -> None:
     tmp_dir = tempfile.mkdtemp()
-    scs = MangledFilesShadowConfigs(tmp_dir)
-    print(scs.get_shadow_config_file_path(__file__))
+    scs = FileShadowConfigsImpl(ManglingShadowPaths(tmp_dir), 'config')
+    print(scs.get_shadow_config_file_path(os.path.dirname(__file__), 'barf', preferred_ext='yml'))

@@ -80,7 +80,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/subprocesses/utils.py', sha1='2210d90ab1bfc75642aa2f4caad662368900aa1c'),
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
-            dict(path='../../../../omlish/configs/formats.py', sha1='ec9db26634c07a50067ff4bfdafa576f4fe7d4b4'),
+            dict(path='../../../../omlish/configs/formats.py', sha1='b6e7b70b0b97aa9b6755dd0d0a0a7c770c63644a'),
             dict(path='../../../../omlish/io/streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -150,6 +150,7 @@ LogLevel = int  # ta.TypeAlias
 
 # ../../../../omlish/configs/formats.py
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
+ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
 
 # ../../../../omlish/io/streams/types.py
 BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
@@ -3671,7 +3672,12 @@ class ConfigLoaderContext:
     pass
 
 
-class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
+class ConfigFileLoader(Abstract, ta.Generic[ConfigDataT]):
+    @property
+    @abc.abstractmethod
+    def data_cls(self) -> ta.Type[ConfigDataT]:
+        raise NotImplementedError
+
     @property
     def file_exts(self) -> ta.Sequence[str]:
         return ()
@@ -3679,8 +3685,12 @@ class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
     def match_file(self, n: str) -> bool:
         return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
 
-    #
+    @abc.abstractmethod
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        raise NotImplementedError
 
+
+class ConfigLoader(ConfigFileLoader[ConfigDataT], Abstract, ta.Generic[ConfigDataT]):
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         with open(p) as f:
             return self.load_str(f.read(), ctx)
@@ -3688,6 +3698,49 @@ class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
     @abc.abstractmethod
     def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         raise NotImplementedError
+
+
+#
+
+
+class ProxyConfigFileLoader(ConfigFileLoader[ConfigDataT]):
+    def __init__(self, underlying: ta.Union[ConfigLoader[ConfigDataT], ta.Callable[[], ConfigLoader[ConfigDataT]]]) -> None:  # noqa
+        super().__init__()
+
+        self._underlying = underlying
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._underlying!r})'
+
+    @property
+    def underlying(self) -> ta.Union[ConfigLoader[ConfigDataT], ta.Callable[[], ConfigLoader[ConfigDataT]]]:
+        return self._underlying
+
+    def get_underlying(self) -> ConfigLoader[ConfigDataT]:
+        if callable(ul := self._underlying):
+            ul = ul()
+        return ul
+
+    #
+
+    @property
+    def data_cls(self) -> ta.Type[ConfigDataT]:
+        return self.get_underlying().data_cls
+
+    @property
+    def file_exts(self) -> ta.Sequence[str]:
+        return self.get_underlying().file_exts
+
+    def match_file(self, n: str) -> bool:
+        return self.get_underlying().match_file(n)
+
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        return self.get_underlying().load_file(p, ctx)
+
+
+class ProxyConfigLoader(ProxyConfigFileLoader[ConfigDataT], ConfigLoader[ConfigDataT]):
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
+        return self.get_underlying().load_str(s, ctx)
 
 
 #
@@ -3727,23 +3780,45 @@ class ObjConfigData(ConfigData, Abstract):
 ##
 
 
+class LoadsConfigLoader(ConfigLoader[ObjConfigDataT], Abstract, ta.Generic[ObjConfigDataT]):
+    @abc.abstractmethod
+    def loads(self, s: str) -> ta.Any:
+        raise NotImplementedError
+
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ObjConfigDataT:
+        return self.data_cls(self.loads(s))
+
+
+class DumpsConfigRenderer(ConfigRenderer[ObjConfigDataT], Abstract, ta.Generic[ObjConfigDataT]):
+    @abc.abstractmethod
+    def dumps(self, o: ta.Any) -> str:
+        raise NotImplementedError
+
+    def render(self, d: ObjConfigDataT, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
+        return self.dumps(d.obj)
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class JsonConfigData(ObjConfigData):
     pass
 
 
-class JsonConfigLoader(ConfigLoader[JsonConfigData]):
+class JsonConfigLoader(LoadsConfigLoader[JsonConfigData]):
+    data_cls = JsonConfigData
     file_exts = ('json',)
 
-    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> JsonConfigData:
-        return JsonConfigData(json.loads(s))
+    def loads(self, s: str) -> ta.Any:
+        return json.loads(s)
 
 
-class JsonConfigRenderer(ConfigRenderer[JsonConfigData]):
+class JsonConfigRenderer(DumpsConfigRenderer[JsonConfigData]):
     data_cls = JsonConfigData
 
-    def render(self, d: JsonConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
-        return json_dumps_pretty(d.obj)
+    def dumps(self, o: ta.Any) -> str:
+        return json_dumps_pretty(o)
 
 
 ##
@@ -3754,18 +3829,19 @@ class TomlConfigData(ObjConfigData):
     pass
 
 
-class TomlConfigLoader(ConfigLoader[TomlConfigData]):
+class TomlConfigLoader(LoadsConfigLoader[TomlConfigData]):
+    data_cls = TomlConfigData
     file_exts = ('toml',)
 
-    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> TomlConfigData:
-        return TomlConfigData(toml_loads(s))
+    def loads(self, s: str) -> ta.Any:
+        return toml_loads(s)
 
 
-class TomlConfigRenderer(ConfigRenderer[TomlConfigData]):
+class TomlConfigRenderer(DumpsConfigRenderer[TomlConfigData]):
     data_cls = TomlConfigData
 
-    def render(self, d: TomlConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
-        return TomlWriter.write_str(d.obj)
+    def dumps(self, o: ta.Any) -> str:
+        return TomlWriter.write_str(o)
 
 
 ##
@@ -3776,22 +3852,46 @@ class YamlConfigData(ObjConfigData):
     pass
 
 
-class YamlConfigLoader(ConfigLoader[YamlConfigData]):
-    file_exts = ('yaml', 'yml')
+class YamlConfigBackend(Abstract):
+    @abc.abstractmethod
+    def loads(self, s: str) -> ta.Any:
+        raise NotImplementedError
 
-    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> YamlConfigData:
+    @abc.abstractmethod
+    def dumps(self, o: ta.Any) -> str:
+        raise NotImplementedError
+
+
+class PyyamlYamlConfigBackend(YamlConfigBackend):
+    def loads(self, s: str) -> ta.Any:
         import yaml  # noqa
 
-        return YamlConfigData(yaml.safe_load(s))
+        return yaml.safe_load(s)
+
+    def dumps(self, o: ta.Any) -> str:
+        import yaml  # noqa
+
+        return yaml.safe_dump(o)
 
 
-class YamlConfigRenderer(ConfigRenderer[YamlConfigData]):
+DEFAULT_YAML_CONFIG_BACKEND = PyyamlYamlConfigBackend()
+
+
+class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
     data_cls = YamlConfigData
+    file_exts = ('yaml', 'yml')
+    backend: ta.Optional[YamlConfigBackend] = None
 
-    def render(self, d: YamlConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
-        import yaml  # noqa
+    def loads(self, s: str) -> ta.Any:
+        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND).loads(s)
 
-        return yaml.safe_dump(d.obj)
+
+class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
+    data_cls = YamlConfigData
+    backend: ta.Optional[YamlConfigBackend] = None
+
+    def dumps(self, o: ta.Any) -> str:
+        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND).dumps(o)
 
 
 ##
@@ -3806,6 +3906,7 @@ class IniConfigData(ConfigData):
 
 
 class IniConfigLoader(ConfigLoader[IniConfigData]):
+    data_cls = IniConfigData
     file_exts = ('ini',)
 
     def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> IniConfigData:
@@ -3824,10 +3925,39 @@ class IniConfigRenderer(ConfigRenderer[IniConfigData]):
 ##
 
 
+DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
+    JsonConfigLoader(),
+    TomlConfigLoader(),
+    YamlConfigLoader(),
+    IniConfigLoader(),
+]
+
+DEFAULT_CONFIG_LOADER: ConfigLoader = JsonConfigLoader()
+
+
+#
+
+
 @dc.dataclass(frozen=True)
-class SwitchedConfigFileLoader:
+class SwitchedConfigFileLoader(ConfigFileLoader[ConfigData]):
     loaders: ta.Sequence[ConfigLoader]
     default: ta.Optional[ConfigLoader] = None
+
+    def __post_init__(self) -> None:
+        seen: ta.Set[str] = set()
+        for l in self.loaders:
+            for e in l.file_exts:
+                if e in seen:
+                    raise ValueError(e)
+                seen.add(e)
+
+    @property
+    def data_cls(self) -> ta.Type[ConfigData]:
+        return ConfigData
+
+    @property
+    def file_exts(self) -> ta.Sequence[str]:
+        return [e for l in self.loaders for e in l.file_exts]
 
     def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigData:
         n = os.path.basename(p)
@@ -3842,15 +3972,6 @@ class SwitchedConfigFileLoader:
         raise NameError(n)
 
 
-DEFAULT_CONFIG_LOADERS: ta.Sequence[ConfigLoader] = [
-    JsonConfigLoader(),
-    TomlConfigLoader(),
-    YamlConfigLoader(),
-    IniConfigLoader(),
-]
-
-DEFAULT_CONFIG_LOADER: ConfigLoader = JsonConfigLoader()
-
 DEFAULT_CONFIG_FILE_LOADER = SwitchedConfigFileLoader(
     loaders=DEFAULT_CONFIG_LOADERS,
     default=DEFAULT_CONFIG_LOADER,
@@ -3861,8 +3982,12 @@ DEFAULT_CONFIG_FILE_LOADER = SwitchedConfigFileLoader(
 
 
 @dc.dataclass(frozen=True)
-class SwitchedConfigRenderer:
+class SwitchedConfigRenderer(ConfigRenderer[ConfigData]):
     renderers: ta.Sequence[ConfigRenderer]
+
+    @property
+    def data_cls(self) -> ta.Type[ConfigData]:
+        return ConfigData
 
     def render(self, d: ConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
         for r in self.renderers:

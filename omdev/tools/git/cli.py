@@ -124,8 +124,8 @@ class Cli(ap.Cli):
         if path is not self._NOT_SET:
             if path is None:
                 path = os.getcwd()
-            shadow_cfg = get_shadow_configs().get_shadow_config(check.isinstance(path, str)) or {}
-            dct = merge_configs(dct, shadow_cfg.get('git', {}))
+            shadow_cfg = get_shadow_configs().get_shadow_config(check.isinstance(path, str), 'git') or {}
+            dct = merge_configs(dct, shadow_cfg)
 
         return msh.unmarshal(dct, self.Config)
 

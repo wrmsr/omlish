@@ -36,25 +36,35 @@ class HomePaths:
     def home_dir(self) -> str:
         return self._home_dir
 
+    config_subdir: ta.Final = 'config'
+
     @property
     def config_dir(self) -> str:
-        return os.path.join(self._home_dir, 'config')
+        return os.path.join(self._home_dir, self.config_subdir)
+
+    log_subdir: ta.Final = 'log'
 
     @property
     def log_dir(self) -> str:
-        return os.path.join(self._home_dir, 'log')
+        return os.path.join(self._home_dir, self.log_subdir)
+
+    run_subdir: ta.Final = 'run'
 
     @property
     def run_dir(self) -> str:
-        return os.path.join(self._home_dir, 'run')
+        return os.path.join(self._home_dir, self.run_subdir)
+
+    shadow_subdir: ta.Final = 'shadow'
 
     @property
     def shadow_dir(self) -> str:
-        return os.path.join(self._home_dir, 'shadow')
+        return os.path.join(self._home_dir, self.shadow_subdir)
+
+    state_subdir: ta.Final = 'state'
 
     @property
     def state_dir(self) -> str:
-        return os.path.join(self._home_dir, 'state')
+        return os.path.join(self._home_dir, self.state_subdir)
 
 
 def get_home_paths() -> HomePaths:
