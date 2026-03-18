@@ -89,7 +89,7 @@ def render_field_hash(value: FieldHashValue) -> str:
                 out.write('}}')
 
             case FieldHashable():
-                rec(v._cached_field_hash())  # noqa
+                out.write(v._cached_rendered_field_hash())  # noqa
 
             case _:
                 raise TypeError(v)
