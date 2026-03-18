@@ -3,7 +3,7 @@
 import dataclasses as dc
 import typing as ta
 
-from ...io.streams.types import BytesLike
+from ...io.types import BytesLike
 from ...lite.abstract import Abstract
 from ...lite.check import check
 from ...lite.dataclasses import install_dataclass_kw_only_init

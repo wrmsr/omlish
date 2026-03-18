@@ -23,18 +23,19 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='../types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
+            dict(path='types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
-            dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
-            dict(path='scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
-            dict(path='adapters.py', sha1='c86a3999392fbc2ed76c0c319277b3f903b31e4c'),
-            dict(path='linear.py', sha1='82d8d806abd708e8d471f32cb49813be150bcf6a'),
-            dict(path='segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
+            dict(path='utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
+            dict(path='direct.py', sha1='f3a90045bd7c7bddc139eaa95d30db2ef24a78c6'),
+            dict(path='scanning.py', sha1='9c8d60b56cd9fcd2eaef550b4f1459a93c48dbe9'),
+            dict(path='adapters.py', sha1='8692c9fdebae45867179ca55f02f53805c2b2b63'),
+            dict(path='linear.py', sha1='94c28f36a07625a9ee97dff9229dc868e094bf06'),
+            dict(path='segmented.py', sha1='8d112d08e066f69527091486f8817af0db586333'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -43,11 +44,11 @@ def __omlish_amalg__():  # noqa
 ########################################
 
 
+# ../types.py
+BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+
 # ../../lite/abstract.py
 T = ta.TypeVar('T')
-
-# types.py
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
@@ -121,6 +122,13 @@ class OutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
 
 class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
     """commit() was called without a preceding reserve()."""
+
+
+########################################
+# ../../types.py
+
+
+##
 
 
 ########################################

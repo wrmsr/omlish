@@ -29,6 +29,7 @@
 - removed callbacks
   - do netty ByteToMessageDecoder removal handling
   - also removing in flight might mess stuff up (STARTTLS?)
+- timeslice-based 'should defer' service (not iteration counting like in decompress)
 
 ### http
 

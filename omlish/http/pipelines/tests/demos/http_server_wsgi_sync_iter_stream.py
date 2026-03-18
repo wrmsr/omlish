@@ -14,7 +14,7 @@ from .....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from .....io.pipelines.flow.stub import StubIoPipelineFlowService
 from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.pipelines.flow.types import IoPipelineFlowMessages
-from .....io.streams.types import BytesLike
+from .....io.types import BytesLike
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from .....logs.modules import get_module_logger

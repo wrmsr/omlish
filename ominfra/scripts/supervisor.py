@@ -114,12 +114,12 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
-            dict(path='../../omlish/io/readers.py', sha1='53409e3413cb4521e4d9e710c099873b3911e32c'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='d0fd2e52b4227fe590add3c567328c3c4cf5f199'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
@@ -135,11 +135,11 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
-            dict(path='../../omlish/http/coro/_buffers.py', sha1='842ebf09077a306689618a9a11ac7faba2a0a22e'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
+            dict(path='../../omlish/io/readers.py', sha1='34b76d1938359c77b57539a25311f1f127accc5b'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -153,6 +153,7 @@ def __omlish_amalg__():  # noqa
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
+            dict(path='../../omlish/http/coro/_buffers.py', sha1='842ebf09077a306689618a9a11ac7faba2a0a22e'),
             dict(path='../../omlish/http/handlers.py', sha1='2b97d76b8e2e507b5c5b6a241d077c00960ee638'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='c90ba13e9e5ee795b6af752a6f25f8bcfd7f88a0'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
@@ -1892,38 +1893,6 @@ class HttpVersions:
 
 
 ########################################
-# ../../../omlish/io/readers.py
-
-
-##
-
-
-class RawBytesReader(ta.Protocol):
-    """Maps to `io.BufferedIOBase`."""
-
-    def read1(self, n: int = -1, /) -> bytes:
-        """Return at most `n` bytes with at most a single underlying read."""
-
-
-class BytesReader(RawBytesReader, ta.Protocol):
-    def read(self, n: int = -1, /) -> bytes:
-        """Return exactly `n` bytes unless EOF is reached.."""
-
-
-#
-
-
-class AsyncRawBytesReader(ta.Protocol):
-    def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]:
-        """Return at most `n` bytes with at most a single underlying read."""
-
-
-class AsyncBytesReader(AsyncRawBytesReader, ta.Protocol):
-    def read(self, n: int = -1, /) -> ta.Awaitable[bytes]:
-        """Return exactly `n` bytes unless EOF is reached.."""
-
-
-########################################
 # ../../../omlish/lite/abstract.py
 
 
@@ -2932,6 +2901,21 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+########################################
+# ../../../omlish/lite/namespaces.py
+
+
+class NamespaceClass:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __init_subclass__(cls, **kwargs):  # noqa
+        super().__init_subclass__(**kwargs)
+
+        if any(issubclass(b, NamespaceClass) and b is not NamespaceClass for b in cls.__bases__):
+            raise TypeError
 
 
 ########################################
@@ -4230,277 +4214,6 @@ class DEFAULT_YAML_BACKEND:  # noqa
         PyyamlYamlBackend(),
         RelativeImportGoyamlYamlBackend(),
     ])
-
-
-########################################
-# ../../../omlish/http/coro/_buffers.py
-"""
-*** THIS FILE IS DEPRECATED ***
-
-This is now only used by the http 'coro' stuff, which is also about to be deleted.
-
-Anything that would have used this should now use `omlish.io.streams`.
-"""
-
-
-##
-
-
-class ReadableListBuffer:
-    # FIXME: merge with PrependableGeneratorReader
-    # FIXME: AND PUSHBACKREADER
-    # FIXME: replace this whole thing with ByteStreamBuffers
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._lst: list[bytes] = []
-        self._len = 0
-
-    def __bool__(self) -> ta.NoReturn:
-        raise TypeError("Use 'buf is not None' or 'len(buf)'.")
-
-    def __len__(self) -> int:
-        return self._len
-
-    def feed(self, d: bytes) -> None:
-        if d:
-            self._lst.append(d)
-            self._len += len(d)
-
-    def _chop(self, i: int, e: int) -> bytes:
-        lst = self._lst
-        d = lst[i]
-
-        o = b''.join([
-            *lst[:i],
-            d[:e],
-        ])
-
-        self._lst = [
-            *([d[e:]] if e < len(d) else []),
-            *lst[i + 1:],
-        ]
-
-        self._len -= len(o)
-
-        return o
-
-    def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
-        if n is None:
-            if not self._lst:
-                return b''
-
-            o = b''.join(self._lst)
-            self._lst = []
-            self._len = 0
-            return o
-
-        if not (lst := self._lst):
-            return None
-
-        c = 0
-        for i, d in enumerate(lst):
-            r = n - c
-            if (l := len(d)) >= r:
-                return self._chop(i, r)
-            c += l
-
-        return None
-
-    def read_exact(self, sz: int) -> bytes:
-        d = self.read(sz)
-        if d is None or len(d) != sz:
-            raise EOFError(f'ReadableListBuffer got {"no" if d is None else len(d)}, expected {sz}')
-        return d
-
-    def read_until_(self, delim: bytes = b'\n', start_buffer: int = 0) -> ta.Union[bytes, int]:
-        if not (lst := self._lst):
-            return 0
-
-        i = start_buffer
-        while i < len(lst):
-            if (p := lst[i].find(delim)) >= 0:
-                return self._chop(i, p + len(delim))
-            i += 1
-
-        return i
-
-    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
-        r = self.read_until_(delim)
-        return r if isinstance(r, bytes) else None
-
-    #
-
-    DEFAULT_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
-
-    @ta.final
-    class _BytesReader(BytesReader):
-        def __init__(
-                self,
-                raw: RawBytesReader,
-                buf: 'ReadableListBuffer',
-                *,
-                chunk_size: ta.Optional[int] = None,
-        ) -> None:
-            self._raw = raw
-            self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
-
-        def read1(self, n: int = -1, /) -> bytes:
-            if n < 0:
-                n = self._chunk_size
-            if not n:
-                return b''
-            if 0 < n <= len(self._buf):
-                return self._buf.read(n) or b''
-            return self._raw.read1(n)
-
-        def read(self, /, n: int = -1) -> bytes:
-            if n < 0:
-                return self._readall()
-            while len(self._buf) < n:
-                if not (b := self._raw.read1(n)):
-                    break
-                self._buf.feed(b)
-
-            if len(self._buf) >= n:
-                return self._buf.read(n) or b''
-
-            # EOF with a partial buffer: return what we have.
-            return self._buf.read() or b''
-
-        def _readall(self) -> bytes:
-            buf = io.BytesIO()
-            buf.write(self._buf.read() or b'')
-            while (b := self._raw.read1(self._chunk_size)):
-                buf.write(b)
-            return buf.getvalue()
-
-    def new_bytes_reader(
-            self,
-            raw: RawBytesReader,
-            *,
-            chunk_size: ta.Optional[int] = None,
-    ) -> BytesReader:
-        return self._BytesReader(
-            raw,
-            self,
-            chunk_size=chunk_size,
-        )
-
-    @ta.final
-    class _AsyncBytesReader(AsyncBytesReader):
-        def __init__(
-                self,
-                raw: AsyncRawBytesReader,
-                buf: 'ReadableListBuffer',
-                *,
-                chunk_size: ta.Optional[int] = None,
-        ) -> None:
-            self._raw = raw
-            self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
-
-        async def read1(self, n: int = -1, /) -> bytes:
-            if n < 0:
-                n = self._chunk_size
-            if not n:
-                return b''
-            if 0 < n <= len(self._buf):
-                return self._buf.read(n) or b''
-            return await self._raw.read1(n)
-
-        async def read(self, /, n: int = -1) -> bytes:
-            if n < 0:
-                return await self._readall()
-            while len(self._buf) < n:
-                if not (b := await self._raw.read1(n)):
-                    break
-                self._buf.feed(b)
-
-            if len(self._buf) >= n:
-                return self._buf.read(n) or b''
-
-            # EOF with a partial buffer: return what we have.
-            return self._buf.read() or b''
-
-        async def _readall(self) -> bytes:
-            buf = io.BytesIO()
-            buf.write(self._buf.read() or b'')
-            while b := await self._raw.read1(self._chunk_size):
-                buf.write(b)
-            return buf.getvalue()
-
-    def new_async_bytes_reader(
-            self,
-            raw: AsyncRawBytesReader,
-            *,
-            chunk_size: ta.Optional[int] = None,
-    ) -> AsyncBytesReader:
-        return self._AsyncBytesReader(
-            raw,
-            self,
-            chunk_size=chunk_size,
-        )
-
-
-##
-
-
-class IncrementalWriteBuffer:
-    def __init__(
-            self,
-            data: bytes,
-            *,
-            write_size: int = 0x10000,
-    ) -> None:
-        super().__init__()
-
-        check.not_empty(data)
-        self._len = len(data)
-        self._write_size = write_size
-
-        self._lst = [
-            data[i:i + write_size]
-            for i in range(0, len(data), write_size)
-        ]
-        self._pos = 0
-
-    @property
-    def rem(self) -> int:
-        return self._len - self._pos
-
-    def write(self, fn: ta.Callable[[bytes], int]) -> int:
-        lst = check.not_empty(self._lst)
-
-        t = 0
-        for i, d in enumerate(lst):  # noqa
-            d = check.not_empty(d)
-            n = fn(d)
-            if not n:
-                break
-
-            if n > len(d):
-                raise ValueError(n)
-
-            t += n
-
-            if n < len(d):
-                # Short write - keep the remainder of this chunk and stop.
-                self._lst = [
-                    d[n:],
-                    *lst[i + 1:],
-                ]
-                self._pos += t
-                return t
-
-        if t:
-            # Only fully-written chunks were consumed.
-            self._lst = lst[i + 1:]
-            self._pos += t
-
-        return t
 
 
 ########################################
@@ -6701,6 +6414,98 @@ if hasattr(select, 'poll'):
     PollFdioPoller = _PollFdioPoller
 else:
     PollFdioPoller = None
+
+
+########################################
+# ../../../omlish/io/readers.py
+"""
+TODO:
+ - s/bytes/BytesLike?
+"""
+
+
+##
+
+
+class RawBytesReader(ta.Protocol):
+    """Maps to `io.BufferedIOBase`."""
+
+    def read1(self, n: int = -1, /) -> bytes:
+        """Return at most `n` bytes with at most a single underlying read."""
+
+
+class BytesReader(RawBytesReader, ta.Protocol):
+    def read(self, n: int = -1, /) -> bytes:
+        """Return exactly `n` bytes unless EOF is reached.."""
+
+
+class BytesReaders(NamespaceClass):
+    @ta.final
+    class Empty:
+        def read1(self, n: int = -1, /) -> bytes:
+            return b''
+
+        def read(self, n: int = -1, /) -> bytes:
+            return b''
+
+    @ta.final
+    class Static:
+        def __init__(self, b: bytes) -> None:
+            self._r = io.BytesIO(b)
+
+        def read1(self, n: int = -1, /) -> bytes:
+            return self._r.read1(n)
+
+        def read(self, n: int = -1, /) -> bytes:
+            return self._r.read(n)
+
+    @classmethod
+    def of_bytes(cls, b: bytes) -> BytesReader:
+        if b:
+            return cls.Static(b)
+        else:
+            return cls.Empty()
+
+
+##
+
+
+class AsyncRawBytesReader(ta.Protocol):
+    def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]:
+        """Return at most `n` bytes with at most a single underlying read."""
+
+
+class AsyncBytesReader(AsyncRawBytesReader, ta.Protocol):
+    def read(self, n: int = -1, /) -> ta.Awaitable[bytes]:
+        """Return exactly `n` bytes unless EOF is reached.."""
+
+
+class AsyncBytesReaders(NamespaceClass):
+    @ta.final
+    class Empty:
+        async def read1(self, n: int = -1, /) -> bytes:
+            return b''
+
+        async def read(self, n: int = -1, /) -> bytes:
+            return b''
+
+    @ta.final
+    class Static:
+        def __init__(self, b: bytes) -> None:
+            self._r = io.BytesIO(b)
+
+        async def read1(self, n: int = -1, /) -> bytes:
+            return self._r.read1(n)
+
+        async def read(self, n: int = -1, /) -> bytes:
+            return self._r.read(n)
+
+    @classmethod
+    def of_bytes(cls, b: bytes) -> AsyncBytesReader:
+        if b:
+            return cls.Static(b)
+        else:
+            return cls.Empty()
 
 
 ########################################
@@ -9346,6 +9151,277 @@ DEFAULT_CONFIG_RENDERERS: ta.Sequence[ConfigRenderer] = [
 ]
 
 DEFAULT_CONFIG_RENDERER = SwitchedConfigRenderer(DEFAULT_CONFIG_RENDERERS)
+
+
+########################################
+# ../../../omlish/http/coro/_buffers.py
+"""
+*** THIS FILE IS DEPRECATED ***
+
+This is now only used by the http 'coro' stuff, which is also about to be deleted.
+
+Anything that would have used this should now use `omlish.io.streams`.
+"""
+
+
+##
+
+
+class ReadableListBuffer:
+    # FIXME: merge with PrependableGeneratorReader
+    # FIXME: AND PUSHBACKREADER
+    # FIXME: replace this whole thing with ByteStreamBuffers
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._lst: list[bytes] = []
+        self._len = 0
+
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError("Use 'buf is not None' or 'len(buf)'.")
+
+    def __len__(self) -> int:
+        return self._len
+
+    def feed(self, d: bytes) -> None:
+        if d:
+            self._lst.append(d)
+            self._len += len(d)
+
+    def _chop(self, i: int, e: int) -> bytes:
+        lst = self._lst
+        d = lst[i]
+
+        o = b''.join([
+            *lst[:i],
+            d[:e],
+        ])
+
+        self._lst = [
+            *([d[e:]] if e < len(d) else []),
+            *lst[i + 1:],
+        ]
+
+        self._len -= len(o)
+
+        return o
+
+    def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
+        if n is None:
+            if not self._lst:
+                return b''
+
+            o = b''.join(self._lst)
+            self._lst = []
+            self._len = 0
+            return o
+
+        if not (lst := self._lst):
+            return None
+
+        c = 0
+        for i, d in enumerate(lst):
+            r = n - c
+            if (l := len(d)) >= r:
+                return self._chop(i, r)
+            c += l
+
+        return None
+
+    def read_exact(self, sz: int) -> bytes:
+        d = self.read(sz)
+        if d is None or len(d) != sz:
+            raise EOFError(f'ReadableListBuffer got {"no" if d is None else len(d)}, expected {sz}')
+        return d
+
+    def read_until_(self, delim: bytes = b'\n', start_buffer: int = 0) -> ta.Union[bytes, int]:
+        if not (lst := self._lst):
+            return 0
+
+        i = start_buffer
+        while i < len(lst):
+            if (p := lst[i].find(delim)) >= 0:
+                return self._chop(i, p + len(delim))
+            i += 1
+
+        return i
+
+    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
+        r = self.read_until_(delim)
+        return r if isinstance(r, bytes) else None
+
+    #
+
+    DEFAULT_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
+
+    @ta.final
+    class _BytesReader(BytesReader):
+        def __init__(
+                self,
+                raw: RawBytesReader,
+                buf: 'ReadableListBuffer',
+                *,
+                chunk_size: ta.Optional[int] = None,
+        ) -> None:
+            self._raw = raw
+            self._buf = buf
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
+
+        def read1(self, n: int = -1, /) -> bytes:
+            if n < 0:
+                n = self._chunk_size
+            if not n:
+                return b''
+            if 0 < n <= len(self._buf):
+                return self._buf.read(n) or b''
+            return self._raw.read1(n)
+
+        def read(self, /, n: int = -1) -> bytes:
+            if n < 0:
+                return self._readall()
+            while len(self._buf) < n:
+                if not (b := self._raw.read1(n)):
+                    break
+                self._buf.feed(b)
+
+            if len(self._buf) >= n:
+                return self._buf.read(n) or b''
+
+            # EOF with a partial buffer: return what we have.
+            return self._buf.read() or b''
+
+        def _readall(self) -> bytes:
+            buf = io.BytesIO()
+            buf.write(self._buf.read() or b'')
+            while (b := self._raw.read1(self._chunk_size)):
+                buf.write(b)
+            return buf.getvalue()
+
+    def new_bytes_reader(
+            self,
+            raw: RawBytesReader,
+            *,
+            chunk_size: ta.Optional[int] = None,
+    ) -> BytesReader:
+        return self._BytesReader(
+            raw,
+            self,
+            chunk_size=chunk_size,
+        )
+
+    @ta.final
+    class _AsyncBytesReader(AsyncBytesReader):
+        def __init__(
+                self,
+                raw: AsyncRawBytesReader,
+                buf: 'ReadableListBuffer',
+                *,
+                chunk_size: ta.Optional[int] = None,
+        ) -> None:
+            self._raw = raw
+            self._buf = buf
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_READER_CHUNK_SIZE
+
+        async def read1(self, n: int = -1, /) -> bytes:
+            if n < 0:
+                n = self._chunk_size
+            if not n:
+                return b''
+            if 0 < n <= len(self._buf):
+                return self._buf.read(n) or b''
+            return await self._raw.read1(n)
+
+        async def read(self, /, n: int = -1) -> bytes:
+            if n < 0:
+                return await self._readall()
+            while len(self._buf) < n:
+                if not (b := await self._raw.read1(n)):
+                    break
+                self._buf.feed(b)
+
+            if len(self._buf) >= n:
+                return self._buf.read(n) or b''
+
+            # EOF with a partial buffer: return what we have.
+            return self._buf.read() or b''
+
+        async def _readall(self) -> bytes:
+            buf = io.BytesIO()
+            buf.write(self._buf.read() or b'')
+            while b := await self._raw.read1(self._chunk_size):
+                buf.write(b)
+            return buf.getvalue()
+
+    def new_async_bytes_reader(
+            self,
+            raw: AsyncRawBytesReader,
+            *,
+            chunk_size: ta.Optional[int] = None,
+    ) -> AsyncBytesReader:
+        return self._AsyncBytesReader(
+            raw,
+            self,
+            chunk_size=chunk_size,
+        )
+
+
+##
+
+
+class IncrementalWriteBuffer:
+    def __init__(
+            self,
+            data: bytes,
+            *,
+            write_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
+
+        check.not_empty(data)
+        self._len = len(data)
+        self._write_size = write_size
+
+        self._lst = [
+            data[i:i + write_size]
+            for i in range(0, len(data), write_size)
+        ]
+        self._pos = 0
+
+    @property
+    def rem(self) -> int:
+        return self._len - self._pos
+
+    def write(self, fn: ta.Callable[[bytes], int]) -> int:
+        lst = check.not_empty(self._lst)
+
+        t = 0
+        for i, d in enumerate(lst):  # noqa
+            d = check.not_empty(d)
+            n = fn(d)
+            if not n:
+                break
+
+            if n > len(d):
+                raise ValueError(n)
+
+            t += n
+
+            if n < len(d):
+                # Short write - keep the remainder of this chunk and stop.
+                self._lst = [
+                    d[n:],
+                    *lst[i + 1:],
+                ]
+                self._pos += t
+                return t
+
+        if t:
+            # Only fully-written chunks were consumed.
+            self._lst = lst[i + 1:]
+            self._pos += t
+
+        return t
 
 
 ########################################

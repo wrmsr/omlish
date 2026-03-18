@@ -3,8 +3,8 @@
 import typing as ta
 
 from ...lite.abstract import Abstract
+from ..types import BytesLike
 from .base import BaseByteStreamBufferLike
-from .types import BytesLike
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferView
 from .utils import ByteStreamBuffers

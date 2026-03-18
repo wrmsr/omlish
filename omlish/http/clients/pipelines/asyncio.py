@@ -1,17 +1,15 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import asyncio
 import dataclasses as dc
-import io
 import typing as ta
 
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
 from ....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
-from ....io.streams.types import BytesLike
-from ....lite.abstract import Abstract
+from ....io.readers import AsyncBytesReader
+from ....io.readers import AsyncBytesReaders
 from ....lite.check import check
 from ...clients.asyncs import AsyncHttpClient
 from ...clients.asyncs import AsyncStreamHttpClientResponse
@@ -26,36 +24,7 @@ from .base import BaseIoPipelineHttpClient
 
 
 class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient):
-    class _StreamReader(Abstract):
-        @abc.abstractmethod
-        def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def read(self, n: int = -1, /) -> ta.Awaitable[bytes]:
-            raise NotImplementedError
-
-        async def close(self) -> None:
-            pass
-
-    class _EmptyStreamReader(_StreamReader):
-        async def read1(self, n: int = -1, /) -> bytes:
-            return b''
-
-        async def read(self, n: int = -1, /) -> bytes:
-            return b''
-
-    class _StaticStreamReader(_StreamReader):
-        def __init__(self, b: BytesLike) -> None:
-            self._r = io.BytesIO(b)
-
-        async def read1(self, n: int = -1, /) -> bytes:
-            return self._r.read1(n)
-
-        async def read(self, n: int = -1, /) -> bytes:
-            return self._r.read1(n)
-
-    class _DriverStreamReader(_StreamReader):
+    class _DriverResponseReader:
         def __init__(
                 self,
                 drv: SimpleAsyncioStreamIoPipelineDriver,
@@ -70,10 +39,6 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
             raise NotImplementedError
 
         async def read(self, n: int = -1, /) -> bytes:
-            raise NotImplementedError
-
-        async def close(self) -> None:
-            # await self._drv.close()
             raise NotImplementedError
 
     #
@@ -133,16 +98,34 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
 
             await drv_run_task
 
+            #
+
             response = check.not_none(response)
 
-            stream_reader: AsyncioIoPipelineAsyncHttpClient._StreamReader
+            response_reader: AsyncBytesReader
+
             if isinstance(response, FullIoPipelineHttpResponse):
-                if response.body:
-                    stream_reader = self._StaticStreamReader(response.body)
-                else:
-                    stream_reader = self._EmptyStreamReader()
+                response_reader = AsyncBytesReaders.of_bytes(response.body)
+
+                drv.pipeline.destroy()
+
+                writer.close()
+                await writer.wait_closed()
+
+                async def close() -> None:
+                    pass
+
             else:
-                stream_reader = self._DriverStreamReader(drv)  # type: ignore[unreachable]
+                response_reader = self._DriverResponseReader(drv)  # type: ignore[unreachable]
+
+                async def close() -> None:
+                    try:
+                        drv.pipeline.destroy()
+                    finally:
+                        writer.close()
+                        await writer.wait_closed()
+
+            #
 
             head = check.not_none(response).head
 
@@ -151,10 +134,12 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
                 headers=head.headers,
                 request=req,
                 underlying=drv,
-                _stream=stream_reader,
-                _closer=stream_reader.close,
+                _stream=response_reader,
+                _closer=close,
             )
 
-        finally:
+        except BaseException:
             writer.close()
             await writer.wait_closed()
+
+            raise

@@ -14,12 +14,21 @@ from omlish.subprocesses.editor import get_user_text_editor
 
 from ..cli.types import CliModule
 from ..home.shadow import get_file_shadow_configs
+from ..home.shadow import get_shadow_paths
 
 
 ##
 
 
 class ShadowCli(ap.Cli):
+    @ap.cmd(
+        ap.arg('-p', '--path'),
+    )
+    def pwd(self) -> None:
+        print(get_shadow_paths().get_shadow_path(self._args.path or os.getcwd()))
+
+    #
+
     def _get_shadow_file(
             self,
             name: str,
@@ -32,8 +41,6 @@ class ShadowCli(ap.Cli):
             name,
             preferred_ext=preferred_ext,
         )
-
-    #
 
     @ap.cmd(
         ap.arg('name'),

@@ -3,7 +3,7 @@
 import typing as ta
 
 from ...lite.namespaces import NamespaceClass
-from .types import BytesLike
+from ..types import BytesLike
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView

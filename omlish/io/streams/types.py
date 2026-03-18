@@ -4,9 +4,7 @@ import abc
 import typing as ta
 
 from ...lite.abstract import Abstract
-
-
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+from ..types import BytesLike
 
 
 ##

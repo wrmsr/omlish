@@ -15,10 +15,10 @@ from ...io.pipelines.core import IoPipelineMessages
 from ...io.pipelines.handlers.decoders import MessageToMessageDecoderIoPipelineHandler
 from ...io.streams.errors import FrameTooLargeByteStreamBufferError
 from ...io.streams.segmented import SegmentedByteStreamBuffer
-from ...io.streams.types import BytesLike
 from ...io.streams.types import MutableByteStreamBuffer
 from ...io.streams.utils import ByteStreamBuffers
 from ...io.streams.utils import CanByteStreamBuffer
+from ...io.types import BytesLike
 from ...lite.abstract import Abstract
 from .bodymodes import IoPipelineHttpBodyMode
 from .bodymodes import IoPipelineHttpBodyModeError

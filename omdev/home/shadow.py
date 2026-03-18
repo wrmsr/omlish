@@ -1,3 +1,7 @@
+"""
+TODO:
+ - <hostname>/ subdir?
+"""
 from omlish.configs.shadow import FileShadowConfigs
 from omlish.configs.shadow import FileShadowConfigsImpl
 from omlish.configs.shadow import ShadowConfigs

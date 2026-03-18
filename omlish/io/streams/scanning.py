@@ -2,8 +2,8 @@
 # @omlish-lite
 import typing as ta
 
+from ..types import BytesLike
 from .base import BaseByteStreamBufferLike
-from .types import BytesLike
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 

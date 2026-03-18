@@ -5,9 +5,9 @@ import io
 import typing as ta
 
 from ...lite.abstract import Abstract
+from ..types import BytesLike
 from .direct import DirectByteStreamBufferView
 from .errors import NeedMoreDataByteStreamBufferError
-from .types import BytesLike
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView

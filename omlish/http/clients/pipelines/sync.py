@@ -1,21 +1,19 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import collections  # noqa
 import errno
-import io
 import socket
 import typing as ta
 
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
-from ....io.streams.types import BytesLike
-from ....lite.abstract import Abstract
 from ....lite.check import check
 from ...clients.base import HttpClientContext
 from ...clients.base import HttpClientRequest
 from ...clients.sync import HttpClient
 from ...clients.sync import StreamHttpClientResponse
+from ....io.readers import BytesReader
+from ....io.readers import BytesReaders
 from ...pipelines.clients.clients import IoPipelineHttpClientMessages
 from ...pipelines.responses import FullIoPipelineHttpResponse
 from .base import BaseIoPipelineHttpClient
@@ -25,36 +23,7 @@ from .base import BaseIoPipelineHttpClient
 
 
 class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
-    class _StreamReader(Abstract):
-        @abc.abstractmethod
-        def read1(self, n: int = -1, /) -> bytes:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def read(self, n: int = -1, /) -> bytes:
-            raise NotImplementedError
-
-        def close(self) -> None:
-            pass
-
-    class _EmptyStreamReader(_StreamReader):
-        def read1(self, n: int = -1, /) -> bytes:
-            return b''
-
-        def read(self, n: int = -1, /) -> bytes:
-            return b''
-
-    class _StaticStreamReader(_StreamReader):
-        def __init__(self, b: BytesLike) -> None:
-            self._r = io.BytesIO(b)
-
-        def read1(self, n: int = -1, /) -> bytes:
-            return self._r.read1(n)
-
-        def read(self, n: int = -1, /) -> bytes:
-            return self._r.read1(n)
-
-    class _DriverStreamReader(_StreamReader):
+    class _DriverResponseReader:
         def __init__(
                 self,
                 drv: SyncSocketIoPipelineDriver,
@@ -72,12 +41,6 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
 
         def read(self, n: int = -1, /) -> bytes:
             raise NotImplementedError
-
-        def close(self) -> None:
-            try:
-                self._drv.close()
-            finally:
-                self._sock.close()
 
     #
 
@@ -128,16 +91,31 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
                 if not drv.pipeline.is_ready:
                     break
 
+            #
+
             response = check.not_none(response)
 
-            stream_reader: IoPipelineHttpClient._StreamReader
+            response_reader: BytesReader
+
             if isinstance(response, FullIoPipelineHttpResponse):
-                if response.body:
-                    stream_reader = self._StaticStreamReader(response.body)
-                else:
-                    stream_reader = self._EmptyStreamReader()
+                response_reader = BytesReaders.of_bytes(response.body)
+
+                drv.close()
+                sock.close()
+
+                def close() -> None:
+                    pass
+
             else:
-                stream_reader = self._DriverStreamReader(drv, sock)  # type: ignore[unreachable]
+                response_reader = self._DriverResponseReader(drv, sock)  # type: ignore[unreachable]
+
+                def close() -> None:
+                    try:
+                        drv.close()
+                    finally:
+                        sock.close()
+
+            #
 
             head = check.not_none(response).head
 
@@ -146,8 +124,8 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
                 headers=head.headers,
                 request=req,
                 underlying=drv,
-                _stream=stream_reader,
-                _closer=stream_reader.close,
+                _stream=response_reader,
+                _closer=close,
             )
 
         except BaseException:

@@ -2,13 +2,13 @@
 # @omlish-lite
 import typing as ta
 
+from ..types import BytesLike
 from .base import BaseByteStreamBufferLike
 from .direct import _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 from .direct import DirectByteStreamBufferView
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
-from .types import BytesLike
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 from .utils import ByteStreamBuffers

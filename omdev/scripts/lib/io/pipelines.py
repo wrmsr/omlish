@@ -37,6 +37,7 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='errors.py', sha1='2d8ee419a407c58dff224316695c9d90fe50f727'),
             dict(path='../streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='../types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../lite/check.py', sha1='d0fd2e52b4227fe590add3c567328c3c4cf5f199'),
@@ -44,7 +45,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='core.py', sha1='3dabd48ce0e19fd974a89ea7b4dd2b6c4118d36b'),
-            dict(path='../streams/types.py', sha1='8959d244de95eaf9f118cc3fd2d713d85e55ff36'),
+            dict(path='../streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
@@ -57,16 +58,16 @@ def __omlish_amalg__():  # noqa
             dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
             dict(path='../streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../streams/utils.py', sha1='eb08fa1d56284b078f973eea6796747b9bbdffdf'),
+            dict(path='../streams/utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
             dict(path='../../logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='bytes/queues.py', sha1='ea3b53a155622376836ba9e3499b85220f37b1fd'),
             dict(path='handlers/flatmap.py', sha1='118478ac94449a9a0b5ba44f5f3e8a5d69bb6f65'),
-            dict(path='../streams/direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
-            dict(path='../streams/scanning.py', sha1='00522802dff772689be66151430754d4f9706dbc'),
+            dict(path='../streams/direct.py', sha1='f3a90045bd7c7bddc139eaa95d30db2ef24a78c6'),
+            dict(path='../streams/scanning.py', sha1='9c8d60b56cd9fcd2eaef550b4f1459a93c48dbe9'),
             dict(path='../../logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../streams/segmented.py', sha1='025cdf30e582a5a2b923e1859fbb4d3f367b811c'),
+            dict(path='../streams/segmented.py', sha1='8d112d08e066f69527091486f8817af0db586333'),
             dict(path='../../logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
@@ -79,6 +80,9 @@ def __omlish_amalg__():  # noqa
 
 ########################################
 
+
+# ../types.py
+BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # ../../lite/abstract.py
 T = ta.TypeVar('T')
@@ -100,9 +104,6 @@ IoPipelineHandlerFn = ta.Callable[['IoPipelineHandlerContext', F], T]  # ta.Type
 IoPipelineHandlerT = ta.TypeVar('IoPipelineHandlerT', bound='IoPipelineHandler')
 ShareableIoPipelineHandlerT = ta.TypeVar('ShareableIoPipelineHandlerT', bound='ShareableIoPipelineHandler')  # noqa
 IoPipelineMetadataT = ta.TypeVar('IoPipelineMetadataT', bound='IoPipelineMetadata')
-
-# ../streams/types.py
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # ../../logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
@@ -315,6 +316,13 @@ class OutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
 
 class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
     """commit() was called without a preceding reserve()."""
+
+
+########################################
+# ../../types.py
+
+
+##
 
 
 ########################################
