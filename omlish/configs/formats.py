@@ -268,7 +268,14 @@ class PyyamlYamlConfigBackend(YamlConfigBackend):
         return yaml.safe_dump(o)
 
 
-DEFAULT_YAML_CONFIG_BACKEND = PyyamlYamlConfigBackend()
+@ta.final
+class DEFAULT_YAML_CONFIG_BACKEND:  # noqa
+    """This isn't just a mutable global because in amalgamated code that's not really possible."""
+
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    INSTANCE: ta.ClassVar[YamlConfigBackend] = PyyamlYamlConfigBackend()
 
 
 class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
@@ -277,7 +284,7 @@ class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
     backend: ta.Optional[YamlConfigBackend] = None
 
     def loads(self, s: str) -> ta.Any:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND).loads(s)
+        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).loads(s)
 
 
 class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
@@ -285,7 +292,7 @@ class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
     backend: ta.Optional[YamlConfigBackend] = None
 
     def dumps(self, o: ta.Any) -> str:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND).dumps(o)
+        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).dumps(o)
 
 
 ##

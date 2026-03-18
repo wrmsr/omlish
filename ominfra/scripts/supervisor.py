@@ -133,7 +133,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
-            dict(path='../../omlish/configs/formats.py', sha1='4aceaa1f45109a58d558e803d11248ee413078d7'),
+            dict(path='../../omlish/configs/formats.py', sha1='b47d92e02fc7869c3246d2fddc13eed6e622489e'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/_buffers.py', sha1='842ebf09077a306689618a9a11ac7faba2a0a22e'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
@@ -4309,7 +4309,14 @@ class PyyamlYamlConfigBackend(YamlConfigBackend):
         return yaml.safe_dump(o)
 
 
-DEFAULT_YAML_CONFIG_BACKEND = PyyamlYamlConfigBackend()
+@ta.final
+class DEFAULT_YAML_CONFIG_BACKEND:  # noqa
+    """This isn't just a mutable global because in amalgamated code that's not really possible."""
+
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    INSTANCE: ta.ClassVar[YamlConfigBackend] = PyyamlYamlConfigBackend()
 
 
 class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
@@ -4318,7 +4325,7 @@ class YamlConfigLoader(LoadsConfigLoader[YamlConfigData]):
     backend: ta.Optional[YamlConfigBackend] = None
 
     def loads(self, s: str) -> ta.Any:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND).loads(s)
+        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).loads(s)
 
 
 class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
@@ -4326,7 +4333,7 @@ class YamlConfigRenderer(DumpsConfigRenderer[YamlConfigData]):
     backend: ta.Optional[YamlConfigBackend] = None
 
     def dumps(self, o: ta.Any) -> str:
-        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND).dumps(o)
+        return (self.backend or DEFAULT_YAML_CONFIG_BACKEND.INSTANCE).dumps(o)
 
 
 ##
