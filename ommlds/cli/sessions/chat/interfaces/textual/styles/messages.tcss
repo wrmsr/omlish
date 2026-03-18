@@ -39,6 +39,17 @@
     layout: stream;
 }
 
+.message-divider-container {
+    height: auto;
+}
+
+.message-outer {
+    width: 1fr;
+    height: auto;
+
+    align: left top;
+}
+
 .message-glyph {
     width: auto;
     height: auto;
@@ -47,13 +58,6 @@
     color: $primary;
 
     text-style: bold;
-}
-
-.message-outer {
-    width: 1fr;
-    height: auto;
-
-    align: left top;
 }
 
 .message-inner {
@@ -72,6 +76,9 @@
     background: $panel-darken-1;
 }
 
+.welcome-message-divider-container {
+}
+
 .welcome-message-outer {
 }
 
@@ -83,6 +90,9 @@
 
 .user-message {
     margin: 0 0 1 0;
+}
+
+.user-message-divider-container {
 }
 
 .user-message-outer {
@@ -98,6 +108,9 @@
 /* Ai Message */
 
 .ai-message {
+}
+
+.ai-message-divider-container {
 }
 
 .ai-message-outer {
@@ -123,6 +136,9 @@
 
 .tool-confirmation-message {
     margin: 0 0 1 0;
+}
+
+.tool-confirmation-message-divider-container {
 }
 
 .tool-confirmation-message-outer {
@@ -167,6 +183,9 @@
 
 .ui-message {
     margin: 0 0 1 0;
+}
+
+.ui-message-divider-container {
 }
 
 .ui-message-glyph {

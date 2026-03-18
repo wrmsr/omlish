@@ -13,37 +13,21 @@ from omlish import lang
 ##
 
 
-@dc.dataclass()
-class MessageFinalized(tx.Event):
-    widget: tx.Widget
-
-
-class OnMountMessageFinalized(tx.Widget, lang.Abstract):
-    __has_finalized = False
-
-    @tx.on(tx.Mount)
-    async def _on_mount_message_finalize(self, event: tx.Mount) -> None:
-        if not self.__has_finalized:
-            self.__has_finalized = True
-
-            self.post_message(MessageFinalized(self))
-
-
-##
-
-
-class MessageDivider(OnMountMessageFinalized, tx.InitAddClass, tx.Static):
+class MessageDivider(tx.InitAddClass, tx.Static):
     init_add_class = 'message-divider'
 
     def __init__(
             self,
-            text: str = '',
+            text: str | None = None,
             *,
             align: tx.AlignMethod = 'center',
             line_style: ta.Any | None = None,
             text_style: ta.Any | None = None,
     ) -> None:
         super().__init__()
+
+        if text is None:
+            text = lang.localnow().strftime('%Y-%m-%d %H:%M:%S')
 
         self._text = text
         self._align = align
@@ -79,6 +63,25 @@ class MessageDivider(OnMountMessageFinalized, tx.InitAddClass, tx.Static):
                 style=line_style,
             ),
         )
+
+
+##
+
+
+@dc.dataclass()
+class MessageFinalized(tx.Event):
+    widget: tx.Widget
+
+
+class OnMountMessageFinalized(tx.Widget, lang.Abstract):
+    __has_finalized = False
+
+    @tx.on(tx.Mount)
+    async def _on_mount_message_finalize(self, event: tx.Mount) -> None:
+        if not self.__has_finalized:
+            self.__has_finalized = True
+
+            self.post_message(MessageFinalized(self))
 
 
 ##
@@ -148,10 +151,13 @@ class UserMessage(StaticMessage):
         self._content = content
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='user-message-outer message-outer'):
-            yield tx.Static('> ', classes='user-message-glyph message-glyph')
-            with tx.Vertical(classes='user-message-inner message-inner'):
-                yield tx.Static(self._content)
+        with tx.Vertical(classes='user-message-divider-container message-divider-container'):
+            yield MessageDivider()
+
+            with tx.Horizontal(classes='user-message-outer message-outer'):
+                yield tx.Static('> ', classes='user-message-glyph message-glyph')
+                with tx.Vertical(classes='user-message-inner message-inner'):
+                    yield tx.Static(self._content)
 
 
 #
@@ -161,10 +167,13 @@ class AiMessage(Message, lang.Abstract):
     init_add_class = 'ai-message'
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='ai-message-outer message-outer'):
-            yield tx.Static('< ', classes='ai-message-glyph message-glyph')
-            with tx.Vertical(classes='ai-message-inner message-inner'):
-                yield from self._compose_content()
+        with tx.Vertical(classes='ai-message-divider-container message-divider-container'):
+            yield MessageDivider()
+
+            with tx.Horizontal(classes='ai-message-outer message-outer'):
+                yield tx.Static('< ', classes='ai-message-glyph message-glyph')
+                with tx.Vertical(classes='ai-message-inner message-inner'):
+                    yield from self._compose_content()
 
     @abc.abstractmethod
     def _compose_content(self) -> ta.Generator:
@@ -372,17 +381,20 @@ class ToolConfirmationMessage(Message):
         self.post_message(MessageFinalized(self))
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
-            yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
-            with tx.Vertical(classes=' '.join([
-                'tool-confirmation-message-inner',
-                'tool-confirmation-message-inner-open',
-                'message-inner',
-            ])):
-                yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
-                yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
+        with tx.Vertical(classes='tool-confirmation-message-divider-container message-divider-container'):
+            yield MessageDivider()
 
-                yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
+            with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
+                yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
+                with tx.Vertical(classes=' '.join([
+                    'tool-confirmation-message-inner',
+                    'tool-confirmation-message-inner-open',
+                    'message-inner',
+                ])):
+                    yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
+                    yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
+
+                    yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
 
     def on_mount(self) -> None:
         def inner():
@@ -418,10 +430,13 @@ class UiMessage(Message):
         self._content = content
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='ui-message-outer message-outer'):
-            yield tx.Static('~ ', classes='ui-message-glyph message-glyph')
-            with tx.Vertical(classes='ui-message-inner message-inner'):
-                yield tx.Static(self._content)
+        with tx.Vertical(classes='ui-message-divider-container message-divider-container'):
+            yield MessageDivider()
+
+            with tx.Horizontal(classes='ui-message-outer message-outer'):
+                yield tx.Static('~ ', classes='ui-message-glyph message-glyph')
+                with tx.Vertical(classes='ui-message-inner message-inner'):
+                    yield tx.Static(self._content)
 
 
 ##
@@ -507,8 +522,6 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
 
     #
 
-    _num_mounted_messages = 0
-
     async def mount_messages(self, *messages: Message) -> None:
         was_at_bottom = self._is_messages_at_bottom()
 
@@ -522,12 +535,7 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
                     if not (isinstance(msg, StreamAiMessage) and xm is msg):
                         raise ValueError(f'message uuid already in use: {mu}')
 
-            if self._num_mounted_messages:
-                await self.mount(MessageDivider(lang.localnow().strftime('%Y-%m-%d %H:%M:%S')))
-
             await self.mount(msg)
-
-            self._num_mounted_messages += 1
 
             if mu is not None:
                 self._messages_by_uuid[mu] = msg
