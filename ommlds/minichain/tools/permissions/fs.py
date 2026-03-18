@@ -6,7 +6,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
-from . import _fieldhash as fh
+from ... import _fieldhash as fh
 from .types import ToolPermissionMatcher
 from .types import ToolPermissionTarget
 

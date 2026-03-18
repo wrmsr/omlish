@@ -1,4 +1,5 @@
 import abc
+import hashlib
 import io
 import json
 import typing as ta
@@ -37,6 +38,23 @@ class FieldHashable(lang.Abstract):
     def _field_hash(self) -> FieldHashValue:
         raise NotImplementedError
 
+    #
+
+    @ta.final
+    @lang.cached_function
+    def _cached_field_hash(self) -> FieldHashValue:
+        return self._field_hash()
+
+    @ta.final
+    @lang.cached_function
+    def _cached_rendered_field_hash(self) -> str:
+        return render_field_hash(self._cached_field_hash())
+
+    @ta.final
+    @lang.cached_function
+    def _cached_field_hash_digest(self) -> str:
+        return _digest_rendered_field_hash(self._cached_rendered_field_hash())
+
 
 ##
 
@@ -71,7 +89,7 @@ def render_field_hash(value: FieldHashValue) -> str:
                 out.write('}}')
 
             case FieldHashable():
-                rec(v._field_hash())  # noqa
+                rec(v._cached_field_hash())  # noqa
 
             case _:
                 raise TypeError(v)
@@ -79,3 +97,14 @@ def render_field_hash(value: FieldHashValue) -> str:
     out = io.StringIO()
     rec(value)
     return out.getvalue()
+
+
+#
+
+
+def _digest_rendered_field_hash(r: str) -> str:
+    return hashlib.sha1(r.encode('utf-8')).hexdigest()  # noqa
+
+
+def digest_field_hash(obj: FieldHashable) -> str:
+    return obj._cached_field_hash_digest()  # noqa

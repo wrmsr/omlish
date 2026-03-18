@@ -1,7 +1,8 @@
+# fmt: off
 # flake8: noqa: E131
 import json
 
-from .. import _fieldhash as fh
+from .... import _fieldhash as fh
 from ..fs import GlobFsToolPermissionMatcher
 from ..types import ToolPermissionRule
 from ..types import ToolPermissionRules
@@ -29,7 +30,8 @@ def test_field_hash():
         ),
     ])
 
-    r = fh.render_field_hash(rules)
+    for _ in range(2):
+        r = fh.render_field_hash(rules)
 
     assert r == (
         '{'
@@ -141,3 +143,6 @@ def test_field_hash():
             ],
         },
     }
+
+    for _ in range(2):
+        assert fh.digest_field_hash(rules) == 'b4a91821704c1616494f5036a238a2b9782b3f41'

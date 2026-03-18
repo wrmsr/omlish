@@ -6,7 +6,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from . import _fieldhash as fh
+from ... import _fieldhash as fh
 
 
 ##
