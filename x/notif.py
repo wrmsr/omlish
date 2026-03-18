@@ -6,7 +6,9 @@ import os
 import socket
 import sys
 import time
+import typing as ta
 
+from omlish import check
 from omlish.sockets.peercreds import PeerCred
 from omlish.sockets.peercreds import get_unix_socket_peer_cred
 
@@ -225,56 +227,79 @@ def _chat_command(
 ##
 
 
+@ta.final
+class _NotificationSender:
+    def __init__(
+            self,
+            *,
+            timeout: float | None = 5,
+    ) -> None:
+        self._timeout = timeout
+
+        self._chunks: list[bytes] = []
+
+    _deadline: float | None = None
+
+    def remaining_timeout(self) -> float | None:
+        if (to := self._timeout) is None:
+            return None
+        if (dl := self._deadline) is None:
+            dl = self._deadline = time.monotonic() + to
+        rem = dl - time.monotonic()
+        if rem <= 0:
+            raise TimeoutError('notification timed out')
+        return rem
+
+    def _split_ack(self) -> str:
+        data = b''.join(self._chunks)
+        check.state(b'\n' in data)
+        line = data.split(b'\n', maxsplit=1)[0]
+        ack = line.decode('utf-8').rstrip('\n')
+        return ack
+
+    def feed_chunk(self, chunk: bytes) -> str | None:
+        if not chunk:
+            return self._split_ack()
+
+        self._chunks.append(chunk)
+        if b'\n' in chunk:
+            return self._split_ack()
+
+        return None
+
+
 def _send_notification(
         socket_path: str,
         payload: str,
         *,
         nowait: bool = False,
         timeout: float | None = 5,
+        read_size: int = 4096,
 ) -> str | None:
     """Send a notification to a socket. Returns the ack line, or None in nowait mode."""
 
-    deadline = None if timeout is None else (time.monotonic() + timeout)
-
-    def _remaining_timeout() -> float | None:
-        if deadline is None:
-            return None
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            raise TimeoutError('notification timed out')
-        return remaining
+    sender = _NotificationSender(timeout=timeout)
 
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
-        sock.settimeout(_remaining_timeout())
+        sock.settimeout(sender.remaining_timeout())
         sock.connect(socket_path)
 
-        sock.settimeout(_remaining_timeout())
+        sock.settimeout(sender.remaining_timeout())
         sock.sendall(f'{payload}\n'.encode('utf-8'))
 
         if nowait:
-            return ''
+            return None
 
-        chunks: list[bytes] = []
         while True:
-            sock.settimeout(_remaining_timeout())
-            chunk = sock.recv(4096)
-            if not chunk:
-                break
-            chunks.append(chunk)
-            if b'\n' in chunk:
-                break
+            sock.settimeout(sender.remaining_timeout())
+            chunk = sock.recv(read_size)
 
-        data = b''.join(chunks)
-        line, _, _rest = data.partition(b'\n')
-        ack = line.decode('utf-8').rstrip('\n')
-        return ack
+            if (ack := sender.feed_chunk(chunk)) is not None:
+                return ack
 
     finally:
         sock.close()
-
-
-#
 
 
 async def _async_send_notification(
@@ -283,68 +308,44 @@ async def _async_send_notification(
         *,
         nowait: bool = False,
         timeout: float | None = 5,
+        read_size: int = 4096,
 ) -> str | None:
     """Send a notification to a socket asynchronously. Returns the ack line, or None in nowait mode."""
 
-    deadline = None if timeout is None else (time.monotonic() + timeout)
+    sender = _NotificationSender(timeout=timeout)
 
-    def _remaining_timeout() -> float | None:
-        if deadline is None:
-            return None
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            raise TimeoutError('notification timed out')
-        return remaining
-
-    reader: asyncio.StreamReader | None = None
+    reader: asyncio.StreamReader | None = None  # noqa
     writer: asyncio.StreamWriter | None = None
     try:
         connect_coro = asyncio.open_unix_connection(socket_path)
-        remaining = _remaining_timeout()
-        if remaining is None:
+        if (remaining_timeout := sender.remaining_timeout()) is None:
             reader, writer = await connect_coro
         else:
-            reader, writer = await asyncio.wait_for(connect_coro, timeout=remaining)
+            reader, writer = await asyncio.wait_for(connect_coro, timeout=remaining_timeout)
 
         writer.write(f'{payload}\n'.encode('utf-8'))
-        remaining = _remaining_timeout()
-        if remaining is None:
+        if (remaining_timeout := sender.remaining_timeout()) is None:
             await writer.drain()
         else:
-            await asyncio.wait_for(writer.drain(), timeout=remaining)
+            await asyncio.wait_for(writer.drain(), timeout=remaining_timeout)
 
         if nowait:
             return None
 
-        chunks: list[bytes] = []
         while True:
-            remaining = _remaining_timeout()
-            recv_coro = reader.read(4096)
-            if remaining is None:
+            recv_coro = reader.read(read_size)
+            if (remaining_timeout := sender.remaining_timeout()) is None:
                 chunk = await recv_coro
             else:
-                chunk = await asyncio.wait_for(recv_coro, timeout=remaining)
+                chunk = await asyncio.wait_for(recv_coro, timeout=remaining_timeout)
 
-            if not chunk:
-                break
-            chunks.append(chunk)
-            if b'\n' in chunk:
-                break
-
-        data = b''.join(chunks)
-        line, _, _rest = data.partition(b'\n')
-        ack = line.decode('utf-8').rstrip('\n')
-        if ack.strip():
-            print(ack)
-        return ack
+            if (ack := sender.feed_chunk(chunk)) is not None:
+                return ack
 
     finally:
         if writer is not None:
             writer.close()
-            try:
-                await writer.wait_closed()
-            except Exception:
-                pass
+            await writer.wait_closed()
 
 
 ##
@@ -356,6 +357,7 @@ def _notify_command(
         socket_dir: str | None = None,
         pid: int | None = None,
         latest: bool = False,
+        nowait: bool = False,
 ) -> int:
     """Execute the notify command."""
 
@@ -363,6 +365,13 @@ def _notify_command(
         socket_dir = _default_socket_dir()
     _ensure_socket_dir(socket_dir)
     _ensure_socket_dir(socket_dir)
+
+    def send_one(socket_path: str) -> str | None:
+         return _send_notification(
+             socket_path,
+             payload,
+             nowait=nowait,
+         )
 
     if pid:
         # Notify specific PID
@@ -373,7 +382,7 @@ def _notify_command(
 
         for filename in socket_files:
             socket_path = os.path.join(socket_dir, filename)
-            if (ack := _send_notification(socket_path, payload)) is not None:
+            if (ack := send_one(socket_path)) is not None:
                 if (ack := ack.strip()):
                     print(ack)
                 return 0
@@ -400,7 +409,7 @@ def _notify_command(
         socket_files.sort(reverse=True, key=lambda x: x[0])
 
         for _, path, filename in socket_files:
-            if (ack := _send_notification(path, payload)) is not None:
+            if (ack := send_one(path)) is not None:
                 pid = _parse_socket_pid(filename)
                 print(pid)
                 if (ack := ack.strip()):
@@ -416,7 +425,7 @@ def _notify_command(
 
         for filename in _iter_socket_files(socket_dir):
             path = os.path.join(socket_dir, filename)
-            if (ack := _send_notification(path, payload)) is not None:
+            if (ack := send_one(path)) is not None:
                 pid = _parse_socket_pid(filename)
                 print(pid)
                 print(ack)
@@ -501,6 +510,7 @@ def _main() -> None:
     # Notify command
     notify_parser = subparsers.add_parser('notify')
     notify_parser.add_argument('payload')
+    notify_parser.add_argument('-n', '--nowait', action='store_true')
     notify_group = notify_parser.add_mutually_exclusive_group()
     notify_group.add_argument('-p', '--pid', type=int)
     notify_group.add_argument('-l', '--latest', action='store_true')
@@ -519,6 +529,7 @@ def _main() -> None:
         sys.exit(_notify_command(
             args.payload,
             socket_dir=args.socket_dir,
+            nowait=args.nowait,
         ))
     elif args.command == 'cleanup':
         sys.exit(_cleanup_command(
