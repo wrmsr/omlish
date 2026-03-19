@@ -24,6 +24,8 @@ class Config:
 
     nvm_versions: ta.Sequence[str] | None = None
 
+    rbenv_versions: ta.Sequence[str] | None = None
+
     uv_python_versions: ta.Sequence[str] | None = None
 
     pyenv_version_keys: ta.Sequence[str] | None = None

@@ -21,6 +21,10 @@ nvm_versions = [
     '25',
 ]
 
+rbenv_versions = [
+    '3.4',
+]
+
 uv_python_versions = [
     '3.13',
     '3.14',

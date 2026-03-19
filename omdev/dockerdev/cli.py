@@ -10,6 +10,9 @@ TODO:
  - launch / manage compose services
  - more cache dirs
  - --mount=type=bind,src=/host/dir,dst=/container/dir,readonly (git)
+ - build --no-cache / cache bust
+   - build args
+ - auto go/zig vers
 
 ====
 

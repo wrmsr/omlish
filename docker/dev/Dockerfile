@@ -34,6 +34,7 @@ DEPS="" ;\
 DEPS="$DEPS\
   apt-transport-https\
   aria2\
+  autoconf\
   bison\
   bmon\
   btop\
@@ -64,7 +65,9 @@ DEPS="$DEPS\
   jq\
   less\
   libdb-dev\
+  libgdbm6\
   libpq-dev\
+  libyaml-dev\
   llvm\
   lsb-release\
   lsof\
@@ -278,6 +281,21 @@ export NVM_DIR="$HOME/.nvm" ;\
 \
 for NV in ${NVM_VERSIONS} ; do\
   nvm install "$NV" ;\
+done ;\
+)
+
+
+## rbenv
+
+RUN (\
+export RBENV_VERSIONS='3.4' ;\
+\
+set -ex ;\
+\
+curl -fsSL https://rbenv.org/install.sh | bash ;\
+\
+for RV in ${RBENV_VERSIONS}; do\
+  bash -c 'eval "$(~/.rbenv/bin/rbenv init - --no-rehash bash)" && rbenv install -L | grep -F "$1." | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1 | xargs rbenv install' bash "$RV" ;\
 done ;\
 )
 

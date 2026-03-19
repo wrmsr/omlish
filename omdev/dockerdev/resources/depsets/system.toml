@@ -26,6 +26,7 @@ deps = [
   'wget',
 
   # build essentials & compilers
+  'autoconf',
   'build-essential',
   'clang',
   'cmake',
@@ -61,9 +62,11 @@ deps = [
 
   # data formats
   'jq',
+  'libyaml-dev',
 
   # databases
   'libdb-dev',
+  'libgdbm6',
   'libpq-dev',
   'postgresql-client',
 

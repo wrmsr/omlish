@@ -94,6 +94,12 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
             static_env={'NVM_VERSIONS': cfg.nvm_versions},
         ))
 
+    if cfg.rbenv_versions:
+        ops.append(fragment_section(
+            'rbenv',
+            static_env={'RBENV_VERSIONS': cfg.rbenv_versions},
+        ))
+
     ops.append(fragment_section(
         'uv',
         static_env={'UV_PYTHON_VERSIONS': cfg.uv_python_versions or []},
