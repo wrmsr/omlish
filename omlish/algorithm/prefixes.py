@@ -17,6 +17,7 @@ class MinUniquePrefixNode(ta.Generic[T]):
     count: int = 0  # number of items in this subtree
     terminals: ta.Set[ta.Tuple[T, ...]] = dc.field(default_factory=set)
     terminal_items: ta.Dict[ta.Tuple[T, ...], ta.Sequence[T]] = dc.field(default_factory=dict)
+    min_unique_prefix_len: int = dc.field(init=False)
 
     @property
     def terminal_count(self) -> int:
@@ -31,6 +32,14 @@ class MinUniquePrefixNode(ta.Generic[T]):
             return self._lookup(prefix)
         except MinUniquePrefixNode._NonUniqueKeyError:
             raise MinUniquePrefixNode.NonUniqueKeyError(prefix)  # noqa
+
+    def __len__(self) -> int:
+        return self.count
+
+    def __iter__(self) -> ta.Iterator[ta.Sequence[T]]:
+        yield from self.terminal_items.values()
+        for child in self.children.values():
+            yield from child
 
     #
 
@@ -70,6 +79,23 @@ class MinUniquePrefixNode(ta.Generic[T]):
 
         self.terminals.add(term)
         self.terminal_items[term] = item
+
+    def _set_min_unique_prefix_len(self, depth_before: int, *, is_root: bool) -> int:
+        if self is is_root and self.count <= 1:
+            ret = 0
+
+        elif self.count == 1:
+            ret = depth_before + 1
+
+        else:
+            child_depth_before = depth_before + len(self.part)
+            ret = max(
+                child._set_min_unique_prefix_len(child_depth_before, is_root=False)  # noqa
+                for child in self.children.values()
+            )
+
+        self.min_unique_prefix_len = ret
+        return ret
 
     class _NonUniqueKeyError(Exception):
         pass
@@ -116,10 +142,12 @@ class MinUniquePrefixNode(ta.Generic[T]):
 
 
 def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniquePrefixNode[T]:
-    if not items:
-        return MinUniquePrefixNode()
-
     root: MinUniquePrefixNode[T]
+
+    if not items:
+        root = MinUniquePrefixNode()
+        root.min_unique_prefix_len = 0
+        return root
 
     if len(items) == 1:
         part = tuple(items[0])
@@ -128,6 +156,7 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
             count=1,
         )
         root._add_terminal(part, items[0])  # noqa
+        root.min_unique_prefix_len = 0
         return root
 
     root = MinUniquePrefixNode()
@@ -215,6 +244,8 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
 
         stack.extend(node.children.values())
 
+    root._set_min_unique_prefix_len(0, is_root=True)  # noqa
+
     return root
 
 
@@ -250,4 +281,9 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
 
 
 def min_unique_prefix_len(items: ta.Sequence[ta.Sequence[T]]) -> int:
-    return max(min_unique_prefix_lens(items), default=0)
+    if len(items) <= 1:
+        return 0
+
+    root = build_min_unique_prefix_tree(items)
+
+    return root.min_unique_prefix_len
