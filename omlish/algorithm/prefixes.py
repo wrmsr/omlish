@@ -1,5 +1,9 @@
 # ruff: noqa: UP006
 # @omlish-lite
+"""
+TODO:
+ - full radix lol, each node has set? of terminals
+"""
 import dataclasses as dc
 import typing as ta
 
@@ -11,16 +15,19 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass()
-class _MinUniquePrefixLenNode(ta.Generic[T]):
+class MinUniquePrefixLenNode(ta.Generic[T]):
     part: ta.Tuple[T, ...] = ()
-    children: ta.Dict[T, '_MinUniquePrefixLenNode[T]'] = dc.field(default_factory=dict)
+    children: ta.Dict[T, 'MinUniquePrefixLenNode[T]'] = dc.field(default_factory=dict)
     count: int = 0  # number of items sharing the prefix ending at this node
     terminal_count: int = 0  # number of items ending exactly at this node
 
 
-def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
-    if len(items) <= 1:
-        return [0] * len(items)
+def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniquePrefixLenNode:
+    if not items:
+        return MinUniquePrefixLenNode()
+
+    if len(items) == 1:
+        return MinUniquePrefixLenNode(tuple(items[0]), count=1, terminal_count=1)
 
     def common_prefix_len(item: 'ta.Sequence[T]', item_pos: int, part: 'ta.Tuple[T, ...]') -> int:
         n = min(len(item) - item_pos, len(part))
@@ -29,7 +36,7 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
             i += 1
         return i
 
-    root: _MinUniquePrefixLenNode[T] = _MinUniquePrefixLenNode()
+    root: MinUniquePrefixLenNode[T] = MinUniquePrefixLenNode()
 
     for item in items:
         root.count += 1
@@ -45,7 +52,7 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
             key = item[pos]
             child = node.children.get(key)
             if child is None:
-                node.children[key] = _MinUniquePrefixLenNode(
+                node.children[key] = MinUniquePrefixLenNode(
                     part=tuple(item[pos:]),
                     count=1,
                     terminal_count=1,
@@ -60,7 +67,7 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
                 pos += common_len
                 continue
 
-            split = _MinUniquePrefixLenNode(
+            split = MinUniquePrefixLenNode(
                 part=child.part[:common_len],
                 count=child.count + 1,
             )
@@ -74,7 +81,7 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
                 split.terminal_count = 1
             else:
                 new_part = tuple(item[pos:])
-                split.children[new_part[0]] = _MinUniquePrefixLenNode(
+                split.children[new_part[0]] = MinUniquePrefixLenNode(
                     part=new_part,
                     count=1,
                     terminal_count=1,
@@ -93,6 +100,18 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
             raise ValueError('at least one item is a prefix of another')
 
         stack.extend(node.children.values())
+
+    return root
+
+
+##
+
+
+def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
+    if len(items) <= 1:
+        return [0] * len(items)
+
+    root = build_min_unique_prefix_tree(items)
 
     out = []
 

@@ -9,9 +9,13 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .prefixes import (  # noqa
+        MinUniquePrefixLenNode,
+        build_min_unique_prefix_tree,
+
         min_unique_prefix_lens,
         min_unique_prefix_len,
     )
+
     from .toposort import (  # noqa
         mut_toposort,
         toposort,
