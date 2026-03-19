@@ -1,9 +1,5 @@
 # ruff: noqa: UP006
 # @omlish-lite
-"""
-TODO:
- - full radix lol, each node has set? of terminals
-"""
 import dataclasses as dc
 import typing as ta
 
@@ -15,37 +11,126 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass()
-class MinUniquePrefixLenNode(ta.Generic[T]):
+class MinUniquePrefixNode(ta.Generic[T]):
     part: ta.Tuple[T, ...] = ()
-    children: ta.Dict[T, 'MinUniquePrefixLenNode[T]'] = dc.field(default_factory=dict)
+    children: ta.Dict[T, 'MinUniquePrefixNode[T]'] = dc.field(default_factory=dict)
     count: int = 0  # number of items in this subtree
     terminals: ta.Set[ta.Tuple[T, ...]] = dc.field(default_factory=set)
+    terminal_items: ta.Dict[ta.Tuple[T, ...], ta.Sequence[T]] = dc.field(default_factory=dict)
 
     @property
     def terminal_count(self) -> int:
         return len(self.terminals)
 
+    @dc.dataclass()
+    class NonUniqueKeyError(Exception):
+        key: ta.Any
 
-def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniquePrefixLenNode:
-    if not items:
-        return MinUniquePrefixLenNode()
+    def lookup(self, prefix: ta.Sequence[T]) -> ta.Sequence[T]:
+        try:
+            return self._lookup(prefix)
+        except MinUniquePrefixNode._NonUniqueKeyError:
+            raise MinUniquePrefixNode.NonUniqueKeyError(prefix)  # noqa
 
-    if len(items) == 1:
-        part = tuple(items[0])
-        return MinUniquePrefixLenNode(
-            part=part,
-            count=1,
-            terminals={part},
-        )
+    #
 
-    def common_prefix_len(item: 'ta.Sequence[T]', item_pos: int, part: 'ta.Tuple[T, ...]') -> int:
+    @staticmethod
+    def _common_prefix_len(
+            item: ta.Sequence[T],
+            item_pos: int,
+            part: ta.Tuple[T, ...],
+    ) -> int:
         n = min(len(item) - item_pos, len(part))
         i = 0
         while i < n and item[item_pos + i] == part[i]:
             i += 1
         return i
 
-    root: MinUniquePrefixLenNode[T] = MinUniquePrefixLenNode()
+    def _match_child(
+            self,
+            item: ta.Sequence[T],
+            item_pos: int,
+    ) -> ta.Tuple[ta.Optional['MinUniquePrefixNode[T]'], int]:
+        if item_pos == len(item):
+            return None, 0
+
+        child = self.children.get(item[item_pos])
+        if child is None:
+            return None, 0
+
+        return child, self._common_prefix_len(item, item_pos, child.part)
+
+    def _add_terminal(
+            self,
+            term: ta.Tuple[T, ...],
+            item: ta.Sequence[T],
+    ) -> None:
+        if term in self.terminal_items:
+            raise ValueError('duplicate items present')
+
+        self.terminals.add(term)
+        self.terminal_items[term] = item
+
+    class _NonUniqueKeyError(Exception):
+        pass
+
+    def _find_unique_terminal_item(self: 'MinUniquePrefixNode[T]') -> ta.Sequence[T]:
+        cur = self
+
+        while True:
+            if cur.count != 1:
+                raise MinUniquePrefixNode._NonUniqueKeyError
+
+            if cur.terminal_items:
+                if len(cur.terminal_items) != 1:
+                    raise RuntimeError('invalid tree')
+                return next(iter(cur.terminal_items.values()))
+
+            if not cur.children:
+                raise RuntimeError('invalid tree')
+
+            if len(cur.children) != 1:
+                raise RuntimeError('invalid tree')
+
+            cur = next(iter(cur.children.values()))
+
+    def _lookup(self, prefix: ta.Sequence[T]) -> ta.Sequence[T]:
+        node = self
+        pos = 0
+
+        while True:
+            common_len = self._common_prefix_len(prefix, pos, node.part)
+            needed = min(len(prefix) - pos, len(node.part))
+            if common_len != needed:
+                raise KeyError(prefix)
+
+            pos += common_len
+            if pos == len(prefix):
+                return node._find_unique_terminal_item()  # noqa
+
+            child, _ = node._match_child(prefix, pos)  # noqa
+            if child is None:
+                raise KeyError(prefix)
+
+            node = child
+
+
+def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniquePrefixNode[T]:
+    if not items:
+        return MinUniquePrefixNode()
+
+    root: MinUniquePrefixNode[T]
+
+    if len(items) == 1:
+        part = tuple(items[0])
+        root = MinUniquePrefixNode(
+            part=part,
+            count=1,
+        )
+        root._add_terminal(part, items[0])  # noqa
+        return root
+
+    root = MinUniquePrefixNode()
 
     for item in items:
         root.count += 1
@@ -55,24 +140,19 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
 
         while True:
             if pos == len(item):
-                term = node.part
-                if term in node.terminals:
-                    raise ValueError('duplicate items present')
-                node.terminals.add(term)
+                node._add_terminal(node.part, item)  # noqa
                 break
 
-            key = item[pos]
-            child = node.children.get(key)
+            child, common_len = node._match_child(item, pos)  # noqa
             if child is None:
                 part = tuple(item[pos:])
-                node.children[key] = MinUniquePrefixLenNode(
+                new_child = MinUniquePrefixNode(
                     part=part,
                     count=1,
-                    terminals={part},
                 )
+                new_child._add_terminal(part, item)  # noqa
+                node.children[part[0]] = new_child
                 break
-
-            common_len = common_prefix_len(item, pos, child.part)
 
             if common_len == len(child.part):
                 child.count += 1
@@ -82,39 +162,40 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
 
             if pos + common_len == len(item):
                 child.count += 1
-                term = child.part[:common_len]
-                if term in child.terminals:
-                    raise ValueError('duplicate items present')
-                child.terminals.add(term)
+                child._add_terminal(child.part[:common_len], item)  # noqa
                 break
 
-            split = MinUniquePrefixLenNode(
+            split = MinUniquePrefixNode(
                 part=child.part[:common_len],
                 count=child.count + 1,
             )
-            node.children[key] = split
+            node.children[item[pos]] = split
 
             old_terminals = child.terminals
-            child.terminals = set()
+            old_terminal_items = child.terminal_items
 
-            new_child_part = child.part[common_len:]
-            child.part = new_child_part
+            child.terminals = set()
+            child.terminal_items = {}
+
+            child.part = child.part[common_len:]
 
             for term in old_terminals:
+                old_item = old_terminal_items[term]
                 if len(term) <= common_len:
-                    split.terminals.add(term)
+                    split._add_terminal(term, old_item)  # noqa
                 else:
-                    child.terminals.add(term[common_len:])
+                    child._add_terminal(term[common_len:], old_item)  # noqa
 
             split.children[child.part[0]] = child
 
             pos += common_len
             new_part = tuple(item[pos:])
-            split.children[new_part[0]] = MinUniquePrefixLenNode(
+            new_child = MinUniquePrefixNode(
                 part=new_part,
                 count=1,
-                terminals={new_part},
             )
+            new_child._add_terminal(new_part, item)  # noqa
+            split.children[new_part[0]] = new_child
 
             break
 

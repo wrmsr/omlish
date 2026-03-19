@@ -1,6 +1,7 @@
 # @omlish-lite
 import unittest
 
+from ..prefixes import MinUniquePrefixNode
 from ..prefixes import build_min_unique_prefix_tree
 from ..prefixes import min_unique_prefix_len
 from ..prefixes import min_unique_prefix_lens
@@ -198,7 +199,7 @@ class TestUniquePrefixLensTrie(unittest.TestCase):
 
 class TestBuildMinUniquePrefixTree(unittest.TestCase):
     def test_empty(self) -> None:
-        root = build_min_unique_prefix_tree([])
+        root: MinUniquePrefixNode = build_min_unique_prefix_tree([])
 
         self.assertEqual(root.part, ())
         self.assertEqual(root.count, 0)
@@ -334,3 +335,81 @@ class TestBuildMinUniquePrefixTree(unittest.TestCase):
     def test_duplicate_empty_sequences_raise(self) -> None:
         with self.assertRaises(ValueError):
             build_min_unique_prefix_tree(['', ''])
+
+
+class TestMinUniquePrefixNodeLookup(unittest.TestCase):
+    def test_lookup_empty_tree_raises(self) -> None:
+        root: MinUniquePrefixNode = build_min_unique_prefix_tree([])
+        with self.assertRaises(KeyError):
+            root.lookup('a')
+
+    def test_lookup_missing_prefix_raises(self) -> None:
+        root = build_min_unique_prefix_tree(['abc', 'abd'])
+        with self.assertRaises(KeyError):
+            root.lookup('z')
+
+    def test_lookup_partial_mismatch_inside_compressed_edge_raises(self) -> None:
+        root = build_min_unique_prefix_tree(['abc123', 'abc456', 'abd000'])
+        with self.assertRaises(KeyError):
+            root.lookup('abx')
+
+    def test_lookup_exact_key_unique(self) -> None:
+        root = build_min_unique_prefix_tree(['abc123', 'abc456', 'abd000'])
+        self.assertEqual(root.lookup('abd000'), 'abd000')
+
+    def test_lookup_short_unique_prefix(self) -> None:
+        root = build_min_unique_prefix_tree(['abc123', 'abc456', 'abd000'])
+        self.assertEqual(root.lookup('abd'), 'abd000')
+
+    def test_lookup_prefix_ending_inside_compressed_edge(self) -> None:
+        root = build_min_unique_prefix_tree(['abc123', 'abc456', 'abd000'])
+        with self.assertRaises(MinUniquePrefixNode.NonUniqueKeyError):
+            self.assertEqual(root.lookup('ab'), 'abd000')
+
+    def test_lookup_non_unique_prefix_raises(self) -> None:
+        root = build_min_unique_prefix_tree(['abc123', 'abc456', 'abd000'])
+        with self.assertRaises(MinUniquePrefixNode.NonUniqueKeyError):
+            root.lookup('abc')
+
+    def test_lookup_empty_prefix_unique(self) -> None:
+        root = build_min_unique_prefix_tree(['abc'])
+        self.assertEqual(root.lookup(''), 'abc')
+
+    def test_lookup_empty_prefix_non_unique_raises(self) -> None:
+        root = build_min_unique_prefix_tree(['abc', 'abd'])
+        with self.assertRaises(MinUniquePrefixNode.NonUniqueKeyError):
+            root.lookup('')
+
+    def test_lookup_exact_shared_prefix_is_non_unique(self) -> None:
+        root = build_min_unique_prefix_tree(['foo', 'bar', 'baz'])
+        with self.assertRaises(MinUniquePrefixNode.NonUniqueKeyError):
+            root.lookup('ba')
+
+    def test_lookup_exact_unique_prefix_after_shared_prefix(self) -> None:
+        root = build_min_unique_prefix_tree(['foo', 'bar', 'baz'])
+        self.assertEqual(root.lookup('bar'), 'bar')
+        self.assertEqual(root.lookup('baz'), 'baz')
+        self.assertEqual(root.lookup('f'), 'foo')
+
+    def test_lookup_non_string_sequences(self) -> None:
+        root = build_min_unique_prefix_tree([
+            (1, 2, 3, 4),
+            (1, 2, 5, 6),
+            (1, 3, 0, 0),
+        ])
+        self.assertEqual(root.lookup((1, 3)), (1, 3, 0, 0))
+        with self.assertRaises(MinUniquePrefixNode.NonUniqueKeyError):
+            root.lookup((1, 2))
+        with self.assertRaises(KeyError):
+            root.lookup((9,))
+
+    def test_lookup_returns_full_key_not_just_suffix(self) -> None:
+        root = build_min_unique_prefix_tree(['aaaaax', 'aaaaay', 'b'])
+        self.assertEqual(root.lookup('b'), 'b')
+        self.assertEqual(root.lookup('aaaaax'), 'aaaaax')
+        self.assertEqual(root.lookup('aaaaay'), 'aaaaay')
+
+    def test_lookup_prefix_longer_than_any_match_raises(self) -> None:
+        root = build_min_unique_prefix_tree(['abc', 'abd'])
+        with self.assertRaises(KeyError):
+            root.lookup('abce')

@@ -9,7 +9,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .prefixes import (  # noqa
-        MinUniquePrefixLenNode,
+        MinUniquePrefixNode,
         build_min_unique_prefix_tree,
 
         min_unique_prefix_lens,
