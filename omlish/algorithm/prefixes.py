@@ -18,8 +18,12 @@ T = ta.TypeVar('T')
 class MinUniquePrefixLenNode(ta.Generic[T]):
     part: ta.Tuple[T, ...] = ()
     children: ta.Dict[T, 'MinUniquePrefixLenNode[T]'] = dc.field(default_factory=dict)
-    count: int = 0  # number of items sharing the prefix ending at this node
-    terminal_count: int = 0  # number of items ending exactly at this node
+    count: int = 0  # number of items in this subtree
+    terminals: ta.Set[ta.Tuple[T, ...]] = dc.field(default_factory=set)
+
+    @property
+    def terminal_count(self) -> int:
+        return len(self.terminals)
 
 
 def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniquePrefixLenNode:
@@ -27,7 +31,12 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
         return MinUniquePrefixLenNode()
 
     if len(items) == 1:
-        return MinUniquePrefixLenNode(tuple(items[0]), count=1, terminal_count=1)
+        part = tuple(items[0])
+        return MinUniquePrefixLenNode(
+            part=part,
+            count=1,
+            terminals={part},
+        )
 
     def common_prefix_len(item: 'ta.Sequence[T]', item_pos: int, part: 'ta.Tuple[T, ...]') -> int:
         n = min(len(item) - item_pos, len(part))
@@ -46,16 +55,20 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
 
         while True:
             if pos == len(item):
-                node.terminal_count += 1
+                term = node.part
+                if term in node.terminals:
+                    raise ValueError('duplicate items present')
+                node.terminals.add(term)
                 break
 
             key = item[pos]
             child = node.children.get(key)
             if child is None:
+                part = tuple(item[pos:])
                 node.children[key] = MinUniquePrefixLenNode(
-                    part=tuple(item[pos:]),
+                    part=part,
                     count=1,
-                    terminal_count=1,
+                    terminals={part},
                 )
                 break
 
@@ -67,25 +80,41 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
                 pos += common_len
                 continue
 
+            if pos + common_len == len(item):
+                child.count += 1
+                term = child.part[:common_len]
+                if term in child.terminals:
+                    raise ValueError('duplicate items present')
+                child.terminals.add(term)
+                break
+
             split = MinUniquePrefixLenNode(
                 part=child.part[:common_len],
                 count=child.count + 1,
             )
             node.children[key] = split
 
-            child.part = child.part[common_len:]
+            old_terminals = child.terminals
+            child.terminals = set()
+
+            new_child_part = child.part[common_len:]
+            child.part = new_child_part
+
+            for term in old_terminals:
+                if len(term) <= common_len:
+                    split.terminals.add(term)
+                else:
+                    child.terminals.add(term[common_len:])
+
             split.children[child.part[0]] = child
 
             pos += common_len
-            if pos == len(item):
-                split.terminal_count = 1
-            else:
-                new_part = tuple(item[pos:])
-                split.children[new_part[0]] = MinUniquePrefixLenNode(
-                    part=new_part,
-                    count=1,
-                    terminal_count=1,
-                )
+            new_part = tuple(item[pos:])
+            split.children[new_part[0]] = MinUniquePrefixLenNode(
+                part=new_part,
+                count=1,
+                terminals={new_part},
+            )
 
             break
 
@@ -93,11 +122,15 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
     while stack:
         node = stack.pop()
 
-        if node.terminal_count > 1:
-            raise ValueError('duplicate items present')
-
-        if node.terminal_count and node.children:
+        if len(node.terminals) > 1:
             raise ValueError('at least one item is a prefix of another')
+
+        if node.terminals:
+            term = next(iter(node.terminals))
+            if len(term) < len(node.part):
+                raise ValueError('at least one item is a prefix of another')
+            if node.children:
+                raise ValueError('at least one item is a prefix of another')
 
         stack.extend(node.children.values())
 

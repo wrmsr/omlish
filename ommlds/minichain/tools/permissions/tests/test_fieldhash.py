@@ -150,7 +150,7 @@ def test_field_hash():
     for _ in range(2):
         assert fh.digest_field_hash(rules) == 'b4a91821704c1616494f5036a238a2b9782b3f41'
 
-    dct0: dict[str, ToolPermissionRule] = col.make_map(((fh.digest_field_hash(r), r) for r in rules), strict=True)
+    dct0 = rules.by_digest
     print(dct0)
 
     mpl = max(min_unique_prefix_len(list(dct0)), 4)
