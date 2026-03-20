@@ -58,6 +58,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
     async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResultMessage:
         return await execute_tool_use(
             ToolContext(
+                tue,
                 tue.use,
                 *self._ctx_provider(),
                 *tue.ctx_items,
