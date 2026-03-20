@@ -118,6 +118,9 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         self._cs.add(c)
         return c
 
+    def _raise_error(self, e: Exception) -> ta.NoReturn:
+        raise e
+
     class _Request:
         def __init__(self, injector: 'AsyncInjectorImpl') -> None:
             super().__init__()
@@ -133,7 +136,8 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
             except KeyError:
                 pass
             if key in self._seen_keys:
-                raise CyclicDependencyError(key)
+                self._injector._raise_error(CyclicDependencyError(key))  # noqa
+                raise RuntimeError  # noqa
             self._seen_keys.add(key)
             return lang.empty()
 
@@ -210,7 +214,8 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         v = await self._try_provide(key, source=source)
         if v.present:
             return v.must()
-        raise UnboundKeyError(key)
+        self._raise_error(UnboundKeyError(key))
+        raise RuntimeError  # noqa
 
     #
 
@@ -221,7 +226,8 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         v = await self._try_provide(key)
         if v.present:
             return v.must()
-        raise UnboundKeyError(key)
+        self._raise_error(UnboundKeyError(key))
+        raise RuntimeError  # noqa
 
     async def provide_kwargs(self, kt: KwargsTarget) -> ta.Mapping[str, ta.Any]:
         ret: dict[str, ta.Any] = {}

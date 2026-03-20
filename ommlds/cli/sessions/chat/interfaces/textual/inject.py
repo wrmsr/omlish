@@ -55,15 +55,15 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     if cfg.enable_tools:
         if cfg.dangerous_no_tool_confirmation:
             els.append(inj.bind(
-                mc.drivers.ToolExecutionConfirmation,
-                to_ctor=mc.drivers.UnsafeAlwaysAllowToolExecutionConfirmation,
+                mc.drivers.ToolPermissionConfirmation,
+                to_ctor=mc.drivers.UnsafeAlwaysAllowToolPermissionConfirmation,
                 singleton=True,
             ))
 
         else:
             els.append(inj.bind(
-                mc.drivers.ToolExecutionConfirmation,
-                to_ctor=_tools.ChatAppToolExecutionConfirmation,
+                mc.drivers.ToolPermissionConfirmation,
+                to_ctor=_tools.ChatAppToolPermissionConfirmation,
                 singleton=True,
             ))
 

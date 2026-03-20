@@ -66,7 +66,7 @@ class PermissionsCommand(Command):
                     bold=True,
                     color=self._PERMISSION_STATE_COLORS[r.result],
                 ),
-                json.dumps(msh.marshal(r.matcher, mc.ToolPermissionMatcher)),
+                json.dumps_compact(msh.marshal(r.matcher, mc.ToolPermissionMatcher)),
             ]))
             for rmd, r in rules.by_min_digest.items()
         ]))

@@ -7,7 +7,7 @@ from .types import ChatAppGetter
 ##
 
 
-class ChatAppToolExecutionConfirmation(mc.drivers.ToolExecutionConfirmation):
+class ChatAppToolPermissionConfirmation(mc.drivers.ToolPermissionConfirmation):
     def __init__(
             self,
             *,
@@ -17,7 +17,11 @@ class ChatAppToolExecutionConfirmation(mc.drivers.ToolExecutionConfirmation):
 
         self._app = app
 
-    async def confirm_tool_execution_or_raise(self, tue: 'mc.drivers.ToolUseExecution') -> None:
+    async def confirm_tool_permission(
+            self,
+            tue: mc.drivers.ToolUseExecution,
+            target: mc.ToolPermissionTarget,
+    ) -> mc.DecidedToolPermissionState:
         tr_dct = dict(
             id=tue.use.id,
             name=tue.tce.spec.name,
@@ -25,8 +29,10 @@ class ChatAppToolExecutionConfirmation(mc.drivers.ToolExecutionConfirmation):
             # spec=msh.marshal(tce.spec),
         )
 
-        if not await (await self._app()).confirm_tool_use(
+        if await (await self._app()).confirm_tool_use(
                 'Execute requested tool?',
                 json.dumps_pretty(tr_dct),
         ):
-            raise mc.drivers.ToolExecutionRequestDeniedError
+            return mc.ToolPermissionState.ALLOW
+        else:
+            return mc.ToolPermissionState.DENY

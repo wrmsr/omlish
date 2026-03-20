@@ -29,6 +29,9 @@ class ToolPermissionDecider(lang.Abstract):
             raise PermissionDeniedToolExecutionError(target)
 
 
+#
+
+
 @ta.final
 @dc.dataclass(frozen=True)
 class StaticToolPermissionDecider(ToolPermissionDecider):
@@ -36,6 +39,9 @@ class StaticToolPermissionDecider(ToolPermissionDecider):
 
     async def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState:
         return self.state
+
+
+##
 
 
 def tool_permission_decider() -> ToolPermissionDecider:

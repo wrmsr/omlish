@@ -2,11 +2,8 @@ from omlish import check
 from omlish import inject as inj
 
 from ...tools.execution.catalog import ToolCatalog
-from ...tools.execution.permissions import StaticToolPermissionDecider
 from ...tools.execution.permissions import ToolPermissionDecider
-from ...tools.permissions.types import ToolPermissionState
 from ..configs import ToolsConfig
-from .confirmation import ConfirmingToolUseExecutor
 from .errorhandling import ErrorHandlingToolUseExecutor
 from .eventemit import EventEmittingToolUseExecutor
 from .execution import ToolContextProvider
@@ -17,6 +14,7 @@ from .injection import ToolSetBinder
 from .injection import bind_tool_context_provider_to_key
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
+from .permissions import ConfirmingToolPermissionDecider
 
 
 ##
@@ -55,8 +53,6 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
 
     els.append(exec_stack.push_bind(to_ctor=EventEmittingToolUseExecutor, singleton=True))
 
-    els.append(exec_stack.push_bind(to_ctor=ConfirmingToolUseExecutor, singleton=True))
-
     els.extend([
         inj.bind(ToolUseExecutor, to_key=exec_stack.top),
     ])
@@ -64,7 +60,8 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(ToolPermissionDecider, to_const=StaticToolPermissionDecider(ToolPermissionState.ALLOW)),
+        inj.bind(ConfirmingToolPermissionDecider, singleton=True),
+        inj.bind(ToolPermissionDecider, to_key=ConfirmingToolPermissionDecider),
         bind_tool_context_provider_to_key(ToolPermissionDecider),
     ])
 

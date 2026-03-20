@@ -108,13 +108,6 @@ with _lang.auto_proxy_init(globals()):
         ToolsConfig,
     )
 
-    from .tools.confirmation import (  # noqa
-        ToolExecutionRequestDeniedError,
-        ToolExecutionConfirmation,
-        AlwaysDenyToolExecutionConfirmation,
-        UnsafeAlwaysAllowToolExecutionConfirmation,
-    )
-
     from .tools.eventemit import (  # noqa
         ToolUseEvent,
         ToolUseResultEvent,
@@ -125,6 +118,15 @@ with _lang.auto_proxy_init(globals()):
 
         ToolUseExecution,
         ToolUseExecutor,
+    )
+
+    from .tools.permissions import (  # noqa
+        ToolPermissionConfirmation,
+
+        AlwaysDenyToolPermissionConfirmation,
+        UnsafeAlwaysAllowToolPermissionConfirmation,
+
+        ConfirmingToolPermissionDecider,
     )
 
     #

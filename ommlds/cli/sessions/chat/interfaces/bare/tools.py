@@ -7,8 +7,12 @@ from ...... import minichain as mc
 ##
 
 
-class InteractiveToolExecutionConfirmation(mc.drivers.ToolExecutionConfirmation):
-    async def confirm_tool_execution_or_raise(self, tue: 'mc.drivers.ToolUseExecution') -> None:
+class InteractiveToolPermissionConfirmation(mc.drivers.ToolPermissionConfirmation):
+    async def confirm_tool_permission(
+            self,
+            tue: mc.drivers.ToolUseExecution,
+            target: mc.ToolPermissionTarget,
+    ) -> mc.DecidedToolPermissionState:
         tr_dct = dict(
             id=tue.use.id,
             name=tue.tce.spec.name,
@@ -17,5 +21,7 @@ class InteractiveToolExecutionConfirmation(mc.drivers.ToolExecutionConfirmation)
         )
         cr = confirm_action(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}')  # FIXME: async lol
 
-        if not cr:
-            raise mc.drivers.ToolExecutionRequestDeniedError
+        if cr:
+            return mc.ToolPermissionState.ALLOW
+        else:
+            return mc.ToolPermissionState.DENY
