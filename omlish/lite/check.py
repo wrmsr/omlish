@@ -583,5 +583,15 @@ class Checks:
                 render_fmt='%s',
             )
 
+    def inline(self, v: T, c: bool, msg: CheckMessage = None, /) -> T:
+        if not c:
+            self._raise(
+                RuntimeError,
+                'State condition not met',
+                msg,
+                render_fmt='%s',
+            )
+        return v
+
 
 check = Checks()

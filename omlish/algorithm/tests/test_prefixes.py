@@ -209,9 +209,9 @@ class TestBuildMinUniquePrefixTree(unittest.TestCase):
     def test_singleton(self) -> None:
         root = build_min_unique_prefix_tree(['abc'])
 
-        self.assertEqual(root.part, tuple('abc'))
+        self.assertEqual(root.part, 'abc')
         self.assertEqual(root.count, 1)
-        self.assertEqual(root.terminals, {tuple('abc')})
+        self.assertEqual(root.terminals, {'abc'})
         self.assertEqual(root.children, {})
 
     def test_singleton_non_string_sequence(self) -> None:
@@ -231,7 +231,7 @@ class TestBuildMinUniquePrefixTree(unittest.TestCase):
         self.assertEqual(set(root.children.keys()), {'a'})
 
         a = root.children['a']
-        self.assertEqual(a.part, tuple('ab'))
+        self.assertEqual(a.part, 'ab')
         self.assertEqual(a.count, 2)
         self.assertEqual(a.terminals, set())
         self.assertEqual(set(a.children.keys()), {'c', 'd'})
@@ -239,14 +239,14 @@ class TestBuildMinUniquePrefixTree(unittest.TestCase):
         c = a.children['c']
         d = a.children['d']
 
-        self.assertEqual(c.part, tuple('c'))
+        self.assertEqual(c.part, 'c')
         self.assertEqual(c.count, 1)
-        self.assertEqual(c.terminals, {tuple('c')})
+        self.assertEqual(c.terminals, {'c'})
         self.assertEqual(c.children, {})
 
-        self.assertEqual(d.part, tuple('d'))
+        self.assertEqual(d.part, 'd')
         self.assertEqual(d.count, 1)
-        self.assertEqual(d.terminals, {tuple('d')})
+        self.assertEqual(d.terminals, {'d'})
         self.assertEqual(d.children, {})
 
     def test_greedy_compression(self) -> None:
@@ -258,7 +258,7 @@ class TestBuildMinUniquePrefixTree(unittest.TestCase):
         self.assertEqual(set(root.children.keys()), {'a'})
 
         a = root.children['a']
-        self.assertEqual(a.part, tuple('ab'))
+        self.assertEqual(a.part, 'ab')
         self.assertEqual(a.count, 3)
         self.assertEqual(a.terminals, set())
         self.assertEqual(set(a.children.keys()), {'c', 'd'})
@@ -266,27 +266,27 @@ class TestBuildMinUniquePrefixTree(unittest.TestCase):
         c = a.children['c']
         d = a.children['d']
 
-        self.assertEqual(c.part, tuple('c'))
+        self.assertEqual(c.part, 'c')
         self.assertEqual(c.count, 2)
         self.assertEqual(c.terminals, set())
         self.assertEqual(set(c.children.keys()), {'1', '4'})
 
-        self.assertEqual(d.part, tuple('d000'))
+        self.assertEqual(d.part, 'd000')
         self.assertEqual(d.count, 1)
-        self.assertEqual(d.terminals, {tuple('d000')})
+        self.assertEqual(d.terminals, {'d000'})
         self.assertEqual(d.children, {})
 
         one = c.children['1']
         four = c.children['4']
 
-        self.assertEqual(one.part, tuple('123'))
+        self.assertEqual(one.part, '123')
         self.assertEqual(one.count, 1)
-        self.assertEqual(one.terminals, {tuple('123')})
+        self.assertEqual(one.terminals, {'123'})
         self.assertEqual(one.children, {})
 
-        self.assertEqual(four.part, tuple('456'))
+        self.assertEqual(four.part, '456')
         self.assertEqual(four.count, 1)
-        self.assertEqual(four.terminals, {tuple('456')})
+        self.assertEqual(four.terminals, {'456'})
         self.assertEqual(four.children, {})
 
     def test_non_string_sequences(self) -> None:

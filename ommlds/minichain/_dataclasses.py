@@ -24864,15 +24864,18 @@ def _process_dataclass__be32a36d8f61a1565b11c6633af87b5c7148065c():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('rules',)), EqPlan(fields=('rules',)), FrozenPlan(fields=('rules',), allow_dynamic"
-        "_dunder_attrs=False), HashPlan(action='add', fields=('rules',), cache=False), InitPlan(fields=(InitPlan.Field("
-        "name='rules', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None, che"
-        "ck_type=None),), self_param='self', std_params=('rules',), kw_only_params=(), frozen=True, slots=False, post_i"
-        "nit_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='rules', kw_only=False, f"
-        "n=None),), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('rules',)), EqPlan(fields=('rules',)), FrozenPlan(fields=('rules', 'MIN_MIN_DIGEST"
+        "_LEN'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('rules',), cache=False), InitPlan(fi"
+        "elds=(InitPlan.Field(name='rules', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'"
+        "), validate=None, check_type=None), InitPlan.Field(name='MIN_MIN_DIGEST_LEN', annotation=OpRef(name='init.fiel"
+        "ds.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None)), self_param='self', std_param"
+        "s=('rules',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()"
+        "), ReprPlan(fields=(ReprPlan.Field(name='rules', kw_only=False, fn=None),), id=False, terse=False, default_fn="
+        "None)))"
     ),
-    plan_repr_sha1='c340acfb939d4af549148c7a5d1ad59810b49983',
+    plan_repr_sha1='ec3dc5ca64d06aa2b09e5c7ea0f2c752f2b83006',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -24881,7 +24884,7 @@ def _process_dataclass__be32a36d8f61a1565b11c6633af87b5c7148065c():
         ('ommlds.minichain.tools.permissions.collection', 'ToolPermissionRules'),
     ),
 )
-def _process_dataclass__c340acfb939d4af549148c7a5d1ad59810b49983():
+def _process_dataclass__ec3dc5ca64d06aa2b09e5c7ea0f2c752f2b83006():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -24929,6 +24932,7 @@ def _process_dataclass__c340acfb939d4af549148c7a5d1ad59810b49983():
 
         __dataclass___setattr_frozen_fields = {
             'rules',
+            'MIN_MIN_DIGEST_LEN',
         }
 
         def __setattr__(self, name, value):
@@ -24946,6 +24950,7 @@ def _process_dataclass__c340acfb939d4af549148c7a5d1ad59810b49983():
 
         __dataclass___delattr_frozen_fields = {
             'rules',
+            'MIN_MIN_DIGEST_LEN',
         }
 
         def __delattr__(self, name):

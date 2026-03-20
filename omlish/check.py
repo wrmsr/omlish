@@ -317,6 +317,11 @@ def state(v: bool, msg: Message = None, /) -> None:
     return check.state(v, msg)
 
 
+@_check_proxy_function
+def inline(v: T, c: bool, msg: Message = None, /) -> T:
+    return check.inline(v, c, msg)
+
+
 ##
 
 

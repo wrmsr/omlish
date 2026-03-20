@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='check.py', sha1='d0fd2e52b4227fe590add3c567328c3c4cf5f199'),
+            dict(path='check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
@@ -782,6 +782,16 @@ class Checks:
                 msg,
                 render_fmt='%s',
             )
+
+    def inline(self, v: T, c: bool, msg: CheckMessage = None, /) -> T:
+        if not c:
+            self._raise(
+                RuntimeError,
+                'State condition not met',
+                msg,
+                render_fmt='%s',
+            )
+        return v
 
 
 check = Checks()

@@ -39,7 +39,7 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='d0fd2e52b4227fe590add3c567328c3c4cf5f199'),
+            dict(path='../../omlish/lite/check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
@@ -898,6 +898,16 @@ class Checks:
                 msg,
                 render_fmt='%s',
             )
+
+    def inline(self, v: T, c: bool, msg: CheckMessage = None, /) -> T:
+        if not c:
+            self._raise(
+                RuntimeError,
+                'State condition not met',
+                msg,
+                render_fmt='%s',
+            )
+        return v
 
 
 check = Checks()

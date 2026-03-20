@@ -1,4 +1,4 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP045
 # @omlish-lite
 import dataclasses as dc
 import typing as ta
@@ -12,11 +12,14 @@ T = ta.TypeVar('T')
 
 @dc.dataclass()
 class MinUniquePrefixNode(ta.Generic[T]):
-    part: ta.Tuple[T, ...] = ()
+    part: ta.Sequence[T] = ()
+
     children: ta.Dict[T, 'MinUniquePrefixNode[T]'] = dc.field(default_factory=dict)
     count: int = 0  # number of items in this subtree
-    terminals: ta.Set[ta.Tuple[T, ...]] = dc.field(default_factory=set)
-    terminal_items: ta.Dict[ta.Tuple[T, ...], ta.Sequence[T]] = dc.field(default_factory=dict)
+
+    terminals: ta.Set[ta.Sequence[T]] = dc.field(default_factory=set)
+    terminal_items: ta.Dict[ta.Sequence[T], ta.Sequence[T]] = dc.field(default_factory=dict)
+
     min_unique_prefix_len: int = dc.field(init=False)
 
     @property
@@ -47,7 +50,7 @@ class MinUniquePrefixNode(ta.Generic[T]):
     def _common_prefix_len(
             item: ta.Sequence[T],
             item_pos: int,
-            part: ta.Tuple[T, ...],
+            part: ta.Sequence[T],
     ) -> int:
         n = min(len(item) - item_pos, len(part))
         i = 0
@@ -71,7 +74,7 @@ class MinUniquePrefixNode(ta.Generic[T]):
 
     def _add_terminal(
             self,
-            term: ta.Tuple[T, ...],
+            term: ta.Sequence[T],
             item: ta.Sequence[T],
     ) -> None:
         if term in self.terminal_items:
@@ -141,7 +144,14 @@ class MinUniquePrefixNode(ta.Generic[T]):
             node = child
 
 
-def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniquePrefixNode[T]:
+def build_min_unique_prefix_tree(
+        items: ta.Sequence[ta.Sequence[T]],
+        *,
+        subsequence: ta.Optional[ta.Callable[[ta.Sequence[T]], ta.Sequence[T]]] = None,
+) -> MinUniquePrefixNode[T]:
+    if subsequence is None:
+        subsequence = lambda x: x  # noqa
+
     root: MinUniquePrefixNode[T]
 
     if not items:
@@ -150,7 +160,7 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
         return root
 
     if len(items) == 1:
-        part = tuple(items[0])
+        part = subsequence(items[0])
         root = MinUniquePrefixNode(
             part=part,
             count=1,
@@ -174,7 +184,7 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
 
             child, common_len = node._match_child(item, pos)  # noqa
             if child is None:
-                part = tuple(item[pos:])
+                part = subsequence(item[pos:])
                 new_child = MinUniquePrefixNode(
                     part=part,
                     count=1,
@@ -218,7 +228,7 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
             split.children[child.part[0]] = child
 
             pos += common_len
-            new_part = tuple(item[pos:])
+            new_part = subsequence(item[pos:])
             new_child = MinUniquePrefixNode(
                 part=new_part,
                 count=1,
@@ -252,11 +262,18 @@ def build_min_unique_prefix_tree(items: ta.Sequence[ta.Sequence[T]]) -> MinUniqu
 ##
 
 
-def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
+def min_unique_prefix_lens(
+        items: ta.Sequence[ta.Sequence[T]],
+        *,
+        subsequence: ta.Optional[ta.Callable[[ta.Sequence[T]], ta.Sequence[T]]] = None,
+) -> ta.List[int]:
     if len(items) <= 1:
         return [0] * len(items)
 
-    root = build_min_unique_prefix_tree(items)
+    root = build_min_unique_prefix_tree(
+        items,
+        subsequence=subsequence,
+    )
 
     out = []
 
@@ -280,10 +297,17 @@ def min_unique_prefix_lens(items: ta.Sequence[ta.Sequence[T]]) -> ta.List[int]:
     return out
 
 
-def min_unique_prefix_len(items: ta.Sequence[ta.Sequence[T]]) -> int:
+def min_unique_prefix_len(
+        items: ta.Sequence[ta.Sequence[T]],
+        *,
+        subsequence: ta.Optional[ta.Callable[[ta.Sequence[T]], ta.Sequence[T]]] = None,
+) -> int:
     if len(items) <= 1:
         return 0
 
-    root = build_min_unique_prefix_tree(items)
+    root = build_min_unique_prefix_tree(
+        items,
+        subsequence=subsequence,
+    )
 
     return root.min_unique_prefix_len

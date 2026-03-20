@@ -40,7 +40,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
-            dict(path='../../lite/check.py', sha1='d0fd2e52b4227fe590add3c567328c3c4cf5f199'),
+            dict(path='../../lite/check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
@@ -1187,6 +1187,16 @@ class Checks:
                 msg,
                 render_fmt='%s',
             )
+
+    def inline(self, v: T, c: bool, msg: CheckMessage = None, /) -> T:
+        if not c:
+            self._raise(
+                RuntimeError,
+                'State condition not met',
+                msg,
+                render_fmt='%s',
+            )
+        return v
 
 
 check = Checks()

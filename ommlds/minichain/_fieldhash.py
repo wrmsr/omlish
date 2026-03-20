@@ -102,6 +102,9 @@ def render_field_hash(value: FieldHashValue) -> str:
 #
 
 
+FIELD_HASH_DIGEST_LEN = 40
+
+
 def _digest_rendered_field_hash(r: str) -> str:
     return hashlib.sha1(r.encode('utf-8')).hexdigest()  # noqa
 
