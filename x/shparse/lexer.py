@@ -19,6 +19,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import typing as ta
 
+from omlish import lang
+
 from .langs import LANG_BASH_LIKE
 from .langs import LANG_MIR_BSD_KORN
 from .langs import LANG_ZSH
@@ -28,8 +30,8 @@ from .tokens import Token
 from .tokens import UnTestOperator
 
 
-if ta.TYPE_CHECKING:
-    from .parser import Parser
+with lang.auto_proxy_import(globals()):
+    from . import parser
 
 
 ##
@@ -85,7 +87,7 @@ TODO: original go for parser_rune / parser_fill (byte-level IO, not applicable t
 const escNewl rune = utf8.RuneSelf + 1
 
 
-def parser_rune(p: Parser) -> str:
+def parser_rune(p: 'parser.Parser') -> str:
     if p.r == '\n' or p.r == escNewl {
         # p.r instead of b so that newline
         # character positions don't have col 0.
@@ -171,7 +173,7 @@ decodeRune:
 # are slid into the beginning of the buffer.
 # The number of read bytes is returned, which is at least one
 # unless a read error occurred, such as [io.EOF].
-def parser_fill(p: Parser, n: int) -> None:
+def parser_fill(p: 'parser.Parser', n: int) -> None:
     if p.readEOF or p.r == utf8.RuneSelf {
         # If the reader already gave us [io.EOF], do not try again.
         # If we decided to stop for any reason, do not bother reading either.
@@ -210,7 +212,7 @@ readAgain:
 """  # noqa
 
 
-def next_keep_spaces(p: 'Parser') -> None:
+def next_keep_spaces(p: 'parser.Parser') -> None:
     r = p.r
     if p.quote != p._HDOC_BODY and p.quote != p._HDOC_BODY_TABS:
         # Heredocs handle escaped newlines in a special way, but others do not.
@@ -253,7 +255,7 @@ def next_keep_spaces(p: 'Parser') -> None:
         p.tok = Token.EOF_
 
 
-def next_(p: 'Parser') -> None:
+def next_(p: 'parser.Parser') -> None:
     if p.r == _EOF_RUNE:
         p.tok = Token.EOF_
         return
@@ -400,7 +402,7 @@ def next_(p: 'Parser') -> None:
 
 # extended_glob determines whether we're parsing a Bash extended globbing expression.
 # For example, whether `*` or `@` are followed by `(` to form `@(foo)`.
-def extended_glob(p: 'Parser') -> bool:
+def extended_glob(p: 'parser.Parser') -> bool:
     if lang_in(p.lang, LANG_ZSH):
         # Zsh doesn't have extended globs like bash/mksh.
         # We still tokenize +( @( !( so the parser can give a clear error,
@@ -422,7 +424,7 @@ def extended_glob(p: 'Parser') -> bool:
     return False
 
 
-def reg_token(p: 'Parser', r: str) -> Token:
+def reg_token(p: 'parser.Parser', r: str) -> Token:
     if r == '\'':
         p.rune()
         return Token.SGL_QUOTE
@@ -573,7 +575,7 @@ def reg_token(p: 'Parser', r: str) -> Token:
     raise RuntimeError('unreachable')
 
 
-def dq_token(p: 'Parser', r: str) -> Token:
+def dq_token(p: 'parser.Parser', r: str) -> Token:
     if r == '"':
         p.rune()
         return Token.DBL_QUOTE
@@ -600,7 +602,7 @@ def dq_token(p: 'Parser', r: str) -> Token:
     raise RuntimeError('unreachable')
 
 
-def param_token(p: 'Parser', r: str) -> Token:
+def param_token(p: 'parser.Parser', r: str) -> Token:
     if r == '}':
         p.rune()
         return Token.RIGHT_BRACE
@@ -680,7 +682,7 @@ def param_token(p: 'Parser', r: str) -> Token:
         return Token.ILLEGAL_TOK
 
 
-def arithm_token(p: 'Parser', r: str) -> Token:
+def arithm_token(p: 'parser.Parser', r: str) -> Token:
     if r == '!':
         if p.rune() == '=':
             p.rune()
@@ -821,14 +823,14 @@ def arithm_token(p: 'Parser', r: str) -> Token:
 ##
 
 
-def new_lit(p: 'Parser', r: str) -> None:
+def new_lit(p: 'parser.Parser', r: str) -> None:
     if r != _EOF_RUNE and r != _ESC_NEWL:
         p.lit_bs = [r]
     else:
         p.lit_bs = []
 
 
-def end_lit(p: 'Parser') -> str:
+def end_lit(p: 'parser.Parser') -> str:
     if p.r == _EOF_RUNE or p.r == _ESC_NEWL:
         s = ''.join(p.lit_bs)
     else:
@@ -838,14 +840,13 @@ def end_lit(p: 'Parser') -> str:
     return s
 
 
-def is_lit_redir(p: 'Parser') -> bool:
+def is_lit_redir(p: 'parser.Parser') -> bool:
     lit = p.lit_bs[:-1] if p.lit_bs else []
     if not lit:
         return False
     lit_str = ''.join(lit)
     if lit_str[0] == '{' and lit_str[-1] == '}':
-        from .parser import valid_name
-        return valid_name(lit_str[1:-1])
+        return parser.valid_name(lit_str[1:-1])
     return _number_literal(lit_str)
 
 
@@ -868,7 +869,7 @@ def _number_literal(val: str) -> bool:
     return True
 
 
-def advance_lit_other(p: 'Parser', r: str) -> None:
+def advance_lit_other(p: 'parser.Parser', r: str) -> None:
     tok = Token.LIT_WORD_
     new_lit(p, r)
     while r != _EOF_RUNE:
@@ -907,7 +908,7 @@ def advance_lit_other(p: 'Parser', r: str) -> None:
 
 # litBsGlob reports whether the literal bytes accumulated so far
 # contain a glob metacharacter, excluding the last byte which is '('.
-def lit_bs_glob(p: 'Parser') -> bool:
+def lit_bs_glob(p: 'parser.Parser') -> bool:
     # Exclude the last byte which is the '(' that triggered this check.
     for b in (p.lit_bs[:-1] if p.lit_bs else []):
         if b in ('*', '?', '['):
@@ -921,7 +922,7 @@ def lit_bs_glob(p: 'Parser') -> bool:
 
 # zshNumRange peeks at the bytes after '<' to check for a zsh numeric
 # range glob pattern like <->, <5->, <-10>, or <5-10>.
-def zsh_num_range(p: 'Parser') -> bool:
+def zsh_num_range(p: 'parser.Parser') -> bool:
     # Peeking a handful of bytes here should be enough.
     rest = p.src[p.bsp:]
     i = 0
@@ -935,7 +936,7 @@ def zsh_num_range(p: 'Parser') -> bool:
     return i < len(rest) and rest[i] == '>'
 
 
-def advance_lit_none(p: 'Parser', r: str) -> None:
+def advance_lit_none(p: 'parser.Parser', r: str) -> None:
     p.eql_offs = -1
     tok = Token.LIT_WORD_
     new_lit(p, r)
@@ -994,7 +995,7 @@ def advance_lit_none(p: 'Parser', r: str) -> None:
     p.tok, p.val = tok, end_lit(p)
 
 
-def advance_lit_dquote(p: 'Parser', r: str) -> None:
+def advance_lit_dquote(p: 'parser.Parser', r: str) -> None:
     tok = Token.LIT_WORD_
     new_lit(p, r)
     while r != _EOF_RUNE:
@@ -1009,7 +1010,7 @@ def advance_lit_dquote(p: 'Parser', r: str) -> None:
     p.tok, p.val = tok, end_lit(p)
 
 
-def advance_lit_hdoc(p: 'Parser', r: str) -> None:
+def advance_lit_hdoc(p: 'parser.Parser', r: str) -> None:
     # Unlike the rest of nextKeepSpaces quote states, we handle escaped
     # newlines here. If lastTok==_Lit, then we know we're following an
     # escaped newline, so the first line can't end the heredoc.
@@ -1072,7 +1073,7 @@ def advance_lit_hdoc(p: 'Parser', r: str) -> None:
         r = p.rune()
 
 
-def quoted_hdoc_word(p: 'Parser') -> ta.Any:  # -> Word | None
+def quoted_hdoc_word(p: 'parser.Parser') -> ta.Any:  # -> Word | None
     r = p.r
     new_lit(p, r)
     pos = p.next_pos()
@@ -1112,7 +1113,7 @@ def quoted_hdoc_word(p: 'Parser') -> ta.Any:  # -> Word | None
         r = p.rune()
 
 
-def advance_lit_re(p: 'Parser', r: str) -> None:
+def advance_lit_re(p: 'parser.Parser', r: str) -> None:
     new_lit(p, r)
     while True:
         if r == '\\':

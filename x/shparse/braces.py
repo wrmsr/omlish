@@ -20,10 +20,15 @@
 import copy
 
 from omlish import dataclasses as dc
+from omlish import lang
 
 from .nodes import BraceExp
 from .nodes import Lit
 from .nodes import Word
+
+
+with lang.auto_proxy_import(globals()):
+    from . import lexer
 
 
 ##
@@ -140,7 +145,7 @@ def split_braces(word: Word) -> bool:
                     try:
                         int(val)  # noqa
                     except ValueError:
-                        if len(val) == 1 and ascii_letter(val[0]):
+                        if len(val) == 1 and lexer.ascii_letter(val[0]):
                             chars[i] = True
                         else:
                             broken = True

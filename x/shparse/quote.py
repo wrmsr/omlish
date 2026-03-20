@@ -20,12 +20,18 @@
 import io
 
 from omlish import dataclasses as dc
+from omlish import lang
 
 from .errors import Error
 from .langs import LANG_MIR_BSD_KORN
 from .langs import LANG_POSIX
 from .langs import LangVariant
 from .langs import lang_in
+from .lexer import _EOF_RUNE
+
+
+with lang.auto_proxy_import(globals()):
+    from . import parser
 
 
 ##
@@ -107,7 +113,7 @@ def quote(s: str, l: LangVariant) -> str | Error:
         rem = rem[1:]
         offs += 1
 
-    if not shell_chars and not non_printable and not is_keyword(s):
+    if not shell_chars and not non_printable and not parser.is_keyword(s):
         # Nothing to quote; avoid allocating.
         return s
 
@@ -146,7 +152,7 @@ def quote(s: str, l: LangVariant) -> str | Error:
                 b.write('\\t')
             elif r == '\v':
                 b.write('\\v')
-            elif r < utf8.RuneSelf or (r == utf8.RuneError and size == 1):
+            elif r < _EOF_RUNE or (r == utf8.RuneError and size == 1):
                 # \xXX, fixed at two hexadecimal characters.
                 b.write('\\x%02x' % (rem[0],))
                 # Unfortunately, mksh allows \x to consume more hex characters.
