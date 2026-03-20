@@ -542,6 +542,14 @@ with _lang.auto_proxy_init(
         NameSwitchedToolExecutor,
     )
 
+    from .tools.execution.permissions import (  # noqa
+        DecidedToolPermissionState,
+        ToolPermissionDecider,
+        StaticToolPermissionDecider,
+
+        tool_permission_decider,
+    )
+
     from .tools.execution.reflect import (  # noqa
         reflect_tool_catalog_entry,
     )
@@ -566,10 +574,6 @@ with _lang.auto_proxy_init(
         ToolPermissionState,
 
         ToolPermissionTarget,
-
-        DecidedToolPermissionState,
-        ToolPermissionDecider,
-        StaticToolPermissionDecider,
 
         ToolPermissionMatcher,
 
