@@ -1,0 +1,18 @@
+#app-grid {
+    layout: vertical;
+    /* border: greenyellow; */
+}
+
+#tree-view {
+    background: $panel;
+    border-right: wide $background;
+    dock:left;
+    width: 0.5fr;
+    overflow-x: auto;
+    /* border: dodgerblue; */
+} 
+
+#json-document {
+    height: auto;
+    /* border: mediumvioletred; */
+}

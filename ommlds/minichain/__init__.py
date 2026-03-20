@@ -569,6 +569,7 @@ with _lang.auto_proxy_init(
 
         DecidedToolPermissionState,
         ToolPermissionDecider,
+        StaticToolPermissionDecider,
 
         ToolPermissionMatcher,
 

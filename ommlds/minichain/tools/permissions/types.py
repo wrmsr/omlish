@@ -33,8 +33,17 @@ DecidedToolPermissionState: ta.TypeAlias = ta.Literal[ToolPermissionState.DENY, 
 
 class ToolPermissionDecider(lang.Abstract):
     @abc.abstractmethod
-    def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState:
+    def decide(self, target: ToolPermissionTarget) -> ta.Awaitable[DecidedToolPermissionState]:
         raise NotImplementedError
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class StaticToolPermissionDecider(ToolPermissionDecider):
+    state: DecidedToolPermissionState
+
+    async def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState:
+        return self.state
 
 
 ##

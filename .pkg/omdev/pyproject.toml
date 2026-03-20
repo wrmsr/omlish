@@ -108,6 +108,9 @@ exclude = [
 'omdev.tools.jsonview' = [
     'resources/*',
 ]
+'omdev.tui.apps.jtree' = [
+    'styles/*.tcss',
+]
 'omdev.pyproject' = [
     'resources/*',
 ]

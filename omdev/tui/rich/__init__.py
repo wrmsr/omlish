@@ -18,11 +18,18 @@ with _lang.auto_proxy_init(globals()):
     from rich.color_triplet import ColorTriplet  # noqa
     from rich.console import Console  # noqa
     from rich.console import Group  # noqa
+    from rich.highlighter import Highlighter  # noqa
+    from rich.highlighter import ISO8601Highlighter  # noqa
+    from rich.highlighter import JSONHighlighter  # noqa
+    from rich.highlighter import NullHighlighter  # noqa
+    from rich.highlighter import RegexHighlighter  # noqa
+    from rich.highlighter import ReprHighlighter  # noqa
     from rich.live import Live  # noqa
     from rich.markdown import Markdown  # noqa
     from rich.segment import Segment  # noqa
     from rich.segment import SegmentLines  # noqa
     from rich.style import Style  # noqa
+    from rich.syntax import Syntax  # noqa
     from rich.syntax import Syntax  # noqa
     from rich.table import Table  # noqa
     from rich.text import Text  # noqa

@@ -227,6 +227,7 @@ with _lang.auto_proxy_init(globals()):
     from textual.widgets.option_list import DuplicateID  # noqa
     from textual.widgets.option_list import Option  # noqa
     from textual.widgets.option_list import OptionDoesNotExist  # noqa
+    from textual.widgets.tree import TreeNode  # noqa
 
     ##
 
