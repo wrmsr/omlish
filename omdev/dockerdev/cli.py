@@ -13,6 +13,7 @@ TODO:
  - build --no-cache / cache bust
    - build args
  - auto go/zig vers
+ - `run --pull=never`, `build --pull=false`
 
 ====
 
@@ -127,8 +128,10 @@ class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
 
+        ap.arg('--mount', action='append'),
         ap.arg('-C', '--mount-caches', action='store_true'),
         ap.arg('-D', '--mount-docker-sock', action='store_true'),
+
         ap.arg('-P', '--privileged', action='store_true'),
 
         ap.arg('--no-host-platform', action='store_true'),
@@ -162,6 +165,9 @@ class Cli(ap.Cli):
 
         if self.args.privileged:
             run_args.append('--privileged')
+
+        if self.args.mount:
+            run_args.extend([f'--mount={m}' for m in self.args.mount])
 
         if self.args.mount_docker_sock:
             run_args.append('--mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock')
