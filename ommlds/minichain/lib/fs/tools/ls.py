@@ -22,7 +22,7 @@ async def execute_ls_tool(
     """
 
     ctx = tool_fs_context()
-    ctx.check_stat_dir(dir_path)
+    await ctx.check_stat_dir(dir_path)
 
     out = io.StringIO()
     out.write('<dir>\n')

@@ -77,7 +77,7 @@ async def execute_edit_tool(
         raise EmptyNewStringError(file_path)
 
     ctx = tool_fs_context()
-    ctx.check_stat_file(file_path, text=True, write=True)
+    await ctx.check_stat_file(file_path, text=True, write=True)
 
     with open(file_path) as f:  # noqa
         old_file = f.read()

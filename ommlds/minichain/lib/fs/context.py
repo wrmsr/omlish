@@ -38,7 +38,7 @@ class FsContext:
 
     #
 
-    def check_requested_path(self, req_path: str) -> None:
+    async def check_requested_path(self, req_path: str) -> None:
         abs_req_path = os.path.abspath(req_path)
 
         if (
@@ -55,11 +55,11 @@ class FsContext:
 
     #
 
-    def check_stat_dir(
+    async def check_stat_dir(
             self,
             req_path: str,
     ) -> os.stat_result:
-        self.check_requested_path(req_path)
+        await self.check_requested_path(req_path)
 
         try:
             st = os.stat(req_path)
@@ -81,14 +81,14 @@ class FsContext:
 
         return st
 
-    def check_stat_file(
+    async def check_stat_file(
             self,
             req_path: str,
             *,
             text: bool = False,
             write: bool = False,
     ) -> os.stat_result:
-        self.check_requested_path(req_path)
+        await self.check_requested_path(req_path)
 
         try:
             st = os.stat(req_path)

@@ -65,7 +65,7 @@ async def execute_read_tool(
         num_lines: int = DEFAULT_MAX_NUM_LINES,
 ) -> str:
     ctx = tool_fs_context()
-    ctx.check_stat_file(file_path, text=True)
+    await ctx.check_stat_file(file_path, text=True)
 
     out = io.StringIO()
     out.write('<file>\n')

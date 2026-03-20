@@ -1,7 +1,8 @@
 import os.path
 
+import pytest
+
 from omlish import check
-from omlish import lang
 
 from ......chat.messages import ToolUse
 from ......chat.tools.execution import execute_tool_use
@@ -15,7 +16,8 @@ from ..execution import recursive_ls_tool
 ##
 
 
-def test_recursive_ls_tool():
+@pytest.mark.asyncs('asyncio')
+async def test_recursive_ls_tool():
     rlt = recursive_ls_tool()
 
     print(rlt.spec)
@@ -38,14 +40,14 @@ def test_recursive_ls_tool():
         check.not_none(rlt.name): rlt.executor(),
     })
 
-    tool_exec_result = lang.run_maysync(execute_tool_use(
+    tool_exec_result = await execute_tool_use(
         ToolContext(
             tool_exec_request,
             FsContext(root_dir=root_dir),
         ),
         tool_executor,
         tool_exec_request,
-    ))
+    )
 
     print()
     print(tool_exec_result.tur.c)

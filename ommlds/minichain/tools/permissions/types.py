@@ -25,6 +25,21 @@ class ToolPermissionTarget(fh.FieldHashable, lang.Abstract, lang.PackageSealed):
     pass
 
 
+##
+
+
+DecidedToolPermissionState: ta.TypeAlias = ta.Literal[ToolPermissionState.DENY, ToolPermissionState.ALLOW]
+
+
+class ToolPermissionDecider(lang.Abstract):
+    @abc.abstractmethod
+    def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState:
+        raise NotImplementedError
+
+
+##
+
+
 class ToolPermissionMatcher(fh.FieldHashable, lang.Abstract):
     @abc.abstractmethod
     def match(self, target: ToolPermissionTarget) -> bool:
