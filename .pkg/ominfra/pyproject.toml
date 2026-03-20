@@ -73,15 +73,15 @@ exclude = [
     'AUTHORS',
     'DESIGN.md',
 ]
-'ominfra.clouds.aws.models.services' = [
-    '*.toml',
-]
 'ominfra.clouds.aws.instancetypes' = [
     'cache.json.gz',
 ]
-'ominfra.nginx' = [
-    'patches/nginx/*',
+'ominfra.clouds.aws.models.services' = [
+    '*.toml',
 ]
 'ominfra.manage.targets' = [
     'bestpython.sh',
+]
+'ominfra.nginx' = [
+    'patches/nginx/*',
 ]

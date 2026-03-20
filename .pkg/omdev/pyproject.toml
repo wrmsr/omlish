@@ -105,14 +105,8 @@ exclude = [
     'AUTHORS',
     'DESIGN.md',
 ]
-'omdev.tools.jsonview' = [
-    'resources/*',
-]
-'omdev.tui.apps.jtree' = [
-    'styles/*.tcss',
-]
-'omdev.pyproject' = [
-    'resources/*',
+'omdev.cc' = [
+    'cdeps.toml',
 ]
 'omdev.dockerdev' = [
     'config.toml',
@@ -122,6 +116,12 @@ exclude = [
     'resources/depsets/*',
     'resources/fragments/*',
 ]
-'omdev.cc' = [
-    'cdeps.toml',
+'omdev.pyproject' = [
+    'resources/*',
+]
+'omdev.tools.jsonview' = [
+    'resources/*',
+]
+'omdev.tui.apps.jtree' = [
+    'styles/*.tcss',
 ]

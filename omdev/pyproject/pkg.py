@@ -390,7 +390,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         epd = dict(st.pop('exclude_package_data', {}))
 
         cpd = self._collect_pkg_data()
-        for pdk, pdv in cpd.items():
+        for pdk, pdv in sorted(cpd.items(), key=lambda kv: kv[0]):
             pdl = TomlWriter.Literal(f"'{pdk}'")
             if pdv.inc:
                 pd.setdefault(pdl, []).extend(sorted(set(pdv.inc)))

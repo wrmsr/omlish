@@ -167,13 +167,13 @@ exclude = [
 'omlish' = [
     'CODESTYLE.md',
 ]
+'omlish.cexts' = [
+    'include/omlish/*',
+]
 'omlish.specs.jsonschema' = [
     'schemas/*',
     'schemas/draft202012/*',
     'schemas/draft202012/vocabularies/*',
-]
-'omlish.cexts' = [
-    'include/omlish/*',
 ]
 'omlish.text.abnf' = [
     'docs/*',
