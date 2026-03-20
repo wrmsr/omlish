@@ -1,15 +1,15 @@
 import abc
 import typing as ta
 
-from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 from ...chat.messages import ToolUseResultMessage
 from ...chat.tools.execution import execute_tool_use
 from ...tools.execution.catalog import ToolCatalog
+from ...tools.execution.catalog import ToolCatalogEntry
 from ...tools.execution.context import ToolContext
 from ...tools.types import ToolUse
-from .confirmation import ToolExecutionConfirmation
 
 
 ##
@@ -25,14 +25,22 @@ ToolContextProviders = ta.NewType('ToolContextProviders', ta.Sequence[ToolContex
 ##
 
 
+@ta.final
+@dc.dataclass(frozen=True)
+class ToolUseExecution(lang.Final):
+    use: ToolUse
+    tce: ToolCatalogEntry
+
+    ctx_items: ta.Sequence[ta.Any] = ()
+
+
 class ToolUseExecutor(lang.Abstract):
     @abc.abstractmethod
-    def execute_tool_use(
-            self,
-            use: ToolUse,
-            *ctx_items: ta.Any,
-    ) -> ta.Awaitable[ToolUseResultMessage]:
+    def execute_tool_use(self, tue: ToolUseExecution) -> ta.Awaitable[ToolUseResultMessage]:
         raise NotImplementedError
+
+
+##
 
 
 class ToolUseExecutorImpl(ToolUseExecutor):
@@ -41,29 +49,19 @@ class ToolUseExecutorImpl(ToolUseExecutor):
             *,
             catalog: ToolCatalog,
             ctx_provider: ToolContextProvider,
-            confirmation: ToolExecutionConfirmation,
     ) -> None:
         super().__init__()
 
         self._catalog = catalog
         self._ctx_provider = ctx_provider
-        self._confirmation = confirmation
 
-    async def execute_tool_use(
-            self,
-            use: ToolUse,
-            *ctx_items: ta.Any,
-    ) -> ToolUseResultMessage:
-        tce = self._catalog.by_name[check.non_empty_str(use.name)]
-
-        await self._confirmation.confirm_tool_execution_or_raise(use, tce)
-
+    async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResultMessage:
         return await execute_tool_use(
             ToolContext(
-                use,
+                tue.use,
                 *self._ctx_provider(),
-                *ctx_items,
+                *tue.ctx_items,
             ),
-            tce.executor(),
-            use,
+            tue.tce.executor(),
+            tue.use,
         )

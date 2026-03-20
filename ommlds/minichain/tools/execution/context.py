@@ -14,6 +14,11 @@ T = ta.TypeVar('T')
 
 
 @ta.final
+class ToolContextKeyError(KeyError):
+    pass
+
+
+@ta.final
 class ToolContext(lang.Final):
     def __init__(self, *items: ta.Any) -> None:
         super().__init__()
@@ -45,7 +50,7 @@ class ToolContext(lang.Final):
 
         lst: ta.Sequence = self.get_any(cls)
         if not lst:
-            raise KeyError(cls)
+            raise ToolContextKeyError(cls)
         return check.single(lst)
 
     def get_any(self, cls: type | tuple[type, ...]) -> ta.Sequence[T]:

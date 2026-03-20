@@ -17,15 +17,11 @@ class ChatAppToolExecutionConfirmation(mc.drivers.ToolExecutionConfirmation):
 
         self._app = app
 
-    async def confirm_tool_execution_or_raise(
-            self,
-            use: 'mc.ToolUse',
-            entry: 'mc.ToolCatalogEntry',
-    ) -> None:
+    async def confirm_tool_execution_or_raise(self, tue: 'mc.drivers.ToolUseExecution') -> None:
         tr_dct = dict(
-            id=use.id,
-            name=entry.spec.name,
-            args=use.args,
+            id=tue.use.id,
+            name=tue.tce.spec.name,
+            args=tue.use.args,
             # spec=msh.marshal(tce.spec),
         )
 

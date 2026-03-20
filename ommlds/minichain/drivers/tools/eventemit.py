@@ -1,10 +1,8 @@
-import typing as ta
-
 from ...chat.messages import ToolUseResultMessage
-from ...tools.types import ToolUse
 from ..events.manager import EventsManager
 from .events import ToolUseEvent
 from .events import ToolUseResultEvent
+from .execution import ToolUseExecution
 from .execution import ToolUseExecutor
 
 
@@ -23,15 +21,11 @@ class EventEmittingToolUseExecutor(ToolUseExecutor):
         self._wrapped = wrapped
         self._events = events
 
-    async def execute_tool_use(
-            self,
-            use: ToolUse,
-            *ctx_items: ta.Any,
-    ) -> ToolUseResultMessage:
-        await self._events.emit_event(ToolUseEvent(use))
+    async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResultMessage:
+        await self._events.emit_event(ToolUseEvent(tue))
 
-        out = await self._wrapped.execute_tool_use(use, *ctx_items)
+        out = await self._wrapped.execute_tool_use(tue)
 
-        await self._events.emit_event(ToolUseResultEvent(out))
+        await self._events.emit_event(ToolUseResultEvent(tue, out))
 
         return out

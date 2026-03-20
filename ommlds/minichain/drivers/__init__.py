@@ -123,6 +123,7 @@ with _lang.auto_proxy_init(globals()):
     from .tools.execution import (  # noqa
         ToolContextProvider,
 
+        ToolUseExecution,
         ToolUseExecutor,
     )
 

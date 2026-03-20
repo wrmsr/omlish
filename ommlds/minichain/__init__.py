@@ -520,6 +520,7 @@ with _lang.auto_proxy_init(
     )
 
     from .tools.execution.context import (  # noqa
+        ToolContextKeyError,
         ToolContext,
 
         bind_tool_context,
