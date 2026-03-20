@@ -398,8 +398,8 @@ class StdRenderer(Renderer):
     @Renderer.render.register
     def render_union(self, o: Union) -> tp.Part:
         return list(lang.interleave(
-            (self.render(s) for s in o.selects),
             'union all' if o.all else 'union',
+            (self.render(s) for s in o.selects),
         ))
 
     # updates

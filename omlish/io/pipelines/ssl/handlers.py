@@ -149,7 +149,8 @@ class SslIoPipelineHandler(
         # for data yet.
         if self._state in (self.State.NEW, self.State.HANDSHAKE) and self._is_ready_for_input:
             self._is_ready_for_input = False
-            ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+            if not IoPipelineFlow.is_auto_read(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
             return
 
         # REASON 2: Downstream asked for data (_read_requested), but our internal BIO and SSL buffers are dry
@@ -160,7 +161,8 @@ class SslIoPipelineHandler(
                 self._is_ready_for_input = False
                 # We don't reset _read_requested here! We keep it True so that when the bytes eventually arrive,
                 # inbound() knows to pump them.
-                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+                if not IoPipelineFlow.is_auto_read(ctx):
+                    ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
     def _pump_plaintext_in(self, ctx: IoPipelineHandlerContext) -> bool:
         """Read decrypted data from SSLObject -> inbound plaintext."""
@@ -458,7 +460,8 @@ class SslIoPipelineHandler(
                 self._state = self.State.SHUTTING_DOWN
                 if isinstance(se, ssl.SSLWantReadError):
                     self._is_ready_for_input = False
-                    ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+                    if not IoPipelineFlow.is_auto_read(ctx):
+                        ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
                 # Save the FinalOutput; we'll feed it once unwrap completes.
                 self._pending_final_output = msg
                 ctx.mark_propagated('outbound', msg)

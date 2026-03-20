@@ -70,7 +70,7 @@ class SseDecoder:
                 self._reconnection_time = int(value)
 
     def _dispatch_event(self) -> SseEvent:
-        data = b''.join(lang.interleave(self._data, b'\n'))
+        data = b''.join(lang.interleave(b'\n', self._data))
 
         e = SseEvent(
             type=self._event_type,

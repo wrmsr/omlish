@@ -1,3 +1,5 @@
+import os
+
 from omlish import inject as inj
 from omlish import lang
 
@@ -50,8 +52,13 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(mc.ListToolPermissionsManager, singleton=True),
-        inj.bind(mc.ToolPermissionsManager, to_key=mc.ListToolPermissionsManager),
+        inj.bind(mc.SimpleToolPermissionsManager([
+            mc.ToolPermissionRule(
+                mc.GlobFsToolPermissionMatcher(os.path.join(os.getcwd(), '**/*'), ['r']),  # FIXME: lol
+                mc.ToolPermissionState.ALLOW,
+            ),
+        ])),
+        inj.bind(mc.ToolPermissionsManager, to_key=mc.SimpleToolPermissionsManager),
     ])
 
     #

@@ -569,7 +569,7 @@ with _lang.auto_proxy_init(
 
     from .tools.permissions.managers import (  # noqa
         ToolPermissionsManager,
-        ListToolPermissionsManager,
+        SimpleToolPermissionsManager,
     )
 
     from .tools.permissions.types import (  # noqa

@@ -91,7 +91,7 @@ class FacadeText(lang.Abstract, lang.Sealed):
         if not delim:
             return FacadeText._BLANK
 
-        return ConcatFacadeText(tuple(lang.interleave(map(FacadeText.of, items), delim)))
+        return ConcatFacadeText(tuple(lang.interleave(delim, map(FacadeText.of, items))))
 
     def style(
             self: CanFacadeText,

@@ -47,7 +47,7 @@ def chunk(n: int, iterable: ta.Iterable[T], strict: bool = False) -> ta.Iterator
         return iterator
 
 
-def interleave(vs: ta.Iterable[T], d: T) -> ta.Iterator[T]:
+def interleave(d: T, vs: ta.Iterable[T]) -> ta.Iterator[T]:
     for i, v in enumerate(vs):
         if i:
             yield d

@@ -639,8 +639,8 @@ class WordPart(Node, lang.Abstract):
 # is lost, but the end position is not.
 @dc.dataclass(kw_only=True)
 class Lit(WordPart):
-    value_pos: Pos = Pos()
-    value_end: Pos = Pos()
+    value_pos: Pos = dc.field(default_factory=Pos)
+    value_end: Pos = dc.field(default_factory=Pos)
     value: str
 
     def pos(self) -> Pos:
