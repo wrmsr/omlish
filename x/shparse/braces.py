@@ -21,18 +21,18 @@ import copy
 
 from omlish import dataclasses as dc
 
+from .nodes import BraceExp
 from .nodes import Lit
 from .nodes import Word
-from .nodes import BraceExp
 
 
 ##
 
 
-LIT_LEFT_BRACE  = Lit(value="{")
-LIT_COMMA       = Lit(value=",")
-LIT_DOTS        = Lit(value="..")
-LIT_RIGHT_BRACE = Lit(value="}")
+LIT_LEFT_BRACE  = Lit(value='{')
+LIT_COMMA       = Lit(value=',')
+LIT_DOTS        = Lit(value='..')
+LIT_RIGHT_BRACE = Lit(value='}')
 
 
 # SplitBraces parses brace expansions within a word's literal parts.
@@ -91,20 +91,20 @@ def split_braces(word: Word) -> bool:
                 l2 = copy.copy(lit)
                 l2.value = l2.value[last:j]
                 add_lit(l2)
-                
+
             if lit.value[j] == '{':
                 add_lit_idx()
                 acc = Word()
                 cur = BraceExp(elems=[acc])
                 opn.append(cur)
-                
+
             elif lit.value[j] == ',':
                 if cur is None:
                     continue
                 add_lit_idx()
                 acc = Word()
                 cur.elems.append(acc)
-                
+
             elif lit.value[j] == '.':
                 if cur is None:
                     continue
@@ -115,12 +115,12 @@ def split_braces(word: Word) -> bool:
                 acc = Word()
                 cur.elems.append(acc)
                 j += 1
-                
+
             elif lit.value[j] == '}':
                 if cur is None:
                     continue
                 add_lit_idx()
-                
+
                 br = pop()
                 if len(br.elems) == 1:
                     # return {x} to a non-brace
@@ -128,11 +128,11 @@ def split_braces(word: Word) -> bool:
                     acc.parts.extend(br.elems[0].parts)
                     add_lit(LIT_RIGHT_BRACE)
                     break
-                    
+
                 if not br.sequence:
                     acc.parts.append(br)
                     break
-                    
+
                 chars = [False, False]
                 broken = False
                 for i, elem in enumerate(br.elems[:2]):
@@ -144,7 +144,7 @@ def split_braces(word: Word) -> bool:
                             chars[i] = True
                         else:
                             broken = True
-                        
+
                 if len(br.elems) == 3:
                     # increment must be a number
                     val = br.elems[2].lit()
@@ -152,7 +152,7 @@ def split_braces(word: Word) -> bool:
                         int(val)  # noqa
                     except ValueError:
                         broken = True
-                        
+
                 # are start and end both chars or
                 # non-chars?
                 if chars[0] != chars[1]:
@@ -168,19 +168,19 @@ def split_braces(word: Word) -> bool:
                         add_lit(LIT_DOTS)
                     acc.parts.extend(elem.parts)
                 add_lit(LIT_RIGHT_BRACE)
-                
+
             else:
                 continue
-                
+
             last = j + 1
-            
+
         if last == 0:
             add_lit(lit)
         else:
             left = copy.copy(lit)
             left.value = left.value[last:]
             add_lit(left)
-            
+
     # open braces that were never closed fall back to non-braces
     while acc != top:
         br = pop()

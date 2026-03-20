@@ -35,7 +35,7 @@ from .langs import lang_in
 class QuoteError(Error):
     offset: int
     s: str
-    
+
     @property
     def message(self) -> str:
         return f'cannot quote character at offset {self.offset}: {self.s}'
@@ -71,11 +71,11 @@ def quote(s: str, l: LangVariant) -> str | Error:
         # Special case; an empty string must always be quoted,
         # as otherwise it expands to zero fields.
         return "''"
-        
+
     shell_chars = False
     non_printable = False
     offs = 0
-    
+
     rem = s
     while len(rem) > 0:
         r = rem[0]
@@ -95,7 +95,7 @@ def quote(s: str, l: LangVariant) -> str | Error:
             # Might result in globbing.
             '*', '?', '[',
             # Might result in an assignment.
-            '='
+            '=',
         ):
             shell_chars = True
         elif r == '\x00':
@@ -106,7 +106,7 @@ def quote(s: str, l: LangVariant) -> str | Error:
             non_printable = True
         rem = rem[1:]
         offs += 1
-        
+
     if not shell_chars and not non_printable and not is_keyword(s):
         # Nothing to quote; avoid allocating.
         return s
@@ -148,7 +148,7 @@ def quote(s: str, l: LangVariant) -> str | Error:
                 b.write('\\v')
             elif r < utf8.RuneSelf or (r == utf8.RuneError and size == 1):
                 # \xXX, fixed at two hexadecimal characters.
-                b.write("\\x%02x" % (rem[0],))
+                b.write('\\x%02x' % (rem[0],))
                 # Unfortunately, mksh allows \x to consume more hex characters.
                 # Ensure that we don't allow it to read more than two.
                 if lang_in(l, LANG_MIR_BSD_KORN):
@@ -164,10 +164,10 @@ def quote(s: str, l: LangVariant) -> str | Error:
                 return QuoteError(offs, QUOTE_ERR_MKSH)
             elif r < 0x10000:
                 # \uXXXX, fixed at four hexadecimal characters.
-                b.write("\\u%04x" % (r,))
+                b.write('\\u%04x' % (r,))
             else:
                 # \UXXXXXXXX, fixed at eight hexadecimal characters.
-                b.write("\\U%08x" % (r,))
+                b.write('\\U%08x' % (r,))
             rem = rem[size:]
             last_requote_if_hex = next_requote_if_hex
             offs += size

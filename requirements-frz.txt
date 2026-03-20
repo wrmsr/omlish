@@ -105,7 +105,7 @@ ipython_pygments_lexers==1.1.1
 ipywidgets==8.1.8
 isoduration==20.11.0
 jaraco.classes==3.4.0
-jaraco.context==6.1.1
+jaraco.context==6.1.2
 jaraco.functools==4.4.0
 jedi==0.19.2
 jedi-language-server==0.46.0
@@ -113,7 +113,7 @@ Jinja2==3.1.6
 jmespath==1.1.0
 joblib==1.5.3
 json5==0.13.0
-jsonpointer==3.0.0
+jsonpointer==3.1.0
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 jupyter==1.1.1

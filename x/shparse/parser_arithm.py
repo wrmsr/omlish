@@ -18,9 +18,8 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 r"""
+TODO: original go:
 
-# compact specifies whether we allow spaces between expressions.
-# This is true for let
 func (p *Parser) arithmExpr(compact bool) ArithmExpr {
     return p.arithmExprComma(compact)
 }
@@ -29,77 +28,6 @@ func (p *Parser) arithmExpr(compact bool) ArithmExpr {
 
 func (p *Parser) arithmExprComma(compact bool) ArithmExpr {
     return p.arithmExprBinary(compact, p.arithmExprAssign, Comma)
-}
-
-func (p *Parser) arithmExprAssign(compact bool) ArithmExpr {
-    # Assign is different from the other binary operators because it's
-    # right-associative and needs to check that it's placed after a name
-    value := p.arithmExprTernary(compact)
-    switch BinAritOperator(p.tok) {
-    case AddAssgn, SubAssgn, MulAssgn, QuoAssgn, RemAssgn, AndAssgn,
-        OrAssgn, XorAssgn, ShlAssgn, ShrAssgn, Assgn,
-        AndBoolAssgn, OrBoolAssgn, XorBoolAssgn, PowAssgn:
-        if compact && p.spaced {
-            return value
-        }
-        if !isArithName(value) {
-            p.posErr(p.pos, "%#q must follow a name", p.tok)
-        }
-        pos := p.pos
-        tok := p.tok
-        p.nextArithOp(compact)
-        y := p.arithmExprAssign(compact)
-        if y == nil {
-            p.followErrExp(pos, tok)
-        }
-        return &BinaryArithm{
-            OpPos: pos,
-            Op:    BinAritOperator(tok),
-            X:     value,
-            Y:     y,
-        }
-    }
-    return value
-}
-
-func (p *Parser) arithmExprTernary(compact bool) ArithmExpr {
-    value := p.arithmExprLor(compact)
-    if BinAritOperator(p.tok) != TernQuest || (compact && p.spaced) {
-        return value
-    }
-
-    if value == nil {
-        p.curErr("%#q must follow an expression", p.tok)
-    }
-    questPos := p.pos
-    p.nextArithOp(compact)
-    if BinAritOperator(p.tok) == TernColon {
-        p.followErrExp(questPos, TernQuest)
-    }
-    trueExpr := p.arithmExpr(compact)
-    if trueExpr == nil {
-        p.followErrExp(questPos, TernQuest)
-    }
-    if BinAritOperator(p.tok) != TernColon {
-        p.posErr(questPos, "ternary operator missing %#q after %#q", colon, quest)
-    }
-    colonPos := p.pos
-    p.nextArithOp(compact)
-    falseExpr := p.arithmExprTernary(compact)
-    if falseExpr == nil {
-        p.followErrExp(colonPos, TernColon)
-    }
-    return &BinaryArithm{
-        OpPos: questPos,
-        Op:    TernQuest,
-        X:     value,
-        Y: &BinaryArithm{
-            OpPos: colonPos,
-            Op:    TernColon,
-            X:     trueExpr,
-            Y:     falseExpr,
-        },
-    }
 }
 
 func (p *Parser) arithmExprLor(compact bool) ArithmExpr {
@@ -141,246 +69,386 @@ func (p *Parser) arithmExprAddition(compact bool) ArithmExpr {
 func (p *Parser) arithmExprMultiplication(compact bool) ArithmExpr {
     return p.arithmExprBinary(compact, p.arithmExprPower, Mul, Quo, Rem)
 }
+"""  # noqa
+import typing as ta
 
-func (p *Parser) arithmExprPower(compact bool) ArithmExpr {
-    # Power is different from the other binary operators because it's right-associative
-    value := p.arithmExprUnary(compact)
-    if BinAritOperator(p.tok) != Pow || (compact && p.spaced) {
+from .langs import LANG_ZSH
+from .langs import lang_in
+from .nodes import RECOVERED_POS
+from .nodes import ArithmExpr
+from .nodes import BinaryArithm
+from .nodes import Lit
+from .nodes import ParamExp
+from .nodes import ParenArithm
+from .nodes import Pos
+from .nodes import UnaryArithm
+from .nodes import Word
+from .tokens import BinAritOperator
+from .tokens import Token
+from .tokens import UnAritOperator
+
+
+if ta.TYPE_CHECKING:
+    from .parser import Parser
+
+
+##
+
+
+# compact specifies whether we allow spaces between expressions.
+# This is true for let
+def arithm_expr(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_comma(p, compact)
+
+
+# These function names are inspired by Bash's expr.c
+
+def arithm_expr_comma(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_assign, BinAritOperator.COMMA)
+
+
+def arithm_expr_assign(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    # Assign is different from the other binary operators because it's
+    # right-associative and needs to check that it's placed after a name
+    value = arithm_expr_ternary(p, compact)
+    try:
+        op = BinAritOperator(p.tok)
+    except ValueError:
         return value
-    }
+    if op in (
+        BinAritOperator.ADD_ASSGN, BinAritOperator.SUB_ASSGN, BinAritOperator.MUL_ASSGN,
+        BinAritOperator.QUO_ASSGN, BinAritOperator.REM_ASSGN, BinAritOperator.AND_ASSGN,
+        BinAritOperator.OR_ASSGN, BinAritOperator.XOR_ASSGN, BinAritOperator.SHL_ASSGN,
+        BinAritOperator.SHR_ASSGN, BinAritOperator.ASSGN,
+        BinAritOperator.AND_BOOL_ASSGN, BinAritOperator.OR_BOOL_ASSGN,
+        BinAritOperator.XOR_BOOL_ASSGN, BinAritOperator.POW_ASSGN,
+    ):
+        if compact and p.spaced:
+            return value
+        if not is_arith_name(value):
+            p.pos_err(p.pos, '%s must follow a name', p.tok)
+        pos = p.pos
+        tok = p.tok
+        next_arith_op(p, compact)
+        y = arithm_expr_assign(p, compact)
+        if y is None:
+            p.follow_err_exp(pos, tok)
+        return BinaryArithm(
+            op_pos=pos,
+            op=BinAritOperator(tok),
+            x=value,
+            y=y,
+        )
+    return value
 
-    if value == nil {
-        p.curErr("%#q must follow an expression", p.tok)
-    }
 
-    op := p.tok
-    pos := p.pos
-    p.nextArithOp(compact)
-    y := p.arithmExprPower(compact)
-    if y == nil {
-        p.followErrExp(pos, op)
-    }
-    return &BinaryArithm{
-        OpPos: pos,
-        Op:    BinAritOperator(op),
-        X:     value,
-        Y:     y,
-    }
-}
+def arithm_expr_ternary(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    value = arithm_expr_lor(p, compact)
+    try:
+        op = BinAritOperator(p.tok)
+    except ValueError:
+        return value
+    if op != BinAritOperator.TERN_QUEST or (compact and p.spaced):
+        return value
 
-func (p *Parser) arithmExprUnary(compact bool) ArithmExpr {
-    if !compact {
-        p.got(_Newl)
-    }
+    if value is None:
+        p.cur_err('%s must follow an expression', p.tok)
+    quest_pos = p.pos
+    next_arith_op(p, compact)
+    try:
+        op2 = BinAritOperator(p.tok)
+    except ValueError:
+        op2 = None
+    if op2 == BinAritOperator.TERN_COLON:
+        p.follow_err_exp(quest_pos, BinAritOperator.TERN_QUEST)
+    true_expr = arithm_expr(p, compact)
+    if true_expr is None:
+        p.follow_err_exp(quest_pos, BinAritOperator.TERN_QUEST)
+    try:
+        op3 = BinAritOperator(p.tok)
+    except ValueError:
+        op3 = None
+    if op3 != BinAritOperator.TERN_COLON:
+        p.pos_err(quest_pos, 'ternary operator missing %s after %s', Token.COLON, Token.QUEST)
+    colon_pos = p.pos
+    next_arith_op(p, compact)
+    false_expr = arithm_expr_ternary(p, compact)
+    if false_expr is None:
+        p.follow_err_exp(colon_pos, BinAritOperator.TERN_COLON)
+    return BinaryArithm(
+        op_pos=quest_pos,
+        op=BinAritOperator.TERN_QUEST,
+        x=value,
+        y=BinaryArithm(
+            op_pos=colon_pos,
+            op=BinAritOperator.TERN_COLON,
+            x=true_expr,
+            y=false_expr,
+        ),
+    )
 
-    switch UnAritOperator(p.tok) {
-    case Not, BitNegation, Plus, Minus:
-        ue := &UnaryArithm{OpPos: p.pos, Op: UnAritOperator(p.tok)}
-        p.nextArithOp(compact)
-        if ue.X = p.arithmExprUnary(compact); ue.X == nil {
-            p.followErrExp(ue.OpPos, ue.Op)
-        }
+
+def arithm_expr_lor(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_land, BinAritOperator.OR_ARIT, BinAritOperator.XOR_BOOL)
+
+
+def arithm_expr_land(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_bor, BinAritOperator.AND_ARIT)
+
+
+def arithm_expr_bor(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_bxor, BinAritOperator.OR)
+
+
+def arithm_expr_bxor(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_band, BinAritOperator.XOR)
+
+
+def arithm_expr_band(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_equality, BinAritOperator.AND)
+
+
+def arithm_expr_equality(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_comparison, BinAritOperator.EQL, BinAritOperator.NEQ)
+
+
+def arithm_expr_comparison(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(
+        p, compact, arithm_expr_shift,
+        BinAritOperator.LSS, BinAritOperator.GTR, BinAritOperator.LEQ, BinAritOperator.GEQ,
+    )
+
+
+def arithm_expr_shift(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_addition, BinAritOperator.SHL, BinAritOperator.SHR)
+
+
+def arithm_expr_addition(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_multiplication, BinAritOperator.ADD, BinAritOperator.SUB)
+
+
+def arithm_expr_multiplication(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    return arithm_expr_binary(p, compact, arithm_expr_power, BinAritOperator.MUL, BinAritOperator.QUO, BinAritOperator.REM)  # noqa
+
+
+def arithm_expr_power(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    # Power is different from the other binary operators because it's right-associative
+    value = arithm_expr_unary(p, compact)
+    try:
+        op = BinAritOperator(p.tok)
+    except ValueError:
+        return value
+    if op != BinAritOperator.POW or (compact and p.spaced):
+        return value
+
+    if value is None:
+        p.cur_err('%s must follow an expression', p.tok)
+
+    tok = p.tok
+    pos = p.pos
+    next_arith_op(p, compact)
+    y = arithm_expr_power(p, compact)
+    if y is None:
+        p.follow_err_exp(pos, tok)
+    return BinaryArithm(
+        op_pos=pos,
+        op=BinAritOperator(tok),
+        x=value,
+        y=y,
+    )
+
+
+def arithm_expr_unary(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    if not compact:
+        p.got(Token.NEWL_)
+
+    try:
+        op = UnAritOperator(p.tok)
+    except ValueError:
+        op = None
+    if op in (UnAritOperator.NOT, UnAritOperator.BIT_NEGATION, UnAritOperator.PLUS, UnAritOperator.MINUS):
+        ue = UnaryArithm(op_pos=p.pos, op=UnAritOperator(p.tok))
+        next_arith_op(p, compact)
+        ue.x = arithm_expr_unary(p, compact)
+        if ue.x is None:
+            p.follow_err_exp(ue.op_pos, ue.op)
         return ue
-    }
-    return p.arithmExprValue(compact)
-}
+    return arithm_expr_value(p, compact)
 
-func (p *Parser) arithmExprValue(compact bool) ArithmExpr {
-    var x ArithmExpr
-    switch p.tok {
-    case addAdd, subSub:
-        ue := &UnaryArithm{OpPos: p.pos, Op: UnAritOperator(p.tok)}
-        p.nextArith(compact)
-        if p.tok != _LitWord {
-            p.followErr(ue.OpPos, ue.Op, noQuote("a literal"))
-        }
-        ue.X = p.arithmExprValue(compact)
+
+def arithm_expr_value(p: 'Parser', compact: bool) -> ArithmExpr | None:
+    x: ArithmExpr | None = None
+    if p.tok in (Token.ADD_ADD, Token.SUB_SUB):
+        ue = UnaryArithm(op_pos=p.pos, op=UnAritOperator(p.tok))
+        next_arith(p, compact)
+        if p.tok != Token.LIT_WORD_:
+            p.follow_err(ue.op_pos, ue.op, 'a literal')
+        ue.x = arithm_expr_value(p, compact)
         return ue
-    case leftParen:
-        if p.quote == paramExpArithm && p.lang.in(LANG_ZSH) {
-            x = p.zshSubFlags()
-            break
-        }
-        pe := &ParenArithm{Lparen: p.pos}
-        p.nextArithOp(compact)
-        pe.X = p.followArithm(leftParen, pe.Lparen)
-        pe.Rparen = p.matched(pe.Lparen, leftParen, rightParen)
-        if p.quote == paramExpArithm && p.tok == _LitWord {
-            p.checkLang(pe.Lparen, LANG_ZSH, "subscript flags")
-        }
-        x = pe
-    case leftBrack:
-        p.curErr("%#q must follow a name", p.tok)
-    case colon:
-        p.curErr("ternary operator missing %#q before %#q", quest, colon)
-    case _LitWord:
-        l := p.getLit()
-        if p.tok != leftBrack {
-            x = p.wordOne(l)
-            break
-        }
-        pe := &ParamExp{Short: true, Param: l}
-        pe.Index = p.eitherIndex()
-        x = p.wordOne(pe)
-    case bckQuote:
-        if p.quote == arithmExprLet && p.openBquotes > 0 {
-            return nil
-        }
-        fallthrough
-    default:
-        if w := p.getWord(); w != nil {
+    elif p.tok == Token.LEFT_PAREN:
+        if p.quote == p._PARAM_EXP_ARITHM and lang_in(p.lang, LANG_ZSH):
+            x = p.zsh_sub_flags()
+        else:
+            pe = ParenArithm(lparen=p.pos)
+            next_arith_op(p, compact)
+            pe.x = follow_arithm(p, Token.LEFT_PAREN, pe.lparen)
+            pe.rparen = p.matched(pe.lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
+            if p.quote == p._PARAM_EXP_ARITHM and p.tok == Token.LIT_WORD_:
+                p.check_lang(pe.lparen, LANG_ZSH, 'subscript flags')
+            x = pe
+    elif p.tok == Token.LEFT_BRACK:
+        p.cur_err('%s must follow a name', p.tok)
+    elif p.tok == Token.COLON:
+        p.cur_err('ternary operator missing %s before %s', Token.QUEST, Token.COLON)
+    elif p.tok == Token.LIT_WORD_:
+        l = p.get_lit()
+        if p.tok != Token.LEFT_BRACK:
+            x = p.word_one(l)
+        else:
+            pe2 = ParamExp(short=True, param=l)
+            pe2.index = p.either_index()
+            x = p.word_one(pe2)
+    elif (
+        (cond_bck := (p.tok == Token.BCK_QUOTE))
+        or (cond_default := True)  # noqa: F841
+    ):
+        if cond_bck:
+            if p.quote == p._ARITHM_EXPR_LET and p.open_bquotes > 0:
+                return None
+            # fallthrough to default
+        w = p.get_word()
+        if w is not None:
             x = w
-        } else {
-            return nil
-        }
-    }
+        else:
+            return None
 
-    if compact && p.spaced {
+    if compact and p.spaced:
         return x
-    }
-    if !compact {
-        p.got(_Newl)
-    }
+    if not compact:
+        p.got(Token.NEWL_)
 
-    # we want real nil, not (*Word)(nil) as that
-    # sets the type to non-nil and then x != nil
-    if p.tok == addAdd || p.tok == subSub {
-        if !isArithName(x) {
-            p.curErr("%#q must follow a name", p.tok)
-        }
-        u := &UnaryArithm{
-            Post:  true,
-            OpPos: p.pos,
-            Op:    UnAritOperator(p.tok),
-            X:     x,
-        }
-        p.nextArith(compact)
+    if p.tok == Token.ADD_ADD or p.tok == Token.SUB_SUB:
+        if not is_arith_name(x):
+            p.cur_err('%s must follow a name', p.tok)
+        u = UnaryArithm(
+            post=True,
+            op_pos=p.pos,
+            op=UnAritOperator(p.tok),
+            x=x,
+        )
+        next_arith(p, compact)
         return u
-    }
     return x
-}
+
 
 # nextArith consumes a token.
 # It returns true if compact and the token was followed by spaces
-func (p *Parser) nextArith(compact bool) bool {
+def next_arith(p: 'Parser', compact: bool) -> bool:
     p.next()
-    if compact && p.spaced {
-        return true
-    }
-    if !compact {
-        p.got(_Newl)
-    }
-    return false
-}
+    if compact and p.spaced:
+        return True
+    if not compact:
+        p.got(Token.NEWL_)
+    return False
 
-func (p *Parser) nextArithOp(compact bool) {
-    pos := p.pos
-    tok := p.tok
-    if p.nextArith(compact) {
-        p.followErrExp(pos, tok)
-    }
-}
+
+def next_arith_op(p: 'Parser', compact: bool) -> None:
+    pos = p.pos
+    tok = p.tok
+    if next_arith(p, compact):
+        p.follow_err_exp(pos, tok)
+
 
 # arithmExprBinary is used for all left-associative binary operators
-func (p *Parser) arithmExprBinary(compact bool, nextOp func(bool) ArithmExpr, operators ...BinAritOperator) ArithmExpr {
-    value := nextOp(compact)
-    for {
-        var foundOp BinAritOperator
-        for _, op := range operators {
-            if p.tok == token(op) {
-                foundOp = op
+def arithm_expr_binary(
+        p: 'Parser',
+        compact: bool,
+        next_op: ta.Callable[['Parser', bool], ArithmExpr | None],
+        *operators: BinAritOperator,
+) -> ArithmExpr | None:
+    value = next_op(p, compact)
+    while True:
+        found_op: BinAritOperator | None = None
+        for op in operators:
+            if p.tok == op.value:
+                found_op = op
                 break
-            }
-        }
 
-        if token(foundOp) == illegalTok || (compact && p.spaced) {
+        if found_op is None or (compact and p.spaced):
             return value
-        }
 
-        if value == nil {
-            p.curErr("%#q must follow an expression", p.tok)
-        }
+        if value is None:
+            p.cur_err('%s must follow an expression', p.tok)
 
-        pos := p.pos
-        p.nextArithOp(compact)
-        y := nextOp(compact)
-        if y == nil {
-            p.followErrExp(pos, foundOp)
-        }
+        pos = p.pos
+        next_arith_op(p, compact)
+        y = next_op(p, compact)
+        if y is None:
+            p.follow_err_exp(pos, found_op)
 
-        value = &BinaryArithm{
-            OpPos: pos,
-            Op:    foundOp,
-            X:     value,
-            Y:     y,
-        }
-    }
-}
+        value = BinaryArithm(
+            op_pos=pos,
+            op=found_op,
+            x=value,
+            y=y,
+        )
 
-func isArithName(left ArithmExpr) bool {
-    w, ok := left.(*Word)
-    if !ok || len(w.Parts) != 1 {
-        return false
-    }
-    switch wp := w.Parts[0].(type) {
-    case *Lit:
-        return ValidName(wp.Value)
-    case *ParamExp:
-        return wp.nakedIndex()
-    default:
-        return false
-    }
-}
 
-func (p *Parser) followArithm(ftok token, fpos Pos) ArithmExpr {
-    x := p.arithmExpr(false)
-    if x == nil {
-        p.followErrExp(fpos, ftok)
-    }
+def is_arith_name(left: ArithmExpr | None) -> bool:
+    if not isinstance(left, Word):
+        return False
+    if len(left.parts) != 1:
+        return False
+    wp = left.parts[0]
+    if isinstance(wp, Lit):
+        from .parser import valid_name
+        return valid_name(wp.value)
+    elif isinstance(wp, ParamExp):
+        return wp.naked_index()
+    else:
+        return False
+
+
+def follow_arithm(p: 'Parser', ftok: Token, fpos: Pos) -> ArithmExpr | None:
+    x = arithm_expr(p, False)
+    if x is None:
+        p.follow_err_exp(fpos, ftok)
     return x
-}
 
-func (p *Parser) peekArithmEnd() bool {
-    return p.tok == rightParen && p.r == ')'
-}
 
-func (p *Parser) arithmMatchingErr(pos Pos, left, right token) {
-    switch p.tok {
-    case _Lit, _LitWord:
-        p.curErr("not a valid arithmetic operator: %#q", p.val)
-    case leftBrack:
-        p.curErr("%#q must follow a name", leftBrack)
-    case colon:
-        p.curErr("ternary operator missing %#q before %#q", quest, colon)
-    case rightParen, _EOF:
-        p.matchingErr(pos, left, right)
-    case period:
-        p.checkLang(p.pos, LANG_ZSH, `floating point arithmetic`)
-    default:
-        if p.quote&allArithmExpr != 0 {
-            p.curErr("not a valid arithmetic operator: %#q", p.tok)
-        }
-        p.matchingErr(pos, left, right)
-    }
-}
+def peek_arithm_end(p: 'Parser') -> bool:
+    return p.tok == Token.RIGHT_PAREN and p.r == ')'
 
-func (p *Parser) matchedArithm(lpos Pos, left, right token) {
-    if !p.got(right) {
-        p.arithmMatchingErr(lpos, left, right)
-    }
-}
 
-func (p *Parser) arithmEnd(ltok token, lpos Pos, old saveState) Pos {
-    if !p.peekArithmEnd() {
-        if p.recoverError() {
-            return recoveredPos
-        }
-        p.arithmMatchingErr(lpos, ltok, dblRightParen)
-    }
+def arithm_matching_err(p: 'Parser', pos: Pos, left: Token, right: Token) -> None:
+    if p.tok in (Token.LIT_, Token.LIT_WORD_):
+        p.cur_err('not a valid arithmetic operator: %s', p.val)
+    elif p.tok == Token.LEFT_BRACK:
+        p.cur_err('%s must follow a name', Token.LEFT_BRACK)
+    elif p.tok == Token.COLON:
+        p.cur_err('ternary operator missing %s before %s', Token.QUEST, Token.COLON)
+    elif p.tok in (Token.RIGHT_PAREN, Token.EOF_):
+        p.matching_err(pos, left, right)
+    elif p.tok == Token.PERIOD:
+        p.check_lang(p.pos, LANG_ZSH, 'floating point arithmetic')
+    else:
+        if p.quote & p._ALL_ARITHM_EXPR != 0:
+            p.cur_err('not a valid arithmetic operator: %s', p.tok)
+        p.matching_err(pos, left, right)
+
+
+def matched_arithm(p: 'Parser', lpos: Pos, left: Token, right: Token) -> None:
+    if not p.got(right):
+        arithm_matching_err(p, lpos, left, right)
+
+
+def arithm_end(p: 'Parser', ltok: Token, lpos: Pos, old: ta.Any) -> Pos:
+    if not peek_arithm_end(p):
+        if p.recover_error():
+            return RECOVERED_POS
+        arithm_matching_err(p, lpos, ltok, Token.DBL_RIGHT_PAREN)
     p.rune()
-    p.postNested(old)
-    pos := p.pos
+    p.post_nested(old)
+    pos = p.pos
     p.next()
     return pos
-}
-"""  # noqa

@@ -23,17 +23,17 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .tokens import RedirOperator
-from .tokens import ProcOperator
+from .tokens import BinAritOperator
+from .tokens import BinCmdOperator
+from .tokens import BinTestOperator
+from .tokens import CaseOperator
+from .tokens import GlobOperator
 from .tokens import ParExpOperator
 from .tokens import ParNamesOperator
+from .tokens import ProcOperator
+from .tokens import RedirOperator
 from .tokens import UnAritOperator
-from .tokens import BinAritOperator
-from .tokens import GlobOperator
-from .tokens import BinCmdOperator
 from .tokens import UnTestOperator
-from .tokens import CaseOperator
-from .tokens import BinTestOperator
 
 
 ##
@@ -64,7 +64,7 @@ class File(Node):
 
     def pos(self) -> 'Pos':
         return stmts_pos(self.stmts, self.last)
-    
+
     def end(self) -> 'Pos':
         return stmts_end(self.stmts, self.last)
 
@@ -258,7 +258,7 @@ class Stmt(Node):
 
     def pos(self) -> Pos:
         return self.position
-    
+
     def end(self) -> Pos:
         if self.semicolon.is_valid():
             end = pos_add_col(self.semicolon, 1)  # ';' or '&'
@@ -391,7 +391,7 @@ class Subshell(Command):
 
     def pos(self) -> Pos:
         return self.lparen
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.rparen, 1)
 
@@ -408,7 +408,7 @@ class Block(Command):
 
     def pos(self) -> Pos:
         return self.lbrace
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.rbrace, 1)
 
@@ -431,7 +431,7 @@ class IfClause(Command):
 
     def pos(self) -> Pos:
         return self.position
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.fi_pos, 2)
 
@@ -451,7 +451,7 @@ class WhileClause(Command):
 
     def pos(self) -> Pos:
         return self.while_pos
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.done_pos, 4)
 
@@ -472,7 +472,7 @@ class ForClause(Command):
 
     def pos(self) -> Pos:
         return self.for_pos
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.done_pos, 4)
 
@@ -494,7 +494,7 @@ class WordIter(Loop):
 
     def pos(self) -> Pos:
         return self.name.pos()
-    
+
     def end(self) -> Pos:
         if len(self.items) > 0:
             return word_last_end(self.items)
@@ -517,7 +517,7 @@ class CStyleLoop(Loop):
 
     def pos(self) -> Pos:
         return self.lparen
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.rparen, 2)
 
@@ -532,7 +532,7 @@ class BinaryCmd(Command):
 
     def pos(self) -> Pos:
         return self.x.pos()
-    
+
     def end(self) -> Pos:
         return self.y.end()
 
@@ -554,7 +554,7 @@ class FuncDecl(Command):
 
     def pos(self) -> Pos:
         return self.position
-    
+
     def end(self) -> Pos:
         return self.body.end()
 
@@ -611,7 +611,7 @@ class Word(ArithmExpr, TestExpr):
         lits: list[str] = []
         for part in self.parts:
             if not isinstance(part, Lit):
-                return ""
+                return ''
             lits.append(part.value)
         return ''.join(lits)
 
@@ -645,7 +645,7 @@ class Lit(WordPart):
 
     def pos(self) -> Pos:
         return self.value_pos
-    
+
     def end(self) -> Pos:
         return self.value_end
 
@@ -660,7 +660,7 @@ class SglQuoted(WordPart):
 
     def pos(self) -> Pos:
         return self.left
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.right, 1)
 
@@ -675,7 +675,7 @@ class DblQuoted(WordPart):
 
     def pos(self) -> Pos:
         return self.left
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.right, 1)
 
@@ -695,7 +695,7 @@ class CmdSubst(WordPart):
 
     def pos(self) -> Pos:
         return self.left
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.right, 1)
 
@@ -760,7 +760,7 @@ class ParamExp(WordPart):
         if self.dollar.is_valid():
             return self.dollar
         return self.param.pos()
-        
+
     def end(self) -> Pos:
         if not self.short:
             return pos_add_col(self.rbrace, 1)
@@ -813,7 +813,7 @@ class ArithmExp(WordPart):
 
     def pos(self) -> Pos:
         return self.left
-    
+
     def end(self) -> Pos:
         if self.bracket:
             return pos_add_col(self.right, 1)
@@ -833,7 +833,7 @@ class ArithmCmd(Command):
 
     def pos(self) -> Pos:
         return self.left
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.right, 2)
 
@@ -855,7 +855,7 @@ class BinaryArithm(ArithmExpr):
 
     def pos(self) -> Pos:
         return self.x.pos()
-    
+
     def end(self) -> Pos:
         return self.y.end()
 
@@ -893,7 +893,7 @@ class ParenArithm(ArithmExpr):
 
     def pos(self) -> Pos:
         return self.lparen
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.rparen, 1)
 
@@ -909,7 +909,7 @@ class FlagsArithm(ArithmExpr):
 
     def pos(self) -> Pos:
         return pos_add_col(self.flags.pos(), -1)
-    
+
     def end(self) -> Pos:
         if self.x is not None:
             return self.x.end()
@@ -930,7 +930,7 @@ class CaseClause(Command):
 
     def pos(self) -> Pos:
         return self.case
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.esac, 4)
 
@@ -948,7 +948,7 @@ class CaseItem(Node):
 
     def pos(self) -> Pos:
         return self.patterns[0].pos()
-    
+
     def end(self) -> Pos:
         if self.op_pos.is_valid():
             return pos_add_col(self.op_pos, len(self.op.string()))
@@ -983,7 +983,7 @@ class BinaryTest(TestExpr):
 
     def pos(self) -> Pos:
         return self.x.pos()
-    
+
     def end(self) -> Pos:
         return self.y.end()
 
@@ -998,7 +998,7 @@ class UnaryTest(TestExpr):
 
     def pos(self) -> Pos:
         return self.op_pos
-    
+
     def end(self) -> Pos:
         return self.x.end()
 
@@ -1013,7 +1013,7 @@ class ParenTest(TestExpr):
 
     def pos(self) -> Pos:
         return self.lparen
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.rparen, 1)
 
@@ -1033,7 +1033,7 @@ class DeclClause(Command):
 
     def pos(self) -> Pos:
         return self.variant.pos()
-    
+
     def end(self) -> Pos:
         if len(self.args) > 0:
             return self.args[-1].end()
@@ -1053,7 +1053,7 @@ class ArrayExpr(Node):
 
     def pos(self) -> Pos:
         return self.lparen
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.rparen, 1)
 
@@ -1093,7 +1093,7 @@ class ExtGlob(WordPart):
 
     def pos(self) -> Pos:
         return self.op_pos
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.pattern.end(), 1)
 
@@ -1112,7 +1112,7 @@ class ProcSubst(WordPart):
 
     def pos(self) -> Pos:
         return self.op_pos
-    
+
     def end(self) -> Pos:
         return pos_add_col(self.rparen, 1)
 
@@ -1129,7 +1129,7 @@ class TimeClause(Command):
 
     def pos(self) -> Pos:
         return self.time
-    
+
     def end(self) -> Pos:
         if self.stmt is None:
             return pos_add_col(self.time, 4)
@@ -1147,7 +1147,7 @@ class CoprocClause(Command):
 
     def pos(self) -> Pos:
         return self.coproc
-    
+
     def end(self) -> Pos:
         return self.stmt.end()
 
@@ -1162,7 +1162,7 @@ class LetClause(Command):
 
     def pos(self) -> Pos:
         return self.let
-    
+
     def end(self) -> Pos:
         return self.exprs[-1].end()
 
@@ -1191,7 +1191,7 @@ class TestDecl(Command):
 
     def pos(self) -> Pos:
         return self.position
-    
+
     def end(self) -> Pos:
         return self.body.end()
 

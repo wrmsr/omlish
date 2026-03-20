@@ -20,8 +20,6 @@
 import functools
 import typing as ta
 
-from omlish import lang
-
 from .nodes import ArithmCmd
 from .nodes import ArithmExp
 from .nodes import ArrayElem
@@ -31,13 +29,13 @@ from .nodes import BinaryArithm
 from .nodes import BinaryCmd
 from .nodes import BinaryTest
 from .nodes import Block
-from .nodes import CStyleLoop
 from .nodes import CallExpr
 from .nodes import CaseClause
 from .nodes import CaseItem
 from .nodes import CmdSubst
 from .nodes import Comment
 from .nodes import CoprocClause
+from .nodes import CStyleLoop
 from .nodes import DblQuoted
 from .nodes import DeclClause
 from .nodes import ExtGlob
@@ -228,7 +226,7 @@ def walk(node: Node, f: ta.Callable[[Node | None], bool]) -> None:
         raise TypeError(node)
 
     f(None)
-    
+
     for defer in defers:
         defer()
 

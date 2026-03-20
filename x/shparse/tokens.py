@@ -268,23 +268,23 @@ class ParExpOperator(enum.Enum):
         return self.value.value  # noqa
 
     ALTERNATE_UNSET         = Token.PLUS
-    ALTERNATE_UNSET_OR_NULL = Token.COL_PLUS 
-    DEFAULT_UNSET           = Token.MINUS    
+    ALTERNATE_UNSET_OR_NULL = Token.COL_PLUS
+    DEFAULT_UNSET           = Token.MINUS
     DEFAULT_UNSET_OR_NULL   = Token.COL_MINUS
-    ERROR_UNSET             = Token.QUEST    
+    ERROR_UNSET             = Token.QUEST
     ERROR_UNSET_OR_NULL     = Token.COL_QUEST
-    ASSIGN_UNSET            = Token.ASSGN    
+    ASSIGN_UNSET            = Token.ASSGN
     ASSIGN_UNSET_OR_NULL    = Token.COL_ASSGN
-    REM_SMALL_SUFFIX        = Token.PERC     
-    REM_LARGE_SUFFIX        = Token.DBL_PERC 
-    REM_SMALL_PREFIX        = Token.HASH     
-    REM_LARGE_PREFIX        = Token.DBL_HASH 
-    MATCH_EMPTY             = Token.COL_HASH 
-    UPPER_FIRST             = Token.CARET    
+    REM_SMALL_SUFFIX        = Token.PERC
+    REM_LARGE_SUFFIX        = Token.DBL_PERC
+    REM_SMALL_PREFIX        = Token.HASH
+    REM_LARGE_PREFIX        = Token.DBL_HASH
+    MATCH_EMPTY             = Token.COL_HASH
+    UPPER_FIRST             = Token.CARET
     UPPER_ALL               = Token.DBL_CARET
-    LOWER_FIRST             = Token.COMMA    
+    LOWER_FIRST             = Token.COMMA
     LOWER_ALL               = Token.DBL_COMMA
-    OTHER_PARAMOPS          = Token.AT       
+    OTHER_PARAMOPS          = Token.AT
 
 
 class UnAritOperator(enum.Enum):

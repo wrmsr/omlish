@@ -18,680 +18,157 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 r"""
-from .tokens import Token
+TODO: original go for higher-level IO/initialization functions:
 
-
-# ParserOption is a function which can be passed to NewParser
-# to alter its behavior. To apply option to existing Parser
-# call it directly, for example KeepComments(True)(parser).
 type ParserOption func(*Parser)
 
-# KeepComments makes the parser parse comments and attach them to
-# nodes, as opposed to discarding them.
-func KeepComments(enabled bool) ParserOption {
-    return func(p *Parser) { p.keepComments = enabled }
+func KeepComments(enabled bool) ParserOption { ... }
+func Variant(l LangVariant) ParserOption { ... }
+func StopAt(word string) ParserOption { ... }
+func RecoverErrors(maximum int) ParserOption { ... }
+func NewParser(options ...ParserOption) *Parser { ... }
+func (p *Parser) Parse(r io.Reader, name string) (*File, error) { ... }
+func (p *Parser) Stmts(r io.Reader, fn func(*Stmt) bool) error { ... }
+func (p *Parser) StmtsSeq(r io.Reader) iter.Seq2[*Stmt, error] { ... }
+type wrappedReader struct { ... }
+func (p *Parser) Interactive(r io.Reader, fn func([]*Stmt) bool) error { ... }
+func (p *Parser) InteractiveSeq(r io.Reader) iter.Seq2[[]*Stmt, error] { ... }
+func (p *Parser) Words(r io.Reader, fn func(*Word) bool) error { ... }
+func (p *Parser) WordsSeq(r io.Reader) iter.Seq2[*Word, error] { ... }
+func (p *Parser) Document(r io.Reader) (*Word, error) { ... }
+func (p *Parser) Arithmetic(r io.Reader) (ArithmExpr, error) { ... }
+
+type ParseError struct { Filename, Pos, Text, Incomplete }
+type LangError struct { Filename, Pos, Feature, Langs, LangUsed }
+"""  # noqa
+import typing as ta
+
+from .langs import LANG_BASH_LIKE
+from .langs import LANG_BATS
+from .langs import LANG_MIR_BSD_KORN
+from .langs import LANG_POSIX
+from .langs import LANG_ZSH
+from .langs import LangVariant
+from .langs import lang_bits
+from .langs import lang_in
+from .lexer import _EOF_RUNE
+from .lexer import _ESC_NEWL
+from .lexer import ascii_digit
+from .lexer import ascii_letter
+from .lexer import param_name_rune
+from .lexer import single_rune_param
+from .lexer import test_binary_op
+from .nodes import RECOVERED_POS
+from .nodes import ArithmCmd
+from .nodes import ArithmExp
+from .nodes import ArrayElem
+from .nodes import ArrayExpr
+from .nodes import Assign
+from .nodes import BinaryCmd
+from .nodes import BinaryTest
+from .nodes import Block
+from .nodes import CallExpr
+from .nodes import CaseClause
+from .nodes import CaseItem
+from .nodes import CmdSubst
+from .nodes import Comment
+from .nodes import CoprocClause
+from .nodes import CStyleLoop
+from .nodes import DblQuoted
+from .nodes import DeclClause
+from .nodes import Expansion
+from .nodes import ExtGlob
+from .nodes import File
+from .nodes import FlagsArithm
+from .nodes import ForClause
+from .nodes import FuncDecl
+from .nodes import IfClause
+from .nodes import LetClause
+from .nodes import Lit
+from .nodes import Node
+from .nodes import ParamExp
+from .nodes import ParenTest
+from .nodes import Pos
+from .nodes import ProcSubst
+from .nodes import Redirect
+from .nodes import Replace
+from .nodes import SglQuoted
+from .nodes import Slice
+from .nodes import Stmt
+from .nodes import Subshell
+from .nodes import TestClause
+from .nodes import TestDecl
+from .nodes import TestExpr
+from .nodes import TimeClause
+from .nodes import UnaryTest
+from .nodes import WhileClause
+from .nodes import Word
+from .nodes import WordIter
+from .nodes import WordPart
+from .nodes import new_pos
+from .nodes import pos_add_col
+from .tokens import BinCmdOperator
+from .tokens import BinTestOperator
+from .tokens import CaseOperator
+from .tokens import GlobOperator
+from .tokens import ParExpOperator
+from .tokens import ParNamesOperator
+from .tokens import ProcOperator
+from .tokens import RedirOperator
+from .tokens import Token
+from .tokens import UnTestOperator
 
 
-# Variant changes the shell language variant that the parser will
-# accept.
-#
-# The passed language variant must be one of the constant values defined in
-# this package.
-func Variant(l LangVariant) ParserOption {
-    switch l {
-    case LANG_BASH_LEGACY:
-        l = LANG_BASH
-    case LANG_BASH, LANG_POSIX, LANG_MIR_BSD_KORN, LANG_BATS, LANG_ZSH:
-    case LANG_AUTO:
-        panic("LANG_AUTO is not supported by the parser at this time")
-    default:
-        panic(fmt.Sprintf("unknown shell language variant: %#b", l))
-    return func(p *Parser) { p.lang = l }
+##
 
 
-# StopAt configures the lexer to stop at an arbitrary word, treating it
-# as if it were the end of the input. It can contain any characters
-# except whitespace, and cannot be over four bytes in size.
-#
-# This can be useful to embed shell code within another language, as
-# one can use a special word to mark the delimiters between the two.
-#
-# As a word, it will only apply when following whitespace or a
-# separating token. For example, StopAt("$$") will act on the inputs
-# "foo $$" and "foo;$$", but not on "foo '$$'".
-#
-# The match is done by prefix, so the example above will also act on
-# "foo $$bar".
-func StopAt(word string) ParserOption {
-    if len(word) > 4 {
-        panic("stop word can't be over four bytes in size")
-    if strings.ContainsAny(word, " \t\n\r") {
-        panic("stop word can't contain whitespace characters")
-    return func(p *Parser) { p.stopAt = []byte(word) }
+# Quote state constants
+_NO_STATE = 1 << 0
+_RUNE_BY_RUNE = 1 << 1
+_UNQUOTED_WORD_CONT = 1 << 2
+_SUB_CMD = 1 << 3
+_SUB_CMD_BCKQUO = 1 << 4
+_DBL_QUOTES = 1 << 5
+_HDOC_WORD = 1 << 6
+_HDOC_BODY = 1 << 7
+_HDOC_BODY_TABS = 1 << 8
+_ARITHM_EXPR = 1 << 9
+_ARITHM_EXPR_LET = 1 << 10
+_ARITHM_EXPR_CMD = 1 << 11
+_TEST_EXPR = 1 << 12
+_TEST_EXPR_REGEXP = 1 << 13
+_SWITCH_CASE = 1 << 14
+_PARAM_EXP_ARITHM = 1 << 15
+_PARAM_EXP_REPL = 1 << 16
+_PARAM_EXP_EXP = 1 << 17
+_ARRAY_ELEMS = 1 << 18
 
-# RecoverErrors allows the parser to skip up to a maximum number of
-# errors in the given input on a best-effort basis.
-# This can be useful to tab-complete an interactive shell prompt,
-# or when providing diagnostics on slightly incomplete shell source.
-#
-# Currently, this only helps with mandatory tokens from the shell grammar
-# which are not present in the input. They result in position fields
-# or nodes whose position report [Pos.IsRecovered] as True.
-#
-# For example, given the input
-#
-#    (foo |
-#
-# the result will contain two recovered positions; first, the pipe requires
-# a statement to follow, and as [Stmt.Pos] reports, the entire node is recovered.
-# Second, the subshell needs to be closed, so [Subshell.Rparen] is recovered.
-func RecoverErrors(maximum int) ParserOption {
-    return func(p *Parser) { p.recoverErrorsMax = maximum }
+_ALL_KEEP_SPACES = _RUNE_BY_RUNE | _PARAM_EXP_REPL | _DBL_QUOTES | _HDOC_BODY | _HDOC_BODY_TABS | _PARAM_EXP_EXP
+_ALL_REG_TOKENS = _NO_STATE | _UNQUOTED_WORD_CONT | _SUB_CMD | _SUB_CMD_BCKQUO | _HDOC_WORD | _SWITCH_CASE | _ARRAY_ELEMS | _TEST_EXPR  # noqa
+_ALL_ARITHM_EXPR = _ARITHM_EXPR | _ARITHM_EXPR_LET | _ARITHM_EXPR_CMD | _PARAM_EXP_ARITHM
+_ALL_PARAM_EXP = _PARAM_EXP_ARITHM | _PARAM_EXP_REPL | _PARAM_EXP_EXP
 
-# NewParser allocates a new [Parser] and applies any number of options.
-func NewParser(options ...ParserOption) *Parser {
-    p := &Parser{
-        lang: LANG_BASH,
-    for _, opt := range options {
-        opt(p)
-    return p
+_RECOVERED_POS = RECOVERED_POS
 
-# Parse reads and parses a shell program with an optional name. It
-# returns the parsed program if no issues were encountered. Otherwise,
-# an error is returned. Reads from r are buffered.
-#
-# Parse can be called more than once, but not concurrently. That is, a
-# Parser can be reused once it is done working.
-func (p *Parser) Parse(r io.Reader, name string) (*File, error) {
-    p.reset()
-    p.f = &File{Name: name}
-    p.src = r
-    p.rune()
-    p.next()
-    p.f.Stmts, p.f.Last = p.stmtList()
-    if p.err == nil {
-        # EOF immediately after heredoc word so no newline to
-        # trigger the parsing error.
-        p.doHeredocs()
-    return p.f, p.err
 
-# Stmts is a pre-iterators API which now wraps [Parser.StmtsSeq].
-#
-# Deprecated: use [Parser.StmtsSeq].
-func (p *Parser) Stmts(r io.Reader, fn func(*Stmt) bool) error {
-    for stmt, err := range p.StmtsSeq(r) {
-        if err != nil {
-            return err
-        if !fn(stmt) {
-            break
-    return nil
-
-# StmtsSeq reads and parses statements one at a time via an iterator.
-func (p *Parser) StmtsSeq(r io.Reader) iter.Seq2[*Stmt, error] {
-    p.reset()
-    p.f = &File{}
-    p.src = r
-    return func(yield func(*Stmt, error) bool) {
-        p.rune()
-        p.next()
-        p.stmts(yield)
-        if p.err == nil {
-            # EOF immediately after heredoc word so no newline to
-            # trigger the parsing error.
-            p.doHeredocs()
-        if p.err != nil {
-            # Yield any final error from the parser.
-            yield(nil, p.err)
-
-type wrappedReader struct {
-    p  *Parser
-    rd io.Reader
-
-    lastLine    int64
-    accumulated []*Stmt
-    yield       func([]*Stmt, error) bool
-
-func (w *wrappedReader) Read(p []byte) (n int, err error) {
-    # If we lexed a newline for the first time, we just finished a line, so
-    # we may need to give a callback for the edge cases below not covered
-    # by [Parser.Stmts].
-    if (w.p.r == '\n' or w.p.r == escNewl) and w.p.line > w.lastLine {
-        if w.p.Incomplete() {
-            # Incomplete statement; call back to print "> ".
-            if !w.yield(w.accumulated, w.p.err) {
-                return 0, io.EOF
-        } else if len(w.accumulated) == 0 {
-            # Nothing was parsed; call back to print another "$ ".
-            if !w.yield(nil, w.p.err) {
-                return 0, io.EOF
-        w.lastLine = w.p.line
-    return w.rd.Read(p)
-
-# Interactive is a pre-iterators API which now wraps [Parser.InteractiveSeq].
-#
-# Deprecated: use [Parser.InteractiveSeq].
-func (p *Parser) Interactive(r io.Reader, fn func([]*Stmt) bool) error {
-    for stmts, err := range p.InteractiveSeq(r) {
-        if err != nil {
-            return err
-        if !fn(stmts) {
-            break
-    return nil
-
-# InteractiveSeq implements what is necessary to parse statements in an
-# interactive shell. The parser will call the given function under two
-# circumstances outlined below.
-#
-# If a line containing any number of statements is parsed, the function will be
-# called with said statements.
-#
-# If a line ending in an incomplete statement is parsed, the function will be
-# called with any fully parsed statements, and [Parser.Incomplete] will return True.
-#
-# One can imagine a simple interactive shell implementation as follows:
-#
-#    fmt.Fprintf(os.Stdout, "$ ")
-#    parser.Interactive(os.Stdin, func(stmts []*syntax.Stmt) bool {
-#        if parser.Incomplete() {
-#            fmt.Fprintf(os.Stdout, "> ")
-#            return True
-#        }
-#        run(stmts)
-#        fmt.Fprintf(os.Stdout, "$ ")
-#        return True
-#    }
-#
-# If the callback function returns False, parsing is stopped and the function
-# is not called again.
-func (p *Parser) InteractiveSeq(r io.Reader) iter.Seq2[[]*Stmt, error] {
-    return func(yield func([]*Stmt, error) bool) {
-        w := wrappedReader{p: p, rd: r, yield: yield}
-        for stmts, err := range p.StmtsSeq(&w) {
-            w.accumulated = append(w.accumulated, stmts)
-            if err != nil {
-                if !yield(w.accumulated, err) {
-                    break
-                # If the caller wishes, they can continue in the presence of parse errors.
-                # TODO: does this even work? Write tests for it. This only came up
-                continue
-            # We finished parsing a statement and we're at a newline token,
-            # so we finished fully parsing a number of statements. Call
-            # back to run the statements and print "$ ".
-            if p.tok == Token.NEWL_ {
-                if !yield(w.accumulated, nil) {
-                    break
-                w.accumulated = w.accumulated[:0]
-                # The callback above would already print "$ ", so we
-                # don't want the subsequent wrappedReader.Read to cause
-                # another "$ " print thinking that nothing was parsed.
-                w.lastLine = w.p.line + 1
-
-# Words is a pre-iterators API which now wraps [Parser.WordsSeq].
-#
-# Deprecated: use [Parser.WordsSeq].
-func (p *Parser) Words(r io.Reader, fn func(*Word) bool) error {
-    for w, err := range p.WordsSeq(r) {
-        if err != nil {
-            return err
-        if !fn(w) {
-            break
-    return nil
-
-# WordsSeq reads and parses a sequence of words alongside any error encountered.
-#
-# Newlines are skipped, meaning that multi-line input will work fine. If the
-# parser encounters a token that isn't a word, such as a Token.SEMICOLON, an error
-# will be returned.
-#
-# Note that the lexer doesn't currently tokenize spaces, so it may need to read
-# a non-space byte such as a newline or a letter before finishing the parsing
-# of a word. This will be fixed in the future.
-func (p *Parser) WordsSeq(r io.Reader) iter.Seq2[*Word, error] {
-    p.reset()
-    p.f = &File{}
-    p.src = r
-    return func(yield func(*Word, error) bool) {
-        p.rune()
-        p.next()
-        for {
-            p.got(Token.NEWL_)
-            w := p.getWord()
-            if w == nil {
-                if p.tok != Token.EOF_ {
-                    p.curErr("%#q is not a valid word", p.tok)
-                if p.err != nil {
-                    yield(nil, p.err)
-                return
-            if !yield(w, nil) {
-                return
-
-# Document parses a single here-document word. That is, it parses the input as
-# if they were lines following a <<EOF redirection.
-#
-# In practice, this is the same as parsing the input as if it were within
-# double quotes, but without having to escape all double quote characters.
-# Similarly, the here-document word parsed here cannot be ended by any
-# delimiter other than reaching the end of the input.
-func (p *Parser) Document(r io.Reader) (*Word, error) {
-    p.reset()
-    p.f = &File{}
-    p.src = r
-    p.rune()
-    p.quote = hdocBody
-    p.hdocStops = [][]byte{[]byte("MVDAN_CC_SH_SYNTAX_EOF")}
-    p.parsingDoc = True
-    p.next()
-    w := p.getWord()
-    return w, p.err
-
-# Arithmetic parses a single arithmetic expression. That is, as if the input
-# were within the $(( and )) tokens.
-func (p *Parser) Arithmetic(r io.Reader) (ArithmExpr, error) {
-    p.reset()
-    p.f = &File{}
-    p.src = r
-    p.rune()
-    p.quote = arithmExpr
-    p.next()
-    expr := p.arithmExpr(False)
-    return expr, p.err
-
-# Parser holds the internal state of the parsing mechanism of a
-# program.
-class Parser:
-    src: Reader
-    bs: []byte  # current chunk of read bytes
-    bsp: int    # offset within [Parser.bs] for the rune after [Parser.r]
-    r: str      # next rune; [utf8.RuneSelf] when it went past EOF, or we stopped
-    w: int      # width of [Parser.r]
-
-    f: File
-
-    spaced: bool  # whether [Parser.tok] has whitespace on its left
-
-    err: Error | None = None       # lexer/parser error
-    read_err: Error | None = None  # got a read error, but bytes left
-    read_eof: bool = False         # [Parser.src] already gave us an [io.EOF] error
-
-    tok: Token  # current token
-    val: str    # current value (valid if tok is Token.LIT_*)
-
-    # position of [Parser.r], to be converted to [Parser.pos] later
-    offs: int
-    line: int
-    col: int
-
-    pos: Pos  # position of tok
-
-    quote: QuoteState  # current lexer state
-    eql_offs: int      # position of '=' in [Parser.val] (a literal)
-
-    keep_comments: bool
-    lang: LangVariant
-
-    stop_at: []byte
-
-    recovered_errors: int
-    recover_errors_max: int
-
-    forbid_nested: bool
-
-    # list of pending heredoc bodies
+class _SaveState(ta.NamedTuple):
+    quote: int
     buried_hdocs: int
-    heredocs: []*Redirect
-
-    hdoc_stops: [][]byte  # stack of end words for open heredocs
-
-    parsing_doc: bool  # True if using [Parser.Document]
-
-    # openNodes tracks how many entire statements or words we're currently parsing.
-    # A non-zero number means that we require certain tokens or words before
-    # reaching EOF, used for [Parser.Incomplete].
-    open_nodes: int
-    # openBquotes is how many levels of backquotes are open at the moment.
-    open_bquotes: int
-
-    # lastBquoteEsc is how many times the last backquote token was escaped
-    last_bquote_esc: int
-
-    rx_open_parens: int
-    rx_first_part: bool
-
-    acc_coms: []Comment
-    cur_coms: *[]Comment
-
-    lit_batch: []Lit
-    word_batch: []wordAlloc
-
-    read_buf: [bufSize]byte
-    lit_buf: [bufSize]byte
-    lit_bs: []byte
 
 
-# Incomplete reports whether the parser needs more input bytes
-# to finish properly parsing a statement or word.
-#
-# It is only safe to call while the parser is blocked on a read. For an example
-# use case, see [Parser.Interactive].
-func (p *Parser) Incomplete() bool {
-    # If there are any open nodes, we need to finish them.
-    # If we're constructing a literal, we need to finish it.
-    return p.openNodes > 0 or len(p.litBs) > 0
-
-
-const bufSize = 1 << 10
-
-
-func (p *Parser) reset() {
-    p.tok, p.val = illegalTok, ""
-    p.eqlOffs = 0
-    p.bs, p.bsp = nil, 0
-    p.offs, p.line, p.col = 0, 1, 1
-    p.r, p.w = 0, 0
-    p.err, p.readErr, p.readEOF = nil, nil, False
-    p.quote, p.forbidNested = noState, False
-    p.openNodes = 0
-    p.recoveredErrors = 0
-    p.heredocs, p.buriedHdocs = p.heredocs[:0], 0
-    p.hdocStops = nil
-    p.parsingDoc = False
-    p.openBquotes = 0
-    p.accComs = nil
-    p.accComs, p.curComs = nil, &p.accComs
-    p.litBatch = nil
-    p.wordBatch = nil
-    p.litBs = nil
-
-# nextPos returns the position of the next rune, [Parser.r].
-func (p *Parser) nextPos() Pos {
-    # Basic protection against offset overflow;
-    # note that an offset of 0 is valid, so we leave the maximum.
-    offset := min(p.offs+int64(p.bsp)-int64(p.w), offsetMax)
-    var line, col uint
-    if p.line <= lineMax {
-        line = uint(p.line)
-    if p.col <= colMax {
-        col = uint(p.col)
-    return NewPos(uint(offset), line, col)
-
-func (p *Parser) lit(pos Pos, val string) *Lit {
-    if len(p.litBatch) == 0 {
-        p.litBatch = make([]Lit, 32)
-    l := &p.litBatch[0]
-    p.litBatch = p.litBatch[1:]
-    l.ValuePos = pos
-    l.ValueEnd = p.nextPos()
-    l.Value = val
-    return l
-
-type wordAlloc struct {
-    word  Word
-    parts [1]WordPart
-
-func (p *Parser) wordAnyNumber() *Word {
-    if len(p.wordBatch) == 0 {
-        p.wordBatch = make([]wordAlloc, 32)
-    alloc := &p.wordBatch[0]
-    p.wordBatch = p.wordBatch[1:]
-    w := &alloc.word
-    w.Parts = p.wordParts(alloc.parts[:0])
-    return w
-
-func (p *Parser) wordOne(part WordPart) *Word {
-    if len(p.wordBatch) == 0 {
-        p.wordBatch = make([]wordAlloc, 32)
-    alloc := &p.wordBatch[0]
-    p.wordBatch = p.wordBatch[1:]
-    w := &alloc.word
-    w.Parts = alloc.parts[:1]
-    w.Parts[0] = part
-    return w
-
-func (p *Parser) call(w *Word) *CallExpr {
-    var alloc struct {
-        ce CallExpr
-        ws [4]*Word
-    ce := &alloc.ce
-    ce.Args = alloc.ws[:1]
-    ce.Args[0] = w
-    return ce
-
-type quoteState uint32
-
-const (
-    # The initial state of the parser.
-    noState quoteState = 1 << iota
-
-    # Used when parsing parameter expansions; use with [Parser.rune],
-    # [Parser.next] always returns [illegalTok].
-    runeByRune
-
-    # unquotedWordCont exists purely so that the '#' in $foo#bar does not
-    # get parsed as a comment; it's a tiny variation on [noState].
-    unquotedWordCont
-
-    subCmd
-    subCmdBckquo
-    dblQuotes
-    hdocWord
-    hdocBody
-    hdocBodyTabs
-    arithmExpr
-    arithmExprLet
-    arithmExprCmd
-    testExpr
-    testExprRegexp
-    switchCase
-    paramExpArithm
-    paramExpRepl
-    paramExpExp
-    arrayElems
-
-    allKeepSpaces = runeByRune | paramExpRepl | dblQuotes | hdocBody | hdocBodyTabs | paramExpRepl | paramExpExp
-    allRegTokens = noState | unquotedWordCont | subCmd | subCmdBckquo | hdocWord | switchCase | arrayElems | testExpr
-    allArithmExpr = arithmExpr | arithmExprLet | arithmExprCmd | paramExpArithm
-    allParamExp   = paramExpArithm | paramExpRepl | paramExpExp
-)
-
-type saveState struct {
-    quote       quoteState
-    buriedHdocs int
-
-func (p *Parser) preNested(quote quoteState) (s saveState) {
-    s.quote, s.buriedHdocs = p.quote, p.buriedHdocs
-    p.buriedHdocs, p.quote = len(p.heredocs), quote
-    return s
-
-func (p *Parser) postNested(s saveState) {
-    p.quote, p.buriedHdocs = s.quote, s.buriedHdocs
-
-func (p *Parser) unquotedWordBytes(w *Word) ([]byte, bool) {
-    buf := make([]byte, 0, 4)
-    didUnquote := False
-    for _, wp := range w.Parts {
-        buf, didUnquote = p.unquotedWordPart(buf, wp, False)
-    return buf, didUnquote
-
-func (p *Parser) unquotedWordPart(buf []byte, wp WordPart, quotes bool) (_ []byte, quoted bool) {
-    switch wp := wp.(type) {
-    case *Lit:
-        for i := 0; i < len(wp.Value); i++ {
-            if b := wp.Value[i]; b == '\\' and !quotes {
-                if i++; i < len(wp.Value) {
-                    buf = append(buf, wp.Value[i])
-                quoted = True
-            else {
-                buf = append(buf, b)
-    case *SglQuoted:
-        buf = append(buf, []byte(wp.Value)...)
-        quoted = True
-    case *DblQuoted:
-        for _, wp2 := range wp.Parts {
-            buf, _ = p.unquotedWordPart(buf, wp2, True)
-        quoted = True
-    return buf, quoted
-
-func (p *Parser) doHeredocs() {
-    hdocs := p.heredocs[p.buriedHdocs:]
-    if len(hdocs) == 0 {
-        # Nothing do do; don't even issue a read.
-        return
-    p.rune() # consume '\n', since we know p.tok == Token.NEWL_
-    old := p.quote
-    p.heredocs = p.heredocs[:p.buriedHdocs]
-    for i, r := range hdocs {
-        if p.err != nil {
-            break
-        p.quote = hdocBody
-        if r.Op == DashHdoc {
-            p.quote = hdocBodyTabs
-        stop, quoted := p.unquotedWordBytes(r.Word)
-        p.hdocStops = append(p.hdocStops, stop)
-        if i > 0 and p.r == '\n' {
-            p.rune()
-        if quoted {
-            r.Hdoc = p.quotedHdocWord()
-        else {
-            p.next()
-            r.Hdoc = p.getWord()
-        if stop := p.hdocStops[len(p.hdocStops)-1]; stop != nil {
-            p.posErr(r.Pos(), "unclosed here-document %#q", stop)
-        p.hdocStops = p.hdocStops[:len(p.hdocStops)-1]
-    p.quote = old
-
-func (p *Parser) got(tok token) bool {
-    if p.tok == tok {
-        p.next()
-        return True
-    return False
-
-func (p *Parser) gotRsrv(val string) (Pos, bool) {
-    pos := p.pos
-    if p.tok == Token.LIT_WORD_ and p.val == val {
-        p.next()
-        return pos, True
-    return pos, False
-
-func (p *Parser) recoverError() bool {
-    if p.recoveredErrors < p.recoverErrorsMax {
-        p.recoveredErrors++
-        return True
-    return False
-
-type noQuote string
-
-func (s noQuote) Format(f fmt.State, verb rune) {
-    f.Write([]byte(s))
-
-func (t token) Format(f fmt.State, verb rune) {
-    if t < _realTokenBoundary and verb == 'q' {
-        # EOF, Lit and the others should not be quoted in error messages
-        # as they are not real shell syntax like `if` or `{`.
-        f.Write([]byte(t.String()))
-    else {
-        fmt.Fprintf(f, fmt.FormatString(f, verb), t.String())
-
-func (p *Parser) followErr(pos Pos, left, right any) {
-    p.posErr(pos, "%#q must be followed by %#q", left, right)
-
-func (p *Parser) followErrExp(pos Pos, left any) {
-    p.followErr(pos, left, noQuote("an expression"))
-
-func (p *Parser) follow(lpos Pos, left string, tok token) {
-    if !p.got(tok) {
-        p.followErr(lpos, left, tok)
-
-func (p *Parser) followRsrv(lpos Pos, left, val string) Pos {
-    pos, ok := p.gotRsrv(val)
-    if !ok {
-        if p.recoverError() {
-            return recoveredPos
-        p.followErr(lpos, left, val)
-    return pos
-
-func (p *Parser) followStmts(left string, lpos Pos, stops ...string) ([]*Stmt, []Comment) {
-    # Language variants disallowing empty command lists:
-    # * [LANG_POSIX]: "A list is a sequence of one or more AND-OR lists...".
-    # * [LANG_BASH]: "A list is a sequence of one or more pipelines..."
-    #
-    # Language variants allowing empty command lists:
-    # * [LANG_ZSH]: "A list is a sequence of zero or more sublists...".
-    # * [LANG_MIR_BSD_KORN]: "Lists of commands can be created by separating pipelines...";
-    #   note that the man page is not explicit, but the shell clearly allows e.g. `{ }`.
-    if p.got(Token.SEMICOLON) {
-        if lang_in(p.lang, LANG_ZSH | LANG_MIR_BSD_KORN) {
-            return nil, nil # allow an empty list
-        p.followErr(lpos, left, noQuote("a statement list"))
-        return nil, nil
-    stmts, last := p.stmtList(stops...)
-    if len(stmts) < 1 {
-        if lang_in(p.lang, LANG_ZSH | LANG_MIR_BSD_KORN) {
-            return nil, nil # allow an empty list
-        if p.recoverError() {
-            return []*Stmt{{Position: recoveredPos}}, nil
-        p.followErr(lpos, left, noQuote("a statement list"))
-    return stmts, last
-
-func (p *Parser) followWordTok(tok token, pos Pos) *Word {
-    w := p.getWord()
-    if w == nil {
-        if p.recoverError() {
-            return p.wordOne(&Lit{ValuePos: recoveredPos})
-        p.followErr(pos, tok, noQuote("a word"))
-    return w
-
-func (p *Parser) stmtEnd(n Node, start, end string) Pos {
-    pos, ok := p.gotRsrv(end)
-    if !ok {
-        if p.recoverError() {
-            return recoveredPos
-        p.posErr(n.Pos(), "%#q statement must end with %#q", start, end)
-    return pos
-
-func (p *Parser) quoteErr(lpos Pos, quote token) {
-    p.posErr(lpos, "reached %#q without closing quote %#q", p.tok, quote)
-
-func (p *Parser) matchingErr(lpos Pos, left, right token) {
-    p.posErr(lpos, "reached %#q without matching %#q with %#q", p.tok, left, right)
-
-func (p *Parser) matched(lpos Pos, left, right token) Pos {
-    pos := p.pos
-    if !p.got(right) {
-        if p.recoverError() {
-            return recoveredPos
-        p.matchingErr(lpos, left, right)
-    return pos
-
-func (p *Parser) errPass(err error) {
-    if p.err == nil {
-        p.err = err
-        p.bsp = uint(len(p.bs)) + 1
-        p.r = utf8.RuneSelf
-        p.w = 1
-        p.tok = Token.EOF_
-
-# IsIncomplete reports whether a Parser error could have been avoided with
-# extra input bytes. For example, if an [io.EOF] was encountered while there was
-# an unclosed quote or parenthesis.
-func IsIncomplete(err error) bool {
-    perr, ok := err.(ParseError)
-    return ok and perr.Incomplete
-
-# TODO: probably redo with a [LangVariant] argument.
-# Perhaps offer an iterator version as well.
+##
 
 
 # IsKeyword returns True if the given word is a language keyword
 # in POSIX Shell or Bash.
 def is_keyword(word: str) -> bool:
     # This list has been copied from the bash 5.1 source code, file y.tab.c +4460
-    # TODO: should we include entries for zsh here? e.g. "{}", "repeat", "always", ...
     if word in (
         '!',
-        '[[', # only if COND_COMMAND is defined
-        ']]', # only if COND_COMMAND is defined
+        '[[',  # only if COND_COMMAND is defined
+        ']]',  # only if COND_COMMAND is defined
         'case',
-        'coproc', # only if COPROCESS_SUPPORT is defined
+        'coproc',  # only if COPROCESS_SUPPORT is defined
         'do',
         'done',
         'else',
@@ -701,9 +178,9 @@ def is_keyword(word: str) -> bool:
         'function',
         'if',
         'in',
-        'select', # only if SELECT_COMMAND is defined
+        'select',  # only if SELECT_COMMAND is defined
         'then',
-        'time', # only if COMMAND_TIMING is defined
+        'time',  # only if COMMAND_TIMING is defined
         'until',
         'while',
         '{',
@@ -712,1686 +189,1889 @@ def is_keyword(word: str) -> bool:
         return True
     return False
 
-# ParseError represents an error found when parsing a source file, from which
-# the parser cannot recover.
-type ParseError struct {
-    Filename string
-    Pos      Pos
-    Text     string
-
-    Incomplete bool
-
-func (e ParseError) Error() string {
-    if e.Filename == "" {
-        return fmt.Sprintf("%s: %s", e.Pos, e.Text)
-    return fmt.Sprintf("%s:%s: %s", e.Filename, e.Pos, e.Text)
-
-# LangError is returned when the parser encounters code that is only valid in
-# other shell language variants. The error includes what feature is not present
-# in the current language variant, and what languages support it.
-type LangError struct {
-    Filename string
-    Pos      Pos
-
-    # TODO: consider replacing the Langs slice with a bitset.
-
-    # Feature briefly describes which language feature caused the error.
-    Feature string
-    # Langs lists some of the language variants which support the feature.
-    Langs []LangVariant
-    # LangUsed is the language variant used which led to the error.
-    LangUsed LangVariant
-
-func (e LangError) Error() string {
-    var sb strings.Builder
-    if e.Filename != "" {
-        sb.WriteString(e.Filename + ":")
-    sb.WriteString(e.Pos.String() + ": ")
-    sb.WriteString(e.Feature)
-    if strings.HasSuffix(e.Feature, "s") {
-        sb.WriteString(" are a ")
-    else {
-        sb.WriteString(" is a ")
-    for i, lang := range e.Langs {
-        if i > 0 {
-            sb.WriteString("/")
-        sb.WriteString(lang.String())
-    sb.WriteString(" feature; tried parsing as ")
-    sb.WriteString(e.LangUsed.String())
-    return sb.String()
-
-func (p *Parser) posErr(pos Pos, format string, args ...any) {
-    # for i, arg := range args {
-    #     if arg, ok := arg.(fmt.Stringer); ok and arg != Token.EOF_ {
-    #         args[i] = quotedToken(arg)
-    #     }
-    # }
-    p.errPass(ParseError{
-        Filename:   p.f.Name,
-        Pos:        pos,
-        Text:       fmt.Sprintf(format, args...),
-        Incomplete: p.tok == Token.EOF_ and p.Incomplete(),
-
-func (p *Parser) curErr(format string, args ...any) {
-    p.posErr(p.pos, format, args...)
-
-func (p *Parser) checkLang(pos Pos, langSet LangVariant, format string, a ...any) {
-    if lang_in(p.lang, langSet) {
-        return
-    if langBashLike.in(langSet) {
-        # If we're reporting an error because a feature is for bash-like funcs,
-        # just mention "bash" rather than "bash/bats" for the sake of clarity.
-        langSet &^= LANG_BATS
-    p.errPass(LangError{
-        Filename: p.f.Name,
-        Pos:      pos,
-        Feature:  fmt.Sprintf(format, a...),
-        Langs:    slices.Collect(langSet.bits()),
-        LangUsed: p.lang,
-    })
-
-func (p *Parser) stmts(yield func(*Stmt, error) bool, stops ...string) {
-    gotEnd := True
-loop:
-    for p.tok != Token.EOF_ {
-        newLine := p.got(Token.NEWL_)
-        switch p.tok {
-        case Token.LIT_WORD_:
-            for _, stop := range stops {
-                if p.val == stop {
-                    break loop
-            if p.val == "}" {
-                p.curErr(`%#q can only be used to close a block`, rightBrace)
-        case Token.RIGHT_PAREN:
-            if p.quote == subCmd {
-                break loop
-        case Token.BCK_QUOTE:
-            if p.backquoteEnd() {
-                break loop
-        case Token.DBL_SEMICOLON, Token.SEMI_AND, Token.DBL_SEMI_AND, Token.SEMI_OR:
-            if p.quote == switchCase {
-                break loop
-            p.curErr("%#q can only be used in a case clause", p.tok)
-        if !newLine and !gotEnd {
-            p.curErr("statements must be separated by &, ; or a newline")
-        if p.tok == Token.EOF_ {
-            break
-        p.openNodes++
-        s := p.getStmt(True, False, False)
-        p.openNodes--
-        if s == nil {
-            p.invalidStmtStart()
-            break
-        gotEnd = s.Semicolon.IsValid()
-        if !yield(s, p.err) {
-            break
-
-func (p *Parser) stmtList(stops ...string) ([]*Stmt, []Comment) {
-    var stmts []*Stmt
-    var last []Comment
-    fn := func(s *Stmt, err error) bool {
-        stmts = append(stmts, s)
-        return True
-    p.stmts(fn, stops...)
-    split := len(p.accComs)
-    if p.tok == Token.LIT_WORD_ and (p.val == "elif" or p.val == "else" or p.val == "fi") {
-        # Split the comments, so that any aligned with an opening token
-        # get attached to it. For example:
-        #
-        #     if foo; then
-        #         # inside the body
-        #     # document the else
-        #     else
-        #     fi
-        # TODO(mvdan): look into deduplicating this with similar logic
-        # in caseItems.
-        for i, c := range slices.Backward(p.accComs) {
-            if c.Pos().Col() != p.pos.Col() {
-                break
-            split = i
-    if split > 0 { # keep last nil if empty
-        last = p.accComs[:split]
-    p.accComs = p.accComs[split:]
-    return stmts, last
-
-func (p *Parser) invalidStmtStart() {
-    switch p.tok {
-    case Token.SEMICOLON, Token.AND, Token.OR, Token.AND_AND, Token.OR_OR:
-        p.curErr("%#q can only immediately follow a statement", p.tok)
-    case Token.RIGHT_PAREN:
-        p.curErr("%#q can only be used to close a subshell", p.tok)
-    default:
-        p.curErr("%#q is not a valid start for a statement", p.tok)
-
-func (p *Parser) getWord() *Word {
-    if w := p.wordAnyNumber(); len(w.Parts) > 0 and p.err == nil {
-        return w
-    return nil
-
-func (p *Parser) getLit() *Lit {
-    switch p.tok {
-    case Token.LIT_, Token.LIT_WORD_, Token.LIT_REDIR_:
-        l := p.lit(p.pos, p.val)
-        p.next()
-        return l
-    return nil
-
-func (p *Parser) wordParts(wps []WordPart) []WordPart {
-    if p.quote == noState {
-        p.quote = unquotedWordCont
-        defer func() { p.quote = noState }()
-    for {
-        p.openNodes++
-        n := p.wordPart()
-        p.openNodes--
-        if n == nil {
-            if len(wps) == 0 {
-                return nil # normalize empty lists into nil
-            return wps
-        wps = append(wps, n)
-        if p.spaced {
-            return wps
-
-func (p *Parser) ensureNoNested(pos Pos) {
-    if p.forbidNested {
-        p.posErr(pos, "expansions not allowed in heredoc words")
-
-func (p *Parser) wordPart() WordPart {
-    switch p.tok {
-    if p.tok in (Token.LIT_, Token.LIT_WORD_, Token.LIT_REDIR_):
-        l := p.lit(p.pos, p.val)
-        p.next()
-        return l
-    elif p.tok == Token.DOLL_BRACE:
-        p.ensureNoNested(p.pos)
-        switch p.r {
-        case '|':
-            p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN, "`${|stmts;}`")
-            fallthrough
-        case ' ', '\t', '\n':
-            p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN, "`${ stmts;}`")
-            cs := &CmdSubst{
-                Left:     p.pos,
-                TempFile: p.r != '|',
-                ReplyVar: p.r == '|',
-            old := p.preNested(subCmd)
-            p.rune() # don't tokenize '|'
-            p.next()
-            cs.Stmts, cs.Last = p.stmtList("}")
-            p.postNested(old)
-            pos, ok := p.gotRsrv("}")
-            if !ok {
-                p.matchingErr(cs.Left, Token.DOLL_BRACE, rightBrace)
-            cs.Right = pos
-            return cs
-        default:
-            return p.paramExp()
-    case Token.DOLL_DBL_PAREN, Token.DOLL_BRACK:
-        p.ensureNoNested(p.pos)
-        left := p.tok
-        ar := &ArithmExp{Left: p.pos, Bracket: left == Token.DOLL_BRACK}
-        old := p.preNested(arithmExpr)
-        p.next()
-        if p.got(hash) {
-            p.checkLang(ar.Pos(), LANG_MIR_BSD_KORN, "unsigned expressions")
-            ar.Unsigned = True
-        ar.X = p.followArithm(left, ar.Left)
-        if ar.Bracket {
-            if p.tok != rightBrack {
-                p.arithmMatchingErr(ar.Left, Token.DOLL_BRACK, rightBrack)
-            p.postNested(old)
-            ar.Right = p.pos
-            p.next()
-        else {
-            ar.Right = p.arithmEnd(Token.DOLL_DBL_PAREN, ar.Left, old)
-        return ar
-    case Token.DOLL_PAREN:
-        p.ensureNoNested(p.pos)
-        return p.cmdSubst()
-    case Token.DOLLAR:
-        pe := p.paramExp()
-        if pe == nil { # was not actually a parameter expansion, like: "foo$"
-            l := p.lit(p.pos, "$")
-            p.next()
-            return l
-        p.ensureNoNested(pe.Dollar)
-        return pe
-    case Token.ASSGN_PAREN:
-        p.checkLang(p.pos, LANG_ZSH, `%#q process substitutions`, p.tok)
-        fallthrough
-    case Token.CMD_IN, Token.CMD_OUT:
-        p.ensureNoNested(p.pos)
-        ps := &ProcSubst{Op: ProcOperator(p.tok), OpPos: p.pos}
-        old := p.preNested(subCmd)
-        p.next()
-        ps.Stmts, ps.Last = p.stmtList()
-        p.postNested(old)
-        ps.Rparen = p.matched(ps.OpPos, token(ps.Op), Token.RIGHT_PAREN)
-        return ps
-    case Token.SGL_QUOTE, Token.DOLL_SGL_QUOTE:
-        sq := &SglQuoted{Left: p.pos, Dollar: p.tok == Token.DOLL_SGL_QUOTE}
-        r := p.r
-        for p.newLit(r); ; r = p.rune() {
-            switch r {
-            case '\\':
-                if sq.Dollar {
-                    p.rune()
-            case '\'':
-                sq.Right = p.nextPos()
-                sq.Value = p.endLit()
-
-                p.rune()
-                p.next()
-                return sq
-            case escNewl:
-                p.litBs = append(p.litBs, '\\', '\n')
-            case utf8.RuneSelf:
-                p.tok = Token.EOF_
-                if p.recoverError() {
-                    sq.Right = recoveredPos
-                    return sq
-                p.quoteErr(sq.Pos(), Token.SGL_QUOTE)
-                return nil
-    case Token.DBL_QUOTE, Token.DOLL_DBL_QUOTE:
-        if p.quote == dblQuotes {
-            # p.tok == Token.DBL_QUOTE, as "foo$" puts $ in the lit
-            return nil
-        return p.dblQuoted()
-    case Token.BCK_QUOTE:
-        if p.backquoteEnd() {
-            return nil
-        p.ensureNoNested(p.pos)
-        cs := &CmdSubst{Left: p.pos, Backquotes: True}
-        old := p.preNested(subCmdBckquo)
-        p.openBquotes++
-
-        # The lexer didn't call p.rune for us, so that it could have
-        # the right p.openBquotes to properly handle backslashes.
-        p.rune()
-
-        p.next()
-        cs.Stmts, cs.Last = p.stmtList()
-        if p.tok == Token.BCK_QUOTE and p.lastBquoteEsc < p.openBquotes-1 {
-            # e.g. found ` before the nested backquote \` was closed.
-            p.tok = Token.EOF_
-            p.quoteErr(cs.Pos(), Token.BCK_QUOTE)
-        p.postNested(old)
-        p.openBquotes--
-        cs.Right = p.pos
-
-        # Like above, the lexer didn't call p.rune for us.
-        p.rune()
-        if !p.got(Token.BCK_QUOTE) {
-            if p.recoverError() {
-                cs.Right = recoveredPos
-            else {
-                p.quoteErr(cs.Pos(), Token.BCK_QUOTE)
-        return cs
-    case Token.GLOB_QUEST, Token.GLOB_STAR, Token.GLOB_PLUS, Token.GLOB_AT, Token.GLOB_EXCL:
-        p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN, "extended globs")
-        eg := &ExtGlob{Op: GlobOperator(p.tok), OpPos: p.pos}
-        lparens := 1
-        r := p.r
-    globLoop:
-        for p.newLit(r); ; r = p.rune() {
-            switch r {
-            case utf8.RuneSelf:
-                break globLoop
-            case '(':
-                lparens++
-            case ')':
-                if lparens--; lparens == 0 {
-                    break globLoop
-        eg.Pattern = p.lit(posAddCol(eg.OpPos, 2), p.endLit())
-        p.rune()
-        p.next()
-        if lparens != 0 {
-            p.matchingErr(eg.OpPos, token(eg.Op), Token.RIGHT_PAREN)
-        return eg
-    default:
-        return nil
-
-func (p *Parser) cmdSubst() *CmdSubst {
-    cs := &CmdSubst{Left: p.pos}
-    old := p.preNested(subCmd)
-    p.next()
-    cs.Stmts, cs.Last = p.stmtList()
-    p.postNested(old)
-    cs.Right = p.matched(cs.Left, Token.DOLL_PAREN, Token.RIGHT_PAREN)
-    return cs
-
-func (p *Parser) dblQuoted() *DblQuoted {
-    alloc := &struct {
-        quoted DblQuoted
-        parts  [1]WordPart
-    }{
-        quoted: DblQuoted{Left: p.pos, Dollar: p.tok == Token.DOLL_DBL_QUOTE},
-    }
-    q := &alloc.quoted
-    old := p.quote
-    p.quote = dblQuotes
-    p.next()
-    q.Parts = p.wordParts(alloc.parts[:0])
-    p.quote = old
-    q.Right = p.pos
-    if !p.got(Token.DBL_QUOTE) {
-        if p.recoverError() {
-            q.Right = recoveredPos
-        else {
-            p.quoteErr(q.Pos(), Token.DBL_QUOTE)
-    return q
-
-# paramExp parses a short or full parameter expansion, depending on whether
-# [Parser.tok] is [Token.DOLLAR] or [Token.DOLL_BRACE]. It returns nil if a [dollar] token
-# does not form a valid parameter expansion, in which case it should be parsed
-# as a literal.
-func (p *Parser) paramExp() *ParamExp {
-    old := p.quote
-    p.quote = runeByRune
-    # [ParamExp.Short] means we are parsing $exp rather than ${exp}.
-    pe := &ParamExp{
-        Dollar: p.pos,
-        Short:  p.tok == Token.DOLLAR,
-    if !pe.Short and p.r == '(' {
-        p.checkLang(pe.Pos(), LANG_ZSH, `parameter expansion flags`)
-        # For now, for simplicity, we parse flags as just a literal.
-        # In the future, parsing as a word is better for cases like
-        # `${(ps.$sep.)val}`.
-        lparen := p.nextPos()
-        p.rune()
-        p.pos = p.nextPos()
-        for p.newLit(p.r); p.r != utf8.RuneSelf; p.rune() {
-            if p.r == ')' {
-                break
-        p.val = p.endLit()
-        if p.r != ')' {
-            p.tok = Token.EOF_ # we can only get here due to EOF
-            p.matchingErr(lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
-        pe.Flags = p.lit(p.pos, p.val)
-        p.rune()
-    if !pe.Short or lang_in(p.lang, LANG_ZSH) {
-        # Prefixes, like ${#name} to get the length of a variable.
-        # Note that in Zsh, the short form like $#name is allowed too.
-        switch p.r {
-        case '#':
-            if r := p.peek(); r == utf8.RuneSelf or singleRuneParam(r) or paramNameRune(r) or r == '"' {
-                pe.Length = True
-                p.rune()
-        case '%':
-            if r := p.peek(); r == utf8.RuneSelf or singleRuneParam(r) or paramNameRune(r) or r == '"' {
-                p.checkLang(pe.Pos(), LANG_MIR_BSD_KORN, "`${%%foo}`")
-                pe.Width = True
-                p.rune()
-        case '!':
-            if r := p.peek(); r == utf8.RuneSelf or singleRuneParam(r) or paramNameRune(r) or r == '"' {
-                p.checkLang(pe.Pos(), langBashLike|LANG_MIR_BSD_KORN, "`${!foo}`")
-                pe.Excl = True
-                p.rune()
-        case '+':
-            if r := p.peek(); r == utf8.RuneSelf or singleRuneParam(r) or paramNameRune(r) or r == '"' {
-                p.checkLang(pe.Pos(), LANG_ZSH, "`${+foo}`")
-                pe.Plus = True
-                p.rune()
-    if pe = p.paramExpParameter(pe); pe == nil {
-        p.quote = old
-        return nil # just "$"
-    # In short mode, any indexing or suffixes is not allowed, and we don't require '}'.
-    # Zsh is an exception: $foo[1] and $foo[1,3] are valid.
-    if pe.Short {
-        if lang_in(p.lang, LANG_ZSH) and p.r == '[' {
-            p.pos = p.nextPos()
-            p.rune()
-            pe.Index = p.eitherIndex()
-        p.quote = old
-        p.next()
-        return pe
-    # Index expressions like ${foo[1]}. Note that expansion suffixes can be combined,
-    # like ${foo[@]#replace/with}.
-    if p.r == '[' {
-        p.checkLang(p.nextPos(), langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH, "arrays")
-        if pe.Param != nil and !ValidName(pe.Param.Value) {
-            p.posErr(p.nextPos(), "cannot index a special parameter name")
-        p.pos = p.nextPos()
-        p.rune()
-        pe.Index = p.eitherIndex()
-    tokRune := p.r
-    p.pos = p.nextPos()
-    p.tok = p.paramToken(p.r)
-    if p.tok == rightBrace {
-        pe.Rbrace = p.pos
-        p.quote = old
-        p.next()
-        return pe
-    if p.tok != Token.EOF_ and (pe.Length or pe.Width or pe.Plus) {
-        p.curErr("cannot combine multiple parameter expansion operators")
-    switch p.tok {
-    case slash, dblSlash: # pattern search and replace
-        p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH, "search and replace")
-        pe.Repl = &Replace{All: p.tok == dblSlash}
-        p.quote = paramExpRepl
-        p.next()
-        pe.Repl.Orig = p.getWord()
-        p.quote = paramExpExp
-        if p.got(slash) {
-            pe.Repl.With = p.getWord()
-    case colon: # slicing
-        if lang_in(p.lang, LANG_ZSH) and (p.r == '&' or asciiLetter(p.r)) {
-            pos := p.pos
-        loop:
-            for p.newLit(p.r); ; p.rune() {
-                switch p.r {
-                case utf8.RuneSelf:
-                    p.tok = Token.EOF_
-                    p.matchingErr(pe.Dollar, Token.DOLL_BRACE, rightBrace)
-                    break loop
-                case '}':
-                    pe.Modifiers = append(pe.Modifiers, p.lit(pos, p.endLit()))
-                    pe.Rbrace = p.nextPos()
-                    p.rune()
-                    break loop
-                case ':':
-                    pe.Modifiers = append(pe.Modifiers, p.lit(pos, p.endLit()))
-                    p.rune()
-                    pos = p.nextPos()
-                    p.newLit(p.r)
-            p.quote = old
-            p.next()
-            return pe
-        p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH, "slicing")
-        pe.Slice = &Slice{}
-        colonPos := p.pos
-        p.quote = paramExpArithm
-        if p.next(); p.tok != colon {
-            pe.Slice.Offset = p.followArithm(colon, colonPos)
-        colonPos = p.pos
-        if p.got(colon) {
-            pe.Slice.Length = p.followArithm(colon, colonPos)
-        # Need to use a different matched style so arithm errors
-        # get reported correctly
-        p.quote = old
-        pe.Rbrace = p.pos
-        p.matchedArithm(pe.Dollar, Token.DOLL_BRACE, rightBrace)
-        return pe
-    case caret, dblCaret, comma, dblComma: # upper/lower case
-        p.checkLang(p.pos, langBashLike, "this expansion operator")
-        pe.Exp = p.paramExpExp()
-    case at, star:
-        switch {
-        case p.tok == star and !pe.Excl:
-            p.curErr("not a valid parameter expansion operator: %#q", p.tok)
-        case pe.Excl and p.r == '}':
-            p.checkLang(pe.Pos(), langBashLike, "`${!foo%s}`", p.tok)
-            pe.Names = ParNamesOperator(p.tok)
-            p.next()
-        case p.tok == at:
-            p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN, "this expansion operator")
-            fallthrough
-        default:
-            pe.Exp = p.paramExpExp()
-    case
-        Token.PLUS,
-        Token.COL_PLUS,
-        Token.MINUS,
-        Token.COL_MINUS,
-        Token.QUEST,
-        Token.COL_QUEST,
-        Token.ASSGN,
-        Token.COL_ASSGN,
-        Token.PERC,
-        Token.DBL_PERC,
-        Token.HASH,
-        Token.DBL_HASH,
-        Token.COL_HASH:
-        pe.Exp = p.paramExpExp()
-    case Token.EOF_:
-    default:
-        if paramNameRune(tokRune) {
-            if pe.Param != nil {
-                p.curErr("%#q cannot be followed by a word", pe.Param.Value)
-            else {
-                p.curErr("nested parameter expansion cannot be followed by a word")
-        else {
-            p.curErr("not a valid parameter expansion operator: %#q", string(tokRune))
-    if p.tok != Token.EOF_ and p.tok != rightBrace {
-        p.tok = p.paramToken(p.r)
-    p.quote = old
-    pe.Rbrace = p.matched(pe.Dollar, Token.DOLL_BRACE, rightBrace)
-    return pe
-
-func (p *Parser) nestedParameterStart(pe *ParamExp) (left token, quotePos Pos) {
-    if pe.Short {
-        return illegalTok, Pos{}
-    if p.r == '"' {
-        quotePos = p.nextPos()
-        p.rune()
-    if p.r != '$' {
-        if quotePos.IsValid() {
-            return Token.DOLLAR, quotePos
-        return illegalTok, Pos{}
-    switch p1 := p.peek(); p1 {
-    case '{', '(':
-        p.pos = p.nextPos()
-        p.checkLang(p.pos, LANG_ZSH, "nested parameter expansions")
-        if p.err != nil {
-            return illegalTok, Pos{} # xxx given that we overwrite p.tok below
-        p.rune()
-        p.rune()
-        if p1 == '{' {
-            left = Token.DOLL_BRACE
-        else { # '('
-            left = Token.DOLL_PAREN
-    return left, quotePos
-
-func (p *Parser) paramExpParameter(pe *ParamExp) *ParamExp {
-    # Check for Zsh nested parameter expressions like ${(f)"$(foo)"}.
-    if left, quotePos := p.nestedParameterStart(pe); left != illegalTok {
-        var wp WordPart
-        switch p.tok = left; p.tok {
-        case Token.DOLL_BRACE: # ${#${nested parameter}}
-            p.tok = Token.DOLL_BRACE
-            wp = p.paramExp()
-        case Token.DOLL_PAREN: # ${#$(nested command)}
-            wp = p.cmdSubst()
-        default: # Token.DOLLAR
-            p.posErr(pe.Pos(), "invalid nested parameter expansion")
-        if quotePos.IsValid() {
-            if p.r != '"' {
-                p.tok = p.paramToken(p.r)
-                if p.tok == illegalTok {
-                    p.posErr(pe.Pos(), "invalid nested parameter expansion")
-                else {
-                    p.quoteErr(quotePos, Token.DBL_QUOTE)
-            pe.NestedParam = &DblQuoted{
-                Left:  quotePos,
-                Right: p.nextPos(),
-                Parts: []WordPart{wp},
-            p.rune()
-        else {
-            pe.NestedParam = wp
-        return pe
-    # The parameter name itself, like $foo or $?.
-    if p.r in ('?', '-'):
-        if pe.Length and p.peek() != '}' {
-            # actually ${#-default}, not ${#-}; fix the ambiguity
-            pe.Length = False
-            pos := p.nextPos()
-            pe.Param = p.lit(posAddCol(pos, -1), "#")
-            pe.Param.ValueEnd = pos
-            break
-        fallthrough
-    elif p.r in ('@', '*', '#', '!', '$'):
-        r, pos := p.r, p.nextPos()
-        p.rune()
-        pe.Param = p.lit(pos, string(r))
-    else:
-        # Note that $1a is equivalent to ${1}a, but ${1a} is not.
-        # POSIX Shell says the latter is unspecified behavior, so match Bash's behavior.
-        pos := p.nextPos()
-        if pe.Short and singleRuneParam(p.r):
-            p.val = string(p.r)
-            p.rune()
-        else:
-            for p.newLit(p.r); p.r != utf8.RuneSelf; p.rune():
-                if !paramNameRune(p.r) and p.r != escNewl:
-                    break
-            p.val = p.endLit()
-            if !numberLiteral(p.val) and !ValidName(p.val) {
-                if pe.Short {
-                    return nil # just "$"
-                p.posErr(pos, "invalid parameter name")
-        pe.Param = p.lit(pos, p.val)
-    return pe
-
-func (p *Parser) param_exp_exp() *Expansion {
-    op := ParExpOperator(p.tok)
-    switch op {
-    case MatchEmpty:
-        p.checkLang(p.pos, LANG_ZSH, "${name%sarg}", op)
-    p.quote = paramExpExp
-    p.next()
-    if op == OtherParamOps {
-        switch p.tok {
-        case Token.LIT_, Token.LIT_WORD_:
-        default:
-            p.curErr("@ expansion operator requires a literal")
-        switch p.val {
-        case "a", "k", "u", "A", "E", "K", "L", "P", "U":
-            p.checkLang(p.pos, langBashLike, "this expansion operator")
-        case "#":
-            p.checkLang(p.pos, LANG_MIR_BSD_KORN, "this expansion operator")
-        case "Q":
-        default:
-            p.curErr("invalid @ expansion operator %#q", p.val)
-    return &Expansion{Op: op, Word: p.getWord()}
-
-func (p *Parser) eitherIndex() ArithmExpr {
-    old := p.quote
-    lpos := p.pos
-    p.quote = paramExpArithm
-    p.next()
-    if p.tok == star or p.tok == at {
-        p.tok, p.val = Token.LIT_WORD_, p.tok.String()
-    expr := p.followArithm(leftBrack, lpos)
-    p.quote = old
-    p.matchedArithm(lpos, leftBrack, rightBrack)
-    return expr
-
-func (p *Parser) zshSubFlags() *FlagsArithm {
-    zf := &FlagsArithm{}
-    # Lex flags as raw text, like paramExp does for ${(flags)...}.
-    lparen := p.pos
-    old := p.quote
-    p.quote = runeByRune
-    p.pos = p.nextPos()
-    for p.newLit(p.r); p.r != utf8.RuneSelf; p.rune() {
-        if p.r == ')' {
-            break
-    p.val = p.endLit()
-    if p.r != ')' {
-        p.tok = Token.EOF_
-        p.matchingErr(lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
-    zf.Flags = p.lit(p.pos, p.val)
-    p.rune()
-    p.quote = old
-    # Parse the expression; use arithmExprAssign so commas are left for ranges.
-    p.next()
-    if p.tok == star or p.tok == at {
-        p.tok, p.val = Token.LIT_WORD_, p.tok.String()
-    zf.X = p.arithmExprAssign(False)
-    return zf
-
-func (p *Parser) stopToken() bool {
-    switch p.tok {
-    case
-        Token.EOF_,
-        Token.NEWL_,
-        Token.SEMICOLON,
-        Token.AND,
-        Token.OR,
-        Token.AND_AND,
-        Token.OR_OR,
-        Token.OR_AND,
-        Token.DBL_SEMICOLON,
-        Token.SEMI_AND,
-        Token.DBL_SEMI_AND,
-        Token.SEMI_OR,
-        Token.RIGHT_PAREN:
-        return True
-    case Token.BCK_QUOTE:
-        return p.backquoteEnd()
-    return False
-
-func (p *Parser) backquoteEnd() bool {
-    return p.lastBquoteEsc < p.openBquotes
 
 # ValidName returns whether val is a valid name as per the POSIX spec.
-func ValidName(val string) bool {
-    if val == "" {
+def valid_name(val: str) -> bool:
+    if val == '':
         return False
-    for i, r := range val {
-        switch {
-        case asciiLetter(r), r == '_':
-        case i > 0 and asciiDigit(r):
-        default:
-            return False
-    return True
-
-func numberLiteral[T string | []byte](val T) bool {
-    if len(val) == 0 {
-        return False
-    for _, r := range string(val) {
-        if !asciiDigit(r) {
-            return False
-    return True
-
-func (p *Parser) hasValidIdent() bool {
-    if p.tok != Token.LIT_ and p.tok != Token.LIT_WORD_ {
-        return False
-    if end := p.eqlOffs; end > 0 {
-        if p.val[end-1] == '+' and lang_in(p.lang, langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) {
-            end-- # a+=x
-        if ValidName(p.val[:end]) {
-            return True
-    else if !ValidName(p.val) {
-        return False # *[i]=x
-    return p.r == '[' # a[i]=x
-
-func (p *Parser) getAssign(needEqual bool) *Assign {
-    as := &Assign{}
-    if p.eqlOffs > 0 { # foo=bar
-        nameEnd := p.eqlOffs
-        if lang_in(p.lang, langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) and p.val[p.eqlOffs-1] == '+' {
-            # a+=b
-            as.Append = True
-            nameEnd--
-        as.Name = p.lit(p.pos, p.val[:nameEnd])
-        # since we're not using the entire p.val
-        as.Name.ValueEnd = posAddCol(as.Name.ValuePos, nameEnd)
-        left := p.lit(posAddCol(p.pos, 1), p.val[p.eqlOffs+1:])
-        if left.Value != "" {
-            left.ValuePos = posAddCol(left.ValuePos, p.eqlOffs)
-            as.Value = p.wordOne(left)
-        p.next()
-    else { # foo[x]=bar
-        as.Name = p.lit(p.pos, p.val)
-        # hasValidIdent already checks p.r is '['
-        p.rune()
-        p.pos = posAddCol(p.pos, 1)
-        as.Index = p.eitherIndex()
-        if p.spaced or p.stopToken() {
-            if needEqual {
-                p.followErr(as.Pos(), "a[b]", assgn)
-            else {
-                as.Naked = True
-                return as
-        if p.tok == Token.ASSGN_PAREN {
-            p.curErr("arrays cannot be nested")
-            return nil
-        if len(p.val) > 0 and p.val[0] == '+' {
-            as.Append = True
-            p.val = p.val[1:]
-            p.pos = posAddCol(p.pos, 1)
-        if len(p.val) < 1 or p.val[0] != '=' {
-            if as.Append {
-                p.followErr(as.Pos(), "a[b]+", assgn)
-            else {
-                p.followErr(as.Pos(), "a[b]", assgn)
-            return nil
-        p.pos = posAddCol(p.pos, 1)
-        p.val = p.val[1:]
-        if p.val == "" {
-            p.next()
-    if p.spaced or p.stopToken() {
-        return as
-    if as.Value == nil and p.tok == Token.LEFT_PAREN {
-        p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH, "arrays")
-        as.Array = &ArrayExpr{Lparen: p.pos}
-        newQuote := p.quote
-        if lang_in(p.lang, langBashLike | LANG_ZSH) {
-            newQuote = arrayElems
-        old := p.preNested(newQuote)
-        p.next()
-        p.got(Token.NEWL_)
-        for p.tok != Token.EOF_ and p.tok != Token.RIGHT_PAREN {
-            ae := &ArrayElem{}
-            ae.Comments, p.accComs = p.accComs, nil
-            if p.tok == leftBrack {
-                left := p.pos
-                ae.Index = p.eitherIndex()
-                if p.tok == Token.ASSGN_PAREN {
-                    p.curErr("arrays cannot be nested")
-                    return nil
-                p.follow(left, `[x]`, assgn)
-            if ae.Value = p.getWord(); ae.Value == nil {
-                switch p.tok {
-                case Token.NEWL_, Token.RIGHT_PAREN, leftBrack:
-                    # TODO: support [index]=[
-                default:
-                    p.curErr("array element values must be words")
-                    return nil
-            if len(p.accComs) > 0 {
-                c := p.accComs[0]
-                if c.Pos().Line() == ae.End().Line() {
-                    ae.Comments = append(ae.Comments, c)
-                    p.accComs = p.accComs[1:]
-            as.Array.Elems = append(as.Array.Elems, ae)
-            p.got(Token.NEWL_)
-        as.Array.Last, p.accComs = p.accComs, nil
-        p.postNested(old)
-        as.Array.Rparen = p.matched(as.Array.Lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
-    else if w := p.getWord(); w != nil {
-        if as.Value == nil {
-            as.Value = w
-        else {
-            as.Value.Parts = append(as.Value.Parts, w.Parts...)
-    return as
-
-func (p *Parser) peekRedir() bool {
-    switch p.tok {
-    case
-        Token.LIT_REDIR_,
-        Token.RDR_OUT,
-        Token.APP_OUT,
-        Token.RDR_IN,
-        Token.RDR_IN_OUT,
-        Token.DPL_IN,
-        Token.DPL_OUT,
-        Token.RDR_CLOB,
-        Token.RDR_TRUNC,
-        Token.APP_CLOB,
-        Token.APP_TRUNC,
-        Token.HDOC,
-        Token.DASH_HDOC,
-        Token.WORD_HDOC,
-        Token.RDR_ALL,
-        Token.RDR_ALL_CLOB,
-        Token.RDR_ALL_TRUNC,
-        Token.APP_ALL,
-        Token.APP_ALL_CLOB,
-        Token.APP_ALL_TRUNC:
-        return True
-    return False
-
-func (p *Parser) doRedirect(s *Stmt) {
-    var r *Redirect
-    if s.Redirs == nil {
-        var alloc struct {
-            redirs [4]*Redirect
-            redir  Redirect
-        s.Redirs = alloc.redirs[:0]
-        r = &alloc.redir
-        s.Redirs = append(s.Redirs, r)
-    else {
-        r = &Redirect{}
-        s.Redirs = append(s.Redirs, r)
-    r.N = p.getLit()
-    if r.N != nil and r.N.Value[0] == '{' {
-        p.checkLang(r.N.Pos(), langBashLike, "`{varname}` redirects")
-    r.Op, r.OpPos = RedirOperator(p.tok), p.pos
-    switch r.Op {
-    case RdrAll, AppAll:
-        p.checkLang(p.pos, langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH, "%#q redirects", r.Op)
-    case RdrTrunc, AppClob, AppTrunc, RdrAllClob, RdrAllTrunc, AppAllClob, AppAllTrunc:
-        p.checkLang(p.pos, LANG_ZSH, "%#q redirects", r.Op)
-    p.next()
-    switch r.Op {
-    case Hdoc, DashHdoc:
-        old := p.quote
-        p.quote, p.forbidNested = hdocWord, True
-        p.heredocs = append(p.heredocs, r)
-        r.Word = p.followWordTok(token(r.Op), r.OpPos)
-        p.quote, p.forbidNested = old, False
-        if p.tok == Token.NEWL_ {
-            if len(p.accComs) > 0 {
-                c := p.accComs[0]
-                if c.Pos().Line() == s.End().Line() {
-                    s.Comments = append(s.Comments, c)
-                    p.accComs = p.accComs[1:]
-            p.doHeredocs()
-    case WordHdoc:
-        p.checkLang(r.OpPos, langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH, "herestrings")
-        fallthrough
-    default:
-        r.Word = p.followWordTok(token(r.Op), r.OpPos)
-
-func (p *Parser) getStmt(readEnd, binCmd, fnBody bool) *Stmt {
-    pos, ok := p.gotRsrv("!")
-    s := &Stmt{Position: pos}
-    if ok {
-        s.Negated = True
-        if p.stopToken() {
-            p.posErr(s.Pos(), `%#q cannot form a statement alone`, exclMark)
-        if _, ok := p.gotRsrv("!"); ok {
-            p.posErr(s.Pos(), `cannot negate a command multiple times`)
-    if s = p.gotStmtPipe(s, False); s == nil or p.err != nil {
-        return nil
-    # instead of using recursion, iterate manually
-    for p.tok == Token.AND_AND or p.tok == Token.OR_OR {
-        if binCmd {
-            # left associativity: in a list of BinaryCmds, the
-            # right recursion should only read a single element
-            return s
-        b := &BinaryCmd{
-            OpPos: p.pos,
-            Op:    BinCmdOperator(p.tok),
-            X:     s,
-        }
-        p.next()
-        p.got(Token.NEWL_)
-        b.Y = p.getStmt(False, True, False)
-        if b.Y == nil or p.err != nil {
-            if p.recoverError() {
-                b.Y = &Stmt{Position: recoveredPos}
-            else {
-                p.followErr(b.OpPos, b.Op, noQuote("a statement"))
-                return nil
-        s = &Stmt{Position: s.Position}
-        s.Cmd = b
-        s.Comments, b.X.Comments = b.X.Comments, nil
-    if readEnd {
-        switch p.tok {
-        case Token.SEMICOLON:
-            s.Semicolon = p.pos
-            p.next()
-        case Token.AND:
-            s.Semicolon = p.pos
-            p.next()
-            s.Background = True
-        case Token.OR_AND:
-            s.Semicolon = p.pos
-            p.next()
-            s.Coprocess = True
-    if len(p.accComs) > 0 and !binCmd and !fnBody {
-        c := p.accComs[0]
-        if c.Pos().Line() == s.End().Line() {
-            s.Comments = append(s.Comments, c)
-            p.accComs = p.accComs[1:]
-    return s
-
-func (p *Parser) gotStmtPipe(s *Stmt, binCmd bool) *Stmt {
-    s.Comments, p.accComs = p.accComs, nil
-    for p.peekRedir() {
-        p.doRedirect(s)
-    redirsStart := len(s.Redirs)
-    if p.tok == Token.LIT_WORD_:
-        switch p.val {
-        if p.val == "{":
-            p.block(s)
-        elif p.val == "{}":
-            # Zsh treats closing braces in a special way, allowing this.
-            if lang_in(p.lang, LANG_ZSH):
-                s.Cmd = &Block{Lbrace: p.pos, Rbrace: posAddCol(p.pos, 1)}
-                p.next()
-        elif p.val == "if":
-            p.ifClause(s)
-        elif p.val in ("while", "until"):
-            # TODO(zsh): "repeat"
-            p.whileClause(s, p.val == "until")
-        elif p.val == "for":
-            p.forClause(s)
-        elif p.val == "case":
-            p.caseClause(s)
-        # TODO(zsh): { try-list } "always" { always-list }
-        elif p.val == "}":
-            p.curErr(`%#q can only be used to close a block`, rightBrace)
-        elif p.val in ("then", "elif"):
-            p.curErr("%#q can only be used in an `if`", p.val)
-        elif p.val == "fi":
-            p.curErr("%#q can only be used to end an `if`", p.val)
-        elif p.val == "do":
-            p.curErr(`%#q can only be used in a loop`, p.val)
-        elif p.val == "done":
-            p.curErr(`%#q can only be used to end a loop`, p.val)
-        elif p.val == "esac":
-            p.curErr("%#q can only be used to end a `case`", p.val)
-        elif p.val == "!":
-            if !s.Negated {
-                p.curErr(`%#q can only be used in full statements`, exclMark)
-                break
-        elif p.val == "[[":
-            if lang_in(p.lang, langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                p.testClause(s)
-        elif p.val == "]]":
-            if lang_in(p.lang, langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                p.curErr(`%#q can only be used to close a test`, dblRightBrack)
-        elif p.val == "let":
-            if lang_in(p.lang, langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                p.letClause(s)
-        elif p.val == "function":
-            if lang_in(p.lang, langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                p.bashFuncDecl(s)
-        elif p.val == "declare":
-            if lang_in(p.lang, langBashLike | LANG_ZSH) { # Note that mksh lacks this one.
-                p.declClause(s)
-        elif p.val in ("local", "export", "readonly", "typeset", "nameref"):
-            if lang_in(p.lang, langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                p.declClause(s)
-        elif p.val == "time":
-            if lang_in(p.lang, langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                p.timeClause(s)
-        elif p.val == "coproc":
-            if lang_in(p.lang, langBashLike) { # Note that mksh lacks this one.
-                p.coprocClause(s)
-        elif p.val == "select":
-            if lang_in(p.lang, langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                p.selectClause(s)
-        elif p.val == "@test":
-            if lang_in(p.lang, LANG_BATS) {
-                p.testDecl(s)
-        if s.Cmd != nil {
-            break
-        if p.hasValidIdent() {
-            p.callExpr(s, nil, True)
-            break
-        name := p.lit(p.pos, p.val)
-        if p.next(); p.got(Token.LEFT_PAREN):
-            p.follow(name.ValuePos, "foo(", Token.RIGHT_PAREN)
-            if lang_in(p.lang, LANG_POSIX) and !ValidName(name.Value) {
-                p.posErr(name.Pos(), "invalid func name")
-            p.funcDecl(s, name.ValuePos, False, True, name)
+    for i, r in enumerate(val):
+        if ascii_letter(r) or r == '_':
+            pass
+        elif i > 0 and ascii_digit(r):
+            pass
         else:
-            p.callExpr(s, p.wordOne(name), False)
-    elif p.tok == Token.BCK_QUOTE:
-        if p.backquoteEnd() {
-            break
-        fallthrough
-    elif p.tok in (
-        Token.LIT_,
-        Token.DOLL_BRACE,
-        Token.DOLL_DBL_PAREN,
-        Token.DOLL_PAREN,
-        Token.DOLLAR,
-        Token.CMD_IN,
-        Token.ASSGN_PAREN,
-        Token.CMD_OUT,
-        Token.SGL_QUOTE,
-        Token.DOLL_SGL_QUOTE,
-        Token.DBL_QUOTE,
-        Token.DOLL_DBL_QUOTE,
-        Token.DOLL_BRACK,
-        Token.GLOB_QUEST,
-        Token.GLOB_STAR,
-        Token.GLOB_PLUS,
-        Token.GLOB_AT,
-        Token.GLOB_EXCL
-    ):
-        if p.hasValidIdent():
-            p.callExpr(s, nil, True)
-            break
-        w := p.wordAnyNumber()
-        if p.got(Token.LEFT_PAREN) {
-            p.posErr(w.Pos(), "invalid func name")
-        p.callExpr(s, w, False)
-    elif p.tok == Token.LEFT_PAREN:
-        if p.r == ')' {
-            p.rune()
-            fpos := p.pos
-            p.next()
-            if p.tok == Token.LIT_WORD_ and p.val == "{" {
-                p.checkLang(fpos, LANG_ZSH, "anonymous functions")
-            p.funcDecl(s, fpos, False, True)
-            break
-        p.subshell(s)
-    elif p.tok == Token.DBL_LEFT_PAREN:
-        p.arithmExpCmd(s)
-    if s.Cmd == nil and len(s.Redirs) == 0:
-        return nil # no statement found
-    if redirsStart > 0 and s.Cmd != nil:
-        if _, ok := s.Cmd.(*CallExpr); !ok:
-            p.checkLang(s.Pos(), LANG_ZSH, "redirects before compound commands")
-    for p.peekRedir():
-        p.doRedirect(s)
-    # instead of using recursion, iterate manually
-    for p.tok == Token.OR or p.tok == Token.OR_AND:
-        if binCmd {
-            # left associativity: in a list of BinaryCmds, the
-            # right recursion should only read a single element
-            return s
-        if p.tok == Token.OR_AND and lang_in(p.lang, LANG_MIR_BSD_KORN) {
-            # No need to check for LANG_POSIX, as on that language
-            # we parse |& as two tokens.
-            break
-        b := &BinaryCmd{OpPos: p.pos, Op: BinCmdOperator(p.tok), X: s}
-        p.next()
-        p.got(Token.NEWL_)
-        if b.Y = p.gotStmtPipe(&Stmt{Position: p.pos}, True); b.Y == nil or p.err != nil {
-            if p.recoverError() {
-                b.Y = &Stmt{Position: recoveredPos}
-            else {
-                p.followErr(b.OpPos, b.Op, noQuote("a statement"))
-                break
-        s = &Stmt{Position: s.Position}
-        s.Cmd = b
-        s.Comments, b.X.Comments = b.X.Comments, nil
-        # in "! x | y", the bang applies to the entire pipeline
-        s.Negated = b.X.Negated
-        b.X.Negated = False
-    return s
+            return False
+    return True
 
-func (p *Parser) subshell(s *Stmt) {
-    sub := &Subshell{Lparen: p.pos}
-    old := p.preNested(subCmd)
-    p.next()
-    sub.Stmts, sub.Last = p.followStmts("(", sub.Lparen)
-    p.postNested(old)
-    sub.Rparen = p.matched(sub.Lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
-    s.Cmd = sub
 
-func (p *Parser) arithmExpCmd(s *Stmt) {
-    ar := &ArithmCmd{Left: p.pos}
-    old := p.preNested(arithmExprCmd)
-    p.next()
-    if p.got(hash) {
-        p.checkLang(ar.Pos(), LANG_MIR_BSD_KORN, "unsigned expressions")
-        ar.Unsigned = True
-    ar.X = p.followArithm(Token.DBL_LEFT_PAREN, ar.Left)
-    ar.Right = p.arithmEnd(Token.DBL_LEFT_PAREN, ar.Left, old)
-    s.Cmd = ar
+def number_literal(val: str) -> bool:
+    if len(val) == 0:
+        return False
+    for r in val:
+        if not ascii_digit(r):
+            return False
+    return True
 
-func (p *Parser) block(s *Stmt) {
-    b := &Block{Lbrace: p.pos}
-    p.next()
-    b.Stmts, b.Last = p.followStmts("{", b.Lbrace, "}")
-    if pos, ok := p.gotRsrv("}"); ok {
-        b.Rbrace = pos
-    else if p.recoverError() {
-        b.Rbrace = recoveredPos
-    else {
-        p.matchingErr(b.Lbrace, leftBrace, rightBrace)
-    s.Cmd = b
 
-func (p *Parser) ifClause(s *Stmt) {
-    rootIf := &IfClause{Position: p.pos}
-    p.next()
-    rootIf.Cond, rootIf.CondLast = p.followStmts("if", rootIf.Position, "then")
-    rootIf.ThenPos = p.followRsrv(rootIf.Position, "if <cond>", "then")
-    rootIf.Then, rootIf.ThenLast = p.followStmts("then", rootIf.ThenPos, "fi", "elif", "else")
-    curIf := rootIf
-    for p.tok == Token.LIT_WORD_ and p.val == "elif" {
-        elf := &IfClause{Position: p.pos}
-        curIf.Last = p.accComs
-        p.accComs = nil
-        p.next()
-        elf.Cond, elf.CondLast = p.followStmts("elif", elf.Position, "then")
-        elf.ThenPos = p.followRsrv(elf.Position, "elif <cond>", "then")
-        elf.Then, elf.ThenLast = p.followStmts("then", elf.ThenPos, "fi", "elif", "else")
-        curIf.Else = elf
-        curIf = elf
-    if elsePos, ok := p.gotRsrv("else"); ok {
-        curIf.Last = p.accComs
-        p.accComs = nil
-        els := &IfClause{Position: elsePos}
-        els.Then, els.ThenLast = p.followStmts("else", els.Position, "fi")
-        curIf.Else = els
-        curIf = els
-    curIf.Last = p.accComs
-    p.accComs = nil
-    rootIf.FiPos = p.stmtEnd(rootIf, "if", "fi")
-    for els := rootIf.Else; els != nil; els = els.Else {
-        # All the nested IfClauses share the same FiPos.
-        els.FiPos = rootIf.FiPos
-    s.Cmd = rootIf
+##
 
-func (p *Parser) whileClause(s *Stmt, until bool) {
-    wc := &WhileClause{WhilePos: p.pos, Until: until}
-    rsrv := "while"
-    rsrvCond := "while <cond>"
-    if wc.Until {
-        rsrv = "until"
-        rsrvCond = "until <cond>"
-    p.next()
-    wc.Cond, wc.CondLast = p.followStmts(rsrv, wc.WhilePos, "do")
-    wc.DoPos = p.followRsrv(wc.WhilePos, rsrvCond, "do")
-    wc.Do, wc.DoLast = p.followStmts("do", wc.DoPos, "done")
-    wc.DonePos = p.stmtEnd(wc, rsrv, "done")
-    s.Cmd = wc
 
-func (p *Parser) forClause(s *Stmt) {
-    fc := &ForClause{ForPos: p.pos}
-    p.next()
-    fc.Loop = p.loop(fc.ForPos)
+class Parser:
+    """Parser holds the internal state of the parsing mechanism of a program."""
 
-    start, end := "do", "done"
-    if pos, ok := p.gotRsrv("{"); ok {
-        p.checkLang(pos, langBashLike|LANG_MIR_BSD_KORN, "for loops with braces")
-        fc.DoPos = pos
-        fc.Braces = True
-        start, end = "{", "}"
-    else {
-        fc.DoPos = p.followRsrv(fc.ForPos, "for foo [in words]", start)
+    # Expose quote state constants as class attributes for access from other modules
+    _NO_STATE = _NO_STATE
+    _RUNE_BY_RUNE = _RUNE_BY_RUNE
+    _UNQUOTED_WORD_CONT = _UNQUOTED_WORD_CONT
+    _SUB_CMD = _SUB_CMD
+    _SUB_CMD_BCKQUO = _SUB_CMD_BCKQUO
+    _DBL_QUOTES = _DBL_QUOTES
+    _HDOC_WORD = _HDOC_WORD
+    _HDOC_BODY = _HDOC_BODY
+    _HDOC_BODY_TABS = _HDOC_BODY_TABS
+    _ARITHM_EXPR = _ARITHM_EXPR
+    _ARITHM_EXPR_LET = _ARITHM_EXPR_LET
+    _ARITHM_EXPR_CMD = _ARITHM_EXPR_CMD
+    _TEST_EXPR = _TEST_EXPR
+    _TEST_EXPR_REGEXP = _TEST_EXPR_REGEXP
+    _SWITCH_CASE = _SWITCH_CASE
+    _PARAM_EXP_ARITHM = _PARAM_EXP_ARITHM
+    _PARAM_EXP_REPL = _PARAM_EXP_REPL
+    _PARAM_EXP_EXP = _PARAM_EXP_EXP
+    _ARRAY_ELEMS = _ARRAY_ELEMS
+    _ALL_KEEP_SPACES = _ALL_KEEP_SPACES
+    _ALL_REG_TOKENS = _ALL_REG_TOKENS
+    _ALL_ARITHM_EXPR = _ALL_ARITHM_EXPR
+    _ALL_PARAM_EXP = _ALL_PARAM_EXP
+    _RECOVERED_POS = _RECOVERED_POS
 
-    s.Comments = append(s.Comments, p.accComs...)
-    p.accComs = nil
-    fc.Do, fc.DoLast = p.followStmts(start, fc.DoPos, end)
-    fc.DonePos = p.stmtEnd(fc, "for", end)
-    s.Cmd = fc
+    def __init__(self) -> None:
+        super().__init__()
 
-func (p *Parser) loop(fpos Pos) Loop {
-    switch p.tok {
-    case Token.LEFT_PAREN, Token.DBL_LEFT_PAREN:
-        p.checkLang(p.pos, langBashLike|LANG_ZSH, "c-style fors")
-    if p.tok == Token.DBL_LEFT_PAREN {
-        cl := &CStyleLoop{Lparen: p.pos}
-        old := p.preNested(arithmExprCmd)
-        p.next()
-        cl.Init = p.arithmExpr(False)
-        if !p.got(Token.DBL_SEMICOLON) {
-            p.follow(p.pos, "expr", Token.SEMICOLON)
-            cl.Cond = p.arithmExpr(False)
-            p.follow(p.pos, "expr", Token.SEMICOLON)
-        cl.Post = p.arithmExpr(False)
-        cl.Rparen = p.arithmEnd(Token.DBL_LEFT_PAREN, cl.Lparen, old)
-        p.got(Token.SEMICOLON)
-        p.got(Token.NEWL_)
-        return cl
-    return p.wordIter("for", fpos)
+        self.src: str = ''
+        self.bsp: int = 0
+        self.r: str = ''
+        self.w: int = 0
 
-func (p *Parser) wordIter(ftok string, fpos Pos) *WordIter {
-    wi := &WordIter{}
-    if wi.Name = p.getLit(); wi.Name == nil {
-        p.followErr(fpos, ftok, noQuote("a literal"))
-    if p.got(Token.SEMICOLON) {
-        p.got(Token.NEWL_)
-        return wi
-    p.got(Token.NEWL_)
-    if pos, ok := p.gotRsrv("in"); ok {
-        wi.InPos = pos
-        for !p.stopToken() {
-            if w := p.getWord(); w == nil {
-                p.curErr("word list can only contain words")
-            else {
-                wi.Items = append(wi.Items, w)
-        p.got(Token.SEMICOLON)
-        p.got(Token.NEWL_)
-    else if p.tok == Token.LIT_WORD_ and p.val == "do" {
-        pass
-    else {
-        p.followErr(fpos, ftok+" foo", noQuote("`in`, `do`, `;`, or a newline"))
-    return wi
+        self.f: File | None = None
 
-func (p *Parser) selectClause(s *Stmt) {
-    fc := &ForClause{ForPos: p.pos, Select: True}
-    p.next()
-    fc.Loop = p.wordIter("select", fc.ForPos)
-    fc.DoPos = p.followRsrv(fc.ForPos, "select foo [in words]", "do")
-    fc.Do, fc.DoLast = p.followStmts("do", fc.DoPos, "done")
-    fc.DonePos = p.stmtEnd(fc, "select", "done")
-    s.Cmd = fc
+        self.spaced: bool = False
 
-func (p *Parser) caseClause(s *Stmt) {
-    cc := &CaseClause{Case: p.pos}
-    p.next()
-    cc.Word = p.getWord()
-    if cc.Word == nil {
-        p.followErr(cc.Case, "case", noQuote("a word"))
-    end := "esac"
-    p.got(Token.NEWL_)
-    if pos, ok := p.gotRsrv("{"); ok {
-        cc.In = pos
-        cc.Braces = True
-        p.checkLang(cc.Pos(), LANG_MIR_BSD_KORN, "`case i {`")
-        end = "}"
-    else {
-        cc.In = p.followRsrv(cc.Case, "case x", "in")
-    cc.Items = p.caseItems(end)
-    cc.Last, p.accComs = p.accComs, nil
-    cc.Esac = p.stmtEnd(cc, "case", end)
-    s.Cmd = cc
+        self.err: Exception | None = None
+        self.read_err: Exception | None = None
+        self.read_eof: bool = False
 
-func (p *Parser) caseItems(stop string) (items []*CaseItem) {
-    p.got(Token.NEWL_)
-    for p.tok != Token.EOF_ and (p.tok != Token.LIT_WORD_ or p.val != stop) {
-        ci := &CaseItem{}
-        ci.Comments, p.accComs = p.accComs, nil
-        p.got(Token.LEFT_PAREN)
-        for p.tok != Token.EOF_ {
-            if w := p.getWord(); w == nil {
-                p.curErr("case patterns must consist of words")
-            else {
-                ci.Patterns = append(ci.Patterns, w)
-            if p.tok == Token.RIGHT_PAREN {
-                break
-            if !p.got(Token.OR) {
-                p.curErr("case patterns must be separated with %#q", Token.OR)
-        old := p.preNested(switchCase)
-        p.next()
-        ci.Stmts, ci.Last = p.stmtList(stop)
-        p.postNested(old)
-        switch p.tok {
-        case Token.DBL_SEMICOLON, Token.SEMI_AND, Token.DBL_SEMI_AND, Token.SEMI_OR:
-        default:
-            ci.Op = Break
-            items = append(items, ci)
-            return items
-        ci.Last = append(ci.Last, p.accComs...)
-        p.accComs = nil
-        ci.OpPos = p.pos
-        ci.Op = CaseOperator(p.tok)
-        p.next()
-        p.got(Token.NEWL_)
+        self.tok: Token = Token.ILLEGAL_TOK
+        self.val: str = ''
 
-        # Split the comments:
-        #
-        # case x in
-        # a)
-        #   foo
-        #   ;;
-        #   # comment for a
-        # # comment for b
-        # b)
-        #   [...]
-        split := len(p.accComs)
-        for i, c := range slices.Backward(p.accComs) {
-            if c.Pos().Col() != p.pos.Col() {
-                break
-            split = i
-        ci.Comments = append(ci.Comments, p.accComs[:split]...)
-        p.accComs = p.accComs[split:]
+        self.offs: int = 0
+        self.line: int = 1
+        self.col: int = 1
 
-        items = append(items, ci)
-    return items
+        self.pos: Pos = Pos()
 
-func (p *Parser) testClause(s *Stmt) {
-    tc := &TestClause{Left: p.pos}
-    old := p.preNested(testExpr)
-    p.next()
-    if tc.X = p.testExprBinary(False); tc.X == nil {
-        p.followErrExp(tc.Left, dblLeftBrack)
-    tc.Right = p.pos
-    if _, ok := p.gotRsrv("]]"); !ok {
-        p.matchingErr(tc.Left, dblLeftBrack, dblRightBrack)
-    p.postNested(old)
-    s.Cmd = tc
+        self.quote: int = _NO_STATE
+        self.eql_offs: int = 0
 
-func (p *Parser) testExprBinary(pastAndOr bool) TestExpr {
-    p.got(Token.NEWL_)
-    var left TestExpr
-    if pastAndOr {
-        left = p.testExprUnary()
-    else {
-        left = p.testExprBinary(True)
-    if left == nil {
-        return left
-    p.got(Token.NEWL_)
-    switch p.tok {
-    case Token.AND_AND, Token.OR_OR:
-    case Token.LIT_WORD_:
-        if p.val == "]]" {
-            return left
-        if p.tok = token(testBinaryOp(p.val)); p.tok == illegalTok {
-            p.curErr("not a valid test operator: %#q", p.val)
-    case rdrIn, rdrOut:
-    case Token.EOF_, Token.RIGHT_PAREN:
-        return left
-    case Token.LIT_:
-        p.curErr("test operator words must consist of a single literal")
-    default:
-        p.curErr("not a valid test operator: %#q", p.tok)
-    b := &BinaryTest{
-        OpPos: p.pos,
-        Op:    BinTestOperator(p.tok),
-        X:     left,
-    switch b.Op {
-    case AndTest, OrTest:
-        p.next()
-        if b.Y = p.testExprBinary(False); b.Y == nil {
-            p.followErrExp(b.OpPos, b.Op)
-    case TsReMatch:
-        p.checkLang(p.pos, langBashLike|LANG_ZSH, "regex tests")
-        p.rxOpenParens = 0
-        p.rxFirstPart = True
-        # TODO(mvdan): Using nested states within a regex will break in
-        # all sorts of ways. The better fix is likely to use a stop
-        # token, like we do with heredocs.
-        p.quote = testExprRegexp
-        fallthrough
-    default:
-        if _, ok := b.X.(*Word); !ok {
-            p.posErr(b.OpPos, "expected %#q, %#q or %#q after complex expr",
-                AndTest, OrTest, dblRightBrack)
-        p.next()
-        b.Y = p.followWordTok(token(b.Op), b.OpPos)
-    return b
+        self.keep_comments: bool = False
+        self.lang: LangVariant = LangVariant(0)
 
-func (p *Parser) testExprUnary() TestExpr {
-    switch p.tok {
-    case Token.EOF_, Token.RIGHT_PAREN:
-        return nil
-    case Token.LIT_WORD_:
-        op := token(testUnaryOp(p.val))
-        switch op {
-        case illegalTok:
-        case tsRefVar, tsModif: # not available in mksh
-            if lang_in(p.lang, langBashLike) {
-                p.tok = op
-        default:
-            p.tok = op
-    switch p.tok {
-    case Token.EXCL_MARK:
-        u := &UnaryTest{OpPos: p.pos, Op: TsNot}
-        p.next()
-        if u.X = p.testExprBinary(False); u.X == nil {
-            p.followErrExp(u.OpPos, u.Op)
-        return u
-    case
-        Token.TS_EXISTS,
-        Token.TS_REG_FILE,
-        Token.TS_DIRECT,
-        Token.TS_CHAR_SP,
-        Token.TS_BLCK_SP,
-        Token.TS_NM_PIPE,
-        Token.TS_SOCKET,
-        Token.TS_SMB_LINK,
-        Token.TS_STICKY,
-        Token.TS_GID_SET,
-        Token.TS_UID_SET,
-        Token.TS_GRP_OWN,
-        Token.TS_USR_OWN,
-        Token.TS_MODIF,
-        Token.TS_READ,
-        Token.TS_WRITE,
-        Token.TS_EXEC,
-        Token.TS_NO_EMPTY,
-        Token.TS_FD_TERM,
-        Token.TS_EMP_STR,
-        Token.TS_NEMP_STR,
-        Token.TS_OPT_SET,
-        Token.TS_VAR_SET,
-        Token.TS_REF_VAR:
-        u := &UnaryTest{OpPos: p.pos, Op: UnTestOperator(p.tok)}
-        p.next()
-        u.X = p.followWordTok(token(u.Op), u.OpPos)
-        return u
-    case Token.LEFT_PAREN:
-        pe := &ParenTest{Lparen: p.pos}
-        p.next()
-        if pe.X = p.testExprBinary(False); pe.X == nil {
-            p.followErrExp(pe.Lparen, Token.LEFT_PAREN)
-        pe.Rparen = p.matched(pe.Lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
-        return pe
-    case Token.LIT_WORD_:
-        if p.val == "]]" {
-            return nil
-        fallthrough
-    default:
-        if w := p.getWord(); w != nil {
-            return w
-        # otherwise we'd return a typed nil above
-        return nil
+        self.stop_at: str | None = None
 
-func (p *Parser) declClause(s *Stmt) {
-    ds := &DeclClause{Variant: p.lit(p.pos, p.val)}
-    p.next()
-    for !p.stopToken() and !p.peekRedir() {
-        if p.hasValidIdent() {
-            ds.Args = append(ds.Args, p.getAssign(False))
-        else if p.eqlOffs > 0 and !strings.Contains(p.val[:p.eqlOffs], "{") {
-            p.curErr("invalid var name")
-        else if p.tok == Token.LIT_WORD_ and ValidName(p.val) {
-            ds.Args = append(ds.Args, &Assign{
-                Naked: True,
-                Name:  p.getLit(),
-            })
-        else if w := p.getWord(); w != nil {
-            ds.Args = append(ds.Args, &Assign{
-                Naked: True,
-                Value: w,
-            })
-        else {
-            p.followErr(p.pos, ds.Variant.Value, noQuote("names or assignments"))
-    s.Cmd = ds
+        self.recovered_errors: int = 0
+        self.recover_errors_max: int = 0
 
-func isBashCompoundCommand(tok token, val string) bool {
-    switch tok {
-    case Token.LEFT_PAREN, Token.DBL_LEFT_PAREN:
-        return True
-    case Token.LIT_WORD_:
-        switch val {
-        case
-            "{",
-            "if",
-            "while",
-            "until",
-            "for",
-            "case",
-            "[[",
-            "coproc",
-            "let",
-            "function",
-            "declare",
-            "local",
-            "export",
-            "readonly",
-            "typeset",
-            "nameref":
-            return True
-    return False
+        self.forbid_nested: bool = False
 
-func (p *Parser) timeClause(s *Stmt) {
-    tc := &TimeClause{Time: p.pos}
-    p.next()
-    if _, ok := p.gotRsrv("-p"); ok {
-        tc.PosixFormat = True
-    tc.Stmt = p.gotStmtPipe(&Stmt{Position: p.pos}, False)
-    s.Cmd = tc
+        self.buried_hdocs: int = 0
+        self.heredocs: list[Redirect] = []
 
-func (p *Parser) coprocClause(s *Stmt) {
-    cc := &CoprocClause{Coproc: p.pos}
-    if p.next(); isBashCompoundCommand(p.tok, p.val) {
-        # has no name
-        cc.Stmt = p.gotStmtPipe(&Stmt{Position: p.pos}, False)
-        s.Cmd = cc
-        return
-    cc.Name = p.getWord()
-    cc.Stmt = p.gotStmtPipe(&Stmt{Position: p.pos}, False)
-    if cc.Stmt == nil {
-        if cc.Name == nil {
-            p.posErr(cc.Coproc, "coproc clause requires a command")
-            return
-        # name was in fact the stmt
-        cc.Stmt = &Stmt{Position: cc.Name.Pos()}
-        cc.Stmt.Cmd = p.call(cc.Name)
-        cc.Name = nil
-    else if cc.Name != nil {
-        if call, ok := cc.Stmt.Cmd.(*CallExpr); ok {
-            # name was in fact the start of a call
-            call.Args = append([]*Word{cc.Name}, call.Args...)
-            cc.Name = nil
-    s.Cmd = cc
+        self.hdoc_stops: list[str | None] = []
 
-func (p *Parser) letClause(s *Stmt) {
-    lc := &LetClause{Let: p.pos}
-    old := p.preNested(arithmExprLet)
-    p.next()
-    for !p.stopToken() and !p.peekRedir() {
-        x := p.arithmExpr(True)
-        if x == nil {
-            break
-        lc.Exprs = append(lc.Exprs, x)
-    if len(lc.Exprs) == 0 {
-        p.followErrExp(lc.Let, "let")
-    p.postNested(old)
-    s.Cmd = lc
+        self.parsing_doc: bool = False
 
-func (p *Parser) bashFuncDecl(s *Stmt) {
-    fpos := p.pos
-    p.next()
-    names := make([]*Lit, 0, 1)
-    for p.tok == Token.LIT_WORD_ and p.val != "{" {
-        names = append(names, p.lit(p.pos, p.val))
-        p.next()
-    hasParens := p.got(Token.LEFT_PAREN)
-    switch len(names) {
-    case 0:
-        if hasParens or (p.tok == Token.LIT_WORD_ and p.val == "{") {
-            p.checkLang(fpos, LANG_ZSH, "anonymous functions")
-        else if !lang_in(p.lang, LANG_ZSH) {
-            p.followErr(fpos, "function", noQuote("a name"))
-        names = nil # avoid non-nil zero-length slices
-    case 1:
-        # allowed in all variants
-    default:
-        p.checkLang(fpos, LANG_ZSH, "multi-name functions")
-    if hasParens {
-        p.follow(fpos, "function foo(", Token.RIGHT_PAREN)
-    p.funcDecl(s, fpos, True, hasParens, names...)
+        self.open_nodes: int = 0
+        self.open_bquotes: int = 0
 
-func (p *Parser) testDecl(s *Stmt) {
-    td := &TestDecl{Position: p.pos}
-    p.next()
-    if td.Description = p.getWord(); td.Description == nil {
-        p.followErr(td.Position, "@test", noQuote("a description word"))
-    if td.Body = p.getStmt(False, False, True); td.Body == nil {
-        p.followErr(td.Position, `@test "desc"`, noQuote("a statement"))
-    s.Cmd = td
+        self.last_bquote_esc: int = 0
 
-func (p *Parser) callExpr(s *Stmt, w *Word, assign bool) {
-    ce := p.call(w)
-    if w == nil {
-        ce.Args = ce.Args[:0]
-    if assign {
-        ce.Assigns = append(ce.Assigns, p.getAssign(True))
-loop:
-    for {
-        switch p.tok {
-        case Token.EOF_, Token.NEWL_, Token.SEMICOLON, Token.AND, Token.OR, Token.AND_AND, Token.OR_OR, Token.OR_AND,
-            Token.DBL_SEMICOLON, Token.SEMI_AND, Token.DBL_SEMI_AND, Token.SEMI_OR:
-            break loop
-        case Token.LIT_WORD_:
-            if len(ce.Args) == 0 and p.hasValidIdent() {
-                ce.Assigns = append(ce.Assigns, p.getAssign(True))
-                break
-            # Avoid failing later with the confusing "} can only be used to close a block".
-            if p.val == "{" and w != nil and w.Lit() == "function" {
-                p.checkLang(p.pos, langBashLike, `the "function" builtin`)
-            # Zsh does not require a Token.SEMICOLON to close a block.
-            if lang_in(p.lang, LANG_ZSH) and p.val == "}":
-                break loop
-            ce.Args = append(ce.Args, p.wordOne(p.lit(p.pos, p.val)))
-            p.next()
-        case Token.LIT_:
-            if len(ce.Args) == 0 and p.hasValidIdent() {
-                ce.Assigns = append(ce.Assigns, p.getAssign(True))
-                break
-            ce.Args = append(ce.Args, p.wordAnyNumber())
-        case Token.BCK_QUOTE:
-            if p.backquoteEnd() {
-                break loop
-            fallthrough
-        case
-            Token.DOLL_BRACE,
-            Token.DOLL_DBL_PAREN,
-            Token.DOLL_PAREN,
-            Token.DOLLAR,
-            Token.CMD_IN,
-            Token.ASSGN_PAREN,
-            Token.CMD_OUT,
-            Token.SGL_QUOTE,
-            Token.DOLL_SGL_QUOTE,
-            Token.DBL_QUOTE,
-            Token.DOLL_DBL_QUOTE,
-            Token.DOLL_BRACK,
-            Token.GLOB_QUEST,
-            Token.GLOB_STAR,
-            Token.GLOB_PLUS,
-            Token.GLOB_AT,
-            Token.GLOB_EXCL:
-            ce.Args = append(ce.Args, p.wordAnyNumber())
-        case Token.DBL_LEFT_PAREN:
-            p.curErr("%#q can only be used to open an arithmetic cmd", p.tok)
-        case Token.RIGHT_PAREN:
-            if p.quote == subCmd {
-                break loop
-            fallthrough
-        default:
-            if p.peekRedir() {
-                p.doRedirect(s)
+        self.rx_open_parens: int = 0
+        self.rx_first_part: bool = False
+
+        self.acc_coms: list[Comment] = []
+        self.cur_coms: list[Comment] = []
+
+        self.lit_bs: list[str] | None = None
+
+    # -- Lexer methods (delegated to lexer.py functions) --
+
+    def rune(self) -> str:
+        """Advance to next character in source. Returns the new p.r."""
+
+        if self.r == '\n' or self.r == _ESC_NEWL:
+            self.line += 1
+            self.col = 0
+        self.col += self.w
+
+        bquotes = 0
+
+        while True:  # retry loop
+            if self.bsp >= len(self.src):
+                self.bsp = len(self.src) + 1
+                self.r = _EOF_RUNE
+                self.w = 1
+                return self.r
+
+            b = self.src[self.bsp]
+            self.bsp += 1
+
+            if b == '\x00':
+                # Ignore null bytes while parsing, like bash.
+                self.col += 1
                 continue
-            # Note that we'll only keep the first error that happens.
-            if len(ce.Args) > 0 {
-                if cmd := ce.Args[0].Lit(); isBashCompoundCommand(Token.LIT_WORD_, cmd) {
-                    p.checkLang(p.pos, langBashLike, "the %#q builtin", cmd)
-            p.curErr("a command can only contain words and redirects; encountered %#q", p.tok)
-    if len(ce.Args) == 0 {
-        ce.Args = nil
-    else {
-        for _, asgn := range ce.Assigns {
-            if asgn.Index != nil or asgn.Array != nil {
-                p.posErr(asgn.Pos(), "inline variables cannot be arrays")
-    s.Cmd = ce
 
-func (p *Parser) funcDecl(s *Stmt, pos Pos, long, withParens bool, names ...*Lit) {
-    fd := &FuncDecl{
-        Position: pos,
-        RsrvWord: long,
-        Parens:   withParens,
-    if len(names) == 1 {
-        fd.Name = names[0]
-    else {
-        fd.Names = names
-    p.got(Token.NEWL_)
-    # TODO: reject any body which isn't a compound command, like a quoted word
-    if fd.Body = p.getStmt(False, False, True); fd.Body == nil {
-        p.followErr(fd.Pos(), "foo()", noQuote("a statement"))
-    s.Cmd = fd
-"""  # noqa
+            if b == '\r':
+                if self.peek() == '\n':  # \r\n turns into \n
+                    self.col += 1
+                    continue
+
+            if b == '\\':
+                if self.r != '\\':
+                    if self.peek() == '\n':
+                        self.bsp += 1
+                        self.w, self.r = 1, _ESC_NEWL
+                        return _ESC_NEWL
+                    p1, p2 = self.peek_two()
+                    if p1 == '\r' and p2 == '\n':  # \\\r\n turns into \\\n
+                        self.col += 1
+                        self.bsp += 2
+                        self.w, self.r = 2, _ESC_NEWL
+                        return _ESC_NEWL
+
+                self.read_eof = False
+                if (
+                    self.open_bquotes > 0
+                    and bquotes < self.open_bquotes
+                    and self.bsp < len(self.src)
+                    and self.src[self.bsp] in ('$', '`', '\\')
+                ):
+                    bquotes += 1
+                    self.col += 1
+                    continue
+
+            if b == '`':
+                self.last_bquote_esc = bquotes
+            if self.lit_bs is not None:
+                self.lit_bs.append(b)
+            self.w, self.r = 1, b
+            return self.r
+
+    def peek(self) -> str:
+        if self.bsp >= len(self.src):
+            return _EOF_RUNE
+        return self.src[self.bsp]
+
+    def peek_two(self) -> tuple[str, str]:
+        if self.bsp >= len(self.src):
+            return _EOF_RUNE, _EOF_RUNE
+        if self.bsp + 1 >= len(self.src):
+            return self.src[self.bsp], _EOF_RUNE
+        return self.src[self.bsp], self.src[self.bsp + 1]
+
+    def next(self) -> None:
+        from .lexer import next_
+        next_(self)
+
+    def next_pos(self) -> Pos:
+        offset = min(self.offs + self.bsp - self.w, 0x7fffffff)
+        return new_pos(offset, self.line, self.col)
+
+    def _comment(self, hash_pos: Pos, text: str) -> Comment:
+        return Comment(hash=hash_pos, text=text)
+
+    # -- Parser helper methods --
+
+    def lit(self, pos: Pos, val: str) -> Lit:
+        l = Lit(value_pos=pos, value_end=self.next_pos(), value=val)
+        return l
+
+    def word_any_number(self) -> Word:
+        w = Word()
+        w.parts = self.word_parts([])
+        return w
+
+    def word_one(self, part: WordPart) -> Word:
+        w = Word(parts=[part])
+        return w
+
+    def call(self, w: Word | None) -> CallExpr:
+        ce = CallExpr()
+        if w is not None:
+            ce.args = [w]
+        else:
+            ce.args = []
+        return ce
+
+    def pre_nested(self, quote: int) -> _SaveState:
+        s = _SaveState(quote=self.quote, buried_hdocs=self.buried_hdocs)
+        self.buried_hdocs, self.quote = len(self.heredocs), quote
+        return s
+
+    def post_nested(self, s: _SaveState) -> None:
+        self.quote, self.buried_hdocs = s.quote, s.buried_hdocs
+
+    def unquoted_word_bytes(self, w: Word) -> tuple[str, bool]:
+        buf: list[str] = []
+        did_unquote = False
+        for wp in w.parts:
+            buf, did_unquote = self._unquoted_word_part(buf, wp, False)
+        return ''.join(buf), did_unquote
+
+    def _unquoted_word_part(
+            self, buf: list[str], wp: WordPart, quotes: bool,
+    ) -> tuple[list[str], bool]:
+        quoted = False
+        if isinstance(wp, Lit):
+            i = 0
+            while i < len(wp.value):
+                b = wp.value[i]
+                if b == '\\' and not quotes:
+                    i += 1
+                    if i < len(wp.value):
+                        buf.append(wp.value[i])
+                    quoted = True
+                else:
+                    buf.append(b)
+                i += 1
+        elif isinstance(wp, SglQuoted):
+            buf.extend(wp.value)
+            quoted = True
+        elif isinstance(wp, DblQuoted):
+            for wp2 in wp.parts:
+                buf, _ = self._unquoted_word_part(buf, wp2, True)
+            quoted = True
+        return buf, quoted
+
+    def do_heredocs(self) -> None:
+        hdocs = self.heredocs[self.buried_hdocs:]
+        if len(hdocs) == 0:
+            return
+        self.rune()  # consume '\n', since we know p.tok == Token.NEWL_
+        old = self.quote
+        self.heredocs = self.heredocs[:self.buried_hdocs]
+        for i, r in enumerate(hdocs):
+            if self.err is not None:
+                break
+            self.quote = _HDOC_BODY
+            if r.op == RedirOperator.DASH_HDOC:
+                self.quote = _HDOC_BODY_TABS
+            stop, quoted = self.unquoted_word_bytes(r.word)
+            self.hdoc_stops.append(stop)
+            if i > 0 and self.r == '\n':
+                self.rune()
+            if quoted:
+                from .lexer import quoted_hdoc_word
+                r.hdoc = quoted_hdoc_word(self)
+            else:
+                self.next()
+                r.hdoc = self.get_word()
+            stop2 = self.hdoc_stops[-1]
+            if stop2 is not None:
+                self.pos_err(r.pos(), 'unclosed here-document %s', stop2)
+            self.hdoc_stops.pop()
+        self.quote = old
+
+    def got(self, tok: Token) -> bool:
+        if self.tok == tok:
+            self.next()
+            return True
+        return False
+
+    def got_rsrv(self, val: str) -> tuple[Pos, bool]:
+        pos = self.pos
+        if self.tok == Token.LIT_WORD_ and self.val == val:
+            self.next()
+            return pos, True
+        return pos, False
+
+    def recover_error(self) -> bool:
+        if self.recovered_errors < self.recover_errors_max:
+            self.recovered_errors += 1
+            return True
+        return False
+
+    def follow_err(self, pos: Pos, left: ta.Any, right: ta.Any) -> None:
+        self.pos_err(pos, '%s must be followed by %s', left, right)
+
+    def follow_err_exp(self, pos: Pos, left: ta.Any) -> None:
+        self.follow_err(pos, left, 'an expression')
+
+    def follow(self, lpos: Pos, left: str, tok: Token) -> None:
+        if not self.got(tok):
+            self.follow_err(lpos, left, tok)
+
+    def follow_rsrv(self, lpos: Pos, left: str, val: str) -> Pos:
+        pos, ok = self.got_rsrv(val)
+        if not ok:
+            if self.recover_error():
+                return _RECOVERED_POS
+            self.follow_err(lpos, left, val)
+        return pos
+
+    def follow_stmts(self, left: str, lpos: Pos, *stops: str) -> tuple[list[Stmt], list[Comment]]:
+        if self.got(Token.SEMICOLON):
+            if lang_in(self.lang, LANG_ZSH | LANG_MIR_BSD_KORN):
+                return [], []  # allow an empty list
+            self.follow_err(lpos, left, 'a statement list')
+            return [], []
+        stmts, last = self.stmt_list(*stops)
+        if len(stmts) < 1:
+            if lang_in(self.lang, LANG_ZSH | LANG_MIR_BSD_KORN):
+                return [], []  # allow an empty list
+            if self.recover_error():
+                return [Stmt(position=_RECOVERED_POS)], []
+            self.follow_err(lpos, left, 'a statement list')
+        return stmts, last
+
+    def follow_word_tok(self, tok: Token, pos: Pos) -> Word | None:
+        w = self.get_word()
+        if w is None:
+            if self.recover_error():
+                return self.word_one(Lit(value_pos=_RECOVERED_POS, value=''))
+            self.follow_err(pos, tok, 'a word')
+        return w
+
+    def stmt_end(self, n: Node, start: str, end: str) -> Pos:
+        pos, ok = self.got_rsrv(end)
+        if not ok:
+            if self.recover_error():
+                return _RECOVERED_POS
+            self.pos_err(n.pos(), '%s statement must end with %s', start, end)
+        return pos
+
+    def quote_err(self, lpos: Pos, quote: Token) -> None:
+        self.pos_err(lpos, 'reached %s without closing quote %s', self.tok, quote)
+
+    def matching_err(self, lpos: Pos, left: Token, right: Token) -> None:
+        self.pos_err(lpos, 'reached %s without matching %s with %s', self.tok, left, right)
+
+    def matched(self, lpos: Pos, left: Token, right: Token) -> Pos:
+        pos = self.pos
+        if not self.got(right):
+            if self.recover_error():
+                return _RECOVERED_POS
+            self.matching_err(lpos, left, right)
+        return pos
+
+    def err_pass(self, err: Exception) -> None:
+        if self.err is None:
+            self.err = err
+            self.bsp = len(self.src) + 1
+            self.r = _EOF_RUNE
+            self.w = 1
+            self.tok = Token.EOF_
+
+    def incomplete(self) -> bool:
+        return self.open_nodes > 0 or self.lit_bs is not None
+
+    def pos_err(self, pos: Pos, format: str, *args: ta.Any) -> None:
+        text = format % args if args else format
+        self.err_pass(RuntimeError(text))
+
+    def cur_err(self, format: str, *args: ta.Any) -> None:
+        self.pos_err(self.pos, format, *args)
+
+    def check_lang(self, pos: Pos, lang_set: LangVariant, format: str, *a: ta.Any) -> None:
+        if lang_in(self.lang, lang_set):
+            return
+        feature = format % a if a else format
+        self.err_pass(RuntimeError(f'{feature} is a {"/".join(str(l) for l in lang_bits(lang_set))} feature'))
+
+    # -- Statement parsing --
+
+    def stmts(self, *stops: str) -> list[Stmt]:
+        result: list[Stmt] = []
+        got_end = True
+        while self.tok != Token.EOF_:
+            new_line = self.got(Token.NEWL_)
+            if self.tok == Token.LIT_WORD_:
+                should_break = False
+                for stop in stops:
+                    if self.val == stop:
+                        should_break = True
+                        break
+                if should_break:
+                    break
+                if self.val == '}':
+                    self.cur_err('%s can only be used to close a block', Token.RIGHT_BRACE)
+            elif self.tok == Token.RIGHT_PAREN:
+                if self.quote == _SUB_CMD:
+                    break
+            elif self.tok == Token.BCK_QUOTE:
+                if self.backquote_end():
+                    break
+            elif self.tok in (Token.DBL_SEMICOLON, Token.SEMI_AND, Token.DBL_SEMI_AND, Token.SEMI_OR):
+                if self.quote == _SWITCH_CASE:
+                    break
+                self.cur_err('%s can only be used in a case clause', self.tok)
+            if not new_line and not got_end:
+                self.cur_err('statements must be separated by &, ; or a newline')
+            if self.tok == Token.EOF_:
+                break
+            self.open_nodes += 1
+            s = self.get_stmt(True, False, False)
+            self.open_nodes -= 1
+            if s is None:
+                self.invalid_stmt_start()
+                break
+            got_end = s.semicolon.is_valid() if hasattr(s.semicolon, 'is_valid') else bool(s.semicolon)
+            result.append(s)
+        return result
+
+    def stmt_list(self, *stops: str) -> tuple[list[Stmt], list[Comment]]:
+        stmts = self.stmts(*stops)
+        split = len(self.acc_coms)
+        if self.tok == Token.LIT_WORD_ and self.val in ('elif', 'else', 'fi'):
+            for i in range(len(self.acc_coms) - 1, -1, -1):
+                c = self.acc_coms[i]
+                if c.pos().col() != self.pos.col():
+                    break
+                split = i
+        last: list[Comment] = []
+        if split > 0:
+            last = self.acc_coms[:split]
+        self.acc_coms = self.acc_coms[split:]
+        return stmts, last
+
+    def invalid_stmt_start(self) -> None:
+        if self.tok in (Token.SEMICOLON, Token.AND, Token.OR, Token.AND_AND, Token.OR_OR):
+            self.cur_err('%s can only immediately follow a statement', self.tok)
+        elif self.tok == Token.RIGHT_PAREN:
+            self.cur_err('%s can only be used to close a subshell', self.tok)
+        else:
+            self.cur_err('%s is not a valid start for a statement', self.tok)
+
+    def get_word(self) -> Word | None:
+        w = self.word_any_number()
+        if len(w.parts) > 0 and self.err is None:
+            return w
+        return None
+
+    def get_lit(self) -> Lit | None:
+        if self.tok in (Token.LIT_, Token.LIT_WORD_, Token.LIT_REDIR_):
+            l = self.lit(self.pos, self.val)
+            self.next()
+            return l
+        return None
+
+    def word_parts(self, wps: list[WordPart]) -> list[WordPart]:
+        if self.quote == _NO_STATE:
+            self.quote = _UNQUOTED_WORD_CONT
+            try:
+                return self._word_parts_inner(wps)
+            finally:
+                self.quote = _NO_STATE
+        return self._word_parts_inner(wps)
+
+    def _word_parts_inner(self, wps: list[WordPart]) -> list[WordPart]:
+        while True:
+            self.open_nodes += 1
+            n = self.word_part()
+            self.open_nodes -= 1
+            if n is None:
+                if len(wps) == 0:
+                    return []
+                return wps
+            wps.append(n)
+            if self.spaced:
+                return wps
+
+    def ensure_no_nested(self, pos: Pos) -> None:
+        if self.forbid_nested:
+            self.pos_err(pos, 'expansions not allowed in heredoc words')
+
+    def word_part(self) -> WordPart | None:  # noqa: C901
+        from .parser_arithm import arithm_end as _arithm_end
+        from .parser_arithm import arithm_matching_err as _arithm_matching_err
+        from .parser_arithm import follow_arithm as _follow_arithm
+
+        if self.tok in (Token.LIT_, Token.LIT_WORD_, Token.LIT_REDIR_):
+            l = self.lit(self.pos, self.val)
+            self.next()
+            return l
+        elif self.tok == Token.DOLL_BRACE:
+            self.ensure_no_nested(self.pos)
+            if self.r in ('|', ' ', '\t', '\n'):
+                if self.r == '|':
+                    self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN, '`${|stmts;}`')
+                else:
+                    self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN, '`${ stmts;}`')
+                cs = CmdSubst(
+                    left=self.pos,
+                    temp_file=self.r != '|',
+                    reply_var=self.r == '|',
+                )
+                old = self.pre_nested(_SUB_CMD)
+                self.rune()  # don't tokenize '|'
+                self.next()
+                cs.stmts, cs.last = self.stmt_list('}')
+                self.post_nested(old)
+                pos, ok = self.got_rsrv('}')
+                if not ok:
+                    self.matching_err(cs.left, Token.DOLL_BRACE, Token.RIGHT_BRACE)
+                cs.right = pos
+                return cs
+            else:
+                return self.param_exp()
+        elif self.tok in (Token.DOLL_DBL_PAREN, Token.DOLL_BRACK):
+            self.ensure_no_nested(self.pos)
+            left = self.tok
+            ar = ArithmExp(left=self.pos, bracket=left == Token.DOLL_BRACK)
+            old = self.pre_nested(_ARITHM_EXPR)
+            self.next()
+            if self.got(Token.HASH):
+                self.check_lang(ar.pos(), LANG_MIR_BSD_KORN, 'unsigned expressions')
+                ar.unsigned = True
+            ar.x = _follow_arithm(self, left, ar.left)
+            if ar.bracket:
+                if self.tok != Token.RIGHT_BRACK:
+                    _arithm_matching_err(self, ar.left, Token.DOLL_BRACK, Token.RIGHT_BRACK)
+                self.post_nested(old)
+                ar.right = self.pos
+                self.next()
+            else:
+                ar.right = _arithm_end(self, Token.DOLL_DBL_PAREN, ar.left, old)
+            return ar
+        elif self.tok == Token.DOLL_PAREN:
+            self.ensure_no_nested(self.pos)
+            return self.cmd_subst()
+        elif self.tok == Token.DOLLAR:
+            pe = self.param_exp()
+            if pe is None:  # was not actually a parameter expansion, like: "foo$"
+                l = self.lit(self.pos, '$')
+                self.next()
+                return l
+            self.ensure_no_nested(pe.dollar)
+            return pe
+        elif (
+            (cond_assgn := (self.tok == Token.ASSGN_PAREN))
+            or (cond_cmd := (self.tok in (Token.CMD_IN, Token.CMD_OUT)))  # noqa: F841
+        ):
+            if cond_assgn:
+                self.check_lang(self.pos, LANG_ZSH, '%s process substitutions', self.tok)
+                # fallthrough
+            self.ensure_no_nested(self.pos)
+            ps = ProcSubst(op=ProcOperator(self.tok), op_pos=self.pos)
+            old = self.pre_nested(_SUB_CMD)
+            self.next()
+            ps.stmts, ps.last = self.stmt_list()
+            self.post_nested(old)
+            ps.rparen = self.matched(ps.op_pos, Token(ps.op.value), Token.RIGHT_PAREN)
+            return ps
+        elif self.tok in (Token.SGL_QUOTE, Token.DOLL_SGL_QUOTE):
+            sq = SglQuoted(left=self.pos, dollar=self.tok == Token.DOLL_SGL_QUOTE)
+            r = self.r
+            from .lexer import end_lit
+            from .lexer import new_lit
+            new_lit(self, r)
+            while True:
+                if r == '\\':
+                    if sq.dollar:
+                        self.rune()
+                elif r == '\'':
+                    sq.right = self.next_pos()
+                    sq.value = end_lit(self)
+                    self.rune()
+                    self.next()
+                    return sq
+                elif r == _ESC_NEWL:
+                    self.lit_bs.append('\\')
+                    self.lit_bs.append('\n')
+                elif r == _EOF_RUNE:
+                    self.tok = Token.EOF_
+                    if self.recover_error():
+                        sq.right = _RECOVERED_POS
+                        return sq
+                    self.quote_err(sq.pos(), Token.SGL_QUOTE)
+                    return None
+                r = self.rune()
+        elif self.tok in (Token.DBL_QUOTE, Token.DOLL_DBL_QUOTE):
+            if self.quote == _DBL_QUOTES:
+                return None
+            return self.dbl_quoted()
+        elif self.tok == Token.BCK_QUOTE:
+            if self.backquote_end():
+                return None
+            self.ensure_no_nested(self.pos)
+            cs = CmdSubst(left=self.pos, backquotes=True)
+            old = self.pre_nested(_SUB_CMD_BCKQUO)
+            self.open_bquotes += 1
+
+            # The lexer didn't call p.rune for us, so that it could have
+            # the right p.openBquotes to properly handle backslashes.
+            self.rune()
+
+            self.next()
+            cs.stmts, cs.last = self.stmt_list()
+            if self.tok == Token.BCK_QUOTE and self.last_bquote_esc < self.open_bquotes - 1:
+                self.tok = Token.EOF_
+                self.quote_err(cs.pos(), Token.BCK_QUOTE)
+            self.post_nested(old)
+            self.open_bquotes -= 1
+            cs.right = self.pos
+
+            # Like above, the lexer didn't call p.rune for us.
+            self.rune()
+            if not self.got(Token.BCK_QUOTE):
+                if self.recover_error():
+                    cs.right = _RECOVERED_POS
+                else:
+                    self.quote_err(cs.pos(), Token.BCK_QUOTE)
+            return cs
+        elif self.tok in (Token.GLOB_QUEST, Token.GLOB_STAR, Token.GLOB_PLUS, Token.GLOB_AT, Token.GLOB_EXCL):
+            self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN, 'extended globs')
+            eg = ExtGlob(op=GlobOperator(self.tok), op_pos=self.pos)
+            lparens = 1
+            r = self.r
+            from .lexer import end_lit
+            from .lexer import new_lit
+            new_lit(self, r)
+            while True:
+                if r == _EOF_RUNE:
+                    break
+                elif r == '(':
+                    lparens += 1
+                elif r == ')':
+                    lparens -= 1
+                    if lparens == 0:
+                        break
+                r = self.rune()
+            eg.pattern = self.lit(pos_add_col(eg.op_pos, 2), end_lit(self))
+            self.rune()
+            self.next()
+            if lparens != 0:
+                self.matching_err(eg.op_pos, Token(eg.op.value), Token.RIGHT_PAREN)
+            return eg
+        else:
+            return None
+
+    def cmd_subst(self) -> CmdSubst:
+        cs = CmdSubst(left=self.pos)
+        old = self.pre_nested(_SUB_CMD)
+        self.next()
+        cs.stmts, cs.last = self.stmt_list()
+        self.post_nested(old)
+        cs.right = self.matched(cs.left, Token.DOLL_PAREN, Token.RIGHT_PAREN)
+        return cs
+
+    def dbl_quoted(self) -> DblQuoted:
+        q = DblQuoted(left=self.pos, dollar=self.tok == Token.DOLL_DBL_QUOTE)
+        old = self.quote
+        self.quote = _DBL_QUOTES
+        self.next()
+        q.parts = self.word_parts([])
+        self.quote = old
+        q.right = self.pos
+        if not self.got(Token.DBL_QUOTE):
+            if self.recover_error():
+                q.right = _RECOVERED_POS
+            else:
+                self.quote_err(q.pos(), Token.DBL_QUOTE)
+        return q
+
+    def param_exp(self) -> ParamExp | None:  # noqa: C901
+        from .lexer import end_lit
+        from .lexer import new_lit
+        from .lexer import param_token
+
+        old = self.quote
+        self.quote = _RUNE_BY_RUNE
+        pe = ParamExp(
+            dollar=self.pos,
+            short=self.tok == Token.DOLLAR,
+        )
+        if not pe.short and self.r == '(':
+            self.check_lang(pe.pos(), LANG_ZSH, 'parameter expansion flags')
+            lparen = self.next_pos()
+            self.rune()
+            self.pos = self.next_pos()
+            new_lit(self, self.r)
+            while self.r != _EOF_RUNE:
+                if self.r == ')':
+                    break
+                self.rune()
+            self.val = end_lit(self)
+            if self.r != ')':
+                self.tok = Token.EOF_
+                self.matching_err(lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
+            pe.flags = self.lit(self.pos, self.val)
+            self.rune()
+        if not pe.short or lang_in(self.lang, LANG_ZSH):
+            if self.r == '#':
+                r2 = self.peek()
+                if r2 == _EOF_RUNE or single_rune_param(r2) or param_name_rune(r2) or r2 == '"':
+                    pe.length = True
+                    self.rune()
+            elif self.r == '%':
+                r2 = self.peek()
+                if r2 == _EOF_RUNE or single_rune_param(r2) or param_name_rune(r2) or r2 == '"':
+                    self.check_lang(pe.pos(), LANG_MIR_BSD_KORN, '`${%%foo}`')
+                    pe.width = True
+                    self.rune()
+            elif self.r == '!':
+                r2 = self.peek()
+                if r2 == _EOF_RUNE or single_rune_param(r2) or param_name_rune(r2) or r2 == '"':
+                    self.check_lang(pe.pos(), LANG_BASH_LIKE | LANG_MIR_BSD_KORN, '`${!foo}`')
+                    pe.excl = True
+                    self.rune()
+            elif self.r == '+':
+                r2 = self.peek()
+                if r2 == _EOF_RUNE or single_rune_param(r2) or param_name_rune(r2) or r2 == '"':
+                    self.check_lang(pe.pos(), LANG_ZSH, '`${+foo}`')
+                    pe.plus = True
+                    self.rune()
+        pe = self._param_exp_parameter(pe)
+        if pe is None:
+            self.quote = old
+            return None  # just "$"
+        if pe.short:
+            if lang_in(self.lang, LANG_ZSH) and self.r == '[':
+                self.pos = self.next_pos()
+                self.rune()
+                pe.index = self.either_index()
+            self.quote = old
+            self.next()
+            return pe
+        # Index expressions
+        if self.r == '[':
+            self.check_lang(self.next_pos(), LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH, 'arrays')
+            if pe.param is not None and not valid_name(pe.param.value):
+                self.pos_err(self.next_pos(), 'cannot index a special parameter name')
+            self.pos = self.next_pos()
+            self.rune()
+            pe.index = self.either_index()
+        tok_rune = self.r
+        self.pos = self.next_pos()
+        self.tok = param_token(self, self.r)
+        if self.tok == Token.RIGHT_BRACE:
+            pe.rbrace = self.pos
+            self.quote = old
+            self.next()
+            return pe
+        if self.tok != Token.EOF_ and (pe.length or pe.width or pe.plus):
+            self.cur_err('cannot combine multiple parameter expansion operators')
+        if self.tok in (Token.SLASH, Token.DBL_SLASH):  # pattern search and replace
+            self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH, 'search and replace')
+            pe.repl = Replace(all=self.tok == Token.DBL_SLASH)
+            self.quote = _PARAM_EXP_REPL
+            self.next()
+            pe.repl.orig = self.get_word()
+            self.quote = _PARAM_EXP_EXP
+            if self.got(Token.SLASH):
+                pe.repl.with_ = self.get_word()
+        elif self.tok == Token.COLON:  # slicing
+            if lang_in(self.lang, LANG_ZSH) and (self.r == '&' or ascii_letter(self.r)):
+                pos2 = self.pos
+                new_lit(self, self.r)
+                while True:
+                    if self.r == _EOF_RUNE:
+                        self.tok = Token.EOF_
+                        self.matching_err(pe.dollar, Token.DOLL_BRACE, Token.RIGHT_BRACE)
+                        break
+                    elif self.r == '}':
+                        if pe.modifiers is None:
+                            pe.modifiers = []
+                        pe.modifiers.append(self.lit(pos2, end_lit(self)))
+                        pe.rbrace = self.next_pos()
+                        self.rune()
+                        break
+                    elif self.r == ':':
+                        if pe.modifiers is None:
+                            pe.modifiers = []
+                        pe.modifiers.append(self.lit(pos2, end_lit(self)))
+                        self.rune()
+                        pos2 = self.next_pos()
+                        new_lit(self, self.r)
+                    else:
+                        self.rune()
+                self.quote = old
+                self.next()
+                return pe
+            self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH, 'slicing')
+            pe.slice = Slice()
+            colon_pos = self.pos
+            self.quote = _PARAM_EXP_ARITHM
+            self.next()
+            if self.tok != Token.COLON:
+                from .parser_arithm import follow_arithm as _follow_arithm
+                pe.slice.offset = _follow_arithm(self, Token.COLON, colon_pos)
+            colon_pos = self.pos
+            if self.got(Token.COLON):
+                from .parser_arithm import follow_arithm as _follow_arithm
+                pe.slice.length = _follow_arithm(self, Token.COLON, colon_pos)
+            self.quote = old
+            pe.rbrace = self.pos
+            from .parser_arithm import matched_arithm as _matched_arithm
+            _matched_arithm(self, pe.dollar, Token.DOLL_BRACE, Token.RIGHT_BRACE)
+            return pe
+        elif self.tok in (Token.CARET, Token.DBL_CARET, Token.COMMA, Token.DBL_COMMA):
+            self.check_lang(self.pos, LANG_BASH_LIKE, 'this expansion operator')
+            pe.exp = self._param_exp_exp()
+        elif self.tok in (Token.AT, Token.STAR):
+            if self.tok == Token.STAR and not pe.excl:
+                self.cur_err('not a valid parameter expansion operator: %s', self.tok)
+            elif pe.excl and self.r == '}':
+                self.check_lang(pe.pos(), LANG_BASH_LIKE, '`${!foo%s}`', self.tok)
+                pe.names = ParNamesOperator(self.tok)
+                self.next()
+            elif self.tok == Token.AT:
+                self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN, 'this expansion operator')
+                pe.exp = self._param_exp_exp()
+            else:
+                pe.exp = self._param_exp_exp()
+        elif self.tok in (
+            Token.PLUS, Token.COL_PLUS, Token.MINUS, Token.COL_MINUS,
+            Token.QUEST, Token.COL_QUEST, Token.ASSGN, Token.COL_ASSGN,
+            Token.PERC, Token.DBL_PERC, Token.HASH, Token.DBL_HASH, Token.COL_HASH,
+        ):
+            pe.exp = self._param_exp_exp()
+        elif self.tok == Token.EOF_:
+            pass
+        else:
+            if param_name_rune(tok_rune):
+                if pe.param is not None:
+                    self.cur_err('%s cannot be followed by a word', pe.param.value)
+                else:
+                    self.cur_err('nested parameter expansion cannot be followed by a word')
+            else:
+                self.cur_err('not a valid parameter expansion operator: %s', tok_rune)
+        if self.tok != Token.EOF_ and self.tok != Token.RIGHT_BRACE:
+            self.tok = param_token(self, self.r)
+        self.quote = old
+        pe.rbrace = self.matched(pe.dollar, Token.DOLL_BRACE, Token.RIGHT_BRACE)
+        return pe
+
+    def _param_exp_parameter(self, pe: ParamExp) -> ParamExp | None:
+        from .lexer import end_lit
+        from .lexer import new_lit
+
+        # Check for Zsh nested parameter expressions
+        # TODO: nestedParameterStart translation - simplified for now
+        if self.r in ('?', '-'):
+            if pe.length and self.peek() != '}':
+                pe.length = False
+                pos = self.next_pos()
+                pe.param = self.lit(pos_add_col(pos, -1), '#')
+                pe.param.value_end = pos
+            else:
+                r2, pos = self.r, self.next_pos()
+                self.rune()
+                pe.param = self.lit(pos, r2)
+        elif self.r in ('@', '*', '#', '!', '$'):
+            r2, pos = self.r, self.next_pos()
+            self.rune()
+            pe.param = self.lit(pos, r2)
+        else:
+            pos = self.next_pos()
+            if pe.short and single_rune_param(self.r):
+                self.val = self.r
+                self.rune()
+            else:
+                new_lit(self, self.r)
+                while self.r != _EOF_RUNE:
+                    if not param_name_rune(self.r) and self.r != _ESC_NEWL:
+                        break
+                    self.rune()
+                self.val = end_lit(self)
+                if not number_literal(self.val) and not valid_name(self.val):
+                    if pe.short:
+                        return None  # just "$"
+                    self.pos_err(pos, 'invalid parameter name')
+            pe.param = self.lit(pos, self.val)
+        return pe
+
+    def _param_exp_exp(self) -> Expansion:
+        op = ParExpOperator(self.tok)
+        self.quote = _PARAM_EXP_EXP
+        self.next()
+        if op == ParExpOperator.OTHER_PARAMOPS:
+            if self.tok not in (Token.LIT_, Token.LIT_WORD_):
+                self.cur_err('@ expansion operator requires a literal')
+            if self.val in ('a', 'k', 'u', 'A', 'E', 'K', 'L', 'P', 'U'):
+                self.check_lang(self.pos, LANG_BASH_LIKE, 'this expansion operator')
+            elif self.val == '#':
+                self.check_lang(self.pos, LANG_MIR_BSD_KORN, 'this expansion operator')
+            elif self.val == 'Q':
+                pass
+            else:
+                self.cur_err('invalid @ expansion operator %s', self.val)
+        return Expansion(op=op, word=self.get_word())
+
+    def either_index(self) -> ta.Any:
+        from .parser_arithm import follow_arithm as _follow_arithm
+        from .parser_arithm import matched_arithm as _matched_arithm
+
+        old = self.quote
+        lpos = self.pos
+        self.quote = _PARAM_EXP_ARITHM
+        self.next()
+        if self.tok == Token.STAR or self.tok == Token.AT:
+            self.tok, self.val = Token.LIT_WORD_, str(self.tok)
+        expr = _follow_arithm(self, Token.LEFT_BRACK, lpos)
+        self.quote = old
+        _matched_arithm(self, lpos, Token.LEFT_BRACK, Token.RIGHT_BRACK)
+        return expr
+
+    def zsh_sub_flags(self) -> FlagsArithm:
+        from .lexer import end_lit
+        from .lexer import new_lit
+        from .parser_arithm import arithm_expr_assign
+
+        zf = FlagsArithm()
+        lparen = self.pos
+        old = self.quote
+        self.quote = _RUNE_BY_RUNE
+        self.pos = self.next_pos()
+        new_lit(self, self.r)
+        while self.r != _EOF_RUNE:
+            if self.r == ')':
+                break
+            self.rune()
+        self.val = end_lit(self)
+        if self.r != ')':
+            self.tok = Token.EOF_
+            self.matching_err(lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
+        zf.flags = self.lit(self.pos, self.val)
+        self.rune()
+        self.quote = old
+        self.next()
+        if self.tok == Token.STAR or self.tok == Token.AT:
+            self.tok, self.val = Token.LIT_WORD_, str(self.tok)
+        zf.x = arithm_expr_assign(self, False)
+        return zf
+
+    def stop_token(self) -> bool:
+        if self.tok in (
+            Token.EOF_, Token.NEWL_, Token.SEMICOLON, Token.AND, Token.OR,
+            Token.AND_AND, Token.OR_OR, Token.OR_AND,
+            Token.DBL_SEMICOLON, Token.SEMI_AND, Token.DBL_SEMI_AND, Token.SEMI_OR,
+            Token.RIGHT_PAREN,
+        ):
+            return True
+        if self.tok == Token.BCK_QUOTE:
+            return self.backquote_end()
+        return False
+
+    def backquote_end(self) -> bool:
+        return self.last_bquote_esc < self.open_bquotes
+
+    def has_valid_ident(self) -> bool:
+        if self.tok != Token.LIT_ and self.tok != Token.LIT_WORD_:
+            return False
+        end = self.eql_offs
+        if end > 0:
+            if self.val[end - 1] == '+' and lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                end -= 1  # a+=x
+            if valid_name(self.val[:end]):
+                return True
+        elif not valid_name(self.val):
+            return False  # *[i]=x
+        return self.r == '['  # a[i]=x
+
+    def get_assign(self, need_equal: bool) -> Assign:
+        as_ = Assign()
+        if self.eql_offs > 0:  # foo=bar
+            name_end = self.eql_offs
+            if (
+                lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH)
+                and self.val[self.eql_offs - 1] == '+'
+            ):
+                as_.append = True
+                name_end -= 1
+            as_.name = self.lit(self.pos, self.val[:name_end])
+            as_.name.value_end = pos_add_col(as_.name.value_pos, name_end)
+            left = self.lit(pos_add_col(self.pos, 1), self.val[self.eql_offs + 1:])
+            if left.value != '':
+                left.value_pos = pos_add_col(left.value_pos, self.eql_offs)
+                as_.value = self.word_one(left)
+            self.next()
+        else:  # foo[x]=bar
+            as_.name = self.lit(self.pos, self.val)
+            self.rune()
+            self.pos = pos_add_col(self.pos, 1)
+            as_.index = self.either_index()
+            if self.spaced or self.stop_token():
+                if need_equal:
+                    self.follow_err(as_.pos(), 'a[b]', Token.ASSGN)
+                else:
+                    as_.naked = True
+                    return as_
+            if self.tok == Token.ASSGN_PAREN:
+                self.cur_err('arrays cannot be nested')
+                return as_
+            if len(self.val) > 0 and self.val[0] == '+':
+                as_.append = True
+                self.val = self.val[1:]
+                self.pos = pos_add_col(self.pos, 1)
+            if len(self.val) < 1 or self.val[0] != '=':
+                if as_.append:
+                    self.follow_err(as_.pos(), 'a[b]+', Token.ASSGN)
+                else:
+                    self.follow_err(as_.pos(), 'a[b]', Token.ASSGN)
+                return as_
+            self.pos = pos_add_col(self.pos, 1)
+            self.val = self.val[1:]
+            if self.val == '':
+                self.next()
+        if self.spaced or self.stop_token():
+            return as_
+        if as_.value is None and self.tok == Token.LEFT_PAREN:
+            self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH, 'arrays')
+            as_.array = ArrayExpr(lparen=self.pos)
+            new_quote = self.quote
+            if lang_in(self.lang, LANG_BASH_LIKE | LANG_ZSH):
+                new_quote = _ARRAY_ELEMS
+            old = self.pre_nested(new_quote)
+            self.next()
+            self.got(Token.NEWL_)
+            while self.tok != Token.EOF_ and self.tok != Token.RIGHT_PAREN:
+                ae = ArrayElem()
+                ae.comments, self.acc_coms = self.acc_coms, []
+                if self.tok == Token.LEFT_BRACK:
+                    left2 = self.pos
+                    ae.index = self.either_index()
+                    if self.tok == Token.ASSGN_PAREN:
+                        self.cur_err('arrays cannot be nested')
+                        return as_
+                    self.follow(left2, '[x]', Token.ASSGN)
+                ae.value = self.get_word()
+                if ae.value is None:
+                    if self.tok not in (Token.NEWL_, Token.RIGHT_PAREN, Token.LEFT_BRACK):
+                        self.cur_err('array element values must be words')
+                        return as_
+                if len(self.acc_coms) > 0:
+                    c = self.acc_coms[0]
+                    if c.pos().line() == ae.end().line():
+                        ae.comments.append(c)
+                        self.acc_coms = self.acc_coms[1:]
+                as_.array.elems.append(ae)
+                self.got(Token.NEWL_)
+            as_.array.last, self.acc_coms = self.acc_coms, []
+            self.post_nested(old)
+            as_.array.rparen = self.matched(as_.array.lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
+        else:
+            w = self.get_word()
+            if w is not None:
+                if as_.value is None:
+                    as_.value = w
+                else:
+                    as_.value.parts.extend(w.parts)
+        return as_
+
+    def peek_redir(self) -> bool:
+        return self.tok in (
+            Token.LIT_REDIR_,
+            Token.RDR_OUT, Token.APP_OUT, Token.RDR_IN, Token.RDR_IN_OUT,
+            Token.DPL_IN, Token.DPL_OUT, Token.RDR_CLOB, Token.RDR_TRUNC,
+            Token.APP_CLOB, Token.APP_TRUNC,
+            Token.HDOC, Token.DASH_HDOC, Token.WORD_HDOC,
+            Token.RDR_ALL, Token.RDR_ALL_CLOB, Token.RDR_ALL_TRUNC,
+            Token.APP_ALL, Token.APP_ALL_CLOB, Token.APP_ALL_TRUNC,
+        )
+
+    def do_redirect(self, s: Stmt) -> None:
+        r = Redirect()
+        if s.redirs is None:
+            s.redirs = []
+        s.redirs.append(r)
+        r.n = self.get_lit()
+        if r.n is not None and r.n.value[0] == '{':
+            self.check_lang(r.n.pos(), LANG_BASH_LIKE, '`{varname}` redirects')
+        r.op, r.op_pos = RedirOperator(self.tok), self.pos
+        if r.op in (RedirOperator.RDR_ALL, RedirOperator.APP_ALL):
+            self.check_lang(self.pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH, '%s redirects', r.op)
+        elif r.op in (
+            RedirOperator.RDR_TRUNC, RedirOperator.APP_CLOB, RedirOperator.APP_TRUNC,
+            RedirOperator.RDR_ALL_CLOB, RedirOperator.RDR_ALL_TRUNC,
+            RedirOperator.APP_ALL_CLOB, RedirOperator.APP_ALL_TRUNC,
+        ):
+            self.check_lang(self.pos, LANG_ZSH, '%s redirects', r.op)
+        self.next()
+        if r.op in (RedirOperator.HDOC, RedirOperator.DASH_HDOC):
+            old = self.quote
+            self.quote, self.forbid_nested = _HDOC_WORD, True
+            self.heredocs.append(r)
+            r.word = self.follow_word_tok(Token(r.op.value), r.op_pos)
+            self.quote, self.forbid_nested = old, False
+            if self.tok == Token.NEWL_:
+                if len(self.acc_coms) > 0:
+                    c = self.acc_coms[0]
+                    if c.pos().line() == s.end().line():
+                        s.comments.append(c)
+                        self.acc_coms = self.acc_coms[1:]
+                self.do_heredocs()
+        elif (
+            (cond_wh := (r.op == RedirOperator.WORD_HDOC))
+            or (cond_default := True)  # noqa: F841
+        ):
+            if cond_wh:
+                self.check_lang(r.op_pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH, 'herestrings')
+                # fallthrough to default
+            r.word = self.follow_word_tok(Token(r.op.value), r.op_pos)
+
+    def get_stmt(self, read_end: bool, bin_cmd: bool, fn_body: bool) -> Stmt | None:
+        pos, ok = self.got_rsrv('!')
+        s = Stmt(position=pos)
+        if ok:
+            s.negated = True
+            if self.stop_token():
+                self.pos_err(s.pos(), '%s cannot form a statement alone', Token.EXCL_MARK)
+            _, ok2 = self.got_rsrv('!')
+            if ok2:
+                self.pos_err(s.pos(), 'cannot negate a command multiple times')
+        s = self.got_stmt_pipe(s, False)
+        if s is None or self.err is not None:
+            return None
+        # instead of using recursion, iterate manually
+        while self.tok == Token.AND_AND or self.tok == Token.OR_OR:
+            if bin_cmd:
+                return s
+            b = BinaryCmd(
+                op_pos=self.pos,
+                op=BinCmdOperator(self.tok),
+                x=s,
+            )
+            self.next()
+            self.got(Token.NEWL_)
+            b.y = self.get_stmt(False, True, False)
+            if b.y is None or self.err is not None:
+                if self.recover_error():
+                    b.y = Stmt(position=_RECOVERED_POS)
+                else:
+                    self.follow_err(b.op_pos, b.op, 'a statement')
+                    return None
+            s = Stmt(position=s.position)
+            s.cmd = b
+            s.comments, b.x.comments = b.x.comments, []
+        if read_end:
+            if self.tok == Token.SEMICOLON:
+                s.semicolon = self.pos
+                self.next()
+            elif self.tok == Token.AND:
+                s.semicolon = self.pos
+                self.next()
+                s.background = True
+            elif self.tok == Token.OR_AND:
+                s.semicolon = self.pos
+                self.next()
+                s.coprocess = True
+        if len(self.acc_coms) > 0 and not bin_cmd and not fn_body:
+            c = self.acc_coms[0]
+            if c.pos().line() == s.end().line():
+                s.comments.append(c)
+                self.acc_coms = self.acc_coms[1:]
+        return s
+
+    def got_stmt_pipe(self, s: Stmt, bin_cmd: bool) -> Stmt | None:  # noqa: C901
+        s.comments, self.acc_coms = self.acc_coms, []
+        while self.peek_redir():
+            self.do_redirect(s)
+        redirs_start = len(s.redirs) if s.redirs else 0
+        if self.tok == Token.LIT_WORD_:
+            if self.val == '{':
+                self.block(s)
+            elif self.val == '{}':
+                if lang_in(self.lang, LANG_ZSH):
+                    s.cmd = Block(lbrace=self.pos, rbrace=pos_add_col(self.pos, 1))
+                    self.next()
+            elif self.val == 'if':
+                self.if_clause(s)
+            elif self.val in ('while', 'until'):
+                self.while_clause(s, self.val == 'until')
+            elif self.val == 'for':
+                self.for_clause(s)
+            elif self.val == 'case':
+                self.case_clause(s)
+            elif self.val == '}':
+                self.cur_err('%s can only be used to close a block', Token.RIGHT_BRACE)
+            elif self.val in ('then', 'elif'):
+                self.cur_err('%s can only be used in an `if`', self.val)
+            elif self.val == 'fi':
+                self.cur_err('%s can only be used to end an `if`', self.val)
+            elif self.val == 'do':
+                self.cur_err('%s can only be used in a loop', self.val)
+            elif self.val == 'done':
+                self.cur_err('%s can only be used to end a loop', self.val)
+            elif self.val == 'esac':
+                self.cur_err('%s can only be used to end a `case`', self.val)
+            elif self.val == '!':
+                if not s.negated:
+                    self.cur_err('%s can only be used in full statements', Token.EXCL_MARK)
+            elif self.val == '[[':
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                    self.test_clause(s)
+            elif self.val == ']]':
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                    self.cur_err('%s can only be used to close a test', Token.DBL_RIGHT_BRACK)
+            elif self.val == 'let':
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                    self.let_clause(s)
+            elif self.val == 'function':
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                    self.bash_func_decl(s)
+            elif self.val == 'declare':
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_ZSH):
+                    self.decl_clause(s)
+            elif self.val in ('local', 'export', 'readonly', 'typeset', 'nameref'):
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                    self.decl_clause(s)
+            elif self.val == 'time':
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                    self.time_clause(s)
+            elif self.val == 'coproc':
+                if lang_in(self.lang, LANG_BASH_LIKE):
+                    self.coproc_clause(s)
+            elif self.val == 'select':
+                if lang_in(self.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                    self.select_clause(s)
+            elif self.val == '@test':
+                if lang_in(self.lang, LANG_BATS):
+                    self.test_decl(s)
+            if s.cmd is not None:
+                pass  # already handled
+            elif self.has_valid_ident():
+                self.call_expr(s, None, True)
+            else:
+                name = self.lit(self.pos, self.val)
+                self.next()
+                if self.got(Token.LEFT_PAREN):
+                    self.follow(name.value_pos, 'foo(', Token.RIGHT_PAREN)
+                    if lang_in(self.lang, LANG_POSIX) and not valid_name(name.value):
+                        self.pos_err(name.pos(), 'invalid func name')
+                    self.func_decl(s, name.value_pos, False, True, [name])
+                else:
+                    self.call_expr(s, self.word_one(name), False)
+        elif (
+            (cond_bck2 := (self.tok == Token.BCK_QUOTE))
+            or (cond_lit2 := (self.tok in (  # noqa: F841
+                Token.LIT_,
+                Token.DOLL_BRACE, Token.DOLL_DBL_PAREN, Token.DOLL_PAREN,
+                Token.DOLLAR, Token.CMD_IN, Token.ASSGN_PAREN, Token.CMD_OUT,
+                Token.SGL_QUOTE, Token.DOLL_SGL_QUOTE,
+                Token.DBL_QUOTE, Token.DOLL_DBL_QUOTE, Token.DOLL_BRACK,
+                Token.GLOB_QUEST, Token.GLOB_STAR, Token.GLOB_PLUS,
+                Token.GLOB_AT, Token.GLOB_EXCL,
+            )))
+        ):
+            if cond_bck2:
+                if self.backquote_end():
+                    pass  # break - don't enter the block below
+                else:
+                    cond_lit2 = True  # fallthrough
+            if cond_lit2:  # noqa: F821
+                if self.has_valid_ident():
+                    self.call_expr(s, None, True)
+                else:
+                    w = self.word_any_number()
+                    if self.got(Token.LEFT_PAREN):
+                        self.pos_err(w.pos(), 'invalid func name')
+                    self.call_expr(s, w, False)
+        elif self.tok == Token.LEFT_PAREN:
+            if self.r == ')':
+                self.rune()
+                fpos = self.pos
+                self.next()
+                if self.tok == Token.LIT_WORD_ and self.val == '{':
+                    self.check_lang(fpos, LANG_ZSH, 'anonymous functions')
+                self.func_decl(s, fpos, False, True)
+            else:
+                self.subshell(s)
+        elif self.tok == Token.DBL_LEFT_PAREN:
+            self.arithm_exp_cmd(s)
+        if s.cmd is None and (s.redirs is None or len(s.redirs) == 0):
+            return None  # no statement found
+        if redirs_start > 0 and s.cmd is not None:
+            if not isinstance(s.cmd, CallExpr):
+                self.check_lang(s.pos(), LANG_ZSH, 'redirects before compound commands')
+        while self.peek_redir():
+            self.do_redirect(s)
+        # instead of using recursion, iterate manually
+        while self.tok == Token.OR or self.tok == Token.OR_AND:
+            if bin_cmd:
+                return s
+            if self.tok == Token.OR_AND and lang_in(self.lang, LANG_MIR_BSD_KORN):
+                break
+            b = BinaryCmd(op_pos=self.pos, op=BinCmdOperator(self.tok), x=s)
+            self.next()
+            self.got(Token.NEWL_)
+            b.y = self.got_stmt_pipe(Stmt(position=self.pos), True)
+            if b.y is None or self.err is not None:
+                if self.recover_error():
+                    b.y = Stmt(position=_RECOVERED_POS)
+                else:
+                    self.follow_err(b.op_pos, b.op, 'a statement')
+                    break
+            s = Stmt(position=s.position)
+            s.cmd = b
+            s.comments, b.x.comments = b.x.comments, []
+            # in "! x | y", the bang applies to the entire pipeline
+            s.negated = b.x.negated
+            b.x.negated = False
+        return s
+
+    def subshell(self, s: Stmt) -> None:
+        sub = Subshell(lparen=self.pos)
+        old = self.pre_nested(_SUB_CMD)
+        self.next()
+        sub.stmts, sub.last = self.follow_stmts('(', sub.lparen)
+        self.post_nested(old)
+        sub.rparen = self.matched(sub.lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
+        s.cmd = sub
+
+    def arithm_exp_cmd(self, s: Stmt) -> None:
+        from .parser_arithm import arithm_end as _arithm_end
+        from .parser_arithm import follow_arithm as _follow_arithm
+
+        ar = ArithmCmd(left=self.pos)
+        old = self.pre_nested(_ARITHM_EXPR_CMD)
+        self.next()
+        if self.got(Token.HASH):
+            self.check_lang(ar.pos(), LANG_MIR_BSD_KORN, 'unsigned expressions')
+            ar.unsigned = True
+        ar.x = _follow_arithm(self, Token.DBL_LEFT_PAREN, ar.left)
+        ar.right = _arithm_end(self, Token.DBL_LEFT_PAREN, ar.left, old)
+        s.cmd = ar
+
+    def block(self, s: Stmt) -> None:
+        b = Block(lbrace=self.pos)
+        self.next()
+        b.stmts, b.last = self.follow_stmts('{', b.lbrace, '}')
+        pos, ok = self.got_rsrv('}')
+        if ok:
+            b.rbrace = pos
+        elif self.recover_error():
+            b.rbrace = _RECOVERED_POS
+        else:
+            self.matching_err(b.lbrace, Token.LEFT_BRACE, Token.RIGHT_BRACE)
+        s.cmd = b
+
+    def if_clause(self, s: Stmt) -> None:
+        root_if = IfClause(position=self.pos)
+        self.next()
+        root_if.cond, root_if.cond_last = self.follow_stmts('if', root_if.position, 'then')
+        root_if.then_pos = self.follow_rsrv(root_if.position, 'if <cond>', 'then')
+        root_if.then, root_if.then_last = self.follow_stmts('then', root_if.then_pos, 'fi', 'elif', 'else')
+        cur_if = root_if
+        while self.tok == Token.LIT_WORD_ and self.val == 'elif':
+            elf = IfClause(position=self.pos)
+            cur_if.last = self.acc_coms
+            self.acc_coms = []
+            self.next()
+            elf.cond, elf.cond_last = self.follow_stmts('elif', elf.position, 'then')
+            elf.then_pos = self.follow_rsrv(elf.position, 'elif <cond>', 'then')
+            elf.then, elf.then_last = self.follow_stmts('then', elf.then_pos, 'fi', 'elif', 'else')
+            cur_if.else_ = elf
+            cur_if = elf
+        else_pos, ok = self.got_rsrv('else')
+        if ok:
+            cur_if.last = self.acc_coms
+            self.acc_coms = []
+            els = IfClause(position=else_pos)
+            els.then, els.then_last = self.follow_stmts('else', els.position, 'fi')
+            cur_if.else_ = els
+            cur_if = els
+        cur_if.last = self.acc_coms
+        self.acc_coms = []
+        root_if.fi_pos = self.stmt_end(root_if, 'if', 'fi')
+        els2 = root_if.else_
+        while els2 is not None:
+            els2.fi_pos = root_if.fi_pos
+            els2 = els2.else_
+        s.cmd = root_if
+
+    def while_clause(self, s: Stmt, until: bool) -> None:
+        wc = WhileClause(while_pos=self.pos, until=until)
+        rsrv = 'while'
+        rsrv_cond = 'while <cond>'
+        if wc.until:
+            rsrv = 'until'
+            rsrv_cond = 'until <cond>'
+        self.next()
+        wc.cond, wc.cond_last = self.follow_stmts(rsrv, wc.while_pos, 'do')
+        wc.do_pos = self.follow_rsrv(wc.while_pos, rsrv_cond, 'do')
+        wc.do, wc.do_last = self.follow_stmts('do', wc.do_pos, 'done')
+        wc.done_pos = self.stmt_end(wc, rsrv, 'done')
+        s.cmd = wc
+
+    def for_clause(self, s: Stmt) -> None:
+        fc = ForClause(for_pos=self.pos)
+        self.next()
+        fc.loop = self.loop(fc.for_pos)
+
+        start, end = 'do', 'done'
+        pos, ok = self.got_rsrv('{')
+        if ok:
+            self.check_lang(pos, LANG_BASH_LIKE | LANG_MIR_BSD_KORN, 'for loops with braces')
+            fc.do_pos = pos
+            fc.braces = True
+            start, end = '{', '}'
+        else:
+            fc.do_pos = self.follow_rsrv(fc.for_pos, 'for foo [in words]', start)
+
+        s.comments.extend(self.acc_coms)
+        self.acc_coms = []
+        fc.do, fc.do_last = self.follow_stmts(start, fc.do_pos, end)
+        fc.done_pos = self.stmt_end(fc, 'for', end)
+        s.cmd = fc
+
+    def loop(self, fpos: Pos) -> ta.Any:
+        from .parser_arithm import arithm_end as _arithm_end
+        from .parser_arithm import arithm_expr as _arithm_expr
+
+        if self.tok in (Token.LEFT_PAREN, Token.DBL_LEFT_PAREN):
+            self.check_lang(self.pos, LANG_BASH_LIKE | LANG_ZSH, 'c-style fors')
+        if self.tok == Token.DBL_LEFT_PAREN:
+            cl = CStyleLoop(lparen=self.pos)
+            old = self.pre_nested(_ARITHM_EXPR_CMD)
+            self.next()
+            cl.init = _arithm_expr(self, False)
+            if not self.got(Token.DBL_SEMICOLON):
+                self.follow(self.pos, 'expr', Token.SEMICOLON)
+                cl.cond = _arithm_expr(self, False)
+                self.follow(self.pos, 'expr', Token.SEMICOLON)
+            cl.post = _arithm_expr(self, False)
+            cl.rparen = _arithm_end(self, Token.DBL_LEFT_PAREN, cl.lparen, old)
+            self.got(Token.SEMICOLON)
+            self.got(Token.NEWL_)
+            return cl
+        return self.word_iter('for', fpos)
+
+    def word_iter(self, ftok: str, fpos: Pos) -> WordIter:
+        wi = WordIter()
+        wi.name = self.get_lit()
+        if wi.name is None:
+            self.follow_err(fpos, ftok, 'a literal')
+        if self.got(Token.SEMICOLON):
+            self.got(Token.NEWL_)
+            return wi
+        self.got(Token.NEWL_)
+        pos, ok = self.got_rsrv('in')
+        if ok:
+            wi.in_pos = pos
+            while not self.stop_token():
+                w = self.get_word()
+                if w is None:
+                    self.cur_err('word list can only contain words')
+                else:
+                    wi.items.append(w)
+            self.got(Token.SEMICOLON)
+            self.got(Token.NEWL_)
+        elif self.tok == Token.LIT_WORD_ and self.val == 'do':
+            pass
+        else:
+            self.follow_err(fpos, ftok + ' foo', '`in`, `do`, `;`, or a newline')
+        return wi
+
+    def select_clause(self, s: Stmt) -> None:
+        fc = ForClause(for_pos=self.pos, select=True)
+        self.next()
+        fc.loop = self.word_iter('select', fc.for_pos)
+        fc.do_pos = self.follow_rsrv(fc.for_pos, 'select foo [in words]', 'do')
+        fc.do, fc.do_last = self.follow_stmts('do', fc.do_pos, 'done')
+        fc.done_pos = self.stmt_end(fc, 'select', 'done')
+        s.cmd = fc
+
+    def case_clause(self, s: Stmt) -> None:
+        cc = CaseClause(case=self.pos)
+        self.next()
+        cc.word = self.get_word()
+        if cc.word is None:
+            self.follow_err(cc.case, 'case', 'a word')
+        end = 'esac'
+        self.got(Token.NEWL_)
+        pos, ok = self.got_rsrv('{')
+        if ok:
+            cc.in_ = pos
+            cc.braces = True
+            self.check_lang(cc.pos(), LANG_MIR_BSD_KORN, '`case i {`')
+            end = '}'
+        else:
+            cc.in_ = self.follow_rsrv(cc.case, 'case x', 'in')
+        cc.items = self.case_items(end)
+        cc.last, self.acc_coms = self.acc_coms, []
+        cc.esac = self.stmt_end(cc, 'case', end)
+        s.cmd = cc
+
+    def case_items(self, stop: str) -> list[CaseItem]:
+        items: list[CaseItem] = []
+        self.got(Token.NEWL_)
+        while self.tok != Token.EOF_ and not (self.tok == Token.LIT_WORD_ and self.val == stop):
+            ci = CaseItem()
+            ci.comments, self.acc_coms = self.acc_coms, []
+            self.got(Token.LEFT_PAREN)
+            while self.tok != Token.EOF_:
+                w = self.get_word()
+                if w is None:
+                    self.cur_err('case patterns must consist of words')
+                else:
+                    ci.patterns.append(w)
+                if self.tok == Token.RIGHT_PAREN:
+                    break
+                if not self.got(Token.OR):
+                    self.cur_err('case patterns must be separated with %s', Token.OR)
+            old = self.pre_nested(_SWITCH_CASE)
+            self.next()
+            ci.stmts, ci.last = self.stmt_list(stop)
+            self.post_nested(old)
+            if self.tok not in (Token.DBL_SEMICOLON, Token.SEMI_AND, Token.DBL_SEMI_AND, Token.SEMI_OR):
+                ci.op = CaseOperator.BREAK
+                items.append(ci)
+                return items
+            ci.last.extend(self.acc_coms)
+            self.acc_coms = []
+            ci.op_pos = self.pos
+            ci.op = CaseOperator(self.tok)
+            self.next()
+            self.got(Token.NEWL_)
+
+            # Split comments
+            split = len(self.acc_coms)
+            for i in range(len(self.acc_coms) - 1, -1, -1):
+                c = self.acc_coms[i]
+                if c.pos().col() != self.pos.col():
+                    break
+                split = i
+            ci.comments.extend(self.acc_coms[:split])
+            self.acc_coms = self.acc_coms[split:]
+
+            items.append(ci)
+        return items
+
+    def test_clause(self, s: Stmt) -> None:
+        tc = TestClause(left=self.pos)
+        old = self.pre_nested(_TEST_EXPR)
+        self.next()
+        tc.x = self.test_expr_binary(False)
+        if tc.x is None:
+            self.follow_err_exp(tc.left, Token.DBL_LEFT_BRACK)
+        tc.right = self.pos
+        _, ok = self.got_rsrv(']]')
+        if not ok:
+            self.matching_err(tc.left, Token.DBL_LEFT_BRACK, Token.DBL_RIGHT_BRACK)
+        self.post_nested(old)
+        s.cmd = tc
+
+    def test_expr_binary(self, past_and_or: bool) -> TestExpr | None:
+        self.got(Token.NEWL_)
+        if past_and_or:
+            left = self.test_expr_unary()
+        else:
+            left = self.test_expr_binary(True)
+        if left is None:
+            return left
+        self.got(Token.NEWL_)
+        if self.tok in (Token.AND_AND, Token.OR_OR):
+            pass
+        elif self.tok == Token.LIT_WORD_:
+            if self.val == ']]':
+                return left
+            op = test_binary_op(self.val)
+            if op is None:
+                self.cur_err('not a valid test operator: %s', self.val)
+            else:
+                self.tok = Token(op.value)
+        elif self.tok in (Token.RDR_IN, Token.RDR_OUT):
+            pass
+        elif self.tok in (Token.EOF_, Token.RIGHT_PAREN):
+            return left
+        elif self.tok == Token.LIT_:
+            self.cur_err('test operator words must consist of a single literal')
+        else:
+            self.cur_err('not a valid test operator: %s', self.tok)
+        b = BinaryTest(
+            op_pos=self.pos,
+            op=BinTestOperator(self.tok),
+            x=left,
+        )
+        if b.op in (BinTestOperator.AND_TEST, BinTestOperator.OR_TEST):
+            self.next()
+            b.y = self.test_expr_binary(False)
+            if b.y is None:
+                self.follow_err_exp(b.op_pos, b.op)
+        elif b.op == BinTestOperator.TS_RE_MATCH:
+            self.check_lang(self.pos, LANG_BASH_LIKE | LANG_ZSH, 'regex tests')
+            self.rx_open_parens = 0
+            self.rx_first_part = True
+            self.quote = _TEST_EXPR_REGEXP
+            # fallthrough to default
+            if not isinstance(b.x, Word):
+                self.pos_err(b.op_pos, 'expected %s, %s or %s after complex expr',
+                             BinTestOperator.AND_TEST, BinTestOperator.OR_TEST, Token.DBL_RIGHT_BRACK)
+            self.next()
+            b.y = self.follow_word_tok(Token(b.op.value), b.op_pos)
+        else:
+            if not isinstance(b.x, Word):
+                self.pos_err(b.op_pos, 'expected %s, %s or %s after complex expr',
+                             BinTestOperator.AND_TEST, BinTestOperator.OR_TEST, Token.DBL_RIGHT_BRACK)
+            self.next()
+            b.y = self.follow_word_tok(Token(b.op.value), b.op_pos)
+        return b
+
+    def test_expr_unary(self) -> TestExpr | None:
+        from .lexer import test_unary_op
+
+        if self.tok in (Token.EOF_, Token.RIGHT_PAREN):
+            return None
+        if self.tok == Token.LIT_WORD_:
+            op = test_unary_op(self.val)
+            if op is not None:
+                if op in (UnTestOperator.TS_REF_VAR, UnTestOperator.TS_MODIF):
+                    if lang_in(self.lang, LANG_BASH_LIKE):
+                        self.tok = Token(op.value)
+                else:
+                    self.tok = Token(op.value)
+        if self.tok == Token.EXCL_MARK:
+            u = UnaryTest(op_pos=self.pos, op=UnTestOperator.TS_NOT)
+            self.next()
+            u.x = self.test_expr_binary(False)
+            if u.x is None:
+                self.follow_err_exp(u.op_pos, u.op)
+            return u
+        elif self.tok in (
+            Token.TS_EXISTS, Token.TS_REG_FILE, Token.TS_DIRECT,
+            Token.TS_CHAR_SP, Token.TS_BLCK_SP, Token.TS_NM_PIPE,
+            Token.TS_SOCKET, Token.TS_SMB_LINK, Token.TS_STICKY,
+            Token.TS_GID_SET, Token.TS_UID_SET, Token.TS_GRP_OWN,
+            Token.TS_USR_OWN, Token.TS_MODIF, Token.TS_READ,
+            Token.TS_WRITE, Token.TS_EXEC, Token.TS_NO_EMPTY,
+            Token.TS_FD_TERM, Token.TS_EMP_STR, Token.TS_NEMP_STR,
+            Token.TS_OPT_SET, Token.TS_VAR_SET, Token.TS_REF_VAR,
+        ):
+            u = UnaryTest(op_pos=self.pos, op=UnTestOperator(self.tok))
+            self.next()
+            u.x = self.follow_word_tok(Token(u.op.value), u.op_pos)
+            return u
+        elif self.tok == Token.LEFT_PAREN:
+            pe = ParenTest(lparen=self.pos)
+            self.next()
+            pe.x = self.test_expr_binary(False)
+            if pe.x is None:
+                self.follow_err_exp(pe.lparen, Token.LEFT_PAREN)
+            pe.rparen = self.matched(pe.lparen, Token.LEFT_PAREN, Token.RIGHT_PAREN)
+            return pe
+        elif self.tok == Token.LIT_WORD_:
+            if self.val == ']]':
+                return None
+            # fallthrough to default
+            w = self.get_word()
+            if w is not None:
+                return w
+            return None
+        else:
+            w = self.get_word()
+            if w is not None:
+                return w
+            return None
+
+    def decl_clause(self, s: Stmt) -> None:
+        ds = DeclClause(variant=self.lit(self.pos, self.val))
+        self.next()
+        while not self.stop_token() and not self.peek_redir():
+            if self.has_valid_ident():
+                ds.args.append(self.get_assign(False))
+            elif self.eql_offs > 0 and '{' not in self.val[:self.eql_offs]:
+                self.cur_err('invalid var name')
+            elif self.tok == Token.LIT_WORD_ and valid_name(self.val):
+                ds.args.append(Assign(naked=True, name=self.get_lit()))
+            else:
+                w = self.get_word()
+                if w is not None:
+                    ds.args.append(Assign(naked=True, value=w))
+                else:
+                    self.follow_err(self.pos, ds.variant.value, 'names or assignments')
+        s.cmd = ds
+
+    def _is_bash_compound_command(self, tok: Token, val: str) -> bool:
+        if tok in (Token.LEFT_PAREN, Token.DBL_LEFT_PAREN):
+            return True
+        if tok == Token.LIT_WORD_:
+            return val in (
+                '{', 'if', 'while', 'until', 'for', 'case', '[[',
+                'coproc', 'let', 'function', 'declare', 'local',
+                'export', 'readonly', 'typeset', 'nameref',
+            )
+        return False
+
+    def time_clause(self, s: Stmt) -> None:
+        tc = TimeClause(time=self.pos)
+        self.next()
+        _, ok = self.got_rsrv('-p')
+        if ok:
+            tc.posix_format = True
+        tc.stmt = self.got_stmt_pipe(Stmt(position=self.pos), False)
+        s.cmd = tc
+
+    def coproc_clause(self, s: Stmt) -> None:
+        cc = CoprocClause(coproc=self.pos)
+        self.next()
+        if self._is_bash_compound_command(self.tok, self.val):
+            cc.stmt = self.got_stmt_pipe(Stmt(position=self.pos), False)
+            s.cmd = cc
+            return
+        cc.name = self.get_word()
+        cc.stmt = self.got_stmt_pipe(Stmt(position=self.pos), False)
+        if cc.stmt is None:
+            if cc.name is None:
+                self.pos_err(cc.coproc, 'coproc clause requires a command')
+                return
+            cc.stmt = Stmt(position=cc.name.pos())
+            cc.stmt.cmd = self.call(cc.name)
+            cc.name = None
+        elif cc.name is not None:
+            if isinstance(cc.stmt.cmd, CallExpr):
+                cc.stmt.cmd.args.insert(0, cc.name)
+                cc.name = None
+        s.cmd = cc
+
+    def let_clause(self, s: Stmt) -> None:
+        from .parser_arithm import arithm_expr as _arithm_expr
+
+        lc = LetClause(let=self.pos)
+        old = self.pre_nested(_ARITHM_EXPR_LET)
+        self.next()
+        while not self.stop_token() and not self.peek_redir():
+            x = _arithm_expr(self, True)
+            if x is None:
+                break
+            lc.exprs.append(x)
+        if len(lc.exprs) == 0:
+            self.follow_err_exp(lc.let, 'let')
+        self.post_nested(old)
+        s.cmd = lc
+
+    def bash_func_decl(self, s: Stmt) -> None:
+        fpos = self.pos
+        self.next()
+        names: list[Lit] = []
+        while self.tok == Token.LIT_WORD_ and self.val != '{':
+            names.append(self.lit(self.pos, self.val))
+            self.next()
+        has_parens = self.got(Token.LEFT_PAREN)
+        if len(names) == 0:
+            if has_parens or (self.tok == Token.LIT_WORD_ and self.val == '{'):
+                self.check_lang(fpos, LANG_ZSH, 'anonymous functions')
+            elif not lang_in(self.lang, LANG_ZSH):
+                self.follow_err(fpos, 'function', 'a name')
+            names = []
+        elif len(names) == 1:
+            pass  # allowed in all variants
+        else:
+            self.check_lang(fpos, LANG_ZSH, 'multi-name functions')
+        if has_parens:
+            self.follow(fpos, 'function foo(', Token.RIGHT_PAREN)
+        self.func_decl(s, fpos, True, has_parens, names)
+
+    def test_decl(self, s: Stmt) -> None:
+        td = TestDecl(position=self.pos)
+        self.next()
+        td.description = self.get_word()
+        if td.description is None:
+            self.follow_err(td.position, '@test', 'a description word')
+        td.body = self.get_stmt(False, False, True)
+        if td.body is None:
+            self.follow_err(td.position, '@test "desc"', 'a statement')
+        s.cmd = td
+
+    def call_expr(self, s: Stmt, w: Word | None, assign: bool) -> None:
+        ce = self.call(w)
+        if w is None:
+            ce.args = []
+        if assign:
+            ce.assigns.append(self.get_assign(True))
+        while True:
+            if self.tok in (
+                Token.EOF_, Token.NEWL_, Token.SEMICOLON, Token.AND, Token.OR,
+                Token.AND_AND, Token.OR_OR, Token.OR_AND,
+                Token.DBL_SEMICOLON, Token.SEMI_AND, Token.DBL_SEMI_AND, Token.SEMI_OR,
+            ):
+                break
+            elif self.tok == Token.LIT_WORD_:
+                if len(ce.args) == 0 and self.has_valid_ident():
+                    ce.assigns.append(self.get_assign(True))
+                else:
+                    if self.val == '{' and w is not None and w.lit() == 'function':
+                        self.check_lang(self.pos, LANG_BASH_LIKE, 'the "function" builtin')
+                    if lang_in(self.lang, LANG_ZSH) and self.val == '}':
+                        break
+                    ce.args.append(self.word_one(self.lit(self.pos, self.val)))
+                    self.next()
+            elif self.tok == Token.LIT_:
+                if len(ce.args) == 0 and self.has_valid_ident():
+                    ce.assigns.append(self.get_assign(True))
+                else:
+                    ce.args.append(self.word_any_number())
+            elif (
+                (cond_bck3 := (self.tok == Token.BCK_QUOTE))
+                or (cond_exp3 := (self.tok in (  # noqa: F841
+                    Token.DOLL_BRACE, Token.DOLL_DBL_PAREN, Token.DOLL_PAREN,
+                    Token.DOLLAR, Token.CMD_IN, Token.ASSGN_PAREN, Token.CMD_OUT,
+                    Token.SGL_QUOTE, Token.DOLL_SGL_QUOTE,
+                    Token.DBL_QUOTE, Token.DOLL_DBL_QUOTE, Token.DOLL_BRACK,
+                    Token.GLOB_QUEST, Token.GLOB_STAR, Token.GLOB_PLUS,
+                    Token.GLOB_AT, Token.GLOB_EXCL,
+                )))
+            ):
+                if cond_bck3:
+                    if self.backquote_end():
+                        break
+                    cond_exp3 = True  # fallthrough
+                if cond_exp3:  # noqa: F821
+                    ce.args.append(self.word_any_number())
+            elif self.tok == Token.DBL_LEFT_PAREN:
+                self.cur_err('%s can only be used to open an arithmetic cmd', self.tok)
+            elif (
+                (cond_rp := (self.tok == Token.RIGHT_PAREN))
+                or (cond_def3 := True)  # noqa: F841
+            ):
+                if cond_rp:
+                    if self.quote == _SUB_CMD:
+                        break
+                    # fallthrough to default
+                if self.peek_redir():
+                    self.do_redirect(s)
+                    continue
+                if len(ce.args) > 0:
+                    cmd = ce.args[0].lit() if hasattr(ce.args[0], 'lit') else None
+                    if cmd and self._is_bash_compound_command(Token.LIT_WORD_, cmd):
+                        self.check_lang(self.pos, LANG_BASH_LIKE, 'the %s builtin', cmd)
+                self.cur_err('a command can only contain words and redirects; encountered %s', self.tok)
+        if len(ce.args) == 0:
+            ce.args = []
+        else:
+            for asgn in ce.assigns:
+                if asgn.index is not None or asgn.array is not None:
+                    self.pos_err(asgn.pos(), 'inline variables cannot be arrays')
+        s.cmd = ce
+
+    def func_decl(
+            self,
+            s: Stmt,
+            pos: Pos,
+            long: bool,
+            with_parens: bool,
+            names: list[Lit] | None = None,
+    ) -> None:
+        fd = FuncDecl(
+            position=pos,
+            rsrv_word=long,
+            parens=with_parens,
+        )
+        if names is not None and len(names) == 1:
+            fd.name = names[0]
+        else:
+            fd.names = names or []
+        self.got(Token.NEWL_)
+        fd.body = self.get_stmt(False, False, True)
+        if fd.body is None:
+            self.follow_err(fd.pos(), 'foo()', 'a statement')
+        s.cmd = fd

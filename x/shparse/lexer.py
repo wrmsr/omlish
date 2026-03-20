@@ -19,11 +19,26 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import typing as ta
 
-from .tokens import UnTestOperator
+from .langs import LANG_BASH_LIKE
+from .langs import LANG_MIR_BSD_KORN
+from .langs import LANG_ZSH
+from .langs import lang_in
 from .tokens import BinTestOperator
 from .tokens import Token
-from .langs import lang_in
-from .langs import LANG_ZSH
+from .tokens import UnTestOperator
+
+
+if ta.TYPE_CHECKING:
+    from .parser import Parser
+
+
+##
+
+
+# Sentinel rune values. In the Go original these are utf8.RuneSelf (0x80) and utf8.RuneSelf+1.
+# In Python we use Unicode noncharacters that cannot appear in valid shell source.
+_EOF_RUNE = '\uffff'   # signals end of input (replaces utf8.RuneSelf)
+_ESC_NEWL = '\ufffe'   # escaped newline pseudo-rune (replaces escNewl)
 
 
 ##
@@ -65,6 +80,8 @@ def bquote_escaped(b: str) -> bool:
 
 
 r"""
+TODO: original go for parser_rune / parser_fill (byte-level IO, not applicable to string-based Python parser):
+
 const escNewl rune = utf8.RuneSelf + 1
 
 
@@ -96,12 +113,12 @@ retry:
             # Ignore null bytes while parsing, like bash.
             p.col++
             goto retry
-            
+
         case '\r':
             if p.peek() == '\n' { # \r\n turns into \n
                 p.col++
                 goto retry
-                
+
         case '\\':
             if p.r == '\\' {
             else if p.peek() == '\n' {
@@ -190,74 +207,77 @@ readAgain:
 
     p.bsp = 0
     return n
+"""  # noqa
 
-func (p *Parser) nextKeepSpaces() {
-    r := p.r
-    if p.quote != hdocBody and p.quote != hdocBodyTabs {
+
+def next_keep_spaces(p: 'Parser') -> None:
+    r = p.r
+    if p.quote != p._HDOC_BODY and p.quote != p._HDOC_BODY_TABS:
         # Heredocs handle escaped newlines in a special way, but others do not.
-        for r == escNewl {
+        while r == _ESC_NEWL:
             r = p.rune()
 
-    p.pos = p.nextPos()
-    switch p.quote {
-    case runeByRune:
-        p.tok = illegalTok
-    case dblQuotes:
-        switch r {
-        case '`', '"', '$':
-            p.tok = p.dqToken(r)
-        default:
-            p.advanceLitDquote(r)
-    case hdocBody, hdocBodyTabs:
-        switch r {
-        case '`', '$':
-            p.tok = p.dqToken(r)
-        default:
-            p.advanceLitHdoc(r)
-    case paramExpRepl:
-        if r == '/' {
-            p.rune()
-            p.tok = slash
-            break
-        fallthrough
-    case paramExpExp:
-        switch r {
-        case '}':
-            p.tok = p.param_token(r)
-        case '`', '"', '$', '\'':
-            p.tok = p.reg_token(r)
-        default:
-            p.advanceLitOther(r)
+    p.pos = p.next_pos()
+    if p.quote == p._RUNE_BY_RUNE:
+        p.tok = Token.ILLEGAL_TOK
+    elif p.quote == p._DBL_QUOTES:
+        if r in ('`', '"', '$'):
+            p.tok = dq_token(p, r)
+        else:
+            advance_lit_dquote(p, r)
+    elif p.quote in (p._HDOC_BODY, p._HDOC_BODY_TABS):
+        if r in ('`', '$'):
+            p.tok = dq_token(p, r)
+        else:
+            advance_lit_hdoc(p, r)
+    elif (
+        (cond_repl := (p.quote == p._PARAM_EXP_REPL))
+        or (cond_exp := (p.quote == p._PARAM_EXP_EXP))  # noqa: F841
+    ):
+        if cond_repl:
+            if r == '/':
+                p.rune()
+                p.tok = Token.SLASH
+            else:
+                # fallthrough to paramExpExp handling
+                cond_exp = True
+        if cond_exp:  # noqa: F821
+            if r == '}':
+                p.tok = param_token(p, r)
+            elif r in ('`', '"', '$', '\''):
+                p.tok = reg_token(p, r)
+            else:
+                advance_lit_other(p, r)
 
     if p.err is not None:
         p.tok = Token.EOF_
 
-func (p *Parser) next():
-    if p.r == utf8.RuneSelf:
+
+def next_(p: 'Parser') -> None:
+    if p.r == _EOF_RUNE:
         p.tok = Token.EOF_
         return
 
     p.spaced = False
-    if p.quote&allKeepSpaces != 0:
-        p.nextKeepSpaces()
+    if p.quote & p._ALL_KEEP_SPACES != 0:
+        next_keep_spaces(p)
         return
 
-    r := p.r
-    for r == escNewl:
+    r = p.r
+    while r == _ESC_NEWL:
         r = p.rune()
 
-skipSpace:
-    for:
-        switch r:
-        case utf8.RuneSelf:
+    # skipSpace
+    while True:
+        if r == _EOF_RUNE:
             p.tok = Token.EOF_
             return
-        case escNewl:
+        elif r == _ESC_NEWL:
             r = p.rune()
-        case ' ', '\t', '\r':
+        elif r in (' ', '\t', '\r'):
             p.spaced = True
             r = p.rune()
-        case '\n':
+        elif r == '\n':
             if p.tok == Token.NEWL_:
                 # merge consecutive newline tokens
                 r = p.rune()
@@ -265,165 +285,144 @@ skipSpace:
 
             p.spaced = True
             p.tok = Token.NEWL_
-            if p.quote != hdocWord and len(p.heredocs) > p.buriedHdocs {
-                p.doHeredocs()
+            if p.quote != p._HDOC_WORD and len(p.heredocs) > p.buried_hdocs:
+                p.do_heredocs()
 
             return
-        default:
-            break skipSpace
+        else:
+            break
 
-    if p.stopAt is not None and (p.spaced or p.tok == illegalTok or p.stopToken()) {
-        w := utf8.RuneLen(r)
-        if bytes.HasPrefix(p.bs[p.bsp-uint(w):], p.stopAt) {
-            p.r = utf8.RuneSelf
+    if p.stop_at is not None and (p.spaced or p.tok == Token.ILLEGAL_TOK or p.stop_token()):
+        if p.src[p.bsp - 1:].startswith(p.stop_at):
+            p.r = _EOF_RUNE
             p.w = 1
             p.tok = Token.EOF_
             return
 
-    p.pos = p.nextPos()
-    switch {
-    case p.quote&allRegTokens != 0:
-        switch r {
-        case ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`':
-            if r == '<' and lang_in(p.lang, LANG_ZSH) and p.zshNumRange() {
-                p.advance_lit_none(r)
+    p.pos = p.next_pos()
+    if p.quote & p._ALL_REG_TOKENS != 0:
+        if r in (';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`'):
+            if r == '<' and lang_in(p.lang, LANG_ZSH) and zsh_num_range(p):
+                advance_lit_none(p, r)
                 return
-            p.tok = p.reg_token(r)
-        case '#':
+            p.tok = reg_token(p, r)
+        elif r == '#':
             # If we're parsing $foo#bar, ${foo}#bar, 'foo'#bar, or "foo"#bar,
             # #bar is a continuation of the same word, not a comment.
-            if p.quote == unquotedWordCont and not p.spaced {
-                p.advance_lit_none(r)
+            if p.quote == p._UNQUOTED_WORD_CONT and not p.spaced:
+                advance_lit_none(p, r)
                 return
             r = p.rune()
-            p.new_lit(r)
-        runeLoop:
-            for {
-                switch r {
-                case '\n', utf8.RuneSelf:
-                    break runeLoop
-                case escNewl:
-                    p.litBs = append(p.litBs, '\\', '\n')
-                    break runeLoop
-                case '`':
-                    if p.backquoteEnd() {
-                        break runeLoop
+            new_lit(p, r)
+            while True:
+                if r in ('\n', _EOF_RUNE):
+                    break
+                elif r == _ESC_NEWL:
+                    p.lit_bs.append('\\')
+                    p.lit_bs.append('\n')
+                    break
+                elif r == '`':
+                    if p.backquote_end():
+                        break
                 r = p.rune()
-            if p.keepComments {
-                *p.curComs = append(*p.curComs, Comment{
-                    Hash: p.pos,
-                    Text: p.end_lit(),
-            else {
-                p.litBs = nil
-            p.next()
-        case '[':
-            if p.quote == arrayElems {
+            if p.keep_comments:
+                p.cur_coms.append(p._comment(
+                    hash_pos=p.pos,
+                    text=end_lit(p),
+                ))
+            else:
+                p.lit_bs = None
+            next_(p)
+        elif r == '[':
+            if p.quote == p._ARRAY_ELEMS:
                 p.rune()
                 p.tok = Token.LEFT_BRACK
-            else {
-                p.advance_lit_none(r)
-        case '=':
-            if p.peek() == '(' {
+            else:
+                advance_lit_none(p, r)
+        elif r == '=':
+            if p.peek() == '(':
                 p.rune()
                 p.rune()
                 p.tok = Token.ASSGN_PAREN
-            else if p.quote == arrayElems {
+            elif p.quote == p._ARRAY_ELEMS:
                 p.rune()
                 p.tok = Token.ASSGN
-            else {
-                p.advance_lit_none(r)
-        case '?', '*', '+', '@', '!':
-            if p.extended_glob() {
-                switch r {
-                case '?':
+            else:
+                advance_lit_none(p, r)
+        elif r in ('?', '*', '+', '@', '!'):
+            if extended_glob(p):
+                if r == '?':
                     p.tok = Token.GLOB_QUEST
-                case '*':
+                elif r == '*':
                     p.tok = Token.GLOB_STAR
-                case '+':
+                elif r == '+':
                     p.tok = Token.GLOB_PLUS
-                case '@':
+                elif r == '@':
                     p.tok = Token.GLOB_AT
-                case '!':
+                elif r == '!':
                     p.tok = Token.GLOB_EXCL
                 p.rune()
                 p.rune()
-            else {
-                p.advance_lit_none(r)
-        default:
-            p.advance_lit_none(r)
-    case p.quote&allArithmExpr != 0 and arithm_ops(r):
-        p.tok = p.arithm_token(r)
-    case p.quote&allParamExp != 0 and param_ops(r):
-        p.tok = p.param_token(r)
-    case p.quote == testExprRegexp:
-        if not p.rxFirstPart and p.spaced {
-            p.quote = testExpr
-            goto skipSpace
-        p.rxFirstPart = False
-        switch r {
-        case ';', '"', '\'', '$', '&', '>', '<', '`':
-            p.tok = p.reg_token(r)
-        case ')':
-            if p.rxOpenParens > 0 {
+            else:
+                advance_lit_none(p, r)
+        else:
+            advance_lit_none(p, r)
+    elif p.quote & p._ALL_ARITHM_EXPR != 0 and arithm_ops(r):
+        p.tok = arithm_token(p, r)
+    elif p.quote & p._ALL_PARAM_EXP != 0 and param_ops(r):
+        p.tok = param_token(p, r)
+    elif p.quote == p._TEST_EXPR_REGEXP:
+        if not p.rx_first_part and p.spaced:
+            p.quote = p._TEST_EXPR
+            # re-enter skipSpace logic via recursion
+            next_(p)
+            return
+        p.rx_first_part = False
+        if r in (';', '"', '\'', '$', '&', '>', '<', '`'):
+            p.tok = reg_token(p, r)
+        elif r == ')':
+            if p.rx_open_parens > 0:
                 # continuation of open paren
-                p.advanceLitRe(r)
-            else {
-                p.tok = rightParen
-                p.quote = testExpr
-                p.rune() # we are tokenizing manually
-        default: # including '(', '|'
-            p.advanceLitRe(r)
-    case reg_ops(r):
-        p.tok = p.reg_token(r)
-    default:
-        p.advanceLitOther(r)
+                advance_lit_re(p, r)
+            else:
+                p.tok = Token.RIGHT_PAREN
+                p.quote = p._TEST_EXPR
+                p.rune()  # we are tokenizing manually
+        else:  # including '(', '|'
+            advance_lit_re(p, r)
+    elif reg_ops(r):
+        p.tok = reg_token(p, r)
+    else:
+        advance_lit_other(p, r)
     if p.err is not None:
         p.tok = Token.EOF_
 
+
 # extended_glob determines whether we're parsing a Bash extended globbing expression.
 # For example, whether `*` or `@` are followed by `(` to form `@(foo)`.
-def extended_glob(p: Parser) -> bool:
-    if lang_in(p.lang, LANG_ZSH) {
+def extended_glob(p: 'Parser') -> bool:
+    if lang_in(p.lang, LANG_ZSH):
         # Zsh doesn't have extended globs like bash/mksh.
         # We still tokenize +( @( !( so the parser can give a clear error,
         # but not *( or ?( as those are used in zsh glob qualifiers.
-        switch p.r {
-        case '+', '@', '!':
-        default:
+        if p.r not in ('+', '@', '!'):
             return False
-    if p.val == "function" {
+    if p.val == 'function':
         # We don't support e.g. `function @() { ... }` at the moment, but we could.
         return False
-    if p.peek() == '(' {
+    if p.peek() == '(':
         # NOTE: empty pattern list is a valid globbing syntax like `@()`,
         # but we'll operate on the "likelihood" that it is a function;
         # only tokenize if its a non-empty pattern list.
         # We do this after peeking for just one byte, so that the input `echo *`
         # followed by a newline does not hang an interactive shell parser until
         # another byte is input.
-        _, p2 := p.peekTwo()
+        _, p2 = p.peek_two()
         return p2 != ')'
     return False
 
-func (p *Parser) peek() byte {
-    if int(p.bsp) >= len(p.bs) {
-        p.fill()
-    if int(p.bsp) >= len(p.bs) {
-        return utf8.RuneSelf
-    return p.bs[p.bsp]
 
-func (p *Parser) peekTwo() (byte, byte) {
-    # TODO: This should loop for slow readers, e.g. those providing one byte at
-    # a time. Use a loop and test it with [testing/iotest.OneByteReader].
-    if int(p.bsp+1) >= len(p.bs) {
-        p.fill()
-    if int(p.bsp) >= len(p.bs) {
-        return utf8.RuneSelf, utf8.RuneSelf
-    if int(p.bsp+1) >= len(p.bs) {
-        return p.bs[p.bsp], utf8.RuneSelf
-    return p.bs[p.bsp], p.bs[p.bsp+1]
-
-def reg_token(p: Parser, r: str) -> Token:
+def reg_token(p: 'Parser', r: str) -> Token:
     if r == '\'':
         p.rune()
         return Token.SGL_QUOTE
@@ -497,7 +496,7 @@ def reg_token(p: Parser, r: str) -> Token:
             return Token.DOLL_PAREN
         return Token.DOLLAR
     elif r == '(':
-        if p.rune() == '(' and lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote != testExpr:
+        if p.rune() == '(' and lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH) and p.quote != p._TEST_EXPR:  # noqa
             p.rune()
             return Token.DBL_LEFT_PAREN
         return Token.LEFT_PAREN
@@ -525,11 +524,11 @@ def reg_token(p: Parser, r: str) -> Token:
     elif r == '<':
         pr = p.rune()
         if pr == '<':
-            r = p.rune()
-            if r == '-':
+            r2 = p.rune()
+            if r2 == '-':
                 p.rune()
                 return Token.DASH_HDOC
-            elif r == '<':
+            elif r2 == '<':
                 p.rune()
                 return Token.WORD_HDOC
             return Token.HDOC
@@ -573,7 +572,8 @@ def reg_token(p: Parser, r: str) -> Token:
         return Token.RDR_OUT
     raise RuntimeError('unreachable')
 
-func (p *Parser) dqToken(r rune) token {
+
+def dq_token(p: 'Parser', r: str) -> Token:
     if r == '"':
         p.rune()
         return Token.DBL_QUOTE
@@ -588,7 +588,7 @@ func (p *Parser) dqToken(r rune) token {
             return Token.DOLL_BRACE
         elif pr == '[':
             if not lang_in(p.lang, LANG_BASH_LIKE):
-                break
+                return Token.DOLLAR
             p.rune()
             return Token.DOLL_BRACK
         elif pr == '(':
@@ -599,7 +599,8 @@ func (p *Parser) dqToken(r rune) token {
         return Token.DOLLAR
     raise RuntimeError('unreachable')
 
-def param_token(p: Parser, r: str) -> Token:
+
+def param_token(p: 'Parser', r: str) -> Token:
     if r == '}':
         p.rune()
         return Token.RIGHT_BRACE
@@ -616,11 +617,11 @@ def param_token(p: Parser, r: str) -> Token:
             return Token.COL_QUEST
         elif pr == '=':
             p.rune()
-            return Token.COL_ASSIGN
+            return Token.COL_ASSGN
         elif pr == '#':
             p.rune()
             return Token.COL_HASH
-        return colon
+        return Token.COLON
     elif r == '+':
         p.rune()
         return Token.PLUS
@@ -637,7 +638,7 @@ def param_token(p: Parser, r: str) -> Token:
         if p.rune() == '%':
             p.rune()
             return Token.DBL_PERC
-        return perc
+        return Token.PERC
     elif r == '#':
         if p.rune() == '#':
             p.rune()
@@ -671,15 +672,15 @@ def param_token(p: Parser, r: str) -> Token:
         p.rune()
         return Token.STAR
 
-    # This func gets called by the parser in [runeByRune] mode;
+    # This func gets called by the parser in runeByRune mode;
     # we need to handle EOF and unexpected runes.
-    case utf8.RuneSelf:
+    elif r == _EOF_RUNE:
         return Token.EOF_
     else:
-        return Tokkens.ILLEGAL_TOK_
-"""  # noqa
+        return Token.ILLEGAL_TOK
 
-def arithm_token(p: Parser, r: str) -> Token:
+
+def arithm_token(p: 'Parser', r: str) -> Token:
     if r == '!':
         if p.rune() == '=':
             p.rune()
@@ -817,335 +818,381 @@ def arithm_token(p: Parser, r: str) -> Token:
     raise RuntimeError('unreachable')
 
 
-r"""
-def new_lit(p: Parser, r: str) -> None:
-    if r < utf8.RuneSelf:
-        p.litBs = p.litBuf[:1]
-        p.litBs[0] = byte(r)
-    case r > escNewl:
-        w := utf8.RuneLen(r)
-        p.litBs = append(p.litBuf[:0], p.bs[p.bsp-uint(w):p.bsp]...)
-    default:
-        # don't let r == utf8.RuneSelf go to the second case as [utf8.RuneLen]
-        # would return -1
-        p.litBs = p.litBuf[:0]
+##
 
-func (p *Parser) end_lit() (s string) {
-    if p.r == utf8.RuneSelf or p.r == escNewl {
-        s = string(p.litBs)
-    else {
-        s = string(p.litBs[:len(p.litBs)-p.w])
-    p.litBs = nil
+
+def new_lit(p: 'Parser', r: str) -> None:
+    if r != _EOF_RUNE and r != _ESC_NEWL:
+        p.lit_bs = [r]
+    else:
+        p.lit_bs = []
+
+
+def end_lit(p: 'Parser') -> str:
+    if p.r == _EOF_RUNE or p.r == _ESC_NEWL:
+        s = ''.join(p.lit_bs)
+    else:
+        # exclude the last rune which hasn't been consumed yet
+        s = ''.join(p.lit_bs[:-1]) if p.lit_bs else ''
+    p.lit_bs = None
     return s
 
-func (p *Parser) isLitRedir() bool {
-    lit := p.litBs[:len(p.litBs)-1]
-    if lit[0] == '{' and lit[len(lit)-1] == '}' {
-        return ValidName(string(lit[1 : len(lit)-1]))
-    return numberLiteral(lit)
+
+def is_lit_redir(p: 'Parser') -> bool:
+    lit = p.lit_bs[:-1] if p.lit_bs else []
+    if not lit:
+        return False
+    lit_str = ''.join(lit)
+    if lit_str[0] == '{' and lit_str[-1] == '}':
+        from .parser import valid_name
+        return valid_name(lit_str[1:-1])
+    return _number_literal(lit_str)
+
 
 def single_rune_param(r: str) -> bool:
     if r in ('@', '*', '#', '$', '?', '!', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
         return True
     return False
 
-func param_name_rune[T rune | byte](r T) bool {
+
+def param_name_rune(r: str) -> bool:
     return ascii_letter(r) or ascii_digit(r) or r == '_'
 
-func (p *Parser) advanceLitOther(r rune) {
-    tok := Token.LIT_WORD_
-loop:
-    for p.new_lit(r); r != utf8.RuneSelf; r = p.rune() {
-        switch r {
-        case '\\': # escaped byte follows
+
+def _number_literal(val: str) -> bool:
+    if len(val) == 0:
+        return False
+    for r in val:
+        if not ascii_digit(r):
+            return False
+    return True
+
+
+def advance_lit_other(p: 'Parser', r: str) -> None:
+    tok = Token.LIT_WORD_
+    new_lit(p, r)
+    while r != _EOF_RUNE:
+        if r == '\\':  # escaped byte follows
             p.rune()
-        case '\'', '"', '`', '$':
+        elif r in ('\'', '"', '`', '$'):
             tok = Token.LIT_
-            break loop
-        case '}':
-            if p.quote&allParamExp != 0 {
-                break loop
-        case '/':
-            if p.quote != paramExpExp {
-                break loop
-        case ':', '=', '%', '^', ',', '?', '!', '~', '*':
-            if p.quote&allArithmExpr != 0 {
-                break loop
-        case '.':
-            if not lang_in(p.lang, LANG_ZSH) and p.quote&allArithmExpr != 0 {
-                break loop
-        case '[', ']':
-            if lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote&allArithmExpr != 0 {
-                break loop
-            fallthrough
-        case '+', '-', ' ', '\t', ';', '&', '>', '<', '|', '(', ')', '\n', '\r':
-            if p.quote&allKeepSpaces == 0 {
-                break loop
-    p.tok, p.val = tok, p.end_lit()
+            break
+        elif r == '}':
+            if p.quote & p._ALL_PARAM_EXP != 0:
+                break
+        elif r == '/':
+            if p.quote != p._PARAM_EXP_EXP:
+                break
+        elif r in (':', '=', '%', '^', ',', '?', '!', '~', '*'):
+            if p.quote & p._ALL_ARITHM_EXPR != 0:
+                break
+        elif r == '.':
+            if not lang_in(p.lang, LANG_ZSH) and p.quote & p._ALL_ARITHM_EXPR != 0:
+                break
+        elif r in ('[', ']'):
+            if (
+                lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH)
+                and p.quote & p._ALL_ARITHM_EXPR != 0
+            ):
+                break
+            # fallthrough to the + - space etc case
+            if p.quote & p._ALL_KEEP_SPACES == 0:
+                break
+        elif r in ('+', '-', ' ', '\t', ';', '&', '>', '<', '|', '(', ')', '\n', '\r'):
+            if p.quote & p._ALL_KEEP_SPACES == 0:
+                break
+        r = p.rune()
+    p.tok, p.val = tok, end_lit(p)
+
 
 # litBsGlob reports whether the literal bytes accumulated so far
 # contain a glob metacharacter, excluding the last byte which is '('.
-func (p *Parser) litBsGlob() bool {
+def lit_bs_glob(p: 'Parser') -> bool:
     # Exclude the last byte which is the '(' that triggered this check.
-    for _, b := range p.litBs[:len(p.litBs)-1] {
-        switch b {
-        case '*', '?', '[':
+    for b in (p.lit_bs[:-1] if p.lit_bs else []):
+        if b in ('*', '?', '['):
             return True
-        case '/':
+        elif b == '/':
             # Paths like /bin/sh(:t) can also have glob qualifiers;
             # function names never contain slashes.
             return True
     return False
 
+
 # zshNumRange peeks at the bytes after '<' to check for a zsh numeric
 # range glob pattern like <->, <5->, <-10>, or <5-10>.
-func (p *Parser) zshNumRange() bool {
+def zsh_num_range(p: 'Parser') -> bool:
     # Peeking a handful of bytes here should be enough.
-    # TODO: This should loop for slow readers, e.g. those providing one byte at
-    # a time. Use a loop and test it with [testing/iotest.OneByteReader].
-    if int(p.bsp) >= len(p.bs) {
-        p.fill()
-    rest := p.bs[p.bsp:]
-    for len(rest) > 0 and rest[0] >= '0' and rest[0] <= '9' {
-        rest = rest[1:]
-    if len(rest) == 0 or rest[0] != '-' {
+    rest = p.src[p.bsp:]
+    i = 0
+    while i < len(rest) and '0' <= rest[i] <= '9':
+        i += 1
+    if i >= len(rest) or rest[i] != '-':
         return False
-    rest = rest[1:]
-    for len(rest) > 0 and rest[0] >= '0' and rest[0] <= '9' {
-        rest = rest[1:]
-    return len(rest) > 0 and rest[0] == '>'
+    i += 1
+    while i < len(rest) and '0' <= rest[i] <= '9':
+        i += 1
+    return i < len(rest) and rest[i] == '>'
 
-func (p *Parser) advance_lit_none(r rune) {
+
+def advance_lit_none(p: 'Parser', r: str) -> None:
     p.eql_offs = -1
     tok = Token.LIT_WORD_
-loop:
-    for p.new_lit(r); r != utf8.RuneSelf; r = p.rune():
+    new_lit(p, r)
+    while r != _EOF_RUNE:
         if r in (' ', '\t', '\n', '\r', '&', '|', ';', ')'):
-            break loop
+            break
         elif r == '(':
-            if lang_in(p.lang, LANG_ZSH) and p.litBsGlob():
+            if lang_in(p.lang, LANG_ZSH) and lit_bs_glob(p):
                 # Zsh glob qualifiers like *(.), **(/) or *(om[1,5]); consume until ')'.
-                for {
-                    if r = p.rune(); r == utf8.RuneSelf or r == ')':
+                while True:
+                    r = p.rune()
+                    if r == _EOF_RUNE or r == ')':
                         break
+                r = p.rune()
                 continue
-            break loop
-        elif r == '\\': # escaped byte follows
+            break
+        elif r == '\\':  # escaped byte follows
             p.rune()
         elif r in ('>', '<'):
-            if r == '<' and lang_in(p.lang, LANG_ZSH) and p.zshNumRange():
+            if r == '<' and lang_in(p.lang, LANG_ZSH) and zsh_num_range(p):
                 # Zsh numeric range glob like <-> or <1-100>; consume until '>'.
-                for {
-                    if r = p.rune(); r == '>' or r == utf8.RuneSelf:
+                while True:
+                    r = p.rune()
+                    if r == '>' or r == _EOF_RUNE:
                         break
+                r = p.rune()
                 continue
-            if p.peek() == '(' {
+            if p.peek() == '(':
                 tok = Token.LIT_
-            else if p.isLitRedir() {
+            elif is_lit_redir(p):
                 tok = Token.LIT_REDIR_
-            break loop
+            break
         elif r == '`':
-            if p.quote != subCmdBckquo {
+            if p.quote != p._SUB_CMD_BCKQUO:
                 tok = Token.LIT_
-            break loop
+            break
         elif r in ('"', '\'', '$'):
             tok = Token.LIT_
-            break loop
+            break
         elif r in ('?', '*', '+', '@', '!'):
-            if p.extended_glob():
+            if extended_glob(p):
                 tok = Token.LIT_
-                break loop
+                break
         elif r == '=':
-            if p.eqlOffs < 0 {
-                p.eqlOffs = len(p.litBs) - 1
+            if p.eql_offs < 0:
+                p.eql_offs = len(p.lit_bs) - 1
         elif r == '[':
-            if lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and len(p.litBs) > 1 and p.litBs[0] != '[' {
+            if (
+                lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH)
+                and len(p.lit_bs) > 1
+                and p.lit_bs[0] != '['
+            ):
                 tok = Token.LIT_
-                break loop
-    p.tok, p.val = tok, p.end_lit()
+                break
+        r = p.rune()
+    p.tok, p.val = tok, end_lit(p)
 
-func (p *Parser) advanceLitDquote(r rune) {
-    tok := Token.LIT_WORD_
-loop:
-    for p.new_lit(r); r != utf8.RuneSelf; r = p.rune() {
-        switch r {
-        case '"':
-            break loop
-        case '\\': # escaped byte follows
+
+def advance_lit_dquote(p: 'Parser', r: str) -> None:
+    tok = Token.LIT_WORD_
+    new_lit(p, r)
+    while r != _EOF_RUNE:
+        if r == '"':
+            break
+        elif r == '\\':  # escaped byte follows
             p.rune()
-        case escNewl, '`', '$':
-            tok = _Lit
-            break loop
-    p.tok, p.val = tok, p.end_lit()
+        elif r in (_ESC_NEWL, '`', '$'):
+            tok = Token.LIT_
+            break
+        r = p.rune()
+    p.tok, p.val = tok, end_lit(p)
 
-func (p *Parser) advanceLitHdoc(r rune) {
+
+def advance_lit_hdoc(p: 'Parser', r: str) -> None:
     # Unlike the rest of nextKeepSpaces quote states, we handle escaped
     # newlines here. If lastTok==_Lit, then we know we're following an
     # escaped newline, so the first line can't end the heredoc.
-    lastTok := p.tok
-    for r == escNewl {
+    last_tok = p.tok
+    while r == _ESC_NEWL:
         r = p.rune()
-        lastTok = _Lit
-    p.pos = p.nextPos()
+        last_tok = Token.LIT_
+    p.pos = p.next_pos()
 
-    p.tok = _Lit
-    p.new_lit(r)
-    for p.quote == hdocBodyTabs and r == '\t' {
+    p.tok = Token.LIT_
+    new_lit(p, r)
+    while p.quote == p._HDOC_BODY_TABS and r == '\t':
         r = p.rune()
-    lStart := len(p.litBs) - 1
-    stop := p.hdocStops[len(p.hdocStops)-1]
-    for ; ; r = p.rune() {
-        switch r {
-        case escNewl, '$':
-            p.val = p.end_lit()
+    l_start = len(p.lit_bs) - 1
+    stop = p.hdoc_stops[-1]
+    while True:
+        if r in (_ESC_NEWL, '$'):
+            p.val = end_lit(p)
             return
-        case '\\': # escaped byte follows
+        elif r == '\\':  # escaped byte follows
             p.rune()
-        case '`':
-            if not p.backquoteEnd() {
-                p.val = p.end_lit()
-                return
-            fallthrough
-        case '\n', utf8.RuneSelf:
-            if p.parsingDoc {
-                if r == utf8.RuneSelf {
-                    p.tok = Token.LIT_WORD_
-                    p.val = p.end_lit()
+        elif (
+            (cond_bck := (r == '`'))
+            or (cond_nl := (r in ('\n', _EOF_RUNE)))  # noqa: F841
+        ):
+            if cond_bck:
+                if not p.backquote_end():
+                    p.val = end_lit(p)
                     return
-            else if lStart == 0 and lastTok == _Lit {
-                # This line starts right after an escaped
-                # newline, so it should never end the heredoc.
-            else if lStart >= 0 {
-                # Compare the current line with the stop word.
-                line := p.litBs[lStart:]
-                if r != utf8.RuneSelf and len(line) > 0 {
-                    line = line[:len(line)-1] # minus trailing character
-                if bytes.Equal(line, stop) {
-                    p.tok = Token.LIT_WORD_
-                    p.val = p.end_lit()[:lStart]
-                    if p.val == "" {
-                        p.tok = Token.NEWL_
-                    p.hdocStops[len(p.hdocStops)-1] = nil
-                    return
-            if r != '\n' {
-                return # hit an unexpected EOF or closing backquote
-            for p.quote == hdocBodyTabs and p.peek() == '\t' {
-                p.rune()
-            lStart = len(p.litBs)
+                cond_nl = True
+            if cond_nl:  # noqa: F821
+                if p.parsing_doc:
+                    if r == _EOF_RUNE:
+                        p.tok = Token.LIT_WORD_
+                        p.val = end_lit(p)
+                        return
+                elif l_start == 0 and last_tok == Token.LIT_:
+                    # This line starts right after an escaped
+                    # newline, so it should never end the heredoc.
+                    pass
+                elif l_start >= 0:
+                    # Compare the current line with the stop word.
+                    line = p.lit_bs[l_start:]
+                    if r != _EOF_RUNE and len(line) > 0:
+                        line = line[:-1]  # minus trailing character
+                    line_str = ''.join(line)
+                    if line_str == stop:
+                        p.tok = Token.LIT_WORD_
+                        full = end_lit(p)
+                        p.val = full[:l_start]
+                        if p.val == '':
+                            p.tok = Token.NEWL_
+                        p.hdoc_stops[-1] = None
+                        return
+                if r != '\n':
+                    return  # hit an unexpected EOF or closing backquote
+                while p.quote == p._HDOC_BODY_TABS and p.peek() == '\t':
+                    p.rune()
+                l_start = len(p.lit_bs)
+        r = p.rune()
 
-func (p *Parser) quotedHdocWord() *Word {
-    r := p.r
-    p.new_lit(r)
-    pos := p.nextPos()
-    stop := p.hdocStops[len(p.hdocStops)-1]
-    for ; ; r = p.rune() {
-        if r == utf8.RuneSelf {
-            return nil
-        for p.quote == hdocBodyTabs and r == '\t' {
+
+def quoted_hdoc_word(p: 'Parser') -> ta.Any:  # -> Word | None
+    r = p.r
+    new_lit(p, r)
+    pos = p.next_pos()
+    stop = p.hdoc_stops[-1]
+    while True:
+        if r == _EOF_RUNE:
+            return None
+        while p.quote == p._HDOC_BODY_TABS and r == '\t':
             r = p.rune()
-        lStart := len(p.litBs) - 1
-    runeLoop:
-        for {
-            switch r {
-            case utf8.RuneSelf, '\n':
-                break runeLoop
-            case '`':
-                if p.backquoteEnd() {
-                    break runeLoop
-            case escNewl:
-                p.litBs = append(p.litBs, '\\', '\n')
-                break runeLoop
+        l_start = len(p.lit_bs) - 1
+        while True:
+            if r in (_EOF_RUNE, '\n'):
+                break
+            elif r == '`':
+                if p.backquote_end():
+                    break
+            elif r == _ESC_NEWL:
+                p.lit_bs.append('\\')
+                p.lit_bs.append('\n')
+                break
             r = p.rune()
-        if lStart < 0 {
+        if l_start < 0:
+            r = p.rune()
             continue
         # Compare the current line with the stop word.
-        line := p.litBs[lStart:]
-        if r != utf8.RuneSelf and len(line) > 0 {
-            line = line[:len(line)-1] # minus \n
-        if bytes.Equal(line, stop) {
-            p.hdocStops[len(p.hdocStops)-1] = nil
-            val := p.end_lit()[:lStart]
-            if val == "" {
-                return nil
-            return p.wordOne(p.lit(pos, val))
+        line = p.lit_bs[l_start:]
+        if r != _EOF_RUNE and len(line) > 0:
+            line = line[:-1]  # minus \n
+        line_str = ''.join(line)
+        if line_str == stop:
+            p.hdoc_stops[-1] = None
+            full = end_lit(p)
+            val = full[:l_start]
+            if val == '':
+                return None
+            return p.word_one(p.lit(pos, val))
+        r = p.rune()
 
-func (p *Parser) advanceLitRe(r rune) {
-    for p.new_lit(r); ; r = p.rune() {
-        switch r {
-        case '\\':
+
+def advance_lit_re(p: 'Parser', r: str) -> None:
+    new_lit(p, r)
+    while True:
+        if r == '\\':
             p.rune()
-        case '(':
-            p.rxOpenParens++
-        case ')':
-            if p.rxOpenParens--; p.rxOpenParens < 0 {
-                p.tok, p.val = Token.LIT_WORD_, p.end_lit()
-                p.quote = testExpr
+        elif r == '(':
+            p.rx_open_parens += 1
+        elif r == ')':
+            p.rx_open_parens -= 1
+            if p.rx_open_parens < 0:
+                p.tok, p.val = Token.LIT_WORD_, end_lit(p)
+                p.quote = p._TEST_EXPR
                 return
-        case ' ', '\t', '\r', '\n', ';', '&', '>', '<':
-            if p.rxOpenParens <= 0 {
-                p.tok, p.val = Token.LIT_WORD_, p.end_lit()
-                p.quote = testExpr
+        elif r in (' ', '\t', '\r', '\n', ';', '&', '>', '<'):
+            if p.rx_open_parens <= 0:
+                p.tok, p.val = Token.LIT_WORD_, end_lit(p)
+                p.quote = p._TEST_EXPR
                 return
-        case '"', '\'', '$', '`':
-            p.tok, p.val = _Lit, p.end_lit()
+        elif r in ('"', '\'', '$', '`'):
+            p.tok, p.val = Token.LIT_, end_lit(p)
             return
-        case utf8.RuneSelf:
-            p.tok, p.val = Token.LIT_WORD_, p.end_lit()
-            p.quote = noState
+        elif r == _EOF_RUNE:
+            p.tok, p.val = Token.LIT_WORD_, end_lit(p)
+            p.quote = p._NO_STATE
             return
-"""  # noqa
+        r = p.rune()
+
+
+##
 
 
 def test_unary_op(val: str) -> UnTestOperator | None:
-    if val == "!":
+    if val == '!':
         return UnTestOperator.TS_NOT
-    elif val == "-e" or val == "-a":
+    elif val == '-e' or val == '-a':
         return UnTestOperator.TS_EXISTS
-    elif val == "-f":
+    elif val == '-f':
         return UnTestOperator.TS_REG_FILE
-    elif val == "-d":
+    elif val == '-d':
         return UnTestOperator.TS_DIRECT
-    elif val == "-c":
+    elif val == '-c':
         return UnTestOperator.TS_CHAR_SP
-    elif val == "-b":
+    elif val == '-b':
         return UnTestOperator.TS_BLCK_SP
-    elif val == "-p":
+    elif val == '-p':
         return UnTestOperator.TS_NM_PIPE
-    elif val == "-S":
+    elif val == '-S':
         return UnTestOperator.TS_SOCKET
-    elif val == "-L" or val == "-h":
+    elif val == '-L' or val == '-h':
         return UnTestOperator.TS_SMB_LINK
-    elif val == "-k":
+    elif val == '-k':
         return UnTestOperator.TS_STICKY
-    elif val == "-g":
+    elif val == '-g':
         return UnTestOperator.TS_GID_SET
-    elif val == "-u":
+    elif val == '-u':
         return UnTestOperator.TS_UID_SET
-    elif val == "-G":
+    elif val == '-G':
         return UnTestOperator.TS_GRP_OWN
-    elif val == "-O":
+    elif val == '-O':
         return UnTestOperator.TS_USR_OWN
-    elif val == "-N":
+    elif val == '-N':
         return UnTestOperator.TS_MODIF
-    elif val == "-r":
+    elif val == '-r':
         return UnTestOperator.TS_READ
-    elif val == "-w":
+    elif val == '-w':
         return UnTestOperator.TS_WRITE
-    elif val == "-x":
+    elif val == '-x':
         return UnTestOperator.TS_EXEC
-    elif val == "-s":
+    elif val == '-s':
         return UnTestOperator.TS_NO_EMPTY
-    elif val == "-t":
+    elif val == '-t':
         return UnTestOperator.TS_FD_TERM
-    elif val == "-z":
+    elif val == '-z':
         return UnTestOperator.TS_EMP_STR
-    elif val == "-n":
+    elif val == '-n':
         return UnTestOperator.TS_NEMP_STR
-    elif val == "-o":
+    elif val == '-o':
         return UnTestOperator.TS_OPT_SET
-    elif val == "-v":
+    elif val == '-v':
         return UnTestOperator.TS_VAR_SET
-    elif val == "-R":
+    elif val == '-R':
         return UnTestOperator.TS_REF_VAR
     else:
         return None
