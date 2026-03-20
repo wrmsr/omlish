@@ -13,6 +13,7 @@ T = ta.TypeVar('T')
 ##
 
 
+@ta.final
 class ToolContext(lang.Final):
     def __init__(self, *items: ta.Any) -> None:
         super().__init__()
@@ -37,7 +38,15 @@ class ToolContext(lang.Final):
         return self._dct.get(ty)
 
     def __getitem__(self, cls: type[T]) -> T:
-        return self._dct[cls]
+        try:
+            return self._dct[cls]
+        except KeyError:
+            pass
+
+        lst: ta.Sequence = self.get_any(cls)
+        if not lst:
+            raise KeyError(cls)
+        return check.single(lst)
 
     def get_any(self, cls: type | tuple[type, ...]) -> ta.Sequence[T]:
         return self._dct.get_any(cls)

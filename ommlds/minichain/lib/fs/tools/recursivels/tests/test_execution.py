@@ -8,7 +8,9 @@ from ......chat.messages import ToolUse
 from ......chat.tools.execution import execute_tool_use
 from ......tools.execution.context import ToolContext
 from ......tools.execution.executors import NameSwitchedToolExecutor
+from ......tools.execution.permissions import StaticToolPermissionDecider
 from ......tools.jsonschema import build_tool_spec_json_schema
+from ......tools.permissions.types import ToolPermissionState
 from ....context import FsContext
 from ..execution import recursive_ls_tool
 
@@ -43,6 +45,7 @@ async def test_recursive_ls_tool():
     tool_exec_result = await execute_tool_use(
         ToolContext(
             tool_exec_request,
+            StaticToolPermissionDecider(ToolPermissionState.ALLOW),
             FsContext(root_dir=root_dir),
         ),
         tool_executor,

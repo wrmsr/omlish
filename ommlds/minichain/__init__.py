@@ -532,6 +532,7 @@ with _lang.auto_proxy_init(
 
     from .tools.execution.errors import (  # noqa
         ToolExecutionError,
+        PermissionDeniedToolExecutionError,
     )
 
     from .tools.execution.executors import (  # noqa

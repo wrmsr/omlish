@@ -4,6 +4,8 @@ import stat
 from omlish import check
 
 from ...tools.execution.context import tool_context
+from ...tools.execution.permissions import tool_permission_decider
+from ...tools.permissions.fs import FsToolPermissionTarget
 from .binfiles import has_binary_file_extension
 from .binfiles import is_binary_file
 from .errors import RequestedPathDoesNotExistError
@@ -21,24 +23,18 @@ class FsContext:
             self,
             *,
             root_dir: str | None = None,
-            writes_permitted: bool = False,
     ) -> None:
         super().__init__()
 
         self._root_dir = root_dir
-        self._writes_permitted = writes_permitted
 
         self._abs_root_dir = os.path.abspath(root_dir) if root_dir is not None else None
 
     #
 
-    @property
-    def writes_permitted(self) -> bool:
-        return self._writes_permitted
-
-    #
-
     async def check_requested_path(self, req_path: str) -> None:
+        await tool_permission_decider().check_allowed(FsToolPermissionTarget(req_path, 'r'))
+
         abs_req_path = os.path.abspath(req_path)
 
         if (
@@ -55,10 +51,7 @@ class FsContext:
 
     #
 
-    async def check_stat_dir(
-            self,
-            req_path: str,
-    ) -> os.stat_result:
+    async def check_stat_dir(self, req_path: str) -> os.stat_result:
         await self.check_requested_path(req_path)
 
         try:
@@ -116,10 +109,18 @@ class FsContext:
                 actual_type='binary file',
             )
 
-        if write and not self._writes_permitted:
-            raise RequestedPathWriteNotPermittedError(req_path)
+        if write:
+            await self.check_writes_permitted(req_path)
 
         return st
+
+    #
+
+    async def check_writes_permitted(self, req_path: str) -> str:
+        if not await tool_permission_decider().is_allowed(FsToolPermissionTarget(req_path, 'w')):
+            raise RequestedPathWriteNotPermittedError(req_path)
+
+        return req_path
 
 
 def tool_fs_context() -> FsContext:

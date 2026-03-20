@@ -7,6 +7,7 @@ from omlish import lang
 from ..permissions.types import ToolPermissionState
 from ..permissions.types import ToolPermissionTarget
 from .context import tool_context
+from .errors import PermissionDeniedToolExecutionError
 
 
 ##
@@ -19,6 +20,13 @@ class ToolPermissionDecider(lang.Abstract):
     @abc.abstractmethod
     def decide(self, target: ToolPermissionTarget) -> ta.Awaitable[DecidedToolPermissionState]:
         raise NotImplementedError
+
+    async def is_allowed(self, target: ToolPermissionTarget) -> bool:
+        return (await self.decide(target)) is ToolPermissionState.ALLOW
+
+    async def check_allowed(self, target: ToolPermissionTarget) -> None:
+        if not await self.is_allowed(target):
+            raise PermissionDeniedToolExecutionError(target)
 
 
 @ta.final
