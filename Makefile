@@ -77,17 +77,21 @@ _default-venv:
 
 	@.venv/bin/python3 -m omlish.diag._pycharm.runhack install -e || true
 
-	@if ! ${PYTHON} -c 'import importlib.util; exit(importlib.util.find_spec("llama_cpp") is None)' ; then \
-		if [ $$(uname) == "Linux" ] && [ $$(uname -m) == "x86_64" ] ; then \
-			LCW=$$(ls -1 ../llama_cpp_python-*-linux_x86_64.whl 2>/dev/null | tail -n1) && \
-			if [ ! -z "$$LCW" ] ; then \
-				${PYTHON} -m pip install "$$LCW" ; \
+	@if [ -z "$$NO_LCPP" ] ; then \
+		if ! ${PYTHON} -c 'import importlib.util; exit(importlib.util.find_spec("llama_cpp") is None)' ; then \
+			if [ $$(uname) == "Linux" ] && [ $$(uname -m) == "x86_64" ] ; then \
+				LCW=$$(ls -1 ../llama_cpp_python-*-linux_x86_64.whl 2>/dev/null | tail -n1) && \
+				if [ ! -z "$$LCW" ] ; then \
+					${PYTHON} -m pip install "$$LCW" ; \
+				fi ; \
 			fi ; \
 		fi ; \
 	fi
 
-	@if ! ${PYTHON} -c 'import importlib.util; exit(importlib.util.find_spec("tinygrad.tensor") is None)' ; then \
-		${MAKE} tg ; \
+	@if [ -z "$$NO_TG" ] ; then \
+		if ! ${PYTHON} -c 'import importlib.util; exit(importlib.util.find_spec("tinygrad.tensor") is None)' ; then \
+			${MAKE} tg ; \
+		fi ; \
 	fi
 
 .PHONY: fresh-venv
