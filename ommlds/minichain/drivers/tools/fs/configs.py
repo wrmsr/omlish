@@ -9,4 +9,4 @@ from ..configs import ToolSetConfig
 
 @dc.dataclass(frozen=True, kw_only=True)
 class FsToolSetConfig(ToolSetConfig, lang.Final):
-    pass
+    enable_write_tools: bool = True
