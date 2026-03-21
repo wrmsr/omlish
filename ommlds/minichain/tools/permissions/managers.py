@@ -17,7 +17,11 @@ class ToolPermissionsManager(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def match(self, target: ToolPermissionTarget) -> ToolPermissionRule | None:
+    def add_rule(self, rule: ToolPermissionRule) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def match_target(self, target: ToolPermissionTarget) -> ToolPermissionRule | None:
         raise NotImplementedError
 
 
@@ -33,7 +37,10 @@ class SimpleToolPermissionsManager(ToolPermissionsManager):
     def get_rules(self) -> ToolPermissionRules:
         return self._rules
 
-    def match(self, target: ToolPermissionTarget) -> ToolPermissionRule | None:
+    def add_rule(self, rule: ToolPermissionRule) -> None:
+        self._rules = ToolPermissionRules([*self._rules, rule])
+
+    def match_target(self, target: ToolPermissionTarget) -> ToolPermissionRule | None:
         for r in self._rules:
             if r.matcher.match(target):
                 return r

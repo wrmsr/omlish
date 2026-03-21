@@ -1,5 +1,6 @@
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as argparse
@@ -29,16 +30,17 @@ class PermissionsCommand(Command):
         parser_list = subparsers.add_parser('list')
         parser_list.set_defaults(cmd='list')
 
-        parser_set = subparsers.add_parser('set')
-        parser_set.add_argument('name')
+        parser_set = subparsers.add_parser('add')
         parser_set.add_argument('state', choices=('allow', 'ask', 'deny'))
-        parser_set.set_defaults(cmd='set')
+        parser_set.add_argument('kind')
+        parser_set.add_argument('body')
+        parser_set.set_defaults(cmd='add')
 
     async def _run_args(self, ctx: Command.Context, args: argparse.Namespace) -> None:
         if args.cmd == 'list':
             await self._run_list(ctx, args)
-        elif args.cmd == 'set':
-            await self._run_set(ctx, args)
+        elif args.cmd == 'add':
+            await self._run_add(ctx, args)
         else:
             raise RuntimeError(f'Unknown command: {args.cmd}')
 
@@ -73,7 +75,9 @@ class PermissionsCommand(Command):
 
     #
 
-    async def _run_set(self, ctx: Command.Context, args: argparse.Namespace) -> None:
-        # tp = self._permissions.get_tool_permissions()[args.name]
-        # self._permissions.set_tool_permission_state(tp, mc.ToolPermissionState[args.state.upper()])
-        raise NotImplementedError
+    async def _run_add(self, ctx: Command.Context, args: argparse.Namespace) -> None:
+        dct: dict = {check.non_empty_str(args.kind): json.loads(args.body or '{}')}
+        matcher = msh.unmarshal(dct, mc.ToolPermissionMatcher)
+        rule = mc.ToolPermissionRule(matcher, mc.ToolPermissionState[args.state.upper()])
+
+        self._permissions.add_rule(rule)

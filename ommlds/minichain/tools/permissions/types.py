@@ -40,8 +40,8 @@ class ToolPermissionMatcher(fh.FieldHashable, lang.Abstract):
 @ta.final
 @dc.dataclass(frozen=True)
 class ToolPermissionRule(fh.FieldHashable, lang.Final):
-    matcher: ToolPermissionMatcher
-    result: ToolPermissionState
+    matcher: ToolPermissionMatcher = dc.xfield(check_type=True)
+    result: ToolPermissionState = dc.xfield(check_type=True)
 
     def _field_hash(self) -> fh.FieldHashValue:
         return fh.FieldHashObject('rule', (

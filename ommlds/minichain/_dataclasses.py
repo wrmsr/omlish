@@ -21301,28 +21301,32 @@ def _process_dataclass__f92c2b600e9ab772595277d8dcfde959106424fb():
         "atcher', 'result'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('matcher', 'result'), ca"
         "che=False), InitPlan(fields=(InitPlan.Field(name='matcher', annotation=OpRef(name='init.fields.0.annotation'),"
         " default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='result', annotation=OpRef(name='init.fields.1.annotation')"
-        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None)), self_param='self', std_params=('matcher', 'result'), kw_only_params=(), froze"
-        "n=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(nam"
-        "e='matcher', kw_only=False, fn=None), ReprPlan.Field(name='result', kw_only=False, fn=None)), id=False, terse="
-        "False, default_fn=None)))"
+        "lidate=None, check_type=OpRef(name='init.fields.0.check_type')), InitPlan.Field(name='result', annotation=OpRe"
+        "f(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=OpRef(name='init.fields.1.check_type'))), self_para"
+        "m='self', std_params=('matcher', 'result'), kw_only_params=(), frozen=True, slots=False, post_init_params=None"
+        ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='matcher', kw_only=False, fn=None), Repr"
+        "Plan.Field(name='result', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='0ea130bbacd5f5cd24959bfb1d9b6b4fee21d790',
+    plan_repr_sha1='500ba51830637d3e2034309ed03e9d2e17ae2bf7',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__check_type',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__check_type',
     ),
     cls_names=(
         ('ommlds.minichain.drivers.inject', 'ToolPermissionRule'),
     ),
 )
-def _process_dataclass__0ea130bbacd5f5cd24959bfb1d9b6b4fee21d790():
+def _process_dataclass__500ba51830637d3e2034309ed03e9d2e17ae2bf7():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__check_type,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__check_type,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -21415,6 +21419,20 @@ def _process_dataclass__0ea130bbacd5f5cd24959bfb1d9b6b4fee21d790():
             matcher: __dataclass__init__fields__0__annotation,
             result: __dataclass__init__fields__1__annotation,
         ) -> __dataclass__None:
+            if not __dataclass__isinstance(matcher, __dataclass__init__fields__0__check_type): 
+                raise __dataclass__FieldTypeValidationError(
+                    obj=self,
+                    type=__dataclass__init__fields__0__check_type,
+                    field='matcher',
+                    value=matcher,
+                )
+            if not __dataclass__isinstance(result, __dataclass__init__fields__1__check_type): 
+                raise __dataclass__FieldTypeValidationError(
+                    obj=self,
+                    type=__dataclass__init__fields__1__check_type,
+                    field='result',
+                    value=result,
+                )
             __dataclass__object_setattr(self, 'matcher', matcher)
             __dataclass__object_setattr(self, 'result', result)
 
