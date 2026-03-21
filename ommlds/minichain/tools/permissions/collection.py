@@ -35,8 +35,6 @@ class ToolPermissionRules(fh.FieldHashable, lang.Final):
 
     #
 
-    #
-
     @lang.cached_function
     def _mup(self) -> MinUniquePrefixNode:
         return build_min_unique_prefix_tree(list(self.by_digest))
