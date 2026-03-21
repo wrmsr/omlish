@@ -62,8 +62,16 @@ class StandardToolPermissionDecider(ToolPermissionDecider):
         self._confirmation = confirmation
 
     async def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState:
-        m = self._manager.match(target)  # noqa
+        if (m := self._manager.match(target)) is None:  # noqa
+            return ToolPermissionState.DENY
 
-        tue = tool_context()[ToolUseExecution]
+        mr = m.result
+        if mr is ToolPermissionState.ALLOW or mr is ToolPermissionState.DENY:
+            return mr
 
-        return await self._confirmation.confirm_tool_permission(tue, target)
+        elif mr is ToolPermissionState.ASK:
+            tue = tool_context()[ToolUseExecution]
+            return await self._confirmation.confirm_tool_permission(tue, target)
+
+        else:
+            raise ValueError(mr)

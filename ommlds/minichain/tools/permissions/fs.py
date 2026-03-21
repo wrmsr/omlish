@@ -1,4 +1,5 @@
-import fnmatch
+import glob
+import re
 import typing as ta
 
 from omlish import check
@@ -60,11 +61,15 @@ class GlobFsToolPermissionMatcher(ToolPermissionMatcher, lang.Final):
             fh.FieldHashField('modes', check.isinstance(self.modes, tuple) if self.modes is not None else None),
         ))
 
+    @lang.cached_function
+    def compiled_glob_pat(self) -> re.Pattern:
+        return re.compile(glob.translate(self.glob, recursive=True, include_hidden=True))
+
     def match(self, target: ToolPermissionTarget) -> bool:
         if not isinstance(target, FsToolPermissionTarget):
             return False
 
         return (
-            fnmatch.fnmatch(target.path, self.glob) and
+            self.compiled_glob_pat().fullmatch(target.path) is not None and
             (self.modes is None or target.mode in self.modes)
         )
