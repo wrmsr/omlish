@@ -1,0 +1,268 @@
+; Proto3 source grammar in ABNF
+; Uses RFC 5234 core rules plus RFC 7405 case-sensitive strings (%s"...").
+
+proto-file      = S syntax-stmt S *(file-item S)
+file-item        = import-stmt / package-stmt / option-stmt / top-level-def / empty-stmt
+top-level-def    = message-def / enum-def / service-def
+
+; ------------------------------------------------------------------------------
+; Whitespace / comments
+; ------------------------------------------------------------------------------
+
+S                = *(WS / comment)
+WS               = SP / HTAB / CR / LF
+
+; ------------------------------------------------------------------------------
+; Comments
+; ------------------------------------------------------------------------------
+
+comment              = line-comment / block-comment
+line-comment         = "//" *not-eol
+not-eol              = %x00-09 / %x0B-0C / %x0E-FF
+
+; Non-nested C-style block comment.
+block-comment        = "/*" *block-comment-item "*/"
+block-comment-item   = block-comment-safe / ("*" block-comment-not-slash)
+block-comment-safe   = %x00-29 / %x2B-FF
+block-comment-not-slash = %x00-2E / %x30-FF
+
+; ------------------------------------------------------------------------------
+; Lexical items
+; ------------------------------------------------------------------------------
+
+squote           = %x27
+OCTDIG           = %x30-37
+NZDIGIT          = %x31-39
+
+ident            = ALPHA *(ALPHA / DIGIT / "_")
+full-ident       = ident *("." ident)
+
+message-name     = ident
+enum-name        = ident
+field-name       = ident
+oneof-name       = ident
+map-name         = ident
+service-name     = ident
+rpc-name         = ident
+
+message-type     = ["." ] full-ident
+enum-type        = ["." ] full-ident
+
+int-lit          = decimal-lit / octal-lit / hex-lit
+decimal-lit      = ["-"] NZDIGIT *DIGIT
+octal-lit        = ["-"] "0" *OCTDIG
+hex-lit          = ["-"] "0" (%s"x" / %s"X") 1*HEXDIG
+
+float-lit        = ( ["-"] float-number ) / %s"inf" / %s"nan"
+float-number     = ( digits "." [digits] [exponent] )
+                 / ( digits exponent )
+                 / ( "." digits [exponent] )
+digits           = 1*DIGIT
+exponent         = (%s"e" / %s"E") ["+" / "-"] digits
+
+bool-lit         = %s"true" / %s"false"
+
+str-lit          = str-lit-single *(S str-lit-single)
+str-lit-single   = squote *sq-char squote / DQUOTE *dq-char DQUOTE
+
+sq-char          = hex-escape / oct-escape / char-escape / unicode-escape
+                 / unicode-long-escape / sq-unescaped
+dq-char          = hex-escape / oct-escape / char-escape / unicode-escape
+                 / unicode-long-escape / dq-unescaped
+
+; unescaped chars exclude NUL, LF, backslash, and the active quote delimiter
+sq-unescaped     = %x01-09 / %x0B-0C / %x0D / %x0E-26 / %x28-5B / %x5D-FF
+dq-unescaped     = %x01-09 / %x0B-0C / %x0D / %x0E-21 / %x23-5B / %x5D-FF
+
+hex-escape       = %x5C (%s"x" / %s"X") HEXDIG [HEXDIG]
+oct-escape       = %x5C OCTDIG [OCTDIG [OCTDIG]]
+char-escape      = %x5C (%s"a" / %s"b" / %s"f" / %s"n" / %s"r" / %s"t" / %s"v"
+                 / %x5C / squote / DQUOTE)
+unicode-escape   = %x5C %s"u" 4HEXDIG
+unicode-long-escape
+                 = %x5C %s"U" (%s"000" 5HEXDIG / %s"0010" 4HEXDIG)
+
+empty-stmt       = ";"
+
+; ------------------------------------------------------------------------------
+; MessageValue (from protobuf text format, adapted to use outer S/comment rules)
+; ------------------------------------------------------------------------------
+
+constant             = full-ident
+                     / (["+" / "-"] int-lit)
+                     / (["+" / "-"] float-lit)
+                     / str-lit
+                     / bool-lit
+                     / message-value
+
+message-value        = "{" S text-message S "}"
+                     / "<" S text-message S ">"
+
+text-message         = *(text-field S)
+
+text-field           = text-scalar-field / text-message-field
+
+text-message-field   = text-field-name
+                       [S ":"]
+                       S (message-value / text-message-list)
+                       [S (";" / ",")]
+
+text-scalar-field    = text-field-name
+                       S ":"
+                       S (text-scalar-value / text-scalar-list)
+                       [S (";" / ",")]
+
+text-message-list    = "[" S [message-value *(S "," S message-value)] S "]"
+text-scalar-list     = "[" S [text-scalar-value *(S "," S text-scalar-value)] S "]"
+
+text-scalar-value    = str-lit
+                     / text-float-value
+                     / text-signed-ident
+                     / ident
+                     / text-signed-int
+                     / int-lit
+
+text-signed-ident    = "-" S ident
+text-signed-int      = "-" S int-lit
+
+; Text-format FLOAT allows either a float literal or a decimal integer with f/F,
+; and also inf/nan via identifiers/sign+identifier.
+text-float-value     = text-float-number [("f" / "F")]
+                     / text-decimal-uint ("f" / "F")
+                     / %s"inf"
+                     / %s"nan"
+
+text-float-number    = digits "." [digits] [exponent]
+                     / digits exponent
+                     / "." digits [exponent]
+
+text-decimal-uint    = "0" / (NZDIGIT *DIGIT)
+
+text-field-name      = ident / text-extension-name / text-any-name
+
+text-extension-name  = "[" S text-type-name S "]"
+text-any-name        = "[" S text-url-prefix S "/" S text-type-name S "]"
+
+text-type-name       = ident *(S "." S ident)
+
+text-url-prefix      = text-url-char *(text-url-char / "/")
+text-url-char        = ALPHA / DIGIT / "-" / "." / "~" / "_"
+                     / "!" / "$" / "&" / "(" / ")"
+                     / "*" / "+" / "," / ";" / "="
+                     / "%" HEXDIG HEXDIG
+
+; ------------------------------------------------------------------------------
+; File-level declarations
+; ------------------------------------------------------------------------------
+
+syntax-stmt      = %s"syntax" S "=" S (squote %s"proto3" squote / DQUOTE %s"proto3" DQUOTE) S ";"
+
+import-stmt      = %s"import" S [(%s"weak" / %s"public") S] str-lit S ";"
+
+package-stmt     = %s"package" S full-ident S ";"
+
+option-stmt      = %s"option" S option-name S "=" S constant S ";"
+
+option-name      = option-name-part *(S "." S option-name-part)
+option-name-part = ident / braced-full-ident
+braced-full-ident
+                 = "(" S ["." S] full-ident S ")"
+
+; ------------------------------------------------------------------------------
+; Types / fields
+; ------------------------------------------------------------------------------
+
+type             = scalar-type / message-type / enum-type
+
+scalar-type      = %s"double" / %s"float"
+                 / %s"int32" / %s"int64"
+                 / %s"uint32" / %s"uint64"
+                 / %s"sint32" / %s"sint64"
+                 / %s"fixed32" / %s"fixed64"
+                 / %s"sfixed32" / %s"sfixed64"
+                 / %s"bool" / %s"string" / %s"bytes"
+
+field-number     = int-lit
+
+field            = [(%s"repeated" / %s"optional") S]
+                   type S field-name S "=" S field-number
+                   [S "[" S field-options S "]"]
+                   S ";"
+
+field-options    = field-option *(S "," S field-option)
+field-option     = option-name S "=" S constant
+
+oneof-def        = %s"oneof" S oneof-name S "{"
+                   S *(option-stmt S / oneof-field S)
+                   "}"
+
+oneof-field      = type S field-name S "=" S field-number
+                   [S "[" S field-options S "]"]
+                   S ";"
+
+map-field        = %s"map" S "<" S key-type S "," S type S ">"
+                   S map-name S "=" S field-number
+                   [S "[" S field-options S "]"]
+                   S ";"
+
+key-type         = %s"int32" / %s"int64"
+                 / %s"uint32" / %s"uint64"
+                 / %s"sint32" / %s"sint64"
+                 / %s"fixed32" / %s"fixed64"
+                 / %s"sfixed32" / %s"sfixed64"
+                 / %s"bool" / %s"string"
+
+reserved-stmt    = %s"reserved" S (ranges / str-field-names) S ";"
+ranges           = range *(S "," S range)
+range            = int-lit [S %s"to" S (int-lit / %s"max")]
+
+str-field-names  = str-field-name *(S "," S str-field-name)
+str-field-name   = squote field-name squote / DQUOTE field-name DQUOTE
+
+; ------------------------------------------------------------------------------
+; Enum definitions
+; ------------------------------------------------------------------------------
+
+enum-def         = %s"enum" S enum-name S enum-body
+enum-body        = "{"
+                   S *(option-stmt S / enum-field S / empty-stmt S / reserved-stmt S)
+                   "}"
+
+enum-field       = ident S "=" S ["-" S] int-lit
+                   [S "[" S enum-value-options S "]"]
+                   S ";"
+
+enum-value-options
+                 = enum-value-option *(S "," S enum-value-option)
+enum-value-option
+                 = option-name S "=" S constant
+
+; ------------------------------------------------------------------------------
+; Message definitions
+; ------------------------------------------------------------------------------
+
+message-def      = %s"message" S message-name S message-body
+message-body     = "{"
+                   S *(field S
+                     / enum-def S
+                     / message-def S
+                     / option-stmt S
+                     / oneof-def S
+                     / map-field S
+                     / reserved-stmt S
+                     / empty-stmt S)
+                   "}"
+
+; ------------------------------------------------------------------------------
+; Service definitions
+; ------------------------------------------------------------------------------
+
+service-def      = %s"service" S service-name S "{"
+                   S *(option-stmt S / rpc S / empty-stmt S)
+                   "}"
+
+rpc              = %s"rpc" S rpc-name
+                   S "(" S [ %s"stream" S ] message-type S ")"
+                   S %s"returns"
+                   S "(" S [ %s"stream" S ] message-type S ")"
+                   S ( "{" S *(option-stmt S / empty-stmt S) "}" / ";" )
