@@ -6,6 +6,7 @@ from omlish import lang
 from ...tools.execution.context import tool_context
 from ...tools.execution.permissions import DecidedToolPermissionState
 from ...tools.execution.permissions import ToolPermissionDecider
+from ...tools.permissions.managers import ToolPermissionsManager
 from ...tools.permissions.types import ToolPermissionState
 from ...tools.permissions.types import ToolPermissionTarget
 from .execution import ToolUseExecution
@@ -48,17 +49,21 @@ class UnsafeAlwaysAllowToolPermissionConfirmation(ToolPermissionConfirmation):
 ##
 
 
-class ConfirmingToolPermissionDecider(ToolPermissionDecider):
+class StandardToolPermissionDecider(ToolPermissionDecider):
     def __init__(
             self,
             *,
+            manager: ToolPermissionsManager,
             confirmation: ToolPermissionConfirmation,
     ) -> None:
         super().__init__()
 
+        self._manager = manager
         self._confirmation = confirmation
 
     async def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState:
+        m = self._manager.match(target)  # noqa
+
         tue = tool_context()[ToolUseExecution]
 
         return await self._confirmation.confirm_tool_permission(tue, target)

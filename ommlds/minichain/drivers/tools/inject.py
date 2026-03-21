@@ -14,7 +14,7 @@ from .injection import ToolSetBinder
 from .injection import bind_tool_context_provider_to_key
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
-from .permissions import ConfirmingToolPermissionDecider
+from .permissions import StandardToolPermissionDecider
 
 
 ##
@@ -60,8 +60,8 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(ConfirmingToolPermissionDecider, singleton=True),
-        inj.bind(ToolPermissionDecider, to_key=ConfirmingToolPermissionDecider),
+        inj.bind(StandardToolPermissionDecider, singleton=True),
+        inj.bind(ToolPermissionDecider, to_key=StandardToolPermissionDecider),
         bind_tool_context_provider_to_key(ToolPermissionDecider),
     ])
 

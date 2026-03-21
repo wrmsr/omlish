@@ -126,7 +126,7 @@ with _lang.auto_proxy_init(globals()):
         AlwaysDenyToolPermissionConfirmation,
         UnsafeAlwaysAllowToolPermissionConfirmation,
 
-        ConfirmingToolPermissionDecider,
+        StandardToolPermissionDecider,
     )
 
     #
