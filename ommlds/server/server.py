@@ -20,7 +20,7 @@ from omlish.http.handlers import LoggingHttpHandler
 from omlish.logs import all as logs
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
-from omlish.sockets.server.server import SocketServer
+from omlish.sockets.handlers.server import SocketServer
 
 from .. import minichain as mc
 from ..minichain.backends.impls.openai.chat import OpenaiChatChoicesService

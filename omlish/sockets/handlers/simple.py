@@ -1,37 +1,23 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import concurrent.futures as cf
 import dataclasses as dc
 import socket
 import typing as ta
 
-from ...lite.abstract import Abstract
 from ...logs.protocols import LoggerLike
 from ..addresses import SocketAndAddress
-from ..handlers import SocketHandler
-from ..io import SocketIoPair
 from ..io import close_socket_immediately
-
-
-SocketServerHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
-
-
-##
-
-
-class SocketServerHandler_(Abstract):  # noqa
-    @abc.abstractmethod
-    def __call__(self, conn: SocketAndAddress) -> None:
-        raise NotImplementedError
+from .types import SocketHandler
+from .types import SocketHandler_
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class StandardSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class StandardSocketHandler(SocketHandler_):
+    handler: SocketHandler
 
     timeout: ta.Optional[float] = None
 
@@ -55,20 +41,20 @@ class StandardSocketServerHandler(SocketServerHandler_):
             close_socket_immediately(conn.socket)
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
-class CallbackWrappedSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class CallbackWrappedSocketHandler(SocketHandler_):
+    handler: SocketHandler
 
-    before_handle: ta.Optional[SocketServerHandler] = None
-    after_handle: ta.Optional[SocketServerHandler] = None
+    before_handle: ta.Optional[SocketHandler] = None
+    after_handle: ta.Optional[SocketHandler] = None
 
     # Return True if suppress like __exit__
     on_error: ta.Optional[ta.Callable[[SocketAndAddress, Exception], bool]] = None
 
-    finally_: ta.Optional[SocketServerHandler] = None
+    finally_: ta.Optional[SocketHandler] = None
 
     def __call__(self, conn: SocketAndAddress) -> None:
         try:
@@ -92,32 +78,12 @@ class CallbackWrappedSocketServerHandler(SocketServerHandler_):
                 finally_(conn)
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
-class SocketHandlerSocketServerHandler(SocketServerHandler_):
+class SocketWrappingSocketHandler(SocketHandler_):
     handler: SocketHandler
-
-    r_buf_size: int = -1
-    w_buf_size: int = 0
-
-    def __call__(self, conn: SocketAndAddress) -> None:
-        fp = SocketIoPair.from_socket(
-            conn.socket,
-            r_buf_size=self.r_buf_size,
-            w_buf_size=self.w_buf_size,
-        )
-
-        self.handler(conn.address, fp)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class SocketWrappingSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
     wrapper: ta.Callable[[SocketAndAddress], SocketAndAddress]
 
     def __call__(self, conn: SocketAndAddress) -> None:
@@ -125,23 +91,24 @@ class SocketWrappingSocketServerHandler(SocketServerHandler_):
         self.handler(wrapped_conn)
 
 
-#
+##
+
 
 @dc.dataclass(frozen=True)
-class ExecutorSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class ExecutorSocketHandler(SocketHandler_):
+    handler: SocketHandler
     executor: cf.Executor
 
     def __call__(self, conn: SocketAndAddress) -> None:
         self.executor.submit(self.handler, conn)
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
-class ExceptionLoggingSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class ExceptionLoggingSocketHandler(SocketHandler_):
+    handler: SocketHandler
     log: LoggerLike
 
     ignored: ta.Optional[ta.Container[ta.Type[Exception]]] = None

@@ -15,7 +15,7 @@ from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.logs.protocols import LoggerLike
 from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
-from omlish.sockets.server.server import SocketServer
+from omlish.sockets.handlers.server import SocketServer
 
 from ...dataserver.http import DataServerHttpHandler
 from ...dataserver.server import DataServer

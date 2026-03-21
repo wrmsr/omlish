@@ -13,14 +13,13 @@ from ....lite.check import check
 from ....sockets.addresses import SocketAndAddress
 from ....sockets.bind import CanSocketBinder
 from ....sockets.bind import SocketBinder
-from ....sockets.server.handlers import ExecutorSocketServerHandler
-from ....sockets.server.handlers import SocketHandlerSocketServerHandler
-from ....sockets.server.handlers import SocketServerHandler
-from ....sockets.server.handlers import SocketWrappingSocketServerHandler
-from ....sockets.server.handlers import StandardSocketServerHandler
-from ....sockets.server.server import SocketServer
-from ....sockets.server.ssl import SslErrorHandlingSocketServerHandler
-from ....sockets.server.threading import ThreadingSocketServerHandler
+from ....sockets.handlers.server import SocketServer
+from ....sockets.handlers.simple import ExecutorSocketHandler
+from ....sockets.handlers.simple import SocketHandler
+from ....sockets.handlers.simple import SocketWrappingSocketHandler
+from ....sockets.handlers.simple import StandardSocketHandler
+from ....sockets.handlers.ssl import SslErrorHandlingSocketHandler
+from ....sockets.handlers.threading import ThreadingSocketHandler
 from ...handlers import HttpHandler
 from .server import CoroHttpServer
 from .sockets import CoroHttpServerSocketHandler
@@ -55,22 +54,16 @@ def make_simple_http_server(
             handler=handler,
         )
 
-        socket_handler = CoroHttpServerSocketHandler(
+        socket_handler: SocketHandler = CoroHttpServerSocketHandler(
             server_factory,
             keep_alive=keep_alive,
         )
 
         #
 
-        server_handler: SocketServerHandler = SocketHandlerSocketServerHandler(
-            socket_handler,
-        )
-
-        #
-
         if ssl_context is not None:
-            server_handler = SocketWrappingSocketServerHandler(
-                server_handler,
+            socket_handler = SocketWrappingSocketHandler(
+                socket_handler,
                 SocketAndAddress.socket_wrapper(functools.partial(
                     ssl_context.wrap_socket,
                     server_side=True,
@@ -78,34 +71,34 @@ def make_simple_http_server(
             )
 
         if ignore_ssl_errors:
-            server_handler = SslErrorHandlingSocketServerHandler(
-                server_handler,
+            socket_handler = SslErrorHandlingSocketHandler(
+                socket_handler,
             )
 
         #
 
-        server_handler = StandardSocketServerHandler(
-            server_handler,
+        socket_handler = StandardSocketHandler(
+            socket_handler,
         )
 
         #
 
         if executor is not None:
-            server_handler = ExecutorSocketServerHandler(
-                server_handler,
+            socket_handler = ExecutorSocketHandler(
+                socket_handler,
                 executor,
             )
 
         elif use_threads:
-            server_handler = es.enter_context(ThreadingSocketServerHandler(
-                server_handler,
+            socket_handler = es.enter_context(ThreadingSocketHandler(
+                socket_handler,
             ))
 
         #
 
         server = es.enter_context(SocketServer(
             SocketBinder.of(bind),
-            server_handler,
+            socket_handler,
             **kwargs,
         ))
 

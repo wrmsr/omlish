@@ -4,8 +4,8 @@ import itertools
 import typing as ta
 
 from ....lite.check import check
-from ....sockets.addresses import SocketAddress
-from ....sockets.handlers import SocketHandler_
+from ....sockets.addresses import SocketAndAddress
+from ....sockets.handlers.types import SocketHandler_
 from ....sockets.io import SocketIoPair
 from .._pushback import PushbackReader
 from ..io import CoroHttpIo
@@ -30,8 +30,10 @@ class CoroHttpServerSocketHandler(SocketHandler_):
         self._keep_alive = keep_alive
         self._log_handler = log_handler
 
-    def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
-        server = self._server_factory(client_address)
+    def __call__(self, conn: SocketAndAddress) -> None:
+        server = self._server_factory(conn.address)
+
+        fp = SocketIoPair.from_socket(conn.socket)
 
         pbr = PushbackReader(fp.r)
 

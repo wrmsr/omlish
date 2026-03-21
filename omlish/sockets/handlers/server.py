@@ -15,7 +15,7 @@ from ...logs.protocols import LoggerLike
 from ..addresses import SocketAndAddress
 from ..bind import SocketBinder
 from ..io import close_socket_immediately
-from .handlers import SocketServerHandler
+from .types import SocketHandler
 
 
 ##
@@ -27,7 +27,7 @@ class SocketServer:
     def __init__(
             self,
             binder: SocketBinder,
-            handler: SocketServerHandler,
+            handler: SocketHandler,
             *,
             on_error: ta.Optional[ta.Callable[[BaseException, ta.Optional[SocketAndAddress]], None]] = None,
             error_logger: ta.Optional[LoggerLike] = _DEFAULT_LOGGER,
@@ -52,7 +52,7 @@ class SocketServer:
         return self._binder
 
     @property
-    def handler(self) -> SocketServerHandler:
+    def handler(self) -> SocketHandler:
         return self._handler
 
     #

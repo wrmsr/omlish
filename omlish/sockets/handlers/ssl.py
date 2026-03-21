@@ -6,16 +6,16 @@ import typing as ta
 from ...logs.protocols import LoggerLike
 from ..addresses import SocketAndAddress
 from ..io import close_socket_immediately
-from .handlers import SocketServerHandler
-from .handlers import SocketServerHandler_
+from .types import SocketHandler
+from .types import SocketHandler_
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class SslErrorHandlingSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class SslErrorHandlingSocketHandler(SocketHandler_):
+    handler: SocketHandler
 
     log: ta.Optional[LoggerLike] = None
 

@@ -137,7 +137,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/temp.py', sha1='fba3470ac095a6c3f893156cc4437bda1b8796cb'),
             dict(path='../../omlish/sockets/bind.py', sha1='d0040d74960fb00c30ae9ece5252c270b59ae3f4'),
-            dict(path='../../omlish/sockets/handlers.py', sha1='733a4855d563001ad09df511531d710aa2632770'),
+            dict(path='../../omlish/sockets/handlers/types.py', sha1='3eba55a4d5c1ca303958020f8e278ffd366661f9'),
             dict(path='../../omlish/text/mangle.py', sha1='5631de37ca659e064eb1afcf2213d317b626f8bd'),
             dict(path='../dataserver/targets.py', sha1='661fc3e60ad436646c8acff3c547d5b86ceb0bd6'),
             dict(path='../oci/data.py', sha1='9cfc3bb8e23fb4cd746c6e8f0e02624e8f63f234'),
@@ -151,7 +151,10 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
-            dict(path='../../omlish/sockets/server/handlers.py', sha1='6f9adca9fa04774a28a488a4e2a11bb4492c71d0'),
+            dict(path='../../omlish/sockets/handlers/server.py', sha1='b02f7f8cfd74dd6a1373704fc95771fb967b35b2'),
+            dict(path='../../omlish/sockets/handlers/simple.py', sha1='aa1e71d53b63eac44a6144fa4f0abde7dd59a748'),
+            dict(path='../../omlish/sockets/handlers/ssl.py', sha1='94c0acedffe5b581419a7a92c2f1c4e4a58b7a83'),
+            dict(path='../../omlish/sockets/handlers/threading.py', sha1='17906cd7f9f89cc036684c807c30034da38a585f'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../dataserver/handlers.py', sha1='f624715f2500087226ec3374315cc8a1ea47a29b'),
@@ -164,16 +167,13 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
-            dict(path='../../omlish/sockets/server/server.py', sha1='89204da9ea77577418ff7d2910aea0d593c765f3'),
-            dict(path='../../omlish/sockets/server/ssl.py', sha1='790dfd208f4d267c826d491d4eb5deeda5ebdddc'),
-            dict(path='../../omlish/sockets/server/threading.py', sha1='ad4ef21b7e3fe3a774d14040191d1e16fa0d1de7'),
             dict(path='../../omlish/subprocesses/base.py', sha1='cb9f668be5422fecb27222caabb67daac6c1bab9'),
             dict(path='docker/cacheserved/manifests.py', sha1='80a65d08319d152f0bc6f893351e23368b3de93b'),
             dict(path='../dataserver/server.py', sha1='e1ba8ca6f85458a64ede4ca07836aa103246132a'),
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='c92e4772e2d50f080bc1ca8a317d0c7aea5b710a'),
-            dict(path='../../omlish/http/coro/server/sockets.py', sha1='bb0915b307622067c5460387ed0014f954167eb5'),
+            dict(path='../../omlish/http/coro/server/sockets.py', sha1='b1c74823a23501f4c769bff74e1a091dd68b5b83'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
@@ -182,11 +182,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
-            dict(path='../../omlish/http/coro/server/simple.py', sha1='27bb1e958ef2e53adf98d4e01cc5868e8b4af72c'),
+            dict(path='../../omlish/http/coro/server/simple.py', sha1='5a2c66c9aa9f1176d2054e1d5d9e59279d96d69f'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
-            dict(path='docker/dataserver.py', sha1='949e561ab756846425a39c05964c0fb256ae61db'),
+            dict(path='docker/dataserver.py', sha1='b5ca4ed8b9e2029b69dcced6db14444b80c0c664'),
             dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
@@ -274,8 +274,8 @@ SocketBinderConfigT = ta.TypeVar('SocketBinderConfigT', bound='SocketBinder.Conf
 CanSocketBinderConfig = ta.Union['SocketBinder.Config', int, ta.Tuple[str, int], str]  # ta.TypeAlias
 CanSocketBinder = ta.Union['SocketBinder', CanSocketBinderConfig]  # ta.TypeAlias
 
-# ../../omlish/sockets/handlers.py
-SocketHandler = ta.Callable[[SocketAddress, 'SocketIoPair'], None]  # ta.TypeAlias
+# ../../omlish/sockets/handlers/types.py
+SocketHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 
 # ../../omlish/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
@@ -292,9 +292,6 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # t
 
 # ../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
-
-# ../../omlish/sockets/server/handlers.py
-SocketServerHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 
 # ../dataserver/handlers.py
 DataServerTargetT = ta.TypeVar('DataServerTargetT', bound='DataServerTarget')
@@ -8360,7 +8357,7 @@ class UnixSocketBinder(SocketBinder):
 
 
 ########################################
-# ../../../omlish/sockets/handlers.py
+# ../../../omlish/sockets/handlers/types.py
 
 
 ##
@@ -8368,7 +8365,7 @@ class UnixSocketBinder(SocketBinder):
 
 class SocketHandler_(Abstract):  # noqa
     @abc.abstractmethod
-    def __call__(self, addr: SocketAddress, f: SocketIoPair) -> None:
+    def __call__(self, conn: SocketAndAddress) -> None:
         raise NotImplementedError
 
 
@@ -11714,24 +11711,201 @@ log_timing_context = LogTimingContext
 
 
 ########################################
-# ../../../omlish/sockets/server/handlers.py
+# ../../../omlish/sockets/handlers/server.py
 
 
 ##
 
 
-class SocketServerHandler_(Abstract):  # noqa
-    @abc.abstractmethod
-    def __call__(self, conn: SocketAndAddress) -> None:
-        raise NotImplementedError
+class SocketServer:
+    _DEFAULT_LOGGER: LoggerLike = logging.getLogger('.'.join([__name__, 'SocketServer']))  # FIXME
+
+    def __init__(
+            self,
+            binder: SocketBinder,
+            handler: SocketHandler,
+            *,
+            on_error: ta.Optional[ta.Callable[[BaseException, ta.Optional[SocketAndAddress]], None]] = None,
+            error_logger: ta.Optional[LoggerLike] = _DEFAULT_LOGGER,
+            poll_interval: float = .5,
+            shutdown_timeout: ta.Optional[float] = None,
+    ) -> None:
+        super().__init__()
+
+        self._binder = binder
+        self._handler = handler
+        self._on_error = on_error
+        self._error_logger = error_logger
+        self._poll_interval = poll_interval
+        self._shutdown_timeout = shutdown_timeout
+
+        self._lock = threading.RLock()
+        self._is_shutdown = threading.Event()
+        self._should_shutdown = False
+
+    @property
+    def binder(self) -> SocketBinder:
+        return self._binder
+
+    @property
+    def handler(self) -> SocketHandler:
+        return self._handler
+
+    #
+
+    def _handle_error(self, exc: BaseException, conn: ta.Optional[SocketAndAddress] = None) -> None:
+        if (error_logger := self._error_logger) is not None:
+            error_logger.exception('Error in socket server: %r', conn)
+
+        if (on_error := self._on_error) is not None:
+            on_error(exc, conn)
+
+    #
+
+    class SelectorProtocol(ta.Protocol):
+        def register(self, *args, **kwargs) -> None:
+            raise NotImplementedError
+
+        def select(self, *args, **kwargs) -> bool:
+            raise NotImplementedError
+
+    Selector: ta.ClassVar[ta.Any]
+    if hasattr(selectors, 'PollSelector'):
+        Selector = selectors.PollSelector
+    else:
+        Selector = selectors.SelectSelector
+
+    #
+
+    class PollResult(enum.Enum):
+        TIMEOUT = enum.auto()
+        CONNECTION = enum.auto()
+        ERROR = enum.auto()
+        SHUTDOWN = enum.auto()
+
+    class PollContext(ExitStacked, Abstract):
+        @abc.abstractmethod
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+            raise NotImplementedError
+
+    class _PollContext(PollContext):
+        def __init__(self, server: 'SocketServer') -> None:
+            super().__init__()
+
+            self._server = server
+
+        _selector: ta.Any = None
+
+        def _enter_contexts(self) -> None:
+            self._enter_context(self._server._lock)  # noqa: SLF001
+            self._enter_context(self._server._binder)  # noqa: SLF001
+
+            self._server._binder.listen()  # noqa: SLF001
+
+            self._server._is_shutdown.clear()  # noqa: SLF001
+            self._enter_context(defer(self._server._is_shutdown.set))  # noqa
+
+            # XXX: Consider using another file descriptor or connecting to the socket to wake this up instead of
+            # polling. Polling reduces our responsiveness to a shutdown request and wastes cpu at all other times.
+            self._selector = self._enter_context(self._server.Selector())
+            self._selector.register(self._server._binder.fileno(), selectors.EVENT_READ)  # noqa: SLF001
+
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+            if self._server._should_shutdown:  # noqa: SLF001
+                return SocketServer.PollResult.SHUTDOWN
+
+            ready = self._selector.select(timeout)
+
+            # bpo-35017: shutdown() called during select(), exit immediately.
+            if self._server._should_shutdown:  # noqa: SLF001
+                return SocketServer.PollResult.SHUTDOWN  # type: ignore[unreachable]
+
+            if not ready:
+                return SocketServer.PollResult.TIMEOUT
+
+            try:
+                conn = self._server._binder.accept()  # noqa: SLF001
+
+            except OSError as exc:
+                self._server._handle_error(exc)  # noqa: SLF001
+
+                return SocketServer.PollResult.ERROR
+
+            try:
+                self._server._handler(conn)  # noqa: SLF001
+
+            except Exception as exc:  # noqa
+                self._server._handle_error(exc, conn)  # noqa: SLF001
+
+                close_socket_immediately(conn.socket)
+
+            return SocketServer.PollResult.CONNECTION
+
+    def poll_context(self) -> PollContext:
+        return self._PollContext(self)
+
+    #
+
+    @contextlib.contextmanager
+    def loop_context(self, poll_interval: ta.Optional[float] = None) -> ta.Iterator[ta.Iterator[bool]]:
+        if poll_interval is None:
+            poll_interval = self._poll_interval
+
+        with self.poll_context() as pc:
+            def loop():
+                while True:
+                    res = pc.poll(poll_interval)
+                    if res in (SocketServer.PollResult.ERROR, SocketServer.PollResult.SHUTDOWN):
+                        return
+                    else:
+                        yield res == SocketServer.PollResult.CONNECTION
+
+            yield loop()
+
+    def run(self, poll_interval: ta.Optional[float] = None) -> None:
+        with self.loop_context(poll_interval=poll_interval) as loop:
+            for _ in loop:
+                pass
+
+    #
+
+    class _NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    def shutdown(
+            self,
+            block: bool = False,
+            timeout: ta.Union[float, None, ta.Type[_NOT_SET]] = _NOT_SET,
+    ) -> None:
+        self._should_shutdown = True
+
+        if block:
+            if timeout is self._NOT_SET:
+                timeout = self._shutdown_timeout
+
+            if not self._is_shutdown.wait(timeout=timeout):  # type: ignore
+                raise TimeoutError
+
+    #
+
+    def __enter__(self) -> 'SocketServer':
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.shutdown()
+
+
+########################################
+# ../../../omlish/sockets/handlers/simple.py
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class StandardSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class StandardSocketHandler(SocketHandler_):
+    handler: SocketHandler
 
     timeout: ta.Optional[float] = None
 
@@ -11755,20 +11929,20 @@ class StandardSocketServerHandler(SocketServerHandler_):
             close_socket_immediately(conn.socket)
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
-class CallbackWrappedSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class CallbackWrappedSocketHandler(SocketHandler_):
+    handler: SocketHandler
 
-    before_handle: ta.Optional[SocketServerHandler] = None
-    after_handle: ta.Optional[SocketServerHandler] = None
+    before_handle: ta.Optional[SocketHandler] = None
+    after_handle: ta.Optional[SocketHandler] = None
 
     # Return True if suppress like __exit__
     on_error: ta.Optional[ta.Callable[[SocketAndAddress, Exception], bool]] = None
 
-    finally_: ta.Optional[SocketServerHandler] = None
+    finally_: ta.Optional[SocketHandler] = None
 
     def __call__(self, conn: SocketAndAddress) -> None:
         try:
@@ -11792,32 +11966,12 @@ class CallbackWrappedSocketServerHandler(SocketServerHandler_):
                 finally_(conn)
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
-class SocketHandlerSocketServerHandler(SocketServerHandler_):
+class SocketWrappingSocketHandler(SocketHandler_):
     handler: SocketHandler
-
-    r_buf_size: int = -1
-    w_buf_size: int = 0
-
-    def __call__(self, conn: SocketAndAddress) -> None:
-        fp = SocketIoPair.from_socket(
-            conn.socket,
-            r_buf_size=self.r_buf_size,
-            w_buf_size=self.w_buf_size,
-        )
-
-        self.handler(conn.address, fp)
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class SocketWrappingSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
     wrapper: ta.Callable[[SocketAndAddress], SocketAndAddress]
 
     def __call__(self, conn: SocketAndAddress) -> None:
@@ -11825,23 +11979,24 @@ class SocketWrappingSocketServerHandler(SocketServerHandler_):
         self.handler(wrapped_conn)
 
 
-#
+##
+
 
 @dc.dataclass(frozen=True)
-class ExecutorSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class ExecutorSocketHandler(SocketHandler_):
+    handler: SocketHandler
     executor: cf.Executor
 
     def __call__(self, conn: SocketAndAddress) -> None:
         self.executor.submit(self.handler, conn)
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
-class ExceptionLoggingSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
+class ExceptionLoggingSocketHandler(SocketHandler_):
+    handler: SocketHandler
     log: LoggerLike
 
     ignored: ta.Optional[ta.Container[ta.Type[Exception]]] = None
@@ -11855,6 +12010,157 @@ class ExceptionLoggingSocketServerHandler(SocketServerHandler_):
                 self.log.exception('Error in handler %r for conn %r', self.handler, conn)
 
             raise
+
+
+########################################
+# ../../../omlish/sockets/handlers/ssl.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SslErrorHandlingSocketHandler(SocketHandler_):
+    handler: SocketHandler
+
+    log: ta.Optional[LoggerLike] = None
+
+    #
+
+    _error_cls: ta.ClassVar[ta.Optional[ta.Type[BaseException]]] = None
+
+    @classmethod
+    def _get_error_cls(cls) -> ta.Type[BaseException]:
+        if (error_cls := cls._error_cls) is None:
+            import ssl
+            error_cls = cls._error_cls = ssl.SSLError
+        return error_cls
+
+    def __call__(self, conn: SocketAndAddress) -> None:
+        try:
+            self.handler(conn)
+        except self._get_error_cls():  # noqa
+            if (log := self.log) is not None:
+                log.exception('SSL Error in connection %r', conn)
+            close_socket_immediately(conn.socket)
+
+
+########################################
+# ../../../omlish/sockets/handlers/threading.py
+
+
+##
+
+
+class ThreadingSocketHandler:
+    def __init__(
+            self,
+            handler: SocketHandler,
+            *,
+            shutdown_timeout: ta.Optional[float] = None,
+    ) -> None:
+        super().__init__()
+
+        self._handler = handler
+        self._shutdown_timeout = shutdown_timeout
+
+        self._lock = threading.RLock()
+        self._threads: ta.List[threading.Thread] = []
+        self._is_shutdown = False
+
+    @property
+    def handler(self) -> SocketHandler:
+        return self._handler
+
+    #
+
+    def __call__(self, conn: SocketAndAddress) -> None:
+        self.handle(conn)
+
+    def handle(self, conn: SocketAndAddress) -> None:
+        with self._lock:
+            check.state(not self._is_shutdown)
+
+            self._reap()
+
+            t = threading.Thread(
+                target=self._handler,
+                args=(conn,),
+            )
+
+            self._threads.append(t)
+
+            t.start()
+
+    #
+
+    def _reap(self) -> None:
+        with self._lock:
+            self._threads[:] = (thread for thread in self._threads if thread.is_alive())
+
+    def is_alive(self) -> bool:
+        with self._lock:
+            self._reap()
+
+            return bool(self._threads)
+
+    def join(self, timeout: ta.Optional[float] = None) -> None:
+        if timeout is not None:
+            deadline: ta.Optional[float] = time.time() + timeout
+        else:
+            deadline = None
+
+        def calc_timeout() -> ta.Optional[float]:
+            if deadline is None:
+                return None
+
+            tt = deadline - time.time()
+            if tt <= 0:
+                raise TimeoutError
+
+            return tt
+
+        if not (self._lock.acquire(timeout=calc_timeout() or -1)):
+            raise TimeoutError
+
+        try:
+            self._reap()
+
+            for t in self._threads:
+                t.join(timeout=calc_timeout())
+
+                if t.is_alive():
+                    raise TimeoutError
+
+        finally:
+            self._lock.release()
+
+    #
+
+    class _NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    def shutdown(
+            self,
+            block: bool = False,
+            timeout: ta.Union[float, None, ta.Type[_NOT_SET]] = _NOT_SET,
+    ) -> None:
+        self._is_shutdown = True
+
+        if block:
+            if timeout is self._NOT_SET:
+                timeout = self._shutdown_timeout
+
+            self.join(timeout=timeout)  # type: ignore
+
+    #
+
+    def __enter__(self) -> 'ThreadingSocketHandler':
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.shutdown()
 
 
 ########################################
@@ -18342,343 +18648,6 @@ def generate_temp_localhost_ssl_cert() -> TempSslCert:
 
 
 ########################################
-# ../../../omlish/sockets/server/server.py
-
-
-##
-
-
-class SocketServer:
-    _DEFAULT_LOGGER: LoggerLike = logging.getLogger('.'.join([__name__, 'SocketServer']))  # FIXME
-
-    def __init__(
-            self,
-            binder: SocketBinder,
-            handler: SocketServerHandler,
-            *,
-            on_error: ta.Optional[ta.Callable[[BaseException, ta.Optional[SocketAndAddress]], None]] = None,
-            error_logger: ta.Optional[LoggerLike] = _DEFAULT_LOGGER,
-            poll_interval: float = .5,
-            shutdown_timeout: ta.Optional[float] = None,
-    ) -> None:
-        super().__init__()
-
-        self._binder = binder
-        self._handler = handler
-        self._on_error = on_error
-        self._error_logger = error_logger
-        self._poll_interval = poll_interval
-        self._shutdown_timeout = shutdown_timeout
-
-        self._lock = threading.RLock()
-        self._is_shutdown = threading.Event()
-        self._should_shutdown = False
-
-    @property
-    def binder(self) -> SocketBinder:
-        return self._binder
-
-    @property
-    def handler(self) -> SocketServerHandler:
-        return self._handler
-
-    #
-
-    def _handle_error(self, exc: BaseException, conn: ta.Optional[SocketAndAddress] = None) -> None:
-        if (error_logger := self._error_logger) is not None:
-            error_logger.exception('Error in socket server: %r', conn)
-
-        if (on_error := self._on_error) is not None:
-            on_error(exc, conn)
-
-    #
-
-    class SelectorProtocol(ta.Protocol):
-        def register(self, *args, **kwargs) -> None:
-            raise NotImplementedError
-
-        def select(self, *args, **kwargs) -> bool:
-            raise NotImplementedError
-
-    Selector: ta.ClassVar[ta.Any]
-    if hasattr(selectors, 'PollSelector'):
-        Selector = selectors.PollSelector
-    else:
-        Selector = selectors.SelectSelector
-
-    #
-
-    class PollResult(enum.Enum):
-        TIMEOUT = enum.auto()
-        CONNECTION = enum.auto()
-        ERROR = enum.auto()
-        SHUTDOWN = enum.auto()
-
-    class PollContext(ExitStacked, Abstract):
-        @abc.abstractmethod
-        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
-            raise NotImplementedError
-
-    class _PollContext(PollContext):
-        def __init__(self, server: 'SocketServer') -> None:
-            super().__init__()
-
-            self._server = server
-
-        _selector: ta.Any = None
-
-        def _enter_contexts(self) -> None:
-            self._enter_context(self._server._lock)  # noqa: SLF001
-            self._enter_context(self._server._binder)  # noqa: SLF001
-
-            self._server._binder.listen()  # noqa: SLF001
-
-            self._server._is_shutdown.clear()  # noqa: SLF001
-            self._enter_context(defer(self._server._is_shutdown.set))  # noqa
-
-            # XXX: Consider using another file descriptor or connecting to the socket to wake this up instead of
-            # polling. Polling reduces our responsiveness to a shutdown request and wastes cpu at all other times.
-            self._selector = self._enter_context(self._server.Selector())
-            self._selector.register(self._server._binder.fileno(), selectors.EVENT_READ)  # noqa: SLF001
-
-        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
-            if self._server._should_shutdown:  # noqa: SLF001
-                return SocketServer.PollResult.SHUTDOWN
-
-            ready = self._selector.select(timeout)
-
-            # bpo-35017: shutdown() called during select(), exit immediately.
-            if self._server._should_shutdown:  # noqa: SLF001
-                return SocketServer.PollResult.SHUTDOWN  # type: ignore[unreachable]
-
-            if not ready:
-                return SocketServer.PollResult.TIMEOUT
-
-            try:
-                conn = self._server._binder.accept()  # noqa: SLF001
-
-            except OSError as exc:
-                self._server._handle_error(exc)  # noqa: SLF001
-
-                return SocketServer.PollResult.ERROR
-
-            try:
-                self._server._handler(conn)  # noqa: SLF001
-
-            except Exception as exc:  # noqa
-                self._server._handle_error(exc, conn)  # noqa: SLF001
-
-                close_socket_immediately(conn.socket)
-
-            return SocketServer.PollResult.CONNECTION
-
-    def poll_context(self) -> PollContext:
-        return self._PollContext(self)
-
-    #
-
-    @contextlib.contextmanager
-    def loop_context(self, poll_interval: ta.Optional[float] = None) -> ta.Iterator[ta.Iterator[bool]]:
-        if poll_interval is None:
-            poll_interval = self._poll_interval
-
-        with self.poll_context() as pc:
-            def loop():
-                while True:
-                    res = pc.poll(poll_interval)
-                    if res in (SocketServer.PollResult.ERROR, SocketServer.PollResult.SHUTDOWN):
-                        return
-                    else:
-                        yield res == SocketServer.PollResult.CONNECTION
-
-            yield loop()
-
-    def run(self, poll_interval: ta.Optional[float] = None) -> None:
-        with self.loop_context(poll_interval=poll_interval) as loop:
-            for _ in loop:
-                pass
-
-    #
-
-    class _NOT_SET:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    def shutdown(
-            self,
-            block: bool = False,
-            timeout: ta.Union[float, None, ta.Type[_NOT_SET]] = _NOT_SET,
-    ) -> None:
-        self._should_shutdown = True
-
-        if block:
-            if timeout is self._NOT_SET:
-                timeout = self._shutdown_timeout
-
-            if not self._is_shutdown.wait(timeout=timeout):  # type: ignore
-                raise TimeoutError
-
-    #
-
-    def __enter__(self) -> 'SocketServer':
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.shutdown()
-
-
-########################################
-# ../../../omlish/sockets/server/ssl.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SslErrorHandlingSocketServerHandler(SocketServerHandler_):
-    handler: SocketServerHandler
-
-    log: ta.Optional[LoggerLike] = None
-
-    #
-
-    _error_cls: ta.ClassVar[ta.Optional[ta.Type[BaseException]]] = None
-
-    @classmethod
-    def _get_error_cls(cls) -> ta.Type[BaseException]:
-        if (error_cls := cls._error_cls) is None:
-            import ssl
-            error_cls = cls._error_cls = ssl.SSLError
-        return error_cls
-
-    def __call__(self, conn: SocketAndAddress) -> None:
-        try:
-            self.handler(conn)
-        except self._get_error_cls():  # noqa
-            if (log := self.log) is not None:
-                log.exception('SSL Error in connection %r', conn)
-            close_socket_immediately(conn.socket)
-
-
-########################################
-# ../../../omlish/sockets/server/threading.py
-
-
-##
-
-
-class ThreadingSocketServerHandler:
-    def __init__(
-            self,
-            handler: SocketServerHandler,
-            *,
-            shutdown_timeout: ta.Optional[float] = None,
-    ) -> None:
-        super().__init__()
-
-        self._handler = handler
-        self._shutdown_timeout = shutdown_timeout
-
-        self._lock = threading.RLock()
-        self._threads: ta.List[threading.Thread] = []
-        self._is_shutdown = False
-
-    @property
-    def handler(self) -> SocketServerHandler:
-        return self._handler
-
-    #
-
-    def __call__(self, conn: SocketAndAddress) -> None:
-        self.handle(conn)
-
-    def handle(self, conn: SocketAndAddress) -> None:
-        with self._lock:
-            check.state(not self._is_shutdown)
-
-            self._reap()
-
-            t = threading.Thread(
-                target=self._handler,
-                args=(conn,),
-            )
-
-            self._threads.append(t)
-
-            t.start()
-
-    #
-
-    def _reap(self) -> None:
-        with self._lock:
-            self._threads[:] = (thread for thread in self._threads if thread.is_alive())
-
-    def is_alive(self) -> bool:
-        with self._lock:
-            self._reap()
-
-            return bool(self._threads)
-
-    def join(self, timeout: ta.Optional[float] = None) -> None:
-        if timeout is not None:
-            deadline: ta.Optional[float] = time.time() + timeout
-        else:
-            deadline = None
-
-        def calc_timeout() -> ta.Optional[float]:
-            if deadline is None:
-                return None
-
-            tt = deadline - time.time()
-            if tt <= 0:
-                raise TimeoutError
-
-            return tt
-
-        if not (self._lock.acquire(timeout=calc_timeout() or -1)):
-            raise TimeoutError
-
-        try:
-            self._reap()
-
-            for t in self._threads:
-                t.join(timeout=calc_timeout())
-
-                if t.is_alive():
-                    raise TimeoutError
-
-        finally:
-            self._lock.release()
-
-    #
-
-    class _NOT_SET:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    def shutdown(
-            self,
-            block: bool = False,
-            timeout: ta.Union[float, None, ta.Type[_NOT_SET]] = _NOT_SET,
-    ) -> None:
-        self._is_shutdown = True
-
-        if block:
-            if timeout is self._NOT_SET:
-                timeout = self._shutdown_timeout
-
-            self.join(timeout=timeout)  # type: ignore
-
-    #
-
-    def __enter__(self) -> 'ThreadingSocketServerHandler':
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.shutdown()
-
-
-########################################
 # ../../../omlish/subprocesses/base.py
 
 
@@ -21825,8 +21794,10 @@ class CoroHttpServerSocketHandler(SocketHandler_):
         self._keep_alive = keep_alive
         self._log_handler = log_handler
 
-    def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
-        server = self._server_factory(client_address)
+    def __call__(self, conn: SocketAndAddress) -> None:
+        server = self._server_factory(conn.address)
+
+        fp = SocketIoPair.from_socket(conn.socket)
 
         pbr = PushbackReader(fp.r)
 
@@ -23615,22 +23586,16 @@ def make_simple_http_server(
             handler=handler,
         )
 
-        socket_handler = CoroHttpServerSocketHandler(
+        socket_handler: SocketHandler = CoroHttpServerSocketHandler(
             server_factory,
             keep_alive=keep_alive,
         )
 
         #
 
-        server_handler: SocketServerHandler = SocketHandlerSocketServerHandler(
-            socket_handler,
-        )
-
-        #
-
         if ssl_context is not None:
-            server_handler = SocketWrappingSocketServerHandler(
-                server_handler,
+            socket_handler = SocketWrappingSocketHandler(
+                socket_handler,
                 SocketAndAddress.socket_wrapper(functools.partial(
                     ssl_context.wrap_socket,
                     server_side=True,
@@ -23638,34 +23603,34 @@ def make_simple_http_server(
             )
 
         if ignore_ssl_errors:
-            server_handler = SslErrorHandlingSocketServerHandler(
-                server_handler,
+            socket_handler = SslErrorHandlingSocketHandler(
+                socket_handler,
             )
 
         #
 
-        server_handler = StandardSocketServerHandler(
-            server_handler,
+        socket_handler = StandardSocketHandler(
+            socket_handler,
         )
 
         #
 
         if executor is not None:
-            server_handler = ExecutorSocketServerHandler(
-                server_handler,
+            socket_handler = ExecutorSocketHandler(
+                socket_handler,
                 executor,
             )
 
         elif use_threads:
-            server_handler = es.enter_context(ThreadingSocketServerHandler(
-                server_handler,
+            socket_handler = es.enter_context(ThreadingSocketHandler(
+                socket_handler,
             ))
 
         #
 
         server = es.enter_context(SocketServer(
             SocketBinder.of(bind),
-            server_handler,
+            socket_handler,
             **kwargs,
         ))
 

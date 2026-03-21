@@ -6,16 +6,16 @@ import typing as ta
 
 from ...lite.check import check
 from ..addresses import SocketAndAddress
-from .handlers import SocketServerHandler
+from .types import SocketHandler
 
 
 ##
 
 
-class ThreadingSocketServerHandler:
+class ThreadingSocketHandler:
     def __init__(
             self,
-            handler: SocketServerHandler,
+            handler: SocketHandler,
             *,
             shutdown_timeout: ta.Optional[float] = None,
     ) -> None:
@@ -29,7 +29,7 @@ class ThreadingSocketServerHandler:
         self._is_shutdown = False
 
     @property
-    def handler(self) -> SocketServerHandler:
+    def handler(self) -> SocketHandler:
         return self._handler
 
     #
@@ -116,7 +116,7 @@ class ThreadingSocketServerHandler:
 
     #
 
-    def __enter__(self) -> 'ThreadingSocketServerHandler':
+    def __enter__(self) -> 'ThreadingSocketHandler':
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
