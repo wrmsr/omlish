@@ -152,7 +152,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='../../omlish/sockets/handlers/server.py', sha1='b02f7f8cfd74dd6a1373704fc95771fb967b35b2'),
-            dict(path='../../omlish/sockets/handlers/simple.py', sha1='aa1e71d53b63eac44a6144fa4f0abde7dd59a748'),
+            dict(path='../../omlish/sockets/handlers/simple.py', sha1='78e1a4c419c8f82d10577f19654a3d8ce28d757f'),
             dict(path='../../omlish/sockets/handlers/ssl.py', sha1='94c0acedffe5b581419a7a92c2f1c4e4a58b7a83'),
             dict(path='../../omlish/sockets/handlers/threading.py', sha1='17906cd7f9f89cc036684c807c30034da38a585f'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
@@ -11911,7 +11911,7 @@ class StandardSocketHandler(SocketHandler_):
 
     # http://bugs.python.org/issue6192
     # TODO: https://eklitzke.org/the-caveats-of-tcp-nodelay
-    disable_nagle_algorithm: bool = False
+    enable_nodelay: bool = False
 
     no_close: bool = False
 
@@ -11920,7 +11920,7 @@ class StandardSocketHandler(SocketHandler_):
             if self.timeout is not None:
                 conn.socket.settimeout(self.timeout)
 
-            if self.disable_nagle_algorithm:
+            if self.enable_nodelay:
                 conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
 
             self.handler(conn)

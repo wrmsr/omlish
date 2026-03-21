@@ -23,7 +23,7 @@ class StandardSocketHandler(SocketHandler_):
 
     # http://bugs.python.org/issue6192
     # TODO: https://eklitzke.org/the-caveats-of-tcp-nodelay
-    disable_nagle_algorithm: bool = False
+    enable_nodelay: bool = False
 
     no_close: bool = False
 
@@ -32,7 +32,7 @@ class StandardSocketHandler(SocketHandler_):
             if self.timeout is not None:
                 conn.socket.settimeout(self.timeout)
 
-            if self.disable_nagle_algorithm:
+            if self.enable_nodelay:
                 conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
 
             self.handler(conn)

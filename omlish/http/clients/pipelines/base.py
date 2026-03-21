@@ -81,7 +81,7 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
 
     def _build_pipeline_spec(
             self,
-
+            *,
             outermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
             innermost_handlers: ta.Optional[ta.Sequence[IoPipelineHandler]] = None,
 
