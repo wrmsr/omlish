@@ -13,8 +13,9 @@ def _main() -> None:
         addressbook_src = f.read()
 
     addressbook = gram.parse(addressbook_src)
+    addressbook = abnf.only_match_rules(addressbook)
 
-    print(addressbook)
+    print(addressbook.render(indent=2))
 
 
 if __name__ == '__main__':
