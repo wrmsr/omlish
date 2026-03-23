@@ -1,4 +1,10 @@
 """
+TODO:
+ - dirty mode / non-reentrant / queued recalc
+  - Value oblivious, handled by effects
+
+====
+
 https://thenewstack.io/did-signals-just-land-in-react/
 https://pomb.us/build-your-own-react/
 https://plainvanillaweb.com/blog/articles/2024-08-30-poor-mans-signals/
@@ -22,26 +28,79 @@ T = ta.TypeVar('T')
 ##
 
 
+@dc.dataclass()
+class ValueNotSetError(Exception):
+    v: 'Value'
+
+
 class Value(lang.Final, ta.Generic[T]):
+    class _NOT_SET(lang.Marker):  # noqa
+        pass
+
     def __init__(
             self,
-            initial: T,
+            initial: T | type[_NOT_SET] = _NOT_SET,
             name: str | None = None,
-            *,
-            listeners: list[ta.Callable[[Value[T]], None]] | None = None,
     ) -> None:
         super().__init__()
 
         self._name = name
 
-        self._listeners: list[ta.Callable[[Value[T]], None]] = list(listeners) if listeners is not None else []
+        self._listeners: dict[ta.Any, ta.Callable[[Value[T]], None]] = {}
 
-        self.set(initial)
+        if initial is not self._NOT_SET:
+            self.set(initial)
+
+    @cached.property
+    def _value_type(self) -> ta.Any:
+        return check.single(ta.get_args(rfl.get_orig_class(self)))
 
     #
 
-    _access_listeners_tl: ta.ClassVar[threading.local] = threading.local()
-    _access_listeners_tl.lst = []
+    _v: lang.Maybe[T] = lang.empty()
+
+    def is_set(self) -> bool:
+        for fn in self._current_access_listeners():
+            fn(self)
+        return self._v.present
+
+    def get(self) -> T:
+        for fn in self._current_access_listeners():
+            fn(self)
+        if not self._v.present:
+            raise ValueNotSetError(self)
+        return self._v.must()
+
+    def set(self, v: T) -> None:
+        self._v = lang.just(v)
+        for l in list(self._listeners.values()):
+            l(self)
+
+    #
+
+    def __call__(self) -> T:
+        return self.get()
+
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
+
+    #
+
+    def add_listener(self, listener: ta.Callable[[Value[T]], None], key: ta.Any = None) -> ta.Self:
+        if key is None:
+            key = listener
+        if key in self._listeners:
+            raise KeyError(key)
+        self._listeners[key] = listener
+        return self
+
+    #
+
+    class _AccessListeners(threading.local):
+        def __init__(self) -> None:
+            self.lst = []
+
+    _access_listeners_tl: ta.ClassVar[threading.local] = _AccessListeners()
 
     @classmethod
     def _current_access_listeners(cls) -> ta.Sequence[ta.Callable[[Value], None]]:
@@ -56,34 +115,6 @@ class Value(lang.Final, ta.Generic[T]):
         finally:
             if cls._access_listeners_tl.lst.pop() is not fn:
                 raise RuntimeError
-
-    #
-
-    _v: T
-
-    @cached.property
-    def _value_type(self) -> ta.Any:
-        return check.single(ta.get_args(rfl.get_orig_class(self)))
-
-    def add_listener(self, *ls: ta.Callable[[Value[T]], None]) -> ta.Self:
-        self._listeners.extend(ls)
-        return self
-
-    def get(self) -> T:
-        for fn in self._current_access_listeners():
-            fn(self)
-        return self._v
-
-    def __call__(self) -> T:
-        return self.get()
-
-    def __bool__(self) -> ta.NoReturn:
-        raise TypeError
-
-    def set(self, v: T) -> None:
-        self._v = v
-        for l in self._listeners:
-            l(self)
 
 
 ##
