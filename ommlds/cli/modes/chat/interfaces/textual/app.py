@@ -110,9 +110,7 @@ class ChatApp(
         self._chat_facade = chat_facade
         self._chat_driver = chat_driver
         self._chat_event_queue = chat_event_queue
-        self._backend_name = backend_name
         self._input_history_manager = input_history_manager
-        self._mode_profile_name = mode_profile_name
         self._background_terminal_renderer = background_terminal_renderer
 
         #
@@ -125,7 +123,13 @@ class ChatApp(
 
         #
 
-        self._messages_container = MessagesContainer()
+        self._messages_container = MessagesContainer([
+            WelcomeMessage('\n'.join([
+                *([f'Profile: {mode_profile_name}'] if mode_profile_name is not None else []),
+                f'Backend: {backend_name or "?"}',
+                f'Dir: {os.getcwd()}',
+            ])),
+        ])
 
         self._input_container = InputContainer(
             input_history_manager=input_history_manager,
@@ -285,14 +289,6 @@ class ChatApp(
         self._chat_action_queue_task = asyncio.create_task(self._chat_action_queue_task_main())
 
         self._input_container.input_text_area.focus()
-
-        await self._messages_container.mount_messages(
-            WelcomeMessage('\n'.join([
-                *([f'Profile: {self._mode_profile_name}'] if self._mode_profile_name is not None else []),
-                f'Backend: {self._backend_name or "?"}',
-                f'Dir: {os.getcwd()}',
-            ])),
-        )
 
     async def on_unmount(self) -> None:
         if (cat := self._chat_action_queue_task) is not None:

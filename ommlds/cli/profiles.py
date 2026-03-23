@@ -139,6 +139,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
             ap.arg('-i', '--interactive', action='store_true'),
             ap.arg('-T', '--textual', action='store_true'),
             ap.arg('-e', '--editor', action='store_true'),
+            ap.arg('-x', '--autoexec', action='append'),
         ]
 
         def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
@@ -167,6 +168,18 @@ class ChatProfile(AspectProfile[ChatConfig]):
                     interface=dc.replace(
                         check.isinstance(cfg.interface, BareInterfaceConfig),
                         interactive=ctx.args.interactive,
+                    ),
+                )
+
+            if ctx.args.autoexec:
+                cfg = dc.replace(
+                    cfg,
+                    facade=dc.replace(
+                        cfg.facade,
+                        commands=dc.replace(
+                            cfg.facade.commands,
+                            autoexec=[*(cfg.facade.commands.autoexec or []), *ctx.args.autoexec],
+                        ),
                     ),
                 )
 

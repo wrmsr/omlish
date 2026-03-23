@@ -46,7 +46,7 @@ class CommandsManager:
         if not parts:
             return RunCommandResult.FAILURE
 
-        cmd = parts[0].lstrip('/').lower()
+        cmd = parts[0].lower()
         argv = parts[1:]
 
         command = self._commands_by_name.get(cmd)

@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 
 
@@ -6,4 +8,4 @@ from omlish import dataclasses as dc
 
 @dc.dataclass(frozen=True, kw_only=True)
 class CommandsConfig:
-    pass
+    autoexec: ta.Sequence[str] | None = None

@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from ...... import minichain as mc
 from .configs import CommandsConfig
 from .injection import commands
 
@@ -38,6 +39,19 @@ def bind_commands(cfg: CommandsConfig = CommandsConfig()) -> inj.Elements:
             inj.bind(cmd_cls, singleton=True),
             commands().bind_item(to_key=cmd_cls),
         ])
+
+    #
+
+    if aex := cfg.autoexec:
+        async def run_autoexec_commands(cm: _manager.CommandsManager) -> None:
+            for cmd in aex:
+                await cm.run_command_text(cmd)
+
+        els.append(
+            mc.drivers.injection.phase_callbacks().bind_item(to_fn=inj.target(
+                cm=_manager.CommandsManager,
+            )(lambda cm: mc.drivers.PhaseCallback(mc.drivers.Phase.STARTED, lambda: run_autoexec_commands(cm)))),  # noqa
+        )
 
     #
 

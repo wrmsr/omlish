@@ -445,10 +445,13 @@ class UiMessage(StaticMessage):
 class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
     init_add_class = 'messages-container'
 
-    def __init__(self) -> None:
+    def __init__(self, init_messages: ta.Sequence[Message] | None = None) -> None:
         super().__init__()
 
         self._messages_by_uuid: dict[uuid.UUID, Message] = {}
+
+        if init_messages:
+            self._pending_mount_messages = list(init_messages)
 
     #
 

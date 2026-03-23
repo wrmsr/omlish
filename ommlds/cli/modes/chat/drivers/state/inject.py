@@ -54,7 +54,7 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
             mc.drivers.injection.phase_callbacks().bind_item(to_fn=inj.target(
                 lcim=LastChatIdManager,
                 cid=mc.drivers.ChatId,
-            )(lambda lcim, cid: mc.drivers.PhaseCallback(mc.drivers.Phase.STARTED, lambda: lcim.set_last_chat_id(cid)))),  # noqa
+            )(lambda lcim, cid: mc.drivers.PhaseCallback(mc.drivers.Phase.STARTING, lambda: lcim.set_last_chat_id(cid)))),  # noqa
         ])
 
     elif cfg.state == 'ephemeral':
