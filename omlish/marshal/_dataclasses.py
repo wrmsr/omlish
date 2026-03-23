@@ -4258,7 +4258,6 @@ def _process_dataclass__c94d23c43d187cd3725f98ba417a2d32b630defb():
     ),
     cls_names=(
         ('omlish.marshal.standard', '_DataclassMarshalerBuilder'),
-        ('omlish.marshal.standard', '_DataclassUnmarshalerBuilder'),
     ),
 )
 def _process_dataclass__35f016ce203e8213abc42b9333cca4a0902d0a62():
@@ -4329,6 +4328,150 @@ def _process_dataclass__35f016ce203e8213abc42b9333cca4a0902d0a62():
             parts = []
             parts.append(f"ctx={self.ctx!r}")
             parts.append(f"rty={self.rty!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('ctx', 'rty', '_fields_dct', '_defaults', '_embeds', '_embeds_by_unmarshal_name'))"
+        ", EqPlan(fields=('ctx', 'rty', '_fields_dct', '_defaults', '_embeds', '_embeds_by_unmarshal_name')), HashPlan("
+        "action='set_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='ctx', annotation=OpRef(name"
+        "='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='rty', annotation=OpRef(name='"
+        "init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldTyp"
+        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='_fields_dct', annotation=OpRef("
+        "name='init.fields.2.annotation'), default=None, default_factory=OpRef(name='init.fields.2.default_factory'), i"
+        "nit=False, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
+        "an.Field(name='_defaults', annotation=OpRef(name='init.fields.3.annotation'), default=None, default_factory=Op"
+        "Ref(name='init.fields.3.default_factory'), init=False, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='_embeds', annotation=OpRef(name='init.fields.4.anno"
+        "tation'), default=None, default_factory=OpRef(name='init.fields.4.default_factory'), init=False, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='_embeds_b"
+        "y_unmarshal_name', annotation=OpRef(name='init.fields.5.annotation'), default=None, default_factory=OpRef(name"
+        "='init.fields.5.default_factory'), init=False, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None)), self_param='self', std_params=('ctx', 'rty'), kw_only_params=(), frozen=False, "
+        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ctx',"
+        " kw_only=False, fn=None), ReprPlan.Field(name='rty', kw_only=False, fn=None), ReprPlan.Field(name='_fields_dct"
+        "', kw_only=False, fn=None), ReprPlan.Field(name='_defaults', kw_only=False, fn=None), ReprPlan.Field(name='_em"
+        "beds', kw_only=False, fn=None), ReprPlan.Field(name='_embeds_by_unmarshal_name', kw_only=False, fn=None)), id="
+        "False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='4bfadfa5296b12af16efea03373079c9e7c1a7e9',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__default_factory',
+        '__dataclass__init__fields__3__default_factory',
+        '__dataclass__init__fields__4__default_factory',
+        '__dataclass__init__fields__5__default_factory',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', '_DataclassUnmarshalerBuilder'),
+    ),
+)
+def _process_dataclass__4bfadfa5296b12af16efea03373079c9e7c1a7e9():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__default_factory,
+        __dataclass__init__fields__3__default_factory,
+        __dataclass__init__fields__4__default_factory,
+        __dataclass__init__fields__5__default_factory,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                ctx=self.ctx,
+                rty=self.rty,
+                _fields_dct=self._fields_dct,
+                _defaults=self._defaults,
+                _embeds=self._embeds,
+                _embeds_by_unmarshal_name=self._embeds_by_unmarshal_name,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ctx == other.ctx and
+                self.rty == other.rty and
+                self._fields_dct == other._fields_dct and
+                self._defaults == other._defaults and
+                self._embeds == other._embeds and
+                self._embeds_by_unmarshal_name == other._embeds_by_unmarshal_name
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        setattr(__dataclass__cls, '__hash__', None)
+
+        def __init__(
+            self,
+            ctx: __dataclass__init__fields__0__annotation,
+            rty: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            _fields_dct = __dataclass__init__fields__2__default_factory()
+            _defaults = __dataclass__init__fields__3__default_factory()
+            _embeds = __dataclass__init__fields__4__default_factory()
+            _embeds_by_unmarshal_name = __dataclass__init__fields__5__default_factory()
+            self.ctx = ctx
+            self.rty = rty
+            self._fields_dct = _fields_dct
+            self._defaults = _defaults
+            self._embeds = _embeds
+            self._embeds_by_unmarshal_name = _embeds_by_unmarshal_name
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ctx={self.ctx!r}")
+            parts.append(f"rty={self.rty!r}")
+            parts.append(f"_fields_dct={self._fields_dct!r}")
+            parts.append(f"_defaults={self._defaults!r}")
+            parts.append(f"_embeds={self._embeds!r}")
+            parts.append(f"_embeds_by_unmarshal_name={self._embeds_by_unmarshal_name!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
