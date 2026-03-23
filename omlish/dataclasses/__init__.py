@@ -126,6 +126,11 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         iter_items,
         iter_keys,
         iter_values,
+
+        FieldIterable,
+        FieldNameIterable,
+        FieldValueIterable,
+        FieldNameValueIterable,
     )
 
     from .tools.modifiers import (  # noqa

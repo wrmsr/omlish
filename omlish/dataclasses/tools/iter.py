@@ -25,3 +25,26 @@ def iter_keys(obj: ta.Any) -> ta.Iterator[str]:
 def iter_values(obj: ta.Any) -> ta.Iterator[ta.Any]:
     for f in dc.fields(obj):
         yield getattr(obj, f.name)
+
+
+##
+
+
+class FieldIterable:
+    def __iter__(self) -> ta.Iterator[dc.Field]:
+        return iter(dc.fields(self))  # type: ignore[arg-type]  # noqa
+
+
+class FieldNameIterable:
+    def __iter__(self) -> ta.Iterator[str]:
+        return (f.name for f in dc.fields(self))  # type: ignore[arg-type]  # noqa
+
+
+class FieldValueIterable:
+    def __iter__(self) -> ta.Iterator[tuple[dc.Field, ta.Any]]:
+        return ((f, getattr(self, f.name)) for f in dc.fields(self))  # type: ignore[arg-type]  # noqa
+
+
+class FieldNameValueIterable:
+    def __iter__(self) -> ta.Iterator[tuple[str, ta.Any]]:
+        return ((f.name, getattr(self, f.name)) for f in dc.fields(self))  # type: ignore[arg-type]  # noqa
