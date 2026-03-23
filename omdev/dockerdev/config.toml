@@ -9,6 +9,7 @@ dep_sets = [
 jdks = [
     'zulu21-ca-jdk',
     'zulu25-ca-jdk',
+    'zulu26-ca-jdk',
 ]
 
 go_version = '1.26.1'
@@ -23,6 +24,7 @@ nvm_versions = [
 
 rbenv_versions = [
     '3.4',
+    '4.0',
 ]
 
 uv_python_versions = [

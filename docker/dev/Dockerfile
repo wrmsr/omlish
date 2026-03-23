@@ -191,7 +191,7 @@ RUN \
   --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
-export JDKS='zulu21-ca-jdk zulu25-ca-jdk' ;\
+export JDKS='zulu21-ca-jdk zulu25-ca-jdk zulu26-ca-jdk' ;\
 \
 set -ex ;\
 \
@@ -288,7 +288,7 @@ done ;\
 ## rbenv
 
 RUN (\
-export RBENV_VERSIONS='3.4' ;\
+export RBENV_VERSIONS='3.4 4.0' ;\
 \
 set -ex ;\
 \
