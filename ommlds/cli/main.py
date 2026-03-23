@@ -12,10 +12,10 @@ from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
 from .inject import bind_main
+from .modes.base import Mode
+from .modes.configs import ModeConfig
 from .profiles import PROFILE_TYPES
 from .secrets import install_env_secrets
-from .sessions.base import Session
-from .sessions.configs import SessionConfig
 
 
 ##
@@ -38,16 +38,16 @@ def _process_main_extra_args(args: ap.Namespace) -> None:
 ##
 
 
-async def _run_session_cfg(
-        session_cfg: SessionConfig,
+async def _run_mode_cfg(
+        mode_cfg: ModeConfig,
         *,
         profile_name: str | None = None,
 ) -> None:
     async with inj.create_async_managed_injector(bind_main(
-            session_cfg=session_cfg,
+            mode_cfg=mode_cfg,
             profile_name=profile_name,
     )) as injector:
-        await (await injector[Session]).run()
+        await (await injector[Mode]).run()
 
 
 ##
@@ -75,14 +75,14 @@ async def _a_main(argv: ta.Any = None) -> None:
     profile_cls = PROFILE_TYPES[args.profile]
     profile = profile_cls()
 
-    session_cfg = profile.configure([
+    mode_cfg = profile.configure([
         *unk_args,
         *(['--help'] if args.help else []),
         *args.args,
     ])
 
-    await _run_session_cfg(
-        session_cfg,
+    await _run_mode_cfg(
+        mode_cfg,
         profile_name=args.profile,
     )
 

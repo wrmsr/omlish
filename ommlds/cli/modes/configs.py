@@ -10,5 +10,5 @@ from .modules.configs import ModuleConfig
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class SessionConfig(lang.Abstract):
+class ModeConfig(lang.Abstract):
     modules: ta.Sequence[ModuleConfig] | None = None

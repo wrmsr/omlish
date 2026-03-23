@@ -1,6 +1,6 @@
 import typing as ta
 
-from ..base import Session
+from ..base import Mode
 from .interfaces.base import ChatInterface
 
 
@@ -8,7 +8,7 @@ from .interfaces.base import ChatInterface
 
 
 @ta.final
-class ChatSession(Session):
+class ChatMode(Mode):
     def __init__(
             self,
             *,

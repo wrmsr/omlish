@@ -3,14 +3,14 @@ from omlish import lang
 
 from ...backends.configs import BackendConfig
 from ...backends.types import DefaultBackendName
-from ..base import Session
+from ..base import Mode
 from .configs import DEFAULT_BACKEND
 from .configs import EmbeddingConfig
 
 
 with lang.auto_proxy_import(globals()):
     from ...backends import inject as _backends
-    from . import session as _session
+    from . import mode as _mode
 
 
 ##
@@ -23,7 +23,7 @@ def bind_embedding(cfg: EmbeddingConfig) -> inj.Elements:
 
     els.extend([
         inj.bind(cfg),
-        inj.bind(Session, to_ctor=_session.EmbeddingSession, singleton=True),
+        inj.bind(Mode, to_ctor=_mode.EmbeddingMode, singleton=True),
     ])
 
     #

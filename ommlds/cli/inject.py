@@ -2,12 +2,12 @@ from omlish import inject as inj
 from omlish import lang
 from omlish import lifecycles as lc
 
-from .sessions.configs import SessionConfig
+from .modes.configs import ModeConfig
 
 
 with lang.auto_proxy_import(globals()):
     from . import asyncs
-    from .sessions import inject as _sessions
+    from .modes import inject as _modes
     from .state import inject as _state
 
 
@@ -16,7 +16,7 @@ with lang.auto_proxy_import(globals()):
 
 def bind_main(
         *,
-        session_cfg: SessionConfig,
+        mode_cfg: ModeConfig,
         profile_name: str | None = None,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
@@ -31,8 +31,8 @@ def bind_main(
     #
 
     els.extend([
-        _sessions.bind_sessions(
-            session_cfg,
+        _modes.bind_modes(
+            mode_cfg,
             profile_name=profile_name,
         ),
 

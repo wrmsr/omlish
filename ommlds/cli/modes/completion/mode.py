@@ -2,14 +2,14 @@ from omlish import check
 
 from .... import minichain as mc
 from ...backends.types import CompletionServiceBackendProvider
-from ..base import Session
+from ..base import Mode
 from .configs import CompletionConfig
 
 
 ##
 
 
-class CompletionSession(Session):
+class CompletionMode(Mode):
     def __init__(
             self,
             config: CompletionConfig,

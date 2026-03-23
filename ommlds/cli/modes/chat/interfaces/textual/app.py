@@ -11,7 +11,7 @@ from omlish.logs import all as logs
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
-from ....types import SessionProfileName
+from ....types import ProfileName
 from ...facades.facade import ChatFacade
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
@@ -98,7 +98,7 @@ class ChatApp(
             backend_name: BackendName | None = None,
             devtools_setup: tx.DevtoolsSetup | None = None,
             input_history_manager: InputHistoryManager,
-            session_profile_name: SessionProfileName | None = None,
+            mode_profile_name: ProfileName | None = None,
             suggestions_manager: SuggestionsManager,
             background_terminal_renderer: BackgroundTerminalRenderer,
     ) -> None:
@@ -112,7 +112,7 @@ class ChatApp(
         self._chat_event_queue = chat_event_queue
         self._backend_name = backend_name
         self._input_history_manager = input_history_manager
-        self._session_profile_name = session_profile_name
+        self._mode_profile_name = mode_profile_name
         self._background_terminal_renderer = background_terminal_renderer
 
         #
@@ -288,7 +288,7 @@ class ChatApp(
 
         await self._messages_container.mount_messages(
             WelcomeMessage('\n'.join([
-                *([f'Profile: {self._session_profile_name}'] if self._session_profile_name is not None else []),
+                *([f'Profile: {self._mode_profile_name}'] if self._mode_profile_name is not None else []),
                 f'Backend: {self._backend_name or "?"}',
                 f'Dir: {os.getcwd()}',
             ])),

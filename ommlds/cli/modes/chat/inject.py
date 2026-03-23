@@ -1,13 +1,13 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ..base import Session
+from ..base import Mode
 from .configs import ChatConfig
 
 
 with lang.auto_proxy_import(globals()):
     from ...interfaces.bare.printing import inject as _printing
-    from . import session as _session
+    from . import mode as _mode
     from .drivers import inject as _drivers
     from .facades import inject as _facades
     from .interfaces import inject as _interfaces
@@ -35,7 +35,7 @@ def bind_chat(cfg: ChatConfig = ChatConfig()) -> inj.Elements:
 
     els.extend([
         # inj.bind(cfg),  # NOTE: *not* done - the code is properly structured around not needing it.
-        inj.bind(Session, to_ctor=_session.ChatSession, singleton=True),
+        inj.bind(Mode, to_ctor=_mode.ChatMode, singleton=True),
     ])
 
     #

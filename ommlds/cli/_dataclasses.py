@@ -25,118 +25,6 @@ def _register(**kwargs):
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=()), EqPlan(fields=()), FrozenPlan(fields=(), allow_dynamic_dunder_attrs=False), Ha"
-        "shPlan(action='add', fields=(), cache=False), InitPlan(fields=(), self_param='self', std_params=(), kw_only_pa"
-        "rams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(), i"
-        "d=False, terse=False, default_fn=None)))"
-    ),
-    plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
-    op_ref_idents=(),
-    cls_names=(
-        ('ommlds.cli.inject', 'ModuleConfig'),
-        ('ommlds.cli.main', 'CodeConfig'),
-        ('ommlds.cli.main', 'CommandsConfig'),
-    ),
-)
-def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
-    def _process_dataclass(
-        *,
-        __dataclass__cls,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
-    ):
-        def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
-                raise TypeError(self)
-            return __dataclass__cls()  # noqa
-
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
-
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return True
-
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
-
-        def __setattr__(self, name, value):
-            if (
-                type(self) is __dataclass__cls
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
-
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
-
-        def __delattr__(self, name):
-            if (
-                type(self) is __dataclass__cls
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
-
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
-
-        def __hash__(self):
-            return hash(())
-
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
-
-        def __init__(
-            self,
-        ) -> __dataclass__None:
-            pass
-
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
-
-        @__dataclass___recursive_repr()
-        def __repr__(self):
-            parts = []
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
-
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
-
-    return _process_dataclass
-
-
-@_register(
-    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('modules',)), EqPlan(fields=('modules',)), FrozenPlan(fields=('modules',), allow_d"
         "ynamic_dunder_attrs=False), HashPlan(action='add', fields=('modules',), cache=False), InitPlan(fields=(InitPla"
         "n.Field(name='modules', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.d"
@@ -151,7 +39,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         '__dataclass__init__fields__0__default',
     ),
     cls_names=(
-        ('ommlds.cli.inject', 'SessionConfig'),
+        ('ommlds.cli.inject', 'ModeConfig'),
     ),
 )
 def _process_dataclass__b3c5ceb1d3f2d52621e06fa7d3819d96ffea7347():
@@ -258,6 +146,118 @@ def _process_dataclass__b3c5ceb1d3f2d52621e06fa7d3819d96ffea7347():
         def __repr__(self):
             parts = []
             parts.append(f"modules={self.modules!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=()), EqPlan(fields=()), FrozenPlan(fields=(), allow_dynamic_dunder_attrs=False), Ha"
+        "shPlan(action='add', fields=(), cache=False), InitPlan(fields=(), self_param='self', std_params=(), kw_only_pa"
+        "rams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(), i"
+        "d=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
+    op_ref_idents=(),
+    cls_names=(
+        ('ommlds.cli.inject', 'ModuleConfig'),
+        ('ommlds.cli.main', 'CodeConfig'),
+        ('ommlds.cli.main', 'CommandsConfig'),
+    ),
+)
+def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls()  # noqa
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return True
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash(())
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+        ) -> __dataclass__None:
+            pass
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2098,7 +2098,7 @@ def _process_dataclass__f515764cf4b50b208c232c9355d9b2ed75cf26f4():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.drivers.state.ids', 'DriverStateStorageKey'),
+        ('ommlds.cli.modes.chat.drivers.state.ids', 'DriverStateStorageKey'),
     ),
 )
 def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
@@ -2244,7 +2244,7 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.facades.facade', 'ArgsCommandError'),
+        ('ommlds.cli.modes.chat.facades.facade', 'ArgsCommandError'),
     ),
 )
 def _process_dataclass__0843ef2470048b534567b0a1d3bd52e06d96c21b():
@@ -2357,7 +2357,7 @@ def _process_dataclass__0843ef2470048b534567b0a1d3bd52e06d96c21b():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.facades.facade', 'Command.Context'),
+        ('ommlds.cli.modes.chat.facades.facade', 'Command.Context'),
     ),
 )
 def _process_dataclass__b85c47820b05dab0f4c49061d498738fe67a73a4():
@@ -2493,7 +2493,7 @@ def _process_dataclass__b85c47820b05dab0f4c49061d498738fe67a73a4():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.facades.facade', 'ConcatFacadeText'),
+        ('ommlds.cli.modes.chat.facades.facade', 'ConcatFacadeText'),
     ),
 )
 def _process_dataclass__d8fe535b51d70dc7c60329bed3f200e1230f614a():
@@ -2620,7 +2620,7 @@ def _process_dataclass__d8fe535b51d70dc7c60329bed3f200e1230f614a():
     plan_repr_sha1='32aca8223fa20a902d4408c1bd046d52b1c41318',
     op_ref_idents=(),
     cls_names=(
-        ('ommlds.cli.sessions.chat.facades.facade', 'FacadeText'),
+        ('ommlds.cli.modes.chat.facades.facade', 'FacadeText'),
     ),
 )
 def _process_dataclass__32aca8223fa20a902d4408c1bd046d52b1c41318():
@@ -2760,7 +2760,7 @@ def _process_dataclass__32aca8223fa20a902d4408c1bd046d52b1c41318():
         '__dataclass__repr__default_fn',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.facades.facade', 'FacadeTextStyle'),
+        ('ommlds.cli.modes.chat.facades.facade', 'FacadeTextStyle'),
     ),
 )
 def _process_dataclass__aaaaf67b231f933c820a9536a9ad09676619608d():
@@ -2933,7 +2933,7 @@ def _process_dataclass__aaaaf67b231f933c820a9536a9ad09676619608d():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.facades.facade', 'StrFacadeText'),
+        ('ommlds.cli.modes.chat.facades.facade', 'StrFacadeText'),
     ),
 )
 def _process_dataclass__f4e6b81cb21510ffec9598279f74b9afddc6c1de():
@@ -3084,7 +3084,7 @@ def _process_dataclass__f4e6b81cb21510ffec9598279f74b9afddc6c1de():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.facades.facade', 'StyleFacadeText'),
+        ('ommlds.cli.modes.chat.facades.facade', 'StyleFacadeText'),
     ),
 )
 def _process_dataclass__1146b322d3d7f9de2743046ef41ed24699798077():
@@ -3244,7 +3244,7 @@ def _process_dataclass__1146b322d3d7f9de2743046ef41ed24699798077():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'ChatApp.UserInput'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'ChatApp.UserInput'),
     ),
 )
 def _process_dataclass__a147f14d22fda2880e5bb366e3496276b9fa48e1():
@@ -3388,9 +3388,9 @@ def _process_dataclass__a147f14d22fda2880e5bb366e3496276b9fa48e1():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'InputTextArea.HistoryNext'),
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'InputTextArea.HistoryPrevious'),
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'InputTextArea.Submitted'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'InputTextArea.HistoryNext'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'InputTextArea.HistoryPrevious'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'InputTextArea.Submitted'),
     ),
 )
 def _process_dataclass__305f12128eb40e3772ab0fec3fd8182bde52bde6():
@@ -3479,7 +3479,7 @@ def _process_dataclass__305f12128eb40e3772ab0fec3fd8182bde52bde6():
     plan_repr_sha1='d8b7f224596d6b56ca61048e31a647b16a3fb3fe',
     op_ref_idents=(),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'InputTextArea.HistoryReset'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'InputTextArea.HistoryReset'),
     ),
 )
 def _process_dataclass__d8b7f224596d6b56ca61048e31a647b16a3fb3fe():
@@ -3565,7 +3565,7 @@ def _process_dataclass__d8b7f224596d6b56ca61048e31a647b16a3fb3fe():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'MessageFinalized'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'MessageFinalized'),
     ),
 )
 def _process_dataclass__95d0b95631fc69464dd20fa9e5c73baceb4022ef():
@@ -3671,7 +3671,7 @@ def _process_dataclass__95d0b95631fc69464dd20fa9e5c73baceb4022ef():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'SuggestionItem'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'SuggestionItem'),
     ),
 )
 def _process_dataclass__27e469b5e8a66ab2f1817b6747e2f6b66cd79dbd():
@@ -3827,7 +3827,7 @@ def _process_dataclass__27e469b5e8a66ab2f1817b6747e2f6b66cd79dbd():
         '__dataclass__init__fields__0__default',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.interfaces.textual.app', 'SuggestionsManager.Config'),
+        ('ommlds.cli.modes.chat.interfaces.textual.app', 'SuggestionsManager.Config'),
     ),
 )
 def _process_dataclass__6963b0f0c27facaf712095f140ca422be3935ff7():

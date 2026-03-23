@@ -2,14 +2,14 @@ from omlish.formats import json
 
 from .... import minichain as mc
 from ...backends.types import EmbeddingServiceBackendProvider
-from ..base import Session
+from ..base import Mode
 from .configs import EmbeddingConfig
 
 
 ##
 
 
-class EmbeddingSession(Session):
+class EmbeddingMode(Mode):
     def __init__(
             self,
             config: EmbeddingConfig,

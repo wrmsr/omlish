@@ -3,9 +3,9 @@ from omlish import lang
 
 from .chat.configs import ChatConfig
 from .completion.configs import CompletionConfig
-from .configs import SessionConfig
+from .configs import ModeConfig
 from .embedding.configs import EmbeddingConfig
-from .types import SessionProfileName
+from .types import ProfileName
 
 
 with lang.auto_proxy_import(globals()):
@@ -18,8 +18,8 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_sessions(
-        cfg: SessionConfig,
+def bind_modes(
+        cfg: ModeConfig,
         *,
         profile_name: str | None = None,
 ) -> inj.Elements:
@@ -28,7 +28,7 @@ def bind_sessions(
     #
 
     if profile_name is not None:
-        els.append(inj.bind(SessionProfileName, to_const=profile_name))
+        els.append(inj.bind(ProfileName, to_const=profile_name))
 
     #
 

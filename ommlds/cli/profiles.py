@@ -7,33 +7,33 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.argparse import all as ap
 
-from .sessions.chat.configs import ChatConfig
-from .sessions.chat.interfaces.bare.configs import BareInterfaceConfig
-from .sessions.chat.interfaces.configs import InterfaceConfig
-from .sessions.chat.interfaces.textual.configs import TextualInterfaceConfig
-from .sessions.completion.configs import CompletionConfig
-from .sessions.configs import SessionConfig
-from .sessions.embedding.configs import EmbeddingConfig
-from .sessions.modules.code.configs import CodeConfig
+from .modes.chat.configs import ChatConfig
+from .modes.chat.interfaces.bare.configs import BareInterfaceConfig
+from .modes.chat.interfaces.configs import InterfaceConfig
+from .modes.chat.interfaces.textual.configs import TextualInterfaceConfig
+from .modes.completion.configs import CompletionConfig
+from .modes.configs import ModeConfig
+from .modes.embedding.configs import EmbeddingConfig
+from .modes.modules.code.configs import CodeConfig
 
 
-SessionConfigT = ta.TypeVar('SessionConfigT', bound=SessionConfig)
-SessionConfigU = ta.TypeVar('SessionConfigU', bound=SessionConfig)
+ModeConfigT = ta.TypeVar('ModeConfigT', bound=ModeConfig)
+ModeConfigU = ta.TypeVar('ModeConfigU', bound=ModeConfig)
 
 
 ##
 
 
-class Profile(lang.Abstract, ta.Generic[SessionConfigT]):
+class Profile(lang.Abstract, ta.Generic[ModeConfigT]):
     @abc.abstractmethod
-    def configure(self, argv: ta.Sequence[str]) -> SessionConfigT:
+    def configure(self, argv: ta.Sequence[str]) -> ModeConfigT:
         raise NotImplementedError
 
 
 ##
 
 
-class ProfileAspect(lang.Abstract, ta.Generic[SessionConfigT]):
+class ProfileAspect(lang.Abstract, ta.Generic[ModeConfigT]):
     @property
     def name(self) -> str:
         return lang.camel_to_snake(type(self).__name__).lower()
@@ -48,25 +48,25 @@ class ProfileAspect(lang.Abstract, ta.Generic[SessionConfigT]):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class ConfigureContext(ta.Generic[SessionConfigU]):
-        profile: 'Profile[SessionConfigU]'
+    class ConfigureContext(ta.Generic[ModeConfigU]):
+        profile: 'Profile[ModeConfigU]'
         args: ap.Namespace
 
     @abc.abstractmethod
-    def configure(self, ctx: ConfigureContext[SessionConfigT], cfg: SessionConfigT) -> SessionConfigT:
+    def configure(self, ctx: ConfigureContext[ModeConfigT], cfg: ModeConfigT) -> ModeConfigT:
         raise NotImplementedError
 
 
-class AspectProfile(Profile[SessionConfigT], lang.Abstract):
+class AspectProfile(Profile[ModeConfigT], lang.Abstract):
     @abc.abstractmethod
-    def _build_aspects(self) -> ta.Sequence[ProfileAspect[SessionConfigT]]:
+    def _build_aspects(self) -> ta.Sequence[ProfileAspect[ModeConfigT]]:
         return []
 
-    __aspects: ta.Sequence[ProfileAspect[SessionConfigT]]
+    __aspects: ta.Sequence[ProfileAspect[ModeConfigT]]
 
     @ta.final
     @property
-    def aspects(self) -> ta.Sequence[ProfileAspect[SessionConfigT]]:
+    def aspects(self) -> ta.Sequence[ProfileAspect[ModeConfigT]]:
         try:
             return self.__aspects
         except AttributeError:
@@ -77,12 +77,12 @@ class AspectProfile(Profile[SessionConfigT], lang.Abstract):
     #
 
     @abc.abstractmethod
-    def initial_config(self) -> SessionConfigT:
+    def initial_config(self) -> ModeConfigT:
         raise NotImplementedError
 
     #
 
-    def configure(self, argv: ta.Sequence[str]) -> SessionConfigT:
+    def configure(self, argv: ta.Sequence[str]) -> ModeConfigT:
         parser = ap.ArgumentParser()
 
         pa_grps: dict[str, ta.Any] = {}
@@ -388,7 +388,7 @@ class CodeProfile(ChatProfile):
 
 
 class CompletionProfile(Profile):
-    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
+    def configure(self, argv: ta.Sequence[str]) -> ModeConfig:
         parser = ap.ArgumentParser()
         parser.add_argument('prompt', nargs='*')
         parser.add_argument('-b', '--backend', default='openai')
@@ -408,7 +408,7 @@ class CompletionProfile(Profile):
 
 
 class EmbedProfile(Profile):
-    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
+    def configure(self, argv: ta.Sequence[str]) -> ModeConfig:
         parser = ap.ArgumentParser()
         parser.add_argument('prompt', nargs='*')
         parser.add_argument('-b', '--backend', default='openai')
