@@ -1,5 +1,6 @@
 """
 TODO:
+ - lazy
  - dirty mode / non-reentrant / queued recalc
   - Value oblivious, handled by effects
 
@@ -9,8 +10,6 @@ https://thenewstack.io/did-signals-just-land-in-react/
 https://pomb.us/build-your-own-react/
 https://plainvanillaweb.com/blog/articles/2024-08-30-poor-mans-signals/
 """
-from __future__ import annotations
-
 import contextlib
 import dataclasses as dc
 import threading
@@ -86,7 +85,7 @@ class Value(lang.Final, ta.Generic[T]):
 
     #
 
-    def add_listener(self, listener: ta.Callable[[Value[T]], None], key: ta.Any = None) -> ta.Self:
+    def add_listener(self, listener: ta.Callable[['Value[T]'], None], *, key: ta.Any = None) -> ta.Self:
         if key is None:
             key = listener
         if key in self._listeners:
@@ -103,12 +102,12 @@ class Value(lang.Final, ta.Generic[T]):
     _access_listeners_tl: ta.ClassVar[threading.local] = _AccessListeners()
 
     @classmethod
-    def _current_access_listeners(cls) -> ta.Sequence[ta.Callable[[Value], None]]:
+    def _current_access_listeners(cls) -> ta.Sequence[ta.Callable[['Value'], None]]:
         return cls._access_listeners_tl.lst
 
     @classmethod
     @contextlib.contextmanager
-    def push_access_listener(cls, fn: ta.Callable[[Value], None]) -> ta.Iterator[None]:
+    def push_access_listener(cls, fn: ta.Callable[['Value'], None]) -> ta.Iterator[None]:
         cls._access_listeners_tl.lst.append(fn)
         try:
             yield
@@ -125,7 +124,7 @@ class Effects:
     class _Effect(ta.Generic[T]):
         fn: ta.Callable[[], T]
         _: dc.KW_ONLY
-        eager: bool = False
+        # lazy: bool = False
 
         inputs: ta.MutableSet[Value] = dc.field(default_factory=set)
         output: Value[T] | None = None
@@ -145,17 +144,16 @@ class Effects:
         e = Effects._Effect(fn)
         self._effects_by_fn[fn] = e
 
-        self._run_effect(e)
-        return check.not_none(e.output)
+        return self._run_effect(e)
 
-    def _run_effect(self, e: _Effect) -> None:
+    def _run_effect(self, e: _Effect[T]) -> Value[T]:
         with Value.push_access_listener(e.inputs.add):
             v = e.fn()
 
         for r in e.inputs:
             self._effect_sets_by_input.setdefault(r, set()).add(e)
             if r not in self._inputs:
-                r.add_listener(self._on_value_update)
+                r.add_listener(self._on_value_update, key=e)
                 self._inputs.add(r)
 
         if (out := e.output) is None:
@@ -163,6 +161,8 @@ class Effects:
             self._effects_by_output[out] = e
         else:
             out.set(v)
+
+        return out
 
     def _on_value_update(self, v: Value) -> None:
         for e in self._effect_sets_by_input[v]:
