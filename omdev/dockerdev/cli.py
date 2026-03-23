@@ -102,7 +102,10 @@ class Cli(ap.Cli):
             bim = bim.split(sep, maxsplit=1)[0]
 
         def run_insp() -> str:
-            return subprocess.check_output(['docker', 'image', 'inspect', cfg.base_image]).decode()  # type: ignore[union-attr]  # noqa
+            return subprocess.check_output([  # type: ignore
+                'docker', 'image', 'inspect', cfg.base_image],  # type: ignore[union-attr]
+                **(dict(stderr=subprocess.DEVNULL) if not verbose else {}),
+            ).decode()
 
         try:
             insp_out = run_insp()
@@ -114,8 +117,12 @@ class Cli(ap.Cli):
 
         insp_out_obj = json.loads(insp_out)
         insp_out_dct = check.not_empty(insp_out_obj)[0]
-        obi = check.non_empty_str(insp_out_dct['Id'])
-        cfg = dc.replace(cfg, base_image=f'{bim}@{obi}')
+
+        obi = check.non_empty_str(insp_out_dct['RepoDigests'][0])
+        cfg = dc.replace(cfg, base_image=obi)
+
+        # obi = check.non_empty_str(insp_out_dct['Id'])
+        # cfg = dc.replace(cfg, base_image=f'{bim}@{obi}')
 
         #
 
