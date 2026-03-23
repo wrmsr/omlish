@@ -22,19 +22,19 @@ T = ta.TypeVar('T')
 ##
 
 
-class Ref(lang.Final, ta.Generic[T]):
+class Value(lang.Final, ta.Generic[T]):
     def __init__(
             self,
             initial: T,
             name: str | None = None,
             *,
-            listeners: list[ta.Callable[[Ref[T]], None]] | None = None,
+            listeners: list[ta.Callable[[Value[T]], None]] | None = None,
     ) -> None:
         super().__init__()
 
         self._name = name
 
-        self._listeners: list[ta.Callable[[Ref[T]], None]] = list(listeners) if listeners is not None else []
+        self._listeners: list[ta.Callable[[Value[T]], None]] = list(listeners) if listeners is not None else []
 
         self.set(initial)
 
@@ -44,12 +44,12 @@ class Ref(lang.Final, ta.Generic[T]):
     _access_listeners_tl.lst = []
 
     @classmethod
-    def _current_access_listeners(cls) -> ta.Sequence[ta.Callable[[Ref], None]]:
+    def _current_access_listeners(cls) -> ta.Sequence[ta.Callable[[Value], None]]:
         return cls._access_listeners_tl.lst
 
     @classmethod
     @contextlib.contextmanager
-    def push_access_listener(cls, fn: ta.Callable[[Ref], None]) -> ta.Iterator[None]:
+    def push_access_listener(cls, fn: ta.Callable[[Value], None]) -> ta.Iterator[None]:
         cls._access_listeners_tl.lst.append(fn)
         try:
             yield
@@ -65,7 +65,7 @@ class Ref(lang.Final, ta.Generic[T]):
     def _value_type(self) -> ta.Any:
         return check.single(ta.get_args(rfl.get_orig_class(self)))
 
-    def add_listener(self, *ls: ta.Callable[[Ref[T]], None]) -> ta.Self:
+    def add_listener(self, *ls: ta.Callable[[Value[T]], None]) -> ta.Self:
         self._listeners.extend(ls)
         return self
 
@@ -93,18 +93,21 @@ class Effects:
     @dc.dataclass(eq=False)
     class _Effect(ta.Generic[T]):
         fn: ta.Callable[[], T]
-        inputs: ta.MutableSet[Ref] = dc.field(default_factory=set)
-        output: Ref[T] | None = None
+        _: dc.KW_ONLY
+        eager: bool = False
+
+        inputs: ta.MutableSet[Value] = dc.field(default_factory=set)
+        output: Value[T] | None = None
 
     def __init__(self) -> None:
         super().__init__()
 
         self._effects_by_fn: dict[ta.Callable[[], None], Effects._Effect] = {}
-        self._effects_by_output: dict[Ref, Effects._Effect] = {}
-        self._effect_sets_by_input: dict[Ref, set[Effects._Effect]] = {}
-        self._inputs: set[Ref] = set()
+        self._effects_by_output: dict[Value, Effects._Effect] = {}
+        self._effect_sets_by_input: dict[Value, set[Effects._Effect]] = {}
+        self._inputs: set[Value] = set()
 
-    def make_effect(self, fn: ta.Callable[[], None]) -> Ref[T]:
+    def make_effect(self, fn: ta.Callable[[], None]) -> Value[T]:
         if fn in self._effects_by_fn:
             raise KeyError(fn)
 
@@ -115,23 +118,23 @@ class Effects:
         return check.not_none(e.output)
 
     def _run_effect(self, e: _Effect) -> None:
-        with Ref.push_access_listener(e.inputs.add):
+        with Value.push_access_listener(e.inputs.add):
             v = e.fn()
 
         for r in e.inputs:
             self._effect_sets_by_input.setdefault(r, set()).add(e)
             if r not in self._inputs:
-                r.add_listener(self._on_ref_update)
+                r.add_listener(self._on_value_update)
                 self._inputs.add(r)
 
         if (out := e.output) is None:
-            out = e.output = Ref(v)
+            out = e.output = Value(v)
             self._effects_by_output[out] = e
         else:
             out.set(v)
 
-    def _on_ref_update(self, ref: Ref) -> None:
-        for e in self._effect_sets_by_input[ref]:
+    def _on_value_update(self, v: Value) -> None:
+        for e in self._effect_sets_by_input[v]:
             self._run_effect(e)
 
 
@@ -144,8 +147,8 @@ make_effect = EFFECTS.make_effect
 
 
 def _main() -> None:
-    x = Ref[int](0)
-    y = Ref[int](0)
+    x = Value[int](0)
+    y = Value[int](0)
 
     @make_effect
     def x_plus_y() -> str:
