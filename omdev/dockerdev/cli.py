@@ -95,15 +95,29 @@ class Cli(ap.Cli):
         if cfg is None:
             cfg = self._load_config()
 
-        if offline:
-            out = subprocess.check_output(['docker', 'image', 'inspect', cfg.base_image]).decode()
-            out_obj = json.loads(out)
-            out_dct = check.not_empty(out_obj)[0]
-            obi = check.non_empty_str(out_dct['Id'])
-            bim = cfg.base_image
-            for sep in ':@':
-                bim = bim.split(sep, maxsplit=1)[0]
-            cfg = dc.replace(cfg, base_image=f'{bim}@{obi}')
+        #
+
+        bim = cfg.base_image
+        for sep in ':@':
+            bim = bim.split(sep, maxsplit=1)[0]
+
+        def run_insp() -> str:
+            return subprocess.check_output(['docker', 'image', 'inspect', cfg.base_image]).decode()  # type: ignore[union-attr]  # noqa
+
+        try:
+            insp_out = run_insp()
+        except subprocess.CalledProcessError:
+            if offline:
+                raise
+            subprocess.check_output(['docker', 'pull', '-q', cfg.base_image])
+            insp_out = run_insp()
+
+        insp_out_obj = json.loads(insp_out)
+        insp_out_dct = check.not_empty(insp_out_obj)[0]
+        obi = check.non_empty_str(insp_out_dct['Id'])
+        cfg = dc.replace(cfg, base_image=f'{bim}@{obi}')
+
+        #
 
         src = gen_src(cfg)
 
