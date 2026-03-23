@@ -1,201 +1,338 @@
-; Minisql, rewritten for ABNF with more semantic normalization.
+; Minisql, semantic ABNF rewrite with explicit skip handling.
 ;
-; Assumptions introduced by the rewrite:
-; - conventional SQL-ish precedence:
-;     postfix cast (::)
-;     unary +/-
-;     *, /, %
-;     +, -
-;     ||
-;     predicates/comparisons ( =, <>, <, <=, >, >=, IS NULL, IN, LIKE )
-;     NOT
-;     AND
-;     OR
-; - join chains associate left-to-right
-; - aliasing a whole join requires parentheses, e.g.:
-;     (a join b on ...) AS t
-;
-; Lexical notes:
-; - literal strings are case-insensitive in ABNF, which matches the SQL keywords here
-; - whitespace/comments are assumed skipped between tokens
-; - regular-ident must exclude reserved keywords except "left" and "right",
-;   matching the original ANTLR's special case
+; Notes:
+; - This is character-level ABNF, so S/R are used explicitly.
+; - Consume the whole input with: single-stmt = S select S ";" S
+; - regular-ident must not match reserved keywords, except that
+;   "left" and "right" are explicitly permitted as unquoted identifiers,
+;   matching the ANTLR grammar.
 
-single-stmt         = select ";"
+SKIP = WS / comment
+S    = *SKIP      ; optional
+R    = 1*SKIP     ; required
 
-select              = query-expression
 
-query-expression    = [with-clause] query-term *(union-op query-term)
+; =========================
+; Top level
+; =========================
 
-with-clause         = "with" cte *("," cte)
-cte                 = ident "as" "(" select ")"
+single-stmt = S select S ";" S
 
-union-op            = "union" [set-quantifier]
+select = query-expression
 
-query-term          = query-specification
+query-expression =
+    [with-clause R]
+    query-term
+    *(S union-op R query-term)
+
+with-clause =
+    "with" R cte *(S "," S cte)
+
+cte =
+    ident R "as" S "(" S select S ")"
+
+union-op =
+    "union" [R set-quantifier]
+
+query-term =
+    query-specification
 
 query-specification =
-    "select"
-    [set-quantifier]
+    "select" R
+    [set-quantifier R]
     select-list
-    [from-clause]
-    [where-clause]
-    [group-by-clause]
-    [having-clause]
-    [order-by-clause]
+    [R from-clause]
+    [R where-clause]
+    [R group-by-clause]
+    [R having-clause]
+    [R order-by-clause]
 
-select-list         = select-item *("," select-item)
+select-list =
+    select-item *(S "," S select-item)
 
-select-item         = "*"
-                    / expr [ ["as"] ident ]
+select-item =
+    "*"
+  / expr [R select-item-alias]
 
-from-clause         = "from" table-reference *("," table-reference)
+select-item-alias =
+    ["as" R] ident
 
-where-clause        = "where" expr
+from-clause =
+    "from" R table-reference *(S "," S table-reference)
 
-group-by-clause     = "group" "by" grouping-element *("," grouping-element)
-grouping-element    = expr
+where-clause =
+    "where" R expr
 
-having-clause       = "having" expr
+group-by-clause =
+    "group" R "by" R grouping-element *(S "," S grouping-element)
 
-order-by-clause     = "order" "by" sort-item *("," sort-item)
-sort-item           = expr [direction]
-direction           = "asc" / "desc"
+grouping-element =
+    expr
+
+having-clause =
+    "having" R expr
+
+order-by-clause =
+    "order" R "by" R sort-item *(S "," S sort-item)
+
+sort-item =
+    expr [R direction]
+
+direction =
+    "asc" / "desc"
 
 
 ; =========================
 ; Expressions
 ; =========================
 
-expr                = or-expr
+expr =
+    or-expr
 
-or-expr             = and-expr *("or" and-expr)
+or-expr =
+    and-expr *(R "or" R and-expr)
 
-and-expr            = not-expr *("and" not-expr)
+and-expr =
+    not-expr *(R "and" R not-expr)
 
-not-expr            = ["not"] predicate-expr
+not-expr =
+    ["not" R] predicate-expr
 
-predicate-expr      = concat-expr [predicate]
+predicate-expr =
+    concat-expr
+    [ cmp-predicate
+    / is-null-predicate
+    / in-list-predicate
+    / in-select-predicate
+    / like-predicate
+    ]
 
-predicate           = cmp-op concat-expr
-                    / "is" ["not"] null-literal
-                    / ["not"] "in" "(" expr-list ")"
-                    / ["not"] "in" "(" select ")"
-                    / ["not"] "like" concat-expr
+cmp-predicate =
+    S cmp-op S concat-expr
 
-expr-list           = expr *("," expr)
+is-null-predicate =
+    R "is" R ["not" R] null-literal
 
-concat-expr         = additive-expr *("||" additive-expr)
+in-list-predicate =
+    (R "in" / R "not" R "in")
+    S "(" S expr-list S ")"
 
-additive-expr       = multiplicative-expr *(("+" / "-") multiplicative-expr)
+in-select-predicate =
+    (R "in" / R "not" R "in")
+    S "(" S select S ")"
 
-multiplicative-expr = unary-expr *(("*" / "/" / "%") unary-expr)
+like-predicate =
+    (R "like" / R "not" R "like")
+    R concat-expr
 
-unary-expr          = *unary-op cast-expr
-unary-op            = "+" / "-"
+expr-list =
+    expr *(S "," S expr)
 
-cast-expr           = primary-expr *("::" ident)
+concat-expr =
+    additive-expr *(S "||" S additive-expr)
 
-primary-expr        = function-call
-                    / star-function-call
-                    / case-expr
-                    / scalar-subquery
-                    / parenthesized-expr
-                    / simple-expr
+additive-expr =
+    multiplicative-expr *(S ("+" / "-") S multiplicative-expr)
 
-function-call       = qualified-name "(" [expr-list] ")" [over-clause]
+multiplicative-expr =
+    unary-expr *(S ("*" / "/" / "%") S unary-expr)
 
-star-function-call  = qualified-name "(" "*" ")" [over-clause]
+unary-expr =
+    *(unary-op S) cast-expr
 
-case-expr           = "case" *case-item ["else" expr] "end"
-case-item           = "when" expr "then" expr
+unary-op =
+    "+" / "-"
 
-scalar-subquery     = "(" select ")"
+cast-expr =
+    primary-expr *(S "::" S ident)
 
-parenthesized-expr  = "(" expr ")"
+primary-expr =
+    function-call
+  / star-function-call
+  / case-expr
+  / scalar-subquery
+  / parenthesized-expr
+  / simple-expr
 
-over-clause         = "over" "(" [order-by-clause-inner] ")"
-order-by-clause-inner
-                    = "order" "by" sort-item *("," sort-item)
+function-call =
+    qualified-name
+    S "(" S [expr-list S] ")"
+    [S over-clause]
 
-simple-expr         = qualified-name
-                    / number
-                    / string
-                    / null-literal
-                    / true-literal
-                    / false-literal
+star-function-call =
+    qualified-name
+    S "(" S "*" S ")"
+    [S over-clause]
+
+case-expr =
+    "case"
+    *(R case-item)
+    [R "else" R expr]
+    R "end"
+
+case-item =
+    "when" R expr R "then" R expr
+
+scalar-subquery =
+    "(" S select S ")"
+
+parenthesized-expr =
+    "(" S expr S ")"
+
+over-clause =
+    "over" S "(" S [order-by-clause-inner] S ")"
+
+order-by-clause-inner =
+    "order" R "by" R sort-item *(S "," S sort-item)
+
+simple-expr =
+    qualified-name
+  / number
+  / string
+  / null-literal
+  / true-literal
+  / false-literal
 
 
 ; =========================
 ; Relations / FROM items
 ; =========================
 
-table-reference     = joined-table
+table-reference =
+    joined-table
 
-joined-table        = table-factor *(join-clause table-factor)
+joined-table =
+    table-factor
+    *(R [join-type R] "join" R table-factor [R "on" R expr])
 
-table-factor        = table-primary [alias-clause]
+table-factor =
+    table-primary [R alias-clause]
 
-alias-clause        = ["as"] ident
+alias-clause =
+    ["as" R] ident
 
-table-primary       = qualified-name
-                    / "(" select ")"
-                    / "(" joined-table ")"
+table-primary =
+    qualified-name
+  / "(" S select S ")"
+  / "(" S joined-table S ")"
 
-join-clause         = [join-type] "join" ["on" expr]
-
-join-type           = "inner"
-                    / "left" ["outer"]
-                    / "right" ["outer"]
-                    / "full" ["outer"]
-                    / "cross"
-                    / "natural"
+join-type =
+    "inner"
+  / "left" [R "outer"]
+  / "right" [R "outer"]
+  / "full" [R "outer"]
+  / "cross"
+  / "natural"
 
 
 ; =========================
 ; Names / literals
 ; =========================
 
-qualified-name      = ident *("." ident)
+qualified-name =
+    ident *(S "." S ident)
 
-ident-list          = ident *("," ident)
+ident-list =
+    ident *(S "," S ident)
 
-ident               = quoted-ident / unquoted-ident
+ident =
+    quoted-ident / unquoted-ident
 
-unquoted-ident      = "left"
-                    / "right"
-                    / regular-ident
+unquoted-ident =
+    "left"
+  / "right"
+  / regular-ident
 
-quoted-ident        = DQUOTE *(quoted-ident-char / 2DQUOTE) DQUOTE
+quoted-ident =
+    DQUOTE *(quoted-ident-char / DQUOTE DQUOTE) DQUOTE
 
-regular-ident       = ident-start *ident-char
-ident-start         = ALPHA / "_"
-ident-char          = ALPHA / DIGIT / "_" / "@" / ":" / "$"
+regular-ident =
+    ident-start *ident-char
 
-number              = float-value / decimal-value / integer-value
+ident-start =
+    ALPHA / "_"
 
-integer-value       = 1*DIGIT
+ident-char =
+    ALPHA / DIGIT / "_" / "@" / ":" / "$"
 
-decimal-value       = (1*DIGIT "." *DIGIT)
-                    / ("." 1*DIGIT)
+number =
+    float-value / decimal-value / integer-value
 
-float-value         = (1*DIGIT ["." *DIGIT] exponent)
-                    / ("." 1*DIGIT exponent)
+integer-value =
+    1*DIGIT
 
-exponent            = ("e" / "E") ["+" / "-"] 1*DIGIT
+decimal-value =
+    (1*DIGIT "." *DIGIT)
+  / ("." 1*DIGIT)
 
-string              = squote *(string-char / 2squote) squote
+float-value =
+    (1*DIGIT ["." *DIGIT] exponent)
+  / ("." 1*DIGIT exponent)
 
-null-literal        = "null"
-true-literal        = "true"
-false-literal       = "false"
+exponent =
+    ("e" / "E") ["+" / "-"] 1*DIGIT
 
-set-quantifier      = "distinct" / "all"
+string =
+    squote *(string-char / squote squote) squote
 
-cmp-op              = "=" / "!=" / "<>" / "<=" / "<" / ">=" / ">"
+null-literal =
+    "null"
 
-string-char         = %x00-26 / %x28-7F
-quoted-ident-char   = %x00-21 / %x23-7F
+true-literal =
+    "true"
 
-squote              = %x27
-DQUOTE              = %x22
+false-literal =
+    "false"
+
+set-quantifier =
+    "distinct" / "all"
+
+cmp-op =
+    "=" / "!=" / "<>" / "<=" / "<" / ">=" / ">"
+
+
+; =========================
+; Skipping / comments
+; =========================
+
+comment =
+    line-comment / block-comment
+
+line-comment =
+    "--" *not-eol [CR] [LF]
+
+block-comment =
+    "/*" *block-comment-unit "*/"
+
+block-comment-unit =
+    block-comment-non-star
+  / "*" block-comment-non-slash
+
+block-comment-non-star =
+    %x00-29 / %x2B-7F
+
+block-comment-non-slash =
+    %x00-2E / %x30-7F
+
+not-eol =
+    %x00-09 / %x0B-0C / %x0E-7F
+
+WS =
+    SP / HTAB / CR / LF
+
+
+; =========================
+; Character classes
+; =========================
+
+string-char =
+    %x00-26 / %x28-7F
+
+quoted-ident-char =
+    %x00-21 / %x23-7F
+
+squote =
+    %x27
+
+DQUOTE =
+    %x22

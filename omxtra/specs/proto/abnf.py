@@ -1,5 +1,6 @@
 import os.path
 
+from omlish import check
 from omlish.text import abnf
 
 
@@ -9,10 +10,10 @@ def _main() -> None:
 
     gram = abnf.parse_grammar(gram_src, root='proto-file')
 
-    with open(os.path.join(os.path.dirname(__file__), 'addressbook.proto')) as f:
+    with open(os.path.join(os.path.dirname(__file__), 'tests', 'examples', 'addressbook.proto')) as f:
         addressbook_src = f.read()
 
-    addressbook = gram.parse(addressbook_src)
+    addressbook = check.not_none(gram.parse(addressbook_src))
     addressbook = abnf.only_match_rules(addressbook)
 
     print(addressbook.render(indent=2))
