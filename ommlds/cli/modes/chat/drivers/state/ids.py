@@ -1,5 +1,4 @@
 from ...... import minichain as mc
-from .storage import StateStorage
 
 
 ##
@@ -12,7 +11,7 @@ class LastChatIdManager:
     def __init__(
             self,
             *,
-            state_storage: StateStorage,
+            state_storage: 'mc.drivers.StateStorage',
     ) -> None:
         super().__init__()
 

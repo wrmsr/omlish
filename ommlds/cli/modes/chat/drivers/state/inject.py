@@ -3,15 +3,15 @@ TODO:
  - given chat-id + ephemeral = continue in mem
  - fork chats
 """
+import os.path
 import uuid
 
+from omdev.home.paths import get_home_paths
 from omlish import inject as inj
 
 from ...... import minichain as mc
 from .configs import StateConfig
 from .ids import LastChatIdManager
-from .storage import StateStorageDriverStateManager
-from .storage import build_driver_storage_key
 
 
 ##
@@ -28,8 +28,45 @@ async def _get_last_or_new_chat_id(lcim: LastChatIdManager) -> mc.drivers.ChatId
 ##
 
 
+def _ensure_state_dir() -> str:
+    state_dir = os.path.join(get_home_paths().state_dir, 'minichain', 'cli')
+    if not os.path.exists(state_dir):
+        os.makedirs(state_dir, exist_ok=True)
+        os.chmod(state_dir, 0o770)  # noqa
+
+    return state_dir
+
+
+def _provide_json_file_state_storage() -> 'mc.drivers.StateStorage':
+    state_dir = _ensure_state_dir()
+    state_file = os.path.join(state_dir, 'state.json')
+    return mc.drivers.JsonFileStateStorage(state_file)
+
+
+def _provide_sql_state_storage() -> 'mc.drivers.StateStorage':
+    state_dir = _ensure_state_dir()
+    state_file = os.path.join(state_dir, 'state.db')
+    return mc.drivers.SqlStateStorage(mc.drivers.SqlStateStorage.Config(
+        file=state_file,
+    ))
+
+
+##
+
+
 def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
+
+    #
+
+    if cfg.format == 'json':
+        els.append(inj.bind(_provide_json_file_state_storage, singleton=True))
+    elif cfg.format == 'sql':
+        els.append(inj.bind(_provide_sql_state_storage, singleton=True))
+    else:
+        raise ValueError(cfg.format)
+
+    #
 
     if cfg.state in ('continue', 'new'):
         if cfg.state == 'new':
@@ -42,8 +79,8 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
             els.append(inj.bind(mc.drivers.ChatId, to_async_fn=_get_last_or_new_chat_id, singleton=True))
 
         els.extend([
-            inj.bind(build_driver_storage_key),
-            inj.bind(mc.drivers.StateManager, to_ctor=StateStorageDriverStateManager, singleton=True),
+            inj.bind(mc.drivers.build_driver_storage_key),
+            inj.bind(mc.drivers.StateManager, to_ctor=mc.drivers.StateStorageDriverStateManager, singleton=True),
         ])
 
         #

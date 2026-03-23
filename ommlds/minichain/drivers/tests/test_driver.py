@@ -13,8 +13,8 @@ from ...chat.messages import AiMessage
 from ..configs import DriverConfig
 from ..inject import bind_driver
 from ..state.inmemory import InMemoryStateManager
+from ..state.manager import StateManager
 from ..state.types import ChatId
-from ..state.types import StateManager
 from ..types import Driver
 from ..user.configs import UserConfig
 

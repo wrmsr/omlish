@@ -8,7 +8,6 @@ from .modes.configs import ModeConfig
 with lang.auto_proxy_import(globals()):
     from . import asyncs
     from .modes import inject as _modes
-    from .state import inject as _state
 
 
 ##
@@ -35,8 +34,6 @@ def bind_main(
             mode_cfg,
             profile_name=profile_name,
         ),
-
-        _state.bind_state(),
     ])
 
     #

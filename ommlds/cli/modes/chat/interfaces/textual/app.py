@@ -290,6 +290,8 @@ class ChatApp(
 
         self._input_container.input_text_area.focus()
 
+        await self._messages_container.mount_messages()
+
     async def on_unmount(self) -> None:
         if (cat := self._chat_action_queue_task) is not None:
             await self._chat_action_queue.put(None)

@@ -5,7 +5,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
-from .storage import StateStorage
+from .types import StateStorage
 
 
 T = ta.TypeVar('T')

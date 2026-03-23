@@ -16,7 +16,7 @@ from .events.manager import EventsManager
 from .phases.manager import PhaseManager
 from .phases.types import Phase
 from .preparing.types import ChatPreparer
-from .state.types import StateManager
+from .state.manager import StateManager
 from .types import Action
 from .types import Driver
 from .user.events import UserMessagesEvent

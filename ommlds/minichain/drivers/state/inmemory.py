@@ -2,8 +2,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ...chat.messages import Chat
+from .manager import StateManager
 from .types import State
-from .types import StateManager
 
 
 ##

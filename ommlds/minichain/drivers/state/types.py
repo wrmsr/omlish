@@ -1,6 +1,4 @@
-import abc
 import datetime
-import typing as ta
 import uuid
 
 from omlish import dataclasses as dc
@@ -30,16 +28,3 @@ class State:
     chat: Chat = ()
 
     # raw_chats: ta.Sequence[ta.Any] | None = None
-
-
-##
-
-
-class StateManager(lang.Abstract):
-    @abc.abstractmethod
-    def get_state(self) -> ta.Awaitable[State]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def extend_chat(self, chat_additions: Chat) -> ta.Awaitable[State]:
-        raise NotImplementedError
