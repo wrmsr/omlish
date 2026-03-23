@@ -33,6 +33,8 @@ class ObjectUnmarshaler(Unmarshaler):
 
     ignore_unknown: bool = False
 
+    unwrap_if_single_field: FieldInfo | None = None
+
     @classmethod
     def make(
             cls,
@@ -63,7 +65,15 @@ class ObjectUnmarshaler(Unmarshaler):
     #
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        ma = check.isinstance(v, collections.abc.Mapping)
+        ma: collections.abc.Mapping
+        if isinstance(v, collections.abc.Mapping):
+            ma = v
+
+        elif (usf := self.unwrap_if_single_field) is not None:
+            ma = {usf.unmarshal_names[0]: v}
+
+        else:
+            raise TypeError(v)
 
         u: ta.Any
         kw: dict[str, ta.Any] = {}

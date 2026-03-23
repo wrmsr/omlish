@@ -27,6 +27,8 @@ class ObjectMarshaler(Marshaler):
 
     attr_getter: ta.Callable[[ta.Any, str], ta.Any] | None = None
 
+    unwrap_if_single_field: FieldInfo | None = None
+
     @classmethod
     def make(
             cls,
@@ -79,6 +81,11 @@ class ObjectMarshaler(Marshaler):
                     raise KeyError(f'Unknown field keys duplicate fields: {dks!r}')
 
             ret.update(ukf)  # FIXME: marshal?
+
+        if (usf := self.unwrap_if_single_field) is not None and len(ret) == 1:
+            skk, skv = next(iter(ret.items()))
+            if skk == usf.marshal_name and not isinstance(skv, collections.abc.Mapping):
+                ret = skv
 
         return ret
 

@@ -1,6 +1,7 @@
 import typing as ta
 
 from ... import cached
+from ... import check
 from ... import collections as col
 from ... import dataclasses as dc
 from .api import DEFAULT_FIELD_OPTIONS
@@ -22,7 +23,7 @@ class FieldInfo:
     type: ta.Any
 
     marshal_name: str | None
-    unmarshal_names: ta.Sequence[str]
+    unmarshal_names: ta.Sequence[str] = dc.xfield(coerce=check.of_not_isinstance(str))
 
     options: FieldOptions = DEFAULT_FIELD_OPTIONS
 

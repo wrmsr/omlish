@@ -99,6 +99,7 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
     )
 
     from .reflection import (  # noqa
+        ClassReflection,
         reflect,
     )
 

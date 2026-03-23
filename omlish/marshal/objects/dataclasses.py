@@ -42,6 +42,8 @@ class _FieldInfoBuilder:
             self,
             ty: type,
             opts: col.TypeMap[Option] | None = None,
+            *,
+            dc_rfl: dc.ClassReflection | None = None,
     ) -> None:
         self.ty = ty
         if opts is None:
@@ -50,7 +52,9 @@ class _FieldInfoBuilder:
 
         self.obj_md = get_dataclass_options(ty)
         self.class_naming = self.obj_md.field_naming or opts.get(Naming)
-        self.dc_rfl = dc.reflect(ty)
+        if dc_rfl is None:
+            dc_rfl = dc.reflect(ty)
+        self.dc_rfl = dc_rfl
         self.type_hints = ta.get_type_hints(ty)
 
     def build_field_info(self, field: dc.Field) -> FieldInfo:
@@ -202,7 +206,8 @@ class _DataclassMarshalerBuilder:
         check.state(not lang.is_abstract_class(ty))
 
         dc_md = get_dataclass_options(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.options)
+        dc_rfl = dc.reflect(ty)
+        fib = _FieldInfoBuilder(ty, self.ctx.options, dc_rfl=dc_rfl)
         fis = fib.build_field_infos()
 
         fields = [
@@ -211,12 +216,14 @@ class _DataclassMarshalerBuilder:
             if fi.name not in dc_md.specials.set
         ]
 
-        if dc_md.unwrap_if_single_field is not None:
-            raise NotImplementedError
+        unwrap_if_single_field: FieldInfo | None = None
+        if dc_md.unwrap_if_single_field in ('marshal', True):
+            unwrap_if_single_field = fields[0][0]
 
         return ObjectMarshaler(
             fields,
             specials=dc_md.specials,
+            unwrap_if_single_field=unwrap_if_single_field,
         )
 
     def _make_field_marshal_obj(self, fi: FieldInfo) -> Marshaler:
@@ -271,7 +278,8 @@ class _DataclassUnmarshalerBuilder:
         check.state(not lang.is_abstract_class(ty))
 
         dc_md = get_dataclass_options(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.options)
+        dc_rfl = dc.reflect(ty)
+        fib = _FieldInfoBuilder(ty, self.ctx.options, dc_rfl=dc_rfl)
         fis = fib.build_field_infos()
 
         for fi in fis:
@@ -279,8 +287,9 @@ class _DataclassUnmarshalerBuilder:
                 continue
             self._add_field(fi)
 
-        if dc_md.unwrap_if_single_field is not None:
-            raise NotImplementedError
+        unwrap_if_single_field: FieldInfo | None = None
+        if dc_md.unwrap_if_single_field in ('unmarshal', True):
+            unwrap_if_single_field = next(iter(self._fields_dct.values()))[0]
 
         return ObjectUnmarshaler(
             ty,
@@ -290,6 +299,7 @@ class _DataclassUnmarshalerBuilder:
             embeds=self._embeds,
             embeds_by_unmarshal_name=self._embeds_by_unmarshal_name,
             ignore_unknown=bool(dc_md.ignore_unknown),
+            unwrap_if_single_field=unwrap_if_single_field,
         )
 
     def _add_field(self, fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:

@@ -2,6 +2,7 @@
 import typing as ta
 
 from .... import dataclasses as dc
+from .... import lang
 from ....lite import marshal as lmsh
 from ...api.contexts import MarshalContext
 from ...api.contexts import MarshalFactoryContext
@@ -11,6 +12,7 @@ from ...globals import marshal
 from ...globals import unmarshal
 from ...standard import new_standard_unmarshaler_factory
 from ...trivial.nop import NOP_MARSHALER_UNMARSHALER
+from ..api import FieldOptions
 from ..api import ObjectSpecials
 from ..helpers import update_fields_options
 from ..helpers import update_object_options
@@ -214,12 +216,15 @@ def test_lite_omit_if_none():
 ##
 
 
-# def test_collapse_single_field():
-#     @dc.dataclass
-#     @update_object_options(unwrap_if_single_field=True)
-#     class Junk:
-#         a: str
-#         b: ta.Optional[int] = None
-#
-#     assert marshal(Junk('A')) == 'A'
-#     assert marshal(Junk('A', 2)) == {'a': 'a', 'b': 2}
+def test_unwrap_if_single_field():
+    @dc.dataclass
+    @update_object_options(unwrap_if_single_field=True, field_defaults=FieldOptions(omit_if=lang.is_none))
+    class Junk:
+        a: str
+        b: ta.Optional[int] = None
+
+    assert (mv := marshal(uv := Junk('A'))) == 'A'
+    assert unmarshal(mv, Junk) == uv
+
+    assert (mv := marshal(uv := Junk('A', 2))) == {'a': 'A', 'b': 2}
+    assert unmarshal(mv, Junk) == uv
