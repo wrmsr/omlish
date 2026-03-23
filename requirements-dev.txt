@@ -31,7 +31,7 @@ types-ujson==5.10.0.20250822
 
 black==26.3.1
 mypy==1.19.1
-pipdeptree==2.32.0
+pipdeptree==2.33.0
 
 astpretty==3.0.0
 

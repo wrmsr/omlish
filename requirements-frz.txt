@@ -134,7 +134,7 @@ lark==1.3.1
 lazy-loader==0.5
 librt==0.8.1
 linkify-it-py==2.1.0
-llama_cpp_python==0.3.16
+llama_cpp_python==0.3.17
 lsprotocol==2025.0.0
 lxml==6.0.2
 lxml-stubs==0.5.1
@@ -186,7 +186,7 @@ pcpp==1.30
 pexpect==4.9.0
 pg8000==1.31.5
 pillow==12.1.1
-pipdeptree==2.32.0
+pipdeptree==2.33.0
 platformdirs==4.9.4
 playwright==1.58.0
 pluggy==1.6.0
