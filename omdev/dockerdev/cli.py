@@ -21,6 +21,7 @@ TODO:
 if [ -t 1 ] ; then TTY_ENV_ARGS="-e LINES=$(tput lines) -e COLUMNS=$(tput cols)" ; fi
 --detach-keys 'ctrl-o,ctrl-d' \
 """
+import json
 import os.path
 import platform
 import re
@@ -32,6 +33,7 @@ import tomllib
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
@@ -87,10 +89,21 @@ class Cli(ap.Cli):
             self,
             cfg: Config | None = None,
             *,
+            offline: bool = False,
             verbose: bool = False,
     ) -> str:
         if cfg is None:
             cfg = self._load_config()
+
+        if offline:
+            out = subprocess.check_output(['docker', 'image', 'inspect', cfg.base_image]).decode()
+            out_obj = json.loads(out)
+            out_dct = check.not_empty(out_obj)[0]
+            obi = check.non_empty_str(out_dct['Id'])
+            bim = cfg.base_image
+            for sep in ':@':
+                bim = bim.split(sep, maxsplit=1)[0]
+            cfg = dc.replace(cfg, base_image=f'{bim}@{obi}')
 
         src = gen_src(cfg)
 
@@ -99,7 +112,15 @@ class Cli(ap.Cli):
         with open(df, 'w') as f:
             f.write(src)
 
-        build_args = ['-f', df, '.']
+        build_args = [
+            '-f',
+            df,
+        ]
+
+        if offline:
+            build_args.append('--pull=false')
+
+        build_args.append('.')
 
         if not verbose:
             out = subprocess.check_output(['docker', 'build', '-q', *build_args]).decode()
@@ -135,6 +156,8 @@ class Cli(ap.Cli):
 
         ap.arg('-P', '--privileged', action='store_true'),
 
+        ap.arg('-O', '--offline', action='store_true'),
+
         ap.arg('--no-host-platform', action='store_true'),
 
         ap.arg('-x', '--autoexec', action='append'),
@@ -149,6 +172,7 @@ class Cli(ap.Cli):
 
         sha = self._build(
             cfg,
+            offline=self.args.offline,
             verbose=self.args.verbose,
         )
 
@@ -167,6 +191,9 @@ class Cli(ap.Cli):
         if self.args.privileged:
             run_args.append('--privileged')
 
+        if self.args.offline:
+            run_args.append('--pull=never')
+
         if self.args.mount:
             run_args.extend([f'--mount={m}' for m in self.args.mount])
 
@@ -182,7 +209,7 @@ class Cli(ap.Cli):
                 run_args.append(f'--mount=type=bind,src={cld},dst={cr}')
 
         if not self.args.no_host_platform:
-            run_args.extend(['-e', f'DOCKER_HOST_PLATFORM={platform.system().lower()}'])
+            run_args.extend([f'--env=DOCKER_HOST_PLATFORM={platform.system().lower()}'])
 
         if self.args.autoexec:
             tmp_dir = tempfile.mkdtemp()
@@ -203,7 +230,7 @@ class Cli(ap.Cli):
         run_args.append(sha)
 
         if self.args.args:
-            check.not_empty(self.args.args)
+            run_args.extend(check.not_empty(self.args.args))
         else:
             run_args.append('bash')
 

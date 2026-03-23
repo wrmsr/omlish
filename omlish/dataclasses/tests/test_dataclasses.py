@@ -512,3 +512,28 @@ def test_allow_dynamic_dunder_attrs():
         b.s = 'bar'  # type: ignore  # noqa
     b.__s__ = 'bar'  # type: ignore  # noqa
     assert b.__s__ == 'bar'  # type: ignore
+
+
+def test_install_class_field_attrs():
+    @dc.dataclass()
+    @dc.extra_class_params(install_class_field_attrs=True)
+    class A:
+        x: int
+        y: str = 'foo'
+
+    dct = {f.name: f for f in dc.fields(A)}
+    assert A.x is dct['x']
+    assert A.y is dct['y']
+
+    @dc.dataclass(frozen=True)
+    @dc.extra_class_params(install_class_field_attrs=True)
+    class B:
+        x: int
+        y: str = 'foo'
+
+    dct = {f.name: f for f in dc.fields(B)}
+    assert B.x is dct['x']
+    assert B.y is dct['y']
+
+    with pytest.raises(dc.FrozenInstanceError):
+        B(4).y = 'bar'  # type: ignore[misc]  # noqa

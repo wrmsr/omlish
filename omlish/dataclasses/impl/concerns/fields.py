@@ -117,3 +117,10 @@ class FieldsProcessor(Processor):
         check.not_none(self._ctx[StdFields])
         for f in self._ctx.cs.fields:
             check.arg(not f.name.startswith(IDENT_PREFIX))
+
+    def process(self, cls: type) -> type:
+        if self._ctx.cs.install_class_field_attrs:
+            fld_dct = self._ctx.cls.__dict__[STD_FIELDS_ATTR]
+            for fn, f in fld_dct.items():
+                setattr(cls, fn, f)
+        return cls

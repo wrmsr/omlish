@@ -51,12 +51,15 @@ def make_dataclass(  # noqa
         generic_init: bool | None = None,
         override: bool | None = None,
         allow_dynamic_dunder_attrs: bool | None = None,
+        install_class_field_attrs: bool | None = None,
 
         repr_id: bool | None = None,
         terse_repr: bool | None = None,
         default_repr_fn: ReprFn | None = None,
 
         allow_redundant_decorator: bool | None = None,
+
+        #
 
         _frame_offset: int = 1,
 ):
@@ -173,6 +176,7 @@ def make_dataclass(  # noqa
         generic_init=generic_init,
         override=override,
         allow_dynamic_dunder_attrs=allow_dynamic_dunder_attrs,
+        install_class_field_attrs=install_class_field_attrs,
 
         repr_id=repr_id,
         terse_repr=terse_repr,
