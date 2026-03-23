@@ -209,3 +209,17 @@ def test_lite_omit_if_none():
 
     assert marshal(Junk('a', 'b', 'c')) == {'a': 'a', 'b': 'b', 'c': 'c'}
     assert marshal(Junk('a', None, None)) == {'a': 'a', 'b': None}
+
+
+##
+
+
+# def test_collapse_single_field():
+#     @dc.dataclass
+#     @update_object_options(unwrap_if_single_field=True)
+#     class Junk:
+#         a: str
+#         b: ta.Optional[int] = None
+#
+#     assert marshal(Junk('A')) == 'A'
+#     assert marshal(Junk('A', 2)) == {'a': 'a', 'b': 2}

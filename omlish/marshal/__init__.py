@@ -150,7 +150,6 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .objects.dataclasses import (  # noqa
-        AbstractDataclassFactory,
         DataclassMarshalerFactory,
         DataclassUnmarshalerFactory,
         get_dataclass_field_infos,

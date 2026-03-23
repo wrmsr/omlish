@@ -173,10 +173,7 @@ def get_dataclass_field_infos(
         ty: type,
         opts: col.TypeMap[Option] | None = None,
 ) -> FieldInfos:
-    return _FieldInfoBuilder(
-        ty,
-        opts,
-    ).build_field_infos()
+    return _FieldInfoBuilder(ty, opts).build_field_infos()
 
 
 ##
@@ -218,24 +215,6 @@ def _make_field_unmarshal_obj(
     return ctx.make_unmarshaler(ty)
 
 
-##
-
-
-class AbstractDataclassFactory(lang.Abstract):
-    def _get_options(self, ty: type) -> ObjectOptions:
-        return get_dataclass_options(ty)
-
-    def _get_field_infos(
-            self,
-            ty: type,
-            opts: col.TypeMap[Option] | None = None,
-    ) -> FieldInfos:
-        return get_dataclass_field_infos(ty, opts)
-
-
-##
-
-
 def _type_or_generic_base(rty: rfl.Type) -> type | None:
     if isinstance(rty, rfl.Generic):
         return rty.cls
@@ -243,6 +222,54 @@ def _type_or_generic_base(rty: rfl.Type) -> type | None:
         return rty
     else:
         return None
+
+
+##
+
+
+class AbstractDataclassFactory(lang.Abstract):
+    pass
+
+
+##
+
+
+@dc.dataclass()
+class _DataclassMarshalerBuilder:
+    ctx: MarshalFactoryContext
+    rty: rfl.Type
+
+    def build_marshaler(self) -> Marshaler:
+        ty = check.isinstance(_type_or_generic_base(self.rty), type)
+        check.state(dc.is_dataclass(ty))
+        check.state(not lang.is_abstract_class(ty))
+
+        dc_md = get_dataclass_options(ty)
+        fib = _FieldInfoBuilder(ty, self.ctx.options)
+        fis = fib.build_field_infos()
+
+        fields = [
+            (
+                fi,
+                _make_field_marshal_obj(
+                    self.ctx,
+                    fi.type,
+                    fi.options.marshaler,
+                    fi.options.marshaler_factory,
+                    fi.options.marshal_as,
+                ),
+            )
+            for fi in fis
+            if fi.name not in dc_md.specials.set
+        ]
+
+        if dc_md.unwrap_if_single_field is not None:
+            raise NotImplementedError
+
+        return ObjectMarshaler(
+            fields,
+            specials=dc_md.specials,
+        )
 
 
 class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
@@ -255,37 +282,91 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
             return None
 
         def inner() -> Marshaler:
-            ty = check.isinstance(_type_or_generic_base(rty), type)
-            check.state(dc.is_dataclass(ty))
-            check.state(not lang.is_abstract_class(ty))
-
-            dc_md = self._get_options(ty)
-            fis = self._get_field_infos(ty, ctx.options)
-
-            fields = [
-                (
-                    fi,
-                    _make_field_marshal_obj(
-                        ctx,
-                        fi.type,
-                        fi.options.marshaler,
-                        fi.options.marshaler_factory,
-                        fi.options.marshal_as,
-                    ),
-                )
-                for fi in fis
-                if fi.name not in dc_md.specials.set
-            ]
-
-            return ObjectMarshaler(
-                fields,
-                specials=dc_md.specials,
-            )
+            return _DataclassMarshalerBuilder(ctx, rty).build_marshaler()
 
         return inner
 
 
 ##
+
+
+@dc.dataclass()
+class _DataclassUnmarshalerBuilder:
+    ctx: UnmarshalFactoryContext
+    rty: rfl.Type
+
+    def build_unmarshaler(self) -> Unmarshaler:
+        ty = check.isinstance(_type_or_generic_base(self.rty), type)
+        check.state(dc.is_dataclass(ty))
+        check.state(not lang.is_abstract_class(ty))
+
+        dc_md = get_dataclass_options(ty)
+        fib = _FieldInfoBuilder(ty, self.ctx.options)
+        fis = fib.build_field_infos()
+
+        d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
+        defaults: dict[str, ta.Any] = {}
+        embeds: dict[str, type] = {}
+        embeds_by_unmarshal_name: dict[str, tuple[str, str]] = {}
+
+        def add_field(fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
+            ret: list[str] = []
+
+            if fi.options.embed:
+                e_ty = check.isinstance(fi.type, type)
+                check.state(dc.is_dataclass(e_ty))
+                e_dc_md = get_dataclass_options(e_ty)
+                if e_dc_md.specials.set:
+                    raise Exception(f'Embedded fields cannot have specials: {e_ty}')
+
+                embeds[fi.name] = e_ty
+                for e_fi in _FieldInfoBuilder(e_ty, self.ctx.options).build_field_infos():
+                    e_ns = add_field(e_fi, prefixes=[p + ep for p in prefixes for ep in fi.unmarshal_names])
+                    embeds_by_unmarshal_name.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
+                    ret.extend(e_ns)
+
+            else:
+                tup = (
+                    fi,
+                    _make_field_unmarshal_obj(
+                        self.ctx,
+                        fi.type,
+                        fi.options.unmarshaler,
+                        fi.options.unmarshaler_factory,
+                        fi.options.unmarshal_as,
+                    ),
+                )
+
+                for pfx in prefixes:
+                    for un in fi.unmarshal_names:
+                        un = pfx + un
+                        if un in d:
+                            raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
+                        d[un] = tup
+                        ret.append(un)
+
+                if (dfl := fi.options.default) is not None and dfl.present:
+                    defaults[fi.name] = dfl.must()
+
+            return ret
+
+        for fi in fis:
+            if fi.name in dc_md.specials.set:
+                continue
+            add_field(fi)
+
+        if dc_md.unwrap_if_single_field is not None:
+            raise NotImplementedError
+
+        return ObjectUnmarshaler(
+            ty,
+            d,
+            specials=dc_md.specials,
+            defaults=defaults,
+            embeds=embeds,
+            embeds_by_unmarshal_name=embeds_by_unmarshal_name,
+            ignore_unknown=bool(dc_md.ignore_unknown),
+        )
 
 
 class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
@@ -298,72 +379,6 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
             return None
 
         def inner() -> Unmarshaler:
-            ty = check.isinstance(_type_or_generic_base(rty), type)
-            check.state(dc.is_dataclass(ty))
-            check.state(not lang.is_abstract_class(ty))
-
-            dc_md = self._get_options(ty)
-            fis = self._get_field_infos(ty, ctx.options)
-
-            d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
-            defaults: dict[str, ta.Any] = {}
-            embeds: dict[str, type] = {}
-            embeds_by_unmarshal_name: dict[str, tuple[str, str]] = {}
-
-            def add_field(fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
-                ret: list[str] = []
-
-                if fi.options.embed:
-                    e_ty = check.isinstance(fi.type, type)
-                    check.state(dc.is_dataclass(e_ty))
-                    e_dc_md = get_dataclass_options(e_ty)
-                    if e_dc_md.specials.set:
-                        raise Exception(f'Embedded fields cannot have specials: {e_ty}')
-
-                    embeds[fi.name] = e_ty
-                    for e_fi in self._get_field_infos(e_ty, ctx.options):
-                        e_ns = add_field(e_fi, prefixes=[p + ep for p in prefixes for ep in fi.unmarshal_names])
-                        embeds_by_unmarshal_name.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
-                        ret.extend(e_ns)
-
-                else:
-                    tup = (
-                        fi,
-                        _make_field_unmarshal_obj(
-                            ctx,
-                            fi.type,
-                            fi.options.unmarshaler,
-                            fi.options.unmarshaler_factory,
-                            fi.options.unmarshal_as,
-                        ),
-                    )
-
-                    for pfx in prefixes:
-                        for un in fi.unmarshal_names:
-                            un = pfx + un
-                            if un in d:
-                                raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
-                            d[un] = tup
-                            ret.append(un)
-
-                    if (dfl := fi.options.default) is not None and dfl.present:
-                        defaults[fi.name] = dfl.must()
-
-                return ret
-
-            for fi in fis:
-                if fi.name in dc_md.specials.set:
-                    continue
-                add_field(fi)
-
-            return ObjectUnmarshaler(
-                ty,
-                d,
-                specials=dc_md.specials,
-                defaults=defaults,
-                embeds=embeds,
-                embeds_by_unmarshal_name=embeds_by_unmarshal_name,
-                ignore_unknown=dc_md.ignore_unknown,
-            )
+            return _DataclassUnmarshalerBuilder(ctx, rty).build_unmarshaler()
 
         return inner
