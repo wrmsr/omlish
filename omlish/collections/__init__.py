@@ -112,9 +112,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .treap.treapmap import (  # noqa
-        TreapDict,
         TreapMap,
-        new_treap_dict,
         new_treap_map,
     )
 
