@@ -57,7 +57,7 @@ class TreapMap(PersistentMapping[K, V], SortedItems[K, V]):
         n = treap.find(self._n, (item, None), self._c)  # type: ignore
         if n is None:
             raise KeyError(item)
-        return n.value[1]
+        return n.value[1]  # type: ignore[return-value]
 
     def __iter__(self) -> ta.Iterator[K]:
         i = self.items()
@@ -79,23 +79,23 @@ class TreapMap(PersistentMapping[K, V], SortedItems[K, V]):
         return i
 
     def items_from(self, k: K) -> 'TreapMapIterator[K, V]':
-        lst = treap.place(self._n, (k, None), self._c, False)  # type: ignore
+        lst: list = treap.place(self._n, (k, None), self._c, False)  # type: ignore
         i = TreapMapIterator(_st=lst, _n=lst.pop() if lst else None)
         return i
 
     def items_from_desc(self, k: K) -> 'TreapMapReverseIterator[K, V]':
-        lst = treap.place(self._n, (k, None), self._c, True)  # type: ignore
+        lst: list = treap.place(self._n, (k, None), self._c, True)  # type: ignore
         i = TreapMapReverseIterator(_st=lst, _n=lst.pop() if lst else None)
         return i
 
     def with_(self, k: K, v: V) -> 'TreapMap[K, V]':
         node = treap.new((k, v))
-        n = treap.union(self._n, node, self._c, True)
+        n = treap.union(self._n, node, self._c, True)  # type: ignore[arg-type]
         return TreapMap(_n=n, _c=self._c)
 
     def without(self, k: K) -> 'TreapMap[K, V]':
         n = treap.delete(self._n, (k, None), self._c)  # type: ignore
-        return TreapMap(_n=n, _c=self._c)
+        return TreapMap(_n=n, _c=self._c)  # type: ignore[arg-type]
 
     def default(self, k: K, v: V) -> 'TreapMap[K, V]':
         try:
@@ -111,7 +111,7 @@ def new_treap_map(
         *,
         cmp: ta.Callable[[K, K], int] | None = None,
 ) -> TreapMap[K, V]:
-    m: TreapMap[K, V] = TreapMap(_n=None, _c=lang.key_cmp(cmp if cmp is not None else lang.cmp))
+    m: TreapMap[K, V] = TreapMap(_n=None, _c=lang.key_cmp(cmp))
     if items is not None:
         for k, v in items:
             m = m.with_(k, v)

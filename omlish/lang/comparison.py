@@ -12,7 +12,9 @@ def cmp(l: ta.Any, r: ta.Any) -> int:
     return int(l > r) - int(l < r)
 
 
-def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[tuple[K, V], tuple[K, V]], int]:
+def key_cmp(fn: ta.Callable[[K, K], int] | None = None) -> ta.Callable[[tuple[K, V], tuple[K, V]], int]:
+    if fn is None:
+        fn = cmp
     return lambda t0, t1: fn(t0[0], t1[0])
 
 
