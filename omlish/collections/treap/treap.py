@@ -29,7 +29,7 @@ Comparer: ta.TypeAlias = ta.Callable[[T, T], int]
 
 
 class TreapNode(ta.Generic[T]):
-    __slots__ = ('_value', '_priority', '_left', '_right')
+    __slots__ = ('_value', '_priority', '_left', '_right')  # , '_count')
 
     def __init__(
             self,
@@ -45,6 +45,14 @@ class TreapNode(ta.Generic[T]):
         self._priority = _priority
         self._left = _left
         self._right = _right
+        # self._set_count()
+
+    # def _set_count(self) -> None:
+    #     self._count = (
+    #         1 +
+    #         (self._left._count if self._left is not None else 0) +
+    #         (self._right._count if self._right is not None else 0)
+    #     )
 
     def __repr__(self) -> str:
         return f'TreapNode(value={self._value!r}, priority={self._priority!r})'
@@ -64,6 +72,10 @@ class TreapNode(ta.Generic[T]):
     @property
     def right(self) -> ta.Optional['TreapNode[T]']:
         return self._right
+
+    # @property
+    # def count(self) -> int:
+    #     return self._count
 
     def __iter__(self) -> ta.Iterator[T]:
         if self._left is not None:

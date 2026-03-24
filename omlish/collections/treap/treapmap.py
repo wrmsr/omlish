@@ -48,9 +48,10 @@ class TreapMap(PersistentMap[K, V], SortedItems[K, V]):
         self._n = _n
         self._c = _c
 
+    # def __len__(self) -> int:
+    #     return self._n.count if self._n is not None else 0
+
     def __len__(self) -> int:
-        # TODO: memo
-        # TODO: itertools lol
         if self._n is None:
             return 0
         result = 0
@@ -70,7 +71,7 @@ class TreapMap(PersistentMap[K, V], SortedItems[K, V]):
         n = treap.find(self._n, (item, None), self._c)  # type: ignore
         if n is None:
             raise KeyError(item)
-        return n.value
+        return n.value[1]
 
     def __iter__(self) -> ta.Iterator[K]:
         i = self.items()
@@ -101,7 +102,7 @@ class TreapMap(PersistentMap[K, V], SortedItems[K, V]):
         lst = treap.place(self._n, (k, None), self._c)  # type: ignore
         i = TreapMapIterator(
             _st=lst,
-            _n=lst.pop(),
+            _n=lst.pop() if lst else None,
         )
         return i
 
@@ -109,14 +110,14 @@ class TreapMap(PersistentMap[K, V], SortedItems[K, V]):
         lst = treap.place(self._n, (k, None), self._c, desc=True)  # type: ignore
         i = TreapMapReverseIterator(
             _st=lst,
-            _n=lst.pop(),
+            _n=lst.pop() if lst else None,
         )
         return i
 
     def with_(self, k: K, v: V) -> 'TreapMap[K, V]':
         node = treap.TreapNode(
             _value=(k, v),
-            _priority=int(random.random() * 0xFFFFFFFF),
+            _priority=random.getrandbits(32),
             _left=None,
             _right=None,
         )

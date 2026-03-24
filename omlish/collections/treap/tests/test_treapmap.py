@@ -24,7 +24,7 @@ def test_treapmap():
         print(it.next())
     print('===')
 
-    print(len(m))
+    assert len(m) == 36
     print('===')
 
     old = m.with_(500, 'five hundred')
