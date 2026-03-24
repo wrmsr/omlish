@@ -45,3 +45,6 @@
   dataclasses.
 - Before committing, run `make fix gen check` and ensure that succeeds, then rerun relevant pytests and ensure they
   pass.
+- As mentioned in `CODESTYLE.md` C/C++ extensions should have a `// @omlish-cext` header line, and otherwise need no
+  additional manual build wiring. After adding a new extension source file, run `make gen` to add it to the build, then
+  run `make build-cext` to build them in-place. It is not necessary to `make gen` after every source file modification.

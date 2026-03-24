@@ -79,7 +79,7 @@ ujson==5.12.0  # @omlish-venv !13t !13dt !14t !14dt  # https://github.com/ultraj
 
 markupsafe==3.0.3
 
-redis==7.3.0
+redis==7.4.0
 
 asgiref==3.11.1
 uvicorn==0.42.0
@@ -142,7 +142,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.74
+boto3>=1.42.75
 types-boto3>=1.42.74
 botocore-stubs>=1.42.41
 

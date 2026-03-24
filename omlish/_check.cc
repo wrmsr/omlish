@@ -224,12 +224,18 @@ static PyObject * BoundUnaryCheck_vectorcall(PyObject *callable, PyObject *const
     return BoundUnaryCheck_execute(self, v, msg);
 }
 
+static PyMemberDef BoundUnaryCheck_members[] = {
+    {"__vectorcalloffset__", T_PYSSIZET, offsetof(BoundUnaryCheck, vectorcall), READONLY, ""},
+    {nullptr}
+};
+
 static PyType_Slot BoundUnaryCheck_slots[] = {
-    {Py_tp_dealloc, (void *)BoundUnaryCheck_dealloc},
-    {Py_tp_traverse, (void *)BoundUnaryCheck_traverse},
-    {Py_tp_clear, (void *)BoundUnaryCheck_clear},
-    {Py_tp_call, (void *)BoundUnaryCheck_call},
-    {Py_tp_doc, (void *)"Bound unary check callable with C acceleration"},
+    {Py_tp_dealloc, (void *) BoundUnaryCheck_dealloc},
+    {Py_tp_traverse, (void *) BoundUnaryCheck_traverse},
+    {Py_tp_clear, (void *) BoundUnaryCheck_clear},
+    {Py_tp_call, (void *) BoundUnaryCheck_call},
+    {Py_tp_members, (void *) BoundUnaryCheck_members},
+    {Py_tp_doc, (void *) "Bound unary check callable with C acceleration"},
     {0, nullptr}
 };
 
@@ -487,11 +493,17 @@ static PyObject * BoundBinaryCheck_vectorcall(PyObject *callable, PyObject *cons
     return BoundBinaryCheck_execute(self, l, r, msg);
 }
 
+static PyMemberDef BoundBinaryCheck_members[] = {
+    {"__vectorcalloffset__", T_PYSSIZET, offsetof(BoundBinaryCheck, vectorcall), READONLY, ""},
+    {nullptr}
+};
+
 static PyType_Slot BoundBinaryCheck_slots[] = {
     {Py_tp_dealloc, (void *)BoundBinaryCheck_dealloc},
     {Py_tp_traverse, (void *)BoundBinaryCheck_traverse},
     {Py_tp_clear, (void *)BoundBinaryCheck_clear},
     {Py_tp_call, (void *)BoundBinaryCheck_call},
+    {Py_tp_members, (void *) BoundBinaryCheck_members},
     {Py_tp_doc, (void *)"Bound binary check callable with C acceleration"},
     {0, nullptr}
 };
@@ -601,7 +613,6 @@ static int check_exec(PyObject *module)
     if (state->BoundUnaryCheckType == nullptr) {
         return -1;
     }
-    state->BoundUnaryCheckType->tp_vectorcall_offset = offsetof(BoundUnaryCheck, vectorcall);
 
     // Create the BoundBinaryCheck type dynamically
     state->BoundBinaryCheckType = (PyTypeObject *)PyType_FromModuleAndSpec(
@@ -612,7 +623,6 @@ static int check_exec(PyObject *module)
     if (state->BoundBinaryCheckType == nullptr) {
         return -1;
     }
-    state->BoundBinaryCheckType->tp_vectorcall_offset = offsetof(BoundBinaryCheck, vectorcall);
 
     return 0;
 }
