@@ -2,7 +2,12 @@ import typing as ta
 
 from ... import check
 from ..persistent import PersistentMapping
-from . import _hamt  # type: ignore
+
+
+try:
+    from . import _hamt  # type: ignore
+except ImportError:
+    pass
 
 
 K = ta.TypeVar('K')
@@ -54,3 +59,12 @@ def new_hamt_map(items: ta.Iterable[tuple[K, V]] | None = None) -> HamtMap[K, V]
         for k, v in items:
             m = m.with_(k, v)
     return m
+
+
+def is_hamt_available() -> bool:
+    try:
+        _hamt  # noqa
+    except NameError:
+        return False
+    else:
+        return True

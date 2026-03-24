@@ -57,6 +57,12 @@ with _lang.auto_proxy_init(globals()):
         frozenlist,
     )
 
+    from .hamt.hamtmap import (  # noqa
+        HamtMap,
+        new_hamt_map,
+        is_hamt_available,
+    )
+
     from .hasheq import (  # noqa
         HashEq,
         HashEqMap,
