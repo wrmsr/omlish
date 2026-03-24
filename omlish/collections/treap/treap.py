@@ -18,6 +18,8 @@
 import random
 import typing as ta
 
+from ... import lang
+
 
 T = ta.TypeVar('T')
 
@@ -86,53 +88,84 @@ def _new_priority() -> int:
     return random.getrandbits(32)
 
 
-def new(value: T, *, priority: int | None = None) -> TreapNode[T]:
+def new(
+        value: T,
+        *,
+        priority: int | None = None,
+) -> TreapNode[T]:
     return TreapNode(_value=value, _priority=priority if priority is not None else _new_priority(), _left=None, _right=None)  # noqa
 
 
-def find(n: TreapNode[T] | None, v: T, c: Comparer[T]) -> TreapNode[T] | None:
+def find(
+        n: TreapNode[T] | None,
+        v: T,
+        c: Comparer[T] | None,
+) -> TreapNode[T] | None:
+    if c is None:
+        c = lang.cmp
+
     while True:
         if n is None:
             return None
+
         diff = c(n._value, v)  # noqa
+
         if diff == 0:
             return n
+
         elif diff < 0:
             n = n._right  # noqa
+
         else:
             n = n._left  # noqa
 
 
-def place(n: TreapNode[T] | None, v: T, c: Comparer[T], *, desc: bool = False) -> list[TreapNode[T]]:
+def place(
+        n: TreapNode[T] | None,
+        v: T,
+        c: Comparer[T] | None,
+        desc: bool,
+) -> list[TreapNode[T]]:
+    if c is None:
+        c = lang.cmp
+
     ret: list[TreapNode[T]] = []
+
     while True:
         if n is None:
             break
+
         diff = c(n._value, v)  # noqa
+
         if diff == 0:
             ret.append(n)
             break
+
         elif diff < 0:
             if desc:
                 ret.append(n)
             n = n._right  # noqa
+
         else:
             if not desc:
                 ret.append(n)
             n = n._left  # noqa
+
     return ret
 
 
 def union(
         n: TreapNode[T] | None,
         other: TreapNode[T] | None,
-        c: Comparer[T],
+        c: Comparer[T] | None,
         overwrite: bool,
 ) -> TreapNode[T] | None:
     if n is None:
         return other
+
     if other is None:
         return n
+
     if n._priority < other._priority:
         # If we are unioning Tree A (target) and Tree B (source), and overwrite=True (meaning B's values should replace
         # A's on a collision):
@@ -145,19 +178,23 @@ def union(
         # - By flipping overwrite = not overwrite (making it False), you prevent A from overwriting B, thus preserving
         #   B's value as the root.
         other, n, overwrite = n, other, not overwrite
+
     left, dupe, right = split(other, n._value, c)
+
     value = n._value
     if overwrite and dupe is not None:
         value = dupe._value
+
     left = union(n._left, left, c, overwrite)
     right = union(n._right, right, c, overwrite)
+
     return TreapNode(_value=value, _priority=n._priority, _left=left, _right=right)
 
 
 def split(
         n: TreapNode[T] | None,
         v: T,
-        c: Comparer[T],
+        c: Comparer[T] | None,
 ) -> tuple[
         TreapNode[T] | None,
         TreapNode[T] | None,
@@ -165,6 +202,9 @@ def split(
 ]:
     if n is None:
         return None, None, None
+
+    if c is None:
+        c = lang.cmp
 
     diff = c(n._value, v)
 
@@ -204,7 +244,7 @@ def split(
 def intersect(
         n: TreapNode[T] | None,
         other: TreapNode[T] | None,
-        c: Comparer[T],
+        c: Comparer[T] | None,
 ) -> TreapNode[T] | None:
     if n is None or other is None:
         return None
@@ -213,6 +253,7 @@ def intersect(
         n, other = other, n
 
     left, found, right = split(other, n._value, c)
+
     left = intersect(n._left, left, c)
     right = intersect(n._right, right, c)
 
@@ -228,24 +269,36 @@ def delete(n: TreapNode[T] | None, v: T, c: Comparer[T]) -> TreapNode[T] | None:
     return _join(left, right)
 
 
-def diff(n: TreapNode[T] | None, other: TreapNode[T] | None, c: Comparer[T]) -> TreapNode[T] | None:
+def diff(
+        n: TreapNode[T] | None,
+        other: TreapNode[T] | None,
+        c: Comparer[T] | None,
+) -> TreapNode[T] | None:
     if n is None or other is None:
         return n
 
     if n._priority >= other._priority:
         left, dupe, right = split(other, n._value, c)
+
         left, right = diff(n._left, left, c), diff(n._right, right, c)
+
         if dupe is not None:
             return _join(left, right)
+
         return TreapNode(_value=n._value, _priority=n._priority, _left=left, _right=right)
 
     left, _, right = split(n, other._value, c)
+
     left = diff(left, other._left, c)
     right = diff(right, other._right, c)
+
     return _join(left, right)
 
 
-def _join(n: TreapNode[T] | None, other: TreapNode[T] | None) -> TreapNode[T] | None:
+def _join(
+        n: TreapNode[T] | None,
+        other: TreapNode[T] | None,
+) -> TreapNode[T] | None:
     if n is None:
         return other
     if other is None:

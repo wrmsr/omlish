@@ -80,12 +80,12 @@ class TreapMap(PersistentMapping[K, V], SortedItems[K, V]):
         return i
 
     def items_from(self, k: K) -> 'TreapMapIterator[K, V]':
-        lst = treap.place(self._n, (k, None), self._c)  # type: ignore
+        lst = treap.place(self._n, (k, None), self._c, False)  # type: ignore
         i = TreapMapIterator(_st=lst, _n=lst.pop() if lst else None)
         return i
 
     def items_from_desc(self, k: K) -> 'TreapMapReverseIterator[K, V]':
-        lst = treap.place(self._n, (k, None), self._c, desc=True)  # type: ignore
+        lst = treap.place(self._n, (k, None), self._c, True)  # type: ignore
         i = TreapMapReverseIterator(_st=lst, _n=lst.pop() if lst else None)
         return i
 

@@ -212,30 +212,30 @@ def test_delete_missing_is_content_noop():
 def test_place_ascending_behavior():
     n = build_tree([10, 20, 30, 40, 50], seed=6)
 
-    lst = treap.place(n, 25, int_cmp)
+    lst = treap.place(n, 25, int_cmp, False)
     assert lst
     assert lst[-1].value == 30
 
-    lst2 = treap.place(n, 30, int_cmp)
+    lst2 = treap.place(n, 30, int_cmp, False)
     assert lst2
     assert lst2[-1].value == 30
 
-    lst3 = treap.place(n, 99, int_cmp)
+    lst3 = treap.place(n, 99, int_cmp, False)
     assert lst3 == []
 
 
 def test_place_descending_behavior():
     n = build_tree([10, 20, 30, 40, 50], seed=7)
 
-    lst = treap.place(n, 25, int_cmp, desc=True)
+    lst = treap.place(n, 25, int_cmp, True)
     assert lst
     assert lst[-1].value == 20
 
-    lst2 = treap.place(n, 30, int_cmp, desc=True)
+    lst2 = treap.place(n, 30, int_cmp, True)
     assert lst2
     assert lst2[-1].value == 30
 
-    lst3 = treap.place(n, -1, int_cmp, desc=True)
+    lst3 = treap.place(n, -1, int_cmp, True)
     assert lst3 == []
 
 
