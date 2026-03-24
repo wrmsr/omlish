@@ -52,13 +52,14 @@ class ReprGenerator(Generator[ReprPlan]):
 
         orm = {}
         rfs: list[ReprPlan.Field] = []
+        fnr_g = OpRef.numbered(len(fs))
         for i, f in enumerate(fs):
             if not (f.field_type is FieldType.INSTANCE and f.repr):
                 continue
 
             fnr: OpRef | None = None
             if f.repr_fn is not None:
-                fnr = OpRef(f'repr.fns.{i}.fn')
+                fnr = fnr_g('repr.fns.{i}.fn', i)
                 orm[fnr] = f.repr_fn
 
             rfs.append(ReprPlan.Field(

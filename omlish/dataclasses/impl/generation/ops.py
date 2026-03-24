@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
+from .... import check
 from .... import lang
 from .globals import FnGlobal
 from .idents import IDENT_PREFIX
@@ -34,6 +35,19 @@ class OpRef(_OpRef[T]):
         ident = IDENT_PREFIX + self.name.replace('.', '__')
         self._ident = ident  # noqa
         return ident
+
+    #
+
+    @classmethod
+    def numbered(cls, limit: int) -> ta.Callable[[str, int], 'OpRef[T]']:
+        z = len(str(limit))
+
+        def inner(s: str, i: int) -> 'OpRef[T]':
+            check.arg(i < limit)
+
+            return OpRef(s.format(i=str(i).zfill(z)))
+
+        return inner
 
 
 ##

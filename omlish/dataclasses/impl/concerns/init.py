@@ -93,7 +93,9 @@ class InitGenerator(Generator[InitPlan]):
             ann: ta.Any,
             ref_map: dict,
     ) -> InitPlan.Field:
-        ann_ref: OpRef = OpRef(f'init.fields.{i}.annotation')
+        ref_gen = OpRef.numbered(len(ctx.cs.fields))
+
+        ann_ref: OpRef = ref_gen('init.fields.{i}.annotation', i)
         ref_map[ann_ref] = ann
 
         default_ref: OpRef[ta.Any] | None = None
@@ -101,22 +103,22 @@ class InitGenerator(Generator[InitPlan]):
         if f.default.present:
             dfl = f.default.must()
             if isinstance(dfl, DefaultFactory):
-                default_factory_ref = OpRef(f'init.fields.{i}.default_factory')
+                default_factory_ref = ref_gen('init.fields.{i}.default_factory', i)
                 ref_map[default_factory_ref] = dfl.fn
             else:
-                default_ref = OpRef(f'init.fields.{i}.default')
+                default_ref = ref_gen('init.fields.{i}.default', i)
                 ref_map[default_ref] = dfl
 
         coerce: bool | OpRef[CoerceFn] | None = None
         if isinstance(f.coerce, bool):
             coerce = f.coerce
         elif f.coerce is not None:
-            coerce = OpRef(f'init.fields.{i}.coerce')
+            coerce = ref_gen('init.fields.{i}.coerce', i)
             ref_map[coerce] = f.coerce
 
         validate_ref: OpRef[ValidateFn] | None = None
         if f.validate is not None:
-            validate_ref = OpRef(f'init.fields.{i}.validate')
+            validate_ref = ref_gen('init.fields.{i}.validate', i)
             ref_map[validate_ref] = f.validate
 
         check_type_ref: OpRef[type | tuple[type, ...]] | None = None
@@ -130,7 +132,7 @@ class InitGenerator(Generator[InitPlan]):
                 check_type_arg = f.annotation
             else:
                 raise TypeError(f.check_type)
-            check_type_ref = OpRef(f'init.fields.{i}.check_type')
+            check_type_ref = ref_gen('init.fields.{i}.check_type', i)
             ref_map[check_type_ref] = check_type_arg
 
         return InitPlan.Field(
@@ -191,21 +193,26 @@ class InitGenerator(Generator[InitPlan]):
             if isinstance(v, property)
             and v.fget is not None
         }
-        init_fns: list[OpRef[InitFn]] = []
-        for i, init_fn in enumerate(ctx.cs.init_fns or []):
+
+        init_fns = ctx.cs.init_fns or []
+        init_fn_refs: list[OpRef[InitFn]] = []
+        init_fn_ref_gen = OpRef.numbered(len(init_fns))
+        for i, init_fn in enumerate(init_fns):
             if (obj_id := id(init_fn)) not in mro_v_ids and obj_id in props_by_fget_id:
                 init_fn = props_by_fget_id[obj_id].__get__
             elif isinstance(init_fn, property):
                 init_fn = init_fn.__get__
-            init_fn_ref: OpRef = OpRef(f'init.init_fns.{i}')
+            init_fn_ref: OpRef = init_fn_ref_gen('init.init_fns.{i}', i)
             ref_map[init_fn_ref] = init_fn
-            init_fns.append(init_fn_ref)
+            init_fn_refs.append(init_fn_ref)
 
-        validate_fns: list[InitPlan.ValidateFnWithParams] = []
-        for i, validate_fn in enumerate(ctx.cs.validate_fns or []):
-            validate_fn_ref: OpRef = OpRef(f'init.validate_fns.{i}')
+        validate_fns = ctx.cs.validate_fns or []
+        validate_fn_refs: list[InitPlan.ValidateFnWithParams] = []
+        validate_fn_ref_gen = OpRef.numbered(len(validate_fns))
+        for i, validate_fn in enumerate(validate_fns):
+            validate_fn_ref: OpRef = validate_fn_ref_gen('init.validate_fns.{i}', i)
             ref_map[validate_fn_ref] = validate_fn.fn
-            validate_fns.append(InitPlan.ValidateFnWithParams(
+            validate_fn_refs.append(InitPlan.ValidateFnWithParams(
                 fn=validate_fn_ref,
                 params=tuple(validate_fn.params),
             ))
@@ -228,9 +235,9 @@ class InitGenerator(Generator[InitPlan]):
 
                 post_init_params=post_init_params,
 
-                init_fns=tuple(init_fns),
+                init_fns=tuple(init_fn_refs),
 
-                validate_fns=tuple(validate_fns),
+                validate_fns=tuple(validate_fn_refs),
             ),
             ref_map,
         )

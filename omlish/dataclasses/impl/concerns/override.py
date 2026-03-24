@@ -38,10 +38,12 @@ class OverrideGenerator(Generator[OverridePlan]):
         orm = {}
 
         flds: list[OverridePlan.Field] = []
-        for i, f in enumerate(ctx[InstanceFields]):
+        ifs = ctx[InstanceFields]
+        r_g = OpRef.numbered(len(ifs))
+        for i, f in enumerate(ifs):
             if not (f.override or ctx.cs.override):
                 continue
-            r: OpRef = OpRef(f'override.fields.{i}.annotation')
+            r: OpRef = r_g('override.fields.{i}.annotation', i)
             orm[r] = f.annotation
             flds.append(OverridePlan.Field(
                 f.name,
