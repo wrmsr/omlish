@@ -121,9 +121,6 @@ class Cli(ap.Cli):
         obi = check.non_empty_str(insp_out_dct['RepoDigests'][0])
         cfg = dc.replace(cfg, base_image=obi)
 
-        # obi = check.non_empty_str(insp_out_dct['Id'])
-        # cfg = dc.replace(cfg, base_image=f'{bim}@{obi}')
-
         #
 
         src = gen_src(cfg)
