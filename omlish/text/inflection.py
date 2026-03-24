@@ -96,7 +96,8 @@ _SINGULARS: list[_RegexReplace] = [
     _RegexReplace(re.compile(r'(?i)s$'), ''),
 ]
 
-_UNCOUNTABLES: set[str] = {
+
+_UNCOUNTABLE_WORDS: set[str] = {
     'equipment',
     'fish',
     'information',
@@ -109,10 +110,19 @@ _UNCOUNTABLES: set[str] = {
 }
 
 
+def _uncountable_pat(s: str) -> re.Pattern[str]:
+    return re.compile(fr'(?i)\b({s})\Z')
+
+
+_UNCOUNTABLE_PATS: list[re.Pattern[str]] = [
+    _uncountable_pat(s) for s in _UNCOUNTABLE_WORDS
+]
+
+
 def _irregular(singular: str, plural: str) -> None:
     """A convenience function to add appropriate rules to plurals and singular for irregular words."""
 
-    def caseinsensitive(string: str) -> str:
+    def ci(string: str) -> str:
         return ''.join('[' + char + char.upper() + ']' for char in string)
 
     if singular[0].upper() == plural[0].upper():
@@ -131,27 +141,27 @@ def _irregular(singular: str, plural: str) -> None:
 
     else:
         _PLURALS.insert(0, _RegexReplace(
-            re.compile(fr'{singular[0].upper()}{caseinsensitive(singular[1:])}$'),
+            re.compile(fr'{singular[0].upper()}{ci(singular[1:])}$'),
             plural[0].upper() + plural[1:],
         ))
         _PLURALS.insert(0, _RegexReplace(
-            re.compile(fr'{singular[0].lower()}{caseinsensitive(singular[1:])}$'),
+            re.compile(fr'{singular[0].lower()}{ci(singular[1:])}$'),
             plural[0].lower() + plural[1:],
         ))
         _PLURALS.insert(0, _RegexReplace(
-            re.compile(fr'{plural[0].upper()}{caseinsensitive(plural[1:])}$'),
+            re.compile(fr'{plural[0].upper()}{ci(plural[1:])}$'),
             plural[0].upper() + plural[1:],
         ))
         _PLURALS.insert(0, _RegexReplace(
-            re.compile(fr'{plural[0].lower()}{caseinsensitive(plural[1:])}$'),
+            re.compile(fr'{plural[0].lower()}{ci(plural[1:])}$'),
             plural[0].lower() + plural[1:],
         ))
         _SINGULARS.insert(0, _RegexReplace(
-            re.compile(fr'{plural[0].upper()}{caseinsensitive(plural[1:])}$'),
+            re.compile(fr'{plural[0].upper()}{ci(plural[1:])}$'),
             singular[0].upper() + singular[1:],
         ))
         _SINGULARS.insert(0, _RegexReplace(
-            re.compile(fr'{plural[0].lower()}{caseinsensitive(plural[1:])}$'),
+            re.compile(fr'{plural[0].lower()}{ci(plural[1:])}$'),
             singular[0].lower() + singular[1:],
         ))
 
@@ -255,7 +265,7 @@ def parameterize(string: str, separator: str = '-') -> str:
 def pluralize(word: str) -> str:
     """Return the plural form of a word."""
 
-    if not word or word.lower() in _UNCOUNTABLES:
+    if not word or word.lower() in _UNCOUNTABLE_WORDS:
         return word
     else:
         for rule, replacement in _PLURALS:
@@ -267,8 +277,8 @@ def pluralize(word: str) -> str:
 def singularize(word: str) -> str:
     """Return the singular form of a word, the reverse of :func:`pluralize`."""
 
-    for inflection in _UNCOUNTABLES:
-        if re.search(fr'(?i)\b({inflection})\Z', word):
+    for pat in _UNCOUNTABLE_PATS:
+        if pat.search(word):
             return word
 
     for rule, replacement in _SINGULARS:
@@ -304,7 +314,7 @@ def titleize(word: str) -> str:
 def transliterate(string: str) -> str:
     """
     Replace non-ASCII characters with an ASCII approximation. If no approximation exists, the non-ASCII character is
-    ignored. The string must be ``unicode``.
+    ignored.
     """
 
     normalized = unicodedata.normalize('NFKD', string)
