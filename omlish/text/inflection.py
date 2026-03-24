@@ -26,72 +26,74 @@ import typing as ta
 import unicodedata
 
 
-RegexReplaceList: ta.TypeAlias = list[tuple[str, str]]
-
-
 ##
 
 
-_PLURALS: RegexReplaceList = [
-    (r'(?i)(quiz)$', r'\1zes'),
-    (r'(?i)^(oxen)$', r'\1'),
-    (r'(?i)^(ox)$', r'\1en'),
-    (r'(?i)(m|l)ice$', r'\1ice'),
-    (r'(?i)(m|l)ouse$', r'\1ice'),
-    (r'(?i)(passer)s?by$', r'\1sby'),
-    (r'(?i)(matr|vert|ind)(?:ix|ex)$', r'\1ices'),
-    (r'(?i)(x|ch|ss|sh)$', r'\1es'),
-    (r'(?i)([^aeiouy]|qu)y$', r'\1ies'),
-    (r'(?i)(hive)$', r'\1s'),
-    (r'(?i)([lr])f$', r'\1ves'),
-    (r'(?i)([^f])fe$', r'\1ves'),
-    (r'(?i)sis$', 'ses'),
-    (r'(?i)([ti])a$', r'\1a'),
-    (r'(?i)([ti])um$', r'\1a'),
-    (r'(?i)(buffal|potat|tomat)o$', r'\1oes'),
-    (r'(?i)(bu)s$', r'\1ses'),
-    (r'(?i)(alias|status)$', r'\1es'),
-    (r'(?i)(octop|vir)i$', r'\1i'),
-    (r'(?i)(octop|vir)us$', r'\1i'),
-    (r'(?i)^(ax|test)is$', r'\1es'),
-    (r'(?i)s$', 's'),
-    (r'$', 's'),
+class _RegexReplace(ta.NamedTuple):
+    pat: re.Pattern[str]
+    rpl: str
+
+
+_PLURALS: list[_RegexReplace] = [
+    _RegexReplace(re.compile(r'(?i)(quiz)$'), r'\1zes'),
+    _RegexReplace(re.compile(r'(?i)^(oxen)$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)^(ox)$'), r'\1en'),
+    _RegexReplace(re.compile(r'(?i)(m|l)ice$'), r'\1ice'),
+    _RegexReplace(re.compile(r'(?i)(m|l)ouse$'), r'\1ice'),
+    _RegexReplace(re.compile(r'(?i)(passer)s?by$'), r'\1sby'),
+    _RegexReplace(re.compile(r'(?i)(matr|vert|ind)(?:ix|ex)$'), r'\1ices'),
+    _RegexReplace(re.compile(r'(?i)(x|ch|ss|sh)$'), r'\1es'),
+    _RegexReplace(re.compile(r'(?i)([^aeiouy]|qu)y$'), r'\1ies'),
+    _RegexReplace(re.compile(r'(?i)(hive)$'), r'\1s'),
+    _RegexReplace(re.compile(r'(?i)([lr])f$'), r'\1ves'),
+    _RegexReplace(re.compile(r'(?i)([^f])fe$'), r'\1ves'),
+    _RegexReplace(re.compile(r'(?i)sis$'), 'ses'),
+    _RegexReplace(re.compile(r'(?i)([ti])a$'), r'\1a'),
+    _RegexReplace(re.compile(r'(?i)([ti])um$'), r'\1a'),
+    _RegexReplace(re.compile(r'(?i)(buffal|potat|tomat)o$'), r'\1oes'),
+    _RegexReplace(re.compile(r'(?i)(bu)s$'), r'\1ses'),
+    _RegexReplace(re.compile(r'(?i)(alias|status)$'), r'\1es'),
+    _RegexReplace(re.compile(r'(?i)(octop|vir)i$'), r'\1i'),
+    _RegexReplace(re.compile(r'(?i)(octop|vir)us$'), r'\1i'),
+    _RegexReplace(re.compile(r'(?i)^(ax|test)is$'), r'\1es'),
+    _RegexReplace(re.compile(r'(?i)s$'), 's'),
+    _RegexReplace(re.compile(r'$'), 's'),
 ]
 
-_SINGULARS: RegexReplaceList = [
-    (r'(?i)(database)s$', r'\1'),
-    (r'(?i)(quiz)zes$', r'\1'),
-    (r'(?i)(matr)ices$', r'\1ix'),
-    (r'(?i)(vert|ind)ices$', r'\1ex'),
-    (r'(?i)(passer)sby$', r'\1by'),
-    (r'(?i)^(ox)en', r'\1'),
-    (r'(?i)(alias|status)(es)?$', r'\1'),
-    (r'(?i)(octop|vir)(us|i)$', r'\1us'),
-    (r'(?i)^(a)x[ie]s$', r'\1xis'),
-    (r'(?i)(cris|test)(is|es)$', r'\1is'),
-    (r'(?i)(shoe)s$', r'\1'),
-    (r'(?i)(o)es$', r'\1'),
-    (r'(?i)(bus)(es)?$', r'\1'),
-    (r'(?i)(m|l)ice$', r'\1ouse'),
-    (r'(?i)(x|ch|ss|sh)es$', r'\1'),
-    (r'(?i)(m)ovies$', r'\1ovie'),
-    (r'(?i)(s)eries$', r'\1eries'),
-    (r'(?i)([^aeiouy]|qu)ies$', r'\1y'),
-    (r'(?i)([lr])ves$', r'\1f'),
-    (r'(?i)(tive)s$', r'\1'),
-    (r'(?i)(hive)s$', r'\1'),
-    (r'(?i)([^f])ves$', r'\1fe'),
-    (r'(?i)(t)he(sis|ses)$', r'\1hesis'),
-    (r'(?i)(s)ynop(sis|ses)$', r'\1ynopsis'),
-    (r'(?i)(p)rogno(sis|ses)$', r'\1rognosis'),
-    (r'(?i)(p)arenthe(sis|ses)$', r'\1arenthesis'),
-    (r'(?i)(d)iagno(sis|ses)$', r'\1iagnosis'),
-    (r'(?i)(b)a(sis|ses)$', r'\1asis'),
-    (r'(?i)(a)naly(sis|ses)$', r'\1nalysis'),
-    (r'(?i)([ti])a$', r'\1um'),
-    (r'(?i)(n)ews$', r'\1ews'),
-    (r'(?i)(ss)$', r'\1'),
-    (r'(?i)s$', ''),
+_SINGULARS: list[_RegexReplace] = [
+    _RegexReplace(re.compile(r'(?i)(database)s$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(quiz)zes$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(matr)ices$'), r'\1ix'),
+    _RegexReplace(re.compile(r'(?i)(vert|ind)ices$'), r'\1ex'),
+    _RegexReplace(re.compile(r'(?i)(passer)sby$'), r'\1by'),
+    _RegexReplace(re.compile(r'(?i)^(ox)en'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(alias|status)(es)?$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(octop|vir)(us|i)$'), r'\1us'),
+    _RegexReplace(re.compile(r'(?i)^(a)x[ie]s$'), r'\1xis'),
+    _RegexReplace(re.compile(r'(?i)(cris|test)(is|es)$'), r'\1is'),
+    _RegexReplace(re.compile(r'(?i)(shoe)s$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(o)es$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(bus)(es)?$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(m|l)ice$'), r'\1ouse'),
+    _RegexReplace(re.compile(r'(?i)(x|ch|ss|sh)es$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(m)ovies$'), r'\1ovie'),
+    _RegexReplace(re.compile(r'(?i)(s)eries$'), r'\1eries'),
+    _RegexReplace(re.compile(r'(?i)([^aeiouy]|qu)ies$'), r'\1y'),
+    _RegexReplace(re.compile(r'(?i)([lr])ves$'), r'\1f'),
+    _RegexReplace(re.compile(r'(?i)(tive)s$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)(hive)s$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)([^f])ves$'), r'\1fe'),
+    _RegexReplace(re.compile(r'(?i)(t)he(sis|ses)$'), r'\1hesis'),
+    _RegexReplace(re.compile(r'(?i)(s)ynop(sis|ses)$'), r'\1ynopsis'),
+    _RegexReplace(re.compile(r'(?i)(p)rogno(sis|ses)$'), r'\1rognosis'),
+    _RegexReplace(re.compile(r'(?i)(p)arenthe(sis|ses)$'), r'\1arenthesis'),
+    _RegexReplace(re.compile(r'(?i)(d)iagno(sis|ses)$'), r'\1iagnosis'),
+    _RegexReplace(re.compile(r'(?i)(b)a(sis|ses)$'), r'\1asis'),
+    _RegexReplace(re.compile(r'(?i)(a)naly(sis|ses)$'), r'\1nalysis'),
+    _RegexReplace(re.compile(r'(?i)([ti])a$'), r'\1um'),
+    _RegexReplace(re.compile(r'(?i)(n)ews$'), r'\1ews'),
+    _RegexReplace(re.compile(r'(?i)(ss)$'), r'\1'),
+    _RegexReplace(re.compile(r'(?i)s$'), ''),
 ]
 
 _UNCOUNTABLES: set[str] = {
@@ -103,7 +105,8 @@ _UNCOUNTABLES: set[str] = {
     'rice',
     'series',
     'sheep',
-    'species'}
+    'species',
+}
 
 
 def _irregular(singular: str, plural: str) -> None:
@@ -113,42 +116,42 @@ def _irregular(singular: str, plural: str) -> None:
         return ''.join('[' + char + char.upper() + ']' for char in string)
 
     if singular[0].upper() == plural[0].upper():
-        _PLURALS.insert(0, (
-            fr'(?i)({singular[0]}){singular[1:]}$',
+        _PLURALS.insert(0, _RegexReplace(
+            re.compile(fr'(?i)({singular[0]}){singular[1:]}$'),
             r'\1' + plural[1:],
         ))
-        _PLURALS.insert(0, (
-            fr'(?i)({plural[0]}){plural[1:]}$',
+        _PLURALS.insert(0, _RegexReplace(
+            re.compile(fr'(?i)({plural[0]}){plural[1:]}$'),
             r'\1' + plural[1:],
         ))
-        _SINGULARS.insert(0, (
-            fr'(?i)({plural[0]}){plural[1:]}$',
+        _SINGULARS.insert(0, _RegexReplace(
+            re.compile(fr'(?i)({plural[0]}){plural[1:]}$'),
             r'\1' + singular[1:],
         ))
 
     else:
-        _PLURALS.insert(0, (
-            fr'{singular[0].upper()}{caseinsensitive(singular[1:])}$',
+        _PLURALS.insert(0, _RegexReplace(
+            re.compile(fr'{singular[0].upper()}{caseinsensitive(singular[1:])}$'),
             plural[0].upper() + plural[1:],
         ))
-        _PLURALS.insert(0, (
-            fr'{singular[0].lower()}{caseinsensitive(singular[1:])}$',
+        _PLURALS.insert(0, _RegexReplace(
+            re.compile(fr'{singular[0].lower()}{caseinsensitive(singular[1:])}$'),
             plural[0].lower() + plural[1:],
         ))
-        _PLURALS.insert(0, (
-            fr'{plural[0].upper()}{caseinsensitive(plural[1:])}$',
+        _PLURALS.insert(0, _RegexReplace(
+            re.compile(fr'{plural[0].upper()}{caseinsensitive(plural[1:])}$'),
             plural[0].upper() + plural[1:],
         ))
-        _PLURALS.insert(0, (
-            fr'{plural[0].lower()}{caseinsensitive(plural[1:])}$',
+        _PLURALS.insert(0, _RegexReplace(
+            re.compile(fr'{plural[0].lower()}{caseinsensitive(plural[1:])}$'),
             plural[0].lower() + plural[1:],
         ))
-        _SINGULARS.insert(0, (
-            fr'{plural[0].upper()}{caseinsensitive(plural[1:])}$',
+        _SINGULARS.insert(0, _RegexReplace(
+            re.compile(fr'{plural[0].upper()}{caseinsensitive(plural[1:])}$'),
             singular[0].upper() + singular[1:],
         ))
-        _SINGULARS.insert(0, (
-            fr'{plural[0].lower()}{caseinsensitive(plural[1:])}$',
+        _SINGULARS.insert(0, _RegexReplace(
+            re.compile(fr'{plural[0].lower()}{caseinsensitive(plural[1:])}$'),
             singular[0].lower() + singular[1:],
         ))
 
@@ -166,11 +169,14 @@ _irregular('zombie', 'zombies')
 ##
 
 
+_CAMELIZE_PAT = re.compile(r'(?:^|_)(.)')
+
+
 def camelize(string: str, uppercase_first_letter: bool = True) -> str:
     """Convert strings to CamelCase."""
 
     if uppercase_first_letter:
-        return re.sub(r'(?:^|_)(.)', lambda m: m.group(1).upper(), string)
+        return _CAMELIZE_PAT.sub(lambda m: m.group(1).upper(), string)
     else:
         return string[0].lower() + camelize(string)[1:]
 
@@ -181,17 +187,29 @@ def dasherize(word: str) -> str:
     return word.replace('_', '-')
 
 
+_HUMANIZE_PAT_0 = re.compile(r'_id$')
+_HUMANIZE_PAT_1 = re.compile(r'(?i)([a-z\d]*)')
+_HUMANIZE_PAT_2 = re.compile(r'^\w')
+
+
 def humanize(word: str) -> str:
     """
     Capitalize the first word and turn underscores into spaces and strip a trailing ``"_id"``, if any. Like
     :func:`titleize`, this is meant for creating pretty output.
     """
 
-    word = re.sub(r'_id$', '', word)
+    word = _HUMANIZE_PAT_0.sub('', word)
     word = word.replace('_', ' ')
-    word = re.sub(r'(?i)([a-z\d]*)', lambda m: m.group(1).lower(), word)
-    word = re.sub(r'^\w', lambda m: m.group(0).upper(), word)
+    word = _HUMANIZE_PAT_1.sub(lambda m: m.group(1).lower(), word)
+    word = _HUMANIZE_PAT_2.sub(lambda m: m.group(0).upper(), word)
     return word
+
+
+_ORDINAL_LOOKUP = {
+    1: 'st',
+    2: 'nd',
+    3: 'rd',
+}
 
 
 def ordinal(number: int) -> str:
@@ -204,11 +222,7 @@ def ordinal(number: int) -> str:
     if number % 100 in (11, 12, 13):
         return 'th'
     else:
-        return {
-            1: 'st',
-            2: 'nd',
-            3: 'rd',
-        }.get(number % 10, 'th')
+        return _ORDINAL_LOOKUP.get(number % 10, 'th')
 
 
 def ordinalize(number: int) -> str:
@@ -219,12 +233,15 @@ def ordinalize(number: int) -> str:
     return f'{number}{ordinal(number)}'
 
 
+_PARAMETERIZE_PAT = re.compile(r'(?i)[^a-z0-9\-_]+')
+
+
 def parameterize(string: str, separator: str = '-') -> str:
     """Replace special characters in a string so that it may be used as part of a 'pretty' URL."""
 
     string = transliterate(string)
     # Turn unwanted chars into the separator
-    string = re.sub(r'(?i)[^a-z0-9\-_]+', separator, string)
+    string = _PARAMETERIZE_PAT.sub(separator, string)
     if separator:
         re_sep = re.escape(separator)
         # No more than one of the separator in a row.
@@ -242,8 +259,8 @@ def pluralize(word: str) -> str:
         return word
     else:
         for rule, replacement in _PLURALS:
-            if re.search(rule, word):
-                return re.sub(rule, replacement, word)
+            if rule.search(word):
+                return rule.sub(replacement, word)
         return word
 
 
@@ -255,8 +272,8 @@ def singularize(word: str) -> str:
             return word
 
     for rule, replacement in _SINGULARS:
-        if re.search(rule, word):
-            return re.sub(rule, replacement, word)
+        if rule.search(word):
+            return rule.sub(replacement, word)
     return word
 
 
@@ -269,14 +286,16 @@ def tableize(word: str) -> str:
     return pluralize(underscore(word))
 
 
+_TITLEIZE_PAT = re.compile(r"\b('?\w)")
+
+
 def titleize(word: str) -> str:
     """
     Capitalize all the words and replace some characters in the string to create a nicer looking title. :func:`titleize`
     is meant for creating pretty output.
     """
 
-    return re.sub(
-        r"\b('?\w)",
+    return _TITLEIZE_PAT.sub(
         lambda match: match.group(1).capitalize(),
         humanize(underscore(word)).title(),
     )
@@ -292,10 +311,14 @@ def transliterate(string: str) -> str:
     return normalized.encode('ascii', 'ignore').decode('ascii')
 
 
+_UNDERSCORE_PAT_0 = re.compile(r'([A-Z]+)([A-Z][a-z])')
+_UNDERSCORE_PAT_1 = re.compile(r'([a-z\d])([A-Z])')
+
+
 def underscore(word: str) -> str:
     """Make an underscored, lowercase form from the expression in the string."""
 
-    word = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', word)
-    word = re.sub(r'([a-z\d])([A-Z])', r'\1_\2', word)
+    word = _UNDERSCORE_PAT_0.sub(r'\1_\2', word)
+    word = _UNDERSCORE_PAT_1.sub(r'\1_\2', word)
     word = word.replace('-', '_')
     return word.lower()

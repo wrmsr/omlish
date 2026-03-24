@@ -308,7 +308,7 @@ def test_pluralize_empty_string() -> None:
 
 
 @pytest.mark.parametrize(
-    'word',
+    ('word',),  # noqa
     [(word,) for word in inflection._UNCOUNTABLES],
 )
 def test_uncountability(word: str) -> None:
