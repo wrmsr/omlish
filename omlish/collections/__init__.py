@@ -106,12 +106,12 @@ with _lang.auto_proxy_init(globals()):
         OrderedSet,
     )
 
-    from .persistent.persistent import (  # noqa
+    from .persistent import (  # noqa
         PersistentMap,
         PersistentMapping,
     )
 
-    from .persistent.treapmap import (  # noqa
+    from .treap.treapmap import (  # noqa
         TreapDict,
         TreapMap,
         new_treap_dict,
@@ -123,12 +123,12 @@ with _lang.auto_proxy_init(globals()):
         RankedSetSeq,
     )
 
-    from .sorted.skiplist import (  # noqa
+    from .skiplist import (  # noqa
         SkipList,
         SkipListDict,
     )
 
-    from .sorted.sorted import (  # noqa
+    from .sorted import (  # noqa
         SortedCollection,
         SortedItems,
         SortedIter,

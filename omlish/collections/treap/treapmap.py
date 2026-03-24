@@ -21,10 +21,10 @@ import random
 import typing as ta
 
 from ... import lang
-from ..sorted.sorted import SortedItems
+from ..persistent import PersistentMap
+from ..persistent import PersistentMapping
+from ..sorted import SortedItems
 from . import treap
-from .persistent import PersistentMap
-from .persistent import PersistentMapping
 
 
 K = ta.TypeVar('K')

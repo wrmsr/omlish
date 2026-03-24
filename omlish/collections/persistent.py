@@ -1,7 +1,7 @@
 import abc
 import typing as ta
 
-from ... import lang
+from .. import lang
 
 
 K = ta.TypeVar('K')
