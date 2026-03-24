@@ -1,11 +1,19 @@
 import typing as ta
 
 
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
+
+
 ##
 
 
 def cmp(l: ta.Any, r: ta.Any) -> int:
     return int(l > r) - int(l < r)
+
+
+def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[tuple[K, V], tuple[K, V]], int]:
+    return lambda t0, t1: fn(t0[0], t1[0])
 
 
 ##

@@ -20,7 +20,6 @@ import typing as ta
 from ... import lang
 from ..persistent import PersistentMapping
 from ..sorted import SortedItems
-from ..utils import key_cmp
 from . import treap
 
 
@@ -112,7 +111,7 @@ def new_treap_map(
         *,
         cmp: ta.Callable[[K, K], int] | None = None,
 ) -> TreapMap[K, V]:
-    m: TreapMap[K, V] = TreapMap(_n=None, _c=key_cmp(cmp if cmp is not None else lang.cmp))
+    m: TreapMap[K, V] = TreapMap(_n=None, _c=lang.key_cmp(cmp if cmp is not None else lang.cmp))
     if items is not None:
         for k, v in items:
             m = m.with_(k, v)

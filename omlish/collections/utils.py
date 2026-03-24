@@ -275,35 +275,3 @@ def multi_map_by(
         identity=False,
 ):
     return multi_map(((fn(v), v) for v in vs), identity=identity)
-
-
-##
-
-
-def all_equal(it: ta.Iterable[T]) -> bool:
-    i = iter(it)
-    try:
-        l = next(i)
-    except StopIteration:
-        return True
-    return all(r == l for r in i)
-
-
-def all_not_equal(it: ta.Iterable[T]) -> bool:
-    s = set()
-    for v in it:
-        if v in s:
-            return False
-        s.add(v)
-    return True
-
-
-##
-
-
-def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[tuple[K, V], tuple[K, V]], int]:
-    return lambda t0, t1: fn(t0[0], t1[0])
-
-
-def indexes(it: ta.Iterable[T]) -> dict[T, int]:
-    return {e: i for i, e in enumerate(it)}

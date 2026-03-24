@@ -154,10 +154,6 @@ with _lang.auto_proxy_init(globals()):
 
     from .utils import (  # noqa
         PartitionResult,
-        all_equal,
-        all_not_equal,
-        indexes,
-        key_cmp,
         make_map,
         make_map_by,
         map_keys,

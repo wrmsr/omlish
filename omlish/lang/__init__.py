@@ -151,6 +151,7 @@ with _auto_proxy_init(globals(), update_exports=True):
 
     from .comparison import (  # noqa
         cmp,
+        key_cmp,
 
         InfinityType,
         Infinity,
@@ -345,6 +346,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         chunk,
         interleave,
         renumerate,
+        indexes,
         common_prefix_len,
 
         seq,

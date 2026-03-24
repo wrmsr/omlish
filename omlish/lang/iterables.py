@@ -58,6 +58,10 @@ def renumerate(it: ta.Iterable[T]) -> ta.Iterator[tuple[T, int]]:
     return ((e, i) for i, e in enumerate(it))
 
 
+def indexes(it: ta.Iterable[T]) -> dict[T, int]:
+    return {e: i for i, e in enumerate(it)}
+
+
 def common_prefix_len(*its: ta.Iterable) -> int:
     return ilen(itertools.takewhile(lambda t: all(e == t[0] for e in t[1:]), zip(*its)))
 

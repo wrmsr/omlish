@@ -2,6 +2,7 @@ import pytest
 
 from ..iterables import common_prefix_len
 from ..iterables import consume
+from ..iterables import indexes
 from ..iterables import itergen
 from ..iterables import peek
 from ..iterables import prodrange
@@ -64,3 +65,7 @@ def test_common_prefix_len():
     assert common_prefix_len('ab', 'abc', 'abd') == 2
     assert common_prefix_len('abc', 'abce', 'abcd') == 3
     assert common_prefix_len('aba', 'aca') == 1
+
+
+def test_indexes():
+    assert indexes('bac') == {'b': 0, 'a': 1, 'c': 2}
