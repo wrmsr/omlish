@@ -1,6 +1,7 @@
 """
 TODO:
  - JAVA_HOME
+ - pomgen colon-sep dep type/scope
 
 See:
  - https://github.com/jbangdev/jbang
@@ -19,6 +20,7 @@ from omlish.argparse import all as ap
 from .. import intellij as ij
 from .. import magic
 from . import pomgen as pg
+from .utils import insert_before_first_non_header_line
 
 
 ##
@@ -70,7 +72,7 @@ def build_maven_project(
         if require_symlink:
             raise ValueError(f'Cannot symlink source file, no package specified.')
         group_id = DEFAULT_PROJECT_GROUP_ID
-        src = f'package {group_id};\n\n{src}'
+        src = insert_before_first_non_header_line(src, f'package {group_id};\n')
         can_symlink = False
 
     check.non_empty_str(group_id)
