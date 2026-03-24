@@ -13,7 +13,7 @@ typedef struct {
     PyObject *abc_get_cache_token;
 } dispatch_state;
 
-static inline dispatch_state * get_dispatch_state(PyObject *module)
+static dispatch_state * get_dispatch_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != NULL);

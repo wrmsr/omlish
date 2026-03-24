@@ -21,7 +21,7 @@ typedef struct treap_state {
     PyTypeObject *TreapIterType;
 } treap_state;
 
-static inline treap_state *get_treap_state(PyObject *module)
+static treap_state *get_treap_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != nullptr);

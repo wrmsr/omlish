@@ -16,16 +16,14 @@ typedef struct {
     PyObject *str___await__;
 } module_state;
 
-static module_state *
-get_module_state(PyObject *module)
+static module_state * get_module_state(PyObject *module)
 {
     return (module_state *) PyModule_GetState(module);
 }
 
 //
 
-static void
-suppress_close(PyObject *iter, module_state *state)
+static void suppress_close(PyObject *iter, module_state *state)
 {
     PyObject *res = PyObject_CallMethodNoArgs(iter, state->str_close);
     if (!res) {
@@ -35,8 +33,7 @@ suppress_close(PyObject *iter, module_state *state)
     }
 }
 
-static PyObject *
-sync_await(PyObject *module, PyObject *aw)
+static PyObject * sync_await(PyObject *module, PyObject *aw)
 {
     module_state *state = get_module_state(module);
     PyObject *await_meth = NULL;
@@ -93,8 +90,7 @@ static PyMethodDef mod_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-static int
-module_traverse(PyObject *module, visitproc visit, void *arg)
+static int module_traverse(PyObject *module, visitproc visit, void *arg)
 {
     module_state *state = get_module_state(module);
     Py_VISIT(state->SyncAwaitCoroutineNotTerminatedError);
@@ -103,8 +99,7 @@ module_traverse(PyObject *module, visitproc visit, void *arg)
     return 0;
 }
 
-static int
-module_clear(PyObject *module)
+static int module_clear(PyObject *module)
 {
     module_state *state = get_module_state(module);
     Py_CLEAR(state->SyncAwaitCoroutineNotTerminatedError);
@@ -113,14 +108,12 @@ module_clear(PyObject *module)
     return 0;
 }
 
-static void
-module_free(void *module)
+static void module_free(void *module)
 {
     module_clear((PyObject *) module);
 }
 
-static int
-module_exec(PyObject *module)
+static int module_exec(PyObject *module)
 {
     module_state *state = get_module_state(module);
 

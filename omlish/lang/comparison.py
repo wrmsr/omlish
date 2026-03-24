@@ -1,6 +1,13 @@
 import typing as ta
 
 
+_comparison: ta.Any
+try:
+    from . import _comparison  # type: ignore
+except ImportError:
+    _comparison = None
+
+
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
@@ -16,6 +23,13 @@ def key_cmp(fn: ta.Callable[[K, K], int] | None = None) -> ta.Callable[[tuple[K,
     if fn is None:
         fn = cmp
     return lambda t0, t1: fn(t0[0], t1[0])
+
+
+if _comparison is not None:
+    globals().update({a: getattr(_comparison, a) for a in [
+        'cmp',
+        'key_cmp',
+    ]})
 
 
 ##

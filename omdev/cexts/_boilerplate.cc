@@ -14,7 +14,7 @@
 typedef struct boilerplate_state {
 } boilerplate_state;
 
-static inline boilerplate_state * get_boilerplate_state(PyObject *module)
+static boilerplate_state * get_boilerplate_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != NULL);

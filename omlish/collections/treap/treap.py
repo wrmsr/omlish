@@ -48,7 +48,7 @@ try:
 except ImportError:
     pass
 else:
-    for a in [
+    globals().update({a: getattr(_treap, a) for a in [
         'new',
         'find',
         'place',
@@ -57,5 +57,4 @@ else:
         'intersect',
         'delete',
         'diff',
-    ]:
-        globals()[a] = getattr(_treap, a)
+    ]})

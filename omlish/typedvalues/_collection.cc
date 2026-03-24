@@ -21,7 +21,7 @@ typedef struct collection_state {
     PyObject *duplicate_error_type;
 } collection_state;
 
-static inline collection_state * get_collection_state(PyObject *module)
+static collection_state * get_collection_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != NULL);

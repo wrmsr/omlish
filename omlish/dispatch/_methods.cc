@@ -13,7 +13,7 @@ typedef struct {
     PyTypeObject *MethodDispatchFuncType;
 } methods_state;
 
-static inline methods_state * get_methods_state(PyObject *module)
+static methods_state * get_methods_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != NULL);
