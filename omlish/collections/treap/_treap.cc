@@ -64,15 +64,29 @@ static void TreapNode_dealloc(TreapNode *self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static PyObject *TreapNode_repr(TreapNode *self)
-{
+static PyObject *TreapNode_repr(TreapNode *self) {
+    if (self->value == nullptr) {
+        return PyUnicode_FromFormat(
+            "TreapNode(<cleared>, priority=%ld, count=%zd)",
+            self->priority,
+            self->count
+        );
+    }
+
     return PyUnicode_FromFormat(
         "TreapNode(value=%R, priority=%ld, count=%zd)",
-        self->value, self->priority, self->count);
+        self->value,
+        self->priority,
+        self->count
+    );
 }
 
 static PyObject *TreapNode_get_value(TreapNode *self, void *closure)
 {
+    if (self->value == nullptr) {
+        PyErr_SetString(PyExc_RuntimeError, "TreapNode has been cleared");
+        return nullptr;
+    }
     return Py_NewRef(self->value);
 }
 
@@ -198,6 +212,11 @@ static PyObject *TreapIter_next(TreapIter *self)
     TreapNode *node = self->stack[--self->stack_top];
     self->current = node->right;
 
+    if (node->value == nullptr) {
+        PyErr_SetString(PyExc_RuntimeError, "iterated over a cleared TreapNode");
+        return nullptr;
+    }
+
     return Py_NewRef(node->value);
 }
 
@@ -228,6 +247,11 @@ static PyType_Spec TreapIter_spec = {
 static PyObject *TreapNode_iter(PyObject *self)
 {
     TreapNode *node = (TreapNode *)self;
+    if (node->value == nullptr) {
+        PyErr_SetString(PyExc_ValueError, "cannot iterate a cleared TreapNode");
+        return nullptr;
+    }
+
     PyObject *module = PyType_GetModule(Py_TYPE(self));
     if (module == nullptr) {
         return nullptr;
