@@ -5,6 +5,12 @@ import pytest
 from ..hamtmap import HamtMap
 
 
+try:
+    from .. import _hamt  # type: ignore  # noqa
+except ImportError:
+    pytest.skip('_hamt module not built', allow_module_level=True)
+
+
 def items_dict(m: HamtMap[ta.Any, ta.Any]) -> dict[ta.Any, ta.Any]:
     return dict(m.items())
 

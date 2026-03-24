@@ -14,6 +14,9 @@ from .caches import HeadersCache
 ##
 
 
+ALLOW_ANY_UNICODE_HEADER = '# @omlish-precheck-allow-any-unicode'
+
+
 class UnicodePrecheck(Precheck['UnicodePrecheck.Config']):
     @dc.dataclass(frozen=True)
     class Config(Precheck.Config):
@@ -86,7 +89,7 @@ class UnicodePrecheck(Precheck['UnicodePrecheck.Config']):
     async def _run_py_file(self, py_file: str) -> ta.AsyncGenerator[Precheck.Violation]:
         if isinstance(header_lines := self._headers_cache.get_file_headers(py_file), Exception):
             return
-        if any(hl.src.strip() == '# @omlish-precheck-allow-any-unicode' for hl in header_lines):
+        if any(hl.src.strip() == ALLOW_ANY_UNICODE_HEADER for hl in header_lines):
             return
 
         async for v in self._run_file(py_file):
