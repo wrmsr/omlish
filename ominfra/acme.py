@@ -1,8 +1,4 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = "~=3.13"
-# dependencies = []
-# ///
+# ruff: noqa: G001 G004 UP030
 # The MIT License (MIT)
 #
 # Copyright (c) 2025 Daniel Roesler
@@ -106,7 +102,7 @@ def _cmd(
     out, err = proc.communicate(cmd_input)
 
     if proc.returncode != 0:
-        raise IOError(f'{err_msg}\n{err!r}')
+        raise OSError(f'{err_msg}\n{err!r}')
 
     return out
 
@@ -125,7 +121,7 @@ def _do_request(
         depth: int = 0,
 ) -> _DoRequestResult:
     try:
-        resp = urllib.request.urlopen(urllib.request.Request(
+        resp = urllib.request.urlopen(urllib.request.Request(  # noqa
             url,
             data=data,
             headers={
@@ -138,7 +134,7 @@ def _do_request(
         code = resp.getcode()
         headers = resp.headers
 
-    except IOError as e:
+    except OSError as e:
         resp_data = e.read().decode('utf8') if hasattr(e, 'read') else str(e)
         code = getattr(e, 'code', None)
         headers = {}
@@ -201,8 +197,8 @@ class _SignedRequestSender:
         else:
             protected['kid'] = self._acct_headers['Location']
 
-        protected_b64 = _b64_encode(json.dumps(protected).encode('utf8'))
-        protected_input = f'{protected_b64}.{payload_b64}'.encode('utf8')
+        protected_b64 = _b64_encode(json.dumps(protected).encode('utf8'))  # noqa
+        protected_input = f'{protected_b64}.{payload_b64}'.encode('utf8')  # noqa
 
         out = check.not_none(_cmd(
             [
@@ -370,11 +366,11 @@ def get_crt(
 
         # Payload is the account key JWK
         # account_key_json is the canonical JSON string of jwk we already computed
-        eab_protected_b64 = _b64_encode(json.dumps(eab_protected).encode('utf8'))
-        eab_payload_b64 = _b64_encode(account_key_json.encode('utf8'))
+        eab_protected_b64 = _b64_encode(json.dumps(eab_protected).encode('utf8'))  # noqa
+        eab_payload_b64 = _b64_encode(account_key_json.encode('utf8'))  # noqa
 
         mac_key = _b64decode(eab_hmac_key)
-        mac_input = f'{eab_protected_b64}.{eab_payload_b64}'.encode('utf8')
+        mac_input = f'{eab_protected_b64}.{eab_payload_b64}'.encode('utf8')  # noqa
         mac = hmac.new(mac_key, mac_input, hashlib.sha256)
         eab_signature_b64 = _b64_encode(mac.digest())
 
@@ -455,7 +451,7 @@ def get_crt(
         log.info(f'Verifying {domain}...')
 
         # find the http-01 challenge and write the challenge file
-        challenge = [c for c in authorization['challenges'] if c['type'] == 'http-01'][0]
+        challenge = [c for c in authorization['challenges'] if c['type'] == 'http-01'][0]  # noqa
 
         token = re.sub(r'[^A-Za-z0-9_\-]', '_', challenge['token'])
 

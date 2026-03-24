@@ -7,6 +7,7 @@
   - decimal.Decimal
   - datetime.date, datetime.time
   - ipaddress
+  - re.pattern
   - numpy types
 - jackson switches
   - accept_case_insensitive_enums

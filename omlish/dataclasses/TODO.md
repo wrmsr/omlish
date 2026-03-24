@@ -1,1 +1,16 @@
 - `override=True` doesn't work with our early-checking `Abstract`
+- per-field frozen
+- option to freeze after `__post_init__` / `dc.init`'s?
+- transient field option
+- derive - per-field and 'free'
+- c codegen?
+- alt backends?
+  - persistent map
+- omlish.metadata
+- optional dirty tracking
+- old ver had descriptor
+  - default, frozen, name, pre_set, post_set
+  - cext
+- user specifiable arbitrary field descriptor?
+- overhaul metaclass / 'confer'
+- 
