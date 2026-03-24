@@ -14,6 +14,11 @@ st.setup(
             extra_compile_args=['-std=c11'],
         ),
         st.Extension(
+            name='omlish.collections.treap._treap',
+            sources=['omlish/collections/treap/_treap.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
             name='omlish.dispatch._dispatch',
             sources=['omlish/dispatch/_dispatch.cc'],
             extra_compile_args=['-std=c++20'],
