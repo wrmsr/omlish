@@ -1538,55 +1538,73 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         " allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('name', 'alts', 'omit_if', 'default', 'embe"
         "d', 'generic_replace', 'no_marshal', 'no_unmarshal', 'marshaler', 'marshaler_factory', 'marshal_as', 'unmarsha"
         "ler', 'unmarshaler_factory', 'unmarshal_as'), cache=False), InitPlan(fields=(InitPlan.Field(name='name', annot"
-        "ation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='alts', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='omit_if', annotation=OpRef(name='init.fields.2.annotation'), d"
-        "efault=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldT"
-        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default', annotation=OpRef(na"
-        "me='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='embed', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None), InitPlan.Field(name='generic_replace', annotation=OpRef(name='init.fields.5.annotation'), defaul"
-        "t=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='no_marshal', annotation=OpRef(name"
-        "='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='no_unmarshal', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='marshaler', annotation=OpRef(name='init.fields.8.annotation'), default"
-        "=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
-        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='marshaler_factory', annotation=OpRe"
-        "f(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=Tr"
-        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
-        "d(name='marshal_as', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='unmarshaler', annotation=OpRef(name='init.fields.11.annotation')"
-        ", default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='unmarshaler_factory', ann"
-        "otation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='unmarshal_as', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='i"
-        "nit.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('name', 'alts', 'o"
-        "mit_if', 'default', 'embed', 'generic_replace', 'no_marshal', 'no_unmarshal', 'marshaler', 'marshaler_factory'"
-        ", 'marshal_as', 'unmarshaler', 'unmarshaler_factory', 'unmarshal_as'), frozen=True, slots=False, post_init_par"
-        "ams=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='alts', kw_only=True, fn=None), ReprPlan.Field(name='omit_if', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='default', kw_only=True, fn=None), ReprPlan.Field(name='embed', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='generic_replace', kw_only=True, fn=None), ReprPlan.Field(name='no_marshal', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='no_unmarshal', kw_only=True, fn=None), ReprPlan.Field(name='marshaler', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='marshaler_factory', kw_only=True, fn=None), ReprPlan.Field(name='marshal_as', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='unmarshaler', kw_only=True, fn=None), ReprPlan.Field(name='unmars"
-        "haler_factory', kw_only=True, fn=None), ReprPlan.Field(name='unmarshal_as', kw_only=True, fn=None)), id=False,"
-        " terse=False, default_fn=None)))"
+        "ation=OpRef(name='init.fields.00.annotation'), default=OpRef(name='init.fields.00.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='alts', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields"
+        ".01.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='omit_if', annotation=OpRef(name='init.fields.02.annotation"
+        "'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default', annotation=Op"
+        "Ref(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='embed', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='generic_replace', annotation=OpRef(name='init.fields.05.annotatio"
+        "n'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='no_marshal', annotatio"
+        "n=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='no_unmarshal', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fi"
+        "elds.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='marshaler', annotation=OpRef(name='init.fields.08.anno"
+        "tation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='marshaler_factory"
+        "', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='marshal_as', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(nam"
+        "e='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='unmarshaler', annotation=OpRef(name='init.fi"
+        "elds.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='unmar"
+        "shaler_factory', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='unmarshal_as', annotation=OpRef(name='init.fields.13.annotation'), d"
+        "efault=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params"
+        "=('name', 'alts', 'omit_if', 'default', 'embed', 'generic_replace', 'no_marshal', 'no_unmarshal', 'marshaler',"
+        " 'marshaler_factory', 'marshal_as', 'unmarshaler', 'unmarshaler_factory', 'unmarshal_as'), frozen=True, slots="
+        "False, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='alts', kw_only=True, fn=None), ReprPlan.Field(name='omit_if', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='default', kw_only=True, fn=None), ReprPlan.Field(name='embed', kw_only=Tru"
+        "e, fn=None), ReprPlan.Field(name='generic_replace', kw_only=True, fn=None), ReprPlan.Field(name='no_marshal', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='no_unmarshal', kw_only=True, fn=None), ReprPlan.Field(name='marsh"
+        "aler', kw_only=True, fn=None), ReprPlan.Field(name='marshaler_factory', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='marshal_as', kw_only=True, fn=None), ReprPlan.Field(name='unmarshaler', kw_only=True, fn=None), ReprPla"
+        "n.Field(name='unmarshaler_factory', kw_only=True, fn=None), ReprPlan.Field(name='unmarshal_as', kw_only=True, "
+        "fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='86da47743353043c8e6030315d0f26512b201079',
+    plan_repr_sha1='7e0d178559cae3ad0c9577a0c433f642b93b3b4e',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__00__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -1595,35 +1613,35 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         '__dataclass__init__fields__12__default',
         '__dataclass__init__fields__13__annotation',
         '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'FieldOptions'),
     ),
 )
-def _process_dataclass__86da47743353043c8e6030315d0f26512b201079():
+def _process_dataclass__7e0d178559cae3ad0c9577a0c433f642b93b3b4e():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__00__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -1632,24 +1650,6 @@ def _process_dataclass__86da47743353043c8e6030315d0f26512b201079():
         __dataclass__init__fields__12__default,
         __dataclass__init__fields__13__annotation,
         __dataclass__init__fields__13__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1800,16 +1800,16 @@ def _process_dataclass__86da47743353043c8e6030315d0f26512b201079():
         def __init__(
             self,
             *,
-            name: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            alts: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            omit_if: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            default: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            embed: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            generic_replace: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            no_marshal: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            no_unmarshal: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            marshaler: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            marshaler_factory: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            name: __dataclass__init__fields__00__annotation = __dataclass__init__fields__00__default,
+            alts: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            omit_if: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            default: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            embed: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            generic_replace: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            no_marshal: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            no_unmarshal: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            marshaler: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            marshaler_factory: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             marshal_as: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             unmarshaler: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             unmarshaler_factory: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,

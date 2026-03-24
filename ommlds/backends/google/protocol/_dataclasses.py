@@ -2973,69 +2973,87 @@ def _process_dataclass__a2a82bcb0bb73f79c4f503340e9eb59973961ce7():
         "ma', 'response_modalities', 'candidate_count', 'max_output_tokens', 'temperature', 'top_p', 'top_k', 'seed', '"
         "presence_penalty', 'frequency_penalty', 'response_logprobs', 'logprobs', 'enable_enhanced_civic_answers', 'thi"
         "nking_config', 'media_resolution'), cache=False), InitPlan(fields=(InitPlan.Field(name='stop_sequences', annot"
-        "ation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='response_mime_type', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='"
-        "init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='response_schema', annotation=OpRef(name='init.fi"
-        "elds.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='respons"
-        "e_json_schema', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='response_modalities', annotation=OpRef(name='init.fields.4.annotation')"
-        ", default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='candidate_count', annotati"
-        "on=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, "
-        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
-        "an.Field(name='max_output_tokens', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init"
-        ".fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='temperature', annotation=OpRef(name='init.fields.7.a"
-        "nnotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='top_p', annotat"
-        "ion=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='top_k', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.d"
+        "ation=OpRef(name='init.fields.00.annotation'), default=OpRef(name='init.fields.00.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='response_mime_type', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(nam"
+        "e='init.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='response_schema', annotation=OpRef(name='ini"
+        "t.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='r"
+        "esponse_json_schema', annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.d"
         "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='seed', annotation=OpRef(name='init.fields.10.annotation'), defa"
-        "ult=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='presence_penalty', annotation=O"
-        "pRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, in"
+        "e=None, check_type=None), InitPlan.Field(name='response_modalities', annotation=OpRef(name='init.fields.04.ann"
+        "otation'), default=OpRef(name='init.fields.04.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='candidate_count'"
+        ", annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one), InitPlan.Field(name='max_output_tokens', annotation=OpRef(name='init.fields.06.annotation'), default=OpR"
+        "ef(name='init.fields.06.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='temperature', annotation=OpRef(name='i"
+        "nit.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'top_p', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='top_k', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(na"
+        "me='init.fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='seed', annotation=OpRef(name='init.fields.1"
+        "0.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='presence_pe"
+        "nalty', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='frequency_penalty', annotation=OpRef(name='init.fields.12.annotation'), defau"
+        "lt=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='response_logprobs', annotation=O"
+        "pRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, in"
         "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='frequency_penalty', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init."
-        "fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='response_logprobs', annotation=OpRef(name='init.fiel"
-        "ds.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='logprob"
-        "s', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='enable_enhanced_civic_answers', annotation=OpRef(name='init.fields.15.annotation'"
-        "), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='thinking_config', annota"
-        "tion=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='media_resolution', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='"
-        "init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('stop_sequences',"
-        " 'response_mime_type', 'response_schema', 'response_json_schema', 'response_modalities', 'candidate_count', 'm"
-        "ax_output_tokens', 'temperature', 'top_p', 'top_k', 'seed', 'presence_penalty', 'frequency_penalty', 'response"
-        "_logprobs', 'logprobs', 'enable_enhanced_civic_answers', 'thinking_config', 'media_resolution'), frozen=True, "
-        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='stop_"
-        "sequences', kw_only=True, fn=None), ReprPlan.Field(name='response_mime_type', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='response_schema', kw_only=True, fn=None), ReprPlan.Field(name='response_json_schema', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='response_modalities', kw_only=True, fn=None), ReprPlan.Field(name='candidate"
-        "_count', kw_only=True, fn=None), ReprPlan.Field(name='max_output_tokens', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='temperature', kw_only=True, fn=None), ReprPlan.Field(name='top_p', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='top_k', kw_only=True, fn=None), ReprPlan.Field(name='seed', kw_only=True, fn=None), ReprPlan.Field("
-        "name='presence_penalty', kw_only=True, fn=None), ReprPlan.Field(name='frequency_penalty', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='response_logprobs', kw_only=True, fn=None), ReprPlan.Field(name='logprobs', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='enable_enhanced_civic_answers', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='thinking_config', kw_only=True, fn=None), ReprPlan.Field(name='media_resolution', kw_only=True, fn=None)), "
-        "id=False, terse=False, default_fn=None)))"
+        ".Field(name='logprobs', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='enable_enhanced_civic_answers', annotation=OpRef(name='init.f"
+        "ields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='thin"
+        "king_config', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='media_resolution', annotation=OpRef(name='init.fields.17.annotation'), "
+        "default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_param"
+        "s=('stop_sequences', 'response_mime_type', 'response_schema', 'response_json_schema', 'response_modalities', '"
+        "candidate_count', 'max_output_tokens', 'temperature', 'top_p', 'top_k', 'seed', 'presence_penalty', 'frequency"
+        "_penalty', 'response_logprobs', 'logprobs', 'enable_enhanced_civic_answers', 'thinking_config', 'media_resolut"
+        "ion'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPl"
+        "an.Field(name='stop_sequences', kw_only=True, fn=None), ReprPlan.Field(name='response_mime_type', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='response_schema', kw_only=True, fn=None), ReprPlan.Field(name='response_json_"
+        "schema', kw_only=True, fn=None), ReprPlan.Field(name='response_modalities', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='candidate_count', kw_only=True, fn=None), ReprPlan.Field(name='max_output_tokens', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='temperature', kw_only=True, fn=None), ReprPlan.Field(name='top_p', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='top_k', kw_only=True, fn=None), ReprPlan.Field(name='seed', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='presence_penalty', kw_only=True, fn=None), ReprPlan.Field(name='frequency_penalty', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='response_logprobs', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "logprobs', kw_only=True, fn=None), ReprPlan.Field(name='enable_enhanced_civic_answers', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='thinking_config', kw_only=True, fn=None), ReprPlan.Field(name='media_resolution', kw_on"
+        "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='978cae922dd5560b415d43fcdd15e6ea01b0b630',
+    plan_repr_sha1='74431281c91b761874a3df8799ebe75e8da3cf98',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__00__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -3052,35 +3070,35 @@ def _process_dataclass__a2a82bcb0bb73f79c4f503340e9eb59973961ce7():
         '__dataclass__init__fields__16__default',
         '__dataclass__init__fields__17__annotation',
         '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ommlds.backends.google.protocol._marshal', 'GenerationConfig'),
     ),
 )
-def _process_dataclass__978cae922dd5560b415d43fcdd15e6ea01b0b630():
+def _process_dataclass__74431281c91b761874a3df8799ebe75e8da3cf98():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__00__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -3097,24 +3115,6 @@ def _process_dataclass__978cae922dd5560b415d43fcdd15e6ea01b0b630():
         __dataclass__init__fields__16__default,
         __dataclass__init__fields__17__annotation,
         __dataclass__init__fields__17__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3285,16 +3285,16 @@ def _process_dataclass__978cae922dd5560b415d43fcdd15e6ea01b0b630():
         def __init__(
             self,
             *,
-            stop_sequences: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            response_mime_type: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            response_schema: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            response_json_schema: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            response_modalities: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            candidate_count: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            max_output_tokens: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            temperature: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            top_p: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            top_k: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            stop_sequences: __dataclass__init__fields__00__annotation = __dataclass__init__fields__00__default,
+            response_mime_type: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            response_schema: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            response_json_schema: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            response_modalities: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            candidate_count: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            max_output_tokens: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            temperature: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            top_p: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            top_k: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             seed: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             presence_penalty: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             frequency_penalty: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -4199,90 +4199,91 @@ def _process_dataclass__beab5da455fe488235693089eeb5876f0af44569():
         ", 'video_metadata'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('text', 'inline_data', "
         "'function_call', 'function_response', 'file_data', 'executable_code', 'code_execution_result', 'thought', 'tho"
         "ught_signature', 'video_metadata'), cache=False), InitPlan(fields=(InitPlan.Field(name='text', annotation=OpRe"
-        "f(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=Tr"
-        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
-        "d(name='inline_data', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='function_call', annotation=OpRef(name='init.fields.2.annotation')"
-        ", default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='function_response', annota"
-        "tion=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='file_data', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.field"
-        "s.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='executable_code', annotation=OpRef(name='init.fields.5.ann"
-        "otation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='code_execution_re"
-        "sult', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='thought', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name="
-        "'init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='thought_signature', annotation=OpRef(name='init"
-        ".fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='vide"
-        "o_metadata', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None)), self_param='self', std_params=(), kw_only_params=('text', 'inline_data', 'function_call', 'fun"
-        "ction_response', 'file_data', 'executable_code', 'code_execution_result', 'thought', 'thought_signature', 'vid"
-        "eo_metadata'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields"
-        "=(ReprPlan.Field(name='text', kw_only=True, fn=None), ReprPlan.Field(name='inline_data', kw_only=True, fn=None"
-        "), ReprPlan.Field(name='function_call', kw_only=True, fn=None), ReprPlan.Field(name='function_response', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='file_data', kw_only=True, fn=None), ReprPlan.Field(name='executable_co"
-        "de', kw_only=True, fn=None), ReprPlan.Field(name='code_execution_result', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='thought', kw_only=True, fn=None), ReprPlan.Field(name='thought_signature', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='video_metadata', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "f(name='init.fields.00.annotation'), default=OpRef(name='init.fields.00.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='inline_data', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='function_call', annotation=OpRef(name='init.fields.02.annotat"
+        "ion'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='function_response', "
+        "annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='file_data', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='i"
+        "nit.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='executable_code', annotation=OpRef(name='init.fi"
+        "elds.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='code_"
+        "execution_result', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='thought', annotation=OpRef(name='init.fields.07.annotation'), defa"
+        "ult=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
+        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='thought_signature', annotation="
+        "OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='video_metadata', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fi"
+        "elds.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('text', 'inline_data', '"
+        "function_call', 'function_response', 'file_data', 'executable_code', 'code_execution_result', 'thought', 'thou"
+        "ght_signature', 'video_metadata'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns="
+        "()), ReprPlan(fields=(ReprPlan.Field(name='text', kw_only=True, fn=None), ReprPlan.Field(name='inline_data', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='function_call', kw_only=True, fn=None), ReprPlan.Field(name='funct"
+        "ion_response', kw_only=True, fn=None), ReprPlan.Field(name='file_data', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='executable_code', kw_only=True, fn=None), ReprPlan.Field(name='code_execution_result', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='thought', kw_only=True, fn=None), ReprPlan.Field(name='thought_signature', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='video_metadata', kw_only=True, fn=None)), id=False, terse=False, defaul"
+        "t_fn=None)))"
     ),
-    plan_repr_sha1='ef190f65073f8a095e31371f3ddd76cd97d6e910',
+    plan_repr_sha1='a8a94f82a0e95e1b3ecf6e8d9fe8937f411d56c3',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__00__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
     ),
     cls_names=(
         ('ommlds.backends.google.protocol._marshal', 'Part'),
     ),
 )
-def _process_dataclass__ef190f65073f8a095e31371f3ddd76cd97d6e910():
+def _process_dataclass__a8a94f82a0e95e1b3ecf6e8d9fe8937f411d56c3():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__00__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4413,16 +4414,16 @@ def _process_dataclass__ef190f65073f8a095e31371f3ddd76cd97d6e910():
         def __init__(
             self,
             *,
-            text: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            inline_data: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            function_call: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            function_response: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            file_data: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            executable_code: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            code_execution_result: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            thought: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            thought_signature: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            video_metadata: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            text: __dataclass__init__fields__00__annotation = __dataclass__init__fields__00__default,
+            inline_data: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            function_call: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            function_response: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            file_data: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            executable_code: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            code_execution_result: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            thought: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            thought_signature: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            video_metadata: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'text', text)
             __dataclass__object_setattr(self, 'inline_data', inline_data)
@@ -4629,78 +4630,96 @@ def _process_dataclass__779bd4b20ed7e168e59d1db7685802988cc0f65b():
         "n', 'nullable', 'enum', 'max_items', 'min_items', 'properties', 'required', 'min_properties', 'max_properties'"
         ", 'min_length', 'max_length', 'pattern', 'example', 'any_of', 'property_ordering', 'default', 'items', 'minimu"
         "m', 'maximum'), cache=False), InitPlan(fields=(InitPlan.Field(name='type', annotation=OpRef(name='init.fields."
-        "0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='format', ann"
-        "otation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='title', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields"
-        ".2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='description', annotation=OpRef(name='init.fields.3.annotati"
-        "on'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type"
-        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nullable', annotation="
-        "OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='enum', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='max_items', annotation=OpRef(name='init.fields.6.annotation'), defau"
-        "lt=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='min_items', annotation=OpRef(name"
-        "='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='properties', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='required', annotation=OpRef(name='init.fields.9.annotation'), default=Op"
-        "Ref(name='init.fields.9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='min_properties', annotation=OpRef(name"
-        "='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='max_properties', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='min_length', annotation=OpRef(name='init.fields.12.annotation'),"
-        " default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='max_length', annotation=Op"
-        "Ref(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='pattern', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='example', annotation=OpRef(name='init.fields.15.annotation'), d"
-        "efault=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='any_of', annotation=OpRef(na"
-        "me='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='property_ordering', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields."
-        "17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='default', annotation=OpRef(name='init.fields.18.annotation'"
-        "), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='items', annotation=OpRef"
-        "(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='minimum', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='maximum', annotation=OpRef(name='init.fields.21.annotation'), defa"
-        "ult=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('"
-        "type', 'format', 'title', 'description', 'nullable', 'enum', 'max_items', 'min_items', 'properties', 'required"
-        "', 'min_properties', 'max_properties', 'min_length', 'max_length', 'pattern', 'example', 'any_of', 'property_o"
-        "rdering', 'default', 'items', 'minimum', 'maximum'), frozen=True, slots=False, post_init_params=None, init_fns"
-        "=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='type', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='format', kw_only=True, fn=None), ReprPlan.Field(name='title', kw_only=True, fn=None), ReprPlan.Field(name='"
-        "description', kw_only=True, fn=None), ReprPlan.Field(name='nullable', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='enum', kw_only=True, fn=None), ReprPlan.Field(name='max_items', kw_only=True, fn=None), ReprPlan.Field(na"
-        "me='min_items', kw_only=True, fn=None), ReprPlan.Field(name='properties', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='required', kw_only=True, fn=None), ReprPlan.Field(name='min_properties', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='max_properties', kw_only=True, fn=None), ReprPlan.Field(name='min_length', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='max_length', kw_only=True, fn=None), ReprPlan.Field(name='pattern', kw_only=True, f"
-        "n=None), ReprPlan.Field(name='example', kw_only=True, fn=None), ReprPlan.Field(name='any_of', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='property_ordering', kw_only=True, fn=None), ReprPlan.Field(name='default', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='items', kw_only=True, fn=None), ReprPlan.Field(name='minimum', kw_only="
-        "True, fn=None), ReprPlan.Field(name='maximum', kw_only=True, fn=None)), id=False, terse=False, default_fn=None"
-        ")))"
+        "00.annotation'), default=OpRef(name='init.fields.00.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='format', a"
+        "nnotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='title', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.f"
+        "ields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='description', annotation=OpRef(name='init.fields.03.a"
+        "nnotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nullable', ann"
+        "otation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='enum', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fiel"
+        "ds.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='max_items', annotation=OpRef(name='init.fields.06.annota"
+        "tion'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='min_items', annotat"
+        "ion=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='properties', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fi"
+        "elds.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='required', annotation=OpRef(name='init.fields.09.annot"
+        "ation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='min_properties', a"
+        "nnotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='max_properties', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(nam"
+        "e='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='min_length', annotation=OpRef(name='init.fie"
+        "lds.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='max_le"
+        "ngth', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='pattern', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(na"
+        "me='init.fields.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='example', annotation=OpRef(name='init.field"
+        "s.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='any_of',"
+        " annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='property_ordering', annotation=OpRef(name='init.fields.17.annotation'), default=OpRe"
+        "f(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default', annotation=OpRef(name='init.f"
+        "ields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='item"
+        "s', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='minimum', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name="
+        "'init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='maximum', annotation=OpRef(name='init.fields.2"
+        "1.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
+        "), kw_only_params=('type', 'format', 'title', 'description', 'nullable', 'enum', 'max_items', 'min_items', 'pr"
+        "operties', 'required', 'min_properties', 'max_properties', 'min_length', 'max_length', 'pattern', 'example', '"
+        "any_of', 'property_ordering', 'default', 'items', 'minimum', 'maximum'), frozen=True, slots=False, post_init_p"
+        "arams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='type', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='format', kw_only=True, fn=None), ReprPlan.Field(name='title', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='nullable', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='enum', kw_only=True, fn=None), ReprPlan.Field(name='max_items', kw_only=True, fn=None"
+        "), ReprPlan.Field(name='min_items', kw_only=True, fn=None), ReprPlan.Field(name='properties', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='required', kw_only=True, fn=None), ReprPlan.Field(name='min_properties', kw_only="
+        "True, fn=None), ReprPlan.Field(name='max_properties', kw_only=True, fn=None), ReprPlan.Field(name='min_length'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='max_length', kw_only=True, fn=None), ReprPlan.Field(name='patte"
+        "rn', kw_only=True, fn=None), ReprPlan.Field(name='example', kw_only=True, fn=None), ReprPlan.Field(name='any_o"
+        "f', kw_only=True, fn=None), ReprPlan.Field(name='property_ordering', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='default', kw_only=True, fn=None), ReprPlan.Field(name='items', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='minimum', kw_only=True, fn=None), ReprPlan.Field(name='maximum', kw_only=True, fn=None)), id=False, terse=Fa"
+        "lse, default_fn=None)))"
     ),
-    plan_repr_sha1='1e53656659168afa1125ddeab490fa1e3f8721cc',
+    plan_repr_sha1='d2f06f13ff37db89d6ed52bd4704a98d60165bb2',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__00__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -4721,39 +4740,39 @@ def _process_dataclass__779bd4b20ed7e168e59d1db7685802988cc0f65b():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
         '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ommlds.backends.google.protocol._marshal', 'Schema'),
     ),
 )
-def _process_dataclass__1e53656659168afa1125ddeab490fa1e3f8721cc():
+def _process_dataclass__d2f06f13ff37db89d6ed52bd4704a98d60165bb2():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__00__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -4774,28 +4793,10 @@ def _process_dataclass__1e53656659168afa1125ddeab490fa1e3f8721cc():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
         __dataclass__init__fields__21__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4986,16 +4987,16 @@ def _process_dataclass__1e53656659168afa1125ddeab490fa1e3f8721cc():
         def __init__(
             self,
             *,
-            type: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            format: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            title: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            description: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            nullable: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            enum: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            max_items: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            min_items: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            properties: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            required: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            type: __dataclass__init__fields__00__annotation = __dataclass__init__fields__00__default,
+            format: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            title: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            description: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            nullable: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            enum: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            max_items: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            min_items: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            properties: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            required: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             min_properties: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             max_properties: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             min_length: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,

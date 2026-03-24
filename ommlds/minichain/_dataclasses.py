@@ -7669,110 +7669,111 @@ def _process_dataclass__6a5c9824784a2112a23d98269f609312c1509aad():
         "', 'snippet', 'html_snippet', 'cache_id', 'formatted_url', 'html_formatted_url', 'mime', 'file_format', 'x'), "
         "allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('kind', 'title', 'html_title', 'link', 'disp"
         "lay_link', 'snippet', 'html_snippet', 'cache_id', 'formatted_url', 'html_formatted_url', 'mime', 'file_format'"
-        ", 'x'), cache=False), InitPlan(fields=(InitPlan.Field(name='kind', annotation=OpRef(name='init.fields.0.annota"
-        "tion'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='title', annotation=O"
-        "pRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='html_title', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='link', annotation=OpRef(name='init.fields.3.annotation'), defau"
-        "lt=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='display_link', annotation=OpRef(n"
-        "ame='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='snippet', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='html_snippet', annotation=OpRef(name='init.fields.6.annotation'), defaul"
-        "t=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_id', annotation=OpRef(name='"
-        "init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
-        "formatted_url', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='html_formatted_url', annotation=OpRef(name='init.fields.9.annotation'),"
-        " default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='mime', annotation=OpRef(nam"
-        "e='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='file_format', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='x', annotation=OpRef(name='init.fields.12.annotation'), default=Op"
-        "Ref(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('kind', 'title', 'html_tit"
-        "le', 'link', 'display_link', 'snippet', 'html_snippet', 'cache_id', 'formatted_url', 'html_formatted_url', 'mi"
-        "me', 'file_format', 'x'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
-        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='kind', kw_only=False, fn=None), ReprPlan.Field(name='titl"
-        "e', kw_only=False, fn=None), ReprPlan.Field(name='html_title', kw_only=False, fn=None), ReprPlan.Field(name='l"
-        "ink', kw_only=False, fn=None), ReprPlan.Field(name='display_link', kw_only=False, fn=None), ReprPlan.Field(nam"
-        "e='snippet', kw_only=False, fn=None), ReprPlan.Field(name='html_snippet', kw_only=False, fn=None), ReprPlan.Fi"
-        "eld(name='cache_id', kw_only=False, fn=None), ReprPlan.Field(name='formatted_url', kw_only=False, fn=None), Re"
-        "prPlan.Field(name='html_formatted_url', kw_only=False, fn=None), ReprPlan.Field(name='mime', kw_only=False, fn"
-        "=None), ReprPlan.Field(name='file_format', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        ", 'x'), cache=False), InitPlan(fields=(InitPlan.Field(name='kind', annotation=OpRef(name='init.fields.00.annot"
+        "ation'), default=OpRef(name='init.fields.00.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='title', annotation"
+        "=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, "
+        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
+        "an.Field(name='html_title', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.field"
+        "s.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='link', annotation=OpRef(name='init.fields.03.annotation')"
+        ", default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='display_link', annotation"
+        "=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, "
+        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
+        "an.Field(name='snippet', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.0"
+        "5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='html_snippet', annotation=OpRef(name='init.fields.06.annotat"
+        "ion'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_id', annotatio"
+        "n=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='formatted_url', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.f"
+        "ields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='html_formatted_url', annotation=OpRef(name='init.fiel"
+        "ds.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='mime', "
+        "annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='file_format', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name="
+        "'init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='x', annotation=OpRef(name='init.fields.12.anno"
+        "tation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('kind'"
+        ", 'title', 'html_title', 'link', 'display_link', 'snippet', 'html_snippet', 'cache_id', 'formatted_url', 'html"
+        "_formatted_url', 'mime', 'file_format', 'x'), kw_only_params=(), frozen=True, slots=False, post_init_params=No"
+        "ne, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='kind', kw_only=False, fn=None), ReprP"
+        "lan.Field(name='title', kw_only=False, fn=None), ReprPlan.Field(name='html_title', kw_only=False, fn=None), Re"
+        "prPlan.Field(name='link', kw_only=False, fn=None), ReprPlan.Field(name='display_link', kw_only=False, fn=None)"
+        ", ReprPlan.Field(name='snippet', kw_only=False, fn=None), ReprPlan.Field(name='html_snippet', kw_only=False, f"
+        "n=None), ReprPlan.Field(name='cache_id', kw_only=False, fn=None), ReprPlan.Field(name='formatted_url', kw_only"
+        "=False, fn=None), ReprPlan.Field(name='html_formatted_url', kw_only=False, fn=None), ReprPlan.Field(name='mime"
+        "', kw_only=False, fn=None), ReprPlan.Field(name='file_format', kw_only=False, fn=None)), id=False, terse=False"
+        ", default_fn=None)))"
     ),
-    plan_repr_sha1='9a7ab73f68edd197196f8d58344e8bb2b4962d7f',
+    plan_repr_sha1='4fe5bb897a686ca1487bb8d85e655d4100c4a8f2',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__00__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ommlds.minichain.backends.impls.google.search', 'CseSearchResult'),
     ),
 )
-def _process_dataclass__9a7ab73f68edd197196f8d58344e8bb2b4962d7f():
+def _process_dataclass__4fe5bb897a686ca1487bb8d85e655d4100c4a8f2():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__00__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
         __dataclass__init__fields__11__default,
         __dataclass__init__fields__12__annotation,
         __dataclass__init__fields__12__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -7917,16 +7918,16 @@ def _process_dataclass__9a7ab73f68edd197196f8d58344e8bb2b4962d7f():
 
         def __init__(
             self,
-            kind: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            title: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            html_title: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            link: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            display_link: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            snippet: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            html_snippet: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            cache_id: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            formatted_url: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            html_formatted_url: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            kind: __dataclass__init__fields__00__annotation = __dataclass__init__fields__00__default,
+            title: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            html_title: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            link: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            display_link: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            snippet: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            html_snippet: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            cache_id: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            formatted_url: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            html_formatted_url: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             mime: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             file_format: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             x: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,

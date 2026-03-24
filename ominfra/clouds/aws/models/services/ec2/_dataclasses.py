@@ -38,62 +38,81 @@ def _register(**kwargs):
         "', 'network_interface_owner_id', 'private_ip_address', 'tags', 'public_ipv4_pool', 'network_border_group', 'cu"
         "stomer_owned_ip', 'customer_owned_ipv4_pool', 'carrier_ip', 'subnet_id', 'service_managed', 'instance_id', 'pu"
         "blic_ip'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields."
-        "0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR,"
-        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='allocation_id', annotation=OpRef(name='ini"
-        "t.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ass"
-        "ociation_id', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), "
-        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
-        "eck_type=None), InitPlan.Field(name='domain', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef"
-        "(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_interface_id', annotation=OpRef(n"
-        "ame='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True,"
+        "00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='allocation_id', annotation=OpRef(name='in"
+        "it.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "association_id', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='domain', annotation=OpRef(name='init.fields.03.annotation'), default"
+        "=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_interface_id', annotation="
+        "OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='network_interface_owner_id', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(n"
+        "ame='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(name"
+        "='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='tags', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='public_ipv4_pool', annotation=OpRef(name='init.fields.08.annotation'), def"
+        "ault=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_border_group', annotat"
+        "ion=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='customer_owned_ip', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='"
+        "init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='customer_owned_ipv4_pool', annotation=OpRef(nam"
+        "e='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True,"
         " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='network_interface_owner_id', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init."
-        "fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(name='init.fiel"
-        "ds.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=Fals"
-        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags', an"
-        "notation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory="
-        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='public_ipv4_pool', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name="
-        "'init.fields.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='network_border_group', annotation=OpRef(name='i"
-        "nit.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='c"
-        "ustomer_owned_ip', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='customer_owned_ipv4_pool', annotation=OpRef(name='init.fields.11.a"
-        "nnotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='carrier_ip', a"
-        "nnotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_facto"
-        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
-        "), InitPlan.Field(name='subnet_id', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='in"
-        "it.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='service_managed', annotation=OpRef(name='init.fie"
-        "lds.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instan"
-        "ce_id', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='public_ip', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef"
-        "(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
-        "E, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('allocatio"
-        "n_id', 'association_id', 'domain', 'network_interface_id', 'network_interface_owner_id', 'private_ip_address',"
-        " 'tags', 'public_ipv4_pool', 'network_border_group', 'customer_owned_ip', 'customer_owned_ipv4_pool', 'carrier"
-        "_ip', 'subnet_id', 'service_managed', 'instance_id', 'public_ip'), frozen=True, slots=False, post_init_params="
-        "None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='allocation_id', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='association_id', kw_only=True, fn=None), ReprPlan.Field(name='domain', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), ReprPlan.Field(name='network_in"
-        "terface_owner_id', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_address', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='public_ipv4_pool', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='network_border_group', kw_only=True, fn=None), ReprPlan.Field(name='customer_owned_i"
-        "p', kw_only=True, fn=None), ReprPlan.Field(name='customer_owned_ipv4_pool', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='carrier_ip', kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='service_managed', kw_only=True, fn=None), ReprPlan.Field(name='instance_id', kw_only=True, fn="
-        "None), ReprPlan.Field(name='public_ip', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "ame='carrier_ip', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='subnet_id', annotation=OpRef(name='init.fields.13.annotation'), def"
+        "ault=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='service_managed', annotation=O"
+        "pRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='instance_id', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields"
+        ".15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='public_ip', annotation=OpRef(name='init.fields.16.annotati"
+        "on'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only"
+        "_params=('allocation_id', 'association_id', 'domain', 'network_interface_id', 'network_interface_owner_id', 'p"
+        "rivate_ip_address', 'tags', 'public_ipv4_pool', 'network_border_group', 'customer_owned_ip', 'customer_owned_i"
+        "pv4_pool', 'carrier_ip', 'subnet_id', 'service_managed', 'instance_id', 'public_ip'), frozen=True, slots=False"
+        ", post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='allocation_id', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='association_id', kw_only=True, fn=None), ReprPlan.Field(name='dom"
+        "ain', kw_only=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), ReprPlan.Fie"
+        "ld(name='network_interface_owner_id', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_address', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='public_ipv4_pool', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='network_border_group', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='customer_owned_ip', kw_only=True, fn=None), ReprPlan.Field(name='customer_owned_ipv4_pool', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='carrier_ip', kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=Tr"
+        "ue, fn=None), ReprPlan.Field(name='service_managed', kw_only=True, fn=None), ReprPlan.Field(name='instance_id'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='public_ip', kw_only=True, fn=None)), id=False, terse=False, def"
+        "ault_fn=None)))"
     ),
-    plan_repr_sha1='db1126f8ac107695f46b0eb4548009951a2add6f',
+    plan_repr_sha1='b37d2d2e0b5c9d7baf2d916497648b989a0e15b3',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -108,33 +127,33 @@ def _register(**kwargs):
         '__dataclass__init__fields__15__default',
         '__dataclass__init__fields__16__annotation',
         '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Address'),
     ),
 )
-def _process_dataclass__db1126f8ac107695f46b0eb4548009951a2add6f():
+def _process_dataclass__b37d2d2e0b5c9d7baf2d916497648b989a0e15b3():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -149,24 +168,6 @@ def _process_dataclass__db1126f8ac107695f46b0eb4548009951a2add6f():
         __dataclass__init__fields__15__default,
         __dataclass__init__fields__16__annotation,
         __dataclass__init__fields__16__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -329,15 +330,15 @@ def _process_dataclass__db1126f8ac107695f46b0eb4548009951a2add6f():
         def __init__(
             self,
             *,
-            allocation_id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            association_id: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            domain: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            network_interface_id: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            network_interface_owner_id: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            private_ip_address: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            tags: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            public_ipv4_pool: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            network_border_group: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            allocation_id: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            association_id: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            domain: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            network_interface_id: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            network_interface_owner_id: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            private_ip_address: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            tags: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            public_ipv4_pool: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            network_border_group: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             customer_owned_ip: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             customer_owned_ipv4_pool: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             carrier_ip: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -1740,68 +1741,85 @@ def _process_dataclass__147d641b6fe062ace9ae79cf40c895abb57d7f1e():
         "it_gateway_id', 'local_gateway_id', 'carrier_gateway_id', 'core_network_arn', 'odb_network_arn', 'dry_run', 'r"
         "oute_table_id', 'destination_cidr_block', 'gateway_id', 'destination_ipv6_cidr_block', 'egress_only_internet_g"
         "ateway_id', 'instance_id', 'network_interface_id', 'vpc_peering_connection_id', 'nat_gateway_id'), cache=False"
-        "), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), defaul"
-        "t=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='destination_prefix_list_id', annotation=OpRef(name='init.fields."
-        "1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='vpc_endpoint"
-        "_id', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='transit_gateway_id', annotation=OpRef(name='init.fields.3.annotation'), default=O"
-        "pRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='local_gateway_id', annotation=OpRef(n"
-        "ame='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='carrier_gateway_id', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='core_network_arn', annotation=OpRef(name='init.fields.6.annot"
-        "ation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_t"
-        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='odb_network_arn', a"
-        "nnotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory"
+        "), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), defau"
+        "lt=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='destination_prefix_list_id', annotation=OpRef(name='init.fields"
+        ".01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='vpc_endpo"
+        "int_id', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='transit_gateway_id', annotation=OpRef(name='init.fields.03.annotation'), def"
+        "ault=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='local_gateway_id', annotation="
+        "OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='carrier_gateway_id', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='ini"
+        "t.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='core_network_arn', annotation=OpRef(name='init.fie"
+        "lds.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='odb_ne"
+        "twork_arn', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.08.annotation'), default=OpR"
+        "ef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='route_table_id', annotation=OpRef(name"
+        "='init.fields.09.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='destination_cidr_block', ann"
+        "otation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory"
         "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fi"
-        "elds.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='route_table_id', annotation=OpRef(name='init.fields.9.a"
-        "nnotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='destination_cidr_block', annotation=OpRef(name"
-        "='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='gateway_id', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='destination_ipv6_cidr_block', annotation=OpRef(name='init.fields.12."
-        "annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='egress_only_i"
-        "nternet_gateway_id', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='instance_id', annotation=OpRef(name='init.fields.14.annotation')"
-        ", default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_interface_id', an"
-        "notation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='vpc_peering_connection_id', annotation=OpRef(name='init.fields.16.annotation'), default"
-        "=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nat_gateway_id', annotation=OpRef("
-        "name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=Tr"
-        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='"
-        "self', std_params=(), kw_only_params=('destination_prefix_list_id', 'vpc_endpoint_id', 'transit_gateway_id', '"
-        "local_gateway_id', 'carrier_gateway_id', 'core_network_arn', 'odb_network_arn', 'dry_run', 'route_table_id', '"
-        "destination_cidr_block', 'gateway_id', 'destination_ipv6_cidr_block', 'egress_only_internet_gateway_id', 'inst"
-        "ance_id', 'network_interface_id', 'vpc_peering_connection_id', 'nat_gateway_id'), frozen=True, slots=False, po"
-        "st_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='destination_prefix_l"
-        "ist_id', kw_only=True, fn=None), ReprPlan.Field(name='vpc_endpoint_id', kw_only=True, fn=None), ReprPlan.Field"
-        "(name='transit_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='local_gateway_id', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='carrier_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='core_network_arn'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='odb_network_arn', kw_only=True, fn=None), ReprPlan.Field(name='"
-        "dry_run', kw_only=True, fn=None), ReprPlan.Field(name='route_table_id', kw_only=True, fn=None), ReprPlan.Field"
-        "(name='destination_cidr_block', kw_only=True, fn=None), ReprPlan.Field(name='gateway_id', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='destination_ipv6_cidr_block', kw_only=True, fn=None), ReprPlan.Field(name='egress_onl"
-        "y_internet_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_id', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='network_interface_id', kw_only=True, fn=None), ReprPlan.Field(name='vpc_peering_connection_i"
-        "d', kw_only=True, fn=None), ReprPlan.Field(name='nat_gateway_id', kw_only=True, fn=None)), id=False, terse=Fal"
-        "se, default_fn=None)))"
+        " InitPlan.Field(name='gateway_id', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='ini"
+        "t.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='destination_ipv6_cidr_block', annotation=OpRef(nam"
+        "e='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='egress_only_internet_gateway_id', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name="
+        "'init.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='instance_id', annotation=OpRef(name='init.fiel"
+        "ds.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network"
+        "_interface_id', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='vpc_peering_connection_id', annotation=OpRef(name='init.fields.16.ann"
+        "otation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nat_gateway_id',"
+        " annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne)), self_param='self', std_params=(), kw_only_params=('destination_prefix_list_id', 'vpc_endpoint_id', 'tran"
+        "sit_gateway_id', 'local_gateway_id', 'carrier_gateway_id', 'core_network_arn', 'odb_network_arn', 'dry_run', '"
+        "route_table_id', 'destination_cidr_block', 'gateway_id', 'destination_ipv6_cidr_block', 'egress_only_internet_"
+        "gateway_id', 'instance_id', 'network_interface_id', 'vpc_peering_connection_id', 'nat_gateway_id'), frozen=Tru"
+        "e, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='de"
+        "stination_prefix_list_id', kw_only=True, fn=None), ReprPlan.Field(name='vpc_endpoint_id', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='transit_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='local_gateway_id', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='carrier_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'core_network_arn', kw_only=True, fn=None), ReprPlan.Field(name='odb_network_arn', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='dry_run', kw_only=True, fn=None), ReprPlan.Field(name='route_table_id', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='destination_cidr_block', kw_only=True, fn=None), ReprPlan.Field(name='gateway_id', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='destination_ipv6_cidr_block', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='egress_only_internet_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_id', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), ReprPlan.Field(name='vpc_pe"
+        "ering_connection_id', kw_only=True, fn=None), ReprPlan.Field(name='nat_gateway_id', kw_only=True, fn=None)), i"
+        "d=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='d80b3f6d522d7ad8f1bac2b374a92de1e4414478',
+    plan_repr_sha1='3d35262dc14d6f347c13dc503f55188d8defb2cd',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -1818,32 +1836,32 @@ def _process_dataclass__147d641b6fe062ace9ae79cf40c895abb57d7f1e():
         '__dataclass__init__fields__16__default',
         '__dataclass__init__fields__17__annotation',
         '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'CreateRouteRequest'),
     ),
 )
-def _process_dataclass__d80b3f6d522d7ad8f1bac2b374a92de1e4414478():
+def _process_dataclass__3d35262dc14d6f347c13dc503f55188d8defb2cd():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -1860,23 +1878,6 @@ def _process_dataclass__d80b3f6d522d7ad8f1bac2b374a92de1e4414478():
         __dataclass__init__fields__16__default,
         __dataclass__init__fields__17__annotation,
         __dataclass__init__fields__17__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2044,15 +2045,15 @@ def _process_dataclass__d80b3f6d522d7ad8f1bac2b374a92de1e4414478():
         def __init__(
             self,
             *,
-            destination_prefix_list_id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            vpc_endpoint_id: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            transit_gateway_id: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            local_gateway_id: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            carrier_gateway_id: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            core_network_arn: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            odb_network_arn: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            dry_run: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            route_table_id: __dataclass__init__fields__9__annotation,
+            destination_prefix_list_id: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            vpc_endpoint_id: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            transit_gateway_id: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            local_gateway_id: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            carrier_gateway_id: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            core_network_arn: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            odb_network_arn: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            dry_run: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            route_table_id: __dataclass__init__fields__09__annotation,
             destination_cidr_block: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             gateway_id: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             destination_ipv6_cidr_block: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -4314,85 +4315,85 @@ def _process_dataclass__8bd2366327ae9973345c3c715d2d93e36ac27f11():
         "_results', 'next_token', 'dry_run', 'filters'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fiel"
         "ds=('executable_users', 'image_ids', 'owners', 'include_deprecated', 'include_disabled', 'max_results', 'next_"
         "token', 'dry_run', 'filters'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRe"
-        "f(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type="
-        "FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='executable_users', ann"
-        "otation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='image_ids', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fi"
-        "elds.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='owners', annotation=OpRef(name='init.fields.3.annotatio"
-        "n'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='include_deprecated', an"
-        "notation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory="
-        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='include_disabled', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name="
-        "'init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='max_results', annotation=OpRef(name='init.field"
-        "s.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_token"
-        "', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='ini"
-        "t.fields.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='filters', annotation=OpRef(name='init.fields.9.anno"
-        "tation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_o"
-        "nly_params=('executable_users', 'image_ids', 'owners', 'include_deprecated', 'include_disabled', 'max_results'"
-        ", 'next_token', 'dry_run', 'filters'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_"
-        "fns=()), ReprPlan(fields=(ReprPlan.Field(name='executable_users', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'image_ids', kw_only=True, fn=None), ReprPlan.Field(name='owners', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='include_deprecated', kw_only=True, fn=None), ReprPlan.Field(name='include_disabled', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='max_results', kw_only=True, fn=None), ReprPlan.Field(name='next_token', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='dry_run', kw_only=True, fn=None), ReprPlan.Field(name='filters', kw_only=True, fn"
-        "=None)), id=False, terse=False, default_fn=None)))"
+        "f(name='init.fields.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type"
+        "=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='executable_users', an"
+        "notation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='image_ids', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='ini"
+        "t.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='owners', annotation=OpRef(name='init.fields.03.ann"
+        "otation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='include_deprecat"
+        "ed', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='include_disabled', annotation=OpRef(name='init.fields.05.annotation'), default=O"
+        "pRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='max_results', annotation=OpRef(name="
+        "'init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='next_token', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.08.annotation'), default"
+        "=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='filters', annotation=OpRef(name='i"
+        "nit.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', "
+        "std_params=(), kw_only_params=('executable_users', 'image_ids', 'owners', 'include_deprecated', 'include_disab"
+        "led', 'max_results', 'next_token', 'dry_run', 'filters'), frozen=True, slots=False, post_init_params=None, ini"
+        "t_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='executable_users', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='image_ids', kw_only=True, fn=None), ReprPlan.Field(name='owners', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='include_deprecated', kw_only=True, fn=None), ReprPlan.Field(name='include_disabled', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='max_results', kw_only=True, fn=None), ReprPlan.Field(name='next_token"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='dry_run', kw_only=True, fn=None), ReprPlan.Field(name='filters"
+        "', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='888cdb8e577e74f9db2d2232e85293bb88592258',
+    plan_repr_sha1='cc857688cf9d60600a322f3bf2ea031fac3e7b42',
     op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'DescribeImagesRequest'),
     ),
 )
-def _process_dataclass__888cdb8e577e74f9db2d2232e85293bb88592258():
+def _process_dataclass__cc857688cf9d60600a322f3bf2ea031fac3e7b42():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4520,15 +4521,15 @@ def _process_dataclass__888cdb8e577e74f9db2d2232e85293bb88592258():
         def __init__(
             self,
             *,
-            executable_users: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            image_ids: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            owners: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            include_deprecated: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            include_disabled: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            max_results: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            next_token: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            dry_run: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            filters: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            executable_users: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            image_ids: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            owners: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            include_deprecated: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            include_disabled: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            max_results: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            next_token: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            dry_run: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            filters: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'executable_users', executable_users)
             __dataclass__object_setattr(self, 'image_ids', image_ids)
@@ -8154,53 +8155,71 @@ def _process_dataclass__0e4d14f08b2bf721ea85332e6840f6f9f2badb03():
         "amic_dunder_attrs=False), HashPlan(action='add', fields=('delete_on_termination', 'iops', 'snapshot_id', 'volu"
         "me_size', 'volume_type', 'kms_key_id', 'throughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_"
         "initialization_rate', 'availability_zone_id', 'ebs_card_index'), cache=False), InitPlan(fields=(InitPlan.Field"
-        "(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init"
-        "=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='delete_on_termination', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='ini"
-        "t.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='iops', annotation=OpRef(name='init.fields.2.annotat"
-        "ion'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='snapshot_id', annotat"
-        "ion=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='volume_size', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fiel"
-        "ds.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='volume_type', annotation=OpRef(name='init.fields.5.annota"
-        "tion'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='kms_key_id', annotat"
-        "ion=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='throughput', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.field"
-        "s.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(name='init.fields.8.annotat"
-        "ion'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='availability_zone', a"
-        "nnotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory"
+        "(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='delete_on_termination', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='i"
+        "nit.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='iops', annotation=OpRef(name='init.fields.02.ann"
+        "otation'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='snapshot_id', an"
+        "notation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='volume_size', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='i"
+        "nit.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='volume_type', annotation=OpRef(name='init.fields"
+        ".05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='kms_key_i"
+        "d', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='throughput', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(na"
+        "me='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(name='init.f"
+        "ields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='avai"
+        "lability_zone', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='encrypted', annotation=OpRef(name='init.fields.10.annotation'), defau"
+        "lt=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_initialization_rate', ann"
+        "otation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory"
         "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='encrypted', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init"
-        ".fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='volume_initialization_rate', annotation=OpRef(name="
-        "'init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='availability_zone_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields."
-        "12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='ebs_card_index', annotation=OpRef(name='init.fields.13.anno"
-        "tation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_"
-        "only_params=('delete_on_termination', 'iops', 'snapshot_id', 'volume_size', 'volume_type', 'kms_key_id', 'thro"
-        "ughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_initialization_rate', 'availability_zone_id'"
-        ", 'ebs_card_index'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan("
-        "fields=(ReprPlan.Field(name='delete_on_termination', kw_only=True, fn=None), ReprPlan.Field(name='iops', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='snapshot_id', kw_only=True, fn=None), ReprPlan.Field(name='volume_size"
-        "', kw_only=True, fn=None), ReprPlan.Field(name='volume_type', kw_only=True, fn=None), ReprPlan.Field(name='kms"
-        "_key_id', kw_only=True, fn=None), ReprPlan.Field(name='throughput', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='outpost_arn', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='encrypted', kw_only=True, fn=None), ReprPlan.Field(name='volume_initialization_rate', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='availability_zone_id', kw_only=True, fn=None), ReprPlan.Field(name='ebs_"
-        "card_index', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        " InitPlan.Field(name='availability_zone_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef"
+        "(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_card_index', annotation=OpRef(name='"
+        "init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self',"
+        " std_params=(), kw_only_params=('delete_on_termination', 'iops', 'snapshot_id', 'volume_size', 'volume_type', "
+        "'kms_key_id', 'throughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_initialization_rate', 'av"
+        "ailability_zone_id', 'ebs_card_index'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate"
+        "_fns=()), ReprPlan(fields=(ReprPlan.Field(name='delete_on_termination', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='iops', kw_only=True, fn=None), ReprPlan.Field(name='snapshot_id', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='volume_size', kw_only=True, fn=None), ReprPlan.Field(name='volume_type', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='throughput', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='outpost_arn', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='encrypted', kw_only=True, fn=None), ReprPlan.Field(name='volume_initializa"
+        "tion_rate', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone_id', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='ebs_card_index', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='ae5b1f8101abb83f483e9c8b7aa73c895d34d4aa',
+    plan_repr_sha1='4cac22fba2074ec3d48c03f4606b5dbea9f34047',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -8209,33 +8228,33 @@ def _process_dataclass__0e4d14f08b2bf721ea85332e6840f6f9f2badb03():
         '__dataclass__init__fields__12__default',
         '__dataclass__init__fields__13__annotation',
         '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'EbsBlockDevice'),
     ),
 )
-def _process_dataclass__ae5b1f8101abb83f483e9c8b7aa73c895d34d4aa():
+def _process_dataclass__4cac22fba2074ec3d48c03f4606b5dbea9f34047():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -8244,24 +8263,6 @@ def _process_dataclass__ae5b1f8101abb83f483e9c8b7aa73c895d34d4aa():
         __dataclass__init__fields__12__default,
         __dataclass__init__fields__13__annotation,
         __dataclass__init__fields__13__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -8409,15 +8410,15 @@ def _process_dataclass__ae5b1f8101abb83f483e9c8b7aa73c895d34d4aa():
         def __init__(
             self,
             *,
-            delete_on_termination: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            iops: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            snapshot_id: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            volume_size: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            volume_type: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            kms_key_id: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            throughput: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            outpost_arn: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            availability_zone: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            delete_on_termination: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            iops: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            snapshot_id: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            volume_size: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            volume_type: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            kms_key_id: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            throughput: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            outpost_arn: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            availability_zone: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             encrypted: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             volume_initialization_rate: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             availability_zone_id: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -12081,127 +12082,145 @@ def _process_dataclass__393cef70a0276465bcd054e4c1e3f3361f57d405():
         "wed', 'source_image_id', 'source_image_region', 'free_tier_eligible', 'image_id', 'image_location', 'state', '"
         "owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id'"
         ", 'platform'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fie"
-        "lds.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_"
-        "VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='platform_details', annotation=OpRef(na"
-        "me='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='usage_operation', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='block_device_mappings', annotation=OpRef(name='init.fields.3.anno"
-        "tation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='description', anno"
-        "tation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='ena_support', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.f"
-        "ields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fields.6.anno"
-        "tation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_owner_alias'"
-        ", annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fi"
-        "elds.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='root_device_name', annotation=OpRef(name='init.fields.9"
-        ".annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='root_device_t"
-        "ype', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None), InitPlan.Field(name='sriov_net_support', annotation=OpRef(name='init.fields.11.annotation'), default"
-        "=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='state_reason', annotation=OpRef(na"
-        "me='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='tags', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='virtualization_type', annotation=OpRef(name='init.fields.14.annotation')"
-        ", default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='boot_mode', annotation=Op"
-        "Ref(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='tpm_support', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields."
-        "16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='deprecation_time', annotation=OpRef(name='init.fields.17.an"
-        "notation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='imds_support', "
-        "annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='source_instance_id', annotation=OpRef(name='init.fields.19.annotation'), default=OpRe"
-        "f(name='init.fields.19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='deregistration_protection', annotation="
-        "OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='last_launched_time', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='ini"
-        "t.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='image_allowed', annotation=OpRef(name='init.fields"
-        ".22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=Fals"
-        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='source_im"
-        "age_id', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), def"
-        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
-        "_type=None), InitPlan.Field(name='source_image_region', annotation=OpRef(name='init.fields.24.annotation'), de"
-        "fault=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldT"
-        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='free_tier_eligible', annotati"
-        "on=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='image_id', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.field"
-        "s.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='image_location', annotation=OpRef(name='init.fields.27.an"
-        "notation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='state', annotat"
-        "ion=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='owner_id', annotation=OpRef(name='init.fields.29.annotation'), default=OpRef(name='init.fiel"
-        "ds.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='creation_date', annotation=OpRef(name='init.fields.30.an"
-        "notation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='public', annota"
-        "tion=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='product_codes', annotation=OpRef(name='init.fields.32.annotation'), default=OpRef(name='ini"
-        "t.fields.32.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='architecture', annotation=OpRef(name='init.fields."
-        "33.annotation'), default=OpRef(name='init.fields.33.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_type"
-        "', annotation=OpRef(name='init.fields.34.annotation'), default=OpRef(name='init.fields.34.default'), default_f"
+        "lds.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS"
+        "_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='platform_details', annotation=OpRef(n"
+        "ame='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='usage_operation', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.0"
+        "2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='block_device_mappings', annotation=OpRef(name='init.fields.0"
+        "3.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='description"
+        "', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_f"
         "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='kernel_id', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name"
-        "='init.fields.35.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='ramdisk_id', annotation=OpRef(name='init.fiel"
-        "ds.36.annotation'), default=OpRef(name='init.fields.36.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='platfor"
-        "m', annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None)), self_param='self', std_params=(), kw_only_params=('platform_details', 'usage_operation', 'block_devic"
-        "e_mappings', 'description', 'ena_support', 'hypervisor', 'image_owner_alias', 'name', 'root_device_name', 'roo"
-        "t_device_type', 'sriov_net_support', 'state_reason', 'tags', 'virtualization_type', 'boot_mode', 'tpm_support'"
-        ", 'deprecation_time', 'imds_support', 'source_instance_id', 'deregistration_protection', 'last_launched_time',"
-        " 'image_allowed', 'source_image_id', 'source_image_region', 'free_tier_eligible', 'image_id', 'image_location'"
-        ", 'state', 'owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_type', 'kernel_id', "
-        "'ramdisk_id', 'platform'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), Rep"
-        "rPlan(fields=(ReprPlan.Field(name='platform_details', kw_only=True, fn=None), ReprPlan.Field(name='usage_opera"
-        "tion', kw_only=True, fn=None), ReprPlan.Field(name='block_device_mappings', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='description', kw_only=True, fn=None), ReprPlan.Field(name='ena_support', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='image_owner_alias', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='root_device_name', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='root_device_type', kw_only=True, fn=None), ReprPlan.Field(name='sriov_ne"
-        "t_support', kw_only=True, fn=None), ReprPlan.Field(name='state_reason', kw_only=True, fn=None), ReprPlan.Field"
-        "(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='virtualization_type', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='boot_mode', kw_only=True, fn=None), ReprPlan.Field(name='tpm_support', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='deprecation_time', kw_only=True, fn=None), ReprPlan.Field(name='imds_support', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='source_instance_id', kw_only=True, fn=None), ReprPlan.Field(name='deregist"
-        "ration_protection', kw_only=True, fn=None), ReprPlan.Field(name='last_launched_time', kw_only=True, fn=None), "
-        "ReprPlan.Field(name='image_allowed', kw_only=True, fn=None), ReprPlan.Field(name='source_image_id', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='source_image_region', kw_only=True, fn=None), ReprPlan.Field(name='free_tie"
-        "r_eligible', kw_only=True, fn=None), ReprPlan.Field(name='image_id', kw_only=True, fn=None), ReprPlan.Field(na"
-        "me='image_location', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='creation_date', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='public', kw_only=True, fn=None), ReprPlan.Field(name='product_codes', kw_only=True, fn=None), "
-        "ReprPlan.Field(name='architecture', kw_only=True, fn=None), ReprPlan.Field(name='image_type', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='kernel_id', kw_only=True, fn=None), ReprPlan.Field(name='ramdisk_id', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='platform', kw_only=True, fn=None)), id=False, terse=False, default_fn=None))"
-        ")"
+        "None), InitPlan.Field(name='ena_support', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(na"
+        "me='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fi"
+        "elds.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image"
+        "_owner_alias', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.08.annotation'), default=OpR"
+        "ef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='root_device_name', annotation=OpRef(na"
+        "me='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='root_device_type', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.1"
+        "0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='sriov_net_support', annotation=OpRef(name='init.fields.11.an"
+        "notation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='state_reason', "
+        "annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='tags', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.f"
+        "ields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='virtualization_type', annotation=OpRef(name='init.fie"
+        "lds.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='boot_m"
+        "ode', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='tpm_support', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef"
+        "(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='deprecation_time', annotation=OpRef(name"
+        "='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='imds_support', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='source_instance_id', annotation=OpRef(name='init.fields.19.annotat"
+        "ion'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='deregistration_prote"
+        "ction', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='last_launched_time', annotation=OpRef(name='init.fields.21.annotation'), defa"
+        "ult=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
+        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_allowed', annotation=OpRe"
+        "f(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='source_image_id', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.field"
+        "s.23.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='source_image_region', annotation=OpRef(name='init.fields."
+        "24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='free_tier_"
+        "eligible', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='image_id', annotation=OpRef(name='init.fields.26.annotation'), default=OpR"
+        "ef(name='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_location', annotation=OpRef(name"
+        "='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='state', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None), InitPlan.Field(name='owner_id', annotation=OpRef(name='init.fields.29.annotation'), default=Op"
+        "Ref(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
+        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='creation_date', annotation=OpRef(name"
+        "='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='public', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='product_codes', annotation=OpRef(name='init.fields.32.annotation'), defa"
+        "ult=OpRef(name='init.fields.32.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
+        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='architecture', annotation=OpRef"
+        "(name='init.fields.33.annotation'), default=OpRef(name='init.fields.33.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='image_type', annotation=OpRef(name='init.fields.34.annotation'), default=OpRef(name='init.fields.34.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='kernel_id', annotation=OpRef(name='init.fields.35.annotation'),"
+        " default=OpRef(name='init.fields.35.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ramdisk_id', annotation=Op"
+        "Ref(name='init.fields.36.annotation'), default=OpRef(name='init.fields.36.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='platform', annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37."
+        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
+        "te=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('platform_details', 'usage_opera"
+        "tion', 'block_device_mappings', 'description', 'ena_support', 'hypervisor', 'image_owner_alias', 'name', 'root"
+        "_device_name', 'root_device_type', 'sriov_net_support', 'state_reason', 'tags', 'virtualization_type', 'boot_m"
+        "ode', 'tpm_support', 'deprecation_time', 'imds_support', 'source_instance_id', 'deregistration_protection', 'l"
+        "ast_launched_time', 'image_allowed', 'source_image_id', 'source_image_region', 'free_tier_eligible', 'image_id"
+        "', 'image_location', 'state', 'owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_t"
+        "ype', 'kernel_id', 'ramdisk_id', 'platform'), frozen=True, slots=False, post_init_params=None, init_fns=(), va"
+        "lidate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='platform_details', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='usage_operation', kw_only=True, fn=None), ReprPlan.Field(name='block_device_mappings', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='ena_support', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='image_owner_al"
+        "ias', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='root_de"
+        "vice_name', kw_only=True, fn=None), ReprPlan.Field(name='root_device_type', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='sriov_net_support', kw_only=True, fn=None), ReprPlan.Field(name='state_reason', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='virtualization_type', kw_only=Tr"
+        "ue, fn=None), ReprPlan.Field(name='boot_mode', kw_only=True, fn=None), ReprPlan.Field(name='tpm_support', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='deprecation_time', kw_only=True, fn=None), ReprPlan.Field(name='imds_"
+        "support', kw_only=True, fn=None), ReprPlan.Field(name='source_instance_id', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='deregistration_protection', kw_only=True, fn=None), ReprPlan.Field(name='last_launched_time', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='image_allowed', kw_only=True, fn=None), ReprPlan.Field(name='source_im"
+        "age_id', kw_only=True, fn=None), ReprPlan.Field(name='source_image_region', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name='image_id', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='image_location', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn="
+        "None), ReprPlan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='creation_date', kw_only=Tr"
+        "ue, fn=None), ReprPlan.Field(name='public', kw_only=True, fn=None), ReprPlan.Field(name='product_codes', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='architecture', kw_only=True, fn=None), ReprPlan.Field(name='image_type"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='kernel_id', kw_only=True, fn=None), ReprPlan.Field(name='ramdi"
+        "sk_id', kw_only=True, fn=None), ReprPlan.Field(name='platform', kw_only=True, fn=None)), id=False, terse=False"
+        ", default_fn=None)))"
     ),
-    plan_repr_sha1='fe5045a4d78c719e770d3dfad1430428ecab7dfe',
+    plan_repr_sha1='686db45689f78c950d397254b6871732b8943f49',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -12222,8 +12241,6 @@ def _process_dataclass__393cef70a0276465bcd054e4c1e3f3361f57d405():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
@@ -12244,8 +12261,6 @@ def _process_dataclass__393cef70a0276465bcd054e4c1e3f3361f57d405():
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
         '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__30__annotation',
         '__dataclass__init__fields__30__default',
         '__dataclass__init__fields__31__annotation',
@@ -12262,29 +12277,33 @@ def _process_dataclass__393cef70a0276465bcd054e4c1e3f3361f57d405():
         '__dataclass__init__fields__36__default',
         '__dataclass__init__fields__37__annotation',
         '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Image'),
     ),
 )
-def _process_dataclass__fe5045a4d78c719e770d3dfad1430428ecab7dfe():
+def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -12305,8 +12324,6 @@ def _process_dataclass__fe5045a4d78c719e770d3dfad1430428ecab7dfe():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
@@ -12327,8 +12344,6 @@ def _process_dataclass__fe5045a4d78c719e770d3dfad1430428ecab7dfe():
         __dataclass__init__fields__28__default,
         __dataclass__init__fields__29__annotation,
         __dataclass__init__fields__29__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
         __dataclass__init__fields__30__annotation,
         __dataclass__init__fields__30__default,
         __dataclass__init__fields__31__annotation,
@@ -12345,20 +12360,6 @@ def _process_dataclass__fe5045a4d78c719e770d3dfad1430428ecab7dfe():
         __dataclass__init__fields__36__default,
         __dataclass__init__fields__37__annotation,
         __dataclass__init__fields__37__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -12626,15 +12627,15 @@ def _process_dataclass__fe5045a4d78c719e770d3dfad1430428ecab7dfe():
         def __init__(
             self,
             *,
-            platform_details: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            usage_operation: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            block_device_mappings: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            description: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            ena_support: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            hypervisor: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            image_owner_alias: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            name: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            root_device_name: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            platform_details: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            usage_operation: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            block_device_mappings: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            description: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            ena_support: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            hypervisor: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            image_owner_alias: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            name: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            root_device_name: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             root_device_type: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             sriov_net_support: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             state_reason: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -13154,205 +13155,223 @@ def _process_dataclass__c61c1debd6c8733c987556e95fc6934a226ef909():
         "private_dns_name', 'public_dns_name', 'state_transition_reason', 'key_name', 'ami_launch_index', 'product_code"
         "s', 'instance_type', 'launch_time', 'placement', 'kernel_id', 'ramdisk_id', 'platform', 'monitoring', 'subnet_"
         "id', 'vpc_id', 'private_ip_address', 'public_ip_address'), cache=False), InitPlan(fields=(InitPlan.Field(name="
-        "'__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True,"
-        " override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='architecture', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='block_device_mappings', annotation=OpRef(name='init.fields.2.annot"
-        "ation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_t"
-        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='client_token', anno"
-        "tation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='ebs_optimized', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init"
-        ".fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='ena_support', annotation=OpRef(name='init.fields.5.a"
-        "nnotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='hypervisor', an"
-        "notation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory="
-        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='iam_instance_profile', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(n"
-        "ame='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_lifecycle', annotation=OpRef(name="
-        "'init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'elastic_gpu_associations', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields"
-        ".9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='elastic_inference_accelerator_associations', annotation=OpR"
-        "ef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='network_interfaces', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.f"
-        "ields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(name='init.fields.12.a"
-        "nnotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='root_device_na"
-        "me', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='root_device_type', annotation=OpRef(name='init.fields.14.annotation'), default=O"
-        "pRef(name='init.fields.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='security_groups', annotation=OpRef(n"
-        "ame='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='source_dest_check', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields"
-        ".16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='spot_instance_request_id', annotation=OpRef(name='init.fie"
-        "lds.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sriov_"
-        "net_support', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='state_reason', annotation=OpRef(name='init.fields.19.annotation'), defa"
-        "ult=OpRef(name='init.fields.19.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags', annotation=OpRef(name='i"
-        "nit.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'virtualization_type', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='cpu_options', annotation=OpRef(name='init.fields.22.annotation"
-        "'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='capacity_block_id', ann"
-        "otation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='capacity_reservation_id', annotation=OpRef(name='init.fields.24.annotation'), default=Op"
-        "Ref(name='init.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='capacity_reservation_specification', "
-        "annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='hibernation_options', annotation=OpRef(name='init.fields.26.annotation'), default=OpR"
-        "ef(name='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='licenses', annotation=OpRef(name='init"
-        ".fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='me"
-        "tadata_options', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='enclave_options', annotation=OpRef(name='init.fields.29.annotation')"
-        ", default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='boot_mode', annotation=Op"
-        "Ref(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='platform_details', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fi"
-        "elds.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='usage_operation', annotation=OpRef(name='init.fields.3"
-        "2.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='usage_opera"
-        "tion_update_time', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef(name='init.fields.33.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='private_dns_name_options', annotation=OpRef(name='init.fields.34.a"
-        "nnotation'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_address',"
-        " annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.default'), default_fac"
+        "'__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init=True"
+        ", override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='architecture', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='block_device_mappings', annotation=OpRef(name='init.fields.02.a"
+        "nnotation'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='client_token',"
+        " annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_fac"
         "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='tpm_support', annotation=OpRef(name='init.fields.36.annotation'), default=OpRef(name"
-        "='init.fields.36.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='maintenance_options', annotation=OpRef(name='"
-        "init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='current_instance_boot_mode', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(name='init.fi"
-        "elds.38.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='network_performance_options', annotation=OpRef(name='i"
-        "nit.fields.39.annotation'), default=OpRef(name='init.fields.39.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'operator', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields.40.default'), "
-        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
-        "eck_type=None), InitPlan.Field(name='secondary_interfaces', annotation=OpRef(name='init.fields.41.annotation')"
-        ", default=OpRef(name='init.fields.41.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_id', annotation="
-        "OpRef(name='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='image_id', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef(name='init.fields.4"
-        "3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='state', annotation=OpRef(name='init.fields.44.annotation'), "
-        "default=OpRef(name='init.fields.44.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_dns_name', annotati"
-        "on=OpRef(name='init.fields.45.annotation'), default=OpRef(name='init.fields.45.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='public_dns_name', annotation=OpRef(name='init.fields.46.annotation'), default=OpRef(name='ini"
-        "t.fields.46.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='state_transition_reason', annotation=OpRef(name='i"
-        "nit.fields.47.annotation'), default=OpRef(name='init.fields.47.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'key_name', annotation=OpRef(name='init.fields.48.annotation'), default=OpRef(name='init.fields.48.default'), "
-        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
-        "eck_type=None), InitPlan.Field(name='ami_launch_index', annotation=OpRef(name='init.fields.49.annotation'), de"
-        "fault=OpRef(name='init.fields.49.default'), default_factory=None, init=True, override=False, field_type=FieldT"
-        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='product_codes', annotation=Op"
-        "Ref(name='init.fields.50.annotation'), default=OpRef(name='init.fields.50.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='instance_type', annotation=OpRef(name='init.fields.51.annotation'), default=OpRef(name='init.field"
-        "s.51.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='launch_time', annotation=OpRef(name='init.fields.52.annot"
-        "ation'), default=OpRef(name='init.fields.52.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='placement', annota"
-        "tion=OpRef(name='init.fields.53.annotation'), default=OpRef(name='init.fields.53.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='kernel_id', annotation=OpRef(name='init.fields.54.annotation'), default=OpRef(name='init.fi"
-        "elds.54.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='ramdisk_id', annotation=OpRef(name='init.fields.55.ann"
-        "otation'), default=OpRef(name='init.fields.55.default'), default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='platform', annot"
-        "ation=OpRef(name='init.fields.56.annotation'), default=OpRef(name='init.fields.56.default'), default_factory=N"
+        "ne), InitPlan.Field(name='ebs_optimized', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(na"
+        "me='init.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='ena_support', annotation=OpRef(name='init.f"
+        "ields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='hype"
+        "rvisor', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='iam_instance_profile', annotation=OpRef(name='init.fields.07.annotation'), d"
+        "efault=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_lifecycle', annotat"
+        "ion=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='elastic_gpu_associations', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef"
+        "(name='init.fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='elastic_inference_accelerator_associatio"
+        "ns', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='network_interfaces', annotation=OpRef(name='init.fields.11.annotation'), default"
+        "=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(nam"
+        "e='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='root_device_name', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='root_device_type', annotation=OpRef(name='init.fields.14.anno"
+        "tation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='security_groups',"
+        " annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='source_dest_check', annotation=OpRef(name='init.fields.16.annotation'), default=OpRe"
+        "f(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='spot_instance_request_id', annotation=O"
+        "pRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='sriov_net_support', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init."
+        "fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='state_reason', annotation=OpRef(name='init.fields.19"
+        ".annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags', annot"
+        "ation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=N"
         "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='monitoring', annotation=OpRef(name='init.fields.57.annotation'), default=OpRef(name='init."
-        "fields.57.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='subnet_id', annotation=OpRef(name='init.fields.58.an"
-        "notation'), default=OpRef(name='init.fields.58.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='vpc_id', annota"
-        "tion=OpRef(name='init.fields.59.annotation'), default=OpRef(name='init.fields.59.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='private_ip_address', annotation=OpRef(name='init.fields.60.annotation'), default=OpRef(name"
-        "='init.fields.60.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='public_ip_address', annotation=OpRef(name='in"
-        "it.fields.61.annotation'), default=OpRef(name='init.fields.61.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', s"
-        "td_params=(), kw_only_params=('architecture', 'block_device_mappings', 'client_token', 'ebs_optimized', 'ena_s"
-        "upport', 'hypervisor', 'iam_instance_profile', 'instance_lifecycle', 'elastic_gpu_associations', 'elastic_infe"
-        "rence_accelerator_associations', 'network_interfaces', 'outpost_arn', 'root_device_name', 'root_device_type', "
-        "'security_groups', 'source_dest_check', 'spot_instance_request_id', 'sriov_net_support', 'state_reason', 'tags"
-        "', 'virtualization_type', 'cpu_options', 'capacity_block_id', 'capacity_reservation_id', 'capacity_reservation"
-        "_specification', 'hibernation_options', 'licenses', 'metadata_options', 'enclave_options', 'boot_mode', 'platf"
-        "orm_details', 'usage_operation', 'usage_operation_update_time', 'private_dns_name_options', 'ipv6_address', 't"
-        "pm_support', 'maintenance_options', 'current_instance_boot_mode', 'network_performance_options', 'operator', '"
-        "secondary_interfaces', 'instance_id', 'image_id', 'state', 'private_dns_name', 'public_dns_name', 'state_trans"
-        "ition_reason', 'key_name', 'ami_launch_index', 'product_codes', 'instance_type', 'launch_time', 'placement', '"
-        "kernel_id', 'ramdisk_id', 'platform', 'monitoring', 'subnet_id', 'vpc_id', 'private_ip_address', 'public_ip_ad"
-        "dress'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Repr"
-        "Plan.Field(name='architecture', kw_only=True, fn=None), ReprPlan.Field(name='block_device_mappings', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='client_token', kw_only=True, fn=None), ReprPlan.Field(name='ebs_optimized'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='ena_support', kw_only=True, fn=None), ReprPlan.Field(name='hype"
-        "rvisor', kw_only=True, fn=None), ReprPlan.Field(name='iam_instance_profile', kw_only=True, fn=None), ReprPlan."
-        "Field(name='instance_lifecycle', kw_only=True, fn=None), ReprPlan.Field(name='elastic_gpu_associations', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='elastic_inference_accelerator_associations', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='network_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='outpost_arn', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='root_device_name', kw_only=True, fn=None), ReprPlan.Field(name='root_device"
-        "_type', kw_only=True, fn=None), ReprPlan.Field(name='security_groups', kw_only=True, fn=None), ReprPlan.Field("
-        "name='source_dest_check', kw_only=True, fn=None), ReprPlan.Field(name='spot_instance_request_id', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='sriov_net_support', kw_only=True, fn=None), ReprPlan.Field(name='state_reason"
-        "', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='virtualiza"
-        "tion_type', kw_only=True, fn=None), ReprPlan.Field(name='cpu_options', kw_only=True, fn=None), ReprPlan.Field("
-        "name='capacity_block_id', kw_only=True, fn=None), ReprPlan.Field(name='capacity_reservation_id', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='capacity_reservation_specification', kw_only=True, fn=None), ReprPlan.Field(na"
-        "me='hibernation_options', kw_only=True, fn=None), ReprPlan.Field(name='licenses', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='metadata_options', kw_only=True, fn=None), ReprPlan.Field(name='enclave_options', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='boot_mode', kw_only=True, fn=None), ReprPlan.Field(name='platform_details', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='usage_operation', kw_only=True, fn=None), ReprPlan.Field(name='us"
-        "age_operation_update_time', kw_only=True, fn=None), ReprPlan.Field(name='private_dns_name_options', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='ipv6_address', kw_only=True, fn=None), ReprPlan.Field(name='tpm_support', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='maintenance_options', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'current_instance_boot_mode', kw_only=True, fn=None), ReprPlan.Field(name='network_performance_options', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='operator', kw_only=True, fn=None), ReprPlan.Field(name='secondary_inte"
-        "rfaces', kw_only=True, fn=None), ReprPlan.Field(name='instance_id', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='image_id', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='private_dns_name', kw_only=True, fn=None), ReprPlan.Field(name='public_dns_name', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='state_transition_reason', kw_only=True, fn=None), ReprPlan.Field(name='key_name', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='ami_launch_index', kw_only=True, fn=None), ReprPlan.Field(name='product_co"
-        "des', kw_only=True, fn=None), ReprPlan.Field(name='instance_type', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='launch_time', kw_only=True, fn=None), ReprPlan.Field(name='placement', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='kernel_id', kw_only=True, fn=None), ReprPlan.Field(name='ramdisk_id', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='platform', kw_only=True, fn=None), ReprPlan.Field(name='monitoring', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='public_ip_address', kw_onl"
-        "y=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "nitPlan.Field(name='virtualization_type', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(na"
+        "me='init.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='cpu_options', annotation=OpRef(name='init.f"
+        "ields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='capa"
+        "city_block_id', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='capacity_reservation_id', annotation=OpRef(name='init.fields.24.annot"
+        "ation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='capacity_reservati"
+        "on_specification', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='hibernation_options', annotation=OpRef(name='init.fields.26.annota"
+        "tion'), default=OpRef(name='init.fields.26.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='licenses', annotati"
+        "on=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='metadata_options', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='in"
+        "it.fields.28.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='enclave_options', annotation=OpRef(name='init.fie"
+        "lds.29.annotation'), default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='boot_m"
+        "ode', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='platform_details', annotation=OpRef(name='init.fields.31.annotation'), default="
+        "OpRef(name='init.fields.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='usage_operation', annotation=OpRef("
+        "name='init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='usage_operation_update_time', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef(name='"
+        "init.fields.33.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='private_dns_name_options', annotation=OpRef(nam"
+        "e='init.fields.34.annotation'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='ipv6_address', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='tpm_support', annotation=OpRef(name='init.fields.36.annotation'),"
+        " default=OpRef(name='init.fields.36.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maintenance_options', anno"
+        "tation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='current_instance_boot_mode', annotation=OpRef(name='init.fields.38.annotation'), default="
+        "OpRef(name='init.fields.38.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_performance_options', annot"
+        "ation=OpRef(name='init.fields.39.annotation'), default=OpRef(name='init.fields.39.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='operator', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fi"
+        "elds.40.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='secondary_interfaces', annotation=OpRef(name='init.fie"
+        "lds.41.annotation'), default=OpRef(name='init.fields.41.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instan"
+        "ce_id', annotation=OpRef(name='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='image_id', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef("
+        "name='init.fields.43.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='state', annotation=OpRef(name='init.field"
+        "s.44.annotation'), default=OpRef(name='init.fields.44.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_"
+        "dns_name', annotation=OpRef(name='init.fields.45.annotation'), default=OpRef(name='init.fields.45.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='public_dns_name', annotation=OpRef(name='init.fields.46.annotation'), defa"
+        "ult=OpRef(name='init.fields.46.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
+        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='state_transition_reason', annot"
+        "ation=OpRef(name='init.fields.47.annotation'), default=OpRef(name='init.fields.47.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='key_name', annotation=OpRef(name='init.fields.48.annotation'), default=OpRef(name='init.fi"
+        "elds.48.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='ami_launch_index', annotation=OpRef(name='init.fields."
+        "49.annotation'), default=OpRef(name='init.fields.49.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='product_co"
+        "des', annotation=OpRef(name='init.fields.50.annotation'), default=OpRef(name='init.fields.50.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init.fields.51.annotation'), default=OpR"
+        "ef(name='init.fields.51.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='launch_time', annotation=OpRef(name='i"
+        "nit.fields.52.annotation'), default=OpRef(name='init.fields.52.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'placement', annotation=OpRef(name='init.fields.53.annotation'), default=OpRef(name='init.fields.53.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='kernel_id', annotation=OpRef(name='init.fields.54.annotation'), default="
+        "OpRef(name='init.fields.54.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ramdisk_id', annotation=OpRef(name="
+        "'init.fields.55.annotation'), default=OpRef(name='init.fields.55.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='platform', annotation=OpRef(name='init.fields.56.annotation'), default=OpRef(name='init.fields.56.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='monitoring', annotation=OpRef(name='init.fields.57.annotation'), defaul"
+        "t=OpRef(name='init.fields.57.default'), default_factory=None, init=True, override=False, field_type=FieldType."
+        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='subnet_id', annotation=OpRef(name"
+        "='init.fields.58.annotation'), default=OpRef(name='init.fields.58.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='vpc_id', annotation=OpRef(name='init.fields.59.annotation'), default=OpRef(name='init.fields.59.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(name='init.fields.60.annotation'),"
+        " default=OpRef(name='init.fields.60.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='public_ip_address', annota"
+        "tion=OpRef(name='init.fields.61.annotation'), default=OpRef(name='init.fields.61.default'), default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), s"
+        "elf_param='self', std_params=(), kw_only_params=('architecture', 'block_device_mappings', 'client_token', 'ebs"
+        "_optimized', 'ena_support', 'hypervisor', 'iam_instance_profile', 'instance_lifecycle', 'elastic_gpu_associati"
+        "ons', 'elastic_inference_accelerator_associations', 'network_interfaces', 'outpost_arn', 'root_device_name', '"
+        "root_device_type', 'security_groups', 'source_dest_check', 'spot_instance_request_id', 'sriov_net_support', 's"
+        "tate_reason', 'tags', 'virtualization_type', 'cpu_options', 'capacity_block_id', 'capacity_reservation_id', 'c"
+        "apacity_reservation_specification', 'hibernation_options', 'licenses', 'metadata_options', 'enclave_options', "
+        "'boot_mode', 'platform_details', 'usage_operation', 'usage_operation_update_time', 'private_dns_name_options',"
+        " 'ipv6_address', 'tpm_support', 'maintenance_options', 'current_instance_boot_mode', 'network_performance_opti"
+        "ons', 'operator', 'secondary_interfaces', 'instance_id', 'image_id', 'state', 'private_dns_name', 'public_dns_"
+        "name', 'state_transition_reason', 'key_name', 'ami_launch_index', 'product_codes', 'instance_type', 'launch_ti"
+        "me', 'placement', 'kernel_id', 'ramdisk_id', 'platform', 'monitoring', 'subnet_id', 'vpc_id', 'private_ip_addr"
+        "ess', 'public_ip_address'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), Re"
+        "prPlan(fields=(ReprPlan.Field(name='architecture', kw_only=True, fn=None), ReprPlan.Field(name='block_device_m"
+        "appings', kw_only=True, fn=None), ReprPlan.Field(name='client_token', kw_only=True, fn=None), ReprPlan.Field(n"
+        "ame='ebs_optimized', kw_only=True, fn=None), ReprPlan.Field(name='ena_support', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='iam_instance_profile', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='instance_lifecycle', kw_only=True, fn=None), ReprPlan.Field(name='elastic_gpu_a"
+        "ssociations', kw_only=True, fn=None), ReprPlan.Field(name='elastic_inference_accelerator_associations', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='network_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='outpo"
+        "st_arn', kw_only=True, fn=None), ReprPlan.Field(name='root_device_name', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='root_device_type', kw_only=True, fn=None), ReprPlan.Field(name='security_groups', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='source_dest_check', kw_only=True, fn=None), ReprPlan.Field(name='spot_instance_reques"
+        "t_id', kw_only=True, fn=None), ReprPlan.Field(name='sriov_net_support', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='state_reason', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Fie"
+        "ld(name='virtualization_type', kw_only=True, fn=None), ReprPlan.Field(name='cpu_options', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='capacity_block_id', kw_only=True, fn=None), ReprPlan.Field(name='capacity_reservation"
+        "_id', kw_only=True, fn=None), ReprPlan.Field(name='capacity_reservation_specification', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='hibernation_options', kw_only=True, fn=None), ReprPlan.Field(name='licenses', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='metadata_options', kw_only=True, fn=None), ReprPlan.Field(name='enclave_op"
+        "tions', kw_only=True, fn=None), ReprPlan.Field(name='boot_mode', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "platform_details', kw_only=True, fn=None), ReprPlan.Field(name='usage_operation', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='usage_operation_update_time', kw_only=True, fn=None), ReprPlan.Field(name='private_dns_name_o"
+        "ptions', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_address', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='tpm_support', kw_only=True, fn=None), ReprPlan.Field(name='maintenance_options', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='current_instance_boot_mode', kw_only=True, fn=None), ReprPlan.Field(name='network_performa"
+        "nce_options', kw_only=True, fn=None), ReprPlan.Field(name='operator', kw_only=True, fn=None), ReprPlan.Field(n"
+        "ame='secondary_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='instance_id', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='image_id', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='private_dns_name', kw_only=True, fn=None), ReprPlan.Field(name='public_dns_name', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='state_transition_reason', kw_only=True, fn=None), ReprPlan.Field(name='k"
+        "ey_name', kw_only=True, fn=None), ReprPlan.Field(name='ami_launch_index', kw_only=True, fn=None), ReprPlan.Fie"
+        "ld(name='product_codes', kw_only=True, fn=None), ReprPlan.Field(name='instance_type', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='launch_time', kw_only=True, fn=None), ReprPlan.Field(name='placement', kw_only=True, fn=N"
+        "one), ReprPlan.Field(name='kernel_id', kw_only=True, fn=None), ReprPlan.Field(name='ramdisk_id', kw_only=True,"
+        " fn=None), ReprPlan.Field(name='platform', kw_only=True, fn=None), ReprPlan.Field(name='monitoring', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_only="
+        "True, fn=None), ReprPlan.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='public_"
+        "ip_address', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd',
+    plan_repr_sha1='0915dbd353427af245371c1edd8d7dc233edbee8',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -13373,8 +13392,6 @@ def _process_dataclass__c61c1debd6c8733c987556e95fc6934a226ef909():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
@@ -13395,8 +13412,6 @@ def _process_dataclass__c61c1debd6c8733c987556e95fc6934a226ef909():
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
         '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__30__annotation',
         '__dataclass__init__fields__30__default',
         '__dataclass__init__fields__31__annotation',
@@ -13417,8 +13432,6 @@ def _process_dataclass__c61c1debd6c8733c987556e95fc6934a226ef909():
         '__dataclass__init__fields__38__default',
         '__dataclass__init__fields__39__annotation',
         '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__40__annotation',
         '__dataclass__init__fields__40__default',
         '__dataclass__init__fields__41__annotation',
@@ -13439,8 +13452,6 @@ def _process_dataclass__c61c1debd6c8733c987556e95fc6934a226ef909():
         '__dataclass__init__fields__48__default',
         '__dataclass__init__fields__49__annotation',
         '__dataclass__init__fields__49__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__50__annotation',
         '__dataclass__init__fields__50__default',
         '__dataclass__init__fields__51__annotation',
@@ -13461,29 +13472,37 @@ def _process_dataclass__c61c1debd6c8733c987556e95fc6934a226ef909():
         '__dataclass__init__fields__58__default',
         '__dataclass__init__fields__59__annotation',
         '__dataclass__init__fields__59__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
         '__dataclass__init__fields__60__annotation',
         '__dataclass__init__fields__60__default',
         '__dataclass__init__fields__61__annotation',
         '__dataclass__init__fields__61__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Instance'),
     ),
 )
-def _process_dataclass__f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd():
+def _process_dataclass__0915dbd353427af245371c1edd8d7dc233edbee8():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -13504,8 +13523,6 @@ def _process_dataclass__f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
@@ -13526,8 +13543,6 @@ def _process_dataclass__f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd():
         __dataclass__init__fields__28__default,
         __dataclass__init__fields__29__annotation,
         __dataclass__init__fields__29__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
         __dataclass__init__fields__30__annotation,
         __dataclass__init__fields__30__default,
         __dataclass__init__fields__31__annotation,
@@ -13548,8 +13563,6 @@ def _process_dataclass__f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd():
         __dataclass__init__fields__38__default,
         __dataclass__init__fields__39__annotation,
         __dataclass__init__fields__39__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
         __dataclass__init__fields__40__annotation,
         __dataclass__init__fields__40__default,
         __dataclass__init__fields__41__annotation,
@@ -13570,8 +13583,6 @@ def _process_dataclass__f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd():
         __dataclass__init__fields__48__default,
         __dataclass__init__fields__49__annotation,
         __dataclass__init__fields__49__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
         __dataclass__init__fields__50__annotation,
         __dataclass__init__fields__50__default,
         __dataclass__init__fields__51__annotation,
@@ -13592,20 +13603,10 @@ def _process_dataclass__f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd():
         __dataclass__init__fields__58__default,
         __dataclass__init__fields__59__annotation,
         __dataclass__init__fields__59__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
         __dataclass__init__fields__60__annotation,
         __dataclass__init__fields__60__default,
         __dataclass__init__fields__61__annotation,
         __dataclass__init__fields__61__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -13993,15 +13994,15 @@ def _process_dataclass__f56d020f4b56f5f3ba4ec1cf51e1b13a319255fd():
         def __init__(
             self,
             *,
-            architecture: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            block_device_mappings: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            client_token: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            ebs_optimized: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            ena_support: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            hypervisor: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            iam_instance_profile: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            instance_lifecycle: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            elastic_gpu_associations: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            architecture: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            block_device_mappings: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            client_token: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            ebs_optimized: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            ena_support: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            hypervisor: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            iam_instance_profile: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            instance_lifecycle: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            elastic_gpu_associations: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             elastic_inference_accelerator_associations: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             network_interfaces: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             outpost_arn: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -15698,75 +15699,93 @@ def _process_dataclass__7fe2772dae2af5a3470bca87c58b0fc1e277591f():
         "scription', 'groups', 'ipv6_addresses', 'mac_address', 'network_interface_id', 'owner_id', 'private_dns_name',"
         " 'private_ip_address', 'private_ip_addresses', 'source_dest_check', 'status', 'subnet_id', 'vpc_id', 'interfac"
         "e_type', 'ipv4_prefixes', 'ipv6_prefixes', 'connection_tracking_configuration', 'operator'), cache=False), Ini"
-        "tPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='association', annotation=OpRef(name='init.fields.1.annotation'), defau"
-        "lt=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attachment', annotation=OpRef(nam"
-        "e='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='description', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='groups', annotation=OpRef(name='init.fields.4.annotation'), default=Op"
-        "Ref(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=OpRef(name"
-        "='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='mac_address', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='network_interface_id', annotation=OpRef(name='init.fields.7.annotation'"
-        "), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='owner_id', annotation=OpR"
-        "ef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='private_dns_name', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields"
-        ".9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(name='init.fields.10."
-        "annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_ad"
-        "dresses', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None), InitPlan.Field(name='source_dest_check', annotation=OpRef(name='init.fields.12.annotation'), def"
-        "ault=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='status', annotation=OpRef(name"
-        "='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='subnet_id', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None), InitPlan.Field(name='vpc_id', annotation=OpRef(name='init.fields.15.annotation'), default="
-        "OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
-        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='interface_type', annotation=OpRef(n"
-        "ame='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='ipv4_prefixes', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='ipv6_prefixes', annotation=OpRef(name='init.fields.18.annotati"
-        "on'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='connection_tracking_c"
-        "onfiguration', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='operator', annotation=OpRef(name='init.fields.20.annotation'), default"
-        "=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('ass"
-        "ociation', 'attachment', 'description', 'groups', 'ipv6_addresses', 'mac_address', 'network_interface_id', 'ow"
-        "ner_id', 'private_dns_name', 'private_ip_address', 'private_ip_addresses', 'source_dest_check', 'status', 'sub"
-        "net_id', 'vpc_id', 'interface_type', 'ipv4_prefixes', 'ipv6_prefixes', 'connection_tracking_configuration', 'o"
-        "perator'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Re"
-        "prPlan.Field(name='association', kw_only=True, fn=None), ReprPlan.Field(name='attachment', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='groups', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='ipv6_addresses', kw_only=True, fn=None), ReprPlan.Field(name='mac_address', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), ReprPlan.Field(name='ow"
-        "ner_id', kw_only=True, fn=None), ReprPlan.Field(name='private_dns_name', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_addresses', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='source_dest_check', kw_only=True, fn=None), ReprPlan.Field(name='status', kw_o"
-        "nly=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_"
-        "only=True, fn=None), ReprPlan.Field(name='interface_type', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_p"
-        "refixes', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_prefixes', kw_only=True, fn=None), ReprPlan.Field("
-        "name='connection_tracking_configuration', kw_only=True, fn=None), ReprPlan.Field(name='operator', kw_only=True"
-        ", fn=None)), id=False, terse=False, default_fn=None)))"
+        "tPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=Non"
+        "e, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='association', annotation=OpRef(name='init.fields.01.annotation'), def"
+        "ault=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attachment', annotation=OpRef("
+        "name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='description', annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='groups', annotation=OpRef(name='init.fields.04.annotation'), de"
+        "fault=OpRef(name='init.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=O"
+        "pRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='mac_address', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields"
+        ".06.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='network_interface_id', annotation=OpRef(name='init.fields."
+        "07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='owner_id',"
+        " annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='private_dns_name', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef"
+        "(name='init.fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(na"
+        "me='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='private_ip_addresses', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fiel"
+        "ds.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='source_dest_check', annotation=OpRef(name='init.fields.1"
+        "2.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='status', an"
+        "notation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='subnet_id', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='ini"
+        "t.fields.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='vpc_id', annotation=OpRef(name='init.fields.15.ann"
+        "otation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='interface_type',"
+        " annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='ipv4_prefixes', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(na"
+        "me='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_prefixes', annotation=OpRef(name='init"
+        ".fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='co"
+        "nnection_tracking_configuration', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init"
+        ".fields.19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='operator', annotation=OpRef(name='init.fields.20.an"
+        "notation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), k"
+        "w_only_params=('association', 'attachment', 'description', 'groups', 'ipv6_addresses', 'mac_address', 'network"
+        "_interface_id', 'owner_id', 'private_dns_name', 'private_ip_address', 'private_ip_addresses', 'source_dest_che"
+        "ck', 'status', 'subnet_id', 'vpc_id', 'interface_type', 'ipv4_prefixes', 'ipv6_prefixes', 'connection_tracking"
+        "_configuration', 'operator'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), "
+        "ReprPlan(fields=(ReprPlan.Field(name='association', kw_only=True, fn=None), ReprPlan.Field(name='attachment', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='groups"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_addresses', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "mac_address', kw_only=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='private_dns_name', kw_only=True, fn=N"
+        "one), ReprPlan.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_addres"
+        "ses', kw_only=True, fn=None), ReprPlan.Field(name='source_dest_check', kw_only=True, fn=None), ReprPlan.Field("
+        "name='status', kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='vpc_id', kw_only=True, fn=None), ReprPlan.Field(name='interface_type', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='ipv4_prefixes', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_prefixes', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='connection_tracking_configuration', kw_only=True, fn=None), ReprPlan.Field(name='oper"
+        "ator', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='a70987d10ed61c28e98fe9fa21edba13d707ac39',
+    plan_repr_sha1='72f8d061b5644c61c9127deda759b59713bd93b2',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -15787,35 +15806,35 @@ def _process_dataclass__7fe2772dae2af5a3470bca87c58b0fc1e277591f():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'InstanceNetworkInterface'),
     ),
 )
-def _process_dataclass__a70987d10ed61c28e98fe9fa21edba13d707ac39():
+def _process_dataclass__72f8d061b5644c61c9127deda759b59713bd93b2():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -15836,26 +15855,8 @@ def _process_dataclass__a70987d10ed61c28e98fe9fa21edba13d707ac39():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -16038,15 +16039,15 @@ def _process_dataclass__a70987d10ed61c28e98fe9fa21edba13d707ac39():
         def __init__(
             self,
             *,
-            association: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            attachment: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            description: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            groups: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            ipv6_addresses: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            mac_address: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            network_interface_id: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            owner_id: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            private_dns_name: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            association: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            attachment: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            description: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            groups: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            ipv6_addresses: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            mac_address: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            network_interface_id: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            owner_id: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            private_dns_name: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             private_ip_address: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             private_ip_addresses: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             source_dest_check: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -16600,87 +16601,105 @@ def _process_dataclass__d3168df540d7e8ab8fa773b5212bd293a057edb3():
         "ry_private_ip_address_count', 'subnet_id', 'associate_carrier_ip_address', 'interface_type', 'network_card_ind"
         "ex', 'ipv4_prefixes', 'ipv4_prefix_count', 'ipv6_prefixes', 'ipv6_prefix_count', 'primary_ipv6', 'ena_srd_spec"
         "ification', 'connection_tracking_specification', 'ena_queue_count'), cache=False), InitPlan(fields=(InitPlan.F"
-        "ield(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, "
-        "init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='associate_public_ip_address', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef"
-        "(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='delete_on_termination', annotation=OpRef("
-        "name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='description', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.defau"
-        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
-        "ne, check_type=None), InitPlan.Field(name='device_index', annotation=OpRef(name='init.fields.4.annotation'), d"
-        "efault=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldT"
-        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='groups', annotation=OpRef(nam"
-        "e='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='ipv6_address_count', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=OpRef(name='init.fields.7.annotatio"
-        "n'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_interface_id', "
-        "annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='private_ip_address', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(n"
-        "ame='init.fields.9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_addresses', annotation=OpRef(nam"
-        "e='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='secondary_private_ip_address_count', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(na"
-        "me='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='subnet_id', annotation=OpRef(name='init.fie"
-        "lds.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='associ"
-        "ate_carrier_ip_address', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.1"
+        "ield(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None,"
+        " init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='associate_public_ip_address', annotation=OpRef(name='init.fields.01.annotation'), default=OpR"
+        "ef(name='init.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='delete_on_termination', annotation=OpR"
+        "ef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='description', annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.0"
         "3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='interface_type', annotation=OpRef(name='init.fields.14.annot"
-        "ation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_card_index"
-        "', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='ipv4_prefixes', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef("
-        "name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_prefix_count', annotation=OpRef(name"
-        "='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='ipv6_prefixes', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='ipv6_prefix_count', annotation=OpRef(name='init.fields.19.annotat"
-        "ion'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='primary_ipv6', annot"
-        "ation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='ena_srd_specification', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef("
-        "name='init.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='connection_tracking_specification', annot"
-        "ation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='ena_queue_count', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='"
-        "init.fields.23.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('associate_public"
-        "_ip_address', 'delete_on_termination', 'description', 'device_index', 'groups', 'ipv6_address_count', 'ipv6_ad"
-        "dresses', 'network_interface_id', 'private_ip_address', 'private_ip_addresses', 'secondary_private_ip_address_"
-        "count', 'subnet_id', 'associate_carrier_ip_address', 'interface_type', 'network_card_index', 'ipv4_prefixes', "
-        "'ipv4_prefix_count', 'ipv6_prefixes', 'ipv6_prefix_count', 'primary_ipv6', 'ena_srd_specification', 'connectio"
-        "n_tracking_specification', 'ena_queue_count'), frozen=True, slots=False, post_init_params=None, init_fns=(), v"
-        "alidate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='associate_public_ip_address', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='delete_on_termination', kw_only=True, fn=None), ReprPlan.Field(name='description', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='device_index', kw_only=True, fn=None), ReprPlan.Field(name='groups', kw_"
-        "only=True, fn=None), ReprPlan.Field(name='ipv6_address_count', kw_only=True, fn=None), ReprPlan.Field(name='ip"
-        "v6_addresses', kw_only=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_addresses', kw_"
-        "only=True, fn=None), ReprPlan.Field(name='secondary_private_ip_address_count', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='associate_carrier_ip_address', kw_only="
-        "True, fn=None), ReprPlan.Field(name='interface_type', kw_only=True, fn=None), ReprPlan.Field(name='network_car"
-        "d_index', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_prefixes', kw_only=True, fn=None), ReprPlan.Field("
-        "name='ipv4_prefix_count', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_prefixes', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='ipv6_prefix_count', kw_only=True, fn=None), ReprPlan.Field(name='primary_ipv6', kw_only="
-        "True, fn=None), ReprPlan.Field(name='ena_srd_specification', kw_only=True, fn=None), ReprPlan.Field(name='conn"
-        "ection_tracking_specification', kw_only=True, fn=None), ReprPlan.Field(name='ena_queue_count', kw_only=True, f"
-        "n=None)), id=False, terse=False, default_fn=None)))"
+        "date=None, check_type=None), InitPlan.Field(name='device_index', annotation=OpRef(name='init.fields.04.annotat"
+        "ion'), default=OpRef(name='init.fields.04.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='groups', annotation="
+        "OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='ipv6_address_count', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='ini"
+        "t.fields.06.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=OpRef(name='init.field"
+        "s.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_"
+        "interface_id', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(name='init.fields.09.annotation'"
+        "), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_addresses', a"
+        "nnotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='secondary_private_ip_address_count', annotation=OpRef(name='init.fields.11.annotation'"
+        "), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='subnet_id', annotation=O"
+        "pRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='associate_carrier_ip_address', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef("
+        "name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='interface_type', annotation=OpRef(name='i"
+        "nit.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'network_card_index', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='ipv4_prefixes', annotation=OpRef(name='init.fields.16.annotatio"
+        "n'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_prefix_count', an"
+        "notation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='ipv6_prefixes', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name="
+        "'init.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_prefix_count', annotation=OpRef(name='ini"
+        "t.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='p"
+        "rimary_ipv6', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='ena_srd_specification', annotation=OpRef(name='init.fields.21.annotatio"
+        "n'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='connection_tracking_sp"
+        "ecification', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='ena_queue_count', annotation=OpRef(name='init.fields.23.annotation'), d"
+        "efault=OpRef(name='init.fields.23.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params"
+        "=('associate_public_ip_address', 'delete_on_termination', 'description', 'device_index', 'groups', 'ipv6_addre"
+        "ss_count', 'ipv6_addresses', 'network_interface_id', 'private_ip_address', 'private_ip_addresses', 'secondary_"
+        "private_ip_address_count', 'subnet_id', 'associate_carrier_ip_address', 'interface_type', 'network_card_index'"
+        ", 'ipv4_prefixes', 'ipv4_prefix_count', 'ipv6_prefixes', 'ipv6_prefix_count', 'primary_ipv6', 'ena_srd_specifi"
+        "cation', 'connection_tracking_specification', 'ena_queue_count'), frozen=True, slots=False, post_init_params=N"
+        "one, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='associate_public_ip_address', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='delete_on_termination', kw_only=True, fn=None), ReprPlan.Field(name='de"
+        "scription', kw_only=True, fn=None), ReprPlan.Field(name='device_index', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='groups', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_address_count', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='ipv6_addresses', kw_only=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only="
+        "True, fn=None), ReprPlan.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='private"
+        "_ip_addresses', kw_only=True, fn=None), ReprPlan.Field(name='secondary_private_ip_address_count', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='associate_carrier_ip"
+        "_address', kw_only=True, fn=None), ReprPlan.Field(name='interface_type', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='network_card_index', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_prefixes', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='ipv4_prefix_count', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_prefixes', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='ipv6_prefix_count', kw_only=True, fn=None), ReprPlan.Field(name='prim"
+        "ary_ipv6', kw_only=True, fn=None), ReprPlan.Field(name='ena_srd_specification', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='connection_tracking_specification', kw_only=True, fn=None), ReprPlan.Field(name='ena_queue_coun"
+        "t', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='d6ea01a33163f433cc27fd38db73e13a68f9e565',
+    plan_repr_sha1='a45d77f3e8e7897d8d42aa12e1e044b980859bd7',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -16701,8 +16720,6 @@ def _process_dataclass__d3168df540d7e8ab8fa773b5212bd293a057edb3():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
@@ -16711,31 +16728,33 @@ def _process_dataclass__d3168df540d7e8ab8fa773b5212bd293a057edb3():
         '__dataclass__init__fields__22__default',
         '__dataclass__init__fields__23__annotation',
         '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'InstanceNetworkInterfaceSpecification'),
     ),
 )
-def _process_dataclass__d6ea01a33163f433cc27fd38db73e13a68f9e565():
+def _process_dataclass__a45d77f3e8e7897d8d42aa12e1e044b980859bd7():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -16756,8 +16775,6 @@ def _process_dataclass__d6ea01a33163f433cc27fd38db73e13a68f9e565():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
@@ -16766,22 +16783,6 @@ def _process_dataclass__d6ea01a33163f433cc27fd38db73e13a68f9e565():
         __dataclass__init__fields__22__default,
         __dataclass__init__fields__23__annotation,
         __dataclass__init__fields__23__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -16979,15 +16980,15 @@ def _process_dataclass__d6ea01a33163f433cc27fd38db73e13a68f9e565():
         def __init__(
             self,
             *,
-            associate_public_ip_address: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            delete_on_termination: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            description: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            device_index: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            groups: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            ipv6_address_count: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            ipv6_addresses: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            network_interface_id: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            private_ip_address: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            associate_public_ip_address: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            delete_on_termination: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            description: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            device_index: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            groups: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            ipv6_address_count: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            ipv6_addresses: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            network_interface_id: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            private_ip_address: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             private_ip_addresses: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             secondary_private_ip_address_count: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             subnet_id: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -17416,93 +17417,93 @@ def _process_dataclass__8b22e4f30c55342a1e67e0793e5d4a8aabf425d6():
         "r_attrs=False), HashPlan(action='add', fields=('attachment', 'mac_address', 'secondary_interface_id', 'owner_i"
         "d', 'private_ip_addresses', 'source_dest_check', 'status', 'secondary_subnet_id', 'secondary_network_id', 'int"
         "erface_type'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fie"
-        "lds.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_"
-        "VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attachment', annotation=OpRef(name='in"
-        "it.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ma"
-        "c_address', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None), InitPlan.Field(name='secondary_interface_id', annotation=OpRef(name='init.fields.3.annotation'),"
-        " default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='owner_id', annotation=OpRef"
-        "(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='private_ip_addresses', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fiel"
-        "ds.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='source_dest_check', annotation=OpRef(name='init.fields.6."
-        "annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='status', annot"
-        "ation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=Non"
+        "lds.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS"
+        "_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attachment', annotation=OpRef(name='i"
+        "nit.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'mac_address', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None), InitPlan.Field(name='secondary_interface_id', annotation=OpRef(name='init.fields.03.annotat"
+        "ion'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='owner_id', annotatio"
+        "n=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='private_ip_addresses', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name="
+        "'init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='source_dest_check', annotation=OpRef(name='ini"
+        "t.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='s"
+        "tatus', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='secondary_subnet_id', annotation=OpRef(name='init.fields.08.annotation'), def"
+        "ault=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='secondary_network_id', annotat"
+        "ion=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=Non"
         "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='secondary_subnet_id', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name="
-        "'init.fields.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='secondary_network_id', annotation=OpRef(name='i"
-        "nit.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='i"
-        "nterface_type', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None)), self_param='self', std_params=(), kw_only_params=('attachment', 'mac_address', 'secondary"
-        "_interface_id', 'owner_id', 'private_ip_addresses', 'source_dest_check', 'status', 'secondary_subnet_id', 'sec"
-        "ondary_network_id', 'interface_type'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_"
-        "fns=()), ReprPlan(fields=(ReprPlan.Field(name='attachment', kw_only=True, fn=None), ReprPlan.Field(name='mac_a"
-        "ddress', kw_only=True, fn=None), ReprPlan.Field(name='secondary_interface_id', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_addresses', kw_only=True, fn="
-        "None), ReprPlan.Field(name='source_dest_check', kw_only=True, fn=None), ReprPlan.Field(name='status', kw_only="
-        "True, fn=None), ReprPlan.Field(name='secondary_subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='second"
-        "ary_network_id', kw_only=True, fn=None), ReprPlan.Field(name='interface_type', kw_only=True, fn=None)), id=Fal"
-        "se, terse=False, default_fn=None)))"
+        "tPlan.Field(name='interface_type', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='ini"
+        "t.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('attachment', 'mac_a"
+        "ddress', 'secondary_interface_id', 'owner_id', 'private_ip_addresses', 'source_dest_check', 'status', 'seconda"
+        "ry_subnet_id', 'secondary_network_id', 'interface_type'), frozen=True, slots=False, post_init_params=None, ini"
+        "t_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='attachment', kw_only=True, fn=None), ReprPla"
+        "n.Field(name='mac_address', kw_only=True, fn=None), ReprPlan.Field(name='secondary_interface_id', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_addresses'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='source_dest_check', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='status', kw_only=True, fn=None), ReprPlan.Field(name='secondary_subnet_id', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='secondary_network_id', kw_only=True, fn=None), ReprPlan.Field(name='interface_type', kw_only=True"
+        ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='11aebceba459972a4cba5ef685f8ed964a7c3d33',
+    plan_repr_sha1='b477bd2f9b3be230ad2d1dc07021ed43baa6f1e4',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'InstanceSecondaryInterface'),
     ),
 )
-def _process_dataclass__11aebceba459972a4cba5ef685f8ed964a7c3d33():
+def _process_dataclass__b477bd2f9b3be230ad2d1dc07021ed43baa6f1e4():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -17635,15 +17636,15 @@ def _process_dataclass__11aebceba459972a4cba5ef685f8ed964a7c3d33():
         def __init__(
             self,
             *,
-            attachment: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            mac_address: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            secondary_interface_id: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            owner_id: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            private_ip_addresses: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            source_dest_check: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            status: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            secondary_subnet_id: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            secondary_network_id: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            attachment: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            mac_address: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            secondary_interface_id: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            owner_id: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            private_ip_addresses: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            source_dest_check: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            status: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            secondary_subnet_id: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            secondary_network_id: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             interface_type: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'attachment', attachment)
@@ -18975,113 +18976,131 @@ def _process_dataclass__327236ea672fda2b2703a334052e0713bf4d89b0():
         "group_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedica"
         "ted_hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_"
         "support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'"
-        "), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annota"
-        "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init.fields"
-        ".1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='current_gen"
-        "eration', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='free_tier_eligible', annotation=OpRef(name='init.fields.3.annotation'), defau"
-        "lt=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_usage_classes', annotat"
-        "ion=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='supported_root_device_types', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef"
-        "(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_virtualization_types', annotati"
-        "on=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, "
-        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
-        "an.Field(name='bare_metal', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields"
-        ".7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fields.8.annotatio"
-        "n'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='processor_info', annota"
-        "tion=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='v_cpu_info', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fie"
-        "lds.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='memory_info', annotation=OpRef(name='init.fields.11.ann"
-        "otation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_storage"
-        "_supported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'),"
+        "), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annot"
+        "ation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init.field"
+        "s.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='current_"
+        "generation', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'),"
         " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='instance_storage_info', annotation=OpRef(name='init.fields.13.annotation"
-        "'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_info', annotation=O"
-        "pRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='network_info', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.field"
-        "s.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='gpu_info', annotation=OpRef(name='init.fields.16.annotati"
-        "on'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fpga_info', annotatio"
-        "n=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='placement_group_info', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name="
-        "'init.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='inference_accelerator_info', annotation=OpRef("
-        "name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=Tr"
-        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
-        "d(name='hibernation_supported', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.f"
-        "ields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='burstable_performance_supported', annotation=OpRef(na"
-        "me='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='dedicated_hosts_supported', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init"
-        ".fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='auto_recovery_supported', annotation=OpRef(name='in"
-        "it.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
-        "supported_boot_modes', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(name='init.fields.24."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='nitro_enclaves_support', annotation=OpRef(name='init.fields.25"
-        ".annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nitro_tpm_su"
-        "pport', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields.26.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='nitro_tpm_info', annotation=OpRef(name='init.fields.27.annotation'), default="
-        "OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
-        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='media_accelerator_info', annotation"
-        "=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), default_factory=None, "
-        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
-        "an.Field(name='neuron_info', annotation=OpRef(name='init.fields.29.annotation'), default=OpRef(name='init.fiel"
-        "ds.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='phc_support', annotation=OpRef(name='init.fields.30.anno"
-        "tation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='reboot_migration_"
-        "support', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'), de"
+        "heck_type=None), InitPlan.Field(name='free_tier_eligible', annotation=OpRef(name='init.fields.03.annotation'),"
+        " default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_usage_classes', "
+        "annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='supported_root_device_types', annotation=OpRef(name='init.fields.05.annotation'), def"
+        "ault=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_virtualization_types"
+        "', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='bare_metal', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(nam"
+        "e='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fie"
+        "lds.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='proces"
+        "sor_info', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='v_cpu_info', annotation=OpRef(name='init.fields.10.annotation'), default=O"
+        "pRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='memory_info', annotation=OpRef(name="
+        "'init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='instance_storage_supported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.f"
+        "ields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='instance_storage_info', annotation=OpRef(name='init.f"
+        "ields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_"
+        "info', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='network_info', annotation=OpRef(name='init.fields.15.annotation'), default=OpR"
+        "ef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='gpu_info', annotation=OpRef(name='init"
+        ".fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fp"
+        "ga_info', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), de"
         "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None)), self_param='self', std_params=(), kw_only_params=('instance_type', 'current_generation', 'free_"
-        "tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtualization_types', 'b"
-        "are_metal', 'hypervisor', 'processor_info', 'v_cpu_info', 'memory_info', 'instance_storage_supported', 'instan"
-        "ce_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_acce"
-        "lerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_"
-        "recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', "
-        "'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'), frozen=True, slots=False,"
-        " post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='instance_type', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='current_generation', kw_only=True, fn=None), ReprPlan.Field(name='"
-        "free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name='supported_usage_classes', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='supported_root_device_types', kw_only=True, fn=None), ReprPlan.Field(name='supporte"
-        "d_virtualization_types', kw_only=True, fn=None), ReprPlan.Field(name='bare_metal', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='processor_info', kw_only=True, fn="
-        "None), ReprPlan.Field(name='v_cpu_info', kw_only=True, fn=None), ReprPlan.Field(name='memory_info', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='instance_storage_supported', kw_only=True, fn=None), ReprPlan.Field(name='i"
-        "nstance_storage_info', kw_only=True, fn=None), ReprPlan.Field(name='ebs_info', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='network_info', kw_only=True, fn=None), ReprPlan.Field(name='gpu_info', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='fpga_info', kw_only=True, fn=None), ReprPlan.Field(name='placement_group_info', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='inference_accelerator_info', kw_only=True, fn=None), ReprPlan.Field(name='h"
-        "ibernation_supported', kw_only=True, fn=None), ReprPlan.Field(name='burstable_performance_supported', kw_only="
-        "True, fn=None), ReprPlan.Field(name='dedicated_hosts_supported', kw_only=True, fn=None), ReprPlan.Field(name='"
-        "auto_recovery_supported', kw_only=True, fn=None), ReprPlan.Field(name='supported_boot_modes', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='nitro_enclaves_support', kw_only=True, fn=None), ReprPlan.Field(name='nitro_tpm_s"
-        "upport', kw_only=True, fn=None), ReprPlan.Field(name='nitro_tpm_info', kw_only=True, fn=None), ReprPlan.Field("
-        "name='media_accelerator_info', kw_only=True, fn=None), ReprPlan.Field(name='neuron_info', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='phc_support', kw_only=True, fn=None), ReprPlan.Field(name='reboot_migration_support',"
-        " kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "k_type=None), InitPlan.Field(name='placement_group_info', annotation=OpRef(name='init.fields.18.annotation'), "
+        "default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='inference_accelerator_info'"
+        ", annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one), InitPlan.Field(name='hibernation_supported', annotation=OpRef(name='init.fields.20.annotation'), default"
+        "=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='burstable_performance_supported', "
+        "annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='dedicated_hosts_supported', annotation=OpRef(name='init.fields.22.annotation'), defau"
+        "lt=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='auto_recovery_supported', annota"
+        "tion=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
+        "itPlan.Field(name='supported_boot_modes', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(na"
+        "me='init.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='nitro_enclaves_support', annotation=OpRef(n"
+        "ame='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='nitro_tpm_support', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields"
+        ".26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='nitro_tpm_info', annotation=OpRef(name='init.fields.27.ann"
+        "otation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='media_accelerato"
+        "r_info', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='neuron_info', annotation=OpRef(name='init.fields.29.annotation'), default=Op"
+        "Ref(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
+        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='phc_support', annotation=OpRef(name='"
+        "init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
+        "='reboot_migration_support', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fiel"
+        "ds.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('instance_type', 'current_"
+        "generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtua"
+        "lization_types', 'bare_metal', 'hypervisor', 'processor_info', 'v_cpu_info', 'memory_info', 'instance_storage_"
+        "supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_inf"
+        "o', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts"
+        "_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support',"
+        " 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'), frozen"
+        "=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name"
+        "='instance_type', kw_only=True, fn=None), ReprPlan.Field(name='current_generation', kw_only=True, fn=None), Re"
+        "prPlan.Field(name='free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name='supported_usage_classes',"
+        " kw_only=True, fn=None), ReprPlan.Field(name='supported_root_device_types', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='supported_virtualization_types', kw_only=True, fn=None), ReprPlan.Field(name='bare_metal', kw_only="
+        "True, fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='processor_info'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='v_cpu_info', kw_only=True, fn=None), ReprPlan.Field(name='memor"
+        "y_info', kw_only=True, fn=None), ReprPlan.Field(name='instance_storage_supported', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='instance_storage_info', kw_only=True, fn=None), ReprPlan.Field(name='ebs_info', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='network_info', kw_only=True, fn=None), ReprPlan.Field(name='gpu_info', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='fpga_info', kw_only=True, fn=None), ReprPlan.Field(name='placement_grou"
+        "p_info', kw_only=True, fn=None), ReprPlan.Field(name='inference_accelerator_info', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='hibernation_supported', kw_only=True, fn=None), ReprPlan.Field(name='burstable_performance_s"
+        "upported', kw_only=True, fn=None), ReprPlan.Field(name='dedicated_hosts_supported', kw_only=True, fn=None), Re"
+        "prPlan.Field(name='auto_recovery_supported', kw_only=True, fn=None), ReprPlan.Field(name='supported_boot_modes"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='nitro_enclaves_support', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='nitro_tpm_support', kw_only=True, fn=None), ReprPlan.Field(name='nitro_tpm_info', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='media_accelerator_info', kw_only=True, fn=None), ReprPlan.Field(name='neuron_info', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='phc_support', kw_only=True, fn=None), ReprPlan.Field(name='reboot_"
+        "migration_support', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='56c553d8f420a0280fd167f1a8f110cec5d9f296',
+    plan_repr_sha1='37124530a544bf60458fe3565a9e16eb383d9afa',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -19102,8 +19121,6 @@ def _process_dataclass__327236ea672fda2b2703a334052e0713bf4d89b0():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
@@ -19124,35 +19141,37 @@ def _process_dataclass__327236ea672fda2b2703a334052e0713bf4d89b0():
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
         '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__30__annotation',
         '__dataclass__init__fields__30__default',
         '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'InstanceTypeInfo'),
     ),
 )
-def _process_dataclass__56c553d8f420a0280fd167f1a8f110cec5d9f296():
+def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -19173,8 +19192,6 @@ def _process_dataclass__56c553d8f420a0280fd167f1a8f110cec5d9f296():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
@@ -19195,26 +19212,10 @@ def _process_dataclass__56c553d8f420a0280fd167f1a8f110cec5d9f296():
         __dataclass__init__fields__28__default,
         __dataclass__init__fields__29__annotation,
         __dataclass__init__fields__29__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
         __dataclass__init__fields__30__annotation,
         __dataclass__init__fields__30__default,
         __dataclass__init__fields__31__annotation,
         __dataclass__init__fields__31__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -19452,15 +19453,15 @@ def _process_dataclass__56c553d8f420a0280fd167f1a8f110cec5d9f296():
         def __init__(
             self,
             *,
-            instance_type: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            current_generation: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            free_tier_eligible: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            supported_usage_classes: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            supported_root_device_types: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            supported_virtualization_types: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            bare_metal: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            hypervisor: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            processor_info: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            instance_type: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            current_generation: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            free_tier_eligible: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            supported_usage_classes: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            supported_root_device_types: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            supported_virtualization_types: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            bare_metal: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            hypervisor: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            processor_info: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             v_cpu_info: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             memory_info: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             instance_storage_supported: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -21325,89 +21326,90 @@ def _process_dataclass__a2a4416e2af8714bacfde725575818993950dd57():
         "fields=('network_card_index', 'network_performance', 'maximum_network_interfaces', 'additional_flexible_networ"
         "k_interfaces', 'baseline_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interfac"
         "e', 'maximum_ena_queue_count', 'maximum_ena_queue_count_per_interface'), cache=False), InitPlan(fields=(InitPl"
-        "an.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='network_card_index', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name"
-        "='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='network_performance', annotation=OpRef(name='i"
-        "nit.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='m"
-        "aximum_network_interfaces', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields"
-        ".3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='additional_flexible_network_interfaces', annotation=OpRef(n"
-        "ame='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='baseline_bandwidth_in_gbips', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init"
-        ".fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='peak_bandwidth_in_gbips', annotation=OpRef(name='ini"
-        "t.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='def"
-        "ault_ena_queue_count_per_interface', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='in"
-        "it.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='maximum_ena_queue_count', annotation=OpRef(name='i"
-        "nit.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='m"
-        "aximum_ena_queue_count_per_interface', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='"
-        "init.fields.9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('network_card_inde"
-        "x', 'network_performance', 'maximum_network_interfaces', 'additional_flexible_network_interfaces', 'baseline_b"
-        "andwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interface', 'maximum_ena_queue_cou"
-        "nt', 'maximum_ena_queue_count_per_interface'), frozen=True, slots=False, post_init_params=None, init_fns=(), v"
-        "alidate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='network_card_index', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='network_performance', kw_only=True, fn=None), ReprPlan.Field(name='maximum_network_interfaces', kw_"
-        "only=True, fn=None), ReprPlan.Field(name='additional_flexible_network_interfaces', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='baseline_bandwidth_in_gbips', kw_only=True, fn=None), ReprPlan.Field(name='peak_bandwidth_in"
-        "_gbips', kw_only=True, fn=None), ReprPlan.Field(name='default_ena_queue_count_per_interface', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='maximum_ena_queue_count', kw_only=True, fn=None), ReprPlan.Field(name='maximum_en"
-        "a_queue_count_per_interface', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "an.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='network_card_index', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(na"
+        "me='init.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_performance', annotation=OpRef(name"
+        "='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='maximum_network_interfaces', annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init."
+        "fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='additional_flexible_network_interfaces', annotation="
+        "OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='baseline_bandwidth_in_gbips', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef("
+        "name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='peak_bandwidth_in_gbips', annotation=OpRe"
+        "f(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='default_ena_queue_count_per_interface', annotation=OpRef(name='init.fields.07.annotation'), default="
+        "OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_ena_queue_count', annotatio"
+        "n=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='maximum_ena_queue_count_per_interface', annotation=OpRef(name='init.fields.09.annotation'), de"
+        "fault=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params="
+        "('network_card_index', 'network_performance', 'maximum_network_interfaces', 'additional_flexible_network_inter"
+        "faces', 'baseline_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interface', 'ma"
+        "ximum_ena_queue_count', 'maximum_ena_queue_count_per_interface'), frozen=True, slots=False, post_init_params=N"
+        "one, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='network_card_index', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='network_performance', kw_only=True, fn=None), ReprPlan.Field(name='maximum_netwo"
+        "rk_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='additional_flexible_network_interfaces', kw_only="
+        "True, fn=None), ReprPlan.Field(name='baseline_bandwidth_in_gbips', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='peak_bandwidth_in_gbips', kw_only=True, fn=None), ReprPlan.Field(name='default_ena_queue_count_per_interface"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='maximum_ena_queue_count', kw_only=True, fn=None), ReprPlan.Fie"
+        "ld(name='maximum_ena_queue_count_per_interface', kw_only=True, fn=None)), id=False, terse=False, default_fn=No"
+        "ne)))"
     ),
-    plan_repr_sha1='d4bb148780d52e5fcca26a2f75b61c893a425fb3',
+    plan_repr_sha1='184552c7199d45d3eae6dc83399caed85853716e',
     op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'NetworkCardInfo'),
     ),
 )
-def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
+def _process_dataclass__184552c7199d45d3eae6dc83399caed85853716e():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -21535,15 +21537,15 @@ def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
         def __init__(
             self,
             *,
-            network_card_index: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            network_performance: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            maximum_network_interfaces: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            additional_flexible_network_interfaces: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            baseline_bandwidth_in_gbips: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            peak_bandwidth_in_gbips: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            default_ena_queue_count_per_interface: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            maximum_ena_queue_count: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            maximum_ena_queue_count_per_interface: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            network_card_index: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            network_performance: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            maximum_network_interfaces: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            additional_flexible_network_interfaces: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            baseline_bandwidth_in_gbips: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            peak_bandwidth_in_gbips: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            default_ena_queue_count_per_interface: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            maximum_ena_queue_count: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            maximum_ena_queue_count_per_interface: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'network_card_index', network_card_index)
             __dataclass__object_setattr(self, 'network_performance', network_performance)
@@ -21608,77 +21610,95 @@ def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
         " 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'ena_srd_sup"
         "ported', 'bandwidth_weightings', 'flexible_ena_queues_support', 'connection_tracking_configuration', 'secondar"
         "y_network_supported', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interface'), cache"
-        "=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), "
-        "default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='network_performance', annotation=OpRef(name='init.fields.1"
-        ".annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_netwo"
-        "rk_interfaces', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='maximum_network_cards', annotation=OpRef(name='init.fields.3.annotation"
-        "'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default_network_card_ind"
-        "ex', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='network_cards', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(n"
-        "ame='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_addresses_per_interface', annotation=O"
-        "pRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init"
+        "=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'),"
+        " default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='network_performance', annotation=OpRef(name='init.fields."
+        "01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_ne"
+        "twork_interfaces', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='maximum_network_cards', annotation=OpRef(name='init.fields.03.anno"
+        "tation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default_network_c"
+        "ard_index', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None), InitPlan.Field(name='network_cards', annotation=OpRef(name='init.fields.05.annotation'), defau"
+        "lt=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_addresses_per_interface', a"
+        "nnotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='ipv6_addresses_per_interface', annotation=OpRef(name='init.fields.07.annotation'), def"
+        "ault=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_supported', annotation=Op"
+        "Ref(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='ena_support', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields."
+        "09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='efa_supported', annotation=OpRef(name='init.fields.10.annot"
+        "ation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='efa_info', annotat"
+        "ion=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='encryption_in_transit_supported', annotation=OpRef(name='init.fields.12.annotation'), defaul"
+        "t=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType."
+        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ena_srd_supported', annotation=Op"
+        "Ref(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='bandwidth_weightings', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='ini"
+        "t.fields.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='flexible_ena_queues_support', annotation=OpRef(nam"
+        "e='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='connection_tracking_configuration', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(nam"
+        "e='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='secondary_network_supported', annotation=OpR"
+        "ef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init"
         "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='ipv6_addresses_per_interface', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(nam"
-        "e='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_supported', annotation=OpRef(name='init."
-        "fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override="
-        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ena_s"
-        "upport', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='efa_supported', annotation=OpRef(name='init.fields.10.annotation'), default=Op"
-        "Ref(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='efa_info', annotation=OpRef(name='ini"
-        "t.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='e"
-        "ncryption_in_transit_supported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init."
-        "fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='ena_srd_supported', annotation=OpRef(name='init.fiel"
-        "ds.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='bandwid"
-        "th_weightings', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None), InitPlan.Field(name='flexible_ena_queues_support', annotation=OpRef(name='init.fields.15.a"
-        "nnotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='connection_tra"
-        "cking_configuration', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='secondary_network_supported', annotation=OpRef(name='init.field"
-        "s.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_"
-        "secondary_network_interfaces', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fi"
-        "elds.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='ipv4_addresses_per_secondary_interface', annotation=Op"
-        "Ref(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_par"
-        "am='self', std_params=(), kw_only_params=('network_performance', 'maximum_network_interfaces', 'maximum_networ"
-        "k_cards', 'default_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'ipv6_addresses_per_i"
-        "nterface', 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_transit_supported', 'e"
-        "na_srd_supported', 'bandwidth_weightings', 'flexible_ena_queues_support', 'connection_tracking_configuration',"
-        " 'secondary_network_supported', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per_secondary_interfac"
-        "e'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan"
-        ".Field(name='network_performance', kw_only=True, fn=None), ReprPlan.Field(name='maximum_network_interfaces', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='maximum_network_cards', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='default_network_card_index', kw_only=True, fn=None), ReprPlan.Field(name='network_cards', kw_only=True, fn="
-        "None), ReprPlan.Field(name='ipv4_addresses_per_interface', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_a"
-        "ddresses_per_interface', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_supported', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='ena_support', kw_only=True, fn=None), ReprPlan.Field(name='efa_supported', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='efa_info', kw_only=True, fn=None), ReprPlan.Field(name='encryption_in_transit_"
-        "supported', kw_only=True, fn=None), ReprPlan.Field(name='ena_srd_supported', kw_only=True, fn=None), ReprPlan."
-        "Field(name='bandwidth_weightings', kw_only=True, fn=None), ReprPlan.Field(name='flexible_ena_queues_support', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='connection_tracking_configuration', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='secondary_network_supported', kw_only=True, fn=None), ReprPlan.Field(name='maximum_secondary_n"
-        "etwork_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_addresses_per_secondary_interface', kw_o"
-        "nly=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "ield(name='maximum_secondary_network_interfaces', annotation=OpRef(name='init.fields.18.annotation'), default="
+        "OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_addresses_per_secondary_interf"
+        "ace', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None)), self_param='self', std_params=(), kw_only_params=('network_performance', 'maximum_network_interface"
+        "s', 'maximum_network_cards', 'default_network_card_index', 'network_cards', 'ipv4_addresses_per_interface', 'i"
+        "pv6_addresses_per_interface', 'ipv6_supported', 'ena_support', 'efa_supported', 'efa_info', 'encryption_in_tra"
+        "nsit_supported', 'ena_srd_supported', 'bandwidth_weightings', 'flexible_ena_queues_support', 'connection_track"
+        "ing_configuration', 'secondary_network_supported', 'maximum_secondary_network_interfaces', 'ipv4_addresses_per"
+        "_secondary_interface'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPl"
+        "an(fields=(ReprPlan.Field(name='network_performance', kw_only=True, fn=None), ReprPlan.Field(name='maximum_net"
+        "work_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='maximum_network_cards', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='default_network_card_index', kw_only=True, fn=None), ReprPlan.Field(name='network_cards'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='ipv4_addresses_per_interface', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='ipv6_addresses_per_interface', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_supported', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='ena_support', kw_only=True, fn=None), ReprPlan.Field(name='efa_suppor"
+        "ted', kw_only=True, fn=None), ReprPlan.Field(name='efa_info', kw_only=True, fn=None), ReprPlan.Field(name='enc"
+        "ryption_in_transit_supported', kw_only=True, fn=None), ReprPlan.Field(name='ena_srd_supported', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='bandwidth_weightings', kw_only=True, fn=None), ReprPlan.Field(name='flexible_en"
+        "a_queues_support', kw_only=True, fn=None), ReprPlan.Field(name='connection_tracking_configuration', kw_only=Tr"
+        "ue, fn=None), ReprPlan.Field(name='secondary_network_supported', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "maximum_secondary_network_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_addresses_per_seconda"
+        "ry_interface', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='d02fbeb89466560958300e0ad908fedd85ae9399',
+    plan_repr_sha1='cd24e0f49948c36a2713dec3ec66bc0a9fe5864b',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -21699,33 +21719,33 @@ def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'NetworkInfo'),
     ),
 )
-def _process_dataclass__d02fbeb89466560958300e0ad908fedd85ae9399():
+def _process_dataclass__cd24e0f49948c36a2713dec3ec66bc0a9fe5864b():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -21746,24 +21766,6 @@ def _process_dataclass__d02fbeb89466560958300e0ad908fedd85ae9399():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -21941,15 +21943,15 @@ def _process_dataclass__d02fbeb89466560958300e0ad908fedd85ae9399():
         def __init__(
             self,
             *,
-            network_performance: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            maximum_network_interfaces: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            maximum_network_cards: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            default_network_card_index: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            network_cards: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            ipv4_addresses_per_interface: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            ipv6_addresses_per_interface: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            ipv6_supported: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            ena_support: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            network_performance: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            maximum_network_interfaces: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            maximum_network_cards: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            default_network_card_index: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            network_cards: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            ipv4_addresses_per_interface: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            ipv6_addresses_per_interface: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            ipv6_supported: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            ena_support: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             efa_supported: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             efa_info: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             encryption_in_transit_supported: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -22047,112 +22049,130 @@ def _process_dataclass__d02fbeb89466560958300e0ad908fedd85ae9399():
         "resses', 'ipv4_prefixes', 'ipv6_prefixes', 'requester_id', 'requester_managed', 'source_dest_check', 'status',"
         " 'subnet_id', 'tag_set', 'vpc_id', 'deny_all_igw_traffic', 'ipv6_native', 'ipv6_address', 'operator', 'associa"
         "ted_subnets', 'availability_zone_id'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotat"
-        "ion=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='association', "
-        "annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factor"
+        "ion=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='association',"
+        " annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='attachment', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name="
+        "'init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef(name='ini"
+        "t.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='c"
+        "onnection_tracking_configuration', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='ini"
+        "t.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='description', annotation=OpRef(name='init.fields.0"
+        "5.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='groups', an"
+        "notation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factor"
         "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='attachment', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='ini"
-        "t.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef(name='init.fie"
-        "lds.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='connecti"
-        "on_tracking_configuration', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields"
-        ".4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='description', annotation=OpRef(name='init.fields.5.annotati"
-        "on'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type"
-        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='groups', annotation=Op"
-        "Ref(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
-        "eld(name='interface_type', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields."
-        "7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=OpRef(name='init.fields.8.annota"
-        "tion'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='mac_address', annota"
-        "tion=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None"
+        ", InitPlan.Field(name='interface_type', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name"
+        "='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=OpRef(name='init."
+        "fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='mac"
+        "_address', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='network_interface_id', annotation=OpRef(name='init.fields.10.annotation'),"
+        " default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=O"
+        "pRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='owner_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='private_dns_name', annotation=OpRef(name='init.fields.13.anno"
+        "tation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='public_dns_name',"
+        " annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='public_ip_dns_name_options', annotation=OpRef(name='init.fields.15.annotation'), def"
+        "ault=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_address', annotatio"
+        "n=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='private_ip_addresses', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name="
+        "'init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='ipv4_prefixes', annotation=OpRef(name='init.fi"
+        "elds.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_"
+        "prefixes', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='requester_id', annotation=OpRef(name='init.fields.20.annotation'), default"
+        "=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='requester_managed', annotation=OpR"
+        "ef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='source_dest_check', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fi"
+        "elds.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='status', annotation=OpRef(name='init.fields.23.annotat"
+        "ion'), default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='subnet_id', annotati"
+        "on=OpRef(name='init.fields.24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None"
         ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='network_interface_id', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name"
-        "='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(name='init.fie"
-        "lds.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='owner_"
-        "id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='private_dns_name', annotation=OpRef(name='init.fields.13.annotation'), default=O"
-        "pRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='public_dns_name', annotation=OpRef(n"
-        "ame='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='public_ip_dns_name_options', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='in"
-        "it.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(name='init."
-        "fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='pri"
-        "vate_ip_addresses', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='ipv4_prefixes', annotation=OpRef(name='init.fields.18.annotation'"
-        "), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_prefixes', annotati"
-        "on=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='requester_id', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.f"
-        "ields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='requester_managed', annotation=OpRef(name='init.field"
-        "s.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='source_d"
-        "est_check', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), "
-        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
-        "eck_type=None), InitPlan.Field(name='status', annotation=OpRef(name='init.fields.23.annotation'), default=OpRe"
-        "f(name='init.fields.23.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='subnet_id', annotation=OpRef(name='init"
-        ".fields.24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ta"
-        "g_set', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='vpc_id', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(na"
-        "me='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='deny_all_igw_traffic', annotation=OpRef(nam"
-        "e='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='ipv6_native', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='ipv6_address', annotation=OpRef(name='init.fields.29.annotation'),"
-        " default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='operator', annotation=OpRe"
-        "f(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
-        "eld(name='associated_subnets', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fi"
-        "elds.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='availability_zone_id', annotation=OpRef(name='init.fie"
-        "lds.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_par"
-        "ams=(), kw_only_params=('association', 'attachment', 'availability_zone', 'connection_tracking_configuration',"
-        " 'description', 'groups', 'interface_type', 'ipv6_addresses', 'mac_address', 'network_interface_id', 'outpost_"
-        "arn', 'owner_id', 'private_dns_name', 'public_dns_name', 'public_ip_dns_name_options', 'private_ip_address', '"
-        "private_ip_addresses', 'ipv4_prefixes', 'ipv6_prefixes', 'requester_id', 'requester_managed', 'source_dest_che"
-        "ck', 'status', 'subnet_id', 'tag_set', 'vpc_id', 'deny_all_igw_traffic', 'ipv6_native', 'ipv6_address', 'opera"
-        "tor', 'associated_subnets', 'availability_zone_id'), frozen=True, slots=False, post_init_params=None, init_fns"
-        "=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='association', kw_only=True, fn=None), ReprPlan.Fi"
-        "eld(name='attachment', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None)"
-        ", ReprPlan.Field(name='connection_tracking_configuration', kw_only=True, fn=None), ReprPlan.Field(name='descri"
-        "ption', kw_only=True, fn=None), ReprPlan.Field(name='groups', kw_only=True, fn=None), ReprPlan.Field(name='int"
-        "erface_type', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_addresses', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='mac_address', kw_only=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn="
-        "None), ReprPlan.Field(name='outpost_arn', kw_only=True, fn=None), ReprPlan.Field(name='owner_id', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='private_dns_name', kw_only=True, fn=None), ReprPlan.Field(name='public_dns_na"
-        "me', kw_only=True, fn=None), ReprPlan.Field(name='public_ip_dns_name_options', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_addresses', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='ipv4_prefixes', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_prefix"
-        "es', kw_only=True, fn=None), ReprPlan.Field(name='requester_id', kw_only=True, fn=None), ReprPlan.Field(name='"
-        "requester_managed', kw_only=True, fn=None), ReprPlan.Field(name='source_dest_check', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='status', kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), "
-        "ReprPlan.Field(name='tag_set', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='deny_all_igw_traffic', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_native', kw_only="
-        "True, fn=None), ReprPlan.Field(name='ipv6_address', kw_only=True, fn=None), ReprPlan.Field(name='operator', kw"
-        "_only=True, fn=None), ReprPlan.Field(name='associated_subnets', kw_only=True, fn=None), ReprPlan.Field(name='a"
-        "vailability_zone_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plan.Field(name='tag_set', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields"
+        ".25.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='vpc_id', annotation=OpRef(name='init.fields.26.annotation'"
+        "), default=OpRef(name='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='deny_all_igw_traffic', a"
+        "nnotation=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='ipv6_native', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='"
+        "init.fields.28.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_address', annotation=OpRef(name='init.fiel"
+        "ds.29.annotation'), default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='operato"
+        "r', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='associated_subnets', annotation=OpRef(name='init.fields.31.annotation'), default="
+        "OpRef(name='init.fields.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='availability_zone_id', annotation=O"
+        "pRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
+        "ram='self', std_params=(), kw_only_params=('association', 'attachment', 'availability_zone', 'connection_track"
+        "ing_configuration', 'description', 'groups', 'interface_type', 'ipv6_addresses', 'mac_address', 'network_inter"
+        "face_id', 'outpost_arn', 'owner_id', 'private_dns_name', 'public_dns_name', 'public_ip_dns_name_options', 'pri"
+        "vate_ip_address', 'private_ip_addresses', 'ipv4_prefixes', 'ipv6_prefixes', 'requester_id', 'requester_managed"
+        "', 'source_dest_check', 'status', 'subnet_id', 'tag_set', 'vpc_id', 'deny_all_igw_traffic', 'ipv6_native', 'ip"
+        "v6_address', 'operator', 'associated_subnets', 'availability_zone_id'), frozen=True, slots=False, post_init_pa"
+        "rams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='association', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='attachment', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='connection_tracking_configuration', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='groups', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='interface_type', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_addresses', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='mac_address', kw_only=True, fn=None), ReprPlan.Field(name='network_interface_id'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='outpost_arn', kw_only=True, fn=None), ReprPlan.Field(name='owne"
+        "r_id', kw_only=True, fn=None), ReprPlan.Field(name='private_dns_name', kw_only=True, fn=None), ReprPlan.Field("
+        "name='public_dns_name', kw_only=True, fn=None), ReprPlan.Field(name='public_ip_dns_name_options', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='private_ip_"
+        "addresses', kw_only=True, fn=None), ReprPlan.Field(name='ipv4_prefixes', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='ipv6_prefixes', kw_only=True, fn=None), ReprPlan.Field(name='requester_id', kw_only=True, fn=None), Re"
+        "prPlan.Field(name='requester_managed', kw_only=True, fn=None), ReprPlan.Field(name='source_dest_check', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='status', kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='tag_set', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='deny_all_igw_traffic', kw_only=True, fn=None), ReprPlan.Field(name='ipv"
+        "6_native', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_address', kw_only=True, fn=None), ReprPlan.Field("
+        "name='operator', kw_only=True, fn=None), ReprPlan.Field(name='associated_subnets', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='availability_zone_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='c56cd673ae581949b4aded8799612b0330bd060b',
+    plan_repr_sha1='30fee6dc03b585d0ce49a9f9ef440e93bbd69440',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -22173,8 +22193,6 @@ def _process_dataclass__d02fbeb89466560958300e0ad908fedd85ae9399():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
@@ -22195,37 +22213,39 @@ def _process_dataclass__d02fbeb89466560958300e0ad908fedd85ae9399():
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
         '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__30__annotation',
         '__dataclass__init__fields__30__default',
         '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__31__default',
         '__dataclass__init__fields__32__annotation',
         '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'NetworkInterface'),
     ),
 )
-def _process_dataclass__c56cd673ae581949b4aded8799612b0330bd060b():
+def _process_dataclass__30fee6dc03b585d0ce49a9f9ef440e93bbd69440():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -22246,8 +22266,6 @@ def _process_dataclass__c56cd673ae581949b4aded8799612b0330bd060b():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
@@ -22268,28 +22286,12 @@ def _process_dataclass__c56cd673ae581949b4aded8799612b0330bd060b():
         __dataclass__init__fields__28__default,
         __dataclass__init__fields__29__annotation,
         __dataclass__init__fields__29__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
         __dataclass__init__fields__30__annotation,
         __dataclass__init__fields__30__default,
         __dataclass__init__fields__31__annotation,
         __dataclass__init__fields__31__default,
         __dataclass__init__fields__32__annotation,
         __dataclass__init__fields__32__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -22532,15 +22534,15 @@ def _process_dataclass__c56cd673ae581949b4aded8799612b0330bd060b():
         def __init__(
             self,
             *,
-            association: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            attachment: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            availability_zone: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            connection_tracking_configuration: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            description: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            groups: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            interface_type: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            ipv6_addresses: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            mac_address: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            association: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            attachment: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            availability_zone: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            connection_tracking_configuration: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            description: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            groups: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            interface_type: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            ipv6_addresses: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            mac_address: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             network_interface_id: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             outpost_arn: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             owner_id: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -22898,94 +22900,94 @@ def _process_dataclass__cf29ec57560fe99a689b868df651118a8fab1f0b():
         "nce_id', 'instance_owner_id', 'status', 'ena_srd_specification', 'ena_queue_count'), allow_dynamic_dunder_attr"
         "s=False), HashPlan(action='add', fields=('attach_time', 'attachment_id', 'delete_on_termination', 'device_inde"
         "x', 'network_card_index', 'instance_id', 'instance_owner_id', 'status', 'ena_srd_specification', 'ena_queue_co"
-        "unt'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.an"
-        "notation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='attach_time', annotation=OpRef(name='init.fiel"
-        "ds.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=Fals"
-        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attachmen"
-        "t_id', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='delete_on_termination', annotation=OpRef(name='init.fields.3.annotation'), defau"
-        "lt=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='device_index', annotation=OpRef(n"
-        "ame='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='network_card_index', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='instance_id', annotation=OpRef(name='init.fields.6.annotation"
-        "'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_owner_id', anno"
-        "tation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='status', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields"
-        ".8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='ena_srd_specification', annotation=OpRef(name='init.fields."
-        "9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ena_queue_co"
-        "unt', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None)), self_param='self', std_params=(), kw_only_params=('attach_time', 'attachment_id', 'delete_on_termin"
-        "ation', 'device_index', 'network_card_index', 'instance_id', 'instance_owner_id', 'status', 'ena_srd_specifica"
-        "tion', 'ena_queue_count'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), Rep"
-        "rPlan(fields=(ReprPlan.Field(name='attach_time', kw_only=True, fn=None), ReprPlan.Field(name='attachment_id', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='delete_on_termination', kw_only=True, fn=None), ReprPlan.Field(na"
-        "me='device_index', kw_only=True, fn=None), ReprPlan.Field(name='network_card_index', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='instance_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_owner_id', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='status', kw_only=True, fn=None), ReprPlan.Field(name='ena_srd_specification'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='ena_queue_count', kw_only=True, fn=None)), id=False, terse=Fals"
-        "e, default_fn=None)))"
+        "unt'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.a"
+        "nnotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='attach_time', annotation=OpRef(name='init.fie"
+        "lds.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attach"
+        "ment_id', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='delete_on_termination', annotation=OpRef(name='init.fields.03.annotation'),"
+        " default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='device_index', annotation="
+        "OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='network_card_index', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='ini"
+        "t.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='instance_id', annotation=OpRef(name='init.fields.0"
+        "6.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_ow"
+        "ner_id', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='status', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(n"
+        "ame='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='ena_srd_specification', annotation=OpRef(n"
+        "ame='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='ena_queue_count', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.1"
+        "0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('attach_time', 'attachment_id'"
+        ", 'delete_on_termination', 'device_index', 'network_card_index', 'instance_id', 'instance_owner_id', 'status',"
+        " 'ena_srd_specification', 'ena_queue_count'), frozen=True, slots=False, post_init_params=None, init_fns=(), va"
+        "lidate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='attach_time', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='attachment_id', kw_only=True, fn=None), ReprPlan.Field(name='delete_on_termination', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='device_index', kw_only=True, fn=None), ReprPlan.Field(name='network_card_index', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='instance_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_own"
+        "er_id', kw_only=True, fn=None), ReprPlan.Field(name='status', kw_only=True, fn=None), ReprPlan.Field(name='ena"
+        "_srd_specification', kw_only=True, fn=None), ReprPlan.Field(name='ena_queue_count', kw_only=True, fn=None)), i"
+        "d=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='c062d3ee4ff14428774ed2e1093da14147ac2647',
+    plan_repr_sha1='a982e85154e2b6add5e739f0f930189622ae53be',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'NetworkInterfaceAttachment'),
     ),
 )
-def _process_dataclass__c062d3ee4ff14428774ed2e1093da14147ac2647():
+def _process_dataclass__a982e85154e2b6add5e739f0f930189622ae53be():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -23118,15 +23120,15 @@ def _process_dataclass__c062d3ee4ff14428774ed2e1093da14147ac2647():
         def __init__(
             self,
             *,
-            attach_time: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            attachment_id: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            delete_on_termination: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            device_index: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            network_card_index: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            instance_id: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            instance_owner_id: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            status: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            ena_srd_specification: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            attach_time: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            attachment_id: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            delete_on_termination: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            device_index: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            network_card_index: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            instance_id: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            instance_owner_id: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            status: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            ena_srd_specification: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             ena_queue_count: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'attach_time', attach_time)
@@ -24297,93 +24299,93 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
         "', 'group_id', 'availability_zone'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('availa"
         "bility_zone_id', 'affinity', 'group_name', 'partition_number', 'host_id', 'tenancy', 'spread_domain', 'host_re"
         "source_group_arn', 'group_id', 'availability_zone'), cache=False), InitPlan(fields=(InitPlan.Field(name='__sha"
-        "pe__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
-        "availability_zone_id', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='affinity', annotation=OpRef(name='init.fields.2.annotation'), de"
-        "fault=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='group_name', annotation=OpRef("
-        "name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='partition_number', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='host_id', annotation=OpRef(name='init.fields.5.annotation'), d"
-        "efault=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldT"
-        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tenancy', annotation=OpRef(na"
-        "me='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='spread_domain', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.defau"
-        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
-        "ne, check_type=None), InitPlan.Field(name='host_resource_group_arn', annotation=OpRef(name='init.fields.8.anno"
-        "tation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='group_id', annotat"
-        "ion=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='availability_zone', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='in"
-        "it.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('availability_zone_"
-        "id', 'affinity', 'group_name', 'partition_number', 'host_id', 'tenancy', 'spread_domain', 'host_resource_group"
-        "_arn', 'group_id', 'availability_zone'), frozen=True, slots=False, post_init_params=None, init_fns=(), validat"
-        "e_fns=()), ReprPlan(fields=(ReprPlan.Field(name='availability_zone_id', kw_only=True, fn=None), ReprPlan.Field"
-        "(name='affinity', kw_only=True, fn=None), ReprPlan.Field(name='group_name', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='partition_number', kw_only=True, fn=None), ReprPlan.Field(name='host_id', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='tenancy', kw_only=True, fn=None), ReprPlan.Field(name='spread_domain', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='host_resource_group_arn', kw_only=True, fn=None), ReprPlan.Field(name='group_id', kw"
-        "_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None)), id=False, terse=False,"
-        " default_fn=None)))"
+        "pe__', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'availability_zone_id', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='affinity', annotation=OpRef(name='init.fields.02.annotation')"
+        ", default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='group_name', annotation=O"
+        "pRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='partition_number', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.f"
+        "ields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='host_id', annotation=OpRef(name='init.fields.05.annot"
+        "ation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tenancy', annotati"
+        "on=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='spread_domain', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init."
+        "fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='host_resource_group_arn', annotation=OpRef(name='ini"
+        "t.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='g"
+        "roup_id', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef(name='init.fields.10.annotation'), def"
+        "ault=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=("
+        "'availability_zone_id', 'affinity', 'group_name', 'partition_number', 'host_id', 'tenancy', 'spread_domain', '"
+        "host_resource_group_arn', 'group_id', 'availability_zone'), frozen=True, slots=False, post_init_params=None, i"
+        "nit_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='availability_zone_id', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='affinity', kw_only=True, fn=None), ReprPlan.Field(name='group_name', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='partition_number', kw_only=True, fn=None), ReprPlan.Field(name='host_id', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='tenancy', kw_only=True, fn=None), ReprPlan.Field(name='spread_domain', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='host_resource_group_arn', kw_only=True, fn=None), ReprPlan.Field("
+        "name='group_id', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None)), id="
+        "False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='9056bbd7f356d0e4a2386c0252f0b94cc7bd0de0',
+    plan_repr_sha1='170a2cb0e2aebb95eb8e0cd341028fb9dbf7b7ed',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Placement'),
     ),
 )
-def _process_dataclass__9056bbd7f356d0e4a2386c0252f0b94cc7bd0de0():
+def _process_dataclass__170a2cb0e2aebb95eb8e0cd341028fb9dbf7b7ed():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -24516,15 +24518,15 @@ def _process_dataclass__9056bbd7f356d0e4a2386c0252f0b94cc7bd0de0():
         def __init__(
             self,
             *,
-            availability_zone_id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            affinity: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            group_name: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            partition_number: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            host_id: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            tenancy: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            spread_domain: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            host_resource_group_arn: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            group_id: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            availability_zone_id: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            affinity: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            group_name: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            partition_number: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            host_id: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            tenancy: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            spread_domain: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            host_resource_group_arn: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            group_id: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             availability_zone: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'availability_zone_id', availability_zone_id)
@@ -26260,70 +26262,88 @@ def _process_dataclass__4dcdc31a11266b0f3715b509ae10ced769c8d571():
         "d', 'instance_owner_id', 'nat_gateway_id', 'transit_gateway_id', 'local_gateway_id', 'carrier_gateway_id', 'ne"
         "twork_interface_id', 'origin', 'state', 'vpc_peering_connection_id', 'core_network_arn', 'odb_network_arn', 'i"
         "p_address'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.field"
-        "s.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VA"
-        "R, coerce=None, validate=None, check_type=None), InitPlan.Field(name='destination_cidr_block', annotation=OpRe"
-        "f(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=Tr"
-        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
-        "d(name='destination_ipv6_cidr_block', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='i"
-        "nit.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='destination_prefix_list_id', annotation=OpRef(nam"
-        "e='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='egress_only_internet_gateway_id', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='in"
-        "it.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='gateway_id', annotation=OpRef(name='init.fields.5."
-        "annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_id', "
-        "annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='instance_owner_id', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(na"
-        "me='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='nat_gateway_id', annotation=OpRef(name='init"
-        ".fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tran"
-        "sit_gateway_id', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='local_gateway_id', annotation=OpRef(name='init.fields.10.annotation'),"
-        " default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='carrier_gateway_id', annot"
-        "ation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='network_interface_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(n"
-        "ame='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
-        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='origin', annotation=OpRef(name='init.field"
-        "s.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='state', "
-        "annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='vpc_peering_connection_id', annotation=OpRef(name='init.fields.15.annotation'), defau"
-        "lt=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType"
-        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='core_network_arn', annotation=Op"
-        "Ref(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='odb_network_arn', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fie"
-        "lds.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='ip_address', annotation=OpRef(name='init.fields.18.anno"
-        "tation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_"
-        "only_params=('destination_cidr_block', 'destination_ipv6_cidr_block', 'destination_prefix_list_id', 'egress_on"
-        "ly_internet_gateway_id', 'gateway_id', 'instance_id', 'instance_owner_id', 'nat_gateway_id', 'transit_gateway_"
-        "id', 'local_gateway_id', 'carrier_gateway_id', 'network_interface_id', 'origin', 'state', 'vpc_peering_connect"
-        "ion_id', 'core_network_arn', 'odb_network_arn', 'ip_address'), frozen=True, slots=False, post_init_params=None"
-        ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='destination_cidr_block', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='destination_ipv6_cidr_block', kw_only=True, fn=None), ReprPlan.Field(name='dest"
-        "ination_prefix_list_id', kw_only=True, fn=None), ReprPlan.Field(name='egress_only_internet_gateway_id', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_id',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='instance_owner_id', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'nat_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='transit_gateway_id', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='local_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='carrier_gateway_id', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), ReprPlan.Field(name='ori"
-        "gin', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name='vpc_pe"
-        "ering_connection_id', kw_only=True, fn=None), ReprPlan.Field(name='core_network_arn', kw_only=True, fn=None), "
-        "ReprPlan.Field(name='odb_network_arn', kw_only=True, fn=None), ReprPlan.Field(name='ip_address', kw_only=True,"
-        " fn=None)), id=False, terse=False, default_fn=None)))"
+        "s.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_V"
+        "AR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='destination_cidr_block', annotation=OpR"
+        "ef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='destination_ipv6_cidr_block', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(nam"
+        "e='init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='destination_prefix_list_id', annotation=OpRe"
+        "f(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='egress_only_internet_gateway_id', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef("
+        "name='init.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='gateway_id', annotation=OpRef(name='init."
+        "fields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ins"
+        "tance_id', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='instance_owner_id', annotation=OpRef(name='init.fields.07.annotation'), de"
+        "fault=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nat_gateway_id', annotation=O"
+        "pRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='transit_gateway_id', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init"
+        ".fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='local_gateway_id', annotation=OpRef(name='init.fiel"
+        "ds.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='carrier"
+        "_gateway_id', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='network_interface_id', annotation=OpRef(name='init.fields.12.annotation"
+        "'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='origin', annotation=OpR"
+        "ef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='state', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='vpc_peering_connection_id', annotation=OpRef(name='init.fields.15."
+        "annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='core_network_"
+        "arn', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='odb_network_arn', annotation=OpRef(name='init.fields.17.annotation'), default=O"
+        "pRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ip_address', annotation=OpRef(name='"
+        "init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self',"
+        " std_params=(), kw_only_params=('destination_cidr_block', 'destination_ipv6_cidr_block', 'destination_prefix_l"
+        "ist_id', 'egress_only_internet_gateway_id', 'gateway_id', 'instance_id', 'instance_owner_id', 'nat_gateway_id'"
+        ", 'transit_gateway_id', 'local_gateway_id', 'carrier_gateway_id', 'network_interface_id', 'origin', 'state', '"
+        "vpc_peering_connection_id', 'core_network_arn', 'odb_network_arn', 'ip_address'), frozen=True, slots=False, po"
+        "st_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='destination_cidr_blo"
+        "ck', kw_only=True, fn=None), ReprPlan.Field(name='destination_ipv6_cidr_block', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='destination_prefix_list_id', kw_only=True, fn=None), ReprPlan.Field(name='egress_only_internet_"
+        "gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='gateway_id', kw_only=True, fn=None), ReprPlan.Field("
+        "name='instance_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_owner_id', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='nat_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='transit_gateway_id', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='local_gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='carrier_"
+        "gateway_id', kw_only=True, fn=None), ReprPlan.Field(name='network_interface_id', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='origin', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='vpc_peering_connection_id', kw_only=True, fn=None), ReprPlan.Field(name='core_network_arn', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='odb_network_arn', kw_only=True, fn=None), ReprPlan.Field(name='ip_addr"
+        "ess', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='d10b36836b385aa819993a55a03255210a1b5dd1',
+    plan_repr_sha1='fd07befef8b10895f57d69c9d094f896375bac33',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -26342,33 +26362,33 @@ def _process_dataclass__4dcdc31a11266b0f3715b509ae10ced769c8d571():
         '__dataclass__init__fields__17__default',
         '__dataclass__init__fields__18__annotation',
         '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Route'),
     ),
 )
-def _process_dataclass__d10b36836b385aa819993a55a03255210a1b5dd1():
+def _process_dataclass__fd07befef8b10895f57d69c9d094f896375bac33():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -26387,24 +26407,6 @@ def _process_dataclass__d10b36836b385aa819993a55a03255210a1b5dd1():
         __dataclass__init__fields__17__default,
         __dataclass__init__fields__18__annotation,
         __dataclass__init__fields__18__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -26577,15 +26579,15 @@ def _process_dataclass__d10b36836b385aa819993a55a03255210a1b5dd1():
         def __init__(
             self,
             *,
-            destination_cidr_block: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            destination_ipv6_cidr_block: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            destination_prefix_list_id: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            egress_only_internet_gateway_id: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            gateway_id: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            instance_id: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            instance_owner_id: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            nat_gateway_id: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            transit_gateway_id: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            destination_cidr_block: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            destination_ipv6_cidr_block: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            destination_prefix_list_id: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            egress_only_internet_gateway_id: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            gateway_id: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            instance_id: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            instance_owner_id: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            nat_gateway_id: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            transit_gateway_id: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             local_gateway_id: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             carrier_gateway_id: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             network_interface_id: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -27460,152 +27462,168 @@ def _process_dataclass__bb4476bedb74d1ffda10b96b3aa1736540de06a7():
         "k_performance_options', 'operator', 'secondary_interfaces', 'dry_run', 'disable_api_termination', 'instance_in"
         "itiated_shutdown_behavior', 'private_ip_address', 'client_token', 'additional_info', 'network_interfaces', 'ia"
         "m_instance_profile', 'ebs_optimized'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotat"
-        "ion=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='block_device_m"
-        "appings', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='image_id', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(n"
-        "ame='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init"
-        ".fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6"
-        "_address_count', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=OpRef(name='init.fields.5.annotation'), de"
-        "fault=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='kernel_id', annotation=OpRef(n"
-        "ame='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='key_name', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='max_count', annotation=OpRef(name='init.fields.8.annotation'), default="
-        "None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
-        "ne, check_type=None), InitPlan.Field(name='min_count', annotation=OpRef(name='init.fields.9.annotation'), defa"
-        "ult=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='monitoring', annotation=OpRef(name='init.fields.10.annotation')"
-        ", default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='placement', annotation=Op"
-        "Ref(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='ramdisk_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.1"
-        "2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='security_group_ids', annotation=OpRef(name='init.fields.13.a"
-        "nnotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='security_group"
-        "s', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_"
+        "ion=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='block_device_"
+        "mappings', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='image_id', annotation=OpRef(name='init.fields.02.annotation'), default=OpR"
+        "ef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name="
+        "'init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='ipv6_address_count', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='ipv6_addresses', annotation=OpRef(name='init.fields.05.annota"
+        "tion'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='kernel_id', annotat"
+        "ion=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='key_name', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fiel"
+        "ds.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='max_count', annotation=OpRef(name='init.fields.08.annota"
+        "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='min_count', annotation=OpRef(name='init.fields.09.a"
+        "nnotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='monitoring', annotation=OpRef(name='init.field"
+        "s.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='placemen"
+        "t', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_"
         "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='subnet_id', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(nam"
-        "e='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='user_data', annotation=OpRef(name='init.fiel"
-        "ds.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='elastic"
-        "_gpu_specification', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.de"
+        "=None), InitPlan.Field(name='ramdisk_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(na"
+        "me='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='security_group_ids', annotation=OpRef(name="
+        "'init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='security_groups', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.de"
         "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='elastic_inference_accelerators', annotation=OpRef(name='init.fie"
-        "lds.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tag_sp"
-        "ecifications', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='launch_template', annotation=OpRef(name='init.fields.20.annotation'), "
-        "default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_market_options', a"
-        "nnotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_facto"
-        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
-        "), InitPlan.Field(name='credit_specification', annotation=OpRef(name='init.fields.22.annotation'), default=OpR"
-        "ef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cpu_options', annotation=OpRef(name='i"
-        "nit.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, ove"
+        "=None, check_type=None), InitPlan.Field(name='subnet_id', annotation=OpRef(name='init.fields.15.annotation'), "
+        "default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='user_data', annotation=OpRe"
+        "f(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='elastic_gpu_specification', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='"
+        "init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='elastic_inference_accelerators', annotation=OpR"
+        "ef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='tag_specifications', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.f"
+        "ields.19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='launch_template', annotation=OpRef(name='init.fields."
+        "20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_m"
+        "arket_options', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='credit_specification', annotation=OpRef(name='init.fields.22.annotati"
+        "on'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cpu_options', annotat"
+        "ion=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='capacity_reservation_specification', annotation=OpRef(name='init.fields.24.annotation'), def"
+        "ault=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='hibernation_options', annotati"
+        "on=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='license_specifications', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(na"
+        "me='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='metadata_options', annotation=OpRef(name='i"
+        "nit.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, ove"
         "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'capacity_reservation_specification', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(name='"
-        "init.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='hibernation_options', annotation=OpRef(name='in"
-        "it.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
-        "license_specifications', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields.2"
-        "6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='metadata_options', annotation=OpRef(name='init.fields.27.ann"
-        "otation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enclave_options'"
-        ", annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), default_fa"
-        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
-        "one), InitPlan.Field(name='private_dns_name_options', annotation=OpRef(name='init.fields.29.annotation'), defa"
-        "ult=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maintenance_options', annotatio"
-        "n=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='disable_api_stop', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='ini"
-        "t.fields.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='enable_primary_ipv6', annotation=OpRef(name='init."
-        "fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='net"
-        "work_performance_options', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef(name='init.fields"
-        ".33.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='operator', annotation=OpRef(name='init.fields.34.annotatio"
-        "n'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override=False, field_type"
-        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='secondary_interfaces',"
-        " annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.36.annotation'), default=OpRef(name='in"
-        "it.fields.36.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='disable_api_termination', annotation=OpRef(name='"
-        "init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='instance_initiated_shutdown_behavior', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(nam"
-        "e='init.fields.38.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_address', annotation=OpRef(name='"
-        "init.fields.39.annotation'), default=OpRef(name='init.fields.39.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='client_token', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields.40.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='additional_info', annotation=OpRef(name='init.fields.41.annotation')"
-        ", default=OpRef(name='init.fields.41.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_interfaces', anno"
-        "tation=OpRef(name='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_factory="
-        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='iam_instance_profile', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef("
-        "name='init.fields.43.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_optimized', annotation=OpRef(name='in"
-        "it.fields.44.annotation'), default=OpRef(name='init.fields.44.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', s"
-        "td_params=(), kw_only_params=('block_device_mappings', 'image_id', 'instance_type', 'ipv6_address_count', 'ipv"
-        "6_addresses', 'kernel_id', 'key_name', 'max_count', 'min_count', 'monitoring', 'placement', 'ramdisk_id', 'sec"
-        "urity_group_ids', 'security_groups', 'subnet_id', 'user_data', 'elastic_gpu_specification', 'elastic_inference"
-        "_accelerators', 'tag_specifications', 'launch_template', 'instance_market_options', 'credit_specification', 'c"
-        "pu_options', 'capacity_reservation_specification', 'hibernation_options', 'license_specifications', 'metadata_"
-        "options', 'enclave_options', 'private_dns_name_options', 'maintenance_options', 'disable_api_stop', 'enable_pr"
-        "imary_ipv6', 'network_performance_options', 'operator', 'secondary_interfaces', 'dry_run', 'disable_api_termin"
-        "ation', 'instance_initiated_shutdown_behavior', 'private_ip_address', 'client_token', 'additional_info', 'netw"
-        "ork_interfaces', 'iam_instance_profile', 'ebs_optimized'), frozen=True, slots=False, post_init_params=None, in"
-        "it_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='block_device_mappings', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='image_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_type', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='ipv6_address_count', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_addres"
-        "ses', kw_only=True, fn=None), ReprPlan.Field(name='kernel_id', kw_only=True, fn=None), ReprPlan.Field(name='ke"
-        "y_name', kw_only=True, fn=None), ReprPlan.Field(name='max_count', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'min_count', kw_only=True, fn=None), ReprPlan.Field(name='monitoring', kw_only=True, fn=None), ReprPlan.Field("
-        "name='placement', kw_only=True, fn=None), ReprPlan.Field(name='ramdisk_id', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='security_group_ids', kw_only=True, fn=None), ReprPlan.Field(name='security_groups', kw_only=True, f"
-        "n=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='user_data', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='elastic_gpu_specification', kw_only=True, fn=None), ReprPlan.Field(name='ela"
-        "stic_inference_accelerators', kw_only=True, fn=None), ReprPlan.Field(name='tag_specifications', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='launch_template', kw_only=True, fn=None), ReprPlan.Field(name='instance_market_"
-        "options', kw_only=True, fn=None), ReprPlan.Field(name='credit_specification', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='cpu_options', kw_only=True, fn=None), ReprPlan.Field(name='capacity_reservation_specification', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='hibernation_options', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'license_specifications', kw_only=True, fn=None), ReprPlan.Field(name='metadata_options', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='enclave_options', kw_only=True, fn=None), ReprPlan.Field(name='private_dns_name_optio"
-        "ns', kw_only=True, fn=None), ReprPlan.Field(name='maintenance_options', kw_only=True, fn=None), ReprPlan.Field"
-        "(name='disable_api_stop', kw_only=True, fn=None), ReprPlan.Field(name='enable_primary_ipv6', kw_only=True, fn="
-        "None), ReprPlan.Field(name='network_performance_options', kw_only=True, fn=None), ReprPlan.Field(name='operato"
-        "r', kw_only=True, fn=None), ReprPlan.Field(name='secondary_interfaces', kw_only=True, fn=None), ReprPlan.Field"
-        "(name='dry_run', kw_only=True, fn=None), ReprPlan.Field(name='disable_api_termination', kw_only=True, fn=None)"
-        ", ReprPlan.Field(name='instance_initiated_shutdown_behavior', kw_only=True, fn=None), ReprPlan.Field(name='pri"
-        "vate_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='client_token', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='additional_info', kw_only=True, fn=None), ReprPlan.Field(name='network_interfaces', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='iam_instance_profile', kw_only=True, fn=None), ReprPlan.Field(name='ebs_optimi"
-        "zed', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "'enclave_options', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='private_dns_name_options', annotation=OpRef(name='init.fields.29.a"
+        "nnotation'), default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maintenance_op"
+        "tions', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='disable_api_stop', annotation=OpRef(name='init.fields.31.annotation'), defaul"
+        "t=OpRef(name='init.fields.31.default'), default_factory=None, init=True, override=False, field_type=FieldType."
+        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_primary_ipv6', annotation="
+        "OpRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='network_performance_options', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef("
+        "name='init.fields.33.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='operator', annotation=OpRef(name='init.fi"
+        "elds.34.annotation'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='secon"
+        "dary_interfaces', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.36.annotation'), defau"
+        "lt=OpRef(name='init.fields.36.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='disable_api_termination', annota"
+        "tion=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
+        "itPlan.Field(name='instance_initiated_shutdown_behavior', annotation=OpRef(name='init.fields.38.annotation'), "
+        "default=OpRef(name='init.fields.38.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='private_ip_address', annota"
+        "tion=OpRef(name='init.fields.39.annotation'), default=OpRef(name='init.fields.39.default'), default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
+        "itPlan.Field(name='client_token', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init"
+        ".fields.40.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='additional_info', annotation=OpRef(name='init.field"
+        "s.41.annotation'), default=OpRef(name='init.fields.41.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_"
+        "interfaces', annotation=OpRef(name='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='iam_instance_profile', annotation=OpRef(name='init.fields.43.annotation'"
+        "), default=OpRef(name='init.fields.43.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_optimized', annotati"
+        "on=OpRef(name='init.fields.44.annotation'), default=OpRef(name='init.fields.44.default'), default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), sel"
+        "f_param='self', std_params=(), kw_only_params=('block_device_mappings', 'image_id', 'instance_type', 'ipv6_add"
+        "ress_count', 'ipv6_addresses', 'kernel_id', 'key_name', 'max_count', 'min_count', 'monitoring', 'placement', '"
+        "ramdisk_id', 'security_group_ids', 'security_groups', 'subnet_id', 'user_data', 'elastic_gpu_specification', '"
+        "elastic_inference_accelerators', 'tag_specifications', 'launch_template', 'instance_market_options', 'credit_s"
+        "pecification', 'cpu_options', 'capacity_reservation_specification', 'hibernation_options', 'license_specificat"
+        "ions', 'metadata_options', 'enclave_options', 'private_dns_name_options', 'maintenance_options', 'disable_api_"
+        "stop', 'enable_primary_ipv6', 'network_performance_options', 'operator', 'secondary_interfaces', 'dry_run', 'd"
+        "isable_api_termination', 'instance_initiated_shutdown_behavior', 'private_ip_address', 'client_token', 'additi"
+        "onal_info', 'network_interfaces', 'iam_instance_profile', 'ebs_optimized'), frozen=True, slots=False, post_ini"
+        "t_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='block_device_mappings', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='image_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_ty"
+        "pe', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_address_count', kw_only=True, fn=None), ReprPlan.Field("
+        "name='ipv6_addresses', kw_only=True, fn=None), ReprPlan.Field(name='kernel_id', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='key_name', kw_only=True, fn=None), ReprPlan.Field(name='max_count', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='min_count', kw_only=True, fn=None), ReprPlan.Field(name='monitoring', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='placement', kw_only=True, fn=None), ReprPlan.Field(name='ramdisk_id', kw_only=True, fn="
+        "None), ReprPlan.Field(name='security_group_ids', kw_only=True, fn=None), ReprPlan.Field(name='security_groups'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), ReprPlan.Field(name='user_d"
+        "ata', kw_only=True, fn=None), ReprPlan.Field(name='elastic_gpu_specification', kw_only=True, fn=None), ReprPla"
+        "n.Field(name='elastic_inference_accelerators', kw_only=True, fn=None), ReprPlan.Field(name='tag_specifications"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='launch_template', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'instance_market_options', kw_only=True, fn=None), ReprPlan.Field(name='credit_specification', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='cpu_options', kw_only=True, fn=None), ReprPlan.Field(name='capacity_reservation_"
+        "specification', kw_only=True, fn=None), ReprPlan.Field(name='hibernation_options', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='license_specifications', kw_only=True, fn=None), ReprPlan.Field(name='metadata_options', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='enclave_options', kw_only=True, fn=None), ReprPlan.Field(name='priva"
+        "te_dns_name_options', kw_only=True, fn=None), ReprPlan.Field(name='maintenance_options', kw_only=True, fn=None"
+        "), ReprPlan.Field(name='disable_api_stop', kw_only=True, fn=None), ReprPlan.Field(name='enable_primary_ipv6', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='network_performance_options', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='operator', kw_only=True, fn=None), ReprPlan.Field(name='secondary_interfaces', kw_only=True, fn=None"
+        "), ReprPlan.Field(name='dry_run', kw_only=True, fn=None), ReprPlan.Field(name='disable_api_termination', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='instance_initiated_shutdown_behavior', kw_only=True, fn=None), ReprPla"
+        "n.Field(name='private_ip_address', kw_only=True, fn=None), ReprPlan.Field(name='client_token', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='additional_info', kw_only=True, fn=None), ReprPlan.Field(name='network_interface"
+        "s', kw_only=True, fn=None), ReprPlan.Field(name='iam_instance_profile', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='ebs_optimized', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='1eb329dfd70a61f4d3904cad15ecc41c9a379853',
+    plan_repr_sha1='a82e5d761b1f14d0de380ddfb5645edb3b8e62c9',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__09__annotation',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -27626,8 +27644,6 @@ def _process_dataclass__bb4476bedb74d1ffda10b96b3aa1736540de06a7():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
@@ -27648,8 +27664,6 @@ def _process_dataclass__bb4476bedb74d1ffda10b96b3aa1736540de06a7():
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
         '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__30__annotation',
         '__dataclass__init__fields__30__default',
         '__dataclass__init__fields__31__annotation',
@@ -27670,8 +27684,6 @@ def _process_dataclass__bb4476bedb74d1ffda10b96b3aa1736540de06a7():
         '__dataclass__init__fields__38__default',
         '__dataclass__init__fields__39__annotation',
         '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__40__annotation',
         '__dataclass__init__fields__40__default',
         '__dataclass__init__fields__41__annotation',
@@ -27682,25 +27694,31 @@ def _process_dataclass__bb4476bedb74d1ffda10b96b3aa1736540de06a7():
         '__dataclass__init__fields__43__default',
         '__dataclass__init__fields__44__annotation',
         '__dataclass__init__fields__44__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__9__annotation',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'RunInstancesRequest'),
     ),
 )
-def _process_dataclass__1eb329dfd70a61f4d3904cad15ecc41c9a379853():
+def _process_dataclass__a82e5d761b1f14d0de380ddfb5645edb3b8e62c9():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__09__annotation,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -27721,8 +27739,6 @@ def _process_dataclass__1eb329dfd70a61f4d3904cad15ecc41c9a379853():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
@@ -27743,8 +27759,6 @@ def _process_dataclass__1eb329dfd70a61f4d3904cad15ecc41c9a379853():
         __dataclass__init__fields__28__default,
         __dataclass__init__fields__29__annotation,
         __dataclass__init__fields__29__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
         __dataclass__init__fields__30__annotation,
         __dataclass__init__fields__30__default,
         __dataclass__init__fields__31__annotation,
@@ -27765,8 +27779,6 @@ def _process_dataclass__1eb329dfd70a61f4d3904cad15ecc41c9a379853():
         __dataclass__init__fields__38__default,
         __dataclass__init__fields__39__annotation,
         __dataclass__init__fields__39__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
         __dataclass__init__fields__40__annotation,
         __dataclass__init__fields__40__default,
         __dataclass__init__fields__41__annotation,
@@ -27777,16 +27789,6 @@ def _process_dataclass__1eb329dfd70a61f4d3904cad15ecc41c9a379853():
         __dataclass__init__fields__43__default,
         __dataclass__init__fields__44__annotation,
         __dataclass__init__fields__44__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__9__annotation,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -28089,15 +28091,15 @@ def _process_dataclass__1eb329dfd70a61f4d3904cad15ecc41c9a379853():
         def __init__(
             self,
             *,
-            block_device_mappings: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            image_id: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            instance_type: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            ipv6_address_count: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            ipv6_addresses: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            kernel_id: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            key_name: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            max_count: __dataclass__init__fields__8__annotation,
-            min_count: __dataclass__init__fields__9__annotation,
+            block_device_mappings: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            image_id: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            instance_type: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            ipv6_address_count: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            ipv6_addresses: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            kernel_id: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            key_name: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            max_count: __dataclass__init__fields__08__annotation,
+            min_count: __dataclass__init__fields__09__annotation,
             monitoring: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             placement: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             ramdisk_id: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -28254,85 +28256,85 @@ def _process_dataclass__1eb329dfd70a61f4d3904cad15ecc41c9a379853():
         "'group_name', 'description', 'ip_permissions'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fiel"
         "ds=('group_id', 'ip_permissions_egress', 'tags', 'vpc_id', 'security_group_arn', 'owner_id', 'group_name', 'de"
         "scription', 'ip_permissions'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRe"
-        "f(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type="
-        "FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='group_id', annotation="
-        "OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='ip_permissions_egress', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='ini"
-        "t.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='tags', annotation=OpRef(name='init.fields.3.annotat"
-        "ion'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='vpc_id', annotation=O"
-        "pRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='security_group_arn', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fi"
-        "elds.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='owner_id', annotation=OpRef(name='init.fields.6.annotat"
-        "ion'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='group_name', annotati"
-        "on=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, "
+        "f(name='init.fields.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type"
+        "=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='group_id', annotation"
+        "=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, "
         "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
-        "an.Field(name='description', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.field"
-        "s.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='ip_permissions', annotation=OpRef(name='init.fields.9.anno"
-        "tation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_o"
-        "nly_params=('group_id', 'ip_permissions_egress', 'tags', 'vpc_id', 'security_group_arn', 'owner_id', 'group_na"
-        "me', 'description', 'ip_permissions'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_"
-        "fns=()), ReprPlan(fields=(ReprPlan.Field(name='group_id', kw_only=True, fn=None), ReprPlan.Field(name='ip_perm"
-        "issions_egress', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(na"
-        "me='vpc_id', kw_only=True, fn=None), ReprPlan.Field(name='security_group_arn', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='group_name', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='ip_permissions', kw_only=True, fn"
-        "=None)), id=False, terse=False, default_fn=None)))"
+        "an.Field(name='ip_permissions_egress', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name="
+        "'init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='tags', annotation=OpRef(name='init.fields.03.a"
+        "nnotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='vpc_id', annot"
+        "ation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='security_group_arn', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(nam"
+        "e='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='owner_id', annotation=OpRef(name='init.field"
+        "s.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='group_na"
+        "me', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='description', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef("
+        "name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='ip_permissions', annotation=OpRef(name='i"
+        "nit.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', "
+        "std_params=(), kw_only_params=('group_id', 'ip_permissions_egress', 'tags', 'vpc_id', 'security_group_arn', 'o"
+        "wner_id', 'group_name', 'description', 'ip_permissions'), frozen=True, slots=False, post_init_params=None, ini"
+        "t_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='group_id', kw_only=True, fn=None), ReprPlan."
+        "Field(name='ip_permissions_egress', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='vpc_id', kw_only=True, fn=None), ReprPlan.Field(name='security_group_arn', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='group_name', kw_only="
+        "True, fn=None), ReprPlan.Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='ip_permissions"
+        "', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='6b96e533fe8f8ebd408827622def8123d5c1c9dc',
+    plan_repr_sha1='558ef21b6f51d19a234244a7f376b8c827c759fb',
     op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'SecurityGroup'),
     ),
 )
-def _process_dataclass__6b96e533fe8f8ebd408827622def8123d5c1c9dc():
+def _process_dataclass__558ef21b6f51d19a234244a7f376b8c827c759fb():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -28460,15 +28462,15 @@ def _process_dataclass__6b96e533fe8f8ebd408827622def8123d5c1c9dc():
         def __init__(
             self,
             *,
-            group_id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            ip_permissions_egress: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            tags: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            vpc_id: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            security_group_arn: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            owner_id: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            group_name: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            description: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            ip_permissions: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            group_id: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            ip_permissions_egress: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            tags: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            vpc_id: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            security_group_arn: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            owner_id: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            group_name: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            description: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            ip_permissions: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'group_id', group_id)
             __dataclass__object_setattr(self, 'ip_permissions_egress', ip_permissions_egress)
@@ -29549,87 +29551,105 @@ def _process_dataclass__e2d93455c9a1ab29f2896f8f9ffa88f634c68bc7():
         "on', 'ipv6_cidr_block_association_set', 'tags', 'subnet_arn', 'outpost_arn', 'enable_dns64', 'ipv6_native', 'p"
         "rivate_dns_name_options_on_launch', 'block_public_access_states', 'type', 'subnet_id', 'state', 'vpc_id', 'cid"
         "r_block', 'available_ip_address_count', 'availability_zone', 'default_for_az', 'map_public_ip_on_launch'), cac"
-        "he=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation')"
-        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='availability_zone_id', annotation=OpRef(name='init.field"
-        "s.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_lni"
-        "_at_device_index', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='map_customer_owned_ip_on_launch', annotation=OpRef(name='init.fields"
-        ".3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='customer_ow"
-        "ned_ipv4_pool', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='owner_id', annotation=OpRef(name='init.fields.5.annotation'), default=O"
-        "pRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='assign_ipv6_address_on_creation', ann"
-        "otation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='ipv6_cidr_block_association_set', annotation=OpRef(name='init.fields.7.annotation'), defau"
-        "lt=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags', annotation=OpRef(name='ini"
-        "t.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sub"
-        "net_arn', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(name='init.fields.10.annotation'), default=OpR"
-        "ef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_dns64', annotation=OpRef(name='"
-        "init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='ipv6_native', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None), InitPlan.Field(name='private_dns_name_options_on_launch', annotation=OpRef(name='init.fiel"
-        "ds.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='block_p"
-        "ublic_access_states', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.d"
+        "he=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'"
+        "), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='availability_zone_id', annotation=OpRef(name='init.fiel"
+        "ds.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_"
+        "lni_at_device_index', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.d"
         "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='type', annotation=OpRef(name='init.fields.15.annotation'), defa"
-        "ult=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='subnet_id', annotation=OpRef(na"
-        "me='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='state', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='vpc_id', annotation=OpRef(name='init.fields.18.annotation'), default=Op"
-        "Ref(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cidr_block', annotation=OpRef(name='i"
-        "nit.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'available_ip_address_count', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fie"
-        "lds.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef(name='init.fields."
-        "21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default_fo"
-        "r_az', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='map_public_ip_on_launch', annotation=OpRef(name='init.fields.23.annotation'), "
-        "default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_param"
-        "s=('availability_zone_id', 'enable_lni_at_device_index', 'map_customer_owned_ip_on_launch', 'customer_owned_ip"
-        "v4_pool', 'owner_id', 'assign_ipv6_address_on_creation', 'ipv6_cidr_block_association_set', 'tags', 'subnet_ar"
-        "n', 'outpost_arn', 'enable_dns64', 'ipv6_native', 'private_dns_name_options_on_launch', 'block_public_access_s"
-        "tates', 'type', 'subnet_id', 'state', 'vpc_id', 'cidr_block', 'available_ip_address_count', 'availability_zone"
-        "', 'default_for_az', 'map_public_ip_on_launch'), frozen=True, slots=False, post_init_params=None, init_fns=(),"
-        " validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='availability_zone_id', kw_only=True, fn=None), ReprPl"
-        "an.Field(name='enable_lni_at_device_index', kw_only=True, fn=None), ReprPlan.Field(name='map_customer_owned_ip"
-        "_on_launch', kw_only=True, fn=None), ReprPlan.Field(name='customer_owned_ipv4_pool', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='assign_ipv6_address_on_creation', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='ipv6_cidr_block_association_set', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='subnet_arn', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='outpost_arn', kw_only=True, fn=None), ReprPlan.Field(name='enable_dns64', kw_only=True, fn=None)"
-        ", ReprPlan.Field(name='ipv6_native', kw_only=True, fn=None), ReprPlan.Field(name='private_dns_name_options_on_"
-        "launch', kw_only=True, fn=None), ReprPlan.Field(name='block_public_access_states', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='type', kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='cidr_block', kw_only=True, fn=None), ReprPlan.Field(name='available_ip_address_count', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None), ReprPlan.Field(name='default_f"
-        "or_az', kw_only=True, fn=None), ReprPlan.Field(name='map_public_ip_on_launch', kw_only=True, fn=None)), id=Fal"
-        "se, terse=False, default_fn=None)))"
+        "e=None, check_type=None), InitPlan.Field(name='map_customer_owned_ip_on_launch', annotation=OpRef(name='init.f"
+        "ields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cust"
+        "omer_owned_ipv4_pool', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04."
+        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
+        "te=None, check_type=None), InitPlan.Field(name='owner_id', annotation=OpRef(name='init.fields.05.annotation'),"
+        " default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='assign_ipv6_address_on_cre"
+        "ation', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='ipv6_cidr_block_association_set', annotation=OpRef(name='init.fields.07.annot"
+        "ation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags', annotation="
+        "OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='subnet_arn', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields"
+        ".09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(name='init.fields.10.annota"
+        "tion'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_dns64', anno"
+        "tation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='ipv6_native', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='ini"
+        "t.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='private_dns_name_options_on_launch', annotation=Op"
+        "Ref(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='block_public_access_states', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(nam"
+        "e='init.fields.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='type', annotation=OpRef(name='init.fields.15"
+        ".annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='subnet_id', "
+        "annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='state', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init."
+        "fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='vpc_id', annotation=OpRef(name='init.fields.18.annot"
+        "ation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cidr_block', annot"
+        "ation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='available_ip_address_count', annotation=OpRef(name='init.fields.20.annotation'), default=O"
+        "pRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef"
+        "(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='default_for_az', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields."
+        "22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='map_public_ip_on_launch', annotation=OpRef(name='init.field"
+        "s.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_param"
+        "s=(), kw_only_params=('availability_zone_id', 'enable_lni_at_device_index', 'map_customer_owned_ip_on_launch',"
+        " 'customer_owned_ipv4_pool', 'owner_id', 'assign_ipv6_address_on_creation', 'ipv6_cidr_block_association_set',"
+        " 'tags', 'subnet_arn', 'outpost_arn', 'enable_dns64', 'ipv6_native', 'private_dns_name_options_on_launch', 'bl"
+        "ock_public_access_states', 'type', 'subnet_id', 'state', 'vpc_id', 'cidr_block', 'available_ip_address_count',"
+        " 'availability_zone', 'default_for_az', 'map_public_ip_on_launch'), frozen=True, slots=False, post_init_params"
+        "=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='availability_zone_id', kw_only=Tru"
+        "e, fn=None), ReprPlan.Field(name='enable_lni_at_device_index', kw_only=True, fn=None), ReprPlan.Field(name='ma"
+        "p_customer_owned_ip_on_launch', kw_only=True, fn=None), ReprPlan.Field(name='customer_owned_ipv4_pool', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='assign_ipv6_add"
+        "ress_on_creation', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_cidr_block_association_set', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='subnet_arn', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='outpost_arn', kw_only=True, fn=None), ReprPlan.Field(name='enable_dns64', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='ipv6_native', kw_only=True, fn=None), ReprPlan.Field(name='private_d"
+        "ns_name_options_on_launch', kw_only=True, fn=None), ReprPlan.Field(name='block_public_access_states', kw_only="
+        "True, fn=None), ReprPlan.Field(name='type', kw_only=True, fn=None), ReprPlan.Field(name='subnet_id', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='cidr_block', kw_only=True, fn=None), ReprPlan.Field(name='available_ip_addres"
+        "s_count', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='default_for_az', kw_only=True, fn=None), ReprPlan.Field(name='map_public_ip_on_launch', kw_only=True"
+        ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='75f7e362ffb3e14e0ae63b7138f52a6d7cd258c5',
+    plan_repr_sha1='c5aa3f3b2385e008f50c32f6e11e0de5322d85e3',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -29650,8 +29670,6 @@ def _process_dataclass__e2d93455c9a1ab29f2896f8f9ffa88f634c68bc7():
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__19__annotation',
         '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__20__annotation',
         '__dataclass__init__fields__20__default',
         '__dataclass__init__fields__21__annotation',
@@ -29660,31 +29678,33 @@ def _process_dataclass__e2d93455c9a1ab29f2896f8f9ffa88f634c68bc7():
         '__dataclass__init__fields__22__default',
         '__dataclass__init__fields__23__annotation',
         '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Subnet'),
     ),
 )
-def _process_dataclass__75f7e362ffb3e14e0ae63b7138f52a6d7cd258c5():
+def _process_dataclass__c5aa3f3b2385e008f50c32f6e11e0de5322d85e3():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -29705,8 +29725,6 @@ def _process_dataclass__75f7e362ffb3e14e0ae63b7138f52a6d7cd258c5():
         __dataclass__init__fields__18__default,
         __dataclass__init__fields__19__annotation,
         __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__init__fields__20__annotation,
         __dataclass__init__fields__20__default,
         __dataclass__init__fields__21__annotation,
@@ -29715,22 +29733,6 @@ def _process_dataclass__75f7e362ffb3e14e0ae63b7138f52a6d7cd258c5():
         __dataclass__init__fields__22__default,
         __dataclass__init__fields__23__annotation,
         __dataclass__init__fields__23__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -29928,15 +29930,15 @@ def _process_dataclass__75f7e362ffb3e14e0ae63b7138f52a6d7cd258c5():
         def __init__(
             self,
             *,
-            availability_zone_id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            enable_lni_at_device_index: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            map_customer_owned_ip_on_launch: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            customer_owned_ipv4_pool: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            owner_id: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            assign_ipv6_address_on_creation: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            ipv6_cidr_block_association_set: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            tags: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            subnet_arn: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            availability_zone_id: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            enable_lni_at_device_index: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            map_customer_owned_ip_on_launch: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            customer_owned_ipv4_pool: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            owner_id: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            assign_ipv6_address_on_creation: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            ipv6_cidr_block_association_set: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            tags: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            subnet_arn: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             outpost_arn: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             enable_dns64: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             ipv6_native: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
@@ -31164,107 +31166,108 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
         "attrs=False), HashPlan(action='add', fields=('owner_id', 'instance_tenancy', 'ipv6_cidr_block_association_set'"
         ", 'cidr_block_association_set', 'is_default', 'encryption_control', 'tags', 'block_public_access_states', 'vpc"
         "_id', 'state', 'cidr_block', 'dhcp_options_id'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__"
-        "', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override="
-        "False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='owne"
-        "r_id', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default"
+        "', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init=True, override"
+        "=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='own"
+        "er_id', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='instance_tenancy', annotation=OpRef(name='init.fields.02.annotation'), defaul"
+        "t=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType."
+        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_cidr_block_association_set',"
+        " annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='cidr_block_association_set', annotation=OpRef(name='init.fields.04.annotation'), def"
+        "ault=OpRef(name='init.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='is_default', annotation=OpRef("
+        "name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='encryption_control', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fiel"
+        "ds.06.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='tags', annotation=OpRef(name='init.fields.07.annotation'"
+        "), default=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='block_public_access_stat"
+        "es', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default"
         "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='instance_tenancy', annotation=OpRef(name='init.fields.2.annotation'), default=Op"
-        "Ref(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ipv6_cidr_block_association_set', anno"
-        "tation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='cidr_block_association_set', annotation=OpRef(name='init.fields.4.annotation'), default=OpR"
-        "ef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='is_default', annotation=OpRef(name='ini"
-        "t.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enc"
-        "ryption_control', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None), InitPlan.Field(name='tags', annotation=OpRef(name='init.fields.7.annotation'), default=OpR"
-        "ef(name='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='block_public_access_states', annotation"
-        "=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='vpc_id', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='state', annotation=OpRef(name='init.fields.10.annotation'), defau"
-        "lt=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType"
-        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cidr_block', annotation=OpRef(na"
-        "me='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='dhcp_options_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('owner_id', 'instance_tenancy',"
-        " 'ipv6_cidr_block_association_set', 'cidr_block_association_set', 'is_default', 'encryption_control', 'tags', "
-        "'block_public_access_states', 'vpc_id', 'state', 'cidr_block', 'dhcp_options_id'), frozen=True, slots=False, p"
-        "ost_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='owner_id', kw_only="
-        "True, fn=None), ReprPlan.Field(name='instance_tenancy', kw_only=True, fn=None), ReprPlan.Field(name='ipv6_cidr"
-        "_block_association_set', kw_only=True, fn=None), ReprPlan.Field(name='cidr_block_association_set', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='is_default', kw_only=True, fn=None), ReprPlan.Field(name='encryption_control"
-        "', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='block_publ"
-        "ic_access_states', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='state', kw_only=True, fn=None), ReprPlan.Field(name='cidr_block', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='dhcp_options_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "e=None), InitPlan.Field(name='vpc_id', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name="
+        "'init.fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='state', annotation=OpRef(name='init.fields.10."
+        "annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cidr_block', "
+        "annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='dhcp_options_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(n"
+        "ame='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('owner_id', "
+        "'instance_tenancy', 'ipv6_cidr_block_association_set', 'cidr_block_association_set', 'is_default', 'encryption"
+        "_control', 'tags', 'block_public_access_states', 'vpc_id', 'state', 'cidr_block', 'dhcp_options_id'), frozen=T"
+        "rue, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='"
+        "owner_id', kw_only=True, fn=None), ReprPlan.Field(name='instance_tenancy', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='ipv6_cidr_block_association_set', kw_only=True, fn=None), ReprPlan.Field(name='cidr_block_associatio"
+        "n_set', kw_only=True, fn=None), ReprPlan.Field(name='is_default', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'encryption_control', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Fie"
+        "ld(name='block_public_access_states', kw_only=True, fn=None), ReprPlan.Field(name='vpc_id', kw_only=True, fn=N"
+        "one), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name='cidr_block', kw_only=True, fn="
+        "None), ReprPlan.Field(name='dhcp_options_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)"
+        "))"
     ),
-    plan_repr_sha1='d719e59ed39034940f5557de3b6e95b675f461c6',
+    plan_repr_sha1='514b6f6632c44ad07c170cd34b257b9a615428db',
     op_ref_idents=(
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Vpc'),
     ),
 )
-def _process_dataclass__d719e59ed39034940f5557de3b6e95b675f461c6():
+def _process_dataclass__514b6f6632c44ad07c170cd34b257b9a615428db():
     def _process_dataclass(
         *,
         __dataclass__cls,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
         __dataclass__init__fields__11__default,
         __dataclass__init__fields__12__annotation,
         __dataclass__init__fields__12__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -31407,15 +31410,15 @@ def _process_dataclass__d719e59ed39034940f5557de3b6e95b675f461c6():
         def __init__(
             self,
             *,
-            owner_id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            instance_tenancy: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            ipv6_cidr_block_association_set: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            cidr_block_association_set: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            is_default: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            encryption_control: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            tags: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            block_public_access_states: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            vpc_id: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            owner_id: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            instance_tenancy: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            ipv6_cidr_block_association_set: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            cidr_block_association_set: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            is_default: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            encryption_control: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            tags: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            block_public_access_states: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            vpc_id: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             state: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             cidr_block: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             dhcp_options_id: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,

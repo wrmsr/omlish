@@ -756,64 +756,82 @@ def _process_dataclass__97f06c15926ba4bb103416285c597e19032efb28():
         "('query', 'auto_parameters', 'topic', 'search_depth', 'chunks_per_source', 'max_results', 'time_range', 'start"
         "_date', 'end_date', 'include_answer', 'include_raw_content', 'include_images', 'include_image_descriptions', '"
         "include_favicon', 'include_domains', 'exclude_domains', 'country'), cache=False), InitPlan(fields=(InitPlan.Fi"
-        "eld(name='query', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
-        "eld(name='auto_parameters', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields"
-        ".1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='topic', annotation=OpRef(name='init.fields.2.annotation'), "
-        "default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='search_depth', annotation=Op"
-        "Ref(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
-        "eld(name='chunks_per_source', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fiel"
-        "ds.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='max_results', annotation=OpRef(name='init.fields.5.annota"
-        "tion'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='time_range', annotat"
-        "ion=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='start_date', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.field"
-        "s.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='end_date', annotation=OpRef(name='init.fields.8.annotation"
-        "'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='include_answer', annotat"
-        "ion=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='include_raw_content', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='"
-        "init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='include_images', annotation=OpRef(name='init.fi"
-        "elds.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override="
-        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='inclu"
-        "de_image_descriptions', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='include_favicon', annotation=OpRef(name='init.fields.13.annot"
-        "ation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='include_domains', "
-        "annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='exclude_domains', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(n"
-        "ame='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
-        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='country', annotation=OpRef(name='init.fiel"
-        "ds.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_para"
-        "ms=(), kw_only_params=('query', 'auto_parameters', 'topic', 'search_depth', 'chunks_per_source', 'max_results'"
-        ", 'time_range', 'start_date', 'end_date', 'include_answer', 'include_raw_content', 'include_images', 'include_"
-        "image_descriptions', 'include_favicon', 'include_domains', 'exclude_domains', 'country'), frozen=True, slots=F"
-        "alse, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='query', kw_o"
-        "nly=True, fn=None), ReprPlan.Field(name='auto_parameters', kw_only=True, fn=None), ReprPlan.Field(name='topic'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='search_depth', kw_only=True, fn=None), ReprPlan.Field(name='chu"
-        "nks_per_source', kw_only=True, fn=None), ReprPlan.Field(name='max_results', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='time_range', kw_only=True, fn=None), ReprPlan.Field(name='start_date', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='end_date', kw_only=True, fn=None), ReprPlan.Field(name='include_answer', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='include_raw_content', kw_only=True, fn=None), ReprPlan.Field(name='include_images', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='include_image_descriptions', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='include_favicon', kw_only=True, fn=None), ReprPlan.Field(name='include_domains', kw_only=True, fn=None"
-        "), ReprPlan.Field(name='exclude_domains', kw_only=True, fn=None), ReprPlan.Field(name='country', kw_only=True,"
-        " fn=None)), id=False, terse=False, default_fn=None)))"
+        "eld(name='query', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='auto_parameters', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fiel"
+        "ds.01.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='topic', annotation=OpRef(name='init.fields.02.annotation"
+        "'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='search_depth', annotati"
+        "on=OpRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='chunks_per_source', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='i"
+        "nit.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='max_results', annotation=OpRef(name='init.fields"
+        ".05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='time_rang"
+        "e', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='start_date', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(na"
+        "me='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='end_date', annotation=OpRef(name='init.fiel"
+        "ds.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='include"
+        "_answer', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='include_raw_content', annotation=OpRef(name='init.fields.10.annotation'), d"
+        "efault=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='include_images', annotation="
+        "OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='include_image_descriptions', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(n"
+        "ame='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='include_favicon', annotation=OpRef(name='i"
+        "nit.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'include_domains', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='exclude_domains', annotation=OpRef(name='init.fields.15.annotation"
+        "'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='country', annotation=Op"
+        "Ref(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_par"
+        "am='self', std_params=(), kw_only_params=('query', 'auto_parameters', 'topic', 'search_depth', 'chunks_per_sou"
+        "rce', 'max_results', 'time_range', 'start_date', 'end_date', 'include_answer', 'include_raw_content', 'include"
+        "_images', 'include_image_descriptions', 'include_favicon', 'include_domains', 'exclude_domains', 'country'), f"
+        "rozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field"
+        "(name='query', kw_only=True, fn=None), ReprPlan.Field(name='auto_parameters', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='topic', kw_only=True, fn=None), ReprPlan.Field(name='search_depth', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='chunks_per_source', kw_only=True, fn=None), ReprPlan.Field(name='max_results', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='time_range', kw_only=True, fn=None), ReprPlan.Field(name='start_date', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='end_date', kw_only=True, fn=None), ReprPlan.Field(name='include_answer', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='include_raw_content', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'include_images', kw_only=True, fn=None), ReprPlan.Field(name='include_image_descriptions', kw_only=True, fn=N"
+        "one), ReprPlan.Field(name='include_favicon', kw_only=True, fn=None), ReprPlan.Field(name='include_domains', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='exclude_domains', kw_only=True, fn=None), ReprPlan.Field(name='coun"
+        "try', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='bd96288940e857f7d97cf10301452de930241668',
+    plan_repr_sha1='5e50b4cb7ee467aefd78a1310cfd63c2acdc2933',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
@@ -828,34 +846,34 @@ def _process_dataclass__97f06c15926ba4bb103416285c597e19032efb28():
         '__dataclass__init__fields__15__default',
         '__dataclass__init__fields__16__annotation',
         '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ommlds.backends.tavily.protocol', 'SearchRequest'),
     ),
 )
-def _process_dataclass__bd96288940e857f7d97cf10301452de930241668():
+def _process_dataclass__5e50b4cb7ee467aefd78a1310cfd63c2acdc2933():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
@@ -870,24 +888,6 @@ def _process_dataclass__bd96288940e857f7d97cf10301452de930241668():
         __dataclass__init__fields__15__default,
         __dataclass__init__fields__16__annotation,
         __dataclass__init__fields__16__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1053,16 +1053,16 @@ def _process_dataclass__bd96288940e857f7d97cf10301452de930241668():
         def __init__(
             self,
             *,
-            query: __dataclass__init__fields__0__annotation,
-            auto_parameters: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            topic: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            search_depth: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            chunks_per_source: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            max_results: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            time_range: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            start_date: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            end_date: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            include_answer: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            query: __dataclass__init__fields__00__annotation,
+            auto_parameters: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            topic: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            search_depth: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            chunks_per_source: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            max_results: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            time_range: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            start_date: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            end_date: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            include_answer: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             include_raw_content: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             include_images: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             include_image_descriptions: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
