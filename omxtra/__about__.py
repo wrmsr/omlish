@@ -15,11 +15,21 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies: dict = {
+        'omdev': [
+            f'omdev == {__version__}',
+        ],
+
         'server': [
             'h11 ~= 0.16',
             'h2 ~= 4.3',
             'priority ~= 2.0',
             'wsproto ~= 1.3',
+        ],
+
+        'ssh': [
+            'paramiko ~= 4.0',  # !! LGPL
+
+            'asyncssh ~= 2.22',  # cffi
         ],
 
         'templates': [

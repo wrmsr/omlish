@@ -15,12 +15,6 @@ class Project(ProjectBase):
         'omdev': [
             f'omdev == {__version__}',
         ],
-
-        'ssh': [
-            'paramiko ~= 4.0',  # !! LGPL
-
-            'asyncssh ~= 2.22',  # cffi
-        ],
     }
 
     entry_points = {
