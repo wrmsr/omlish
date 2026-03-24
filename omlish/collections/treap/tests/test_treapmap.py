@@ -3,12 +3,11 @@ import typing as ta
 
 import pytest
 
-from ...utils import key_cmp
 from .. import treapmap as tm
 
 
 def test_treapmap():
-    m: tm.TreapMap[int, str] = tm.TreapMap(_n=None, _c=key_cmp(lambda l, r: l - r))
+    m: tm.TreapMap[int, str] = tm.new_treap_map()
 
     for i in range(32):
         m = m.with_(i, str(i))
@@ -64,12 +63,8 @@ def test_treapmap():
 ##
 
 
-def item_cmp(a: tuple[int, str | None], b: tuple[int, str | None]) -> int:
-    return (a[0] > b[0]) - (a[0] < b[0])
-
-
 def new_map() -> tm.TreapMap[int, str]:
-    return ta.cast(tm.TreapMap[int, str], tm.new_treap_map(cmp=item_cmp))
+    return ta.cast('tm.TreapMap[int, str]', tm.new_treap_map())
 
 
 def items_list(m: tm.TreapMap[int, str]) -> list[tuple[int, str]]:
