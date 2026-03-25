@@ -1,7 +1,10 @@
 import abc
+import operator
 import typing as ta
 
 from .. import lang
+from .mappings import IterItemsViewMapping
+from .mappings import IterValuesViewMapping
 
 
 T = ta.TypeVar('T')
@@ -75,7 +78,7 @@ class SortedCollection(
 
 class SortedItems(lang.Abstract, ta.Generic[K, V]):
     @abc.abstractmethod
-    def items(self) -> ta.Iterator[tuple[K, V]]:
+    def iteritems(self) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -97,9 +100,7 @@ class SortedMapping(
     lang.Abstract,
     ta.Generic[K, V],
 ):
-    @abc.abstractmethod
-    def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore[override]  # FIXME: ItemsView
-        raise NotImplementedError
+    pass
 
 
 class SortedMutableMapping(
@@ -114,7 +115,11 @@ class SortedMutableMapping(
 ##
 
 
-class SortedListDict(SortedMutableMapping[K, V]):
+class SortedListDict(
+    IterValuesViewMapping[K, V],
+    IterItemsViewMapping[K, V],
+    SortedMutableMapping[K, V],
+):
     @staticmethod
     def _item_comparator(a: tuple[K, V], b: tuple[K, V]) -> int:
         return SortedCollection.default_comparator(a[0], b[0])
@@ -150,7 +155,10 @@ class SortedListDict(SortedMutableMapping[K, V]):
         for k, _ in self._impl:
             yield k
 
-    def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore
+    def itervalues(self) -> ta.Iterator[V]:
+        return map(operator.itemgetter(0), self.iteritems())
+
+    def iteritems(self) -> ta.Iterator[tuple[K, V]]:
         yield from self._impl.iter()
 
     def items_desc(self) -> ta.Iterator[tuple[K, V]]:

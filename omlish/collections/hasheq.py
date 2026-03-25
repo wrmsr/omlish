@@ -8,6 +8,8 @@ import dataclasses as dc
 import typing as ta
 
 from .. import lang
+from .mappings import IterItemsViewMapping
+from .mappings import IterValuesViewMapping
 
 
 K = ta.TypeVar('K')
@@ -52,7 +54,11 @@ class hash_eq(HashEq[K], lang.NotInstantiable, lang.Final):  # noqa
         raise TypeError
 
 
-class HashEqMap(ta.MutableMapping[K, V]):
+class HashEqMap(
+    IterValuesViewMapping[K, V],
+    IterItemsViewMapping[K, V],
+    ta.MutableMapping[K, V],
+):
     class _Node(ta.NamedTuple, ta.Generic[K2, V2]):
         k: K2
         v: V2
@@ -141,14 +147,3 @@ class HashEqMap(ta.MutableMapping[K, V]):
         for l in self._dct.values():
             for e in l:
                 yield (e.k, e.v)
-
-    # FIXME:
-
-    def keys(self) -> ta.Iterable[K]:  # type: ignore[override]
-        return lang.itergen(self.iterkeys)
-
-    def values(self) -> ta.Iterable[V]:  # type: ignore[override]
-        return lang.itergen(self.itervalues)
-
-    def items(self) -> ta.Iterable[tuple[K, V]]:  # type: ignore[override]
-        return lang.itergen(self.iteritems)

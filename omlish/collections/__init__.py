@@ -80,12 +80,21 @@ with _lang.auto_proxy_init(globals()):
     from . import kv  # noqa
 
     from .mappings import (  # noqa
-        DynamicTypeMap,
-        MissingDict,
-        TypeMap,
-        dict_factory,
-        guarded_map_update,
         multikey_dict,
+
+        guarded_map_update,
+
+        TypeMap,
+        DynamicTypeMap,
+
+        MissingDict,
+
+        dict_factory,
+
+        IterValuesView,
+        IterValuesViewMapping,
+        IterItemsView,
+        IterItemsViewMapping,
     )
 
     from .multimaps import (  # noqa

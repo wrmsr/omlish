@@ -21,7 +21,7 @@ def test_treapmap():
     print(m)
     print('===')
 
-    it = m.items()
+    it = m.iteritems()
     while it.has_next():
         print(it.next())
     print('===')
@@ -39,7 +39,7 @@ def test_treapmap():
     print(old[500])
     print('===')
 
-    it = m.items()
+    it = m.iteritems()
     while it.has_next():
         print(it.next())
     print('===')
@@ -68,7 +68,7 @@ def new_map() -> tm.TreapMap[int, str]:
 
 
 def items_list(m: tm.TreapMap[int, str]) -> list[tuple[int, str]]:
-    return list(m.items())
+    return list(m.iteritems())
 
 
 def items_desc_list(m: tm.TreapMap[int, str]) -> list[tuple[int, str]]:
@@ -127,7 +127,7 @@ def test_items_and_items_desc():
 def test_items_iterator_protocol():
     m = new_map().with_(1, 'a').with_(2, 'b')
 
-    it = m.items()
+    it = m.iteritems()
     assert iter(it) is it
     assert it.has_next() is True
     assert next(it) == (1, 'a')

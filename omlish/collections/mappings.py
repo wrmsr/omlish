@@ -1,3 +1,5 @@
+import abc
+import collections.abc
 import typing as ta
 import weakref
 
@@ -166,3 +168,42 @@ def dict_factory[K, V](
         return weakref.WeakKeyDictionary
     else:
         return dict
+
+
+##
+
+
+@ta.final
+class IterValuesView(collections.abc.ValuesView[V]):
+    _mapping: 'IterValuesViewMapping[ta.Any, V]'
+
+
+class IterValuesViewMapping(collections.abc.Mapping[K, V]):
+    @ta.final
+    def values(self) -> IterValuesView[V]:
+        return IterValuesView(self)
+
+    @abc.abstractmethod
+    def itervalues(self) -> ta.Iterator[V]:
+        raise NotImplementedError
+
+
+#
+
+
+@ta.final
+class IterItemsView(collections.abc.ItemsView[K, V]):
+    _mapping: 'IterItemsViewMapping[K, V]'
+
+    def __iter__(self) -> ta.Iterator[tuple[K, V]]:
+        return self._mapping.iteritems()  # noqa
+
+
+class IterItemsViewMapping(collections.abc.Mapping[K, V]):
+    @ta.final
+    def items(self) -> IterItemsView[K, V]:
+        return IterItemsView(self)
+
+    @abc.abstractmethod
+    def iteritems(self) -> ta.Iterator[tuple[K, V]]:
+        raise NotImplementedError

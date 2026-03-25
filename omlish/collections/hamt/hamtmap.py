@@ -36,7 +36,7 @@ class HamtMap(PersistentMapping[K, V]):
     def __iter__(self) -> ta.Iterator[K]:
         return _hamt.iter_keys(self._h)
 
-    def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore[override]
+    def iteritems(self) -> ta.Iterator[tuple[K, V]]:
         return _hamt.iter_items(self._h)
 
     def with_(self, k: K, v: V) -> ta.Self:

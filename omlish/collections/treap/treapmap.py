@@ -31,7 +31,10 @@ V = ta.TypeVar('V')
 
 
 @ta.final
-class TreapMap(PersistentMapping[K, V], SortedItems[K, V]):
+class TreapMap(
+    PersistentMapping[K, V],
+    SortedItems[K, V],
+):
     __slots__ = ('_n', '_c')
 
     def __init__(
@@ -45,14 +48,6 @@ class TreapMap(PersistentMapping[K, V], SortedItems[K, V]):
     def __len__(self) -> int:
         return self._n.count if self._n is not None else 0
 
-    def __contains__(self, item: K) -> bool:  # type: ignore[override]
-        try:
-            self[item]  # noqa
-        except KeyError:
-            return False
-        else:
-            return True
-
     def __getitem__(self, item: K) -> V:
         n = treap.find(self._n, (item, None), self._c)  # type: ignore
         if n is None:
@@ -60,11 +55,11 @@ class TreapMap(PersistentMapping[K, V], SortedItems[K, V]):
         return n.value[1]  # type: ignore[return-value]
 
     def __iter__(self) -> ta.Iterator[K]:
-        i = self.items()
+        i = self.iteritems()
         while i.has_next():
             yield i.next()[0]
 
-    def items(self) -> 'TreapMapIterator[K, V]':  # type: ignore[override]
+    def iteritems(self) -> 'TreapMapIterator[K, V]':
         i = TreapMapIterator(_st=[], _n=self._n)
         while (n := i._n) is not None and n.left is not None:  # noqa
             i._st.append(n)  # noqa
