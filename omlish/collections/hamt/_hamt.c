@@ -567,6 +567,8 @@ IS_BITMAP_NODE(HamtNode *node)
     return Py_IS_TYPE(node, state->Hamt_BitmapNode_Type);
 }
 
+static int IS_COLLISION_NODE(HamtNode *node) __attribute__((unused));
+
 static inline int
 IS_COLLISION_NODE(HamtNode *node)
 {
