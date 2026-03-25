@@ -17,7 +17,7 @@ from .executors import ToolFnToolExecutor
 
 
 @dc.dataclass(frozen=True, eq=False)
-@msh.update_fields_options(['target'], marshal_as=msh.OpaqueRepr, unmarshal_as=msh.OpaqueRepr)
+@msh.update_fields_options(['target'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
 class ToolCatalogEntry(lang.Final):
     spec: ToolSpec
     target: ToolFn | ToolExecutor

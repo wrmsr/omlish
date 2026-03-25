@@ -267,3 +267,15 @@ class Identity(ta.Generic[T]):
         if type(other) is not type(self):
             return NotImplemented
         return self._obj is not other._obj  # noqa
+
+
+##
+
+
+class OpaqueRepr(str):
+    """Represents a non-roundtrippable repr of some other complex / non-picklable / non-marshalable object."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return f'OpaqueRepr({super().__repr__()})'

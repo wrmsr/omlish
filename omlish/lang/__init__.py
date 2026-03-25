@@ -74,7 +74,11 @@ with _auto_proxy_init(globals(), update_exports=True):
 
     from .cells import (  # noqa
         Cell,
+        BaseCell,
+
         cell,
+
+        cell_cell,
     )
 
     from .classes.abstract import (  # noqa
@@ -409,6 +413,8 @@ with _auto_proxy_init(globals(), update_exports=True):
         anon_object,
 
         Identity,
+
+        OpaqueRepr,
     )
 
     from .outcomes import (  # noqa

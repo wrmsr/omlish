@@ -25,6 +25,7 @@ with lang.auto_proxy_import(globals()):
     from . import suggestions as _suggestions
     from . import termrender as _termrender
     from . import tools as _tools
+    from . import welcome as _welcome
 
 
 ##
@@ -119,6 +120,10 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     els.extend([
         inj.bind(_termrender.BackgroundTerminalRenderer, singleton=True),
     ])
+
+    #
+
+    els.append(inj.bind(_welcome.build_welcome_message, singleton=True))
 
     #
 

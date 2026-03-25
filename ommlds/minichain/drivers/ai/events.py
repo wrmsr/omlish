@@ -44,8 +44,8 @@ class AiStreamDeltaEvent(AiStreamEvent, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_options(['exception'], marshal_as=msh.OpaqueRepr, unmarshal_as=msh.OpaqueRepr)
+@msh.update_fields_options(['exception'], marshal_as=lang.OpaqueRepr | None, unmarshal_as=lang.OpaqueRepr | None)
 class AiStreamEndEvent(AiStreamEvent, lang.Final):
     _: dc.KW_ONLY
 
-    exception: BaseException | None = None
+    exception: BaseException | lang.OpaqueRepr | None = None

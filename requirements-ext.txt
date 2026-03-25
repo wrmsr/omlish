@@ -21,7 +21,7 @@ torch==2.11.0
 torchvision==0.26.0
 # torchcodec==0.7.0
 
-diffusers==0.37.0  # @omlish-venv !14t !14dt
+diffusers==0.37.1  # @omlish-venv !14t !14dt
 
 scipy==1.17.1
 scikit-learn==1.8.0
@@ -52,7 +52,7 @@ tree-sitter-python==0.25.0  # @omlish-venv !13t !13dt !14t
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.408
-basedpyright==1.38.3
+basedpyright==1.38.4
 
 blobfile==3.2.0
 
@@ -60,7 +60,7 @@ blobfile==3.2.0
 ##
 # bins
 
-deno==2.7.7
+deno==2.7.8
 playwright==1.58.0
 ripgrep==15.0.0
 

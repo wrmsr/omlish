@@ -1,3 +1,4 @@
+import asyncio
 import fcntl
 import os.path
 
@@ -25,22 +26,25 @@ class EventLogger:
 
         self._config = config
 
+        self._lock = asyncio.Lock()
+
     async def handle_event(self, event: Event) -> None:
         m = msh.marshal(event, Event)
         j = json.dumps_compact(m)
 
         os.makedirs(os.path.dirname(self._config.file_path), exist_ok=True)
 
-        with open(self._config.file_path, 'a') as f:  # noqa
-            if not (nl := self._config.no_lock):
+        async with self._lock:
+            with open(self._config.file_path, 'a') as f:  # noqa
+                if not (nl := self._config.no_lock):
+                    try:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    except BlockingIOError:
+                        raise RuntimeError(f'Driver event log file {self._config.file_path} is locked') from None
+
                 try:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-                except BlockingIOError:
-                    raise RuntimeError(f'Driver event log file {self._config.file_path} is locked') from None
+                    f.write(j + '\n')
 
-            try:
-                f.write(j + '\n')
-
-            finally:
-                if not nl:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                finally:
+                    if not nl:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)

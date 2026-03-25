@@ -1,5 +1,7 @@
 import typing as ta
 
+from ... import check
+from ... import lang
 from ..api.contexts import MarshalContext
 from ..api.contexts import UnmarshalContext
 from ..api.types import Marshaler
@@ -12,22 +14,15 @@ from ..factories.typemap import TypeMapUnmarshalerFactory
 ##
 
 
-class CannotUnmarshalOpaqueReprNotError(TypeError):
-    pass
-
-
-class OpaqueRepr:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-
 class OpaqueReprMarshalerUnmarshaler(Marshaler, Unmarshaler):
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        raise NotImplementedError
+        if not isinstance(o, lang.OpaqueRepr):
+            o = lang.OpaqueRepr(repr(o))
+        return o
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        raise CannotUnmarshalOpaqueReprNotError
+        return lang.OpaqueRepr(check.isinstance(v, str))
 
 
-OPAQUE_REPR_MARSHALER_FACTORY = TypeMapMarshalerFactory({OpaqueRepr: OpaqueReprMarshalerUnmarshaler()})
-OPAQUE_REPR_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({OpaqueRepr: OpaqueReprMarshalerUnmarshaler()})
+OPAQUE_REPR_MARSHALER_FACTORY = TypeMapMarshalerFactory({lang.OpaqueRepr: OpaqueReprMarshalerUnmarshaler()})
+OPAQUE_REPR_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({lang.OpaqueRepr: OpaqueReprMarshalerUnmarshaler()})

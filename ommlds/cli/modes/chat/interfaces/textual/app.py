@@ -1,5 +1,4 @@
 import asyncio
-import os
 import typing as ta
 import uuid
 import weakref
@@ -10,8 +9,6 @@ from omlish import dataclasses as dc
 from omlish.logs import all as logs
 
 from ...... import minichain as mc
-from .....backends.types import BackendName
-from ....types import ProfileName
 from ...facades.facade import ChatFacade
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
@@ -95,12 +92,11 @@ class ChatApp(
             chat_facade: ChatFacade,
             chat_driver: mc.drivers.Driver,
             chat_event_queue: ChatEventQueue,
-            backend_name: BackendName | None = None,
             devtools_setup: tx.DevtoolsSetup | None = None,
             input_history_manager: InputHistoryManager,
-            mode_profile_name: ProfileName | None = None,
             suggestions_manager: SuggestionsManager,
             background_terminal_renderer: BackgroundTerminalRenderer,
+            welcome_message: WelcomeMessage | None = None,
     ) -> None:
         super().__init__()
 
@@ -123,13 +119,7 @@ class ChatApp(
 
         #
 
-        self._messages_container = MessagesContainer([
-            WelcomeMessage('\n'.join([
-                *([f'Profile: {mode_profile_name}'] if mode_profile_name is not None else []),
-                f'Backend: {backend_name or "?"}',
-                f'Dir: {os.getcwd()}',
-            ])),
-        ])
+        self._messages_container = MessagesContainer([welcome_message] if welcome_message is not None else [])
 
         self._input_container = InputContainer(
             input_history_manager=input_history_manager,
