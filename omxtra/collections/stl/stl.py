@@ -23,8 +23,5 @@ class ObjectIntMap(_stl.MapObjI64, cabc.MutableMapping[K, int], ta.Generic[K]):
     pass
 
 
-class ObjectMap(_stl.MapObjObj, cabc.MutableMapping[K, V], ta.Generic[K, V]):
+class ObjectObjectMap(_stl.MapObjObj, cabc.MutableMapping[K, V], ta.Generic[K, V]):
     pass
-
-
-Map: ta.TypeAlias = ObjectMap

@@ -1,3 +1,5 @@
+import typing as ta
+
 import pytest
 
 
@@ -8,6 +10,15 @@ except ImportError:
 
 
 def test_stl():
-    m = stl.IntIntMap()
-    m[1] = 2
-    assert m[1] == 2
+    m: ta.Any
+    for cls, k, v, k2 in [
+        (stl.IntIntMap, 1, 2, 3),
+        (stl.IntObjectMap, 1, '2', 3),
+        (stl.ObjectIntMap, '1', 2, '3'),
+        (stl.ObjectObjectMap, '1', '2', '3'),
+    ]:
+        m = cls()
+        m[k] = v
+        assert m[k] == v
+        with pytest.raises(KeyError):  # noqa
+            m[k2]  # noqa
