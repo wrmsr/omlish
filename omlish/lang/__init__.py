@@ -72,6 +72,11 @@ with _auto_proxy_init(globals(), update_exports=True):
         split_string_casing,
     )
 
+    from .cells import (  # noqa
+        Cell,
+        cell,
+    )
+
     from .classes.abstract import (  # noqa
         is_abstract_class,
         is_abstract,

@@ -158,6 +158,9 @@ class Project(ProjectBase):
 
 
 class SetuptoolsBase:
+    cext = False
+    rs = False
+
     manifest_in = [
         'global-exclude **/conftest.py',
     ]
