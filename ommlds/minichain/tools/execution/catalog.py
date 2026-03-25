@@ -3,6 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 from ...content.content import Content
 from ..fns import ToolFn
@@ -16,6 +17,7 @@ from .executors import ToolFnToolExecutor
 
 
 @dc.dataclass(frozen=True, eq=False)
+@msh.update_fields_options(['target'], marshal_as=msh.OpaqueRepr, unmarshal_as=msh.OpaqueRepr)
 class ToolCatalogEntry(lang.Final):
     spec: ToolSpec
     target: ToolFn | ToolExecutor

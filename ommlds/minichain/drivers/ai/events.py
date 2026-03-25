@@ -2,6 +2,7 @@ import uuid
 
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
@@ -43,6 +44,7 @@ class AiStreamDeltaEvent(AiStreamEvent, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_options(['exception'], marshal_as=msh.OpaqueRepr, unmarshal_as=msh.OpaqueRepr)
 class AiStreamEndEvent(AiStreamEvent, lang.Final):
     _: dc.KW_ONLY
 

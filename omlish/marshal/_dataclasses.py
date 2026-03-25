@@ -1581,9 +1581,9 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         "aler', kw_only=True, fn=None), ReprPlan.Field(name='marshaler_factory', kw_only=True, fn=None), ReprPlan.Field"
         "(name='marshal_as', kw_only=True, fn=None), ReprPlan.Field(name='unmarshaler', kw_only=True, fn=None), ReprPla"
         "n.Field(name='unmarshaler_factory', kw_only=True, fn=None), ReprPlan.Field(name='unmarshal_as', kw_only=True, "
-        "fn=None)), id=False, terse=False, default_fn=None)))"
+        "fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='7e0d178559cae3ad0c9577a0c433f642b93b3b4e',
+    plan_repr_sha1='70cec7c0508ee074f7dc8c617424d153e4591383',
     op_ref_idents=(
         '__dataclass__init__fields__00__annotation',
         '__dataclass__init__fields__00__default',
@@ -1613,12 +1613,13 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         '__dataclass__init__fields__12__default',
         '__dataclass__init__fields__13__annotation',
         '__dataclass__init__fields__13__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'FieldOptions'),
     ),
 )
-def _process_dataclass__7e0d178559cae3ad0c9577a0c433f642b93b3b4e():
+def _process_dataclass__70cec7c0508ee074f7dc8c617424d153e4591383():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1650,6 +1651,7 @@ def _process_dataclass__7e0d178559cae3ad0c9577a0c433f642b93b3b4e():
         __dataclass__init__fields__12__default,
         __dataclass__init__fields__13__annotation,
         __dataclass__init__fields__13__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1839,20 +1841,34 @@ def _process_dataclass__7e0d178559cae3ad0c9577a0c433f642b93b3b4e():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"name={self.name!r}")
-            parts.append(f"alts={self.alts!r}")
-            parts.append(f"omit_if={self.omit_if!r}")
-            parts.append(f"default={self.default!r}")
-            parts.append(f"embed={self.embed!r}")
-            parts.append(f"generic_replace={self.generic_replace!r}")
-            parts.append(f"no_marshal={self.no_marshal!r}")
-            parts.append(f"no_unmarshal={self.no_unmarshal!r}")
-            parts.append(f"marshaler={self.marshaler!r}")
-            parts.append(f"marshaler_factory={self.marshaler_factory!r}")
-            parts.append(f"marshal_as={self.marshal_as!r}")
-            parts.append(f"unmarshaler={self.unmarshaler!r}")
-            parts.append(f"unmarshaler_factory={self.unmarshaler_factory!r}")
-            parts.append(f"unmarshal_as={self.unmarshal_as!r}")
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.alts)) is not None:
+                parts.append(f"alts={s}")
+            if (s := __dataclass__repr__default_fn(self.omit_if)) is not None:
+                parts.append(f"omit_if={s}")
+            if (s := __dataclass__repr__default_fn(self.default)) is not None:
+                parts.append(f"default={s}")
+            if (s := __dataclass__repr__default_fn(self.embed)) is not None:
+                parts.append(f"embed={s}")
+            if (s := __dataclass__repr__default_fn(self.generic_replace)) is not None:
+                parts.append(f"generic_replace={s}")
+            if (s := __dataclass__repr__default_fn(self.no_marshal)) is not None:
+                parts.append(f"no_marshal={s}")
+            if (s := __dataclass__repr__default_fn(self.no_unmarshal)) is not None:
+                parts.append(f"no_unmarshal={s}")
+            if (s := __dataclass__repr__default_fn(self.marshaler)) is not None:
+                parts.append(f"marshaler={s}")
+            if (s := __dataclass__repr__default_fn(self.marshaler_factory)) is not None:
+                parts.append(f"marshaler_factory={s}")
+            if (s := __dataclass__repr__default_fn(self.marshal_as)) is not None:
+                parts.append(f"marshal_as={s}")
+            if (s := __dataclass__repr__default_fn(self.unmarshaler)) is not None:
+                parts.append(f"unmarshaler={s}")
+            if (s := __dataclass__repr__default_fn(self.unmarshaler_factory)) is not None:
+                parts.append(f"unmarshaler_factory={s}")
+            if (s := __dataclass__repr__default_fn(self.unmarshal_as)) is not None:
+                parts.append(f"unmarshal_as={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2971,9 +2987,10 @@ def _process_dataclass__938f9d4f2e651144784a7af849b82eaded6cdf98():
         "lan(fields=(ReprPlan.Field(name='field_naming', kw_only=True, fn=None), ReprPlan.Field(name='ignore_unknown', "
         "kw_only=True, fn=None), ReprPlan.Field(name='unwrap_if_single_field', kw_only=True, fn=None), ReprPlan.Field(n"
         "ame='unknown_field', kw_only=True, fn=None), ReprPlan.Field(name='source_field', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='field_defaults', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "lan.Field(name='field_defaults', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.d"
+        "efault_fn'))))"
     ),
-    plan_repr_sha1='9506cc97005d4e55864518d11cac80730626f116',
+    plan_repr_sha1='5277fe301807274532795c7a7ebc26e9452c63b8',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2987,12 +3004,13 @@ def _process_dataclass__938f9d4f2e651144784a7af849b82eaded6cdf98():
         '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__5__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'ObjectOptions'),
     ),
 )
-def _process_dataclass__9506cc97005d4e55864518d11cac80730626f116():
+def _process_dataclass__5277fe301807274532795c7a7ebc26e9452c63b8():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3008,6 +3026,7 @@ def _process_dataclass__9506cc97005d4e55864518d11cac80730626f116():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3140,12 +3159,18 @@ def _process_dataclass__9506cc97005d4e55864518d11cac80730626f116():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"field_naming={self.field_naming!r}")
-            parts.append(f"ignore_unknown={self.ignore_unknown!r}")
-            parts.append(f"unwrap_if_single_field={self.unwrap_if_single_field!r}")
-            parts.append(f"unknown_field={self.unknown_field!r}")
-            parts.append(f"source_field={self.source_field!r}")
-            parts.append(f"field_defaults={self.field_defaults!r}")
+            if (s := __dataclass__repr__default_fn(self.field_naming)) is not None:
+                parts.append(f"field_naming={s}")
+            if (s := __dataclass__repr__default_fn(self.ignore_unknown)) is not None:
+                parts.append(f"ignore_unknown={s}")
+            if (s := __dataclass__repr__default_fn(self.unwrap_if_single_field)) is not None:
+                parts.append(f"unwrap_if_single_field={s}")
+            if (s := __dataclass__repr__default_fn(self.unknown_field)) is not None:
+                parts.append(f"unknown_field={s}")
+            if (s := __dataclass__repr__default_fn(self.source_field)) is not None:
+                parts.append(f"source_field={s}")
+            if (s := __dataclass__repr__default_fn(self.field_defaults)) is not None:
+                parts.append(f"field_defaults={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

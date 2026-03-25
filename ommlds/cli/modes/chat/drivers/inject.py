@@ -1,5 +1,6 @@
 import os
 
+from omdev.home.paths import get_home_paths
 from omlish import inject as inj
 from omlish import lang
 
@@ -92,7 +93,12 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(mc.drivers.EventLogger.Config('foo')),
+        inj.bind(mc.drivers.EventLogger.Config, to_fn=inj.target(
+            did=mc.drivers.DriverId,
+        )(lambda did: mc.drivers.EventLogger.Config(
+            os.path.join(get_home_paths().log_dir, 'minichain', 'drivers', f'{did.v}.jsonl'),
+        ))),
+
         inj.bind(mc.drivers.EventLogger, singleton=True),
 
         mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=mc.drivers.EventLogger)(lambda o: o.handle_event)),  # noqa

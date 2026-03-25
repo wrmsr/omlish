@@ -23,6 +23,7 @@ T = ta.TypeVar('T')
 
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class FieldOptions(lang.Final):
     """
     Unified field options - all configuration for a single field's marshaling/unmarshaling.
@@ -125,6 +126,7 @@ class ObjectSpecials(lang.Final):
 
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ObjectOptions(lang.Final):
     """Object-level marshaling options."""
 
