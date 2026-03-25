@@ -467,7 +467,8 @@ static int treap_split_impl(
         TreapNode *new_right = make_node(
             state, n->value, n->priority,
             right_split,  // stolen
-            (TreapNode *)Py_XNewRef((PyObject *)n->right));  // borrow -> incref for steal
+            (TreapNode *)Py_XNewRef((PyObject *)n->right)  // borrow -> incref for steal
+        );
         if (new_right == nullptr) {
             Py_XDECREF(left_split);
             Py_XDECREF(dupe);
@@ -802,8 +803,9 @@ static PyObject *treap_new_func(PyObject *module, PyObject *args, PyObject *kwar
         priority = new_priority();
     } else {
         priority = PyLong_AsLong(priority_obj);
-        if (priority == -1 && PyErr_Occurred())
+        if (priority == -1 && PyErr_Occurred()) {
             return nullptr;
+        }
     }
 
     treap_state *state = get_treap_state(module);
