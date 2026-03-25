@@ -59,6 +59,11 @@ def test_treapmap():
         print(rit.next())
     print('===')
 
+    assert 'Hello' in m.values()
+    assert 'HellO' not in m.values()
+    assert (52, 'Hello') in m.items()
+    assert (52, 'HellO') not in m.items()
+
 
 ##
 
