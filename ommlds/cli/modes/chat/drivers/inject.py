@@ -91,4 +91,13 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     #
 
+    els.extend([
+        inj.bind(mc.drivers.EventLogger.Config('foo')),
+        inj.bind(mc.drivers.EventLogger, singleton=True),
+
+        mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=mc.drivers.EventLogger)(lambda o: o.handle_event)),  # noqa
+    ])
+
+    #
+
     return inj.as_elements(*els)

@@ -219,6 +219,10 @@ with _lang.auto_proxy_init(globals()):
         Base64MarshalerUnmarshaler,
     )
 
+    from .singular.opaquerepr import (  # noqa
+        OpaqueRepr,
+    )
+
     from .singular.primitives import (  # noqa
         PRIMITIVE_TYPES,
     )

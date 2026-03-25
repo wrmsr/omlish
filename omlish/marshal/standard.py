@@ -47,6 +47,8 @@ from .singular.enums import EnumMarshalerFactory
 from .singular.enums import EnumUnmarshalerFactory
 from .singular.numbers import NUMBERS_MARSHALER_FACTORY
 from .singular.numbers import NUMBERS_UNMARSHALER_FACTORY
+from .singular.opaquerepr import OPAQUE_REPR_MARSHALER_FACTORY
+from .singular.opaquerepr import OPAQUE_REPR_UNMARSHALER_FACTORY
 from .singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from .singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from .singular.uuids import UUID_MARSHALER_FACTORY
@@ -79,6 +81,7 @@ class StandardFactories(ta.NamedTuple):
 
 
 DEFAULT_STANDARD_FACTORIES = StandardFactories.of_pairs([
+    (OPAQUE_REPR_MARSHALER_FACTORY,    OPAQUE_REPR_UNMARSHALER_FACTORY),
     (PRIMITIVE_MARSHALER_FACTORY,      PRIMITIVE_UNMARSHALER_FACTORY),
     (NewtypeMarshalerFactory(),        NewtypeUnmarshalerFactory()),
     (OptionalMarshalerFactory(),       OptionalUnmarshalerFactory()),
