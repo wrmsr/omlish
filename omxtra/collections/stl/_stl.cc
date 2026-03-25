@@ -64,8 +64,43 @@ enum map_iter_kind : uint8_t {
 };
 
 
-struct PyCompareError final : std::exception {
+struct BaseMapObject {
+    PyObject_HEAD
+    PyMutex mutex;
+    uint64_t version;
+    map_kind kind;
+    void *impl;
 };
+
+
+// Thread-Local Context for Optimistic Lock Elision
+
+struct CompareContext {
+    CompareContext *prev;
+    BaseMapObject *map_obj;
+    uint64_t start_version;
+};
+
+// C++11 thread_local ensures thread safety without locking
+thread_local CompareContext *g_compare_context = nullptr;
+
+struct CompareContextGuard {
+    CompareContext ctx;
+
+    CompareContextGuard(BaseMapObject *map, uint64_t version) {
+        ctx.prev = g_compare_context;
+        ctx.map_obj = map;
+        ctx.start_version = version;
+        g_compare_context = &ctx;
+    }
+
+    ~CompareContextGuard() {
+        g_compare_context = ctx.prev;
+    }
+};
+
+struct PyCompareError final : std::exception {};
+struct PyMapMutatedError final : std::exception {};
 
 struct ObjKeyCompare {
     bool operator()(PyObject *l, PyObject *r) const
@@ -74,32 +109,36 @@ struct ObjKeyCompare {
             return false;
         }
 
+        CompareContext *ctx = g_compare_context;
+
+        // Pin the objects. If another thread drops the lock and deletes these
+        // from the map, we don't want a segfault inside RichCompareBool.
+        Py_INCREF(l);
+        Py_INCREF(r);
+
+        // Drop the lock to avoid GC/Re-entrancy deadlocks
+        PyMutex_Unlock(&ctx->map_obj->mutex);
+
+        // std::map only requires Strict Weak Ordering, so Py_LT is sufficient.
         int lt = PyObject_RichCompareBool(l, r, Py_LT);
+
+        // Re-acquire the lock to resume C++ STL invariants
+        PyMutex_Lock(&ctx->map_obj->mutex);
+
+        Py_DECREF(l);
+        Py_DECREF(r);
+
         if (lt < 0) {
             throw PyCompareError();
         }
-        if (lt > 0) {
-            return true;
+
+        // The Abort Switch: If another thread mutated the map while we were
+        // in Python land, our iterators/tree-state are invalid. Abort!
+        if (ctx->map_obj->version != ctx->start_version) {
+            throw PyMapMutatedError();
         }
 
-        int gt = PyObject_RichCompareBool(l, r, Py_GT);
-        if (gt < 0) {
-            throw PyCompareError();
-        }
-        if (gt > 0) {
-            return false;
-        }
-
-        int eq = PyObject_RichCompareBool(l, r, Py_EQ);
-        if (eq < 0) {
-            throw PyCompareError();
-        }
-        if (eq > 0) {
-            return false;
-        }
-
-        PyErr_SetString(PyExc_TypeError, "map keys are not totally ordered");
-        throw PyCompareError();
+        return lt > 0;
     }
 };
 
@@ -121,14 +160,6 @@ using MapI64ObjImpl = PlainMapImpl<int64_t, PyObject *>;
 using MapObjI64Impl = ObjKeyMapImpl<int64_t>;
 using MapObjObjImpl = ObjKeyMapImpl<PyObject *>;
 
-
-struct BaseMapObject {
-    PyObject_HEAD
-    PyMutex mutex;
-    uint64_t version;
-    map_kind kind;
-    void *impl;
-};
 
 struct MapIterObject {
     PyObject_HEAD
@@ -198,10 +229,12 @@ template <typename K, typename V, typename Map>
 static int traverse_map_impl(Map &map, visitproc visit, void *arg)
 {
     for (auto const &entry : map) {
-        if (visit_maybe_pyobject<K>(entry.first, visit, arg) < 0) {
+        // BUG FIX: The Py_VISIT macro returns a positive integer if a cycle
+        // path is found. Checking `< 0` silently swallowed the GC traversal.
+        if (visit_maybe_pyobject<K>(entry.first, visit, arg) != 0) {
             return -1;
         }
-        if (visit_maybe_pyobject<V>(entry.second, visit, arg) < 0) {
+        if (visit_maybe_pyobject<V>(entry.second, visit, arg) != 0) {
             return -1;
         }
     }
@@ -457,26 +490,40 @@ static int map_contains(BaseMapObject *self, PyObject *key)
         }
 
         case MAP_KIND_OBJ_I64: {
-            PyMutex_Lock(&self->mutex);
-            try {
-                int ret = ((MapObjI64Impl *)self->impl)->map.find(key) != ((MapObjI64Impl *)self->impl)->map.end();
-                PyMutex_Unlock(&self->mutex);
-                return ret;
-            } catch (const PyCompareError &) {
-                PyMutex_Unlock(&self->mutex);
-                return -1;
+            while (true) {
+                PyMutex_Lock(&self->mutex);
+                uint64_t current_version = self->version;
+                CompareContextGuard guard(self, current_version);
+                try {
+                    int ret = ((MapObjI64Impl *)self->impl)->map.find(key) != ((MapObjI64Impl *)self->impl)->map.end();
+                    PyMutex_Unlock(&self->mutex);
+                    return ret;
+                } catch (const PyMapMutatedError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    continue;
+                } catch (const PyCompareError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    return -1;
+                }
             }
         }
 
         case MAP_KIND_OBJ_OBJ: {
-            PyMutex_Lock(&self->mutex);
-            try {
-                int ret = ((MapObjObjImpl *)self->impl)->map.find(key) != ((MapObjObjImpl *)self->impl)->map.end();
-                PyMutex_Unlock(&self->mutex);
-                return ret;
-            } catch (const PyCompareError &) {
-                PyMutex_Unlock(&self->mutex);
-                return -1;
+            while (true) {
+                PyMutex_Lock(&self->mutex);
+                uint64_t current_version = self->version;
+                CompareContextGuard guard(self, current_version);
+                try {
+                    int ret = ((MapObjObjImpl *)self->impl)->map.find(key) != ((MapObjObjImpl *)self->impl)->map.end();
+                    PyMutex_Unlock(&self->mutex);
+                    return ret;
+                } catch (const PyMapMutatedError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    continue;
+                } catch (const PyCompareError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    return -1;
+                }
             }
         }
 
@@ -531,40 +578,54 @@ static PyObject *map_subscript(BaseMapObject *self, PyObject *key)
         }
 
         case MAP_KIND_OBJ_I64: {
-            PyMutex_Lock(&self->mutex);
-            try {
-                auto &map = ((MapObjI64Impl *)self->impl)->map;
-                auto it = map.find(key);
-                if (it == map.end()) {
+            while (true) {
+                PyMutex_Lock(&self->mutex);
+                uint64_t current_version = self->version;
+                CompareContextGuard guard(self, current_version);
+                try {
+                    auto &map = ((MapObjI64Impl *)self->impl)->map;
+                    auto it = map.find(key);
+                    if (it == map.end()) {
+                        PyMutex_Unlock(&self->mutex);
+                        PyErr_SetObject(PyExc_KeyError, key);
+                        return nullptr;
+                    }
+                    PyObject *ret = i64_to_py(it->second);
                     PyMutex_Unlock(&self->mutex);
-                    PyErr_SetObject(PyExc_KeyError, key);
+                    return ret;
+                } catch (const PyMapMutatedError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    continue;
+                } catch (const PyCompareError &) {
+                    PyMutex_Unlock(&self->mutex);
                     return nullptr;
                 }
-                PyObject *ret = i64_to_py(it->second);
-                PyMutex_Unlock(&self->mutex);
-                return ret;
-            } catch (const PyCompareError &) {
-                PyMutex_Unlock(&self->mutex);
-                return nullptr;
             }
         }
 
         case MAP_KIND_OBJ_OBJ: {
-            PyMutex_Lock(&self->mutex);
-            try {
-                auto &map = ((MapObjObjImpl *)self->impl)->map;
-                auto it = map.find(key);
-                if (it == map.end()) {
+            while (true) {
+                PyMutex_Lock(&self->mutex);
+                uint64_t current_version = self->version;
+                CompareContextGuard guard(self, current_version);
+                try {
+                    auto &map = ((MapObjObjImpl *)self->impl)->map;
+                    auto it = map.find(key);
+                    if (it == map.end()) {
+                        PyMutex_Unlock(&self->mutex);
+                        PyErr_SetObject(PyExc_KeyError, key);
+                        return nullptr;
+                    }
+                    PyObject *ret = obj_to_py(it->second);
                     PyMutex_Unlock(&self->mutex);
-                    PyErr_SetObject(PyExc_KeyError, key);
+                    return ret;
+                } catch (const PyMapMutatedError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    continue;
+                } catch (const PyCompareError &) {
+                    PyMutex_Unlock(&self->mutex);
                     return nullptr;
                 }
-                PyObject *ret = obj_to_py(it->second);
-                PyMutex_Unlock(&self->mutex);
-                return ret;
-            } catch (const PyCompareError &) {
-                PyMutex_Unlock(&self->mutex);
-                return nullptr;
             }
         }
 
@@ -623,51 +684,62 @@ static int map_ass_subscript(BaseMapObject *self, PyObject *key, PyObject *value
             }
 
             case MAP_KIND_OBJ_I64: {
-                PyObject *old_key = nullptr;
-                PyMutex_Lock(&self->mutex);
-                try {
-                    auto &map = ((MapObjI64Impl *)self->impl)->map;
-                    auto it = map.find(key);
-                    if (it == map.end()) {
+                while (true) {
+                    PyMutex_Lock(&self->mutex);
+                    uint64_t current_version = self->version;
+                    CompareContextGuard guard(self, current_version);
+                    try {
+                        auto &map = ((MapObjI64Impl *)self->impl)->map;
+                        auto it = map.find(key);
+                        if (it == map.end()) {
+                            PyMutex_Unlock(&self->mutex);
+                            PyErr_SetObject(PyExc_KeyError, key);
+                            return -1;
+                        }
+                        PyObject *old_key = it->first;
+                        map.erase(it);
+                        self->version++;
                         PyMutex_Unlock(&self->mutex);
-                        PyErr_SetObject(PyExc_KeyError, key);
+                        Py_DECREF(old_key);
+                        return 0;
+                    } catch (const PyMapMutatedError &) {
+                        PyMutex_Unlock(&self->mutex);
+                        continue;
+                    } catch (const PyCompareError &) {
+                        PyMutex_Unlock(&self->mutex);
                         return -1;
                     }
-                    old_key = it->first;
-                    map.erase(it);
-                    self->version++;
-                    PyMutex_Unlock(&self->mutex);
-                    Py_DECREF(old_key);
-                    return 0;
-                } catch (const PyCompareError &) {
-                    PyMutex_Unlock(&self->mutex);
-                    return -1;
                 }
             }
 
             case MAP_KIND_OBJ_OBJ: {
-                PyObject *old_key = nullptr;
-                PyObject *old_value = nullptr;
-                PyMutex_Lock(&self->mutex);
-                try {
-                    auto &map = ((MapObjObjImpl *)self->impl)->map;
-                    auto it = map.find(key);
-                    if (it == map.end()) {
+                while (true) {
+                    PyMutex_Lock(&self->mutex);
+                    uint64_t current_version = self->version;
+                    CompareContextGuard guard(self, current_version);
+                    try {
+                        auto &map = ((MapObjObjImpl *)self->impl)->map;
+                        auto it = map.find(key);
+                        if (it == map.end()) {
+                            PyMutex_Unlock(&self->mutex);
+                            PyErr_SetObject(PyExc_KeyError, key);
+                            return -1;
+                        }
+                        PyObject *old_key = it->first;
+                        PyObject *old_value = it->second;
+                        map.erase(it);
+                        self->version++;
                         PyMutex_Unlock(&self->mutex);
-                        PyErr_SetObject(PyExc_KeyError, key);
+                        Py_DECREF(old_key);
+                        Py_DECREF(old_value);
+                        return 0;
+                    } catch (const PyMapMutatedError &) {
+                        PyMutex_Unlock(&self->mutex);
+                        continue;
+                    } catch (const PyCompareError &) {
+                        PyMutex_Unlock(&self->mutex);
                         return -1;
                     }
-                    old_key = it->first;
-                    old_value = it->second;
-                    map.erase(it);
-                    self->version++;
-                    PyMutex_Unlock(&self->mutex);
-                    Py_DECREF(old_key);
-                    Py_DECREF(old_value);
-                    return 0;
-                } catch (const PyCompareError &) {
-                    PyMutex_Unlock(&self->mutex);
-                    return -1;
                 }
             }
 
@@ -740,28 +812,40 @@ static int map_ass_subscript(BaseMapObject *self, PyObject *key, PyObject *value
                 return -1;
             }
 
-            PyMutex_Lock(&self->mutex);
-            try {
-                auto &map = ((MapObjI64Impl *)self->impl)->map;
-                auto it = map.find(k);
-                if (it != map.end()) {
+            while (true) {
+                PyMutex_Lock(&self->mutex);
+                uint64_t current_version = self->version;
+                CompareContextGuard guard(self, current_version);
+
+                try {
+                    auto &map = ((MapObjI64Impl *)self->impl)->map;
+                    auto it = map.find(k);
+                    PyObject *drop_key = nullptr;
+
+                    if (it != map.end()) {
+                        drop_key = k; // DEFERRED DECREF
+                        it->second = v;
+                    } else {
+                        map.emplace(k, v);
+                    }
+                    self->version++;
+                    PyMutex_Unlock(&self->mutex);
+
+                    Py_XDECREF(drop_key);
+                    return 0;
+                } catch (const PyMapMutatedError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    continue;
+                } catch (const PyCompareError &) {
+                    PyMutex_Unlock(&self->mutex);
                     Py_DECREF(k);
-                    it->second = v;
-                } else {
-                    map.emplace(k, v);
+                    return -1;
+                } catch (const std::bad_alloc &) {
+                    PyMutex_Unlock(&self->mutex);
+                    Py_DECREF(k);
+                    PyErr_NoMemory();
+                    return -1;
                 }
-                self->version++;
-                PyMutex_Unlock(&self->mutex);
-                return 0;
-            } catch (const PyCompareError &) {
-                PyMutex_Unlock(&self->mutex);
-                Py_DECREF(k);
-                return -1;
-            } catch (const std::bad_alloc &) {
-                PyMutex_Unlock(&self->mutex);
-                Py_DECREF(k);
-                PyErr_NoMemory();
-                return -1;
             }
         }
 
@@ -773,33 +857,45 @@ static int map_ass_subscript(BaseMapObject *self, PyObject *key, PyObject *value
                 return -1;
             }
 
-            PyObject *drop_value = nullptr;
-            PyMutex_Lock(&self->mutex);
-            try {
-                auto &map = ((MapObjObjImpl *)self->impl)->map;
-                auto it = map.find(k);
-                if (it != map.end()) {
-                    drop_value = it->second;
+            while (true) {
+                PyMutex_Lock(&self->mutex);
+                uint64_t current_version = self->version;
+                CompareContextGuard guard(self, current_version);
+
+                try {
+                    auto &map = ((MapObjObjImpl *)self->impl)->map;
+                    auto it = map.find(k);
+                    PyObject *drop_value = nullptr;
+                    PyObject *drop_key = nullptr;
+
+                    if (it != map.end()) {
+                        drop_value = it->second;
+                        drop_key = k; // DEFERRED DECREF
+                        it->second = v;
+                    } else {
+                        map.emplace(k, v);
+                    }
+                    self->version++;
+                    PyMutex_Unlock(&self->mutex);
+
+                    Py_XDECREF(drop_value);
+                    Py_XDECREF(drop_key);
+                    return 0;
+                } catch (const PyMapMutatedError &) {
+                    PyMutex_Unlock(&self->mutex);
+                    continue;
+                } catch (const PyCompareError &) {
+                    PyMutex_Unlock(&self->mutex);
                     Py_DECREF(k);
-                    it->second = v;
-                } else {
-                    map.emplace(k, v);
+                    Py_DECREF(v);
+                    return -1;
+                } catch (const std::bad_alloc &) {
+                    PyMutex_Unlock(&self->mutex);
+                    Py_DECREF(k);
+                    Py_DECREF(v);
+                    PyErr_NoMemory();
+                    return -1;
                 }
-                self->version++;
-                PyMutex_Unlock(&self->mutex);
-                Py_XDECREF(drop_value);
-                return 0;
-            } catch (const PyCompareError &) {
-                PyMutex_Unlock(&self->mutex);
-                Py_DECREF(k);
-                Py_DECREF(v);
-                return -1;
-            } catch (const std::bad_alloc &) {
-                PyMutex_Unlock(&self->mutex);
-                Py_DECREF(k);
-                Py_DECREF(v);
-                PyErr_NoMemory();
-                return -1;
             }
         }
 
