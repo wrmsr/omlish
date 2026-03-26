@@ -18,12 +18,11 @@ import abc
 import typing as ta
 
 from ... import lang
+from ..intersections import PersistentSortedMapping
 from ..mappings import IterItemsViewMapping
 from ..mappings import IterValuesViewMapping
 from ..mappings import iteritems_itervalues
 from ..mappings import map_contains
-from ..persistent import PersistentMapping
-from ..sorted import SortedMapping
 from . import treap
 
 
@@ -38,8 +37,7 @@ V = ta.TypeVar('V')
 class TreapMap(
     IterValuesViewMapping[K, V],
     IterItemsViewMapping[K, V],
-    PersistentMapping[K, V],
-    SortedMapping[K, V],
+    PersistentSortedMapping[K, V],
     ta.Mapping[K, V],
     ta.Generic[K, V],
 ):

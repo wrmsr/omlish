@@ -77,6 +77,19 @@ with _lang.auto_proxy_init(globals()):
         IdentityWeakSet,
     )
 
+    from .impls import (  # noqa
+        new_persistent_map,
+
+        new_sorted_map,
+        new_sorted_mutable_map,
+
+        new_persistent_sorted_map,
+    )
+
+    from . intersections import (  # noqa
+        PersistentSortedMapping,
+    )
+
     from . import kv  # noqa
 
     from .mappings import (  # noqa
