@@ -21,3 +21,6 @@ def test_marshal():
     tvs = TypedValues(OptA(420), OptB('abc'))
     mtvs = msh.marshal(tvs, TypedValues[Opt])
     print(mtvs)
+    tvs2 = msh.unmarshal(mtvs, TypedValues[Opt])
+    print(tvs2)
+    assert list(tvs) == list(tvs2)

@@ -84,6 +84,10 @@ with _lang.auto_proxy_init(globals()):
         Value,
     )
 
+    from .composite.api import (  # noqa
+        DefaultIterableConstructors,
+    )
+
     from .composite.iterables import (  # noqa
         IterableMarshaler,
         IterableUnmarshaler,

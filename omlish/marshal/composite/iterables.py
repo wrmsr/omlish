@@ -13,11 +13,13 @@ from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
 from ..api.contexts import UnmarshalFactoryContext
+from ..api.options import Options
 from ..api.types import Marshaler
 from ..api.types import Unmarshaler
 from ..api.values import Value
 from ..factories.method import MarshalerFactoryMethodClass
 from ..factories.method import UnmarshalerFactoryMethodClass
+from .api import DefaultIterableConstructors
 
 
 ##
@@ -28,6 +30,25 @@ DEFAULT_ITERABLE_CONCRETE_TYPES: dict[type[collections.abc.Iterable], type[colle
     collections.abc.Sequence: tuple,  # type: ignore
     collections.abc.MutableSequence: list,  # type: ignore
 }
+
+
+def get_default_iterable_constructor(
+        cls: type,
+        options: Options | None = None,
+) -> ta.Callable[[collections.abc.Iterable], ta.Any]:
+    if options is not None and (opt := options.get(DefaultIterableConstructors)) is not None:
+        opt = check.isinstance(opt, DefaultIterableConstructors)
+        o_ctor: ta.Any = None
+        if cls == collections.abc.Iterable:
+            o_ctor = opt.iterable
+        elif cls == collections.abc.Sequence:
+            o_ctor = opt.sequence
+        elif cls == collections.abc.MutableSequence:
+            o_ctor = opt.mutable_sequence
+        if o_ctor is not None:
+            return o_ctor
+
+    return DEFAULT_ITERABLE_CONCRETE_TYPES.get(cls, cls)  # noqa
 
 
 #
@@ -60,11 +81,15 @@ class IterableMarshalerFactory(MarshalerFactoryMethodClass):
 
 @dc.dataclass(frozen=True)
 class IterableUnmarshaler(Unmarshaler):
-    ctor: ta.Callable[[ta.Iterable[ta.Any]], ta.Iterable]
+    cls: type
     e: Unmarshaler
 
+    ctor: ta.Callable[[collections.abc.Iterable], ta.Any] | None = None
+
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Iterable:
-        return self.ctor(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Iterable)))
+        if (ctor := self.ctor) is None:
+            ctor = get_default_iterable_constructor(self.cls, ctx.options)
+        return ctor(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Iterable)))
 
 
 class IterableUnmarshalerFactory(UnmarshalerFactoryMethodClass):
@@ -72,8 +97,7 @@ class IterableUnmarshalerFactory(UnmarshalerFactoryMethodClass):
     def _make_generic(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable)):
             return None
-        cty = DEFAULT_ITERABLE_CONCRETE_TYPES.get(rty.cls, rty.cls)  # noqa
-        return lambda: IterableUnmarshaler(cty, ctx.make_unmarshaler(check.single(rty.args)))  # noqa
+        return lambda: IterableUnmarshaler(rty.cls, ctx.make_unmarshaler(check.single(rty.args)))  # noqa
 
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
     def _make_concrete(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:

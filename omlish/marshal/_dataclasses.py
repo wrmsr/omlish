@@ -1666,31 +1666,38 @@ def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('ctor', 'e')), EqPlan(fields=('ctor', 'e')), FrozenPlan(fields=('ctor', 'e'), allo"
-        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ctor', 'e'), cache=False), InitPlan(fields=(Ini"
-        "tPlan.Field(name='ctor', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='e', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
-        "ram='self', std_params=('ctor', 'e'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init"
-        "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ctor', kw_only=False, fn=None), ReprPlan.Fiel"
-        "d(name='e', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('cls', 'e', 'ctor')), EqPlan(fields=('cls', 'e', 'ctor')), FrozenPlan(fields=('cls"
+        "', 'e', 'ctor'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('cls', 'e', 'ctor'), cache="
+        "False), InitPlan(fields=(InitPlan.Field(name='cls', annotation=OpRef(name='init.fields.0.annotation'), default"
+        "=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='e', annotation=OpRef(name='init.fields.1.annotation'), default=Non"
+        "e, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None), InitPlan.Field(name='ctor', annotation=OpRef(name='init.fields.2.annotation'), default=OpRe"
+        "f(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('cls', 'e', 'ctor'), kw_only_"
+        "params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Re"
+        "prPlan.Field(name='cls', kw_only=False, fn=None), ReprPlan.Field(name='e', kw_only=False, fn=None), ReprPlan.F"
+        "ield(name='ctor', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='5aff919b0d188d63797ebb3a8d909d863403960b',
+    plan_repr_sha1='213c17bea15f5fc2ebb3ba450b08965983b8bbd4',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'IterableUnmarshaler'),
     ),
 )
-def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
+def _process_dataclass__213c17bea15f5fc2ebb3ba450b08965983b8bbd4():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1709,8 +1716,9 @@ def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                ctor=self.ctor,
+                cls=self.cls,
                 e=self.e,
+                ctor=self.ctor,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1724,8 +1732,9 @@ def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.ctor == other.ctor and
-                self.e == other.e
+                self.cls == other.cls and
+                self.e == other.e and
+                self.ctor == other.ctor
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1734,8 +1743,9 @@ def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'ctor',
+            'cls',
             'e',
+            'ctor',
         }
 
         def __setattr__(self, name, value):
@@ -1752,8 +1762,9 @@ def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'ctor',
+            'cls',
             'e',
+            'ctor',
         }
 
         def __delattr__(self, name):
@@ -1771,8 +1782,9 @@ def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
 
         def __hash__(self):
             return hash((
-                self.ctor,
+                self.cls,
                 self.e,
+                self.ctor,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1780,11 +1792,13 @@ def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
 
         def __init__(
             self,
-            ctor: __dataclass__init__fields__0__annotation,
+            cls: __dataclass__init__fields__0__annotation,
             e: __dataclass__init__fields__1__annotation,
+            ctor: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'ctor', ctor)
+            __dataclass__object_setattr(self, 'cls', cls)
             __dataclass__object_setattr(self, 'e', e)
+            __dataclass__object_setattr(self, 'ctor', ctor)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1794,8 +1808,9 @@ def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"ctor={self.ctor!r}")
+            parts.append(f"cls={self.cls!r}")
             parts.append(f"e={self.e!r}")
+            parts.append(f"ctor={self.ctor!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

@@ -6,9 +6,7 @@ TODO:
 """
 import typing as ta
 
-
-if ta.TYPE_CHECKING:
-    from ... import collections as col
+from ... import collections as col
 
 
 ##
@@ -18,4 +16,4 @@ class Option:
     pass
 
 
-Options: ta.TypeAlias = 'col.TypeMap[Option]'
+Options: ta.TypeAlias = col.TypeMap[Option]

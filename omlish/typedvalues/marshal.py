@@ -149,7 +149,7 @@ def build_typed_values_unmarshaler(ctx: msh.UnmarshalFactoryContext, rty: rfl.Ty
         msh.WrapperTypeTagging(),
         ctx,
     )
-    return msh.IterableUnmarshaler(lambda it: TypedValues(*it), tv_u)  # noqa
+    return msh.IterableUnmarshaler(TypedValues, tv_u, ctor=lambda it: TypedValues(*it))  # noqa
 
 
 class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
