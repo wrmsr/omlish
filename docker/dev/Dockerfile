@@ -132,6 +132,7 @@ DEPS="$DEPS\
 # x11\
 \
 DEPS="$DEPS\
+  dbus-x11\
   x11-apps\
 " ;\
 \
@@ -402,6 +403,36 @@ set tabstop=4\n\
 set shiftwidth=4\n\
 set expandtab\n\
 ' > /omlish/.vimrc
+
+
+## scripts
+
+RUN (\
+mkdir /omlish/scripts ;\
+)
+
+RUN echo '\
+#!/bin/bash\n\
+set -ex\n\
+\n\
+curl -fsSL https://claude.ai/install.sh | bash\n\
+' > /omlish/scripts/install-claude-code
+
+RUN echo '\
+#!/bin/bash\n\
+set -ex\n\
+\n\
+sudo mkdir -p /var/run/dbus /run/dbus\n\
+sudo dbus-daemon --system --nofork --nopidfile\n\
+' > /omlish/scripts/run-dbus
+
+RUN (\
+chmod a+x /omlish/scripts/* ;\
+)
+
+RUN (\
+echo '\n\nexport PATH="$HOME/scripts:$PATH"' >> /omlish/.bashrc ;\
+)
 
 
 ## entrypoint

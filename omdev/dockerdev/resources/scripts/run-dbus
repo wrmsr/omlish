@@ -1,0 +1,5 @@
+#!/bin/bash
+set -ex
+
+sudo mkdir -p /var/run/dbus /run/dbus
+sudo dbus-daemon --system --nofork --nopidfile

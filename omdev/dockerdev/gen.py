@@ -6,6 +6,8 @@ TODO:
 import io
 import typing as ta
 
+from omlish import lang
+
 from .config import Config
 from .content import LazyContent
 from .content import Resource
@@ -139,15 +141,22 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
 
     ops.append(fragment_section('sshd'))
 
-    # ops.append(Section('x11', [
-    #     Run(f'touch {home}/.Xauthority'),
-    # ]))
+    ops.append(Section('configs', [
+        Write(f'{home}/{n}', r.read_text())
+        for n, r in sorted(lang.get_relative_resources('resources.configs', globals=globals()).items())
+        if r.is_file
+    ]))
 
-    if cfg.config_files:
-        ops.append(Section('configs', [
-            Write(f'{home}/{n}', Resource(f'configs/{n}'))
-            for n in cfg.config_files
-        ]))
+    ops.append(Section('scripts', [
+        Run(f'mkdir {home}/scripts ;'),
+        *[
+            Write(f'{home}/scripts/{n}', r.read_text())
+            for n, r in sorted(lang.get_relative_resources('resources.scripts', globals=globals()).items())
+            if r.is_file
+        ],
+        Run(f'chmod a+x {home}/scripts/* ;'),
+        Run(f"""echo '\\n\\nexport PATH="$HOME/scripts:$PATH"' >> {home}/.bashrc ;"""),
+    ]))
 
     ops.append(Section('entrypoint', [
         *([Workdir(cfg.workdir)] if cfg.workdir is not None else []),

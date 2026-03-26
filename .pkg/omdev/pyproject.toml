@@ -115,6 +115,7 @@ exclude = [
     'resources/configs/.*',
     'resources/depsets/*',
     'resources/fragments/*',
+    'resources/scripts/*',
 ]
 'omdev.pyproject' = [
     'resources/*',

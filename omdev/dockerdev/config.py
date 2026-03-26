@@ -30,6 +30,4 @@ class Config:
 
     pyenv_version_keys: ta.Sequence[str] | None = None
 
-    config_files: ta.Sequence[str] | None = None
-
     cache_mounts: ta.Mapping[str, str] | None = None

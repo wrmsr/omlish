@@ -36,12 +36,6 @@ pyenv_version_keys = [
     '14',
 ]
 
-config_files = [
-    '.gdbinit',
-    '.tmux.conf',
-    '.vimrc',
-]
-
 workdir = '/work'
 
 [cache_mounts]

@@ -1,0 +1,4 @@
+#!/bin/bash
+set -ex
+
+curl -fsSL https://claude.ai/install.sh | bash
