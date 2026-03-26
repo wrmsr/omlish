@@ -94,6 +94,10 @@ with _auto_proxy_init(globals(), update_exports=True):
         BindableClass,
     )
 
+    from .classes.mro import (  # noqa
+        try_mro,
+    )
+
     from .classes.namespaces import (  # noqa
         GenericNamespaceMeta,
         NamespaceMeta,

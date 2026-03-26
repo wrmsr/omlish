@@ -84,8 +84,7 @@ with _lang.auto_proxy_init(globals()):
 
         guarded_map_update,
 
-        TypeMap,
-        DynamicTypeMap,
+        map_contains,
 
         MissingDict,
 
@@ -152,6 +151,11 @@ with _lang.auto_proxy_init(globals()):
 
     from .trie import (  # noqa
         Trie,
+    )
+
+    from .typemaps import (  # noqa
+        TypeMap,
+        DynamicTypeMap,
     )
 
     from .unmodifiable import (  # noqa

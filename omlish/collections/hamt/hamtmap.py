@@ -1,6 +1,9 @@
+import operator
 import typing as ta
 
 from ... import check
+from ..mappings import IterItemsViewMapping
+from ..mappings import IterValuesViewMapping
 from ..persistent import PersistentMapping
 
 
@@ -18,7 +21,11 @@ V = ta.TypeVar('V')
 
 
 @ta.final
-class HamtMap(PersistentMapping[K, V]):
+class HamtMap(
+    IterValuesViewMapping[K, V],
+    IterItemsViewMapping[K, V],
+    PersistentMapping[K, V],
+):
     def __init__(self, *, _h: ta.Any | None = None) -> None:
         self._h = _h if _h is not None else _hamt.new()
 
@@ -38,6 +45,9 @@ class HamtMap(PersistentMapping[K, V]):
 
     def iteritems(self) -> ta.Iterator[tuple[K, V]]:
         return _hamt.iter_items(self._h)
+
+    def itervalues(self) -> ta.Iterator[V]:
+        return map(operator.itemgetter(1), self.iteritems())
 
     def with_(self, k: K, v: V) -> ta.Self:
         return HamtMap(_h=_hamt.assoc(self._h, k, check.not_none(v)))

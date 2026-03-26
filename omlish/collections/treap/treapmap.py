@@ -18,8 +18,12 @@ import abc
 import typing as ta
 
 from ... import lang
+from ..mappings import IterItemsViewMapping
+from ..mappings import IterValuesViewMapping
+from ..mappings import iteritems_itervalues
+from ..mappings import map_contains
 from ..persistent import PersistentMapping
-from ..sorted import SortedItems
+from ..sorted import SortedMapping
 from . import treap
 
 
@@ -32,8 +36,12 @@ V = ta.TypeVar('V')
 
 @ta.final
 class TreapMap(
+    IterValuesViewMapping[K, V],
+    IterItemsViewMapping[K, V],
     PersistentMapping[K, V],
-    SortedItems[K, V],
+    SortedMapping[K, V],
+    ta.Mapping[K, V],
+    ta.Generic[K, V],
 ):
     __slots__ = ('_n', '_c')
 
@@ -58,6 +66,10 @@ class TreapMap(
         i = self.iteritems()
         while i.has_next():
             yield i.next()[0]
+
+    __contains__ = map_contains
+
+    itervalues = iteritems_itervalues
 
     def iteritems(self) -> 'TreapMapIterator[K, V]':
         i = TreapMapIterator(_st=[], _n=self._n)
