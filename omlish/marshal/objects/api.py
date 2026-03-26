@@ -2,12 +2,13 @@
 TODO:
  - @lang.copy_type
 """
+import dataclasses as dc
 import typing as ta
 
 from ... import cached
 from ... import check
-from ... import dataclasses as dc
 from ... import lang
+from ...lite.dataclasses import install_dataclass_filtered_repr
 from ..api.naming import Naming
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
@@ -22,8 +23,8 @@ T = ta.TypeVar('T')
 
 
 @ta.final
+@install_dataclass_filtered_repr('omit_falsey')
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class FieldOptions(lang.Final):
     """
     Unified field options - all configuration for a single field's marshaling/unmarshaling.
@@ -125,8 +126,8 @@ class ObjectSpecials(lang.Final):
 
 
 @ta.final
+@install_dataclass_filtered_repr('omit_falsey')
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ObjectOptions(lang.Final):
     """Object-level marshaling options."""
 
