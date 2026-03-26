@@ -180,6 +180,8 @@ class Cli(ap.Cli):
 
         ap.arg('-x', '--autoexec', action='append'),
 
+        ap.arg('-X', '--x11', action='store_true'),
+
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
@@ -244,6 +246,22 @@ class Cli(ap.Cli):
                 f'--mount=type=bind,src={tmp_dir},dst=/dockerdev,readonly',
                 f'--entrypoint=/dockerdev/entrypoint.sh',
             ])
+
+        if self.args.x11:
+            sys_platform = getattr(sys, 'platform')  # shuts up mypy
+            if sys_platform.startswith('linux'):
+                run_args.extend([
+                    f'--env=DISPLAY',
+                    '--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw',
+                    f'--volume={os.environ["HOME"]}/.Xauthority:/tmp/.Xauthority:ro',
+                    '--env=XAUTHORITY=/tmp/.Xauthority',
+                ])
+            elif sys_platform == 'darwin':
+                run_args.extend([
+                    '--env=DISPLAY=host.docker.internal:0',
+                ])
+            else:
+                raise OSError(sys_platform)
 
         run_args.append(sha)
 
