@@ -63,7 +63,9 @@ class HamtMap(
         return self.with_(k, v)
 
 
-def new_hamt_map(items: ta.Iterable[tuple[K, V]] | None = None) -> HamtMap[K, V]:
+def new_hamt_map(
+        items: ta.Iterable[tuple[K, V]] | None = None,
+) -> HamtMap[K, V]:
     m: HamtMap[K, V] = HamtMap()
     if items is not None:
         for k, v in items:

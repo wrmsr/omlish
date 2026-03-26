@@ -23,7 +23,7 @@ V = ta.TypeVar('V')
 ##
 
 
-def new_persistent_map(
+def new_persistent_map[K, V](
         items: ta.Iterable[tuple[K, V]] | None = None,
 ) -> 'PersistentMapping[K, V]':
     if hamtmap.is_hamt_available():
@@ -35,13 +35,13 @@ def new_persistent_map(
 #
 
 
-def new_sorted_map(
+def new_sorted_map[K, V](
         items: ta.Iterable[tuple[K, V]] | None = None,
 ) -> 'SortedMapping[K, V]':
     return treapmap.new_treap_map(items)
 
 
-def new_sorted_mutable_map(
+def new_sorted_mutable_map[K, V](
         items: ta.Iterable[tuple[K, V]] | None = None,
 ) -> 'SortedMutableMapping[K, V]':
     return skiplist.SkipListDict(items)
@@ -50,7 +50,7 @@ def new_sorted_mutable_map(
 #
 
 
-def new_persistent_sorted_map(
+def new_persistent_sorted_map[K, V](
         items: ta.Iterable[tuple[K, V]] | None = None,
 ) -> 'PersistentSortedMapping[K, V]':
     return treapmap.new_treap_map(items)
