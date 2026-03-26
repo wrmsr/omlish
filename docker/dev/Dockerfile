@@ -135,7 +135,7 @@ DEPS="$DEPS\
   x11-apps\
 " ;\
 \
-apt-get install -y $DEPS\
+apt-get install -y $DEPS ;\
 )
 
 
@@ -223,6 +223,15 @@ sudo apt-get install -y ${JDKS} ;\
 )
 
 
+## man
+
+RUN (\
+set -ex ;\
+\
+yes | sudo unminimize ;\
+)
+
+
 ## rust
 
 RUN (\
@@ -242,9 +251,9 @@ $HOME/.cargo/bin/cargo install \
 ## go
 
 RUN (\
-export GO_VERSION='1.26.1' ;\
-\
 set -ex ;\
+\
+GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | head -n1 | sed 's/^go//') ;\
 \
 curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf - ;\
 mv "$HOME/go" "$HOME/.go" ;\
@@ -259,11 +268,15 @@ export PATH="$GOROOT/bin:$PATH"\n\
 ## zig
 
 RUN (\
-export ZIG_VERSION='0.15.2' ;\
-\
 set -ex ;\
 \
+ZIG_VERSION=$(\
+  curl -fsSL 'https://ziglang.org/download/index.json' |\
+  jq -r 'to_entries | map(select(.key != "master")) | map(.value) | sort_by(.version) | last | .version'\
+) ;\
+\
 curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME" ;\
+\
 mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig" ;\
 \
 echo '\n\
@@ -337,7 +350,7 @@ done ;\
 ## pyenv
 
 RUN \
-  --mount=target=/root/.pyenv_cache,type=cache,sharing=locked \
+  --mount=target=/omlish/.pyenv_cache,type=cache,sharing=locked,uid=2000,gid=2000 \
 ( \
 export PYENV_VERSIONS='3.8.20 3.13.12 3.14.3' ;\
 \
@@ -356,11 +369,11 @@ done ;\
 RUN (\
 set -ex ;\
 \
-sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config ;\
-sed -i 's/^#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config ;\
-sed -i 's/^# Ciphers and keying/Ciphers chacha20-poly1305@openssh.com/' /etc/ssh/sshd_config ;\
-sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd ;\
-mkdir /var/run/sshd ;\
+sudo sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config ;\
+sudo sed -i 's/^#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config ;\
+sudo sed -i 's/^# Ciphers and keying/Ciphers chacha20-poly1305@openssh.com/' /etc/ssh/sshd_config ;\
+sudo sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd ;\
+sudo mkdir /var/run/sshd ;\
 )
 
 
@@ -369,7 +382,7 @@ mkdir /var/run/sshd ;\
 RUN echo '\
 handle SIGUSR1 nostop noprint\n\
 handle SIGUSR2 nostop noprint\n\
-' > /root/.gdbinit
+' > /omlish/.gdbinit
 
 RUN echo '\
 setw -g mode-keys vi\n\
@@ -379,7 +392,7 @@ set -g status-fg black\n\
 set -g history-limit 50000\n\
 set -g update-environment "DISPLAY"\n\
 set -sg default-terminal "xterm-256color"\n\
-' > /root/.tmux.conf
+' > /omlish/.tmux.conf
 
 RUN echo '\
 set number\n\
@@ -388,12 +401,12 @@ filetype indent plugin on\n\
 set tabstop=4\n\
 set shiftwidth=4\n\
 set expandtab\n\
-' > /root/.vimrc
+' > /omlish/.vimrc
 
 
 ## entrypoint
 
-WORKDIR /omlish
+WORKDIR /work
 
 ENTRYPOINT [ \
   "dumb-init", \

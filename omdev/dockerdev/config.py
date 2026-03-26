@@ -22,10 +22,6 @@ class Config:
 
     jdks: ta.Sequence[str] | None = None
 
-    go_version: str | None = None
-
-    zig_version: str | None = None
-
     nvm_versions: ta.Sequence[str] | None = None
 
     rbenv_versions: ta.Sequence[str] | None = None

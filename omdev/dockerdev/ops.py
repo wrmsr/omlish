@@ -57,6 +57,7 @@ class Run(Op):
     _: dc.KW_ONLY
 
     cache_mounts: ta.Sequence[str] | None = None
+    cache_mount_args: ta.Sequence[str] | None = None
 
 
 @dc.dataclass(frozen=True)

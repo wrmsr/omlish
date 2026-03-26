@@ -24,6 +24,7 @@ def fragment_section(
         *,
         static_env: StaticEnv | None = None,
         cache_mounts: ta.Sequence[str] | None = None,
+        cache_mount_args: ta.Sequence[str] | None = None,
 ) -> Section:
     body: Content = Resource(f'fragments/{name}.sh')
 
@@ -34,6 +35,7 @@ def fragment_section(
         Run(
             body,
             cache_mounts=cache_mounts or None,
+            cache_mount_args=cache_mount_args or None,
         ),
     ])
 
@@ -59,7 +61,7 @@ def render_apt_install_dep_sets(*names: str) -> str:
     out.write(render_var_sections('DEPS', *dsl))
     out.write('\n')
 
-    out.write('apt-get install -y $DEPS\n')
+    out.write('apt-get install -y $DEPS ;\n')
 
     return out.getvalue()
 

@@ -14,10 +14,6 @@ jdks = [
     'zulu26-ca-jdk',
 ]
 
-go_version = '1.26.1'
-
-zig_version = '0.15.2'
-
 nvm_versions = [
     '20',
     '22',
@@ -46,8 +42,8 @@ config_files = [
     '.vimrc',
 ]
 
-workdir = '/omlish'
+workdir = '/work'
 
 [cache_mounts]
-'pip' = '/root/.cache/pip'
-'uv' = '/root/.cache/uv'
+'pip' = '/omlish/.cache/pip'
+'uv' = '/omlish/.cache/uv'

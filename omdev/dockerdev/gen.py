@@ -19,9 +19,9 @@ from .ops import Entrypoint
 from .ops import Env
 from .ops import From
 from .ops import Op
-from .ops import User
 from .ops import Run
 from .ops import Section
+from .ops import User
 from .ops import Workdir
 from .ops import Write
 from .rendering import render_op
@@ -39,6 +39,8 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
     #     Copy(src='docker/.timestamp', dst='/'),
     # ]))
 
+    home = f'/{cfg.user or "root"}'
+
     ops.append(Section('locale', [
         Env([
             ('LANG', 'en_US.UTF-8'),
@@ -46,6 +48,9 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
             ('LC_ALL', 'en_US.UTF-8'),
         ]),
     ]))
+
+    ##
+    # apt
 
     ops.append(Section('deps', [
         Run(
@@ -82,69 +87,65 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
         cache_mounts=APT_CACHE_MOUNTS,
     ))
 
-    if cfg.jdks:
-        ops.append(fragment_section(
-            'jdk',
-            static_env={'JDKS': cfg.jdks},
-            cache_mounts=APT_CACHE_MOUNTS,
-        ))
+    ops.append(fragment_section(
+        'jdk',
+        static_env={'JDKS': cfg.jdks or []},
+        cache_mounts=APT_CACHE_MOUNTS,
+    ))
+
+    ops.append(fragment_section('man'))
+
+    ##
+    # langs
 
     ops.append(fragment_section('rust'))
 
-    if cfg.go_version is not None:
-        ops.append(fragment_section(
-            'go',
-            static_env={'GO_VERSION': cfg.go_version},
-        ))
+    ops.append(fragment_section('go'))
 
-    if cfg.zig_version is not None:
-        ops.append(fragment_section(
-            'zig',
-            static_env={'ZIG_VERSION': cfg.zig_version},
-        ))
+    ops.append(fragment_section('zig'))
 
     ops.append(fragment_section('vcpkg'))
 
-    if cfg.nvm_versions:
-        ops.append(fragment_section(
-            'nvm',
-            static_env={'NVM_VERSIONS': cfg.nvm_versions},
-        ))
+    ops.append(fragment_section(
+        'nvm',
+        static_env={'NVM_VERSIONS': cfg.nvm_versions or []},
+    ))
 
-    if cfg.rbenv_versions:
-        ops.append(fragment_section(
-            'rbenv',
-            static_env={'RBENV_VERSIONS': cfg.rbenv_versions},
-        ))
+    ops.append(fragment_section(
+        'rbenv',
+        static_env={'RBENV_VERSIONS': cfg.rbenv_versions or []},
+    ))
 
     ops.append(fragment_section(
         'uv',
         static_env={'UV_PYTHON_VERSIONS': cfg.uv_python_versions or []},
     ))
 
-    if cfg.pyenv_version_keys:
-        ops.append(fragment_section(
-            'pyenv',
-            static_env=lambda: {
-                'PYENV_VERSIONS': list(read_versions_file_versions(
-                    'resources',
-                    '.python-versions.json',
-                    cfg.pyenv_version_keys,
-                ).values()),
-            },
-            cache_mounts=['/root/.pyenv_cache'],
-        ))
+    ops.append(fragment_section(
+        'pyenv',
+        static_env=lambda: {
+            'PYENV_VERSIONS': list(read_versions_file_versions(
+                'resources',
+                '.python-versions.json',
+                cfg.pyenv_version_keys or [],
+            ).values()),
+        },
+        cache_mounts=[f'{home}/.pyenv_cache'],
+        cache_mount_args=[f'uid={cfg.uid}', f'gid={cfg.gid}'],
+    ))
+
+    ##
+    # config
 
     ops.append(fragment_section('sshd'))
 
     # ops.append(Section('x11', [
-    #     Run('touch /root/.Xauthority'),
-    #     Write('/root/xu', Resource('xu')),
+    #     Run(f'touch {home}/.Xauthority'),
     # ]))
 
     if cfg.config_files:
         ops.append(Section('configs', [
-            Write(f'/root/{n}', Resource(f'configs/{n}'))
+            Write(f'{home}/{n}', Resource(f'configs/{n}'))
             for n in cfg.config_files
         ]))
 

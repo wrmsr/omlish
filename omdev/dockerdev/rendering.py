@@ -219,7 +219,16 @@ def render_run(op: Run) -> str:
     if op.cache_mounts:
         out.write('RUN \\\n')
         for cm in op.cache_mounts:
-            out.write(INDENT + f'--mount=target={cm},type=cache,sharing=locked \\\n')
+            out.write(INDENT + ''.join([
+                '--mount=',
+                ','.join([
+                    f'target={cm}',
+                    'type=cache',
+                    'sharing=locked',
+                    *(op.cache_mount_args or []),
+                ]),
+                ' \\\n',
+            ]))
         out.write('( \\\n')
     else:
         out.write('RUN (\\\n')
