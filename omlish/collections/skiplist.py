@@ -59,8 +59,8 @@ class SkipList(SortedCollection[T]):
         self._max_height = max_height
 
         self._head = SkipList._Node(None, self._max_height)
+        self._tail = self._head
         self._height = 1
-        self._head.next = [None] * self._max_height
         self._length = 0
 
     #
@@ -86,32 +86,34 @@ class SkipList(SortedCollection[T]):
         if value is None:
             raise TypeError(value)
 
-        node = SkipList._Node(value, self._random_level())
-        update = [None] * self._max_height  # noqa
+        # Pre-fill update with head to handle height increases safely
+        update = [self._head] * self._max_height
         cur = self._head
 
         for i in range(self._height - 1, -1, -1):
             while cur.next[i] is not None and self._compare(value, cur.next[i].value) > 0:  # type: ignore
                 cur = cur.next[i]  # type: ignore
-            update[i] = cur  # type: ignore
+            update[i] = cur
 
-        cur = cur.next[0]  # type: ignore
-        if cur is not None:
-            if self._compare(value, cur.value) == 0:  # type: ignore
-                return False
-            node.prev, cur.prev = cur.prev, node
-        else:
-            node.prev = update[0]  # type: ignore
+        target = cur.next[0]
+        if target is not None and self._compare(value, target.value) == 0:  # type: ignore
+            return False
+
+        node = SkipList._Node(value, self._random_level())
 
         if node.level > self._height:
-            for i in range(self._height, node.level):
-                update[i] = self._head  # type: ignore
             self._height = node.level
 
         for i in range(node.level):
-            cur = update[i]  # type: ignore
-            node.next[i] = cur.next[i]  # noqa
-            cur.next[i] = node  # noqa
+            node.next[i] = update[i].next[i]
+            update[i].next[i] = node
+
+        # Correctly wire up the doubly-linked list layer (Level 0)
+        node.prev = update[0]
+        if node.next[0] is not None:
+            node.next[0].prev = node
+        else:
+            self._tail = node  # New node is at the end
 
         self._length += 1
         return True
@@ -144,7 +146,7 @@ class SkipList(SortedCollection[T]):
         if value is None:
             raise TypeError(value)
 
-        update = [None] * self._max_height  # noqa
+        update = [None] * self._max_height
         cur = self._head
 
         for i in range(self._height - 1, -1, -1):
@@ -152,18 +154,23 @@ class SkipList(SortedCollection[T]):
                 cur = cur.next[i]  # type: ignore
             update[i] = cur  # type: ignore
 
-        cur = cur.next[0]  # type: ignore
-        if cur is None or self._compare(value, cur.value) != 0:  # type: ignore
+        target = cur.next[0]
+        if target is None or self._compare(value, target.value) != 0:  # type: ignore
             return False
-        elif cur.next[0] is not None:
-            cur.next[0].prev = cur.prev
 
+        # Update next pointers and height
         for i in range(self._height):
-            if update[i].next[i] is not cur:  # type: ignore
+            if update[i].next[i] is not target:  # type: ignore
                 break
-            update[i].next[i] = cur.next[i]  # type: ignore
+            update[i].next[i] = target.next[i]  # type: ignore
 
-        while self._height > 0 and self._head.next[self._height - 1] is None:
+        # Correctly update prev pointer and tail
+        if target.next[0] is not None:
+            target.next[0].prev = target.prev
+        else:
+            self._tail = target.prev  # type: ignore
+
+        while self._height > 1 and self._head.next[self._height - 1] is None:
             self._height -= 1
 
         self._length -= 1
@@ -179,14 +186,8 @@ class SkipList(SortedCollection[T]):
             cur = cur.next[0]
 
     def iter_desc(self) -> ta.Iterator[T]:
-        cur = self._head.next[self._height - 1]
-        while True:
-            next = cur.next[cur.next.index(None) - 1 if None in cur.next else -1]  # type: ignore  # noqa
-            if next is None:
-                break
-            cur = next
-
-        while cur is not self._head:
+        cur = self._tail
+        while cur is not self._head and cur is not None:
             yield cur.value  # type: ignore
             cur = cur.prev  # type: ignore
 

@@ -50,3 +50,46 @@ def test_skiplistdict():
 def test_sorted_list_dict():
     assert dict(SkipListDict()) == {}
     assert dict(SkipListDict({3: 4, 1: 2})) == {1: 2, 3: 4}
+
+
+def test_skiplist_reverse_iteration():
+    sl: SkipList = SkipList()
+    values = [10, 5, 20, 15]
+    for v in values:
+        sl.add(v)
+
+    # Test forward
+    assert list(sl.iter()) == [5, 10, 15, 20]
+    # Test backward (This would have failed or been extremely slow before)
+    assert list(sl.iter_desc()) == [20, 15, 10, 5]
+
+
+def test_skiplist_prev_pointer_integrity():
+    sl: SkipList = SkipList()
+    sl.add(10)
+    sl.add(20)
+    sl.add(15)  # Insert in middle
+
+    # Manually verify the chain
+    node_20 = sl._find(20)  # noqa
+    node_15 = sl._find(15)  # noqa
+    node_10 = sl._find(10)  # noqa
+
+    assert node_20.prev == node_15  # type: ignore
+    assert node_15.prev == node_10  # type: ignore
+
+    sl.remove(15)
+    # After removal, 20.prev should point back to 10
+    assert node_20.prev == node_10  # type: ignore
+
+
+def test_skiplist_tail_updates():
+    sl: SkipList = SkipList()
+    sl.add(10)
+    assert sl._tail.value == 10  # noqa
+    sl.add(20)
+    assert sl._tail.value == 20  # noqa
+    sl.remove(20)
+    assert sl._tail.value == 10  # noqa
+    sl.add(5)  # Adding smaller than tail shouldn't change tail
+    assert sl._tail.value == 10  # noqa
