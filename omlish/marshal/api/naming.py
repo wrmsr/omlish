@@ -7,13 +7,13 @@ import enum
 
 from ... import check
 from ... import lang
-from .options import Option
+from .configs import Config
 
 
 ##
 
 
-class Naming(Option, enum.Enum):
+class Naming(Config, enum.Enum):
     SNAKE = 'snake'
     CAMEL = 'camel'
     LOW_CAMEL = 'low_camel'

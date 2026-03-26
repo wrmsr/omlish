@@ -61,6 +61,12 @@ class TypeMap(ta.Generic[T]):
             dct[ty] = item
         self._dct = dct
 
+    @classmethod
+    def of(cls, items: ta.Iterable[T]) -> 'TypeMap[T]':
+        if isinstance(items, TypeMap):
+            return items
+        return cls(items)
+
     @property
     def items(self) -> ta.Sequence[T]:
         return self._items

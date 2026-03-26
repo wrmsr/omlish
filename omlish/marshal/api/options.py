@@ -4,6 +4,11 @@ TODO:
  - Options only apply to Factories?
   - MarshalFactoryOption, MarshalOption, UnmarshalFactoryOption, MarshalOption ?
 """
+import typing as ta
+
+
+if ta.TYPE_CHECKING:
+    from ... import collections as col
 
 
 ##
@@ -11,3 +16,6 @@ TODO:
 
 class Option:
     pass
+
+
+Options: ta.TypeAlias = 'col.TypeMap[Option]'

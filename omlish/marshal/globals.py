@@ -4,6 +4,7 @@ import typing as ta
 from .. import lang
 from .api.configs import Config
 from .api.configs import ConfigRegistry
+from .api.options import Option
 from .api.types import MarshalerFactory
 from .api.types import Marshaling
 from .api.types import UnmarshalerFactory
@@ -60,22 +61,34 @@ def global_marshaling() -> Marshaling:
 ##
 
 
-def marshal(obj: ta.Any, ty: ta.Any | None = None, **kwargs: ta.Any) -> Value:
-    return global_marshaling().marshal(obj, ty, **kwargs)
+def marshal(
+        obj: ta.Any,
+        ty: ta.Any | None = None,
+        *options: Option,
+) -> Value:
+    return global_marshaling().marshal(obj, ty, *options)
 
 
 @ta.overload
-def unmarshal(v: Value, ty: type[T], **kwargs: ta.Any) -> T:
+def unmarshal(
+        v: Value,
+        ty: type[T],
+        *options: Option,
+) -> T:
     ...
 
 
 @ta.overload
-def unmarshal(v: Value, ty: ta.Any, **kwargs: ta.Any) -> ta.Any:
+def unmarshal(
+        v: Value,
+        ty: ta.Any,
+        *options: Option,
+) -> ta.Any:
     ...
 
 
-def unmarshal(v, ty, **kwargs):
-    return global_marshaling().unmarshal(v, ty, **kwargs)
+def unmarshal(v, ty, *options):
+    return global_marshaling().unmarshal(v, ty, *options)
 
 
 ##

@@ -2,12 +2,10 @@ import inspect
 import typing as ta
 
 from ... import check
-from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
-from ..api.options import Option
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
@@ -29,10 +27,7 @@ def _is_namedtuple(rty: rfl.Type) -> bool:
     )
 
 
-def get_namedtuple_field_infos(
-        ty: type,
-        opts: col.TypeMap[Option] = col.TypeMap(),
-) -> FieldInfos:
+def get_namedtuple_field_infos(ty: type) -> FieldInfos:
     check.arg(_is_namedtuple(ty), ty)
 
     sig = inspect.signature(ty)
@@ -63,7 +58,7 @@ class NamedtupleMarshalerFactory(MarshalerFactory):
             ty = check.isinstance(rty, type)
             check.state(not lang.is_abstract_class(ty))
 
-            fis = get_namedtuple_field_infos(ty, ctx.options)
+            fis = get_namedtuple_field_infos(ty)
 
             fields = [
                 (fi, ctx.make_marshaler(fi.type))
@@ -90,7 +85,7 @@ class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
             ty = check.isinstance(rty, type)
             check.state(not lang.is_abstract_class(ty))
 
-            fis = get_namedtuple_field_infos(ty, ctx.options)
+            fis = get_namedtuple_field_infos(ty)
 
             d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
             defaults: dict[str, ta.Any] = {}

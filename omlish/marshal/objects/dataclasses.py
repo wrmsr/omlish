@@ -10,12 +10,12 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ...lite import marshal as lm
+from ..api.configs import Configs
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.errors import UnhandledTypeError
 from ..api.naming import Naming
 from ..api.naming import translate_name
-from ..api.options import Option
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
@@ -41,20 +41,27 @@ class _FieldInfoBuilder:
     def __init__(
             self,
             ty: type,
-            opts: col.TypeMap[Option] | None = None,
+            configs: Configs | None = None,
             *,
             dc_rfl: dc.ClassReflection | None = None,
     ) -> None:
         self.ty = ty
-        if opts is None:
-            opts = col.TypeMap()
-        self.opts = opts
+        self.configs = configs
 
         self.obj_md = get_dataclass_options(ty)
-        self.class_naming = self.obj_md.field_naming or opts.get(Naming)
+
+        fn = self.obj_md.field_naming
+        if fn is None and configs is not None:
+            if not (cnl := configs.get_of(ty, Naming)):
+                cnl = configs.get_of(None, Naming)
+            if cnl:
+                fn = check.isinstance(check.unique(cnl), Naming)
+        self.class_naming = fn
+
         if dc_rfl is None:
             dc_rfl = dc.reflect(ty)
         self.dc_rfl = dc_rfl
+
         self.type_hints = ta.get_type_hints(ty)
 
     def build_field_info(self, field: dc.Field) -> FieldInfo:
@@ -175,9 +182,9 @@ class _FieldInfoBuilder:
 
 def get_dataclass_field_infos(
         ty: type,
-        opts: col.TypeMap[Option] | None = None,
+        configs: Configs | None = None,
 ) -> FieldInfos:
-    return _FieldInfoBuilder(ty, opts).build_field_infos()
+    return _FieldInfoBuilder(ty, configs).build_field_infos()
 
 
 ##
@@ -207,7 +214,7 @@ class _DataclassMarshalerBuilder:
 
         dc_md = get_dataclass_options(ty)
         dc_rfl = dc.reflect(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.options, dc_rfl=dc_rfl)
+        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl)
         fis = fib.build_field_infos()
 
         fields = [
@@ -279,7 +286,7 @@ class _DataclassUnmarshalerBuilder:
 
         dc_md = get_dataclass_options(ty)
         dc_rfl = dc.reflect(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.options, dc_rfl=dc_rfl)
+        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl)
         fis = fib.build_field_infos()
 
         for fi in fis:
@@ -313,7 +320,7 @@ class _DataclassUnmarshalerBuilder:
                 raise Exception(f'Embedded fields cannot have specials: {e_ty}')
 
             self._embeds[fi.name] = e_ty
-            for e_fi in _FieldInfoBuilder(e_ty, self.ctx.options).build_field_infos():
+            for e_fi in _FieldInfoBuilder(e_ty, self.ctx.configs).build_field_infos():
                 e_ns = self._add_field(e_fi, prefixes=[p + ep for p in prefixes for ep in fi.unmarshal_names])
                 self._embeds_by_unmarshal_name.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
                 ret.extend(e_ns)

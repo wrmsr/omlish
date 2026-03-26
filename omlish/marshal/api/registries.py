@@ -2,6 +2,8 @@
 TODO:
  - col.TypeMap?
   - at least get_any
+ - unique?
+ - this really feels like TypedValues again
 """
 import abc
 import dataclasses as dc

@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
 from ...funcs import guard as gfs
@@ -9,6 +10,7 @@ from .contexts import MarshalContext
 from .contexts import MarshalFactoryContext
 from .contexts import UnmarshalContext
 from .contexts import UnmarshalFactoryContext
+from .options import Option
 from .values import Value
 
 
@@ -81,44 +83,47 @@ class Marshaling(lang.Abstract):
 
     ##
 
-    def new_marshal_context(self) -> MarshalContext:
+    def new_marshal_context(self, options: ta.Iterable[Option] | None = None) -> MarshalContext:
         return MarshalContext(
-            configs=self.config_registry(),
             marshal_factory_context=self.new_marshal_factory_context(),
+            options=col.TypeMap.of(options or ()),
         )
 
-    def new_unmarshal_context(self) -> UnmarshalContext:
+    def new_unmarshal_context(self, options: ta.Iterable[Option] | None = None) -> UnmarshalContext:
         return UnmarshalContext(
-            configs=self.config_registry(),
             unmarshal_factory_context=self.new_unmarshal_factory_context(),
+            options=col.TypeMap.of(options or ()),
         )
 
     #
 
     @ta.final
-    def marshal(self, obj: ta.Any, ty: ta.Any | None = None, **kwargs: ta.Any) -> Value:
-        return self.new_marshal_context(**kwargs).marshal(obj, ty)
+    def marshal(
+            self,
+            obj: ta.Any,
+            ty: ta.Any | None = None,
+            *options: Option,
+    ) -> Value:
+        return self.new_marshal_context(options).marshal(obj, ty)
 
     @ta.overload
-    def unmarshal(self, v: Value, ty: type[T], **kwargs: ta.Any) -> T:
+    def unmarshal(
+            self,
+            v: Value,
+            ty: type[T],
+            *options: Option,
+    ) -> T:
         ...
 
     @ta.overload
-    def unmarshal(self, v: Value, ty: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    def unmarshal(
+            self,
+            v: Value,
+            ty: ta.Any,
+            *options: Option,
+    ) -> ta.Any:
         ...
 
     @ta.final
-    def unmarshal(self, v, ty, **kwargs):
-        return self.new_unmarshal_context(**kwargs).unmarshal(v, ty)
-
-
-##
-
-
-# MarshalerOrUnmarshaler: ta.TypeAlias = Marshaler | Unmarshaler
-# MarshalerOrUnmarshalerT = ta.TypeVar('MarshalerOrUnmarshalerT', bound=MarshalerOrUnmarshaler)
-#
-# MarshalContextOrUnmarshalContext: ta.TypeAlias = MarshalContext | UnmarshalContext
-# MarshalContextOrUnmarshalContextT = ta.TypeVar('MarshalContextOrUnmarshalContextT', bound=MarshalContextOrUnmarshalContext)  # noqa
-#
-# MarshalerMakerOrUnmarshalerMaker: ta.TypeAlias = MarshalerMaker | UnmarshalerMaker
+    def unmarshal(self, v, ty, *options):
+        return self.new_unmarshal_context(options).unmarshal(v, ty)
