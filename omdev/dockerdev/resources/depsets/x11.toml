@@ -1,4 +1,4 @@
 deps = [
-    'dbus-x11',
-    'x11-apps',
+  'dbus-x11',
+  'x11-apps',
 ]

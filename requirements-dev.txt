@@ -118,7 +118,7 @@ rich==14.3.3
 textual-dev==1.8.0
 textual-speedups==0.2.1
 
-snowflake-connector-python[secure-local-storage]==4.3.0  # @omlish-venv !13t !13dt  # cffi
+snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !13t !13dt  # cffi
 # snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt  # cffi
 
 trino==0.337.0  # @omlish-venv !13t !13dt !14t !14dt  # orjson
@@ -142,8 +142,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.75
-types-boto3>=1.42.75
+boto3>=1.42.76
+types-boto3>=1.42.76
 botocore-stubs>=1.42.41
 
 antlr4-python3-runtime==4.13.2

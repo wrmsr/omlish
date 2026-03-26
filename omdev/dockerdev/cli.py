@@ -29,6 +29,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import tomllib
 import typing as ta
 
@@ -118,41 +119,50 @@ class Cli(ap.Cli):
         insp_out_obj = json.loads(insp_out)
         insp_out_dct = check.not_empty(insp_out_obj)[0]
 
-        obi = check.non_empty_str(insp_out_dct['RepoDigests'][0])
-        cfg = dc.replace(cfg, base_image=obi)
+        obi = check.non_empty_str(insp_out_dct['Id'])
 
-        #
+        tag = f'omlish-dockerdev--{time.time_ns()}--{os.getpid()}'
 
-        src = gen_src(cfg)
+        subprocess.check_call(['docker', 'tag', obi, tag])
 
-        tmp_dir = tempfile.mkdtemp()
-        df = os.path.join(tmp_dir, 'Dockerfile')
-        with open(df, 'w') as f:
-            f.write(src)
+        try:
+            cfg = dc.replace(cfg, base_image=tag)  # noqa
 
-        build_args = [
-            '-f',
-            df,
-        ]
+            #
 
-        if offline:
-            build_args.append('--pull=false')
+            src = gen_src(cfg)
 
-        build_args.append('.')
+            tmp_dir = tempfile.mkdtemp()
+            df = os.path.join(tmp_dir, 'Dockerfile')
+            with open(df, 'w') as f:
+                f.write(src)
 
-        if not verbose:
-            out = subprocess.check_output(['docker', 'build', '-q', *build_args]).decode()
-            if (m := SHA_PAT.search(out)) is not None:
-                return m.group(0)
-            raise RuntimeError('Can\'t find sha256 in output')
+            build_args = [
+                '-f',
+                df,
+            ]
 
-        else:
-            proc, out = run_and_tee(['docker', 'build', *build_args])
-            check.state(proc.returncode == 0)
-            for line in reversed(out.splitlines()):
-                if (m := SHA_PAT.search(line)) is not None:
+            if offline:
+                build_args.append('--pull=false')
+
+            build_args.append('.')
+
+            if not verbose:
+                out = subprocess.check_output(['docker', 'build', '-q', *build_args]).decode()
+                if (m := SHA_PAT.search(out)) is not None:
                     return m.group(0)
-            raise RuntimeError('Can\'t find sha256 in output')
+                raise RuntimeError("Can't find sha256 in output")
+
+            else:
+                proc, out = run_and_tee(['docker', 'build', *build_args])
+                check.state(proc.returncode == 0)
+                for line in reversed(out.splitlines()):
+                    if (m := SHA_PAT.search(line)) is not None:
+                        return m.group(0)
+                raise RuntimeError("Can't find sha256 in output")
+
+        finally:
+            subprocess.check_call(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL)
 
     @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
