@@ -254,7 +254,7 @@ $HOME/.cargo/bin/cargo install \
 RUN (\
 set -ex ;\
 \
-GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | head -n1 | sed 's/^go//') ;\
+GO_VERSION=$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -n1 | sed 's/^go//') ;\
 \
 curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf - ;\
 mv "$HOME/go" "$HOME/.go" ;\
@@ -330,7 +330,7 @@ export RBENV_VERSIONS='3.4 4.0' ;\
 \
 set -ex ;\
 \
-curl -fsSL https://rbenv.org/install.sh | bash ;\
+curl -fsSL 'https://rbenv.org/install.sh' | bash ;\
 \
 for RV in ${RBENV_VERSIONS}; do\
   bash -c 'eval "$(~/.rbenv/bin/rbenv init - --no-rehash bash)" && rbenv install -L | grep -F "$1." | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1 | xargs rbenv install' bash "$RV" ;\
@@ -420,7 +420,7 @@ RUN echo '\
 #!/bin/bash\n\
 set -ex\n\
 \n\
-curl -fsSL https://claude.ai/install.sh | bash\n\
+curl -fsSL '"'"'https://claude.ai/install.sh'"'"' | bash\n\
 ' > /omlish/scripts/install-claude
 
 RUN echo '\
