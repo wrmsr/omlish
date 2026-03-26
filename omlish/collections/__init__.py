@@ -126,11 +126,6 @@ with _lang.auto_proxy_init(globals()):
         PersistentMapping,
     )
 
-    from .treap.treapmap import (  # noqa
-        TreapMap,
-        new_treap_map,
-    )
-
     from .ranked import (  # noqa
         RankedSeq,
         RankedSetSeq,
@@ -148,6 +143,11 @@ with _lang.auto_proxy_init(globals()):
         SortedListDict,
         SortedMapping,
         SortedMutableMapping,
+    )
+
+    from .treap.treapmap import (  # noqa
+        TreapMap,
+        new_treap_map,
     )
 
     from .trie import (  # noqa
