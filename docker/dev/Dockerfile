@@ -416,7 +416,7 @@ RUN echo '\
 set -ex\n\
 \n\
 curl -fsSL https://claude.ai/install.sh | bash\n\
-' > /omlish/scripts/install-claude-code
+' > /omlish/scripts/install-claude
 
 RUN echo '\
 #!/bin/bash\n\

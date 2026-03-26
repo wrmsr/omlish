@@ -20,6 +20,16 @@ TODO:
 
 if [ -t 1 ] ; then TTY_ENV_ARGS="-e LINES=$(tput lines) -e COLUMNS=$(tput cols)" ; fi
 --detach-keys 'ctrl-o,ctrl-d' \
+
+====
+
+tag = f'omlish-dockerdev--{time.time_ns()}--{os.getpid()}'
+subprocess.check_call(['docker', 'tag', obi, tag])
+try:
+    cfg = dc.replace(cfg, base_image=tag)  # noqa
+    ...
+finally:
+    subprocess.check_call(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL)
 """
 import json
 import os.path
@@ -29,12 +39,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 import tomllib
 import typing as ta
 
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
@@ -103,8 +111,8 @@ class Cli(ap.Cli):
             bim = bim.split(sep, maxsplit=1)[0]
 
         def run_insp() -> str:
-            return subprocess.check_output([  # type: ignore
-                'docker', 'image', 'inspect', cfg.base_image],  # type: ignore[union-attr]
+            return subprocess.check_output(  # type: ignore
+                ['docker', 'image', 'inspect', cfg.base_image],
                 **(dict(stderr=subprocess.DEVNULL) if not verbose else {}),
             ).decode()
 
@@ -119,50 +127,41 @@ class Cli(ap.Cli):
         insp_out_obj = json.loads(insp_out)
         insp_out_dct = check.not_empty(insp_out_obj)[0]
 
-        obi = check.non_empty_str(insp_out_dct['Id'])
+        # TODO: really want to rewrite Dockerfile on the fly to directly use this local image as a base to avoid any
+        #       network hit, but docker is *really hostile* to that idea
+        #  cfg = dc.replace(cfg, base_image=tag)
+        obi = check.non_empty_str(insp_out_dct['Id'])  # noqa
 
-        tag = f'omlish-dockerdev--{time.time_ns()}--{os.getpid()}'
+        src = gen_src(cfg)
 
-        subprocess.check_call(['docker', 'tag', obi, tag])
+        tmp_dir = tempfile.mkdtemp()
+        df = os.path.join(tmp_dir, 'Dockerfile')
+        with open(df, 'w') as f:
+            f.write(src)
 
-        try:
-            cfg = dc.replace(cfg, base_image=tag)  # noqa
+        build_args = [
+            '-f',
+            df,
+        ]
 
-            #
+        if offline:
+            build_args.append('--pull=false')
 
-            src = gen_src(cfg)
+        build_args.append('.')
 
-            tmp_dir = tempfile.mkdtemp()
-            df = os.path.join(tmp_dir, 'Dockerfile')
-            with open(df, 'w') as f:
-                f.write(src)
+        if not verbose:
+            out = subprocess.check_output(['docker', 'build', '-q', *build_args]).decode()
+            if (m := SHA_PAT.search(out)) is not None:
+                return m.group(0)
+            raise RuntimeError("Can't find sha256 in output")
 
-            build_args = [
-                '-f',
-                df,
-            ]
-
-            if offline:
-                build_args.append('--pull=false')
-
-            build_args.append('.')
-
-            if not verbose:
-                out = subprocess.check_output(['docker', 'build', '-q', *build_args]).decode()
-                if (m := SHA_PAT.search(out)) is not None:
+        else:
+            proc, out = run_and_tee(['docker', 'build', *build_args])
+            check.state(proc.returncode == 0)
+            for line in reversed(out.splitlines()):
+                if (m := SHA_PAT.search(line)) is not None:
                     return m.group(0)
-                raise RuntimeError("Can't find sha256 in output")
-
-            else:
-                proc, out = run_and_tee(['docker', 'build', *build_args])
-                check.state(proc.returncode == 0)
-                for line in reversed(out.splitlines()):
-                    if (m := SHA_PAT.search(line)) is not None:
-                        return m.group(0)
-                raise RuntimeError("Can't find sha256 in output")
-
-        finally:
-            subprocess.check_call(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL)
+            raise RuntimeError("Can't find sha256 in output")
 
     @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
