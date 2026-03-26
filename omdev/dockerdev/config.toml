@@ -1,5 +1,7 @@
 base_image = 'ubuntu:24.04'
 
+user = 'omlish'
+
 dep_sets = [
     'system',
     'python',

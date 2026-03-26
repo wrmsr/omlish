@@ -9,6 +9,7 @@ import typing as ta
 from .config import Config
 from .content import LazyContent
 from .content import Resource
+from .content import WithStaticEnv
 from .helpers import APT_CACHE_MOUNTS
 from .helpers import fragment_section
 from .helpers import read_versions_file_versions
@@ -18,6 +19,7 @@ from .ops import Entrypoint
 from .ops import Env
 from .ops import From
 from .ops import Op
+from .ops import User
 from .ops import Run
 from .ops import Section
 from .ops import Workdir
@@ -54,6 +56,21 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
             cache_mounts=APT_CACHE_MOUNTS,
         ),
     ]))
+
+    if cfg.user is not None:
+        ops.append(Section('user', [
+            Run(
+                WithStaticEnv(
+                    Resource('fragments/user.sh'),
+                    {
+                        'NEWUSER': cfg.user,
+                        'NEWUID': str(cfg.uid),
+                        'NEWGID': str(cfg.gid),
+                    },
+                ),
+            ),
+            User(cfg.user),
+        ]))
 
     ops.append(fragment_section(
         'firefox',

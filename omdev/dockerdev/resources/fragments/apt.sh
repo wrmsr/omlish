@@ -1,6 +1,7 @@
 set -ex ;
 
 rm -f /etc/apt/apt.conf.d/docker-clean ;
+rm -f /etc/dpkg/dpkg.cfg.d/excludes ;
 
 export DEBIAN_FRONTEND=noninteractive ;
 apt-get update ;

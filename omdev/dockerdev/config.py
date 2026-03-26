@@ -10,6 +10,10 @@ from omlish import dataclasses as dc
 class Config:
     base_image: str
 
+    user: str | None = None
+    uid: int = 2000
+    gid: int = 2000
+
     workdir: str | None = None
 
     _: dc.KW_ONLY

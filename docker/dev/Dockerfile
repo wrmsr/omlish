@@ -17,6 +17,7 @@ RUN \
 set -ex ;\
 \
 rm -f /etc/apt/apt.conf.d/docker-clean ;\
+rm -f /etc/dpkg/dpkg.cfg.d/excludes ;\
 \
 export DEBIAN_FRONTEND=noninteractive ;\
 apt-get update ;\
@@ -138,6 +139,24 @@ apt-get install -y $DEPS\
 )
 
 
+## user
+
+RUN (\
+export NEWUSER='omlish' ;\
+export NEWUID='2000' ;\
+export NEWGID='2000' ;\
+\
+set -ex ;\
+\
+groupadd --gid ${NEWGID} ${NEWUSER} ;\
+useradd --uid ${NEWUID} --gid ${NEWGID} -m -s /bin/bash -d /${NEWUSER} ${NEWUSER} ;\
+echo "${NEWUSER} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${NEWUSER} ;\
+chmod 0440 /etc/sudoers.d/${NEWUSER} ;\
+)
+
+USER omlish
+
+
 ## firefox
 
 RUN \
@@ -146,7 +165,7 @@ RUN \
 ( \
 set -ex ;\
 \
-add-apt-repository ppa:mozillateam/ppa ;\
+sudo add-apt-repository ppa:mozillateam/ppa ;\
 \
 echo "\
 Package: *\n\
@@ -158,8 +177,8 @@ Pin: version 1:1snap1-0ubuntu2\n\
 Pin-Priority: -1\n\
 " | sudo tee /etc/apt/preferences.d/mozilla-firefox ;\
 \
-apt-get update ;\
-apt-get install -y firefox ;\
+sudo apt-get update ;\
+sudo apt-get install -y firefox ;\
 \
 echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' |\
   sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox ;\
@@ -175,13 +194,13 @@ RUN \
 set -ex ;\
 \
 mkdir -p /etc/apt/keyrings ;\
-curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | gpg --dearmor -o /etc/apt/keyrings/docker.gpg ;\
+curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg ;\
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu\
-  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null ;\
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null ;\
 \
-apt-get update ;\
-apt-get install -y docker-ce-cli ;\
+sudo apt-get update ;\
+sudo apt-get install -y docker-ce-cli ;\
 )
 
 
@@ -199,8 +218,8 @@ sudo apt install gnupg ca-certificates curl ;\
 curl -s 'https://repos.azul.com/azul-repo.key' | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg ;\
 echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list ;\
 \
-apt-get update ;\
-apt-get install -y ${JDKS} ;\
+sudo apt-get update ;\
+sudo apt-get install -y ${JDKS} ;\
 )
 
 
@@ -258,8 +277,8 @@ export PATH="$HOME/.zig:$PATH"\n\
 RUN (\
 set -ex ;\
 \
-git clone 'https://github.com/microsoft/vcpkg' /root/.vcpkg_root ;\
-(cd /root/.vcpkg_root && ./bootstrap-vcpkg.sh) ;\
+git clone 'https://github.com/microsoft/vcpkg' ~/.vcpkg_root ;\
+(cd ~/.vcpkg_root && ./bootstrap-vcpkg.sh) ;\
 \
 echo '\n\
 export VCPKG_ROOT="$HOME/.vcpkg_root"\n\
@@ -324,10 +343,10 @@ export PYENV_VERSIONS='3.8.20 3.13.12 3.14.3' ;\
 \
 set -ex ;\
 \
-git clone 'https://github.com/pyenv/pyenv' /root/.pyenv ;\
+git clone 'https://github.com/pyenv/pyenv' ~/.pyenv ;\
 \
 for V in ${PYENV_VERSIONS} ; do\
-  PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V" ;\
+  PYTHON_BUILD_CACHE_PATH=~/.pyenv_cache ~/.pyenv/bin/pyenv install -s "$V" ;\
 done ;\
 )
 

@@ -20,6 +20,7 @@ from .ops import From
 from .ops import Op
 from .ops import Run
 from .ops import Section
+from .ops import User
 from .ops import Workdir
 from .ops import Write
 
@@ -177,6 +178,11 @@ def render_env(op: Env) -> str:
         f'ENV {k}={v}'
         for k, v in op.items
     ])
+
+
+@render_op.register(User)
+def render_user(op: User) -> str:
+    return f'USER {op.user}'
 
 
 @render_op.register(Copy)
