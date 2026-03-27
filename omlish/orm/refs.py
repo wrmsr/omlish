@@ -21,7 +21,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class Ref(lang.Sealed, lang.Abstract, ta.Generic[K, T]):
+class Ref(lang.Sealed, lang.Abstract, ta.Generic[T, K]):
     @property
     @abc.abstractmethod
     def cls(self) -> type[T]:
@@ -65,7 +65,7 @@ class UnloadedRefError(Exception):
 
 
 @ta.final
-class _LazyRef(Ref[K, T], lang.Final):
+class _LazyRef(Ref[T, K], lang.Final):
     def __init__(self, cls: type[T], k: Key[K]) -> None:  # noqa
         check.in_(k.__class__, _KEY_TYPES)
         self._cls, self._k = cls, k
@@ -91,17 +91,17 @@ class _LazyRef(Ref[K, T], lang.Final):
 
 
 @ta.overload
-def ref(obj: T) -> Ref[K, T]:
+def ref(obj: T) -> Ref[T, K]:
     ...
 
 
 @ta.overload
-def ref(cls: type[T], k: Key[K]) -> Ref[K, T]:
+def ref(cls: type[T], k: Key[K]) -> Ref[T, K]:
     ...
 
 
 @ta.overload
-def ref(cls: type[T], k: K) -> Ref[K, T]:
+def ref(cls: type[T], k: K) -> Ref[T, K]:
     ...
 
 

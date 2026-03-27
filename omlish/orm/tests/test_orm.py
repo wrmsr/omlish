@@ -14,7 +14,7 @@ class Business:
 @dc.dataclass()
 class BusinessCategory:
     id: orm.Key[int]
-    business: orm.Ref[int, Business]
+    business: orm.Ref[Business, int]
     tag: str
 
 
@@ -25,21 +25,21 @@ class User:
 
     _: dc.KW_ONLY
 
-    favorite_business: orm.Ref[int, Business] | None = None
+    favorite_business: orm.Ref[Business, int] | None = None
 
 
 @dc.dataclass()
 class UserRelation:
     id: orm.Key[int]
-    src: orm.Ref[int, User]
-    dst: orm.Ref[int, User]
+    src: orm.Ref[User, int]
+    dst: orm.Ref[User, int]
 
 
 @dc.dataclass()
 class Review:
     id: orm.Key[int]
-    business: orm.Ref[int, Business]
-    user: orm.Ref[int, User]
+    business: orm.Ref[Business, int]
+    user: orm.Ref[User, int]
     text: str
 
 

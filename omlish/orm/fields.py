@@ -79,18 +79,18 @@ class RefField(Field, lang.Final):
 
         gty = check.isinstance(rty, rfl.Generic)
         check.is_(gty.cls, Ref)
-        krt, ort = gty.args
-        self._ref_key_cls = check.isinstance(krt, type)
+        ort, krt = gty.args
         self._ref_obj_cls = check.isinstance(ort, type)
+        self._ref_key_cls = check.isinstance(krt, type)
 
     @property
     def optional(self) -> bool:
         return self._optional
 
     @property
-    def ref_key_cls(self) -> type:
-        return self._ref_key_cls
-
-    @property
     def ref_obj_cls(self) -> type:
         return self._ref_obj_cls
+
+    @property
+    def ref_key_cls(self) -> type:
+        return self._ref_key_cls
