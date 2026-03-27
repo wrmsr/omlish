@@ -155,12 +155,14 @@ def dataclass_mapper(
 ) -> Mapper:
     check.arg(dc.is_dataclass(cls))
 
+    dc_rfl = dc.reflect(cls)
+
     #
 
     fields: list[Field] = []
 
-    for df in dc.fields(cls):  # noqa
-        fields.append(field(df.name, df.type))
+    for df in dc_rfl.fields.values():  # noqa
+        fields.append(field(df.name, dc_rfl.field_annotations[df.name]))
 
     #
 

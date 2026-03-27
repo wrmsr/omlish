@@ -5,20 +5,20 @@ from ... import orm
 ##
 
 
-@dc.dataclass()
+@dc.dataclass(kw_only=True)
+class BusinessCategory:
+    id: orm.Key[int]
+    business: orm.Ref['Business', int]
+    tag: str
+
+
+@dc.dataclass(kw_only=True)
 class Business:
     id: orm.Key[int]
     name: str
 
 
-@dc.dataclass()
-class BusinessCategory:
-    id: orm.Key[int]
-    business: orm.Ref[Business, int]
-    tag: str
-
-
-@dc.dataclass()
+@dc.dataclass(kw_only=True)
 class User:
     id: orm.Key[int]
     name: str
@@ -28,14 +28,14 @@ class User:
     favorite_business: orm.Ref[Business, int] | None = None
 
 
-@dc.dataclass()
+@dc.dataclass(kw_only=True)
 class UserRelation:
     id: orm.Key[int]
     src: orm.Ref[User, int]
     dst: orm.Ref[User, int]
 
 
-@dc.dataclass()
+@dc.dataclass(kw_only=True)
 class Review:
     id: orm.Key[int]
     business: orm.Ref[Business, int]
@@ -74,21 +74,21 @@ def test_orm():
     #     print(r3)
 
     with orm.session(registry, store):
-        alice = User(orm.key(1), 'Alice')
-        bob = User(orm.key(2), 'Bob')
-        diner = Business(orm.key(1), "Alice's Diner")
-        sushi = Business(orm.key(2), 'Sushi Spot')
+        alice = User(id=orm.key(1), name='Alice')
+        bob = User(id=orm.key(2), name='Bob')
+        diner = Business(id=orm.key(1), name="Alice's Diner")
+        sushi = Business(id=orm.key(2), name='Sushi Spot')
 
         orm.add(alice)
         orm.add(bob)
         orm.add(diner)
         orm.add(sushi)
 
-        orm.add(Review(orm.key(1), business=orm.ref(Business, 1), user=orm.ref(User, 1), text='great pie'))
-        orm.add(Review(orm.key(2), business=orm.ref(Business, 1), user=orm.ref(User, 2), text='solid brunch'))
-        orm.add(Review(orm.key(3), business=orm.ref(Business, 2), user=orm.ref(User, 1), text='fresh fish'))
-        orm.add(Review(orm.key(4), business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it aight'))
-        orm.add(Review(orm.key(5), business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it still aight'))
+        orm.add(Review(id=orm.key(1), business=orm.ref(Business, 1), user=orm.ref(User, 1), text='great pie'))
+        orm.add(Review(id=orm.key(2), business=orm.ref(Business, 1), user=orm.ref(User, 2), text='solid brunch'))
+        orm.add(Review(id=orm.key(3), business=orm.ref(Business, 2), user=orm.ref(User, 1), text='fresh fish'))
+        orm.add(Review(id=orm.key(4), business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it aight'))
+        orm.add(Review(id=orm.key(5), business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it still aight'))
 
         assert orm.get(User, 1) is alice
 
