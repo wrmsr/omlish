@@ -35,7 +35,7 @@ class Project(ProjectBase):
 
             'torch ~= 2.11',
 
-            'transformers ~= 5.3',
+            'transformers ~= 5.4',
             'sentence-transformers ~= 5.3',
         ],
 
@@ -63,7 +63,7 @@ class Project(ProjectBase):
         ],
 
         'search': [
-            'ddgs ~= 9.11',
+            'ddgs ~= 9.12',
 
             'tavily-python ~= 0.7',
         ],

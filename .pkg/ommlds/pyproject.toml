@@ -38,7 +38,7 @@ all = [
     'tinygrad ~= 0.12',
     'tokenizers ~= 0.22',
     'torch ~= 2.11',
-    'transformers ~= 5.3',
+    'transformers ~= 5.4',
     'sentence-transformers ~= 5.3',
     'huggingface-hub ~= 1.8',
     'datasets ~= 4.8',
@@ -47,7 +47,7 @@ all = [
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
     'pillow ~= 12.1',
-    'ddgs ~= 9.11',
+    'ddgs ~= 9.12',
     'tavily-python ~= 0.7',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
@@ -65,7 +65,7 @@ backends = [
     'tinygrad ~= 0.12',
     'tokenizers ~= 0.22',
     'torch ~= 2.11',
-    'transformers ~= 5.3',
+    'transformers ~= 5.4',
     'sentence-transformers ~= 5.3',
 ]
 huggingface = [
@@ -86,7 +86,7 @@ pillow = [
     'pillow ~= 12.1',
 ]
 search = [
-    'ddgs ~= 9.11',
+    'ddgs ~= 9.12',
     'tavily-python ~= 0.7',
 ]
 wiki = [

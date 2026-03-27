@@ -29,7 +29,7 @@ class CancellableTextStreamer(tfm.TextStreamer):
             **decode_kwargs: ta.Any,
     ) -> None:
         super().__init__(
-            ta.cast(tfm.AutoTokenizer, tokenizer),  # noqa
+            ta.cast(tfm.PreTrainedTokenizerBase, tokenizer),  # noqa
             skip_prompt=skip_prompt,
             **decode_kwargs,
         )
