@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import abc
 import typing as ta
 
@@ -78,17 +79,13 @@ class _DirectRef(Ref[T, K], lang.Final):
 
     @property
     def k(self) -> Key[K]:
-        raise NotImplementedError
+        return _sessions.active_session()._get_direct_ref_key(self)
 
     def __call__(self) -> T:
         return self._obj
 
 
 #
-
-
-class UnloadedRefError(Exception):
-    pass
 
 
 @ta.final
@@ -109,9 +106,7 @@ class _LazyRef(Ref[T, K], lang.Final):
         return self._k
 
     def __call__(self) -> T:
-        if (session := _sessions.opt_active_session()) is not None:
-            return session._load_lazy_ref(self)  # noqa
-        raise UnloadedRefError
+        return _sessions.active_session()._get_lazy_ref_obj(self)
 
 
 ##

@@ -60,8 +60,6 @@ from .queries import (  # noqa
 from .refs import (  # noqa
     Ref,
 
-    UnloadedRefError,
-
     ref,
 )
 

@@ -85,7 +85,7 @@ def test_orm():
         orm.add(sushi)
 
         orm.add(Review(id=orm.key(1), business=orm.ref(Business, 1), user=orm.ref(User, 1), text='great pie'))
-        orm.add(Review(id=orm.key(2), business=orm.ref(Business, 1), user=orm.ref(User, 2), text='solid brunch'))
+        orm.add(Review(id=orm.key(2), business=orm.ref(diner), user=orm.ref(User, 2), text='solid brunch'))
         orm.add(Review(id=orm.key(3), business=orm.ref(Business, 2), user=orm.ref(User, 1), text='fresh fish'))
         orm.add(Review(id=orm.key(4), business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it aight'))
         orm.add(Review(id=orm.key(5), business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it still aight'))
