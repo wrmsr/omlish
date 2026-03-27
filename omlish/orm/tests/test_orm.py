@@ -50,6 +50,7 @@ def test_orm():
         orm.mapper(User, indexes=['name']),
         orm.mapper(UserRelation, indexes=['src', 'dst']),
         orm.mapper(Review, indexes=['business', 'user']),
+        codec=orm.MarshalCodec(),
     )
 
     store = orm.InMemoryStore()

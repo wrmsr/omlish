@@ -10,6 +10,7 @@ from .contexts import MarshalContext
 from .contexts import MarshalFactoryContext
 from .contexts import UnmarshalContext
 from .contexts import UnmarshalFactoryContext
+from .options import _EMPTY_OPTIONS
 from .options import Option
 from .values import Value
 
@@ -86,13 +87,13 @@ class Marshaling(lang.Abstract):
     def new_marshal_context(self, options: ta.Iterable[Option] | None = None) -> MarshalContext:
         return MarshalContext(
             marshal_factory_context=self.new_marshal_factory_context(),
-            options=col.TypeMap.of(options or ()),
+            options=col.TypeMap.of(options) if options else _EMPTY_OPTIONS,
         )
 
     def new_unmarshal_context(self, options: ta.Iterable[Option] | None = None) -> UnmarshalContext:
         return UnmarshalContext(
             unmarshal_factory_context=self.new_unmarshal_factory_context(),
-            options=col.TypeMap.of(options or ()),
+            options=col.TypeMap.of(options) if options else _EMPTY_OPTIONS,
         )
 
     #

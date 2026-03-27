@@ -17,3 +17,9 @@ class Option:
 
 
 Options: ta.TypeAlias = col.TypeMap[Option]
+
+
+##
+
+
+_EMPTY_OPTIONS: Options = col.TypeMap()
