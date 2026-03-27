@@ -13,9 +13,9 @@ from .fields import RefField
 from .indexes import Index
 from .keys import Key
 from .mappers import Mapper
-from .mappers import Registry
 from .queries import Query
 from .refs import Ref
+from .registries import Registry
 from .sessions import Session
 from .sessions import active_session
 from .stores import Store

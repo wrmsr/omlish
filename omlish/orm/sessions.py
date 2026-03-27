@@ -10,9 +10,9 @@ from .keys import _AutoKey
 from .keys import _Key
 from .keys import _unwrap_key
 from .mappers import Mapper
-from .mappers import Registry
 from .queries import Query
 from .refs import _LazyRef
+from .registries import Registry
 from .snaps import Snap
 from .stores import Store
 

@@ -43,8 +43,6 @@ from .inmemory import (  # noqa
 
 from .mappers import (  # noqa
     Mapper,
-
-    Registry,
 )
 
 from .queries import (  # noqa
@@ -57,6 +55,10 @@ from .refs import (  # noqa
     UnloadedRefError,
 
     ref,
+)
+
+from .registries import (  # noqa
+    Registry,
 )
 
 from .sessions import (  # noqa
