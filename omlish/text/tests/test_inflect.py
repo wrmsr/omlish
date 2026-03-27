@@ -21,7 +21,7 @@ import typing as ta
 
 import pytest
 
-from .. import inflection
+from .. import inflect
 
 
 TestParameters: ta.TypeAlias = tuple[tuple[str, str], ...]
@@ -299,77 +299,77 @@ STRING_TO_TABLEIZE: TestParameters = (
 
 
 def test_pluralize_plurals() -> None:
-    assert 'plurals' == inflection.pluralize('plurals')
-    assert 'Plurals' == inflection.pluralize('Plurals')
+    assert 'plurals' == inflect.pluralize('plurals')
+    assert 'Plurals' == inflect.pluralize('Plurals')
 
 
 def test_pluralize_empty_string() -> None:
-    assert '' == inflection.pluralize('')
+    assert '' == inflect.pluralize('')
 
 
 @pytest.mark.parametrize(
     ('word',),  # noqa
-    [(word,) for word in sorted(inflection._UNCOUNTABLE_WORDS)],
+    [(word,) for word in sorted(inflect._UNCOUNTABLE_WORDS)],
 )
 def test_uncountability(word: str) -> None:
-    assert word == inflection.singularize(word)
-    assert word == inflection.pluralize(word)
-    assert inflection.pluralize(word) == inflection.singularize(word)
+    assert word == inflect.singularize(word)
+    assert word == inflect.pluralize(word)
+    assert inflect.pluralize(word) == inflect.singularize(word)
 
 
 def test_uncountable_word_is_not_greedy() -> None:
     uncountable_word = 'ors'
     countable_word = 'sponsor'
 
-    inflection._UNCOUNTABLE_WORDS.add(uncountable_word)
-    inflection._UNCOUNTABLE_PATS.append(inflection._uncountable_pat(uncountable_word))
+    inflect._UNCOUNTABLE_WORDS.add(uncountable_word)
+    inflect._UNCOUNTABLE_PATS.append(inflect._uncountable_pat(uncountable_word))
     try:
-        assert uncountable_word == inflection.singularize(uncountable_word)
-        assert uncountable_word == inflection.pluralize(uncountable_word)
-        assert inflection.pluralize(uncountable_word) == inflection.singularize(uncountable_word)
+        assert uncountable_word == inflect.singularize(uncountable_word)
+        assert uncountable_word == inflect.pluralize(uncountable_word)
+        assert inflect.pluralize(uncountable_word) == inflect.singularize(uncountable_word)
 
-        assert 'sponsor' == inflection.singularize(countable_word)
-        assert 'sponsors' == inflection.pluralize(countable_word)
-        assert 'sponsor' == inflection.singularize(inflection.pluralize(countable_word))
+        assert 'sponsor' == inflect.singularize(countable_word)
+        assert 'sponsors' == inflect.pluralize(countable_word)
+        assert 'sponsor' == inflect.singularize(inflect.pluralize(countable_word))
     finally:
-        inflection._UNCOUNTABLE_WORDS.remove(uncountable_word)
-        inflection._UNCOUNTABLE_PATS.pop()
+        inflect._UNCOUNTABLE_WORDS.remove(uncountable_word)
+        inflect._UNCOUNTABLE_PATS.pop()
 
 
 @pytest.mark.parametrize(('singular', 'plural'), SINGULAR_TO_PLURAL)
 def test_pluralize_singular(singular: str, plural: str) -> None:
-    assert plural == inflection.pluralize(singular)
-    assert plural.capitalize() == inflection.pluralize(singular.capitalize())
+    assert plural == inflect.pluralize(singular)
+    assert plural.capitalize() == inflect.pluralize(singular.capitalize())
 
 
 @pytest.mark.parametrize(('singular', 'plural'), SINGULAR_TO_PLURAL)
 def test_singularize_plural(singular: str, plural: str) -> None:
-    assert singular == inflection.singularize(plural)
-    assert singular.capitalize() == inflection.singularize(plural.capitalize())
+    assert singular == inflect.singularize(plural)
+    assert singular.capitalize() == inflect.singularize(plural.capitalize())
 
 
 @pytest.mark.parametrize(('singular', 'plural'), SINGULAR_TO_PLURAL)
 def test_pluralize_plural(singular: str, plural: str) -> None:
-    assert plural == inflection.pluralize(plural)
-    assert plural.capitalize() == inflection.pluralize(plural.capitalize())
+    assert plural == inflect.pluralize(plural)
+    assert plural.capitalize() == inflect.pluralize(plural.capitalize())
 
 
 @pytest.mark.parametrize(('before', 'titleized'), MIXTURE_TO_TITLEIZED)
 def test_titleize(before: str, titleized: str) -> None:
-    assert titleized == inflection.titleize(before)
+    assert titleized == inflect.titleize(before)
 
 
 @pytest.mark.parametrize(('camel', 'underscore'), CAMEL_TO_UNDERSCORE)
 def test_camelize(camel: str, underscore: str) -> None:
-    assert camel == inflection.camelize(underscore)
+    assert camel == inflect.camelize(underscore)
 
 
 def test_camelize_with_lower_downcases_the_first_letter() -> None:
-    assert 'capital' == inflection.camelize('Capital', False)
+    assert 'capital' == inflect.camelize('Capital', False)
 
 
 def test_camelize_with_underscores() -> None:
-    assert 'CamelCase' == inflection.camelize('Camel_Case')
+    assert 'CamelCase' == inflect.camelize('Camel_Case')
 
 
 @pytest.mark.parametrize(
@@ -377,7 +377,7 @@ def test_camelize_with_underscores() -> None:
     CAMEL_TO_UNDERSCORE + CAMEL_TO_UNDERSCORE_WITHOUT_REVERSE,
 )
 def test_underscore(camel: str, underscore: str) -> None:
-    assert underscore == inflection.underscore(camel)
+    assert underscore == inflect.underscore(camel)
 
 
 @pytest.mark.parametrize(
@@ -385,7 +385,7 @@ def test_underscore(camel: str, underscore: str) -> None:
     STRING_TO_PARAMETERIZED,
 )
 def test_parameterize(some_string: str, parameterized_string: str) -> None:
-    assert parameterized_string == inflection.parameterize(some_string)
+    assert parameterized_string == inflect.parameterize(some_string)
 
 
 @pytest.mark.parametrize(
@@ -393,7 +393,7 @@ def test_parameterize(some_string: str, parameterized_string: str) -> None:
     STRING_TO_PARAMETERIZED_AND_NORMALIZED,
 )
 def test_parameterize_and_normalize(some_string: str, parameterized_string: str) -> None:
-    assert parameterized_string == inflection.parameterize(some_string)
+    assert parameterized_string == inflect.parameterize(some_string)
 
 
 @pytest.mark.parametrize(
@@ -401,7 +401,7 @@ def test_parameterize_and_normalize(some_string: str, parameterized_string: str)
     STRING_TO_PARAMETERIZE_WITH_UNDERSCORE,
 )
 def test_parameterize_with_custom_separator(some_string: str, parameterized_string: str) -> None:
-    assert parameterized_string == inflection.parameterize(some_string, '_')
+    assert parameterized_string == inflect.parameterize(some_string, '_')
 
 
 @pytest.mark.parametrize(
@@ -414,7 +414,7 @@ def test_parameterize_with_multi_character_separator(
 ) -> None:
     assert (
         parameterized_string.replace('-', '__sep__') ==
-        inflection.parameterize(some_string, '__sep__')
+        inflect.parameterize(some_string, '__sep__')
     )
 
 
@@ -423,29 +423,29 @@ def test_parameterize_with_multi_character_separator(
     STRING_TO_PARAMETERIZE_WITH_NO_SEPARATOR,
 )
 def test_parameterize_with_no_separator(some_string: str, parameterized_string: str) -> None:
-    assert parameterized_string == inflection.parameterize(some_string, '')
+    assert parameterized_string == inflect.parameterize(some_string, '')
 
 
 @pytest.mark.parametrize(('underscore', 'human'), UNDERSCORE_TO_HUMAN)
 def test_humanize(underscore: str, human: str) -> None:
-    assert human == inflection.humanize(underscore)
+    assert human == inflect.humanize(underscore)
 
 
 @pytest.mark.parametrize(('number', 'ordinalized'), ORDINAL_NUMBERS)
 def test_ordinal(number: str, ordinalized: str) -> None:
-    assert ordinalized == number + inflection.ordinal(int(number))
+    assert ordinalized == number + inflect.ordinal(int(number))
 
 
 @pytest.mark.parametrize(('number', 'ordinalized'), ORDINAL_NUMBERS)
 def test_ordinalize(number: str, ordinalized: str) -> None:
-    assert ordinalized == inflection.ordinalize(int(number))
+    assert ordinalized == inflect.ordinalize(int(number))
 
 
 @pytest.mark.parametrize(('input', 'expected'), UNDERSCORES_TO_DASHES)
 def test_dasherize(input: str, expected: str) -> None:  # noqa
-    assert inflection.dasherize(input) == expected
+    assert inflect.dasherize(input) == expected
 
 
 @pytest.mark.parametrize(('string', 'tableized'), STRING_TO_TABLEIZE)
 def test_tableize(string: str, tableized: str) -> None:
-    assert inflection.tableize(string) == tableized
+    assert inflect.tableize(string) == tableized
