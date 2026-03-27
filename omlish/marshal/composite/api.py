@@ -12,3 +12,9 @@ class DefaultIterableConstructors(Option):
     iterable: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
     sequence: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
     mutable_sequence: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class DefaultMappingConstructors(Option):
+    mapping: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
+    mutable_mapping: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
