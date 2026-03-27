@@ -16,6 +16,11 @@ from .api import (  # noqa
     query,
 )
 
+from .codecs import (  # noqa
+    Codec,
+    FnCodec,
+)
+
 from .fields import (  # noqa
     Field,
     KeyField,

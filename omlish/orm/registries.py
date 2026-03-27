@@ -2,6 +2,7 @@
 import typing as ta
 
 from .. import check
+from .codecs import Codec
 from .mappers import Mapper
 
 
@@ -9,8 +10,15 @@ from .mappers import Mapper
 
 
 class Registry:
-    def __init__(self, *mappers: Mapper) -> None:
+    def __init__(
+            self,
+            mappers: ta.Iterable[Mapper],
+            *,
+            codec: Codec | None = None,
+    ) -> None:
         super().__init__()
+
+        self._codec = codec
 
         self._mappers: set[Mapper] = set()
 
@@ -35,6 +43,10 @@ class Registry:
     @property
     def mappers_by_store_name(self) -> ta.Mapping[str, Mapper]:
         return self._mappers_by_store_name
+
+    @property
+    def codec(self) -> Codec | None:
+        return self._codec
 
     #
 

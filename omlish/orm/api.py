@@ -7,6 +7,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
 from ..text import inflect
+from .codecs import Codec
 from .fields import Field
 from .fields import KeyField
 from .fields import RefField
@@ -176,6 +177,7 @@ def dataclass_mapper(
 
 def registry(
         *mappers: Mapper | type,
+        codec: Codec | None = None,
 ) -> Registry:
     mapper_lst: list[Mapper] = []
 
@@ -187,7 +189,10 @@ def registry(
         else:
             raise TypeError(a)
 
-    return Registry(*mapper_lst)
+    return Registry(
+        mapper_lst,
+        codec=codec,
+    )
 
 
 #
