@@ -10,8 +10,10 @@ from .keys import key
 
 if ta.TYPE_CHECKING:
     from . import sessions as _sessions
+    from . import wrappers as _wrappers
 else:
     _sessions = lang.proxy_import('.sessions', __package__)
+    _wrappers = lang.proxy_import('.wrappers', __package__)
 
 
 K = ta.TypeVar('K')
@@ -55,6 +57,31 @@ class Ref(lang.Sealed, lang.Abstract, ta.Generic[T, K]):
         if ot not in _REF_TYPES:
             return False
         return ot.cls == self.cls and ot.k == self.k
+
+
+#
+
+
+@ta.final
+class _DirectRef(Ref[T, K], lang.Final):
+    def __init__(self, obj: T) -> None:  # noqa
+        cls = type(obj)
+        check.not_in(cls, _wrappers.WRAPPER_TYPES)
+        self._cls, self._obj = cls, obj
+
+    def __repr__(self) -> str:
+        return f'orm.ref({self._obj!r})'
+
+    @property
+    def cls(self) -> type[T]:
+        return self._cls
+
+    @property
+    def k(self) -> Key[K]:
+        raise NotImplementedError
+
+    def __call__(self) -> T:
+        return self._obj
 
 
 #
@@ -108,7 +135,7 @@ def ref(cls: type[T], k: K) -> Ref[T, K]:
 def ref(obj, *args):
     if not args:
         check.not_isinstance(obj, type)
-        raise NotImplementedError
+        return _DirectRef(obj)
     else:
         check.isinstance(obj, type)
         [k] = args
@@ -119,5 +146,6 @@ def ref(obj, *args):
 
 
 _REF_TYPES: tuple[type[Ref], ...] = (
+    _DirectRef,
     _LazyRef,
 )
