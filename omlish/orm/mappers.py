@@ -168,6 +168,9 @@ class Mapper(ta.Generic[K, T]):
             check.state(not vk)
             check.state(not vr)
 
+            if (co := self._registry._codec) is not None:
+                v = co.decode(v, f._rty)
+
         return v
 
     def obj_to_snap(self, obj: T) -> Snap:
@@ -190,6 +193,9 @@ class Mapper(ta.Generic[K, T]):
                 check.state(f._optional)  # type: ignore[attr-defined]
             else:
                 v = _LazyRef(f._ref_obj_cls, _Key(v))  # type: ignore[attr-defined]
+
+        elif (co := self._registry._codec) is not None:
+            v = co.decode(v, f._rty)
 
         return v
 

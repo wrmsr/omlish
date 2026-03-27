@@ -18,7 +18,10 @@ from .api import (  # noqa
 
 from .codecs import (  # noqa
     Codec,
+    NopCodec,
     FnCodec,
+
+    MarshalCodec,
 )
 
 from .fields import (  # noqa
