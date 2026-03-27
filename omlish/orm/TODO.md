@@ -1,4 +1,3 @@
-- optional refs
 - backrefs
 - sorted indexes
 - composite keys
