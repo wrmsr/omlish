@@ -47,6 +47,8 @@ class Registry:
     def _register(self, m: Mapper) -> None:
         self._check_can_register(m)
 
+        m._set_registry(self)
+
         self._mappers.add(m)
         self._mappers_by_cls[m.cls] = m
         self._mappers_by_cls_name[m.cls.__name__] = m

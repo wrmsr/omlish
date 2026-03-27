@@ -16,6 +16,10 @@ from .refs import _LazyRef
 from .snaps import Snap
 
 
+if ta.TYPE_CHECKING:
+    from .registries import Registry
+
+
 K = ta.TypeVar('K')
 T = ta.TypeVar('T')
 
@@ -103,6 +107,23 @@ class Mapper(ta.Generic[K, T]):
     @property
     def index_field_store_names(self) -> ta.Mapping[Index, tuple[str, ...]]:
         return self._index_field_store_names
+
+    #
+
+    _registry: 'Registry'
+
+    def _set_registry(self, r: 'Registry') -> None:
+        try:
+            self._registry  # noqa
+        except AttributeError:
+            pass
+        else:
+            raise RuntimeError('registry already set')
+        self._registry = r
+
+    @property
+    def registry(self) -> 'Registry':
+        return self._registry
 
     #
 
