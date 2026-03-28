@@ -323,9 +323,9 @@ class Session:
                     k = _Key(fr.inserted_auto_keys[ek])  # type: ignore[index]
 
                     check.not_in(k, ed)  # noqa
+                    check.is_(self._entities_by_auto_key[ek], e)  # type: ignore[index]
 
                     del ed[ek]
-                    del self._entities_by_auto_key[ek]  # type: ignore[arg-type]
 
                     e.k = k
                     setattr(e_obj, m._key_field._name, k)
