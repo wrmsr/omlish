@@ -92,9 +92,6 @@ class Session:
             self.obj = obj
             self.snap = snap
 
-        m: ta.Final[Mapper]
-        k: ta.Final[Key]
-
         def __repr__(self) -> str:
             return (
                 f'{self.__class__.__name__}('
@@ -269,12 +266,18 @@ class Session:
         check.state(not self._aborted)
 
         entity_ops: list[tuple[
-            Session._Entity,
-            ta.Any | None,
-            Snap | None,
+            Mapper,
+            Store.FlushResult,
+            list[tuple[
+                Session._Entity,
+                ta.Any | None,
+                Snap | None,
+            ]],
         ]] = []
 
         for cls, cd in self._entities_by_key_by_cls.items():
+            eol: list = []
+
             m = self._registry.mapper_for_cls(cls)
 
             insert: list[Snap] = []
@@ -286,13 +289,13 @@ class Session:
                     if e.snap is None:
                         continue
                     delete.append(_unwrap_key(e.k))
-                    entity_ops.append((e, None, None))
+                    eol.append((e, None, None))
 
                 else:
                     snap = e.m.obj_to_snap(e.obj)
                     if snap == e.snap:
                         continue
-                    entity_ops.append((e, e.obj, snap))
+                    eol.append((e, e.obj, snap))
                     if (xs := e.snap) is None:
                         insert.append(snap)
                     else:
@@ -308,13 +311,31 @@ class Session:
                 delete=delete or None,
             )
 
-            self._store.flush(m, batch)
+            fr = self._store.flush(m, batch)
 
-        for e, e_obj, e_snap in entity_ops:
-            if e_obj is None and (xo := e.obj) is not None:
-                del self._entities_by_obj_id[id(xo)]
-            e.obj = e_obj
-            e.snap = e_snap
+            entity_ops.append((m, fr, eol))
+
+        for m, fr, eol in entity_ops:
+            ed = self._entities_by_key_by_cls[m._cls]
+
+            for e, e_obj, e_snap in eol:
+                if (ek := e.k).__class__ is _AutoKey:
+                    k = _Key(fr.inserted_auto_keys[ek])  # type: ignore[index]
+
+                    check.not_in(k, ed)  # noqa
+
+                    del ed[ek]
+                    del self._entities_by_auto_key[ek]  # type: ignore[arg-type]
+
+                    e.k = k
+                    setattr(e_obj, m._key_field._name, k)
+                    ed[k] = e
+
+                if e_obj is None and (xo := e.obj) is not None:
+                    del self._entities_by_obj_id[id(xo)]
+
+                e.obj = e_obj
+                e.snap = e_snap
 
     #
 

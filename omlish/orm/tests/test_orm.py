@@ -7,20 +7,20 @@ from ... import orm
 
 @dc.dataclass(kw_only=True)
 class BusinessCategory:
-    id: orm.Key[int]
+    id: orm.Key[int] = orm.auto_key()
     business: orm.Ref['Business', int]
     tag: str
 
 
 @dc.dataclass(kw_only=True)
 class Business:
-    id: orm.Key[int]
+    id: orm.Key[int] = orm.auto_key()
     name: str
 
 
 @dc.dataclass(kw_only=True)
 class User:
-    id: orm.Key[int]
+    id: orm.Key[int] = orm.auto_key()
     name: str
 
     _: dc.KW_ONLY
@@ -30,14 +30,14 @@ class User:
 
 @dc.dataclass(kw_only=True)
 class UserRelation:
-    id: orm.Key[int]
+    id: orm.Key[int] = orm.auto_key()
     src: orm.Ref[User, int]
     dst: orm.Ref[User, int]
 
 
 @dc.dataclass(kw_only=True)
 class Review:
-    id: orm.Key[int]
+    id: orm.Key[int] = orm.auto_key()
     business: orm.Ref[Business, int]
     user: orm.Ref[User, int]
     text: str
@@ -78,7 +78,7 @@ def test_orm():
         alice = User(id=orm.key(1), name='Alice')
         bob = User(id=orm.key(2), name='Bob')
         diner = Business(id=orm.key(1), name="Alice's Diner")
-        sushi = Business(id=orm.key(2), name='Sushi Spot')
+        sushi = Business(name='Sushi Spot')
 
         orm.add(alice)
         orm.add(bob)

@@ -85,7 +85,7 @@ class AutoKeyNotSetError(Exception):
 @ta.final
 class _AutoKey(Key[K], lang.Final):
     def __repr__(self) -> str:
-        return f'orm.auto_key@{id(self):x}()'
+        return f'orm.auto_key@{id(self):x}'
 
     @property
     def k(self) -> K:

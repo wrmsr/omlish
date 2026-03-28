@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import typing as ta
 
 from .. import check
@@ -135,7 +136,11 @@ class InMemoryStore(Store):
     #
 
     def flush(self, m: Mapper, b: Store.FlushBatch) -> Store.FlushResult:
+        kf_sn = m._key_field._store_name
+
         t = self._table_for_mapper(m)
+
+        iak: dict[ta.Any, ta.Any] = {}
 
         def index(k: ta.Any, snap: Snap) -> None:  # noqa
             for it, idc in t.indexes.items():
@@ -155,10 +160,15 @@ class InMemoryStore(Store):
                     del idc[ik]
 
         for snap in b.insert or ():
-            k = snap[m.key_field.name]
+            k = snap[kf_sn]
             kt = k.__class__
             if kt is _AutoKey:
-                raise NotImplementedError
+                ak = len(t.snaps) + 1
+                while ak in t.snaps:
+                    ak += 1
+                iak[k] = ak
+                k = ak
+                snap[kf_sn] = k
             else:
                 check.not_in(kt, WRAPPER_TYPES)
             check.not_in(k, t.snaps)
@@ -166,7 +176,7 @@ class InMemoryStore(Store):
             index(k, snap)
 
         for k, snap in b.update or ():
-            check.not_in(m.key_field.name, snap)
+            check.not_in(kf_sn, snap)
             kt = k.__class__
             check.not_in(kt, WRAPPER_TYPES)
             x = t.snaps[k]
@@ -180,4 +190,6 @@ class InMemoryStore(Store):
             del t.snaps[k]
             deindex(k, snap)
 
-        return self.FlushResult()
+        return self.FlushResult(
+            inserted_auto_keys=iak or None,
+        )

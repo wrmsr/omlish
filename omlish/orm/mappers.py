@@ -149,7 +149,7 @@ class Mapper(ta.Generic[K, T]):
         if ft is KeyField:
             check.state(vk)
             if vt is _AutoKey:
-                raise NotImplementedError
+                pass
             else:
                 v = v.k
 
@@ -160,7 +160,7 @@ class Mapper(ta.Generic[K, T]):
                 check.state(vr)
                 v = v.k
                 if vt is _AutoKey:
-                    raise NotImplementedError
+                    pass
                 else:
                     v = v.k
 
