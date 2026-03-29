@@ -159,7 +159,7 @@ class Mapper(ta.Generic[K, T]):
             else:
                 check.state(vr)
                 v = v.k
-                if vt is _AutoKey:
+                if v.__class__ is _AutoKey:
                     pass
                 else:
                     v = v.k
