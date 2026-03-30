@@ -166,8 +166,8 @@ class ChatApp(
         self.call_next(self._drain_append_stream_ai_message_content_buffer)
 
     async def _drain_append_stream_ai_message_content_buffer(self) -> None:
-        for mu, cc in (await self._append_stream_ai_message_content_buffer.swap()):
-            await self._messages_container.append_stream_ai_message_content(mu, cc)
+        parts = await self._append_stream_ai_message_content_buffer.swap()
+        await self._messages_container.append_stream_ai_message_content(*parts)
 
     ##
     # Chat events

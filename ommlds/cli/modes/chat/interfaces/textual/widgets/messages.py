@@ -491,33 +491,39 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
 
     #
 
-    async def append_stream_ai_message_content(self, message_uuid: uuid.UUID, content: str) -> None:
-        if (msg := self._messages_by_uuid.get(message_uuid)) is None:
-            aim = StreamAiMessage(content, message_uuid=message_uuid)
+    async def append_stream_ai_message_content(self, *parts: tuple[uuid.UUID, str]) -> None:
+        mount_messages = False
+        refresh = False
+        scroll_to_bottom = False
 
-            self._messages_by_uuid[message_uuid] = aim
+        for message_uuid, content in parts:
+            if (msg := self._messages_by_uuid.get(message_uuid)) is None:
+                aim = StreamAiMessage(content, message_uuid=message_uuid)
 
-            await self.enqueue_mount_messages(aim)
+                self._messages_by_uuid[message_uuid] = aim
 
+                await self.enqueue_mount_messages(aim)
+
+                mount_messages = True
+                refresh = True
+
+            else:
+                aim = check.isinstance(msg, StreamAiMessage)
+
+                if not aim.is_mounted:
+                    await aim.append_stream_content(content)
+
+                else:
+                    scroll_to_bottom |= self._is_messages_at_bottom()
+
+                    await aim.append_stream_content(content)
+
+        if mount_messages:
             self.call_later(self.mount_messages)
-
-            self.refresh()
-
-            return
-
-        aim = check.isinstance(msg, StreamAiMessage)
-
-        if not aim.is_mounted:
-            await aim.append_stream_content(content)
-
-            return
-
-        was_at_bottom = self._is_messages_at_bottom()
-
-        await aim.append_stream_content(content)
-
-        if was_at_bottom:
+        if scroll_to_bottom:
             self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
+        if refresh:
+            self.refresh()
 
     async def finalize_stream_ai_message(self, message_uuid: uuid.UUID) -> None:
         if (msg := self._messages_by_uuid.get(message_uuid)) is None:
