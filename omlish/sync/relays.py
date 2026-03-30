@@ -1,7 +1,10 @@
 # ruff: noqa: UP006 UP043 UP045
 # @omlish-lite
+import abc
 import threading
 import typing as ta
+
+from ..lite.abstract import Abstract
 
 
 T = ta.TypeVar('T')
@@ -10,10 +13,22 @@ T = ta.TypeVar('T')
 ##
 
 
-class SyncBufferRelay(ta.Generic[T]):
+class BufferRelay(Abstract, ta.Generic[T]):
+    @abc.abstractmethod
+    def push(self, *vs: T) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def swap(self) -> ta.Sequence[T]:
+        raise NotImplementedError
+
+
+##
+
+
+class WakingBufferRelay(BufferRelay[T]):
     def __init__(
             self,
-            *,
             wake_fn: ta.Callable[[], None],
     ) -> None:
         super().__init__()
@@ -21,7 +36,7 @@ class SyncBufferRelay(ta.Generic[T]):
         self._wake_fn = wake_fn
 
         self._lock = threading.Lock()
-        self._buffer: SyncBufferRelay._Buffer = SyncBufferRelay._Buffer()
+        self._buffer: WakingBufferRelay._Buffer = WakingBufferRelay._Buffer()
 
     class _Buffer:
         def __init__(self) -> None:
@@ -42,5 +57,5 @@ class SyncBufferRelay(ta.Generic[T]):
 
     def swap(self) -> ta.Sequence[T]:
         with self._lock:
-            buf, self._buffer = self._buffer, SyncBufferRelay._Buffer()
+            buf, self._buffer = self._buffer, WakingBufferRelay._Buffer()
         return buf.lst

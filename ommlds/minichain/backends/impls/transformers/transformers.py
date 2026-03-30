@@ -10,7 +10,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
-from omlish.asyncs.asyncio.relays import AsyncioSyncBufferRelay
+from omlish.asyncs.asyncio.relays import AsyncioSyncToAsyncBufferRelay
 
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
@@ -242,7 +242,7 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
             for m in request.v
         ]
 
-        relay: AsyncioSyncBufferRelay = AsyncioSyncBufferRelay()
+        relay: AsyncioSyncToAsyncBufferRelay = AsyncioSyncToAsyncBufferRelay()
 
         def streamer_callback(text: str, *, stream_end: bool) -> None:
             if text or stream_end:

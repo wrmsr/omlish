@@ -4,7 +4,7 @@ import typing as ta
 
 import transformers as tfm
 
-from omlish.asyncs.asyncio.relays import AsyncioSyncBufferRelay
+from omlish.asyncs.asyncio.relays import AsyncioSyncToAsyncBufferRelay
 
 from ...filecache import file_cache_patch_context
 from ...hacks import disable_mistral_bullshit
@@ -47,7 +47,7 @@ async def _a_main() -> None:
             add_generation_prompt=True,
         )
 
-        relay: AsyncioSyncBufferRelay = AsyncioSyncBufferRelay()
+        relay: AsyncioSyncToAsyncBufferRelay = AsyncioSyncToAsyncBufferRelay()
 
         def streamer_callback(text: str, *, stream_end: bool) -> None:
             if text or stream_end:

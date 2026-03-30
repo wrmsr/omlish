@@ -3,8 +3,8 @@
 import asyncio
 import typing as ta
 
-from ...sync.relays import SyncBufferRelay
-from ..relays import AsyncSyncBufferRelay
+from ...sync.relays import WakingBufferRelay
+from ..relays import SyncToAsyncBufferRelay
 
 
 T = ta.TypeVar('T')
@@ -14,7 +14,7 @@ T = ta.TypeVar('T')
 
 
 @ta.final
-class AsyncioSyncBufferRelay(AsyncSyncBufferRelay[T]):
+class AsyncioSyncToAsyncBufferRelay(SyncToAsyncBufferRelay[T]):
     def __init__(
             self,
             *,
@@ -28,8 +28,8 @@ class AsyncioSyncBufferRelay(AsyncSyncBufferRelay[T]):
             loop = asyncio.get_running_loop()
         self._loop = loop
 
-        self._relay: SyncBufferRelay[T] = SyncBufferRelay(
-            wake_fn=lambda: loop.call_soon_threadsafe(event.set),  # type: ignore[arg-type]
+        self._relay: WakingBufferRelay[T] = WakingBufferRelay(
+            lambda: loop.call_soon_threadsafe(event.set),  # type: ignore[arg-type]
         )
 
     def push(self, *vs: T) -> None:
