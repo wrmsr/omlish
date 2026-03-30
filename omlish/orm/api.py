@@ -7,6 +7,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
 from ..text import inflect
+from .backrefs import Backref
 from .codecs import Codec
 from .fields import Field
 from .fields import KeyField
@@ -96,6 +97,7 @@ def mapper(
         *,
         store_name: str | None = None,
         indexes: ta.Sequence[Index | str | ta.Sequence[str]] | None = None,
+        backrefs: ta.Sequence[Backref] | None = None,
 ) -> Mapper:
     check.isinstance(cls, type)
 
@@ -147,6 +149,7 @@ def mapper(
         store_name,
         fields,
         indexes=index_lst,
+        backrefs=backrefs,
     )
 
 
@@ -171,6 +174,12 @@ def dataclass_mapper(
             backref_binding=df,
         ))
 
+    backrefs: list[Backref] = []
+
+    for cdf in dc_rfl.fields_inspection.cls_fields.values():
+        if isinstance(br := cdf.default, Backref):
+            backrefs.append(br)
+
     #
 
     return mapper(
@@ -178,6 +187,7 @@ def dataclass_mapper(
         fields,
         store_name=store_name,
         indexes=indexes,
+        backrefs=backrefs,
     )
 
 

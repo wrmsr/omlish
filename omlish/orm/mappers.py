@@ -3,6 +3,7 @@ import typing as ta
 
 from .. import check
 from .. import collections as col
+from .backrefs import Backref
 from .fields import Field
 from .fields import KeyField
 from .fields import RefField
@@ -35,6 +36,7 @@ class Mapper(ta.Generic[K, T]):
             fields: ta.Sequence[Field],
             *,
             indexes: ta.Sequence[Index] | None = None,
+            backrefs: ta.Sequence[Backref] | None = None,
     ) -> None:
         super().__init__()
 
@@ -42,13 +44,18 @@ class Mapper(ta.Generic[K, T]):
         self._cls = cls
         self._store_name = check.non_empty_str(store_name)
 
-        self._fields = fields = check.not_empty(list(fields))
+        self._fields = fields = list(fields) if fields is not None else []
         self._indexes = indexes = list(indexes) if indexes is not None else []
+        self._backrefs = backrefs = list(backrefs) if backrefs is not None else []
 
         for f in fields:
+            check.isinstance(f, Field)
             f._set_mapper(self)
         for idx in indexes:
+            check.isinstance(idx, Index)
             idx._set_mapper(self)
+        for br in backrefs:
+            check.isinstance(br, Backref)
 
         self._fields_by_name: ta.Mapping[str, Field] = col.make_map(((f.name, f) for f in fields), strict=True)
         self._fields_by_store_name: ta.Mapping[str, Field] = col.make_map(((f.store_name, f) for f in fields), strict=True)  # noqa
@@ -83,6 +90,10 @@ class Mapper(ta.Generic[K, T]):
     @property
     def indexes(self) -> ta.Sequence[Index]:
         return self._indexes
+
+    @property
+    def backrefs(self) -> ta.Sequence[Backref]:
+        return self._backrefs
 
     #
 

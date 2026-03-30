@@ -87,3 +87,7 @@ class Registry:
 
     def mapper_for_obj(self, obj: ta.Any) -> Mapper:
         return self.mapper_for_cls(type(obj))
+
+    #
+
+    # def field_for_backref(self, br: Backref):
