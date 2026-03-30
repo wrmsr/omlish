@@ -4,6 +4,7 @@ import typing as ta
 
 from .. import check
 from .. import lang
+from .backrefs import _Backref
 from .keys import _KEY_TYPES
 from .keys import Key
 from .keys import _AutoKey
@@ -346,6 +347,9 @@ class Session:
     def _get_lazy_ref_obj(self, lr: _LazyRef) -> ta.Any:
         # TODO: writeback?
         return check.not_none(self.get(lr._cls, lr._k))
+
+    def _get_backref_objs(self, br: _Backref) -> ta.Sequence[ta.Any]:
+        raise NotImplementedError
 
     #
 

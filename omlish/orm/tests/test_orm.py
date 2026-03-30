@@ -1,3 +1,5 @@
+import typing as ta
+
 from ... import dataclasses as dc
 from ... import orm
 
@@ -6,40 +8,60 @@ from ... import orm
 
 
 @dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs=True)
 class BusinessCategory:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+
     business: orm.Ref['Business', int]
+
     tag: str
 
 
 @dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs=True)
 class Business:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+
     name: str
+
+    categories: ta.ClassVar[orm.Backref[BusinessCategory]] = orm.backref(lambda: BusinessCategory.business)
+    reviews: ta.ClassVar[orm.Backref['Review']] = orm.backref(lambda: Review.business)
 
 
 @dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs=True)
 class User:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+
     name: str
 
     _: dc.KW_ONLY
 
     favorite_business: orm.Ref[Business, int] | None = None
 
+    src_relations: ta.ClassVar[orm.Backref['UserRelation']] = orm.backref(lambda: UserRelation.src)
+    dst_relations: ta.ClassVar[orm.Backref['UserRelation']] = orm.backref(lambda: UserRelation.dst)
+
+    reviews: ta.ClassVar[orm.Backref['Review']] = orm.backref(lambda: Review.user)
+
 
 @dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs=True)
 class UserRelation:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+
     src: orm.Ref[User, int]
     dst: orm.Ref[User, int]
 
 
 @dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs=True)
 class Review:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+
     business: orm.Ref[Business, int]
     user: orm.Ref[User, int]
+
     text: str
 
 

@@ -16,6 +16,12 @@ from .api import (  # noqa
     query,
 )
 
+from .backrefs import (  # noqa
+    Backref,
+
+    backref,
+)
+
 from .codecs import (  # noqa
     Codec,
     NopCodec,
