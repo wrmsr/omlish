@@ -1,34 +1,29 @@
 # import abc
-# import typing as ta
 #
 # from omlish import lang
 #
-# from .....transform.general import CompositeGeneralTransform
-# from .....transform.general import FnGeneralTransform
-# from .....transform.general import GeneralTransform
-# from .....transform.general import TypeFilteredGeneralTransform
-# from ..types import AiDeltas
+# from .....transform.sequence import CompositeSequenceTransform
+# from .....transform.sequence import FnSequenceTransform
+# from .....transform.sequence import SequenceTransform
+# from ...stream.types import AiDelta
+# from ...stream.types import AiDeltas
 #
 #
 # ##
 #
 #
-# class AiDeltasTransform(GeneralTransform[AiDeltas], lang.Abstract):
+# class AiDeltasTransform(SequenceTransform[AiDelta], lang.Abstract):
 #     @abc.abstractmethod
-#     def transform(self, d: AiDeltas) -> ta.Sequence[AiDeltas]:
+#     def transform(self, d: AiDeltas) -> AiDeltas:
 #         raise NotImplementedError
 #
 #
 # ##
 #
 #
-# class CompositeAiDeltasTransform(CompositeGeneralTransform[AiDeltas], AiDeltasTransform):
+# class CompositeAiDeltasTransform(CompositeSequenceTransform[AiDelta], AiDeltasTransform):
 #     pass
 #
 #
-# class FnAiDeltasTransform(FnGeneralTransform[AiDeltas], AiDeltasTransform):
-#     pass
-#
-#
-# class TypeFilteredAiDeltasTransform(TypeFilteredGeneralTransform[AiDeltas], AiDeltasTransform):
+# class FnAiDeltasTransform(FnSequenceTransform[AiDelta], AiDeltasTransform):
 #     pass

@@ -7,7 +7,12 @@ from ....transform.general import CompositeGeneralTransform
 from ....transform.general import FnGeneralTransform
 from ....transform.general import GeneralTransform
 from ....transform.general import TypeFilteredGeneralTransform
+from ....transform.sequence import CompositeSequenceTransform
+from ....transform.sequence import FnSequenceTransform
+from ....transform.sequence import GeneralTransformSequenceTransform
+from ....transform.sequence import SequenceTransform
 from ..types import AiDelta
+from ..types import AiDeltas
 
 
 ##
@@ -19,7 +24,7 @@ class AiDeltaTransform(GeneralTransform[AiDelta], lang.Abstract):
         raise NotImplementedError
 
 
-##
+#
 
 
 class CompositeAiDeltaTransform(CompositeGeneralTransform[AiDelta], AiDeltaTransform):
@@ -31,4 +36,28 @@ class FnAiDeltaTransform(FnGeneralTransform[AiDelta], AiDeltaTransform):
 
 
 class TypeFilteredAiDeltaTransform(TypeFilteredGeneralTransform[AiDelta], AiDeltaTransform):
+    pass
+
+
+##
+
+
+class AiDeltasTransform(SequenceTransform[AiDelta], lang.Abstract):
+    @abc.abstractmethod
+    def transform(self, ds: AiDeltas) -> AiDeltas:
+        raise NotImplementedError
+
+
+#
+
+
+class CompositeAiDeltasTransform(CompositeSequenceTransform[AiDelta], AiDeltasTransform):
+    pass
+
+
+class FnAiDeltasTransform(FnSequenceTransform[AiDelta], AiDeltasTransform):
+    pass
+
+
+class AiDeltaTransformAiDeltasTransform(GeneralTransformSequenceTransform[AiDelta], AiDeltasTransform):
     pass
