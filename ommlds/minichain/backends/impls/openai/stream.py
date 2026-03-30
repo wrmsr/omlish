@@ -25,7 +25,7 @@ from ....standard import ApiKey
 from ....stream.services import StreamOption
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
-from .format import build_mc_ai_delta
+from .format import build_mc_ai_deltas
 from .names import CHAT_MODEL_NAMES
 
 
@@ -76,7 +76,7 @@ class OpenaiChatChoicesStreamService:
             return [None]
 
         return [AiChoicesDeltas([
-            AiChoiceDeltas([build_mc_ai_delta(choice.delta)])
+            AiChoiceDeltas(build_mc_ai_deltas(choice.delta))
             for choice in ccc.choices
         ])]
 

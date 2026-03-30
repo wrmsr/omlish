@@ -87,6 +87,8 @@ class ChatApp(
         ),
     ]
 
+    AUTO_FOCUS = '.input-container'
+
     def __init__(
             self,
             *,
