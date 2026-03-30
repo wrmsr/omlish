@@ -5,6 +5,8 @@ from omlish import check
 from ...chat.messages import Chat
 from ...chat.metadata import MessageUuid
 from ...chat.stream.types import AiDelta
+from ...chat.transform.chats import MessageTransformChatTransform
+from ...chat.transform.metadata import MessageUuidAddingMessageTransform
 from .types import AiChatGenerator
 from .types import GenerateAiChatArgs
 from .types import StreamAiChatGenerator
@@ -58,9 +60,12 @@ class UuidAddingStreamAiChatGenerator(StreamAiChatGenerator):
 
         out = await self._wrapped.generate_ai_chat_streamed(args, delta_callback=inner)
 
-        msg = check.single(out)
-        check.not_in(MessageUuid, msg.metadata)
-        msg = msg.with_metadata(MessageUuid(args.message_uuid))
-        out = [msg]
+        check.not_empty(out)
+
+        out = MessageTransformChatTransform(
+            MessageUuidAddingMessageTransform(
+                check_not_already_present=True,
+            ),
+        ).transform(out)
 
         return out

@@ -14758,29 +14758,38 @@ def _process_dataclass__a89375a36223a889920e8b93b4e42846a4cfffa0():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('uuid_factory',)), EqPlan(fields=('uuid_factory',)), FrozenPlan(fields=('uuid_fact"
-        "ory',), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('uuid_factory',), cache=False), Init"
-        "Plan(fields=(InitPlan.Field(name='uuid_factory', annotation=OpRef(name='init.fields.0.annotation'), default=No"
-        "ne, default_factory=OpRef(name='init.fields.0.default_factory'), init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_params=('uuid_factory',), "
-        "kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fi"
-        "elds=(ReprPlan.Field(name='uuid_factory', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('uuid_factory', 'check_not_already_present')), EqPlan(fields=('uuid_factory', 'che"
+        "ck_not_already_present')), FrozenPlan(fields=('uuid_factory', 'check_not_already_present'), allow_dynamic_dund"
+        "er_attrs=False), HashPlan(action='add', fields=('uuid_factory', 'check_not_already_present'), cache=False), In"
+        "itPlan(fields=(InitPlan.Field(name='uuid_factory', annotation=OpRef(name='init.fields.0.annotation'), default="
+        "None, default_factory=OpRef(name='init.fields.0.default_factory'), init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='check_not_already_present', "
+        "annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        "), self_param='self', std_params=('uuid_factory',), kw_only_params=('check_not_already_present',), frozen=True"
+        ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='uui"
+        "d_factory', kw_only=False, fn=None), ReprPlan.Field(name='check_not_already_present', kw_only=True, fn=None)),"
+        " id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='19ef2cebd031d990f735e4c579538f81f6196e5e',
+    plan_repr_sha1='e30bbf6583f0c07b205da9e025567d24f6d42bcc',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default_factory',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
     cls_names=(
         ('ommlds.minichain.chat.transform.metadata', 'MessageUuidAddingMessageTransform'),
     ),
 )
-def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
+def _process_dataclass__e30bbf6583f0c07b205da9e025567d24f6d42bcc():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default_factory,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -14800,6 +14809,7 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 uuid_factory=self.uuid_factory,
+                check_not_already_present=self.check_not_already_present,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -14813,7 +14823,8 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.uuid_factory == other.uuid_factory
+                self.uuid_factory == other.uuid_factory and
+                self.check_not_already_present == other.check_not_already_present
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -14823,6 +14834,7 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
 
         __dataclass___setattr_frozen_fields = {
             'uuid_factory',
+            'check_not_already_present',
         }
 
         def __setattr__(self, name, value):
@@ -14840,6 +14852,7 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
 
         __dataclass___delattr_frozen_fields = {
             'uuid_factory',
+            'check_not_already_present',
         }
 
         def __delattr__(self, name):
@@ -14858,6 +14871,7 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
         def __hash__(self):
             return hash((
                 self.uuid_factory,
+                self.check_not_already_present,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -14866,10 +14880,13 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
         def __init__(
             self,
             uuid_factory: __dataclass__init__fields__0__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+            *,
+            check_not_already_present: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
             if uuid_factory is __dataclass__HAS_DEFAULT_FACTORY:
                 uuid_factory = __dataclass__init__fields__0__default_factory()
             __dataclass__object_setattr(self, 'uuid_factory', uuid_factory)
+            __dataclass__object_setattr(self, 'check_not_already_present', check_not_already_present)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -14880,6 +14897,7 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
         def __repr__(self):
             parts = []
             parts.append(f"uuid_factory={self.uuid_factory!r}")
+            parts.append(f"check_not_already_present={self.check_not_already_present!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

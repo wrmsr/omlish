@@ -5,6 +5,7 @@ from .configs import FacadeConfig
 
 
 with lang.auto_proxy_import(globals()):
+    from . import chat as _chat
     from . import facade as _facade
     from . import ui as _ui
     from .commands import inject as _commands
@@ -20,6 +21,12 @@ def bind_facade(cfg: FacadeConfig = FacadeConfig()) -> inj.Elements:
 
     els.extend([
         _commands.bind_commands(cfg.commands),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind_async_late(_chat.UserInputSender, _chat.UserInputSenderGetter),
     ])
 
     #

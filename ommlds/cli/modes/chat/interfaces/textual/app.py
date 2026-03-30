@@ -296,27 +296,33 @@ class ChatApp(
     ##
     # Input
 
+    async def send_user_input(self, s: str, *, no_echo: bool = False) -> None:
+        input_uuid = uuid.uuid4()
+
+        if not no_echo:
+            await self._messages_container.mount_messages(
+                UserMessage(
+                    s,
+                    message_uuid=input_uuid,
+                ),
+            )
+
+            await self._input_history_manager.add(s)
+
+        await self._chat_action_queue.put(
+            ChatApp.UserInput(
+                s,
+                input_uuid=input_uuid,
+            ),
+        )
+
     @tx.on(InputTextArea.Submitted)
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._input_container.input_text_area.clear()
 
-        input_uuid = uuid.uuid4()
-
-        await self._messages_container.mount_messages(
-            UserMessage(
-                event.text,
-                message_uuid=input_uuid,
-            ),
-        )
-
         await self._input_history_manager.add(event.text)
 
-        await self._chat_action_queue.put(
-            ChatApp.UserInput(
-                event.text,
-                input_uuid=input_uuid,
-            ),
-        )
+        await self.send_user_input(event.text)
 
     @tx.on(tx.Key)
     async def on_key(self, event: tx.Key) -> None:

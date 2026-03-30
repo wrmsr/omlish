@@ -46,7 +46,13 @@ class CreatedAtAddingMessageTransform(MessageTransform):
 class MessageUuidAddingMessageTransform(MessageTransform):
     uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid4)
 
+    _: dc.KW_ONLY
+
+    check_not_already_present: bool = False
+
     def transform(self, m: Message) -> Chat:
+        if self.check_not_already_present:
+            check.not_in(MessageUuid, m.metadata)
         if MessageUuid not in m.metadata:
             m = m.with_metadata(MessageUuid(self.uuid_factory()))
         return [m]

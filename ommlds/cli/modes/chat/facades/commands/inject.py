@@ -9,6 +9,7 @@ from .injection import commands
 with lang.auto_proxy_import(globals()):
     from . import manager as _manager
     from . import permissions as _permissions
+    from . import send as _send
     from . import simple as _simple
 
 
@@ -31,9 +32,10 @@ def bind_commands(cfg: CommandsConfig = CommandsConfig()) -> inj.Elements:
     #
 
     for cmd_cls in [
+        _permissions.PermissionsCommand,
+        _send.SendCommand,
         _simple.EchoCommand,
         _simple.QuitCommand,
-        _permissions.PermissionsCommand,
     ]:
         els.extend([
             inj.bind(cmd_cls, singleton=True),
@@ -45,7 +47,7 @@ def bind_commands(cfg: CommandsConfig = CommandsConfig()) -> inj.Elements:
     if aex := cfg.autoexec:
         async def run_autoexec_commands(cm: _manager.CommandsManager) -> None:
             for cmd in aex:
-                await cm.run_command_text(cmd)
+                await cm.run_command_text(cmd.removeprefix('/'))
 
         els.append(
             mc.drivers.injection.phase_callbacks().bind_item(to_fn=inj.target(
