@@ -8,8 +8,8 @@ from ...messages import UserMessage
 from ...services import ChatRequest
 from ...services import ChatResponse
 from ...services import static_check_is_chat_service
-from ...transform.chats import MessageTransformChatTransform
 from ...transform.services import ResponseChatTransformingChatService
+from ...transform.types import MessageTransformChatTransform
 from ..parsing import ToolExecParsingMessageTransform
 
 

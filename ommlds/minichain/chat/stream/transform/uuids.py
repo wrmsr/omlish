@@ -1,5 +1,5 @@
-import uuid
 import typing as ta
+import uuid
 
 from ...metadata import MessageUuid
 from ..types import AiDelta

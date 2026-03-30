@@ -13,7 +13,7 @@ from ..messages import MessageOriginal
 from ..metadata import MessageMetadata
 from ..metadata import MessageUuid
 from ..metadata import TurnUuid
-from .messages import MessageTransform
+from .types import MessageTransform
 
 
 ##

@@ -5,11 +5,11 @@ from omlish import inject as inj
 from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.stream.services import ChatChoicesStreamService
 from ...chat.tools.types import Tool
-from ...chat.transform.chats import MessageTransformChatTransform
-from ...chat.transform.messages import CompositeMessageTransform
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
 from ...chat.transform.metadata import MessageUuidAddingMessageTransform
 from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
+from ...chat.transform.types import CompositeMessageTransform
+from ...chat.transform.types import MessageTransformChatTransform
 from ...tools.execution.catalog import ToolCatalog
 from ...wrappers.uuids import RequestResponseUuidAddingService
 from .configs import AiConfig

@@ -1,6 +1,6 @@
 import typing as ta
 
-from ...chat.transform.chats import ChatTransform
+from ...chat.transform.types import ChatTransform
 
 
 ##

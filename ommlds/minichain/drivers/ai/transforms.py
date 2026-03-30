@@ -2,7 +2,7 @@ import typing as ta
 
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
-from ...chat.transform.chats import ChatTransform
+from ...chat.transform.types import ChatTransform
 from .types import AiChatGenerator
 from .types import GenerateAiChatArgs
 from .types import StreamAiChatGenerator

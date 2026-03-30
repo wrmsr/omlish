@@ -2,11 +2,11 @@ from omlish import check
 from omlish import inject as inj
 
 from ...chat.messages import UserMessage
-from ...chat.transform.chats import MessageTransformChatTransform
-from ...chat.transform.messages import CompositeMessageTransform
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
 from ...chat.transform.metadata import MessageUuidAddingMessageTransform
 from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
+from ...chat.transform.types import CompositeMessageTransform
+from ...chat.transform.types import MessageTransformChatTransform
 from ..actions import SendUserMessagesAction
 from ..inject import system_message_providers
 from ..phases.injection import phase_callbacks

@@ -4,7 +4,7 @@ from omlish import lang
 
 from ..messages import Message
 from ..visitors import MessageVisitor
-from .messages import MessageTransform
+from .types import MessageTransform
 
 
 ##

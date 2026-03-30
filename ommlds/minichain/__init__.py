@@ -142,22 +142,18 @@ with _lang.auto_proxy_init(
         execute_tool_use,
     )
 
-    from .chat.transform.messages import (  # noqa
+    from .chat.transform.types import (  # noqa
         MessageTransform,
 
         CompositeMessageTransform,
         FnMessageTransform,
         TypeFilteredMessageTransform,
-    )
 
-    from .chat.transform.chats import (  # noqa
         ChatTransform,
 
         CompositeChatTransform,
         FnChatTransform,
-
         MessageTransformChatTransform,
-        LastMessageTransformChatTransform,
     )
 
     from .chat.transform.content import (  # noqa

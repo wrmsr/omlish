@@ -7,9 +7,9 @@ from ...messages import UserMessage
 from ...services import ChatRequest
 from ...services import ChatResponse
 from ...services import static_check_is_chat_service
-from ..chats import MessageTransformChatTransform
-from ..messages import FnMessageTransform
 from ..services import ResponseChatTransformingChatService
+from ..types import FnMessageTransform
+from ..types import MessageTransformChatTransform
 
 
 @static_check_is_chat_service
