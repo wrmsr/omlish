@@ -4,7 +4,7 @@ import typing as ta
 
 import transformers as tfm
 
-from omlish.asyncs.asyncio.sync import AsyncioSyncBufferRelay
+from omlish.asyncs.asyncio.relays import AsyncioSyncBufferRelay
 
 from ...filecache import file_cache_patch_context
 from ...hacks import disable_mistral_bullshit

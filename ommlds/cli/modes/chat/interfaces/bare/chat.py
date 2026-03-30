@@ -17,7 +17,7 @@ class BareUserInputSender(UserInputSender):
 
     async def send_user_input(self, text: str, *, no_echo: bool = False) -> None:
         if not no_echo:
-            print('>' + text)
+            print('> ' + text)
 
         print()
         print('<')

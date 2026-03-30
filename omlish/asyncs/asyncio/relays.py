@@ -3,8 +3,8 @@
 import asyncio
 import typing as ta
 
-from ...sync.buffers import SyncBufferRelay
-from ..sync import AsyncSyncBufferRelay
+from ...sync.relays import SyncBufferRelay
+from ..relays import AsyncSyncBufferRelay
 
 
 T = ta.TypeVar('T')

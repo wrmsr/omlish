@@ -4,10 +4,6 @@ from .. import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
-    from .buffers import (  # noqa
-        SyncBufferRelay,
-    )
-
     from .conddeque import (  # noqa
         ConditionDeque,
     )
@@ -24,4 +20,8 @@ with _lang.auto_proxy_init(globals()):
 
     from .objectpools import (  # noqa
         ObjectPool,
+    )
+
+    from .relays import (  # noqa
+        SyncBufferRelay,
     )

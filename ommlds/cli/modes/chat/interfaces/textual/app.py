@@ -162,6 +162,41 @@ class ChatApp(
 
     _chat_event_queue_task: asyncio.Task[None] | None = None
 
+    async def _handle_chat_queue_event(self, ev: ta.Any) -> None:
+        if isinstance(ev, mc.drivers.AiMessagesEvent):
+            if not ev.streamed:
+                wx: list[Message] = []
+
+                for ai_msg in ev.chat:
+                    if isinstance(ai_msg, mc.AiMessage):
+                        wx.append(
+                            StaticAiMessage(
+                                check.isinstance(ai_msg.c, str),
+                                markdown=True,
+                                message_uuid=ai_msg.metadata[mc.MessageUuid].v,
+                            ),
+                        )
+
+                if wx:
+                    await self._messages_container.enqueue_mount_messages(*wx)
+                    self.call_later(self._messages_container.mount_messages)
+
+        elif isinstance(ev, mc.drivers.AiStreamBeginEvent):
+            # self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa
+            pass
+
+        elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
+            if isinstance(ev.delta, mc.ContentAiDelta):
+                cc = check.isinstance(ev.delta.c, str)
+                # FIXME: append to internal buffer
+                self.call_later(self._messages_container.append_stream_ai_message_content, ev.message_uuid, cc)  # noqa
+
+            elif isinstance(ev.delta, mc.ToolUseAiDelta):
+                pass
+
+        elif isinstance(ev, mc.drivers.AiStreamEndEvent):
+            self.call_later(self._messages_container.finalize_stream_ai_message, ev.message_uuid)
+
     @logs.async_exception_logging(alog, BaseException)
     async def _chat_event_queue_task_main(self) -> None:
         while True:
@@ -171,38 +206,7 @@ class ChatApp(
 
             await alog.debug(lambda: f'Got chat event: {ev!r}')
 
-            if isinstance(ev, mc.drivers.AiMessagesEvent):
-                if not ev.streamed:
-                    wx: list[Message] = []
-
-                    for ai_msg in ev.chat:
-                        if isinstance(ai_msg, mc.AiMessage):
-                            wx.append(
-                                StaticAiMessage(
-                                    check.isinstance(ai_msg.c, str),
-                                    markdown=True,
-                                    message_uuid=ai_msg.metadata[mc.MessageUuid].v,
-                                ),
-                            )
-
-                    if wx:
-                        await self._messages_container.enqueue_mount_messages(*wx)
-                        self.call_later(self._messages_container.mount_messages)
-
-            elif isinstance(ev, mc.drivers.AiStreamBeginEvent):
-                # self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa
-                pass
-
-            elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
-                if isinstance(ev.delta, mc.ContentAiDelta):
-                    cc = check.isinstance(ev.delta.c, str)
-                    self.call_later(self._messages_container.append_stream_ai_message_content, ev.message_uuid, cc)  # noqa
-
-                elif isinstance(ev.delta, mc.ToolUseAiDelta):
-                    pass
-
-            elif isinstance(ev, mc.drivers.AiStreamEndEvent):
-                self.call_later(self._messages_container.finalize_stream_ai_message, ev.message_uuid)
+            await self._handle_chat_queue_event(ev)
 
     ##
     # Chat actions
@@ -273,14 +277,14 @@ class ChatApp(
         check.state(self._chat_event_queue_task is None)
         self._chat_event_queue_task = asyncio.create_task(self._chat_event_queue_task_main())
 
-        await self._chat_driver.start()
-
         check.state(self._chat_action_queue_task is None)
         self._chat_action_queue_task = asyncio.create_task(self._chat_action_queue_task_main())
 
         self._input_container.input_text_area.focus()
 
         await self._messages_container.mount_messages()
+
+        self.call_after_refresh(self._chat_driver.start)
 
     async def on_unmount(self) -> None:
         if (cat := self._chat_action_queue_task) is not None:

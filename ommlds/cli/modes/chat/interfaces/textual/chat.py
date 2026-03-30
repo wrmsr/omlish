@@ -19,4 +19,5 @@ class TextualUserInputSender(UserInputSender):
         self._facade = facade
 
     async def send_user_input(self, text: str, *, no_echo: bool = False) -> None:
-        await (await self._app()).send_user_input(text, no_echo=no_echo)
+        app = await self._app()
+        app.call_later(app.send_user_input, text, no_echo=no_echo)
