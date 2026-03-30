@@ -20,8 +20,6 @@ class AiMessagesEvent(Event, lang.Final):
 
     streamed: bool = False
 
-    message_uuid: uuid.UUID | None = None
-
 
 #
 

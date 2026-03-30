@@ -3708,7 +3708,7 @@ def _process_dataclass__e28bbe95a5e6fa9335be8f6fa393bd08862be998():
     cls_names=(
         ('ommlds.minichain.backends.impls.anthropic.chat', 'FnContentTransform'),
         ('ommlds.minichain.chat.content', 'StringFnContentTransform'),
-        ('ommlds.minichain.chat.tools.ids', 'FnMessageTransform'),
+        ('ommlds.minichain.chat.tools.ids', 'FnGeneralTransform'),
         ('ommlds.minichain.chat.transform.chats', 'FnChatTransform'),
     ),
 )
@@ -13594,23 +13594,23 @@ def _process_dataclass__512f54ae8b68c29c74c7815b448db1e085d548b4():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('mts',)), EqPlan(fields=('mts',)), FrozenPlan(fields=('mts',), allow_dynamic_dunde"
-        "r_attrs=False), HashPlan(action='add', fields=('mts',), cache=False), InitPlan(fields=(InitPlan.Field(name='mt"
-        "s', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_"
-        "params=('mts',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns"
-        "=()), ReprPlan(fields=(ReprPlan.Field(name='mts', kw_only=False, fn=None),), id=False, terse=False, default_fn"
-        "=None)))"
+        "Plans(tup=(CopyPlan(fields=('ts',)), EqPlan(fields=('ts',)), FrozenPlan(fields=('ts',), allow_dynamic_dunder_a"
+        "ttrs=False), HashPlan(action='add', fields=('ts',), cache=False), InitPlan(fields=(InitPlan.Field(name='ts', a"
+        "nnotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_param"
+        "s=('ts',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), "
+        "ReprPlan(fields=(ReprPlan.Field(name='ts', kw_only=False, fn=None),), id=False, terse=False, default_fn=None))"
+        ")"
     ),
-    plan_repr_sha1='7c77afa1c0f5f02889fd2b827e06017e86ba5373',
+    plan_repr_sha1='7aa0c77816a80679651208a64d723952e216d065',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.tools.ids', 'CompositeMessageTransform'),
+        ('ommlds.minichain.chat.tools.ids', 'CompositeGeneralTransform'),
     ),
 )
-def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
+def _process_dataclass__7aa0c77816a80679651208a64d723952e216d065():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -13633,7 +13633,7 @@ def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                mts=self.mts,
+                ts=self.ts,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -13647,7 +13647,7 @@ def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.mts == other.mts
+                self.ts == other.ts
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -13656,7 +13656,7 @@ def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'mts',
+            'ts',
         }
 
         def __setattr__(self, name, value):
@@ -13673,7 +13673,7 @@ def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'mts',
+            'ts',
         }
 
         def __delattr__(self, name):
@@ -13691,7 +13691,7 @@ def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
 
         def __hash__(self):
             return hash((
-                self.mts,
+                self.ts,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -13699,9 +13699,9 @@ def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
 
         def __init__(
             self,
-            mts: __dataclass__init__fields__0__annotation,
+            ts: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'mts', mts)
+            __dataclass__object_setattr(self, 'ts', ts)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -13711,7 +13711,7 @@ def _process_dataclass__7c77afa1c0f5f02889fd2b827e06017e86ba5373():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"mts={self.mts!r}")
+            parts.append(f"ts={self.ts!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -13864,26 +13864,26 @@ def _process_dataclass__56dfe391de5b28798606c2e0e96f2f9f6f367b48():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('ty', 'mt')), EqPlan(fields=('ty', 'mt')), FrozenPlan(fields=('ty', 'mt'), allow_d"
-        "ynamic_dunder_attrs=False), HashPlan(action='add', fields=('ty', 'mt'), cache=False), InitPlan(fields=(InitPla"
-        "n.Field(name='ty', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='mt', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=Tr"
-        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='"
-        "self', std_params=('ty', 'mt'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=("
-        "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ty', kw_only=False, fn=None), ReprPlan.Field(name='"
-        "mt', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('ty', 't')), EqPlan(fields=('ty', 't')), FrozenPlan(fields=('ty', 't'), allow_dyna"
+        "mic_dunder_attrs=False), HashPlan(action='add', fields=('ty', 't'), cache=False), InitPlan(fields=(InitPlan.Fi"
+        "eld(name='ty', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='t', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self'"
+        ", std_params=('ty', 't'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
+        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ty', kw_only=False, fn=None), ReprPlan.Field(name='t', kw"
+        "_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='dd461b9bf78b0af6ae2af593dfd0f556db66339c',
+    plan_repr_sha1='df51b7d1de0f9f842f3c7c328814272743a295d9',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.tools.ids', 'TypeFilteredMessageTransform'),
+        ('ommlds.minichain.chat.tools.ids', 'TypeFilteredGeneralTransform'),
     ),
 )
-def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
+def _process_dataclass__df51b7d1de0f9f842f3c7c328814272743a295d9():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -13908,7 +13908,7 @@ def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 ty=self.ty,
-                mt=self.mt,
+                t=self.t,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -13923,7 +13923,7 @@ def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
                 return NotImplemented
             return (
                 self.ty == other.ty and
-                self.mt == other.mt
+                self.t == other.t
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -13933,7 +13933,7 @@ def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
 
         __dataclass___setattr_frozen_fields = {
             'ty',
-            'mt',
+            't',
         }
 
         def __setattr__(self, name, value):
@@ -13951,7 +13951,7 @@ def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
 
         __dataclass___delattr_frozen_fields = {
             'ty',
-            'mt',
+            't',
         }
 
         def __delattr__(self, name):
@@ -13970,7 +13970,7 @@ def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
         def __hash__(self):
             return hash((
                 self.ty,
-                self.mt,
+                self.t,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -13979,10 +13979,10 @@ def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
         def __init__(
             self,
             ty: __dataclass__init__fields__0__annotation,
-            mt: __dataclass__init__fields__1__annotation,
+            t: __dataclass__init__fields__1__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'ty', ty)
-            __dataclass__object_setattr(self, 'mt', mt)
+            __dataclass__object_setattr(self, 't', t)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -13993,7 +13993,7 @@ def _process_dataclass__dd461b9bf78b0af6ae2af593dfd0f556db66339c():
         def __repr__(self):
             parts = []
             parts.append(f"ty={self.ty!r}")
-            parts.append(f"mt={self.mt!r}")
+            parts.append(f"t={self.t!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -14636,7 +14636,7 @@ def _process_dataclass__d69d1885aa1de3f2cf7ba34fff19d7456c262eb5():
         '__dataclass__init__fields__0__default',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transform.metadata', 'CreatedAtAddingMessageTransform'),
+        ('ommlds.minichain.chat.transform.metadata', 'CreatedAtAddingGeneralTransform'),
     ),
 )
 def _process_dataclass__a89375a36223a889920e8b93b4e42846a4cfffa0():
@@ -18524,38 +18524,33 @@ def _process_dataclass__d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('uuid', 'chat', 'streamed', 'message_uuid')), EqPlan(fields=('uuid', 'chat', 'stre"
-        "amed', 'message_uuid')), FrozenPlan(fields=('uuid', 'chat', 'streamed', 'message_uuid'), allow_dynamic_dunder_"
-        "attrs=False), HashPlan(action='add', fields=('uuid', 'chat', 'streamed', 'message_uuid'), cache=False), InitPl"
-        "an(fields=(InitPlan.Field(name='uuid', annotation=OpRef(name='init.fields.0.annotation'), default=None, defaul"
-        "t_factory=OpRef(name='init.fields.0.default_factory'), init=True, override=False, field_type=FieldType.INSTANC"
-        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='chat', annotation=OpRef(name='init.field"
-        "s.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='streamed', annotation=OpRef(name='init.fi"
-        "elds.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='message"
-        "_uuid', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None)), self_param='self', std_params=('chat',), kw_only_params=('uuid', 'streamed', 'message_uuid'), froze"
-        "n=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(nam"
-        "e='chat', kw_only=False, fn=None), ReprPlan.Field(name='streamed', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='message_uuid', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('uuid', 'chat', 'streamed')), EqPlan(fields=('uuid', 'chat', 'streamed')), FrozenP"
+        "lan(fields=('uuid', 'chat', 'streamed'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('uu"
+        "id', 'chat', 'streamed'), cache=False), InitPlan(fields=(InitPlan.Field(name='uuid', annotation=OpRef(name='in"
+        "it.fields.0.annotation'), default=None, default_factory=OpRef(name='init.fields.0.default_factory'), init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='chat', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='streamed', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None)), self_param='self', std_params=('chat',), kw_only_params=('uuid', 'streamed'), frozen=True, "
+        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='chat'"
+        ", kw_only=False, fn=None), ReprPlan.Field(name='streamed', kw_only=True, fn=None)), id=False, terse=False, def"
+        "ault_fn=None)))"
     ),
-    plan_repr_sha1='81c8c618f475bff94dc79f329118efc9ce57eb15',
+    plan_repr_sha1='10cb55809e653ae13865ef0c4d693d6580186456',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default_factory',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
     ),
     cls_names=(
         ('ommlds.minichain.drivers._marshal', 'AiMessagesEvent'),
     ),
 )
-def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
+def _process_dataclass__10cb55809e653ae13865ef0c4d693d6580186456():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -18564,8 +18559,6 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -18587,7 +18580,6 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
                 uuid=self.uuid,
                 chat=self.chat,
                 streamed=self.streamed,
-                message_uuid=self.message_uuid,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -18603,8 +18595,7 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
             return (
                 self.uuid == other.uuid and
                 self.chat == other.chat and
-                self.streamed == other.streamed and
-                self.message_uuid == other.message_uuid
+                self.streamed == other.streamed
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -18616,7 +18607,6 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
             'uuid',
             'chat',
             'streamed',
-            'message_uuid',
         }
 
         def __setattr__(self, name, value):
@@ -18636,7 +18626,6 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
             'uuid',
             'chat',
             'streamed',
-            'message_uuid',
         }
 
         def __delattr__(self, name):
@@ -18657,7 +18646,6 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
                 self.uuid,
                 self.chat,
                 self.streamed,
-                self.message_uuid,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -18669,14 +18657,12 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
             *,
             uuid: __dataclass__init__fields__0__annotation = __dataclass__HAS_DEFAULT_FACTORY,
             streamed: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            message_uuid: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             if uuid is __dataclass__HAS_DEFAULT_FACTORY:
                 uuid = __dataclass__init__fields__0__default_factory()
             __dataclass__object_setattr(self, 'uuid', uuid)
             __dataclass__object_setattr(self, 'chat', chat)
             __dataclass__object_setattr(self, 'streamed', streamed)
-            __dataclass__object_setattr(self, 'message_uuid', message_uuid)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -18688,7 +18674,6 @@ def _process_dataclass__81c8c618f475bff94dc79f329118efc9ce57eb15():
             parts = []
             parts.append(f"chat={self.chat!r}")
             parts.append(f"streamed={self.streamed!r}")
-            parts.append(f"message_uuid={self.message_uuid!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -19958,42 +19943,34 @@ def _process_dataclass__c482f48571373aa3a652970539fae3894d726271():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('uuid', 'next_user_chat', 'ai_message_uuid')), EqPlan(fields=('uuid', 'next_user_c"
-        "hat', 'ai_message_uuid')), FrozenPlan(fields=('uuid', 'next_user_chat', 'ai_message_uuid'), allow_dynamic_dund"
-        "er_attrs=False), HashPlan(action='add', fields=('uuid', 'next_user_chat', 'ai_message_uuid'), cache=False), In"
-        "itPlan(fields=(InitPlan.Field(name='uuid', annotation=OpRef(name='init.fields.0.annotation'), default=None, de"
-        "fault_factory=OpRef(name='init.fields.0.default_factory'), init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_user_chat', annotation=OpRef(na"
-        "me='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ai_message_uuid', annotatio"
-        "n=OpRef(name='init.fields.2.annotation'), default=None, default_factory=OpRef(name='init.fields.2.default_fact"
-        "ory'), init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None))"
-        ", self_param='self', std_params=('next_user_chat',), kw_only_params=('uuid', 'ai_message_uuid'), frozen=True, "
-        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='next_"
-        "user_chat', kw_only=False, fn=None), ReprPlan.Field(name='ai_message_uuid', kw_only=True, fn=None)), id=False,"
-        " terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('uuid', 'next_user_chat')), EqPlan(fields=('uuid', 'next_user_chat')), FrozenPlan("
+        "fields=('uuid', 'next_user_chat'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('uuid', '"
+        "next_user_chat'), cache=False), InitPlan(fields=(InitPlan.Field(name='uuid', annotation=OpRef(name='init.field"
+        "s.0.annotation'), default=None, default_factory=OpRef(name='init.fields.0.default_factory'), init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ne"
+        "xt_user_chat', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='s"
+        "elf', std_params=('next_user_chat',), kw_only_params=('uuid',), frozen=True, slots=False, post_init_params=Non"
+        "e, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='next_user_chat', kw_only=False, fn=Non"
+        "e),), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='6ceb53e13af9fcb75871d18bac23f7e3f463ea77',
+    plan_repr_sha1='27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default_factory',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default_factory',
     ),
     cls_names=(
         ('ommlds.minichain.drivers.actions', 'SendUserMessagesAction'),
     ),
 )
-def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
+def _process_dataclass__27f01b8b2c3dd0711b4189b1bb0c01c3eb28287a():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default_factory,
         __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default_factory,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -20014,7 +19991,6 @@ def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
             return __dataclass__cls(  # noqa
                 uuid=self.uuid,
                 next_user_chat=self.next_user_chat,
-                ai_message_uuid=self.ai_message_uuid,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -20029,8 +20005,7 @@ def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
                 return NotImplemented
             return (
                 self.uuid == other.uuid and
-                self.next_user_chat == other.next_user_chat and
-                self.ai_message_uuid == other.ai_message_uuid
+                self.next_user_chat == other.next_user_chat
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -20041,7 +20016,6 @@ def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
         __dataclass___setattr_frozen_fields = {
             'uuid',
             'next_user_chat',
-            'ai_message_uuid',
         }
 
         def __setattr__(self, name, value):
@@ -20060,7 +20034,6 @@ def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
         __dataclass___delattr_frozen_fields = {
             'uuid',
             'next_user_chat',
-            'ai_message_uuid',
         }
 
         def __delattr__(self, name):
@@ -20080,7 +20053,6 @@ def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
             return hash((
                 self.uuid,
                 self.next_user_chat,
-                self.ai_message_uuid,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -20091,15 +20063,11 @@ def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
             next_user_chat: __dataclass__init__fields__1__annotation,
             *,
             uuid: __dataclass__init__fields__0__annotation = __dataclass__HAS_DEFAULT_FACTORY,
-            ai_message_uuid: __dataclass__init__fields__2__annotation = __dataclass__HAS_DEFAULT_FACTORY,
         ) -> __dataclass__None:
             if uuid is __dataclass__HAS_DEFAULT_FACTORY:
                 uuid = __dataclass__init__fields__0__default_factory()
-            if ai_message_uuid is __dataclass__HAS_DEFAULT_FACTORY:
-                ai_message_uuid = __dataclass__init__fields__2__default_factory()
             __dataclass__object_setattr(self, 'uuid', uuid)
             __dataclass__object_setattr(self, 'next_user_chat', next_user_chat)
-            __dataclass__object_setattr(self, 'ai_message_uuid', ai_message_uuid)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -20110,7 +20078,6 @@ def _process_dataclass__6ceb53e13af9fcb75871d18bac23f7e3f463ea77():
         def __repr__(self):
             parts = []
             parts.append(f"next_user_chat={self.next_user_chat!r}")
-            parts.append(f"ai_message_uuid={self.ai_message_uuid!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -21086,34 +21053,27 @@ def _process_dataclass__b7e32a7dbf5f05a83fc427c50ebb80be7b556fc1():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('chat', 'message_uuid')), EqPlan(fields=('chat', 'message_uuid')), FrozenPlan(fiel"
-        "ds=('chat', 'message_uuid'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('chat', 'messag"
-        "e_uuid'), cache=False), InitPlan(fields=(InitPlan.Field(name='chat', annotation=OpRef(name='init.fields.0.anno"
-        "tation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='message_uuid', annotation=OpRef(name='init.fields"
-        ".1.annotation'), default=None, default_factory=OpRef(name='init.fields.1.default_factory'), init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_"
-        "params=('chat',), kw_only_params=('message_uuid',), frozen=True, slots=False, post_init_params=None, init_fns="
-        "(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='chat', kw_only=False, fn=None), ReprPlan.Field(nam"
-        "e='message_uuid', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('chat',)), EqPlan(fields=('chat',)), FrozenPlan(fields=('chat',), allow_dynamic_du"
+        "nder_attrs=False), HashPlan(action='add', fields=('chat',), cache=False), InitPlan(fields=(InitPlan.Field(name"
+        "='chat', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self',"
+        " std_params=('chat',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), valida"
+        "te_fns=()), ReprPlan(fields=(ReprPlan.Field(name='chat', kw_only=False, fn=None),), id=False, terse=False, def"
+        "ault_fn=None)))"
     ),
-    plan_repr_sha1='00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3',
+    plan_repr_sha1='b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default_factory',
     ),
     cls_names=(
         ('ommlds.minichain.drivers.impl', 'GenerateAiChatArgs'),
     ),
 )
-def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
+def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default_factory,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -21133,7 +21093,6 @@ def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 chat=self.chat,
-                message_uuid=self.message_uuid,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -21147,8 +21106,7 @@ def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.chat == other.chat and
-                self.message_uuid == other.message_uuid
+                self.chat == other.chat
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -21158,7 +21116,6 @@ def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
 
         __dataclass___setattr_frozen_fields = {
             'chat',
-            'message_uuid',
         }
 
         def __setattr__(self, name, value):
@@ -21176,7 +21133,6 @@ def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
 
         __dataclass___delattr_frozen_fields = {
             'chat',
-            'message_uuid',
         }
 
         def __delattr__(self, name):
@@ -21195,7 +21151,6 @@ def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
         def __hash__(self):
             return hash((
                 self.chat,
-                self.message_uuid,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -21204,13 +21159,8 @@ def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
         def __init__(
             self,
             chat: __dataclass__init__fields__0__annotation,
-            *,
-            message_uuid: __dataclass__init__fields__1__annotation = __dataclass__HAS_DEFAULT_FACTORY,
         ) -> __dataclass__None:
-            if message_uuid is __dataclass__HAS_DEFAULT_FACTORY:
-                message_uuid = __dataclass__init__fields__1__default_factory()
             __dataclass__object_setattr(self, 'chat', chat)
-            __dataclass__object_setattr(self, 'message_uuid', message_uuid)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -21221,7 +21171,6 @@ def _process_dataclass__00c1bdc783b3ac84e8b08c9b031d85e3bf13f5c3():
         def __repr__(self):
             parts = []
             parts.append(f"chat={self.chat!r}")
-            parts.append(f"message_uuid={self.message_uuid!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

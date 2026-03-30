@@ -1,4 +1,3 @@
-import datetime
 import typing as ta
 import uuid
 
@@ -7,7 +6,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ...metadata import CreatedAt
+from ...transform.metadata import CreatedAtAddingGeneralTransform
 from ..messages import Chat
 from ..messages import Message
 from ..messages import MessageOriginal
@@ -32,14 +31,8 @@ def strip_message_original_metadata(c: Message) -> Message:
 ##
 
 
-@dc.dataclass(frozen=True)
-class CreatedAtAddingMessageTransform(MessageTransform):
-    clock: ta.Callable[[], datetime.datetime] = dc.field(default=lang.utcnow)
-
-    def transform(self, m: Message) -> Chat:
-        if CreatedAt not in m.metadata:
-            m = m.with_metadata(CreatedAt(self.clock()))
-        return [m]
+class CreatedAtAddingMessageTransform(CreatedAtAddingGeneralTransform[Message], MessageTransform):
+    pass
 
 
 @dc.dataclass(frozen=True)

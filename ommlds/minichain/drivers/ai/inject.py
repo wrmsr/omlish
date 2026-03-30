@@ -16,8 +16,6 @@ from .configs import AiConfig
 from .eventemit import EventEmittingAiChatGenerator
 from .eventemit import EventEmittingStreamAiChatGenerator
 from .injection import chat_options_providers
-from .metadata import UuidAddingAiChatGenerator
-from .metadata import UuidAddingStreamAiChatGenerator
 from .services import ChatChoicesServiceAiChatGenerator
 from .services import ChatChoicesServiceOptionsProvider
 from .services import ChatChoicesServiceOptionsProviders
@@ -85,7 +83,6 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
             inj.bind(ChatChoicesStreamService, to_key=InternalChatChoicesStreamService),
         ]))
 
-        els.append(stream_ai_stack.push_bind(to_ctor=UuidAddingStreamAiChatGenerator, singleton=True))
         els.append(stream_ai_stack.push_bind(to_ctor=ChatTransformStreamAiChatGenerator, singleton=True))
         els.append(stream_ai_stack.push_bind(to_ctor=EventEmittingStreamAiChatGenerator, singleton=True))
 
@@ -114,7 +111,6 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
             inj.bind(ChatChoicesService, to_key=InternalChatChoicesService),
         ]))
 
-        els.append(ai_stack.push_bind(to_ctor=UuidAddingAiChatGenerator, singleton=True))
         els.append(ai_stack.push_bind(to_ctor=ChatTransformAiChatGenerator, singleton=True))
         els.append(ai_stack.push_bind(to_ctor=EventEmittingAiChatGenerator, singleton=True))
 

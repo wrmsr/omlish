@@ -1,9 +1,12 @@
+# ruff: noqa: TC003
 import asyncio
 import typing as ta
+import uuid
 
 from omlish.asyncs.asyncio import all as au
 
 from ...chat.messages import Chat
+from ...chat.metadata import MessageUuid
 from ...chat.stream.types import AiDelta
 from ..events.manager import EventsManager
 from .events import AiMessagesEvent
@@ -33,7 +36,7 @@ class EventEmittingAiChatGenerator(AiChatGenerator):
     async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
         out = await self._wrapped.generate_ai_chat(args)
 
-        await self._events.emit_event(AiMessagesEvent(out, message_uuid=args.message_uuid))
+        await self._events.emit_event(AiMessagesEvent(out))
 
         return out
 
@@ -55,23 +58,27 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             args: GenerateAiChatArgs,
             delta_callback: ta.Callable[[AiDelta], ta.Awaitable[None]] | None = None,
     ) -> Chat:
-        sent_begin_event = False
+        last_message_uuid: uuid.UUID | None = None
         end_exception: BaseException | None = None
 
         async def inner(delta: AiDelta) -> None:
-            nonlocal sent_begin_event
-            if not sent_begin_event:
-                await self._events.emit_event(AiStreamBeginEvent(message_uuid=args.message_uuid))
-                sent_begin_event = True
+            mu = delta.metadata[MessageUuid].v
 
-            await self._events.emit_event(AiStreamDeltaEvent(delta, message_uuid=args.message_uuid))
+            nonlocal last_message_uuid
+            if mu != last_message_uuid:
+                await emit_end()
+
+                await self._events.emit_event(AiStreamBeginEvent(message_uuid=mu))
+                last_message_uuid = mu
+
+            await self._events.emit_event(AiStreamDeltaEvent(delta, message_uuid=mu))
 
             if delta_callback is not None:
                 await delta_callback(delta)
 
         async def emit_end() -> None:
-            if sent_begin_event:
-                await self._events.emit_event(AiStreamEndEvent(message_uuid=args.message_uuid, exception=end_exception))
+            if last_message_uuid:
+                await self._events.emit_event(AiStreamEndEvent(message_uuid=last_message_uuid, exception=end_exception))
 
         async with au.shielded_finally(emit_end):
             try:
@@ -80,6 +87,6 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
                 end_exception = e
                 raise
 
-        await self._events.emit_event(AiMessagesEvent(out, streamed=True, message_uuid=args.message_uuid))
+        await self._events.emit_event(AiMessagesEvent(out, streamed=True))
 
         return out

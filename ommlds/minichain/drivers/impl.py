@@ -87,7 +87,6 @@ class DriverImpl(Driver):
 
         next_ai_chat = await self._ai_chat_generator.generate_ai_chat(GenerateAiChatArgs(
             prepared_chat,
-            message_uuid=action.ai_message_uuid,
         ))
 
         await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])
