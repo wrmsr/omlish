@@ -41,8 +41,14 @@ class Mapper(ta.Generic[K, T]):
         check.isinstance(cls, type)
         self._cls = cls
         self._store_name = check.non_empty_str(store_name)
+
         self._fields = fields = check.not_empty(list(fields))
         self._indexes = indexes = list(indexes) if indexes is not None else []
+
+        for f in fields:
+            f._set_mapper(self)
+        for idx in indexes:
+            idx._set_mapper(self)
 
         self._fields_by_name: ta.Mapping[str, Field] = col.make_map(((f.name, f) for f in fields), strict=True)
         self._fields_by_store_name: ta.Mapping[str, Field] = col.make_map(((f.store_name, f) for f in fields), strict=True)  # noqa

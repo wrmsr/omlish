@@ -48,6 +48,7 @@ def field(
         ty: ta.Any,
         *,
         store_name: str | None = None,
+        backref_binding: ta.Any | None = None,
 ) -> Field:
     check.non_empty_str(name)
 
@@ -85,6 +86,7 @@ def field(
         _name=name,
         _store_name=store_name,
         _rty=rty,
+        _backref_binding=backref_binding,
     )
 
 
@@ -163,7 +165,11 @@ def dataclass_mapper(
     fields: list[Field] = []
 
     for df in dc_rfl.fields.values():  # noqa
-        fields.append(field(df.name, dc_rfl.field_annotations[df.name]))
+        fields.append(field(
+            df.name,
+            dc_rfl.field_annotations[df.name],
+            backref_binding=df,
+        ))
 
     #
 

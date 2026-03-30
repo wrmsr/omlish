@@ -7,6 +7,10 @@ from .keys import Key
 from .refs import Ref
 
 
+if ta.TYPE_CHECKING:
+    from .mappers import Mapper
+
+
 ##
 
 
@@ -17,12 +21,14 @@ class Field(lang.Sealed):
             _name: str,
             _store_name: str,
             _rty: rfl.Type,
+            _backref_binding: ta.Any | None = None,
     ) -> None:
         super().__init__()
 
         self._name = check.non_empty_str(_name)
         self._store_name = check.non_empty_str(_store_name)
         self._rty = check.isinstance(_rty, rfl.Type)
+        self._backref_binding = _backref_binding
 
     @classmethod
     def _default_store_name(cls, name: str) -> str:
@@ -49,6 +55,27 @@ class Field(lang.Sealed):
     @property
     def rty(self) -> rfl.Type:
         return self._rty
+
+    @property
+    def backref_binding(self) -> ta.Any | None:
+        return self._backref_binding
+
+    #
+
+    _mapper: 'Mapper'
+
+    def _set_mapper(self, r: 'Mapper') -> None:
+        try:
+            self._mapper  # noqa
+        except AttributeError:
+            pass
+        else:
+            raise RuntimeError('mapper already set')
+        self._mapper = r
+
+    @property
+    def mapper(self) -> 'Mapper':
+        return self._mapper
 
 
 @ta.final

@@ -4,6 +4,10 @@ from .. import check
 from .. import lang
 
 
+if ta.TYPE_CHECKING:
+    from .mappers import Mapper
+
+
 ##
 
 
@@ -43,3 +47,20 @@ class Index(lang.Final):
     @property
     def store_name(self) -> str | None:
         return self._store_name
+
+    #
+
+    _mapper: 'Mapper'
+
+    def _set_mapper(self, r: 'Mapper') -> None:
+        try:
+            self._mapper  # noqa
+        except AttributeError:
+            pass
+        else:
+            raise RuntimeError('mapper already set')
+        self._mapper = r
+
+    @property
+    def mapper(self) -> 'Mapper':
+        return self._mapper
