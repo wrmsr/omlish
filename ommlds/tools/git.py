@@ -45,7 +45,7 @@ def _get_single_ai_message_str(resp: mc.ChatChoicesResponse) -> str:
                 check.single(
                     check.single(
                         resp.v,
-                    ).ms,
+                    ).chat,
                 ),
                 mc.AiMessage,
             ).c,

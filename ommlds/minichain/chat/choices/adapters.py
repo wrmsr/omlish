@@ -19,4 +19,4 @@ class ChatChoicesServiceChatService:
 
     async def invoke(self, request: ChatRequest) -> Response[AiChat, ChatChoicesOutputs]:
         resp = await self.service.invoke(request)
-        return Response(check.single(resp.v).ms, resp.outputs)
+        return Response(check.single(resp.v).chat, resp.outputs)

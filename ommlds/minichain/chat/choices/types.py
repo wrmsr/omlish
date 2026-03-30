@@ -39,7 +39,7 @@ ChatChoicesOutputs: ta.TypeAlias = ChatChoicesOutput | ChatOutputs
 
 @dc.dataclass(frozen=True)
 class AiChoice(lang.Final):
-    ms: AiChat
+    chat: AiChat
 
 
 AiChoices: ta.TypeAlias = ta.Sequence[AiChoice]

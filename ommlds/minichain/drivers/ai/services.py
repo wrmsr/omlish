@@ -58,7 +58,7 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
 
         resp = await self._service.invoke(ChatChoicesRequest(args.chat, opts))
 
-        out: Chat = check.single(resp.v).ms
+        out: Chat = check.single(resp.v).chat
 
         out = self._mt.transform(out)
 

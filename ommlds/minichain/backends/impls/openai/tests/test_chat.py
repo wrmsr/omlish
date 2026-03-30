@@ -113,7 +113,7 @@ def test_openai_tools(harness):
     print(resp)
     assert resp.v
 
-    tum = check.isinstance(check.single(check.single(resp.v).ms), ToolUseMessage)
+    tum = check.isinstance(check.single(check.single(resp.v).chat), ToolUseMessage)
     chat.append(tum)
 
     tr = tum.tu
