@@ -51,7 +51,7 @@ def dataclass(
         generic_init: bool | None = None,
         override: bool | None = None,
         allow_dynamic_dunder_attrs: bool | None = None,
-        install_class_field_attrs: bool | None = None,
+        install_class_field_attrs: bool | ta.Literal['instance'] | None = None,
 
         repr_id: bool | None = None,
         terse_repr: bool | None = None,

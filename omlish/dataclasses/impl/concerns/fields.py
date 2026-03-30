@@ -3,6 +3,8 @@ import typing as ta
 
 from .... import check
 from ..._internals import STD_FIELDS_ATTR
+from ..._internals import StdFieldType
+from ..._internals import std_field_type
 from ...debug import DEBUG
 from ...inspect import FieldsInspection
 from ...specs import FieldSpec
@@ -119,8 +121,12 @@ class FieldsProcessor(Processor):
             check.arg(not f.name.startswith(IDENT_PREFIX))
 
     def process(self, cls: type) -> type:
-        if self._ctx.cs.install_class_field_attrs:
+        if cfa := self._ctx.cs.install_class_field_attrs:
             fld_dct = self._ctx.cls.__dict__[STD_FIELDS_ATTR]
             for fn, f in fld_dct.items():
+                if cfa == 'instance':
+                    if std_field_type(f) != StdFieldType.INSTANCE:
+                        continue
                 setattr(cls, fn, f)
+
         return cls

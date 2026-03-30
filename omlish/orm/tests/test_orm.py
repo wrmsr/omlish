@@ -8,7 +8,7 @@ from ... import orm
 
 
 @dc.dataclass(kw_only=True)
-@dc.extra_class_params(install_class_field_attrs=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
 class BusinessCategory:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
 
@@ -18,7 +18,7 @@ class BusinessCategory:
 
 
 @dc.dataclass(kw_only=True)
-@dc.extra_class_params(install_class_field_attrs=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
 class Business:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
 
@@ -29,7 +29,7 @@ class Business:
 
 
 @dc.dataclass(kw_only=True)
-@dc.extra_class_params(install_class_field_attrs=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
 class User:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
 
@@ -46,7 +46,7 @@ class User:
 
 
 @dc.dataclass(kw_only=True)
-@dc.extra_class_params(install_class_field_attrs=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
 class UserRelation:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
 
@@ -55,7 +55,7 @@ class UserRelation:
 
 
 @dc.dataclass(kw_only=True)
-@dc.extra_class_params(install_class_field_attrs=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
 class Review:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
 

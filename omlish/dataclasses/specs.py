@@ -213,7 +213,7 @@ class ClassSpec(_SpecBase, lang.Final):
     generic_init: bool = False
     override: bool = False
     allow_dynamic_dunder_attrs: bool = False
-    install_class_field_attrs: bool = False
+    install_class_field_attrs: bool | ta.Literal['instance'] = False
 
     repr_id: bool = False
     terse_repr: bool = False
