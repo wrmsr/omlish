@@ -13,7 +13,7 @@ from .keys import Key
 from .keys import _AutoKey
 from .keys import _Key
 from .refs import _REF_TYPES
-from .refs import _LazyRef
+from .refs import _KeyRef
 from .snaps import Snap
 
 
@@ -209,7 +209,7 @@ class Mapper(ta.Generic[K, T]):
             if v is None:
                 check.state(f._optional)  # type: ignore[attr-defined]
             else:
-                v = _LazyRef(f._ref_obj_cls, _Key(v))  # type: ignore[attr-defined]
+                v = _KeyRef(f._ref_obj_cls, _Key(v))  # type: ignore[attr-defined]
 
         elif (co := self._registry._codec) is not None:
             v = co.decode(v, f._rty)

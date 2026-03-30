@@ -64,7 +64,7 @@ class Ref(lang.Sealed, lang.Abstract, ta.Generic[T, K]):
 
 
 @ta.final
-class _DirectRef(Ref[T, K], lang.Final):
+class _ObjRef(Ref[T, K], lang.Final):
     def __init__(self, obj: T) -> None:  # noqa
         cls = type(obj)
         check.not_in(cls, _wrappers.WRAPPER_TYPES)
@@ -79,7 +79,7 @@ class _DirectRef(Ref[T, K], lang.Final):
 
     @property
     def k(self) -> Key[K]:
-        return _sessions.active_session()._get_direct_ref_key(self)
+        return _sessions.active_session()._get_obj_ref_key(self)
 
     def __call__(self) -> T:
         return self._obj
@@ -89,7 +89,7 @@ class _DirectRef(Ref[T, K], lang.Final):
 
 
 @ta.final
-class _LazyRef(Ref[T, K], lang.Final):
+class _KeyRef(Ref[T, K], lang.Final):
     def __init__(self, cls: type[T], k: Key[K]) -> None:  # noqa
         check.in_(k.__class__, _KEY_TYPES)
         self._cls, self._k = cls, k
@@ -106,7 +106,7 @@ class _LazyRef(Ref[T, K], lang.Final):
         return self._k
 
     def __call__(self) -> T:
-        return _sessions.active_session()._get_lazy_ref_obj(self)
+        return _sessions.active_session()._get_key_ref_obj(self)
 
 
 ##
@@ -130,17 +130,17 @@ def ref(cls: type[T], k: K) -> Ref[T, K]:
 def ref(obj, *args):
     if not args:
         check.not_isinstance(obj, type)
-        return _DirectRef(obj)
+        return _ObjRef(obj)
     else:
         check.isinstance(obj, type)
         [k] = args
-        return _LazyRef(obj, key(k))
+        return _KeyRef(obj, key(k))
 
 
 ##
 
 
 _REF_TYPES: tuple[type[Ref], ...] = (
-    _DirectRef,
-    _LazyRef,
+    _ObjRef,
+    _KeyRef,
 )

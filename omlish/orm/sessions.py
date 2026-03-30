@@ -13,8 +13,8 @@ from .keys import _Key
 from .keys import _unwrap_key
 from .mappers import Mapper
 from .queries import Query
-from .refs import _DirectRef
-from .refs import _LazyRef
+from .refs import _KeyRef
+from .refs import _ObjRef
 from .registries import Registry
 from .snaps import Snap
 from .stores import Store
@@ -341,17 +341,17 @@ class Session:
 
     #
 
-    def _get_direct_ref_key(self, dr: _DirectRef) -> Key:
+    def _get_obj_ref_key(self, dr: _ObjRef) -> Key:
         e = self._entities_by_obj_id[id(dr._obj)]
         return e.k
 
-    def _get_lazy_ref_obj(self, lr: _LazyRef) -> ta.Any:
+    def _get_key_ref_obj(self, lr: _KeyRef) -> ta.Any:
         # TODO: writeback?
         return check.not_none(self.get(lr._cls, lr._k))
 
     def _get_bound_backref_objs(self, bbr: _BoundBackref) -> ta.Sequence[ta.Any]:
         rf = check.isinstance(self._registry._fields_by_backref_binding[bbr._br._binder()], RefField)
-        return self.query(Query(rf._mapper._cls, {rf._name: _DirectRef(bbr._obj)}))
+        return self.query(Query(rf._mapper._cls, {rf._name: _ObjRef(bbr._obj)}))
 
     #
 
