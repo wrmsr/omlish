@@ -6,6 +6,7 @@ import weakref
 from omdev.tui import textual as tx
 from omlish import check
 from omlish import dataclasses as dc
+from omlish.asyncs.relays import SchedulingAsyncBufferRelay
 from omlish.logs import all as logs
 
 from ...... import minichain as mc
@@ -117,6 +118,10 @@ class ChatApp(
 
         self._pending_tool_confirmations: set[ToolConfirmationMessage] = set()
 
+        self._append_stream_ai_message_content_buffer: SchedulingAsyncBufferRelay[tuple[uuid.UUID, str]] = SchedulingAsyncBufferRelay(  # noqa
+            self._schedule_drain_append_stream_ai_message_content_buffer,
+        )
+
         #
 
         self._messages_container = MessagesContainer([welcome_message] if welcome_message is not None else [])
@@ -157,6 +162,13 @@ class ChatApp(
         self.refresh(layout=True)
         self.call_after_refresh(inner)
 
+    async def _schedule_drain_append_stream_ai_message_content_buffer(self) -> None:
+        self.call_next(self._drain_append_stream_ai_message_content_buffer)
+
+    async def _drain_append_stream_ai_message_content_buffer(self) -> None:
+        for mu, cc in (await self._append_stream_ai_message_content_buffer.swap()):
+            await self._messages_container.append_stream_ai_message_content(mu, cc)
+
     ##
     # Chat events
 
@@ -187,9 +199,10 @@ class ChatApp(
 
         elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
             if isinstance(ev.delta, mc.ContentAiDelta):
-                cc = check.isinstance(ev.delta.c, str)
-                # FIXME: append to internal buffer
-                self.call_later(self._messages_container.append_stream_ai_message_content, ev.message_uuid, cc)  # noqa
+                await self._append_stream_ai_message_content_buffer.push((
+                    check.not_none(ev.message_uuid),
+                    check.isinstance(ev.delta.c, str),
+                ))
 
             elif isinstance(ev.delta, mc.ToolUseAiDelta):
                 pass

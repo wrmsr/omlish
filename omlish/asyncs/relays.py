@@ -34,11 +34,19 @@ class SchedulingAsyncBufferRelay(AsyncBufferRelay[T]):
 
         self._schedule_fn = schedule_fn
 
+        self._buffer: list[T] = []
+        self._has_scheduled: bool = False
+
     async def push(self, *vs: T) -> None:
-        raise NotImplementedError
+        self._buffer.extend(vs)
+        if self._buffer and not self._has_scheduled:
+            self._has_scheduled = True
+            await self._schedule_fn()
 
     async def swap(self) -> ta.Sequence[T]:
-        raise NotImplementedError
+        buf, self._buffer = self._buffer, []
+        self._has_scheduled = False
+        return buf
 
 
 ##
