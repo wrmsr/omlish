@@ -31,6 +31,8 @@ ChatChoicesStreamOutputs: ta.TypeAlias = ChatChoicesStreamOutput
 
 
 ##
+# These are broken out into dataclasses (as opposed to a sequence `ta.TypeAlias`) both for type safety and to be able to
+# propagate choices-level metadata from backends.
 
 
 @dc.dataclass(frozen=True)

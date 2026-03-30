@@ -26,8 +26,8 @@ class CompositeGeneralTransform(GeneralTransform[T]):
 
     def transform(self, o: T) -> ta.Sequence[T]:
         out: list[T] = [o]
-        for mt in self.ts:
-            out = [o for i in out for o in mt.transform(i)]
+        for t in self.ts:
+            out = [o for i in out for o in t.transform(i)]
         return out
 
 
