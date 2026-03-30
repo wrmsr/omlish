@@ -8,6 +8,7 @@ from ..messages import AiChat
 from ..messages import AiMessage
 from ..messages import AnyAiMessage
 from ..messages import ToolUseMessage
+from ..metadata import MessageUuid
 from .types import AiDelta
 from .types import AiDeltas
 from .types import ContentAiDelta
@@ -26,19 +27,36 @@ class AiDeltaJoiner:
         self._queue: list[AiDelta] = []
         self._out: list[AnyAiMessage] = []
 
+    def _confer_uuid(self, m: AnyAiMessage, ds: ta.Sequence[AiDelta]) -> AnyAiMessage:
+        dus = {du for d in ds if (du := d.metadata.get(MessageUuid)) is not None}
+        if not dus:
+            return m
+
+        du = check.single(dus)
+
+        if (mu := m.metadata.get(MessageUuid)) is not None:
+            check.equal(du, mu)
+            return m
+
+        return m.with_metadata(du)
+
     def _build_joined(self, deltas: ta.Sequence[AiDelta]) -> AnyAiMessage:
         dty = check.single(set(map(type, check.not_empty(deltas))))
 
         if dty is ContentAiDelta:
-            cds = ta.cast(ta.Sequence[ContentAiDelta], deltas)
-            return AiMessage(''.join(check.isinstance(cd.c, str) for cd in cds))
+            cds = ta.cast('ta.Sequence[ContentAiDelta]', deltas)
+
+            aim = AiMessage(''.join(check.isinstance(cd.c, str) for cd in cds))
+
+            return self._confer_uuid(aim, cds)
 
         elif dty is ToolUseAiDelta:
             raise TypeError(dty)
 
         elif dty is PartialToolUseAiDelta:
-            tds = ta.cast(ta.Sequence[PartialToolUseAiDelta], deltas)
-            for td in ta.cast(ta.Sequence[PartialToolUseAiDelta], deltas)[1:]:
+            tds = ta.cast('ta.Sequence[PartialToolUseAiDelta]', deltas)
+
+            for td in ta.cast('ta.Sequence[PartialToolUseAiDelta]', deltas)[1:]:
                 check.none(td.id)
                 check.none(td.name)
 
@@ -47,12 +65,14 @@ class AiDeltaJoiner:
             if not ra:
                 ra = '{}'
 
-            return ToolUseMessage(ToolUse(
+            tum = ToolUseMessage(ToolUse(
                 id=tds[0].id,
                 name=check.non_empty_str(tds[0].name),
                 args=json.loads(ra),
                 raw_args=ra,
             ))
+
+            return self._confer_uuid(tum, tds)
 
         else:
             raise TypeError(dty)

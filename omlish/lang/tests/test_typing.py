@@ -1,5 +1,6 @@
 import typing as ta
 
+from ..typing import copy_params
 from ..typing import copy_type
 from ..typing import static_check_isinstance
 from ..typing import static_check_issubclass
@@ -32,6 +33,24 @@ def test_copy_type():
     if not isinstance(r, float):
         ta.assert_never(r)
 
+
+def test_copy_params():
+    def foo(i: int, s: str) -> int:
+        return i + len(s)
+
+    r = foo(2, 'abc')
+    assert r == 5
+    if not isinstance(r, int):
+        ta.assert_never(r)
+
+    @copy_params[str]()(foo)
+    def foo2(*args, **kwargs) -> str:
+        return str(foo(*args, **kwargs))
+
+    r2 = foo2(2, 'abc')
+    assert r2 == '5'
+    if not isinstance(r2, str):
+        ta.assert_never(r2)
 
 ##
 

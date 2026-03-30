@@ -17,6 +17,10 @@ T = ta.TypeVar('T')
 T_co = ta.TypeVar('T_co', covariant=True)
 T_contra = ta.TypeVar('T_contra', contravariant=True)
 
+U = ta.TypeVar('U')
+
+P = ta.ParamSpec('P')
+
 # FIXME: remove? ducktyped by mypy (with memoryview)
 BytesLike: ta.TypeAlias = bytes | bytearray | memoryview
 
@@ -44,6 +48,11 @@ def copy_type(o: T) -> ta.Callable[[ta.Any], T]:
     """https://github.com/python/typing/issues/769#issuecomment-903760354"""
 
     return lambda x: x
+
+
+class copy_params(ta.Generic[U]):  # noqa
+    def __call__(self, o: ta.Callable[P, T]) -> ta.Callable[[ta.Any], ta.Callable[P, U]]:
+        return lambda x: x
 
 
 ##

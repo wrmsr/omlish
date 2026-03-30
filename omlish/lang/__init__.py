@@ -544,6 +544,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         static_check_isinstance,
         static_check_issubclass,
         copy_type,
+        copy_params,
 
         protocol_check,
 
