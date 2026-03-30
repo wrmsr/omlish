@@ -19,8 +19,11 @@ T = ta.TypeVar('T')
 
 
 class _BoundBackref(lang.Final, ta.Generic[T]):
+    def __init__(self, *, _br: '_Backref[T]', _obj: ta.Any) -> None:
+        self._br, self._obj = _br, _obj
+
     def __call__(self) -> ta.Sequence[T]:
-        raise NotImplementedError
+        return _sessions.active_session()._get_bound_backref_objs(self)
 
 
 class Backref(lang.Sealed, lang.Abstract, ta.Generic[T]):
@@ -51,8 +54,7 @@ class _Backref(Backref[T], lang.Final):
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-
-        return _sessions.active_session()._get_backref_objs(self)
+        return _BoundBackref(_br=self, _obj=instance)
 
 
 #

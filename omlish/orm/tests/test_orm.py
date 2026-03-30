@@ -119,7 +119,8 @@ def test_orm():
         # print('pending reviews for business 1:', pending)
 
         print(orm.query(Review, business=orm.ref(Business, 2)))
-        # print(bob.reviews())
+
+        print(sushi.reviews())
 
     with orm.session(registry, store):
         orm.delete(orm.get(Review, 4))

@@ -4,7 +4,8 @@ import typing as ta
 
 from .. import check
 from .. import lang
-from .backrefs import _Backref
+from .backrefs import _BoundBackref
+from .fields import RefField
 from .keys import _KEY_TYPES
 from .keys import Key
 from .keys import _AutoKey
@@ -348,8 +349,9 @@ class Session:
         # TODO: writeback?
         return check.not_none(self.get(lr._cls, lr._k))
 
-    def _get_backref_objs(self, br: _Backref) -> ta.Sequence[ta.Any]:
-        raise NotImplementedError
+    def _get_bound_backref_objs(self, bbr: _BoundBackref) -> ta.Sequence[ta.Any]:
+        rf = check.isinstance(self._registry._fields_by_backref_binding[bbr._br._binder()], RefField)
+        return self.query(Query(rf._mapper._cls, {rf._name: _DirectRef(bbr._obj)}))
 
     #
 

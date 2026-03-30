@@ -97,6 +97,9 @@ class InMemoryStore(Store):
             bs = il
             bi = di
 
+        del il
+        del it
+
         if bt is None:
             lst: list[Snap] = []
 
@@ -112,7 +115,7 @@ class InMemoryStore(Store):
         ik = tuple(where[k] for k in bt)
         ig = [(k, where[k]) for k in fl - bs]  # type: ignore[operator]
 
-        ix = t.indexes[it]  # noqa
+        ix = t.indexes[bt]  # noqa
         try:
             xs = ix[ik]
         except KeyError:
