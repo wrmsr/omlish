@@ -18,9 +18,13 @@ from omlish import lang as _lang  # noqa
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from .bash.configs import BashConfig  # noqa
     from .code.configs import CodeConfig  # noqa
-
+    from .fs.configs import FsConfig  # noqa
     from .skills.configs import SkillsConfig  # noqa
+    from .todo.configs import TodoConfig  # noqa
+
+    #
 
     from .configs import ModuleConfig  # noqa
 

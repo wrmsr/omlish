@@ -1,4 +1,3 @@
-from omlish import check
 from omlish import inject as inj
 
 from ...tools.execution.catalog import ToolCatalog
@@ -10,7 +9,6 @@ from .execution import ToolContextProvider
 from .execution import ToolContextProviders
 from .execution import ToolUseExecutor
 from .execution import ToolUseExecutorImpl
-from .injection import ToolSetBinder
 from .injection import bind_tool_context_provider_to_key
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
@@ -30,18 +28,6 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     #
 
     els.append(tool_catalog_entries().bind_items_provider(singleton=True))
-
-    for etn in check.not_isinstance(cfg.enabled_tools or [], str):
-        from .fs.inject import FS_TOOL_SET_BINDER
-        from .todo.inject import TODO_TOOL_SET_BINDER
-        from .weather.inject import WEATHER_TOOL_SET_BINDER
-        ts_binder: ToolSetBinder = {  # type: ignore[assignment]  # FIXME: placeholder obviously lol
-            'fs': FS_TOOL_SET_BINDER,
-            'todo': TODO_TOOL_SET_BINDER,
-            'weather': WEATHER_TOOL_SET_BINDER,
-        }[etn]
-
-        els.append(ts_binder.fn(ts_binder.cfg_cls()))
 
     #
 

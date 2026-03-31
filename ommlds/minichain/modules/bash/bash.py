@@ -7,8 +7,8 @@ from omlish import check
 from omlish import lang
 from omlish.subprocesses.sync import subprocesses
 
-from ..tools.execution.catalog import ToolCatalogEntry
-from ..tools.execution.reflect import reflect_tool_catalog_entry
+from ...tools.execution.catalog import ToolCatalogEntry
+from ...tools.execution.reflect import reflect_tool_catalog_entry
 
 
 ##

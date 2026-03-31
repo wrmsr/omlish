@@ -341,6 +341,8 @@ class ChatProfile(AspectProfile[ChatConfig]):
                 modules=[
                     *(cfg.modules or []),
                     mc.modules.CodeConfig(),
+                    mc.modules.FsConfig(),
+                    mc.modules.TodoConfig(),
                 ],
                 driver=dc.replace(
                     cfg.driver,
