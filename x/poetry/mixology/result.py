@@ -13,7 +13,7 @@ class SolverResult:
     def __init__(
             self,
             root: ProjectPackage,
-            packages: list[Package],
+            packages: ta.List[Package],
             attempted_solutions: int,
     ) -> None:
         self._root = root
@@ -21,7 +21,7 @@ class SolverResult:
         self._attempted_solutions = attempted_solutions
 
     @property
-    def packages(self) -> list[Package]:
+    def packages(self) -> ta.List[Package]:
         return self._packages
 
     @property

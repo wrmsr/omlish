@@ -30,9 +30,9 @@ class SolveFailureError(Exception):
 class _Writer:
     def __init__(self, root: 'Incompatibility') -> None:
         self._root = root
-        self._derivations: dict[Incompatibility, int] = {}
-        self._lines: list[tuple[str, int | None]] = []
-        self._line_numbers: dict[Incompatibility, int] = {}
+        self._derivations: ta.Dict[Incompatibility, int] = {}
+        self._lines: ta.List[ta.Tuple[str, ta.Optional[int]]] = []
+        self._line_numbers: ta.Dict[Incompatibility, int] = {}
 
         self._count_derivations(self._root)
 

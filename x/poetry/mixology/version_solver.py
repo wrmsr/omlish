@@ -45,9 +45,9 @@ class Preference(enum.IntEnum):
     DEFAULT = 4
 
 
-CompKey = tuple[Preference, int, bool, int]
+CompKey = ta.Tuple[Preference, int, bool, int]
 
-DependencyCacheKey = tuple[str, str | None, str | None, str | None, str | None]
+DependencyCacheKey = ta.Tuple[str, ta.Optional[str], ta.Optional[str], ta.Optional[str], ta.Optional[str]]
 
 
 class DependencyCache:
@@ -67,8 +67,8 @@ class DependencyCache:
         #
         # In order to maintain the integrity of the cache, `clear_level()` needs to be called in descending order as
         # decision levels are backtracked so that the correct items can be popped from the stack.
-        self._cache: dict[DependencyCacheKey, list[list[DependencyPackage]]] = collections.defaultdict(list)
-        self._cached_dependencies_by_level: dict[int, list[DependencyCacheKey]] = collections.defaultdict(list)
+        self._cache: ta.Dict[DependencyCacheKey, ta.List[ta.List[DependencyPackage]]] = collections.defaultdict(list)
+        self._cached_dependencies_by_level: ta.Dict[int, ta.List[DependencyCacheKey]] = collections.defaultdict(list)
 
         self._search_for_cached = functools.lru_cache(maxsize=128)(self._search_for)
 
@@ -76,7 +76,7 @@ class DependencyCache:
             self,
             dependency: Dependency,
             key: DependencyCacheKey,
-    ) -> list[DependencyPackage]:
+    ) -> ta.List[DependencyPackage]:
         cache_entries = self._cache[key]
         if cache_entries:
             packages = [
@@ -101,7 +101,7 @@ class DependencyCache:
             self,
             dependency: Dependency,
             decision_level: int,
-    ) -> list[DependencyPackage]:
+    ) -> ta.List[DependencyPackage]:
         key = (
             dependency.name,
             dependency.source_type,
@@ -143,9 +143,9 @@ class VersionSolver:
         self._root = root
         self._provider = provider
         self._dependency_cache = DependencyCache(provider)
-        self._incompatibilities: dict[str, list[Incompatibility]] = {}
-        self._contradicted_incompatibilities: set[Incompatibility] = set()
-        self._contradicted_incompatibilities_by_level: dict[int, set[Incompatibility]] = collections.defaultdict(set)
+        self._incompatibilities: ta.Dict[str, ta.List[Incompatibility]] = {}
+        self._contradicted_incompatibilities: ta.Set[Incompatibility] = set()
+        self._contradicted_incompatibilities_by_level: ta.Dict[int, ta.Set[Incompatibility]] = collections.defaultdict(set)
         self._solution = PartialSolution()
         self._get_comp_key_cached = functools.cache(self._get_comp_key)
 
@@ -168,10 +168,10 @@ class VersionSolver:
         )
 
         try:
-            next: str | None = self._root.name
-            while next is not None:
-                self._propagate(next)
-                next = self._choose_package_version()
+            nxt: ta.Optional[str] = self._root.name
+            while nxt is not None:
+                self._propagate(nxt)
+                nxt = self._choose_package_version()
 
             return self._result()
 
@@ -222,7 +222,7 @@ class VersionSolver:
                 if result is not None:
                     changed.add(check.isinstance(result, str))
 
-    def _propagate_incompatibility(self, incompatibility: Incompatibility) -> str | object | None:
+    def _propagate_incompatibility(self, incompatibility: Incompatibility) -> ta.Union[str, object, None]:
         """
         If incompatibility is almost satisfied by _solution, adds the negation of the unsatisfied term to _solution.
 
@@ -437,7 +437,7 @@ class VersionSolver:
         if dependency.is_direct_origin():
             preference = Preference.DIRECT_ORIGIN
 
-        packages: list[DependencyPackage] = []
+        packages: ta.List[DependencyPackage] = []
         use_latest = dependency.name in self._provider.use_latest
         if not use_latest:
             locked = self._provider.get_locked(dependency)
@@ -495,12 +495,12 @@ class VersionSolver:
                 preference = Preference.USE_LATEST
         return preference, -num_deps_upper_bound, not has_deps, -num_packages
 
-    def _choose_next(self, unsatisfied: list[Dependency]) -> Dependency:
+    def _choose_next(self, unsatisfied: ta.List[Dependency]) -> Dependency:
         """Chooses the next package to resolve."""
 
         return min(unsatisfied, key=self._get_comp_key_cached)
 
-    def _choose_package_version(self) -> str | None:
+    def _choose_package_version(self) -> ta.Optional[str]:
         """
         Tries to select a version of a required package.
 

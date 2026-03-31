@@ -19,7 +19,7 @@ if ta.TYPE_CHECKING:
 
 
 class Incompatibility:
-    def __init__(self, terms: list[Term], cause: 'IncompatibilityCauseError') -> None:
+    def __init__(self, terms: ta.List[Term], cause: 'IncompatibilityCauseError') -> None:
         # Remove the root package from generated incompatibilities, since it will always be satisfied. This makes error
         # reporting clearer, and may also make solving more efficient.
         if (
@@ -40,7 +40,7 @@ class Incompatibility:
             or terms[0].dependency.complete_name == terms[-1].dependency.complete_name
         ):
             # Coalesce multiple terms about the same package if possible.
-            by_name: dict[str, dict[str, Term]] = {}
+            by_name: ta.Dict[str, ta.Dict[str, Term]] = {}
             for term in terms:
                 by_ref = by_name.setdefault(term.dependency.complete_name, {})
                 ref = term.dependency.complete_name
@@ -72,7 +72,7 @@ class Incompatibility:
         self._cause = cause
 
     @property
-    def terms(self) -> list[Term]:
+    def terms(self) -> ta.List[Term]:
         return self._terms
 
     @property
@@ -203,8 +203,8 @@ class Incompatibility:
     def and_to_string(
         self,
         other: 'Incompatibility',
-        this_line: int | None,
-        other_line: int | None,
+        this_line: ta.Optional[int],
+        other_line: ta.Optional[int],
     ) -> str:
         requires_both = self._try_requires_both(other, this_line, other_line)
         if requires_both is not None:
@@ -232,9 +232,9 @@ class Incompatibility:
     def _try_requires_both(
         self,
         other: 'Incompatibility',
-        this_line: int | None,
-        other_line: int | None,
-    ) -> str | None:
+        this_line: ta.Optional[int],
+        other_line: ta.Optional[int],
+    ) -> ta.Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return None
 
@@ -281,9 +281,9 @@ class Incompatibility:
     def _try_requires_through(
         self,
         other: 'Incompatibility',
-        this_line: int | None,
-        other_line: int | None,
-    ) -> str | None:
+        this_line: ta.Optional[int],
+        other_line: ta.Optional[int],
+    ) -> ta.Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return None
 
@@ -362,9 +362,9 @@ class Incompatibility:
     def _try_requires_forbidden(
         self,
         other: 'Incompatibility',
-        this_line: int | None,
-        other_line: int | None,
-    ) -> str | None:
+        this_line: ta.Optional[int],
+        other_line: ta.Optional[int],
+    ) -> ta.Optional[str]:
         if len(self._terms) != 1 and len(other.terms) != 1:
             return None
 
@@ -429,7 +429,7 @@ class Incompatibility:
         pretty_name = term.dependency.complete_pretty_name
         return f'{pretty_name} ({term.dependency.pretty_constraint})'
 
-    def _single_term_where(self, callable: ta.Callable[[Term], bool]) -> Term | None:
+    def _single_term_where(self, callable: ta.Callable[[Term], bool]) -> ta.Optional[Term]:
         found = None
         for term in self._terms:
             if not callable(term):

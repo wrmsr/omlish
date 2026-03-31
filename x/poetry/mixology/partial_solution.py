@@ -27,23 +27,23 @@ class PartialSolution:
 
     def __init__(self) -> None:
         # The assignments that have been made so far, in the order they were assigned.
-        self._assignments: list[Assignment] = []
+        self._assignments: ta.List[Assignment] = []
 
         # The decisions made for each package.
-        self._decisions: dict[str, Package] = {}
+        self._decisions: ta.Dict[str, Package] = {}
 
         # The intersection of all positive Assignments for each package, minus any negative Assignments that refer to
         # that package.
         #
         # This is derived from self._assignments.
-        self._positive: dict[str, Term] = {}
+        self._positive: ta.Dict[str, Term] = {}
 
         # The union of all negative Assignments for each package.
         #
         # If a package has any positive Assignments, it doesn't appear in this map.
         #
         # This is derived from self._assignments.
-        self._negative: dict[str, Term] = {}
+        self._negative: ta.Dict[str, Term] = {}
 
         # The number of distinct solutions that have been attempted so far.
         self._attempted_solutions = 1
@@ -52,7 +52,7 @@ class PartialSolution:
         self._backtracking = False
 
     @property
-    def decisions(self) -> list[Package]:
+    def decisions(self) -> ta.List[Package]:
         return list(self._decisions.values())
 
     @property
@@ -64,7 +64,7 @@ class PartialSolution:
         return self._attempted_solutions
 
     @property
-    def unsatisfied(self) -> list[Dependency]:
+    def unsatisfied(self) -> ta.List[Dependency]:
         return [
             term.dependency
             for term in self._positive.values()
@@ -157,7 +157,7 @@ class PartialSolution:
         entry collectively satisfies term.
         """
 
-        assigned_term: Term | None = None
+        assigned_term: ta.Optional[Term] = None
 
         for assignment in self._assignments:
             if assignment.dependency.complete_name != term.dependency.complete_name:
