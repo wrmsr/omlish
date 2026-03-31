@@ -43,6 +43,8 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
 
     #
 
+    _aggregate_responses: bool = True
+
     async def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> AsyncStreamHttpClientResponse:
         prepared = self._prepare_request(req)
 

@@ -16,6 +16,7 @@ from ...headers import HttpHeaders
 from ...pipelines.clients.clients import IoPipelineHttpClientHandler
 from ...pipelines.clients.requests import IoPipelineHttpRequestCompressor
 from ...pipelines.clients.requests import IoPipelineHttpRequestEncoder
+from ...pipelines.clients.responses import IoPipelineHttpResponseAggregatorDecoder
 from ...pipelines.clients.responses import IoPipelineHttpResponseDechunker
 from ...pipelines.clients.responses import IoPipelineHttpResponseDecoder
 from ...pipelines.clients.responses import IoPipelineHttpResponseDecompressor
@@ -79,6 +80,8 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
 
     #
 
+    _aggregate_responses: bool = False  # FIXME: jank placeholder lol
+
     def _build_pipeline_spec(
             self,
             *,
@@ -106,9 +109,9 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
                 *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
                 IoPipelineHttpResponseDecoder(),
-                IoPipelineHttpResponseDechunker(),
+                *([IoPipelineHttpResponseDechunker()] if not self._aggregate_responses else []),
                 IoPipelineHttpResponseDecompressor(),
-                # IoPipelineHttpResponseAggregatorDecoder(enabled='unless_chunked'),
+                *([IoPipelineHttpResponseAggregatorDecoder()] if self._aggregate_responses else []),
 
                 IoPipelineHttpRequestEncoder(),
                 IoPipelineHttpRequestCompressor(),
