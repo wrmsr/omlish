@@ -98,7 +98,7 @@ docutils==0.22.4
 markdown-it-py==4.0.0
 mdit-py-plugins==0.5.0
 
-pygments==2.19.2
+pygments==2.20.0
 
 mwparserfromhell==0.7.2
 wikitextparser==0.56.4  # !! GPL
@@ -109,8 +109,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 # must be kept in sync
-textual==8.2.0  # @omlish-venv 13t 13dt 14t
-textual[syntax]==8.2.0  # @omlish-venv !13t !13dt !14t
+textual==8.2.1  # @omlish-venv 13t 13dt 14t
+textual[syntax]==8.2.1  # @omlish-venv !13t !13dt !14t
 
 rich==14.3.3
 textual-dev==1.8.0
@@ -140,8 +140,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.78
-types-boto3>=1.42.78
+boto3>=1.42.79
+types-boto3>=1.42.79
 botocore-stubs>=1.42.41
 
 antlr4-python3-runtime==4.13.2

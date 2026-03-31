@@ -9,7 +9,7 @@
 # infra
 
 google-api-python-client==2.193.0
-google-cloud-compute==1.46.0
+google-cloud-compute==1.47.0
 
 
 ##
@@ -31,7 +31,7 @@ safetensors==0.7.0
 
 tavily-python==0.7.23
 
-sqlite-vec==0.1.7
+sqlite-vec==0.1.8
 
 pytesseract==0.3.13
 
