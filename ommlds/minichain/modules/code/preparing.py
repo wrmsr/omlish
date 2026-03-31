@@ -4,9 +4,9 @@ from ...drivers.preparing.types import PlaceholderContents
 from ...drivers.preparing.types import PlaceholderContentsProvider
 from ...drivers.preparing.types import ProvidedSystemMessage
 from ...drivers.preparing.types import SystemMessageProvider
-from ...lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
-from ...lib.code.prompts import CodeAgentSystemPromptEnvironmentPlaceholder
-from ...lib.code.prompts import build_code_agent_system_prompt_environment
+from .prompts import CODE_AGENT_SYSTEM_PROMPT
+from .prompts import CodeAgentSystemPromptEnvironmentPlaceholder
+from .prompts import build_code_agent_system_prompt_environment
 
 
 ##
