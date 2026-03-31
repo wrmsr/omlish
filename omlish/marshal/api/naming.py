@@ -4,6 +4,7 @@ TODO:
   - this interface is ~intentionally~ limited, but custom overrides would be useful
 """
 import enum
+import typing as ta
 
 from ... import check
 from ... import lang
@@ -14,9 +15,22 @@ from .configs import Config
 
 
 class Naming(Config, enum.Enum):
-    SNAKE = 'snake'
     CAMEL = 'camel'
     LOW_CAMEL = 'low_camel'
+    SNAKE = 'snake'
+    UP_SNAKE = 'up_snake'
+    KEBAB = 'kebab'
+    UP_KEBAB = 'up_kebab'
+
+
+_CASING_BY_NAMING: ta.Mapping[Naming, lang.StringCasing] = {
+    Naming.CAMEL: lang.CAMEL_CASE,
+    Naming.LOW_CAMEL: lang.LOW_CAMEL_CASE,
+    Naming.SNAKE: lang.SNAKE_CASE,
+    Naming.UP_SNAKE: lang.UP_SNAKE_CASE,
+    Naming.KEBAB: lang.KEBAB_CASE,
+    Naming.UP_KEBAB: lang.UP_KEBAB_CASE,
+}
 
 
 def translate_name(n: str, e: Naming) -> str:
@@ -29,13 +43,7 @@ def translate_name(n: str, e: Naming) -> str:
     sfx = '_' * (len(n1) - len(n2))
     ps = lang.split_string_casing(n2)
 
-    if e is Naming.SNAKE:
-        r = lang.snake_case(*ps)
-    elif e is Naming.CAMEL:
-        r = lang.camel_case(*ps)
-    elif e is Naming.LOW_CAMEL:
-        r = lang.low_camel_case(*ps)
-    else:
-        raise ValueError(e)
+    cs = _CASING_BY_NAMING[e]
+    r = cs.join(*ps)
 
     return pfx + r + sfx

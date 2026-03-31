@@ -159,7 +159,25 @@ class UpSnakeCase(_SepStringCasing):
 
     _SEP = '_'
     _UP = True
-    _EXAMPLE = 'UPPER_SNAKE_CASE'
+    _EXAMPLE = 'UP_SNAKE_CASE'
+
+
+#
+
+
+class KebabCase(_SepStringCasing):
+    """foo-bar-baz"""
+
+    _SEP = '-'
+    _EXAMPLE = 'kebab-case'
+
+
+class UpKebabCase(_SepStringCasing):
+    """FOO-BAR-BAZ"""
+
+    _SEP = '-'
+    _UP = True
+    _EXAMPLE = 'UP-KEBAB-CASE'
 
 
 ##
@@ -170,6 +188,8 @@ STRING_CASINGS = [
     (LOW_CAMEL_CASE := LowCamelCase()),
     (SNAKE_CASE := SnakeCase()),
     (UP_SNAKE_CASE := UpSnakeCase()),
+    (KEBAB_CASE := KebabCase()),
+    (UP_KEBAB_CASE := UpKebabCase()),
 ]
 
 
@@ -177,6 +197,8 @@ camel_case = CAMEL_CASE.join
 low_camel_case = LOW_CAMEL_CASE.join
 snake_case = SNAKE_CASE.join
 up_snake_case = UP_SNAKE_CASE.join
+kebab_case = KEBAB_CASE.join
+up_kebab_case = UP_KEBAB_CASE.join
 
 
 camel_to_snake = CAMEL_CASE.to(SNAKE_CASE)

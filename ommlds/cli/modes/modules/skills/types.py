@@ -1,12 +1,17 @@
+import operator
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish import lang
+from omlish import marshal as msh
 
 
 ##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.truthy_repr)
+@msh.update_object_options(field_naming=msh.Naming.KEBAB, field_defaults=msh.FieldOptions(omit_if=operator.not_))
 class SkillHeader:
     # Max 64 characters. Lowercase letters, numbers, and hyphens only. Must not start or end with a hyphen.
     name: str
@@ -25,3 +30,9 @@ class SkillHeader:
 
     # Space-delimited list of pre-approved tools the skill may use. (Experimental)
     allowed_tools: str | None = None
+
+
+@dc.dataclass(frozen=True)
+class Skill:
+    header: SkillHeader
+    body: str

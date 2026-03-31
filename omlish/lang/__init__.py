@@ -53,17 +53,23 @@ with _auto_proxy_init(globals(), update_exports=True):
         LowCamelCase,
         SnakeCase,
         UpSnakeCase,
+        KebabCase,
+        UpKebabCase,
 
         STRING_CASINGS,
         CAMEL_CASE,
         LOW_CAMEL_CASE,
         SNAKE_CASE,
         UP_SNAKE_CASE,
+        KEBAB_CASE,
+        UP_KEBAB_CASE,
 
         camel_case,
         low_camel_case,
         snake_case,
         up_snake_case,
+        kebab_case,
+        up_kebab_case,
 
         camel_to_snake,
         snake_to_camel,
