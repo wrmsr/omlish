@@ -12,15 +12,15 @@ from omlish import cached
 from omlish import check
 from omlish import lang
 from omlish.http.coro.server.simple import make_simple_http_server
-from omlish.http.simple.handlers import ExceptionLoggingHttpHandler
-from omlish.http.simple.handlers import HttpHandler_
-from omlish.http.simple.handlers import HttpHandlerRequest
-from omlish.http.simple.handlers import HttpHandlerResponse
-from omlish.http.simple.handlers import LoggingHttpHandler
+from omlish.http.simple.handlers import ExceptionLoggingSimpleHttpHandler
+from omlish.http.simple.handlers import LoggingSimpleHttpHandler
+from omlish.http.simple.handlers import SimpleHttpHandler_
+from omlish.http.simple.handlers import SimpleHttpHandlerRequest
+from omlish.http.simple.handlers import SimpleHttpHandlerResponse
 from omlish.logs import all as logs
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
-from omlish.sockets.handlers.server import SocketServer
+from omlish.sockets.handlers.server import SocketHandlerServer
 
 from .. import minichain as mc
 from ..minichain.backends.impls.openai.chat import OpenaiChatChoicesService
@@ -39,10 +39,10 @@ log = logs.get_module_logger(globals())
 
 
 @dc.dataclass(frozen=True)
-class McServerHandler(HttpHandler_):
+class McServerHandlerSimple(SimpleHttpHandler_):
     llm: mc.ChatChoicesService
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         prompt = check.not_none(req.data).decode('utf-8')
 
         log.info('Server got prompt: %s', prompt)
@@ -56,7 +56,7 @@ class McServerHandler(HttpHandler_):
         log.info('Server got response: %s', resp_txt)
 
         data = resp_txt.encode('utf-8')
-        return HttpHandlerResponse(
+        return SimpleHttpHandlerResponse(
             status=200,
             headers={
                 'Content-Length': str(len(data)),
@@ -101,9 +101,9 @@ class McServer:
 
             with make_simple_http_server(
                     self._config.bind,
-                    ExceptionLoggingHttpHandler(
-                        LoggingHttpHandler(
-                            McServerHandler(llm),
+                    ExceptionLoggingSimpleHttpHandler(
+                        LoggingSimpleHttpHandler(
+                            McServerHandlerSimple(llm),
                             log,
                         ),
                         log,
@@ -122,10 +122,10 @@ class McServer:
 
                         res = pc.poll(5.)
 
-                        if res in (SocketServer.PollResult.ERROR, SocketServer.PollResult.SHUTDOWN):
+                        if res in (SocketHandlerServer.PollResult.ERROR, SocketHandlerServer.PollResult.SHUTDOWN):
                             break
 
-                        if res == SocketServer.PollResult.CONNECTION:
+                        if res == SocketHandlerServer.PollResult.CONNECTION:
                             deadline = time.monotonic() + linger_s
 
         finally:

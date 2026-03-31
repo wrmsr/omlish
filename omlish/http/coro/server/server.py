@@ -66,11 +66,11 @@ from ....sockets.addresses import SocketAddress
 from ...parsing import HttpParseError
 from ...parsing import HttpParser
 from ...parsing import ParsedHttpMessage
-from ...simple.handlers import HttpHandler
-from ...simple.handlers import HttpHandlerRequest
-from ...simple.handlers import HttpHandlerResponseData
-from ...simple.handlers import HttpHandlerResponseStreamedData
-from ...simple.handlers import UnsupportedMethodHttpHandlerError
+from ...simple.handlers import SimpleHttpHandler
+from ...simple.handlers import SimpleHttpHandlerRequest
+from ...simple.handlers import SimpleHttpHandlerResponseData
+from ...simple.handlers import SimpleHttpHandlerResponseStreamedData
+from ...simple.handlers import UnsupportedMethodSimpleHttpHandlerError
 from ...versions import HttpVersion
 from ...versions import HttpVersions
 from ..io import CoroHttpIo
@@ -94,7 +94,7 @@ class CoroHttpServer:
             self,
             client_address: SocketAddress,
             *,
-            handler: HttpHandler,
+            handler: SimpleHttpHandler,
             parser: HttpParser = HttpParser(),
 
             default_content_type: ta.Optional[str] = None,
@@ -121,7 +121,7 @@ class CoroHttpServer:
         return self._client_address
 
     @property
-    def handler(self) -> HttpHandler:
+    def handler(self) -> SimpleHttpHandler:
         return self._handler
 
     #
@@ -188,7 +188,7 @@ class CoroHttpServer:
 
         message: ta.Optional[str] = None
         headers: ta.Optional[ta.Sequence['CoroHttpServer._Header']] = None
-        data: ta.Optional[HttpHandlerResponseData] = None
+        data: ta.Optional[SimpleHttpHandlerResponseData] = None
         close_connection: ta.Optional[bool] = False
 
         def get_header(self, key: str) -> ta.Optional['CoroHttpServer._Header']:
@@ -198,7 +198,7 @@ class CoroHttpServer:
             return None
 
         def close(self) -> None:
-            if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+            if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
                 d.close()
 
     #
@@ -228,7 +228,7 @@ class CoroHttpServer:
             yield a.data
             return
 
-        elif isinstance(a.data, HttpHandlerResponseStreamedData):
+        elif isinstance(a.data, SimpleHttpHandlerResponseStreamedData):
             yield from a.data.iter
 
         else:
@@ -249,7 +249,7 @@ class CoroHttpServer:
             cl: ta.Optional[int]
             if isinstance(resp.data, bytes):
                 cl = len(resp.data)
-            elif isinstance(resp.data, HttpHandlerResponseStreamedData):
+            elif isinstance(resp.data, SimpleHttpHandlerResponseStreamedData):
                 cl = resp.data.length
             else:
                 raise TypeError(resp.data)
@@ -504,7 +504,7 @@ class CoroHttpServer:
 
         # Build request
 
-        handler_request = HttpHandlerRequest(
+        handler_request = SimpleHttpHandlerRequest(
             client_address=self._client_address,
             method=check.not_none(parsed.request_line).method,
             path=check.not_none(parsed.request_line).request_target.decode('ascii'),  # FIXME: lol
@@ -517,7 +517,7 @@ class CoroHttpServer:
         try:
             handler_response = self._handler(handler_request)
 
-        except UnsupportedMethodHttpHandlerError:
+        except UnsupportedMethodSimpleHttpHandlerError:
             err = self._build_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({(parsed.request_line.method if parsed.request_line else "?")!r})',

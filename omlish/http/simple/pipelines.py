@@ -21,7 +21,7 @@ from ...lite.check import check
 from ...sockets.addresses import SocketAndAddress
 from ...sockets.bind import CanSocketBinder
 from ...sockets.bind import SocketBinder
-from ...sockets.handlers.server import SocketServer
+from ...sockets.handlers.server import SocketHandlerServer
 from ...sockets.handlers.simple import ExecutorSocketHandler
 from ...sockets.handlers.simple import SocketHandler
 from ...sockets.handlers.simple import SocketWrappingSocketHandler
@@ -35,8 +35,8 @@ from ..pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
 from ..pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from ..pipelines.servers.responses import IoPipelineHttpResponseEncoder
 from ..pipelines.servers.responses import IoPipelineHttpResponseHead
-from .handlers import HttpHandler
-from .handlers import HttpHandlerRequest
+from .handlers import SimpleHttpHandler
+from .handlers import SimpleHttpHandlerRequest
 
 
 if ta.TYPE_CHECKING:
@@ -47,7 +47,7 @@ if ta.TYPE_CHECKING:
 
 
 class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
-    def __init__(self, handler: HttpHandler) -> None:
+    def __init__(self, handler: SimpleHttpHandler) -> None:
         super().__init__()
 
         self._handler = handler
@@ -71,7 +71,7 @@ class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
 
         #
 
-        handler_req = HttpHandlerRequest(
+        handler_req = SimpleHttpHandlerRequest(
             client_address=ctx.pipeline.metadata[SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata],
             method=msg.head.method,
             path=msg.head.target,
@@ -101,7 +101,7 @@ class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
 @contextlib.contextmanager
 def make_simple_http_server(
         bind: CanSocketBinder,
-        handler: HttpHandler,
+        handler: SimpleHttpHandler,
         *,
         # keep_alive: bool = False,  # TODO
         ssl_context: ta.Optional['ssl.SSLContext'] = None,
@@ -109,7 +109,7 @@ def make_simple_http_server(
         executor: ta.Optional[cf.Executor] = None,
         use_threads: bool = False,
         **kwargs: ta.Any,
-) -> ta.Iterator[SocketServer]:
+) -> ta.Iterator[SocketHandlerServer]:
     check.arg(not (executor is not None and use_threads))
 
     #
@@ -180,7 +180,7 @@ def make_simple_http_server(
 
         #
 
-        server = es.enter_context(SocketServer(
+        server = es.enter_context(SocketHandlerServer(
             SocketBinder.of(bind),
             socket_handler,
             **kwargs,

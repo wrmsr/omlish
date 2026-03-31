@@ -8,19 +8,19 @@ socat TCP-LISTEN:8000,fork UNIX-CONNECT:foo.sock
 import typing as ta
 
 from .... import check
-from ...coro.server.server import UnsupportedMethodHttpHandlerError
-from ..handlers import HttpHandlerRequest
-from ..handlers import HttpHandlerResponse
-from ..handlers import HttpHandlerResponseStreamedData
+from ...coro.server.server import UnsupportedMethodSimpleHttpHandlerError
+from ..handlers import SimpleHttpHandlerRequest
+from ..handlers import SimpleHttpHandlerResponse
+from ..handlers import SimpleHttpHandlerResponseStreamedData
 from ..pipelines import make_simple_http_server
 
 
 ##
 
 
-def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
+def say_hi_handler(req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
     if req.method not in ('GET', 'POST'):
-        raise UnsupportedMethodHttpHandlerError
+        raise UnsupportedMethodSimpleHttpHandlerError
 
     resp = '\n'.join([
         f'method: {req.method}',
@@ -36,7 +36,7 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
             for b in data:
                 yield bytes([b])
 
-        resp_data = HttpHandlerResponseStreamedData(
+        resp_data = SimpleHttpHandlerResponseStreamedData(
             stream_data(),
             len(data),
         )
@@ -44,7 +44,7 @@ def say_hi_handler(req: HttpHandlerRequest) -> HttpHandlerResponse:
     else:
         resp_data = data
 
-    return HttpHandlerResponse(
+    return SimpleHttpHandlerResponse(
         200,
         data=resp_data,
     )

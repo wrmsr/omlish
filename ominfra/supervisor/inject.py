@@ -19,7 +19,7 @@ from .groups import ProcessGroupManager
 from .groupsimpl import ProcessFactory
 from .groupsimpl import ProcessGroupImpl
 from .http import HttpServer
-from .http import SupervisorHttpHandler
+from .http import SupervisorSimpleHttpHandler
 from .io import HasDispatchersList
 from .io import IoManager
 from .process import PidHistory
@@ -135,7 +135,7 @@ def bind_server(
     #
 
     if config.http_port is not None:
-        def _provide_http_handler(s: SupervisorHttpHandler) -> HttpServer.Handler:
+        def _provide_http_handler(s: SupervisorSimpleHttpHandler) -> HttpServer.Handler:
             return HttpServer.Handler(s)
 
         lst.extend([
@@ -144,7 +144,7 @@ def bind_server(
 
             inj.bind(HttpServer.Address(('localhost', config.http_port))),
 
-            inj.bind(SupervisorHttpHandler, singleton=True),
+            inj.bind(SupervisorSimpleHttpHandler, singleton=True),
             inj.bind(_provide_http_handler),
         ])
 

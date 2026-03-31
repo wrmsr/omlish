@@ -7,10 +7,10 @@ TODO:
 """
 import typing as ta
 
-from omlish.http.simple.handlers import HttpHandler_
-from omlish.http.simple.handlers import HttpHandlerRequest
-from omlish.http.simple.handlers import HttpHandlerResponse
-from omlish.http.simple.handlers import HttpHandlerResponseStreamedData
+from omlish.http.simple.handlers import SimpleHttpHandler_
+from omlish.http.simple.handlers import SimpleHttpHandlerRequest
+from omlish.http.simple.handlers import SimpleHttpHandlerResponse
+from omlish.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
 
 from .handlers import DataServerRequest
 from .server import DataServer
@@ -19,7 +19,7 @@ from .server import DataServer
 ##
 
 
-class DataServerHttpHandler(HttpHandler_):
+class DataServerSimpleHttpHandler(SimpleHttpHandler_):
     DEFAULT_READ_CHUNK_SIZE = 0x10000
 
     def __init__(
@@ -33,7 +33,7 @@ class DataServerHttpHandler(HttpHandler_):
         self._ps = ps
         self._read_chunk_size = read_chunk_size
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         p_req = DataServerRequest(
             req.method,
             req.path,
@@ -50,12 +50,12 @@ class DataServerHttpHandler(HttpHandler_):
                     finally:
                         p_body.close()
 
-                data = HttpHandlerResponseStreamedData(stream_data())
+                data = SimpleHttpHandlerResponseStreamedData(stream_data())
 
             else:
                 data = None
 
-            resp = HttpHandlerResponse(
+            resp = SimpleHttpHandlerResponse(
                 status=p_resp.status,
                 headers=p_resp.headers,
                 data=data,

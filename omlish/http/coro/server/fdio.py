@@ -6,7 +6,7 @@ import typing as ta
 from ....io.fdio.handlers import SocketFdioHandler
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
-from ...simple.handlers import HttpHandler
+from ...simple.handlers import SimpleHttpHandler
 from .._buffers import IncrementalWriteBuffer
 from .._buffers import ReadableListBuffer
 from ..io import CoroHttpIo
@@ -21,7 +21,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
             self,
             addr: SocketAddress,
             sock: socket.socket,
-            handler: HttpHandler,
+            handler: SimpleHttpHandler,
             *,
             read_size: int = 0x10000,
             write_size: int = 0x10000,

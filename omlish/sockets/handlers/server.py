@@ -21,7 +21,7 @@ from .types import SocketHandler
 ##
 
 
-class SocketServer:
+class SocketHandlerServer:
     _DEFAULT_LOGGER: LoggerLike = logging.getLogger('.'.join([__name__, 'SocketServer']))  # FIXME
 
     def __init__(
@@ -89,11 +89,11 @@ class SocketServer:
 
     class PollContext(ExitStacked, Abstract):
         @abc.abstractmethod
-        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketHandlerServer.PollResult':
             raise NotImplementedError
 
     class _PollContext(PollContext):
-        def __init__(self, server: 'SocketServer') -> None:
+        def __init__(self, server: 'SocketHandlerServer') -> None:
             super().__init__()
 
             self._server = server
@@ -114,18 +114,18 @@ class SocketServer:
             self._selector = self._enter_context(self._server.Selector())
             self._selector.register(self._server._binder.fileno(), selectors.EVENT_READ)  # noqa: SLF001
 
-        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketHandlerServer.PollResult':
             if self._server._should_shutdown:  # noqa: SLF001
-                return SocketServer.PollResult.SHUTDOWN
+                return SocketHandlerServer.PollResult.SHUTDOWN
 
             ready = self._selector.select(timeout)
 
             # bpo-35017: shutdown() called during select(), exit immediately.
             if self._server._should_shutdown:  # noqa: SLF001
-                return SocketServer.PollResult.SHUTDOWN  # type: ignore[unreachable]
+                return SocketHandlerServer.PollResult.SHUTDOWN  # type: ignore[unreachable]
 
             if not ready:
-                return SocketServer.PollResult.TIMEOUT
+                return SocketHandlerServer.PollResult.TIMEOUT
 
             try:
                 conn = self._server._binder.accept()  # noqa: SLF001
@@ -133,7 +133,7 @@ class SocketServer:
             except OSError as exc:
                 self._server._handle_error(exc)  # noqa: SLF001
 
-                return SocketServer.PollResult.ERROR
+                return SocketHandlerServer.PollResult.ERROR
 
             try:
                 self._server._handler(conn)  # noqa: SLF001
@@ -143,7 +143,7 @@ class SocketServer:
 
                 close_socket_immediately(conn.socket)
 
-            return SocketServer.PollResult.CONNECTION
+            return SocketHandlerServer.PollResult.CONNECTION
 
     def poll_context(self) -> PollContext:
         return self._PollContext(self)
@@ -159,10 +159,10 @@ class SocketServer:
             def loop():
                 while True:
                     res = pc.poll(poll_interval)
-                    if res in (SocketServer.PollResult.ERROR, SocketServer.PollResult.SHUTDOWN):
+                    if res in (SocketHandlerServer.PollResult.ERROR, SocketHandlerServer.PollResult.SHUTDOWN):
                         return
                     else:
-                        yield res == SocketServer.PollResult.CONNECTION
+                        yield res == SocketHandlerServer.PollResult.CONNECTION
 
             yield loop()
 
@@ -193,7 +193,7 @@ class SocketServer:
 
     #
 
-    def __enter__(self) -> 'SocketServer':
+    def __enter__(self) -> 'SocketHandlerServer':
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

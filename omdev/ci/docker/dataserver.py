@@ -8,16 +8,16 @@ import typing as ta
 
 from omlish.docker.ports import DockerPortRelay
 from omlish.http.coro.server.simple import make_simple_http_server
-from omlish.http.simple.handlers import HttpHandler
-from omlish.http.simple.handlers import LoggingHttpHandler
+from omlish.http.simple.handlers import LoggingSimpleHttpHandler
+from omlish.http.simple.handlers import SimpleHttpHandler
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked
 from omlish.logs.protocols import LoggerLike
 from omlish.secrets.tempssl import generate_temp_localhost_ssl_cert
-from omlish.sockets.handlers.server import SocketServer
+from omlish.sockets.handlers.server import SocketHandlerServer
 
-from ...dataserver.http import DataServerHttpHandler
+from ...dataserver.http import DataServerSimpleHttpHandler
 from ...dataserver.server import DataServer
 
 
@@ -54,7 +54,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
     def __init__(
             self,
             port: int,
-            handler: HttpHandler,
+            handler: SimpleHttpHandler,
             *,
             temp_ssl: bool = False,
     ) -> None:
@@ -70,7 +70,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
         self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
         self._thread: ta.Optional[threading.Thread] = None
         self._thread_exit_event = asyncio.Event()
-        self._server: ta.Optional[SocketServer] = None
+        self._server: ta.Optional[SocketHandlerServer] = None
 
     @cached_nullary
     def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
@@ -88,7 +88,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
         return ssl_context
 
     @contextlib.contextmanager
-    def _make_server(self) -> ta.Iterator[SocketServer]:
+    def _make_server(self) -> ta.Iterator[SocketHandlerServer]:
         with make_simple_http_server(
                 self._port,
                 self._handler,
@@ -180,10 +180,10 @@ class DockerDataServer(AsyncExitStacked):
 
         #
 
-        handler: HttpHandler = DataServerHttpHandler(self._data_server)
+        handler: SimpleHttpHandler = DataServerSimpleHttpHandler(self._data_server)
 
         if self._handler_log is not None:
-            handler = LoggingHttpHandler(
+            handler = LoggingSimpleHttpHandler(
                 handler,
                 self._handler_log,
             )

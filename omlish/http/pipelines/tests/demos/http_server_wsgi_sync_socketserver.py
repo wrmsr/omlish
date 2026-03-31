@@ -16,7 +16,7 @@ from .....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from .....lite.check import check
 from .....sockets.addresses import SocketAndAddress
 from .....sockets.bind import SocketBinder
-from .....sockets.handlers.server import SocketServer
+from .....sockets.handlers.server import SocketHandlerServer
 from .....sockets.handlers.simple import ExecutorSocketHandler
 from .....sockets.handlers.simple import SocketHandler
 from .....sockets.handlers.simple import StandardSocketHandler
@@ -112,7 +112,7 @@ def make_simple_http_server(
         executor: ta.Optional[cf.Executor] = None,
         use_threads: bool = False,
         **kwargs: ta.Any,
-) -> ta.Iterator[SocketServer]:
+) -> ta.Iterator[SocketHandlerServer]:
     check.arg(not (executor is not None and use_threads))
 
     #
@@ -144,7 +144,7 @@ def make_simple_http_server(
 
         #
 
-        server = es.enter_context(SocketServer(
+        server = es.enter_context(SocketHandlerServer(
             SocketBinder.of((spec.host, spec.port)),
             socket_handler,
             **kwargs,

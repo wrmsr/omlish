@@ -7,8 +7,8 @@ import typing as ta
 from .... import cached
 from .... import check
 from ....http.coro.server.simple import make_simple_http_server
-from ....http.simple.handlers import LoggingHttpHandler
-from ....http.simple.handlers import StringResponseHttpHandler
+from ....http.simple.handlers import LoggingSimpleHttpHandler
+from ....http.simple.handlers import StringResponseSimpleHttpHandler
 from ....logs import all as logs
 from ....sockets.bind import SocketBinder
 from ... import spawning
@@ -44,7 +44,7 @@ class HiServer:
         try:
             with make_simple_http_server(
                     SocketBinder.Config.of(self._config.port),
-                    LoggingHttpHandler(StringResponseHttpHandler('Hi!'), log),
+                    LoggingSimpleHttpHandler(StringResponseSimpleHttpHandler('Hi!'), log),
             ) as server:
 
                 deadline = time.time() + 10.

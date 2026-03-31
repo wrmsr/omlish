@@ -12,15 +12,15 @@ from ...sockets.addresses import SocketAddress
 from ..parsing import ParsedHttpHeaders
 
 
-HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
-HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
+SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
+SimpleHttpHandlerResponseData = ta.Union[bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerRequest:
+class SimpleHttpHandlerRequest:
     client_address: SocketAddress
     method: str
     path: str
@@ -29,20 +29,20 @@ class HttpHandlerRequest:
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerResponse:
+class SimpleHttpHandlerResponse:
     status: ta.Union[http.HTTPStatus, int]
 
     headers: ta.Optional[ta.Mapping[str, str]] = None
-    data: ta.Optional[HttpHandlerResponseData] = None
+    data: ta.Optional[SimpleHttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
 
     def close(self) -> None:
-        if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+        if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
             d.close()
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerResponseStreamedData:
+class SimpleHttpHandlerResponseStreamedData:
     iter: ta.Iterable[bytes]
     length: ta.Optional[int] = None
 
@@ -51,17 +51,17 @@ class HttpHandlerResponseStreamedData:
             d.close()  # noqa
 
 
-class HttpHandlerError(Exception):
+class SimpleHttpHandlerError(Exception):
     pass
 
 
-class UnsupportedMethodHttpHandlerError(Exception):
+class UnsupportedMethodSimpleHttpHandlerError(Exception):
     pass
 
 
-class HttpHandler_(Abstract):  # noqa
+class SimpleHttpHandler_(Abstract):  # noqa
     @abc.abstractmethod
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         raise NotImplementedError
 
 
@@ -69,12 +69,12 @@ class HttpHandler_(Abstract):  # noqa
 
 
 @dc.dataclass(frozen=True)
-class LoggingHttpHandler(HttpHandler_):
-    handler: HttpHandler
+class LoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
     log: LoggerLike
     level: int = logging.DEBUG
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         self.log.log(self.level, '%r', req)
         resp = self.handler(req)
         self.log.log(self.level, '%r', resp)
@@ -82,12 +82,12 @@ class LoggingHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class ExceptionLoggingHttpHandler(HttpHandler_):
-    handler: HttpHandler
+class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
     log: LoggerLike
-    message: ta.Union[str, ta.Callable[[HttpHandlerRequest, BaseException], str]] = 'Error in http handler'
+    message: ta.Union[str, ta.Callable[[SimpleHttpHandlerRequest, BaseException], str]] = 'Error in http handler'
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         try:
             return self.handler(req)
         except Exception as e:  # noqa
@@ -101,7 +101,7 @@ class ExceptionLoggingHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class BytesResponseHttpHandler(HttpHandler_):
+class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: bytes
 
     status: ta.Union[http.HTTPStatus, int] = 200
@@ -109,8 +109,8 @@ class BytesResponseHttpHandler(HttpHandler_):
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
-        return HttpHandlerResponse(
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
             status=self.status,
             headers={
                 **({'Content-Type': self.content_type} if self.content_type else {}),
@@ -123,7 +123,7 @@ class BytesResponseHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class StringResponseHttpHandler(HttpHandler_):
+class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: str
 
     status: ta.Union[http.HTTPStatus, int] = 200
@@ -131,9 +131,9 @@ class StringResponseHttpHandler(HttpHandler_):
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         data = self.data.encode('utf-8')
-        return HttpHandlerResponse(
+        return SimpleHttpHandlerResponse(
             status=self.status,
             headers={
                 **({'Content-Type': self.content_type} if self.content_type else {}),

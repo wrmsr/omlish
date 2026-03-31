@@ -146,12 +146,12 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/sockets.py', sha1='8d24dae988a30bb73f167a9ab62d4fc9eef4ad06'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
-            dict(path='../../omlish/http/simple/handlers.py', sha1='18f545608e9708c9b1c9711bebde3e8d357cc484'),
+            dict(path='../../omlish/http/simple/handlers.py', sha1='9e49c2ba5518616ce15bed6bac80ab4c88ed3b83'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
-            dict(path='../../omlish/sockets/handlers/server.py', sha1='b02f7f8cfd74dd6a1373704fc95771fb967b35b2'),
+            dict(path='../../omlish/sockets/handlers/server.py', sha1='ff961abd10f255e9efb7178e9d850a52d95841b5'),
             dict(path='../../omlish/sockets/handlers/simple.py', sha1='78e1a4c419c8f82d10577f19654a3d8ce28d757f'),
             dict(path='../../omlish/sockets/handlers/ssl.py', sha1='94c0acedffe5b581419a7a92c2f1c4e4a58b7a83'),
             dict(path='../../omlish/sockets/handlers/threading.py', sha1='17906cd7f9f89cc036684c807c30034da38a585f'),
@@ -163,7 +163,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
             dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
             dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
-            dict(path='../../omlish/http/coro/server/server.py', sha1='0a2739bc15256194346c93efef37bbce8cb51e92'),
+            dict(path='../../omlish/http/coro/server/server.py', sha1='7df1eeef6bb161287d04bf2f77bb4b9d0ef73237'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
@@ -178,15 +178,15 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
-            dict(path='../dataserver/http.py', sha1='ee3797df26d6fe434d226c8470c2b4b1d7909c49'),
+            dict(path='../dataserver/http.py', sha1='41a6e39c6d66807b6189e2d78d8cf2ff10e45bc3'),
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
-            dict(path='../../omlish/http/coro/server/simple.py', sha1='e4718a476a94b0f4f82ec55ae94a8248e8de9b78'),
+            dict(path='../../omlish/http/coro/server/simple.py', sha1='253e6629997443949695d8058020a5c130c8b64f'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
-            dict(path='docker/dataserver.py', sha1='126c3ab0b41eb83308b73daf1380a9048c171b66'),
+            dict(path='docker/dataserver.py', sha1='f0f015b9ef52db501fd4efd5e7049e2e314b3daf'),
             dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
@@ -281,8 +281,8 @@ SocketHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
 # ../../omlish/http/simple/handlers.py
-HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
-HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
+SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
+SimpleHttpHandlerResponseData = ta.Union[bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 # ../../omlish/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
@@ -10122,7 +10122,7 @@ def yaml_detect_line_break_char(src: str) -> str:
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerRequest:
+class SimpleHttpHandlerRequest:
     client_address: SocketAddress
     method: str
     path: str
@@ -10131,20 +10131,20 @@ class HttpHandlerRequest:
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerResponse:
+class SimpleHttpHandlerResponse:
     status: ta.Union[http.HTTPStatus, int]
 
     headers: ta.Optional[ta.Mapping[str, str]] = None
-    data: ta.Optional[HttpHandlerResponseData] = None
+    data: ta.Optional[SimpleHttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
 
     def close(self) -> None:
-        if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+        if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
             d.close()
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerResponseStreamedData:
+class SimpleHttpHandlerResponseStreamedData:
     iter: ta.Iterable[bytes]
     length: ta.Optional[int] = None
 
@@ -10153,17 +10153,17 @@ class HttpHandlerResponseStreamedData:
             d.close()  # noqa
 
 
-class HttpHandlerError(Exception):
+class SimpleHttpHandlerError(Exception):
     pass
 
 
-class UnsupportedMethodHttpHandlerError(Exception):
+class UnsupportedMethodSimpleHttpHandlerError(Exception):
     pass
 
 
-class HttpHandler_(Abstract):  # noqa
+class SimpleHttpHandler_(Abstract):  # noqa
     @abc.abstractmethod
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         raise NotImplementedError
 
 
@@ -10171,12 +10171,12 @@ class HttpHandler_(Abstract):  # noqa
 
 
 @dc.dataclass(frozen=True)
-class LoggingHttpHandler(HttpHandler_):
-    handler: HttpHandler
+class LoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
     log: LoggerLike
     level: int = logging.DEBUG
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         self.log.log(self.level, '%r', req)
         resp = self.handler(req)
         self.log.log(self.level, '%r', resp)
@@ -10184,12 +10184,12 @@ class LoggingHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class ExceptionLoggingHttpHandler(HttpHandler_):
-    handler: HttpHandler
+class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
     log: LoggerLike
-    message: ta.Union[str, ta.Callable[[HttpHandlerRequest, BaseException], str]] = 'Error in http handler'
+    message: ta.Union[str, ta.Callable[[SimpleHttpHandlerRequest, BaseException], str]] = 'Error in http handler'
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         try:
             return self.handler(req)
         except Exception as e:  # noqa
@@ -10203,7 +10203,7 @@ class ExceptionLoggingHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class BytesResponseHttpHandler(HttpHandler_):
+class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: bytes
 
     status: ta.Union[http.HTTPStatus, int] = 200
@@ -10211,8 +10211,8 @@ class BytesResponseHttpHandler(HttpHandler_):
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
-        return HttpHandlerResponse(
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
             status=self.status,
             headers={
                 **({'Content-Type': self.content_type} if self.content_type else {}),
@@ -10225,7 +10225,7 @@ class BytesResponseHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class StringResponseHttpHandler(HttpHandler_):
+class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: str
 
     status: ta.Union[http.HTTPStatus, int] = 200
@@ -10233,9 +10233,9 @@ class StringResponseHttpHandler(HttpHandler_):
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         data = self.data.encode('utf-8')
-        return HttpHandlerResponse(
+        return SimpleHttpHandlerResponse(
             status=self.status,
             headers={
                 **({'Content-Type': self.content_type} if self.content_type else {}),
@@ -11717,7 +11717,7 @@ log_timing_context = LogTimingContext
 ##
 
 
-class SocketServer:
+class SocketHandlerServer:
     _DEFAULT_LOGGER: LoggerLike = logging.getLogger('.'.join([__name__, 'SocketServer']))  # FIXME
 
     def __init__(
@@ -11785,11 +11785,11 @@ class SocketServer:
 
     class PollContext(ExitStacked, Abstract):
         @abc.abstractmethod
-        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketHandlerServer.PollResult':
             raise NotImplementedError
 
     class _PollContext(PollContext):
-        def __init__(self, server: 'SocketServer') -> None:
+        def __init__(self, server: 'SocketHandlerServer') -> None:
             super().__init__()
 
             self._server = server
@@ -11810,18 +11810,18 @@ class SocketServer:
             self._selector = self._enter_context(self._server.Selector())
             self._selector.register(self._server._binder.fileno(), selectors.EVENT_READ)  # noqa: SLF001
 
-        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketServer.PollResult':
+        def poll(self, timeout: ta.Optional[float] = None) -> 'SocketHandlerServer.PollResult':
             if self._server._should_shutdown:  # noqa: SLF001
-                return SocketServer.PollResult.SHUTDOWN
+                return SocketHandlerServer.PollResult.SHUTDOWN
 
             ready = self._selector.select(timeout)
 
             # bpo-35017: shutdown() called during select(), exit immediately.
             if self._server._should_shutdown:  # noqa: SLF001
-                return SocketServer.PollResult.SHUTDOWN  # type: ignore[unreachable]
+                return SocketHandlerServer.PollResult.SHUTDOWN  # type: ignore[unreachable]
 
             if not ready:
-                return SocketServer.PollResult.TIMEOUT
+                return SocketHandlerServer.PollResult.TIMEOUT
 
             try:
                 conn = self._server._binder.accept()  # noqa: SLF001
@@ -11829,7 +11829,7 @@ class SocketServer:
             except OSError as exc:
                 self._server._handle_error(exc)  # noqa: SLF001
 
-                return SocketServer.PollResult.ERROR
+                return SocketHandlerServer.PollResult.ERROR
 
             try:
                 self._server._handler(conn)  # noqa: SLF001
@@ -11839,7 +11839,7 @@ class SocketServer:
 
                 close_socket_immediately(conn.socket)
 
-            return SocketServer.PollResult.CONNECTION
+            return SocketHandlerServer.PollResult.CONNECTION
 
     def poll_context(self) -> PollContext:
         return self._PollContext(self)
@@ -11855,10 +11855,10 @@ class SocketServer:
             def loop():
                 while True:
                     res = pc.poll(poll_interval)
-                    if res in (SocketServer.PollResult.ERROR, SocketServer.PollResult.SHUTDOWN):
+                    if res in (SocketHandlerServer.PollResult.ERROR, SocketHandlerServer.PollResult.SHUTDOWN):
                         return
                     else:
-                        yield res == SocketServer.PollResult.CONNECTION
+                        yield res == SocketHandlerServer.PollResult.CONNECTION
 
             yield loop()
 
@@ -11889,7 +11889,7 @@ class SocketServer:
 
     #
 
-    def __enter__(self) -> 'SocketServer':
+    def __enter__(self) -> 'SocketHandlerServer':
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -17151,7 +17151,7 @@ class CoroHttpServer:
             self,
             client_address: SocketAddress,
             *,
-            handler: HttpHandler,
+            handler: SimpleHttpHandler,
             parser: HttpParser = HttpParser(),
 
             default_content_type: ta.Optional[str] = None,
@@ -17178,7 +17178,7 @@ class CoroHttpServer:
         return self._client_address
 
     @property
-    def handler(self) -> HttpHandler:
+    def handler(self) -> SimpleHttpHandler:
         return self._handler
 
     #
@@ -17245,7 +17245,7 @@ class CoroHttpServer:
 
         message: ta.Optional[str] = None
         headers: ta.Optional[ta.Sequence['CoroHttpServer._Header']] = None
-        data: ta.Optional[HttpHandlerResponseData] = None
+        data: ta.Optional[SimpleHttpHandlerResponseData] = None
         close_connection: ta.Optional[bool] = False
 
         def get_header(self, key: str) -> ta.Optional['CoroHttpServer._Header']:
@@ -17255,7 +17255,7 @@ class CoroHttpServer:
             return None
 
         def close(self) -> None:
-            if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+            if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
                 d.close()
 
     #
@@ -17285,7 +17285,7 @@ class CoroHttpServer:
             yield a.data
             return
 
-        elif isinstance(a.data, HttpHandlerResponseStreamedData):
+        elif isinstance(a.data, SimpleHttpHandlerResponseStreamedData):
             yield from a.data.iter
 
         else:
@@ -17306,7 +17306,7 @@ class CoroHttpServer:
             cl: ta.Optional[int]
             if isinstance(resp.data, bytes):
                 cl = len(resp.data)
-            elif isinstance(resp.data, HttpHandlerResponseStreamedData):
+            elif isinstance(resp.data, SimpleHttpHandlerResponseStreamedData):
                 cl = resp.data.length
             else:
                 raise TypeError(resp.data)
@@ -17561,7 +17561,7 @@ class CoroHttpServer:
 
         # Build request
 
-        handler_request = HttpHandlerRequest(
+        handler_request = SimpleHttpHandlerRequest(
             client_address=self._client_address,
             method=check.not_none(parsed.request_line).method,
             path=check.not_none(parsed.request_line).request_target.decode('ascii'),  # FIXME: lol
@@ -17574,7 +17574,7 @@ class CoroHttpServer:
         try:
             handler_response = self._handler(handler_request)
 
-        except UnsupportedMethodHttpHandlerError:
+        except UnsupportedMethodSimpleHttpHandlerError:
             err = self._build_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({(parsed.request_line.method if parsed.request_line else "?")!r})',
@@ -22232,7 +22232,7 @@ TODO:
 ##
 
 
-class DataServerHttpHandler(HttpHandler_):
+class DataServerSimpleHttpHandler(SimpleHttpHandler_):
     DEFAULT_READ_CHUNK_SIZE = 0x10000
 
     def __init__(
@@ -22246,7 +22246,7 @@ class DataServerHttpHandler(HttpHandler_):
         self._ps = ps
         self._read_chunk_size = read_chunk_size
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         p_req = DataServerRequest(
             req.method,
             req.path,
@@ -22263,12 +22263,12 @@ class DataServerHttpHandler(HttpHandler_):
                     finally:
                         p_body.close()
 
-                data = HttpHandlerResponseStreamedData(stream_data())
+                data = SimpleHttpHandlerResponseStreamedData(stream_data())
 
             else:
                 data = None
 
-            resp = HttpHandlerResponse(
+            resp = SimpleHttpHandlerResponse(
                 status=p_resp.status,
                 headers=p_resp.headers,
                 data=data,
@@ -23567,7 +23567,7 @@ TODO:
 @contextlib.contextmanager
 def make_simple_http_server(
         bind: CanSocketBinder,
-        handler: HttpHandler,
+        handler: SimpleHttpHandler,
         *,
         keep_alive: bool = False,
         ssl_context: ta.Optional['ssl.SSLContext'] = None,
@@ -23575,7 +23575,7 @@ def make_simple_http_server(
         executor: ta.Optional[cf.Executor] = None,
         use_threads: bool = False,
         **kwargs: ta.Any,
-) -> ta.Iterator[SocketServer]:
+) -> ta.Iterator[SocketHandlerServer]:
     check.arg(not (executor is not None and use_threads))
 
     #
@@ -23628,7 +23628,7 @@ def make_simple_http_server(
 
         #
 
-        server = es.enter_context(SocketServer(
+        server = es.enter_context(SocketHandlerServer(
             SocketBinder.of(bind),
             socket_handler,
             **kwargs,
@@ -24153,7 +24153,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
     def __init__(
             self,
             port: int,
-            handler: HttpHandler,
+            handler: SimpleHttpHandler,
             *,
             temp_ssl: bool = False,
     ) -> None:
@@ -24169,7 +24169,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
         self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
         self._thread: ta.Optional[threading.Thread] = None
         self._thread_exit_event = asyncio.Event()
-        self._server: ta.Optional[SocketServer] = None
+        self._server: ta.Optional[SocketHandlerServer] = None
 
     @cached_nullary
     def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
@@ -24187,7 +24187,7 @@ class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
         return ssl_context
 
     @contextlib.contextmanager
-    def _make_server(self) -> ta.Iterator[SocketServer]:
+    def _make_server(self) -> ta.Iterator[SocketHandlerServer]:
         with make_simple_http_server(
                 self._port,
                 self._handler,
@@ -24279,10 +24279,10 @@ class DockerDataServer(AsyncExitStacked):
 
         #
 
-        handler: HttpHandler = DataServerHttpHandler(self._data_server)
+        handler: SimpleHttpHandler = DataServerSimpleHttpHandler(self._data_server)
 
         if self._handler_log is not None:
-            handler = LoggingHttpHandler(
+            handler = LoggingSimpleHttpHandler(
                 handler,
                 self._handler_log,
             )

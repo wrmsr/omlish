@@ -1,7 +1,7 @@
 from omlish.http.coro.server.simple import make_simple_http_server
 
 from ..handlers import DataServerRequest
-from ..http import DataServerHttpHandler
+from ..http import DataServerSimpleHttpHandler
 from ..routes import DataServerRoute
 from ..server import DataServer
 from ..targets import DataServerTarget
@@ -33,7 +33,7 @@ def _main() -> None:
 
     with make_simple_http_server(
             5021,
-            DataServerHttpHandler(ds),
+            DataServerSimpleHttpHandler(ds),
             use_threads=True,
     ) as server:
         server.run()

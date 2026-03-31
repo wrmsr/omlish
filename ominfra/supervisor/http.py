@@ -5,10 +5,10 @@ import socket
 import typing as ta
 
 from omlish.http.coro.server.fdio import CoroHttpServerConnectionFdioHandler
-from omlish.http.simple.handlers import HttpHandler
-from omlish.http.simple.handlers import HttpHandler_
-from omlish.http.simple.handlers import HttpHandlerRequest
-from omlish.http.simple.handlers import HttpHandlerResponse
+from omlish.http.simple.handlers import SimpleHttpHandler
+from omlish.http.simple.handlers import SimpleHttpHandler_
+from omlish.http.simple.handlers import SimpleHttpHandlerRequest
+from omlish.http.simple.handlers import SimpleHttpHandlerResponse
 from omlish.io.fdio.handlers import SocketFdioHandler
 from omlish.lite.check import check
 from omlish.lite.json import JSON_PRETTY_KWARGS
@@ -55,7 +55,7 @@ class HttpServer(HasDispatchers):
         a: SocketAddress
 
     class Handler(ta.NamedTuple):
-        h: HttpHandler
+        h: SimpleHttpHandler
 
     def __init__(
             self,
@@ -99,7 +99,7 @@ class HttpServer(HasDispatchers):
 ##
 
 
-class SupervisorHttpHandler(HttpHandler_):
+class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
     def __init__(
             self,
             *,
@@ -109,7 +109,7 @@ class SupervisorHttpHandler(HttpHandler_):
 
         self._groups = groups
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         dct = {
             'method': req.method,
             'path': req.path,
@@ -128,7 +128,7 @@ class SupervisorHttpHandler(HttpHandler_):
             },
         }
 
-        return HttpHandlerResponse(
+        return SimpleHttpHandlerResponse(
             200,
             data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
             headers={

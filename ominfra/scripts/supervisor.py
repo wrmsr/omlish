@@ -154,34 +154,34 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/http/coro/_buffers.py', sha1='842ebf09077a306689618a9a11ac7faba2a0a22e'),
-            dict(path='../../omlish/http/simple/handlers.py', sha1='18f545608e9708c9b1c9711bebde3e8d357cc484'),
+            dict(path='../../omlish/http/simple/handlers.py', sha1='9e49c2ba5518616ce15bed6bac80ab4c88ed3b83'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='c90ba13e9e5ee795b6af752a6f25f8bcfd7f88a0'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
-            dict(path='../../omlish/http/coro/server/server.py', sha1='0a2739bc15256194346c93efef37bbce8cb51e92'),
+            dict(path='../../omlish/http/coro/server/server.py', sha1='7df1eeef6bb161287d04bf2f77bb4b9d0ef73237'),
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
-            dict(path='../../omlish/http/coro/server/fdio.py', sha1='7dd3710481ab161a8390714ee17221ae35690a45'),
+            dict(path='../../omlish/http/coro/server/fdio.py', sha1='024d5e99cffecb294313426a489ae4833fb4a834'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='9e65e562395ad04e3f3a314f946b7a4e58a601da'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
-            dict(path='http.py', sha1='a232396660531ecedb9d18f7d97aa31fb3bdfe18'),
+            dict(path='http.py', sha1='214b14ea812fb296473f9c78fdaefb4129ca3d67'),
             dict(path='io.py', sha1='6ba708a8396c212afdd1d314c9b5804c2d66646e'),
             dict(path='processimpl.py', sha1='ac6cc63f2259d73b714522e028056f7944ed6084'),
             dict(path='setupimpl.py', sha1='b4b8b8c3e1d71a0e6794fb0a845181f3662a6bfd'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
             dict(path='supervisor.py', sha1='a97a13ec71deaf6eacabb1527f373b21b89209af'),
-            dict(path='inject.py', sha1='6ad254bcf1c78e0b8a1d7bb3940628857e3bb60c'),
+            dict(path='inject.py', sha1='bd9596e612217fe2b968966a59c7a43d37ea84da'),
             dict(path='main.py', sha1='8bd55a46b4a4fc4ad0034205384b0b49b8374c7a'),
         ],
     )
@@ -249,8 +249,8 @@ ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
 
 # ../../omlish/http/simple/handlers.py
-HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
-HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
+SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
+SimpleHttpHandlerResponseData = ta.Union[bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 # ../../omlish/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
@@ -9442,7 +9442,7 @@ class IncrementalWriteBuffer:
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerRequest:
+class SimpleHttpHandlerRequest:
     client_address: SocketAddress
     method: str
     path: str
@@ -9451,20 +9451,20 @@ class HttpHandlerRequest:
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerResponse:
+class SimpleHttpHandlerResponse:
     status: ta.Union[http.HTTPStatus, int]
 
     headers: ta.Optional[ta.Mapping[str, str]] = None
-    data: ta.Optional[HttpHandlerResponseData] = None
+    data: ta.Optional[SimpleHttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
 
     def close(self) -> None:
-        if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+        if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
             d.close()
 
 
 @dc.dataclass(frozen=True)
-class HttpHandlerResponseStreamedData:
+class SimpleHttpHandlerResponseStreamedData:
     iter: ta.Iterable[bytes]
     length: ta.Optional[int] = None
 
@@ -9473,17 +9473,17 @@ class HttpHandlerResponseStreamedData:
             d.close()  # noqa
 
 
-class HttpHandlerError(Exception):
+class SimpleHttpHandlerError(Exception):
     pass
 
 
-class UnsupportedMethodHttpHandlerError(Exception):
+class UnsupportedMethodSimpleHttpHandlerError(Exception):
     pass
 
 
-class HttpHandler_(Abstract):  # noqa
+class SimpleHttpHandler_(Abstract):  # noqa
     @abc.abstractmethod
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         raise NotImplementedError
 
 
@@ -9491,12 +9491,12 @@ class HttpHandler_(Abstract):  # noqa
 
 
 @dc.dataclass(frozen=True)
-class LoggingHttpHandler(HttpHandler_):
-    handler: HttpHandler
+class LoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
     log: LoggerLike
     level: int = logging.DEBUG
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         self.log.log(self.level, '%r', req)
         resp = self.handler(req)
         self.log.log(self.level, '%r', resp)
@@ -9504,12 +9504,12 @@ class LoggingHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class ExceptionLoggingHttpHandler(HttpHandler_):
-    handler: HttpHandler
+class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
     log: LoggerLike
-    message: ta.Union[str, ta.Callable[[HttpHandlerRequest, BaseException], str]] = 'Error in http handler'
+    message: ta.Union[str, ta.Callable[[SimpleHttpHandlerRequest, BaseException], str]] = 'Error in http handler'
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         try:
             return self.handler(req)
         except Exception as e:  # noqa
@@ -9523,7 +9523,7 @@ class ExceptionLoggingHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class BytesResponseHttpHandler(HttpHandler_):
+class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: bytes
 
     status: ta.Union[http.HTTPStatus, int] = 200
@@ -9531,8 +9531,8 @@ class BytesResponseHttpHandler(HttpHandler_):
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
-        return HttpHandlerResponse(
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
             status=self.status,
             headers={
                 **({'Content-Type': self.content_type} if self.content_type else {}),
@@ -9545,7 +9545,7 @@ class BytesResponseHttpHandler(HttpHandler_):
 
 
 @dc.dataclass(frozen=True)
-class StringResponseHttpHandler(HttpHandler_):
+class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: str
 
     status: ta.Union[http.HTTPStatus, int] = 200
@@ -9553,9 +9553,9 @@ class StringResponseHttpHandler(HttpHandler_):
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         data = self.data.encode('utf-8')
-        return HttpHandlerResponse(
+        return SimpleHttpHandlerResponse(
             status=self.status,
             headers={
                 **({'Content-Type': self.content_type} if self.content_type else {}),
@@ -11315,7 +11315,7 @@ class CoroHttpServer:
             self,
             client_address: SocketAddress,
             *,
-            handler: HttpHandler,
+            handler: SimpleHttpHandler,
             parser: HttpParser = HttpParser(),
 
             default_content_type: ta.Optional[str] = None,
@@ -11342,7 +11342,7 @@ class CoroHttpServer:
         return self._client_address
 
     @property
-    def handler(self) -> HttpHandler:
+    def handler(self) -> SimpleHttpHandler:
         return self._handler
 
     #
@@ -11409,7 +11409,7 @@ class CoroHttpServer:
 
         message: ta.Optional[str] = None
         headers: ta.Optional[ta.Sequence['CoroHttpServer._Header']] = None
-        data: ta.Optional[HttpHandlerResponseData] = None
+        data: ta.Optional[SimpleHttpHandlerResponseData] = None
         close_connection: ta.Optional[bool] = False
 
         def get_header(self, key: str) -> ta.Optional['CoroHttpServer._Header']:
@@ -11419,7 +11419,7 @@ class CoroHttpServer:
             return None
 
         def close(self) -> None:
-            if isinstance(d := self.data, HttpHandlerResponseStreamedData):
+            if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
                 d.close()
 
     #
@@ -11449,7 +11449,7 @@ class CoroHttpServer:
             yield a.data
             return
 
-        elif isinstance(a.data, HttpHandlerResponseStreamedData):
+        elif isinstance(a.data, SimpleHttpHandlerResponseStreamedData):
             yield from a.data.iter
 
         else:
@@ -11470,7 +11470,7 @@ class CoroHttpServer:
             cl: ta.Optional[int]
             if isinstance(resp.data, bytes):
                 cl = len(resp.data)
-            elif isinstance(resp.data, HttpHandlerResponseStreamedData):
+            elif isinstance(resp.data, SimpleHttpHandlerResponseStreamedData):
                 cl = resp.data.length
             else:
                 raise TypeError(resp.data)
@@ -11725,7 +11725,7 @@ class CoroHttpServer:
 
         # Build request
 
-        handler_request = HttpHandlerRequest(
+        handler_request = SimpleHttpHandlerRequest(
             client_address=self._client_address,
             method=check.not_none(parsed.request_line).method,
             path=check.not_none(parsed.request_line).request_target.decode('ascii'),  # FIXME: lol
@@ -11738,7 +11738,7 @@ class CoroHttpServer:
         try:
             handler_response = self._handler(handler_request)
 
-        except UnsupportedMethodHttpHandlerError:
+        except UnsupportedMethodSimpleHttpHandlerError:
             err = self._build_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
                 f'Unsupported method ({(parsed.request_line.method if parsed.request_line else "?")!r})',
@@ -12926,7 +12926,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
             self,
             addr: SocketAddress,
             sock: socket.socket,
-            handler: HttpHandler,
+            handler: SimpleHttpHandler,
             *,
             read_size: int = 0x10000,
             write_size: int = 0x10000,
@@ -13693,7 +13693,7 @@ class HttpServer(HasDispatchers):
         a: SocketAddress
 
     class Handler(ta.NamedTuple):
-        h: HttpHandler
+        h: SimpleHttpHandler
 
     def __init__(
             self,
@@ -13737,7 +13737,7 @@ class HttpServer(HasDispatchers):
 ##
 
 
-class SupervisorHttpHandler(HttpHandler_):
+class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
     def __init__(
             self,
             *,
@@ -13747,7 +13747,7 @@ class SupervisorHttpHandler(HttpHandler_):
 
         self._groups = groups
 
-    def __call__(self, req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         dct = {
             'method': req.method,
             'path': req.path,
@@ -13766,7 +13766,7 @@ class SupervisorHttpHandler(HttpHandler_):
             },
         }
 
-        return HttpHandlerResponse(
+        return SimpleHttpHandlerResponse(
             200,
             data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
             headers={
@@ -15322,7 +15322,7 @@ def bind_server(
     #
 
     if config.http_port is not None:
-        def _provide_http_handler(s: SupervisorHttpHandler) -> HttpServer.Handler:
+        def _provide_http_handler(s: SupervisorSimpleHttpHandler) -> HttpServer.Handler:
             return HttpServer.Handler(s)
 
         lst.extend([
@@ -15331,7 +15331,7 @@ def bind_server(
 
             inj.bind(HttpServer.Address(('localhost', config.http_port))),
 
-            inj.bind(SupervisorHttpHandler, singleton=True),
+            inj.bind(SupervisorSimpleHttpHandler, singleton=True),
             inj.bind(_provide_http_handler),
         ])
 
