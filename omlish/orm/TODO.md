@@ -1,3 +1,5 @@
 - sorted indexes
 - composite keys
 - marshal interop
+  - options? for ref expansion/id replacement
+  - hybrid schemaless-ish marshal'd storage - line? embedded?

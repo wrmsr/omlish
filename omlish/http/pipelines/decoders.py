@@ -622,7 +622,7 @@ class IoPipelineHttpObjectDecoder(
             if not len(data):
                 return None
 
-            raise NotImplementedError
+            return (self._d._HeadState(self._d), data)  # noqa
 
     #
 
