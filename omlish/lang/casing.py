@@ -80,9 +80,6 @@ class CamelCase(StringCasing):
         return ''.join(p.capitalize() for p in parts)
 
 
-#
-
-
 class LowCamelCase(StringCasing):
     """fooBarBaz"""
 
@@ -118,43 +115,51 @@ class LowCamelCase(StringCasing):
 #
 
 
-class SnakeCase(StringCasing):
-    """foo_bar_baz"""
+class _SepStringCasing(StringCasing, Abstract):
+    _SEP: ta.ClassVar[str]
+    _UP: ta.ClassVar[bool] = False
+    _EXAMPLE: ta.ClassVar[str]
 
-    _PAT: ta.ClassVar[re.Pattern] = re.compile(r'[a-z0-9]+(?:_[a-z0-9]+)*')
+    _PAT: ta.ClassVar[re.Pattern]
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        ch = 'A-Z' if cls._UP else 'a-z'
+        cls._PAT = re.compile(rf'[{ch}0-9]+(?:{re.escape(cls._SEP)}[{ch}0-9]+)*')
 
     def match(self, s: str) -> bool:
         return bool(self._PAT.fullmatch(s))
 
     def split(self, s: str) -> list[str]:
         if not self.match(s):
-            raise ImproperStringCasingError(f'Not valid snake_case: {s!r}')
-        return s.split('_')
+            raise ImproperStringCasingError(f'Not valid {self._EXAMPLE}: {s!r}')
+        if self._UP:
+            return [part.lower() for part in s.split(self._SEP)]
+        else:
+            return s.split(self._SEP)
 
     def join(self, *parts: str) -> str:
         _check_all_lowercase(*parts)
-        return '_'.join(p.lower() for p in parts)
+        return self._SEP.join(p.upper() if self._UP else p for p in parts)
 
 
 #
 
 
-class UpSnakeCase(StringCasing):
+class SnakeCase(_SepStringCasing):
+    """foo_bar_baz"""
+
+    _SEP = '_'
+    _EXAMPLE = 'snake_case'
+
+
+class UpSnakeCase(_SepStringCasing):
     """FOO_BAR_BAZ"""
 
-    _PAT: ta.ClassVar[re.Pattern] = re.compile(r'[A-Z0-9]+(?:_[A-Z0-9]+)*')
-
-    def match(self, s: str) -> bool:
-        return bool(self._PAT.fullmatch(s))
-
-    def split(self, s: str) -> list[str]:
-        if not self.match(s):
-            raise ImproperStringCasingError(f'Not valid UPPER_SNAKE_CASE: {s!r}')
-        return [part.lower() for part in s.split('_')]
-
-    def join(self, *parts: str) -> str:
-        _check_all_lowercase(*parts)
-        return '_'.join(p.upper() for p in parts)
+    _SEP = '_'
+    _UP = True
+    _EXAMPLE = 'UPPER_SNAKE_CASE'
 
 
 ##

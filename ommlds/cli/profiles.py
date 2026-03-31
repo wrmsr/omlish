@@ -15,6 +15,7 @@ from .modes.completion.configs import CompletionConfig
 from .modes.configs import ModeConfig
 from .modes.embedding.configs import EmbeddingConfig
 from .modes.modules.code.configs import CodeConfig
+from .modes.modules.skills.configs import SkillsConfig
 
 
 ModeConfigT = ta.TypeVar('ModeConfigT', bound=ModeConfig)
@@ -361,6 +362,30 @@ class ChatProfile(AspectProfile[ChatConfig]):
 
     #
 
+    class Skills(ProfileAspect[ChatConfig]):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('-k', '--skills', action='store_true'),
+        ]
+
+        def configure_for_code(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            cfg = dc.replace(
+                cfg,
+                modules=[
+                    *(cfg.modules or []),
+                    SkillsConfig(),
+                ],
+            )
+
+            return cfg
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            if not ctx.args.code:
+                return cfg
+
+            return self.configure_for_code(ctx, cfg)
+
+    #
+
     def _build_aspects(self) -> ta.Sequence[ProfileAspect[ChatConfig]]:
         return [
             *super()._build_aspects(),
@@ -371,6 +396,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
             self.Output(),
             self.Tools(),
             self.Code(),
+            self.Skills(),
         ]
 
     def initial_config(self) -> ChatConfig:
