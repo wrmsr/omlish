@@ -143,6 +143,8 @@ class CacheServedDockerCache(DockerCache):
                     pull_cmd = [
                         'run',
                         '--rm',
+                        '--entrypoint',
+                        prc,
                         image_url,
                         prc,
                     ]

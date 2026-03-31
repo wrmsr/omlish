@@ -7,9 +7,9 @@ import threading
 import typing as ta
 
 from omlish.docker.ports import DockerPortRelay
-from omlish.http.coro.server.simple import make_simple_http_server
 from omlish.http.simple.handlers import LoggingSimpleHttpHandler
 from omlish.http.simple.handlers import SimpleHttpHandler
+from omlish.http.simple.pipelines import make_simple_http_server
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked

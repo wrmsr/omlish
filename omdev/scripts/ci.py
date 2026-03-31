@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../ci/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 PYI034 TC003 UP006 UP007 UP036 UP043 UP045 UP046
+# ruff: noqa: FURB188 N802 PYI034 TC003 UP006 UP007 UP036 UP043 UP045 UP046
 """
 Inputs:
  - requirements.txt
@@ -17,6 +17,7 @@ Inputs:
 run --cache-dir omdev/ci/tests/cache -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
 
 run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
+run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build --always-pull -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
 
 run --cache-dir ~/.cache/omlish/ci . omlish-ci bash
 """  # noqa
@@ -35,7 +36,6 @@ import copy
 import dataclasses as dc
 import datetime
 import decimal
-import email.utils
 import enum
 import errno
 import fcntl
@@ -45,7 +45,6 @@ import glob
 import gzip
 import hashlib
 import heapq
-import html
 import http
 import http.client
 import http.server
@@ -69,7 +68,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import textwrap
 import threading
 import time
 import traceback
@@ -81,6 +79,7 @@ import urllib.request
 import uuid
 import weakref
 import xml.etree.ElementTree as ET
+import zlib
 
 
 ########################################
@@ -99,9 +98,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
             dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='a093aa6b49e25b3206f59b703b281d569c386838'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
-            dict(path='../../omlish/http/coro/_pushback.py', sha1='783fe8a40fa9f2febf035f4553c53c73b9bd58e1'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
+            dict(path='../../omlish/io/pipelines/errors.py', sha1='2d8ee419a407c58dff224316695c9d90fe50f727'),
+            dict(path='../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
+            dict(path='../../omlish/io/types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
@@ -109,6 +110,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
             dict(path='../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
@@ -129,8 +131,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/formats/yaml/goyaml/errors.py', sha1='8fa73c90292f56f8faaedebb2f478ff6a3b95460'),
-            dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
+            dict(path='../../omlish/http/headers.py', sha1='6023f8b08e4f9ac1e35dbac3837aab2858bfb217'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
+            dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='5cdb46afb542d4b6be8d4e4f8369ea190fa99fb4'),  # noqa
+            dict(path='../../omlish/io/pipelines/core.py', sha1='3dabd48ce0e19fd974a89ea7b4dd2b6c4118d36b'),
+            dict(path='../../omlish/io/streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -150,7 +155,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/sockets.py', sha1='8d24dae988a30bb73f167a9ab62d4fc9eef4ad06'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
+            dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='82fa249cf910b5fd854582850bcc2fc51c0ec712'),
+            dict(path='../../omlish/http/pipelines/objects.py', sha1='3de6f87e2a56375cc8a539321b1205e2d1d3900e'),
             dict(path='../../omlish/http/simple/handlers.py', sha1='9e49c2ba5518616ce15bed6bac80ab4c88ed3b83'),
+            dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
+            dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
+            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='f6d06c7d6ca41a88930811507c966eeb073c15b3'),
+            dict(path='../../omlish/io/pipelines/sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
+            dict(path='../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
+            dict(path='../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
+            dict(path='../../omlish/io/streams/utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
@@ -167,7 +181,15 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
             dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
             dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
-            dict(path='../../omlish/http/coro/server/server.py', sha1='7df1eeef6bb161287d04bf2f77bb4b9d0ef73237'),
+            dict(path='../../omlish/http/pipelines/chunking.py', sha1='35114ed9cf2db0d910261b7c861617147f9ed5d3'),
+            dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='8585190368d96ee8d6e31c91f55f2690628711c5'),  # noqa
+            dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='b7e1d61e1a2cb722b6c69a61ec59d02ebd1a5615'),  # noqa
+            dict(path='../../omlish/http/pipelines/encoders.py', sha1='fdcc3953e2a7f9ba4c1fddba9c365da113c77b45'),
+            dict(path='../../omlish/http/pipelines/requests.py', sha1='63f12883cf9896dd683b2f128427a9861c32812d'),
+            dict(path='../../omlish/http/pipelines/responses.py', sha1='dc43fe410010aa10595ca0b8a7b17b4c2a445160'),
+            dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
+            dict(path='../../omlish/io/streams/direct.py', sha1='f3a90045bd7c7bddc139eaa95d30db2ef24a78c6'),
+            dict(path='../../omlish/io/streams/scanning.py', sha1='9c8d60b56cd9fcd2eaef550b4f1459a93c48dbe9'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
@@ -177,7 +199,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='c92e4772e2d50f080bc1ca8a317d0c7aea5b710a'),
-            dict(path='../../omlish/http/coro/server/sockets.py', sha1='b1c74823a23501f4c769bff74e1a091dd68b5b83'),
+            dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
+            dict(path='../../omlish/io/streams/segmented.py', sha1='8d112d08e066f69527091486f8817af0db586333'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
@@ -186,12 +209,14 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
-            dict(path='../../omlish/http/coro/server/simple.py', sha1='253e6629997443949695d8058020a5c130c8b64f'),
+            dict(path='../../omlish/http/pipelines/aggregators.py', sha1='a08bbe1feac5852f9609d6a5bf967a3e5767e7b5'),
+            dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
-            dict(path='docker/dataserver.py', sha1='f0f015b9ef52db501fd4efd5e7049e2e314b3daf'),
             dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
+            dict(path='../../omlish/http/pipelines/decoders.py', sha1='836ddfc508c494a6fd15c2b597c50aecddcf5a04'),
+            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='7332a415bf10597be3c40f8d7557d9f6a3093eab'),
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
             dict(path='docker/cache.py', sha1='07a9e3d00bdd60f1a0a9b55aca12430fa1b4e3d9'),
@@ -201,18 +226,21 @@ def __omlish_amalg__():  # noqa
             dict(path='github/api/v2/azure.py', sha1='19052e8e2babb8b2953ec10e6b9dcee97c21419a'),
             dict(path='requirements.py', sha1='c370a65958a00412e00608a0e1f12795e276aee1'),
             dict(path='../oci/pack/repositories.py', sha1='e9bf6fa8bdaae2031dd0967d07a56c93a2e099b6'),
+            dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='docker/buildcaching.py', sha1='7b2633d5b8dac6aab01dd459e273cb370c5b11c8'),
-            dict(path='docker/cacheserved/cache.py', sha1='69732c658dba7ccf260e784132ff0c60192e3c69'),
             dict(path='docker/imagepulling.py', sha1='d6b1ca1ecb9aa5c593a25e6deb78e942c75ebcb4'),
             dict(path='github/api/v1/client.py', sha1='6ddd600cd8a7ff72a6a3408ded14240bafab6944'),
             dict(path='github/api/v2/client.py', sha1='e28f27c07011487d5a3f4ae32fdfa1a857d02459'),
+            dict(path='../../omlish/http/simple/pipelines.py', sha1='d891b215b5f2abb2c81d74c804fe3360f2e29469'),
             dict(path='ci.py', sha1='87b82e2bd86aa886764f1e0067251b056e359650'),
-            dict(path='docker/inject.py', sha1='69acac65fae413cb58c1f9aa739d2cc1c3ffa09d'),
+            dict(path='docker/dataserver.py', sha1='3001eb5d039a4f732ac1a9495f2dbfcc50cae9f2'),
             dict(path='github/cache.py', sha1='d91f9c87d167574e94c99817e6c3a0f75925dfb9'),
             dict(path='github/cli.py', sha1='6d14b0eb4ca5f606ad2821b63b9707ce57f50406'),
+            dict(path='docker/cacheserved/cache.py', sha1='4f8c5c2b7451b8f0d7cccb12060ff609af4f44e8'),
             dict(path='github/inject.py', sha1='99c0dd7c55767e7c49f70b7edac25da67f718b2e'),
+            dict(path='docker/inject.py', sha1='69acac65fae413cb58c1f9aa739d2cc1c3ffa09d'),
             dict(path='inject.py', sha1='e86b16d79a113a4f387e68ed0db1d067bcada93a'),
-            dict(path='cli.py', sha1='0e9d5fe4982f8e5ef6aa70b34e17fe3d45f27901'),
+            dict(path='cli.py', sha1='bf4845886c5e7b623e54fb98ce7c8f0fa6696d3a'),
         ],
     )
 
@@ -225,6 +253,9 @@ T = ta.TypeVar('T')
 
 # ../../omlish/asyncs/asyncio/utils.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+
+# ../../omlish/io/types.py
+BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # ../../omlish/lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
@@ -259,6 +290,16 @@ ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 # ../../omlish/formats/yaml/goyaml/errors.py
 YamlErrorOr = ta.Union['YamlError', T]  # ta.TypeAlias
 
+# ../../omlish/http/headers.py
+StrOrBytes = ta.Union[str, bytes]  # ta.TypeAlias
+
+# ../../omlish/io/pipelines/core.py
+F = ta.TypeVar('F')
+IoPipelineHandlerFn = ta.Callable[['IoPipelineHandlerContext', F], T]  # ta.TypeAlias
+IoPipelineHandlerT = ta.TypeVar('IoPipelineHandlerT', bound='IoPipelineHandler')
+ShareableIoPipelineHandlerT = ta.TypeVar('ShareableIoPipelineHandlerT', bound='ShareableIoPipelineHandler')  # noqa
+IoPipelineMetadataT = ta.TypeVar('IoPipelineMetadataT', bound='IoPipelineMetadata')
+
 # ../../omlish/lite/maybes.py
 U = ta.TypeVar('U')
 
@@ -288,6 +329,9 @@ AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
 SimpleHttpHandlerResponseData = ta.Union[bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
+# ../../omlish/io/streams/utils.py
+CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
+
 # ../../omlish/lite/inject.py
 InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
 InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
@@ -299,9 +343,6 @@ LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo
 
 # ../dataserver/handlers.py
 DataServerTargetT = ta.TypeVar('DataServerTargetT', bound='DataServerTarget')
-
-# ../../omlish/http/coro/server/server.py
-CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']  # ta.TypeAlias
 
 # ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
@@ -637,147 +678,6 @@ class DockerPortRelay:
 
 
 ########################################
-# ../../../omlish/http/coro/_pushback.py
-
-
-##
-
-
-class PushbackReader:
-    """
-    Wrap a non-seekable stream (e.g. socket.makefile('rb') or BufferedReader)
-    and provide:
-      - read(n=-1)
-      - readline(limit=-1)
-      - readuntil(delim, max_bytes, include_delim=True, chunk_size=8192)
-
-    Extra bytes read past a delimiter are kept in an internal pushback buffer and returned on subsequent reads/readline
-    calls.
-    """
-
-    def __init__(self, raw):
-        self._raw = raw
-        self._pushback = bytearray()
-
-    class MaxLengthExceededError(Exception):
-        pass
-
-    def read(self, n: int = -1) -> bytes:
-        if n == 0:
-            return b''
-
-        # read all
-        if n < 0:
-            out = bytes(self._pushback)
-            self._pushback.clear()
-            rest = self._raw.read(-1)
-            return out + (rest or b'')
-
-        # satisfy from pushback first
-        if len(self._pushback) >= n:
-            out = bytes(self._pushback[:n])
-            del self._pushback[:n]
-            return out
-
-        out = bytes(self._pushback)
-        self._pushback.clear()
-        need = n - len(out)
-        chunk = self._raw.read(need) or b''
-        return out + chunk
-
-    def readline(self, limit: int = -1) -> bytes:
-        # If limit is set, we must not exceed it.
-        if limit == 0:
-            return b''
-
-        # First, see if pushback already contains a full line.
-        nl = self._pushback.find(b'\n')
-        if nl != -1:
-            end = nl + 1
-            if limit > -1:
-                end = min(end, limit)
-            out = bytes(self._pushback[:end])
-            del self._pushback[:end]
-            return out
-
-        # Otherwise, accumulate until newline or limit or EOF.
-        buf = bytearray()
-        if self._pushback:
-            buf += self._pushback
-            self._pushback.clear()
-
-        while True:
-            # Stop if limit reached
-            if limit > -1 and len(buf) >= limit:
-                return bytes(buf[:limit])
-
-            # Read more
-            # Choose a chunk size that respects limit
-            to_read = 8192
-            if limit > -1:
-                to_read = min(to_read, limit - len(buf))
-            chunk = self._raw.read1(to_read)
-            if not chunk:
-                return bytes(buf)
-
-            buf += chunk
-            nl = buf.find(b'\n')
-            if nl != -1:
-                end = nl + 1
-                if limit > -1:
-                    end = min(end, limit)
-                out = bytes(buf[:end])
-                # push back anything after the returned part
-                if end < len(buf):
-                    self._pushback += buf[end:]
-                return out
-
-    def readuntil(
-            self,
-            delim: bytes,
-            *,
-            max_bytes: ta.Optional[int] = None,
-            include_delim: bool = True,
-            chunk_size: int = 8192,
-    ) -> bytes:
-        if not delim:
-            raise ValueError('delim must be non-empty')
-        if max_bytes is not None and max_bytes < 0:
-            raise ValueError('max_bytes must be >= 0')
-
-        buf = bytearray()
-
-        # start with any pushback data
-        if self._pushback:
-            buf += self._pushback
-            self._pushback.clear()
-
-        while True:
-            idx = buf.find(delim)
-            if idx != -1:
-                end = idx + (len(delim) if include_delim else 0)
-                out = bytes(buf[:end])
-                # push back everything after the delimiter (or after idx+len(delim))
-                tail_start = idx + len(delim)
-                if tail_start < len(buf):
-                    self._pushback += buf[tail_start:]
-                return out
-
-            if max_bytes is not None:
-                if len(buf) >= max_bytes:
-                    raise PushbackReader.MaxLengthExceededError(f'Delimiter not found within {max_bytes} bytes')
-                # read another chunk, but don't exceed max_bytes by too much
-                to_read = min(chunk_size, max_bytes - len(buf))
-            else:
-                to_read = chunk_size
-
-            chunk = self._raw.read1(to_read)
-            if not chunk:
-                raise EOFError('EOF reached before delimiter was found')
-            buf += chunk
-
-
-########################################
 # ../../../omlish/http/urllib.py
 
 
@@ -896,6 +796,212 @@ class HttpVersions:
             return cls.from_str(o)
         else:
             raise TypeError(o)
+
+
+########################################
+# ../../../omlish/io/pipelines/errors.py
+
+
+##
+
+
+class IoPipelineError(Exception):
+    pass
+
+
+##
+
+
+class UnhandleableIoPipelineError(IoPipelineError):
+    pass
+
+
+##
+# state
+
+
+class StateIoPipelineError(IoPipelineError):
+    pass
+
+
+class ContextInvalidatedIoPipelineError(StateIoPipelineError):
+    pass
+
+
+class SawInitialInputIoPipelineError(StateIoPipelineError):
+    pass
+
+
+class SawFinalInputIoPipelineError(StateIoPipelineError):
+    pass
+
+
+class SawFinalOutputIoPipelineError(StateIoPipelineError):
+    pass
+
+
+##
+# messages
+
+
+@dc.dataclass()
+class MessageIoPipelineError(IoPipelineError):
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Item:
+        direction: ta.Literal['inbound', 'outbound']
+        msg: ta.Any
+
+        # _: dc.KW_ONLY
+
+        last_seen: ta.Optional[ta.Any] = None
+
+        def __repr__(self) -> str:
+            return (
+                f'{self.__class__.__name__}('
+                f'{self.direction!r}'
+                f', {self.msg!r}' +
+                (f', last_seen={self.last_seen!r}' if self.last_seen is not None else '') +
+                ')'
+            )
+
+    items: ta.Sequence[Item]
+
+    @classmethod
+    def new(
+            cls,
+            *,
+            inbound: ta.Optional[ta.Sequence[ta.Any]] = None,
+            inbound_with_last_seen: ta.Optional[ta.Sequence[ta.Tuple[ta.Any, ta.Any]]] = None,
+            outbound: ta.Optional[ta.Sequence[ta.Any]] = None,
+            outbound_with_last_seen: ta.Optional[ta.Sequence[ta.Tuple[ta.Any, ta.Any]]] = None,
+    ) -> 'MessageIoPipelineError':
+        items: ta.List[MessageIoPipelineError.Item] = []
+        for msg in inbound or ():
+            items.append(MessageIoPipelineError.Item('inbound', msg))
+        for msg, last_seen in inbound_with_last_seen or ():
+            items.append(MessageIoPipelineError.Item('inbound', msg, last_seen=last_seen))
+        for msg in outbound or ():
+            items.append(MessageIoPipelineError.Item('outbound', msg))
+        for msg, last_seen in outbound_with_last_seen or ():
+            items.append(MessageIoPipelineError.Item('outbound', msg, last_seen=last_seen))
+        return cls(items)
+
+    @classmethod
+    def new_single(
+            cls,
+            direction: ta.Literal['inbound', 'outbound'],
+            msg: ta.Any,
+            *,
+            last_seen: ta.Optional[ta.Any] = None,
+    ) -> 'MessageIoPipelineError':
+        return cls([
+            MessageIoPipelineError.Item(
+                direction,
+                msg,
+                last_seen=last_seen,
+            ),
+        ])
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.items!r})'
+
+
+@dc.dataclass(repr=False)
+class MessageNotPropagatedIoPipelineError(MessageIoPipelineError, UnhandleableIoPipelineError):
+    pass
+
+
+@dc.dataclass(repr=False)
+class MessageReachedTerminalIoPipelineError(MessageIoPipelineError, UnhandleableIoPipelineError):
+    pass
+
+
+##
+# misc (TODO: move/cleanup)
+
+
+class DecodingIoPipelineError(IoPipelineError):
+    pass
+
+
+class IncompleteDecodingIoPipelineError(DecodingIoPipelineError):
+    pass
+
+
+class FlowControlValidationIoPipelineError(IoPipelineError):
+    pass
+
+
+########################################
+# ../../../omlish/io/streams/errors.py
+
+
+##
+
+
+class ByteStreamBufferError(Exception):
+    pass
+
+
+#
+
+
+class NeedMoreDataByteStreamBufferError(ByteStreamBufferError):
+    """
+    Raised when an operation cannot complete because insufficient bytes are currently buffered.
+
+    This is intentionally distinct from EOF: it means "try again after feeding more bytes".
+    """
+
+
+#
+
+
+class LimitByteStreamBufferError(ValueError, ByteStreamBufferError):
+    """
+    Base class for buffer/framing limit violations.
+
+    Subclasses inherit from ValueError so existing tests expecting ValueError continue to pass.
+    """
+
+
+class BufferTooLargeByteStreamBufferError(LimitByteStreamBufferError):
+    """
+    Buffered data exceeded a configured cap without finding a boundary that would allow progress.
+
+    Typically indicates an unframed stream, a missing delimiter, or an upstream not enforcing limits.
+    """
+
+
+class FrameTooLargeByteStreamBufferError(LimitByteStreamBufferError):
+    """A single decoded frame (payload before its boundary delimiter/length) exceeded a configured max size."""
+
+
+#
+
+
+class StateByteStreamBufferError(RuntimeError, ByteStreamBufferError):
+    """
+    Base class for invalid buffer state transitions (e.g., coalescing while a reservation is outstanding).
+
+    Subclasses inherit from RuntimeError so existing tests expecting RuntimeError continue to pass.
+    """
+
+
+class OutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
+    """A reserve() is outstanding; an operation requiring stable storage cannot proceed."""
+
+
+class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
+    """commit() was called without a preceding reserve()."""
+
+
+########################################
+# ../../../omlish/io/types.py
+
+
+##
 
 
 ########################################
@@ -2376,6 +2482,21 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+########################################
+# ../../../omlish/lite/namespaces.py
+
+
+class NamespaceClass:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __init_subclass__(cls, **kwargs):  # noqa
+        super().__init_subclass__(**kwargs)
+
+        if any(issubclass(b, NamespaceClass) and b is not NamespaceClass for b in cls.__bases__):
+            raise TypeError
 
 
 ########################################
@@ -4213,74 +4334,311 @@ def yaml_error(obj: ta.Union[YamlError, str, Exception]) -> YamlError:
 
 
 ########################################
-# ../../../omlish/http/coro/io.py
+# ../../../omlish/http/headers.py
+"""
+TODO:
+ - handle secrets (but they're strs..)
+ - *enforce* lower case access keys? `if not k.islower(): raise KeysMustBeLowerCaseHttpHeadersError(k)` ?
+   - `(s := 'abcd').lower() is s` == `False`
+ - kill `__new__` self hack, use (require?) `.of()`
+"""
 
 
 ##
 
 
-class CoroHttpIo:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
+CanHttpHeaders = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'HttpHeaders',
 
-    def __init_subclass__(cls, **kwargs):  # noqa
-        raise TypeError
+    http.client.HTTPMessage,
+
+    ta.Mapping[str, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
+    ta.Mapping[bytes, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
+    ta.Mapping[StrOrBytes, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
+
+    ta.Sequence[ta.Tuple[StrOrBytes, StrOrBytes]],
+]
+
+
+@dc.dataclass()
+class DuplicateHttpHeaderError(Exception):
+    key: str
+
+
+@ta.final
+class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
+    def __init__(self, src: CanHttpHeaders) -> None:
+        super().__init__()
+
+        if isinstance(src, HttpHeaders):
+            check.is_(src, self)
+            return
+
+        self._raw = self.unpack(src)
+
+        self._all = tuple((self._as_key(k), v) for k, v in self._raw)
+
+        dct: ta.Dict[str, ta.List[str]] = {}
+        for k, v in self._all:
+            dct.setdefault(k, []).append(v)
+        self._dct = {k: tuple(v) for k, v in dct.items()}
+
+    @classmethod
+    def unpack(cls, src: ta.Optional[CanHttpHeaders]) -> ta.Sequence[ta.Tuple[str, str]]:
+        if src is None:
+            return ()
+
+        if isinstance(src, HttpHeaders):
+            return src.raw
+
+        raw: ta.List[ta.Tuple[str, str]] = []
+
+        if isinstance(src, http.client.HTTPMessage):
+            raw = list(src.items())
+
+        elif isinstance(src, collections.abc.Mapping):
+            for k, v in src.items():
+                if isinstance(v, (str, bytes)):
+                    raw.append((cls._decode(k), cls._decode(v)))
+                else:
+                    for e in v:
+                        raw.append((cls._decode(k), cls._decode(e)))
+
+        elif isinstance(src, (str, bytes)):  # type: ignore
+            raise TypeError(src)
+
+        elif isinstance(src, collections.abc.Sequence):
+            for t in src:
+                if isinstance(t, (str, bytes)):
+                    raise TypeError(t)
+
+                k, v = t
+                raw.append((cls._decode(k), cls._decode(v)))
+
+        else:
+            raise TypeError(src)
+
+        return raw
+
+    def __new__(cls, obj: CanHttpHeaders) -> 'HttpHeaders':
+        if isinstance(obj, HttpHeaders):
+            return obj
+
+        return super().__new__(cls)
+
+    @classmethod
+    def of(cls, obj: ta.Optional[CanHttpHeaders]) -> 'HttpHeaders':
+        if isinstance(obj, HttpHeaders):
+            return obj
+
+        elif not obj:
+            return cls._EMPTY
+
+        else:
+            return cls(obj)
+
+    _EMPTY: ta.ClassVar['HttpHeaders']
+
+    @classmethod
+    def empty(cls) -> 'HttpHeaders':
+        return cls._EMPTY
 
     #
 
-    MAX_LINE: ta.ClassVar[int] = 65536
+    @property
+    def raw(self) -> ta.Sequence[ta.Tuple[str, str]]:
+        return self._raw
+
+    @property
+    def all(self) -> ta.Sequence[ta.Tuple[str, str]]:
+        return self._all
 
     #
 
-    class Io(Abstract):
-        pass
+    @classmethod
+    def _decode(cls, o: StrOrBytes) -> str:
+        if isinstance(o, bytes):
+            return o.decode('latin-1')
+        elif isinstance(o, str):
+            return o
+        else:
+            raise TypeError(o)
+
+    @classmethod
+    def _as_key(cls, o: StrOrBytes) -> str:
+        return cls._decode(o).lower()
 
     #
 
-    class AnyLogIo(Io, Abstract):
-        pass
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}<{", ".join(map(repr, self._dct))}>'
 
     #
 
-    @dc.dataclass(frozen=True)
-    class ConnectIo(Io):
-        args: ta.Tuple[ta.Any, ...]
-        kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
-
-        server_hostname: ta.Optional[str] = None
+    def __bool__(self) -> bool:
+        return len(self._dct) > 0
 
     #
 
-    class CloseIo(Io):
-        pass
+    def __len__(self) -> int:
+        return len(self._dct)
+
+    def __iter__(self) -> ta.Iterator[str]:
+        return iter(self._dct)
+
+    def __getitem__(self, key: str) -> ta.Sequence[str]:
+        return self._dct[key.lower()]
+
+    def __contains__(self, key: str) -> bool:  # type: ignore[override]
+        return check.isinstance(key, str).lower() in self._dct
 
     #
 
-    class AnyReadIo(Io):  # noqa
-        pass
+    _raw_by_key: ta.Mapping[str, ta.Sequence[ta.Tuple[str, str]]]
 
-    @dc.dataclass(frozen=True)
-    class ReadIo(AnyReadIo):
-        sz: ta.Optional[int]
-
-    @dc.dataclass(frozen=True)
-    class ReadLineIo(AnyReadIo):
-        sz: int
-
-    @dc.dataclass(frozen=True)
-    class ReadUntilIo(AnyReadIo):
-        b: bytes
-        sz: ta.Optional[int] = None
-
-    @dc.dataclass(frozen=True)
-    class PeekIo(AnyReadIo):
-        sz: int
+    @property
+    def raw_by_key(self) -> ta.Mapping[str, ta.Sequence[ta.Tuple[str, str]]]:
+        try:
+            return self._raw_by_key
+        except AttributeError:
+            pass
+        dct: ta.Dict[str, ta.List[ta.Tuple[str, str]]] = {}
+        for k, v in self._raw:
+            dct.setdefault(self._as_key(k), []).append((k, v))
+        return {k: tuple(vs) for k, vs in dct.items()}
 
     #
 
-    @dc.dataclass(frozen=True)
-    class WriteIo(Io):
-        data: bytes
+    @ta.final
+    class _SingleAccessor:
+        def __init__(self, o: 'HttpHeaders') -> None:
+            self._o = o
+
+        def __getitem__(self, key: str) -> str:
+            l = self._o._dct[key.lower()]  # noqa
+            if len(l) > 1:
+                raise DuplicateHttpHeaderError(key)
+            return l[0]
+
+        @ta.overload
+        def get(self, key: str, /, default: str) -> str:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[str]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
+    _single: _SingleAccessor
+
+    @property
+    def single(self) -> _SingleAccessor:
+        try:
+            return self._single
+        except AttributeError:
+            pass
+        a = self._single = self._SingleAccessor(self)
+        return a
+
+    #
+
+    @ta.final
+    class _LowerAccessor:
+        def __init__(self, o: 'HttpHeaders') -> None:
+            self._o = o
+
+            self._cache: ta.Dict[str, ta.Sequence[str]] = {}
+
+        def __getitem__(self, key: str) -> ta.Sequence[str]:
+            key = key.lower()
+            try:
+                return self._cache[key]
+            except KeyError:
+                pass
+            x = self._o._dct[key]  # noqa
+            l = self._cache[key] = tuple(v.lower() for v in x)
+            return l
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Sequence[str]) -> ta.Sequence[str]:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[ta.Sequence[str]]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
+    _lower: _LowerAccessor
+
+    @property
+    def lower(self) -> _LowerAccessor:
+        try:
+            return self._lower
+        except AttributeError:
+            pass
+        a = self._lower = self._LowerAccessor(self)
+        return a
+
+    #
+
+    def contains_value(self, key: str, value: str, *, ignore_case: bool = False) -> bool:
+        try:
+            if ignore_case:
+                vs = self.lower[key.lower()]
+            else:
+                vs = self._dct[key.lower()]
+        except KeyError:
+            return False
+        return value in vs
+
+    def update(
+            self,
+            *items: ta.Tuple[str, ta.Union[str, ta.Callable[[], ta.Optional[str]], None]],
+            if_present: ta.Literal['append', 'override', 'skip', 'raise'],
+            # preserve_raw: bool = False,  # TODO: less wasteful
+    ) -> 'HttpHeaders':
+        if not items:
+            return self
+
+        v: ta.Any
+        if if_present == 'append':
+            return HttpHeaders([
+                *self._raw,
+                *[(k, v) for k, rv in items if (v := (rv() if callable(rv) else rv)) is not None]],
+            )
+
+        dct: ta.Dict[str, ta.Sequence[ta.Tuple[str, str]]] = dict(self.raw_by_key)
+
+        for k, v in items:
+            if (lk := k.lower()) in dct and if_present != 'override':
+                if (v := (v() if callable(v) else v)) is None:
+                    continue
+
+                if if_present == 'skip':
+                    continue
+                elif if_present == 'raise':
+                    raise DuplicateHttpHeaderError(k)
+                else:
+                    raise RuntimeError(f'unknown if_present: {if_present!r}')
+
+            if (v := (v() if callable(v) else v)) is None:
+                continue
+            dct[lk] = [(k, v)]
+
+        return HttpHeaders([kv for kvs in dct.values() for kv in kvs])
+
+
+HttpHeaders._EMPTY = HttpHeaders([])  # noqa
 
 
 ########################################
@@ -6133,6 +6491,2182 @@ def parse_http_trailers(
 ) -> ParsedHttpTrailers:
     parser = HttpParser(**(dict(config=config) if config is not None else {}))
     return parser.parse_trailers(data)
+
+
+########################################
+# ../../../omlish/http/pipelines/compression/codings.py
+
+
+##
+
+
+class IoPiplineHttpCompressorCoding(Abstract):
+    @abc.abstractmethod
+    def compress(
+            self,
+            data: BytesLike,
+            /,
+    ) -> ta.Optional[BytesLike]:
+        raise NotImplementedError
+
+    def flush(self) -> ta.Optional[BytesLike]:
+        return None
+
+    @abc.abstractmethod
+    def finish(self) -> ta.Optional[BytesLike]:
+        raise NotImplementedError
+
+
+IoPiplineHttpCompressorCodings = ta.Mapping[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    str,
+    ta.Callable[[], IoPiplineHttpCompressorCoding],
+]
+
+
+#
+
+
+class IoPiplineHttpDecompressorCoding(Abstract):
+    @abc.abstractmethod
+    def decompress(
+            self,
+            data: BytesLike,
+            max_bytes: ta.Optional[int] = None,
+            /,
+    ) -> ta.Optional[BytesLike]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unconsumed_tail(self) -> ta.Optional[BytesLike]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def finish(self) -> ta.Optional[BytesLike]:
+        raise NotImplementedError
+
+
+IoPiplineHttpDecompressorCodings = ta.Mapping[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    str,
+    ta.Callable[[], IoPiplineHttpDecompressorCoding],
+]
+
+
+##
+
+
+class ZlibIoPiplineHttpCompressorCoding(IoPiplineHttpCompressorCoding):
+    def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
+        super().__init__()
+
+        self._z = zlib.compressobj(wbits=wbits)
+
+    def compress(
+            self,
+            data: BytesLike,
+            /,
+    ) -> ta.Optional[BytesLike]:
+        return self._z.compress(data)
+
+    def flush(self) -> ta.Optional[BytesLike]:
+        return self._z.flush(zlib.Z_SYNC_FLUSH) or None
+
+    def finish(self) -> ta.Optional[BytesLike]:
+        return self._z.flush()
+
+
+class ZlibIoPiplineHttpDecompressorCoding(IoPiplineHttpDecompressorCoding):
+    def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
+        super().__init__()
+
+        self._z = zlib.decompressobj(wbits)
+
+    def decompress(
+            self,
+            data: BytesLike,
+            max_bytes: ta.Optional[int] = None,
+            /,
+    ) -> ta.Optional[BytesLike]:
+        return self._z.decompress(data, max_bytes or 0)
+
+    def unconsumed_tail(self) -> ta.Optional[BytesLike]:
+        return self._z.unconsumed_tail
+
+    def finish(self) -> ta.Optional[BytesLike]:
+        return self._z.flush()
+
+
+##
+
+
+class DefaultIoPiplineHttpCompressionCodings(NamespaceClass):
+    COMPRESSOR: ta.Final[IoPiplineHttpCompressorCodings] = {
+        'gzip': ZlibIoPiplineHttpCompressorCoding,
+    }
+
+    DECOMPRESSOR: ta.Final[IoPiplineHttpDecompressorCodings] = {
+        'gzip': ZlibIoPiplineHttpDecompressorCoding,
+    }
+
+
+########################################
+# ../../../omlish/io/pipelines/core.py
+
+
+##
+
+
+class IoPipelineMessages(NamespaceClass):
+    """Standard messages sent through a pipeline."""
+
+    #
+
+    class NeverInbound(Abstract):
+        pass
+
+    class NeverOutbound(Abstract):
+        pass
+
+    #
+
+    class MayPropagate(Abstract):
+        """
+        These *may* be propagated all the way through the pipeline without being an error. These will be silently
+        dropped when fed inbound and reaching the innermost pipeline position, but will still be emitted as pipeline
+        output when fed outbound.
+        """
+
+    class MustPropagate(MayPropagate, Abstract):
+        """
+        These *must* be propagated all the way through the pipeline when sent in either direction. This is enforced via
+        object identity - the same *instance* of the message must be seen at the end of the pipeline to be considered
+        caught. This is intentional.
+        """
+
+    #
+
+    class Pinning(Abstract):
+        @property
+        @abc.abstractmethod
+        def pinned(self) -> ta.Optional[ta.Sequence['IoPipelineMessages.MustPropagate']]:
+            raise NotImplementedError
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True, eq=False)
+    class InitialInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelActive`
+        """Signals that the inbound stream has begun producing input (`connected`)."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}()'
+
+    @ta.final
+    @dc.dataclass(frozen=True, eq=False)
+    class FinalInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelInactive`
+        """Signals that the inbound stream has produced its final message (`eof`)."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}()'
+
+    @ta.final
+    @dc.dataclass(frozen=True, eq=False)
+    class FinalOutput(NeverInbound, MustPropagate):  # ~ Netty `ChannelOutboundHandler::close`
+        """Signals that the outbound stream has produced its final message (`close`)."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}()'
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Error(NeverOutbound):
+        """Signals an exception occurred in the pipeline."""
+
+        exc: BaseException
+
+        direction: ta.Optional['IoPipelineDirection'] = None
+        handler: ta.Optional['IoPipelineHandlerRef'] = None
+
+    #
+
+    class Completable(Abstract, ta.Generic[T]):
+        # Management of completable state is implemented as 'hidden' / dynamic attributes to allow mixing in with
+        # otherwise frozen dataclasses.
+
+        # _completion_state: ta.Literal['pending', 'succeeded', 'failed'] = 'pending'
+        # _completion_: _Completion
+
+        @ta.final
+        class _Completion:
+            result: ta.Any
+            exc: ta.Optional[BaseException]
+            listeners: ta.Optional[ta.List[ta.Callable[[ta.Any], None]]] = None
+
+        def is_done(self) -> bool:
+            try:
+                cps = self._completion_state  # type: ignore[attr-defined]
+            except AttributeError:
+                return False
+            return cps != 'pending'
+
+        def is_succeeded(self) -> bool:
+            try:
+                cps = self._completion_state  # type: ignore[attr-defined]
+            except AttributeError:
+                return False
+            return cps == 'succeeded'
+
+        def get_result(self) -> T:
+            check.state(self._completion_state == 'succeeded')  # type: ignore[attr-defined]
+
+            return self._completion_.result  # type: ignore[attr-defined]
+
+        def is_failed(self) -> bool:
+            try:
+                cps = self._completion_state  # type: ignore[attr-defined]
+            except AttributeError:
+                return False
+            return cps == 'failed'
+
+        def get_exception(self) -> ta.Optional[BaseException]:
+            check.state(self._completion_state == 'failed')  # type: ignore[attr-defined]
+
+            return self._completion_.exc  # type: ignore[attr-defined]
+
+        def _completion(self) -> _Completion:
+            try:
+                return self._completion_  # type: ignore[attr-defined]
+            except AttributeError:
+                pass
+
+            cpl = IoPipelineMessages.Completable._Completion()  # noqa
+            object.__setattr__(self, '_completion_', cpl)
+            return cpl
+
+        def add_listener(self, fn: ta.Callable[['IoPipelineMessages.Completable[T]'], None]) -> None:
+            check.state(not self.is_done())
+
+            cpl = self._completion()
+            if (lst := cpl.listeners) is None:
+                lst = cpl.listeners = []
+            lst.append(fn)
+
+        def set_succeeded(self, result: T) -> None:
+            check.state(not self.is_done())
+
+            object.__setattr__(self, '_completion_state', 'succeeded')
+
+            try:
+                cpl = self._completion_  # type: ignore[attr-defined]
+            except AttributeError:
+                return
+
+            cpl.result = result
+            if (lst := cpl.listeners) is not None:
+                for fn in lst:
+                    fn(self)
+
+            object.__delattr__(self, '_completion_')
+
+        def set_failed(self, exc: ta.Optional[BaseException] = None) -> None:
+            check.state(not self.is_done())
+
+            object.__setattr__(self, '_completion_state', 'failed')
+
+            try:
+                cpl = self._completion_  # type: ignore[attr-defined]
+            except AttributeError:
+                return
+
+            cpl.exc = exc
+            if (lst := cpl.listeners) is not None:
+                for fn in lst:
+                    fn(self)
+
+            object.__delattr__(self, '_completion_')
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Defer(NeverInbound, Pinning, Completable[T], ta.Generic[T]):
+        fn: ta.Union[
+            ta.Callable[['IoPipelineHandlerContext'], T],
+            ta.Callable[[], T],
+        ]
+
+        no_context: bool = False
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}({self.fn!r}{", no_context=True" if self.no_context else ""})'
+
+        # _: dc.KW_ONLY
+
+        _ctx: ta.Optional['IoPipelineHandlerContext'] = dc.field(default=None, repr=False)
+
+        _pinned: ta.Optional[ta.Sequence['IoPipelineMessages.MustPropagate']] = dc.field(default=None, repr=False)
+
+        @property
+        def pinned(self) -> ta.Optional[ta.Sequence['IoPipelineMessages.MustPropagate']]:
+            return self._pinned
+
+
+##
+
+
+class IoPipelineHandlerNotification(Abstract):  # ~ Netty `ChannelHandler` methods
+    """
+    Directionless, private events sent to a specific handler that are not to be forwarded to any other handler in either
+    direction.
+    """
+
+
+class IoPipelineHandlerNotifications(NamespaceClass):
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Added(IoPipelineHandlerNotification):
+        ctx: 'IoPipelineHandlerContext'
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Removed(IoPipelineHandlerNotification):
+        ctx: 'IoPipelineHandlerContext'
+
+
+##
+
+
+@ta.final
+class IoPipelineHandlerRef(ta.Generic[T]):
+    """
+    Encapsulates a reference to a unique position of a handler instance in a pipeline, used at public api boundaries.
+
+    Should the handler be removed from the relevant position in the pipeline, the ref instance becomes permanently
+    invalidated.
+
+    Note that this is definitionally identity hash/eq: given some valid ref, removing that ref from the pipeline and
+    re-adding the same handler instance to the same effective position in a pipeline results in a different ref.
+    """
+
+    def __init__(self, *, _context: 'IoPipelineHandlerContext') -> None:
+        self._context = _context
+
+    @property
+    def pipeline(self) -> 'IoPipeline':
+        return self._context._pipeline  # noqa
+
+    @property
+    def handler(self) -> T:
+        return self._context._handler  # type: ignore[return-value]  # noqa
+
+    @property
+    def name(self) -> ta.Optional[str]:
+        return self._context._name  # noqa
+
+    @property
+    def invalidated(self) -> bool:
+        return self._context._invalidated  # noqa
+
+    def __repr__(self) -> str:
+        return (
+            f'{type(self).__name__}'
+            f'{"!INVALIDATED" if self.invalidated else ""}'
+            f'{f"<{self.name!r}>" if self.name is not None else ""}'
+            f'<context@{id(self._context):x}>'
+            f'({self.handler!r})'  # {f"@{id(self.handler):x}"})'
+        )
+
+
+IoPipelineHandlerRef_ = IoPipelineHandlerRef['IoPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+
+
+##
+
+
+@ta.final
+class IoPipelineHandlerContext:
+    """
+    The embodiment of an instance of a handler at a position in a pipeline. Passed to IoPipelineHandler methods,
+    providing handler-specific access to the pipeline. As instances of `ShareableIoPipelineHandler` may validly be
+    simultaneously present at multiple positions in a pipeline, a single handler may have multiple active context
+    instances associated with it in any given pipeline.
+
+    Instances of this class are considered private to a handler instance and are not to be cached or shared in any way.
+    The method names reflect this: they are operations available to the handler in the context of a pipeline processing
+    operation.
+    """
+
+    def __init__(
+            self,
+            *,
+            _pipeline: 'IoPipeline',
+            _handler: 'IoPipelineHandler',
+
+            _name: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        self._pipeline: ta.Final[IoPipeline] = _pipeline
+        self._handler: ta.Final[IoPipelineHandler] = _handler
+
+        self._name: ta.Final[ta.Optional[str]] = _name
+
+        self._ref: IoPipelineHandlerRef_ = IoPipelineHandlerRef(_context=self)
+
+        hty = type(_handler)
+        self._handles_inbound = hty.inbound is not IoPipelineHandler.inbound
+        self._handles_outbound = hty.outbound is not IoPipelineHandler.outbound
+
+    _next_in: 'IoPipelineHandlerContext'  # 'next'
+    _next_out: 'IoPipelineHandlerContext'  # 'prev'
+
+    def __repr__(self) -> str:
+        return (
+            f'{type(self).__name__}@{id(self):x}'
+            f'{"!INVALIDATED" if self._invalidated else ""}'
+            f'{f"<{self._name!r}>" if self._name is not None else ""}'
+            f'<pipeline@{id(self.pipeline):x}>'
+            f'({self._handler!r})'  # @{id(self._handler):x})'
+        )
+
+    @property
+    def ref(self) -> IoPipelineHandlerRef_:
+        return self._ref
+
+    @property
+    def pipeline(self) -> 'IoPipeline':
+        return self._pipeline
+
+    @property
+    def services(self) -> 'IoPipelineServices':  # noqa
+        return self._pipeline._services  # noqa
+
+    @property
+    def handler(self) -> 'IoPipelineHandler':
+        return self._handler
+
+    @property
+    def name(self) -> ta.Optional[str]:
+        return self._name
+
+    #
+
+    def defer(
+            self,
+            fn: ta.Callable[['IoPipelineHandlerContext'], T],
+            *,
+            pin: ta.Optional[ta.Sequence[IoPipelineMessages.MustPropagate]] = None,
+    ) -> IoPipelineMessages.Defer[T]:
+        return self._pipeline._defer(self, fn, pin=pin)  # noqa
+
+    def defer_no_context(
+            self,
+            fn: ta.Callable[[], T],
+            *,
+            pin: ta.Optional[ta.Sequence[IoPipelineMessages.MustPropagate]] = None,
+    ) -> IoPipelineMessages.Defer[T]:
+        return self._pipeline._defer(self, fn, no_context=True, pin=pin)  # noqa
+
+    #
+
+    _invalidated = False
+
+    @property
+    def invalidated(self) -> bool:
+        return self._invalidated
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class StorageKey(ta.Generic[T]):
+        name: str
+
+    @ta.final
+    class Storage:
+        def __init__(self) -> None:
+            self.__dict: ta.Dict[IoPipelineHandlerContext.StorageKey, ta.Any] = {}
+
+        @property
+        def dict(self) -> ta.Dict['IoPipelineHandlerContext.StorageKey', ta.Any]:
+            return self.__dict
+
+        def __getitem__(self, key: 'IoPipelineHandlerContext.StorageKey[T]') -> T:
+            return self.__dict[key]
+
+        @ta.overload
+        def get(
+                self,
+                key: 'IoPipelineHandlerContext.StorageKey[T]',
+                default: T,
+                /,
+        ) -> T:
+            ...
+
+        @ta.overload
+        def get(
+                self,
+                key: 'IoPipelineHandlerContext.StorageKey[T]',
+                default: ta.Optional[T] = None,
+                /,
+        ) -> ta.Optional[T]:
+            ...
+
+        def get(self, key, default=None, /):
+            return self.__dict.get(key, default)
+
+        def __setitem__(self, key: 'IoPipelineHandlerContext.StorageKey[T]', value: T) -> None:
+            self.__dict[key] = value
+
+        def __delitem__(self, key: 'IoPipelineHandlerContext.StorageKey[T]') -> None:
+            del self.__dict[key]
+
+        def __len__(self) -> int:
+            return len(self.__dict)
+
+        def __contains__(self, key: 'IoPipelineHandlerContext.StorageKey[T]') -> bool:
+            return key in self.__dict
+
+        def __iter__(self) -> ta.Iterator['IoPipelineHandlerContext.StorageKey[T]']:
+            return iter(self.__dict)
+
+        def items(self) -> ta.Iterator[ta.Tuple['IoPipelineHandlerContext.StorageKey[T]', T]]:
+            return iter(self.__dict.items())
+
+    _storage_: Storage
+
+    @property
+    def storage(self) -> Storage:
+        try:
+            return self._storage_
+        except AttributeError:
+            pass
+        self._storage_ = ret = IoPipelineHandlerContext.Storage()
+        return ret
+
+    #
+
+    def _notify(self, no: IoPipelineHandlerNotification) -> None:
+        check.isinstance(no, IoPipelineHandlerNotification)
+        check.state(self._pipeline._execution_depth > 0)  # noqa
+
+        self._handler.notify(self, no)
+
+    ##
+    # Feeding `type`'s is forbidden as it's almost always going to be an error - usually forgetting to instantiate a
+    # marker dataclass)
+
+    _FORBIDDEN_INBOUND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        IoPipelineMessages.NeverInbound,
+        IoPipelineHandlerNotification,
+        type,
+        type(None),
+    )
+
+    def _inbound(self, msg: ta.Any) -> None:
+        check.state(not self._invalidated, ContextInvalidatedIoPipelineError)
+        check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
+
+        check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
+
+        if isinstance(msg, IoPipelineMessages.MustPropagate):
+            self._pipeline._propagation.add_must(self, 'inbound', msg)  # noqa
+
+        try:
+            self._handler.inbound(self, msg)
+
+        except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+            raise
+
+        except BaseException as e:
+            if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
+                raise
+            self._handle_error(e, 'inbound')
+
+    _FORBIDDEN_OUTBOUND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        IoPipelineMessages.NeverOutbound,
+        IoPipelineHandlerNotification,
+        type,
+        type(None),
+    )
+
+    def _outbound(self, msg: ta.Any) -> None:
+        check.state(not self._invalidated, ContextInvalidatedIoPipelineError)
+        check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
+
+        check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
+
+        if isinstance(msg, IoPipelineMessages.MustPropagate):
+            self._pipeline._propagation.add_must(self, 'outbound', msg)  # noqa
+
+        try:
+            self._handler.outbound(self, msg)
+
+        except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+            raise
+
+        except BaseException as e:
+            if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
+                raise
+            self._handle_error(e, 'outbound')
+
+    #
+
+    def _run_deferred(self, dfl: IoPipelineMessages.Defer) -> None:
+        check.state(not self._invalidated, ContextInvalidatedIoPipelineError)
+        check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
+
+        check.state(dfl._ctx is self)  # noqa
+
+        try:
+            if dfl.no_context:
+                res = dfl.fn()  # type: ignore[call-arg]
+            else:
+                res = dfl.fn(self)  # type: ignore[call-arg]
+
+        except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+            raise
+
+        except BaseException as e:  # noqa
+            dfl.set_failed(e)
+
+            if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
+                raise
+            self._handle_error(e, 'inbound')
+
+        else:
+            dfl.set_succeeded(res)
+
+    #
+
+    _handling_error: bool = False
+
+    def _handle_error(self, e: BaseException, direction: 'IoPipelineDirection') -> None:
+        check.state(not self._handling_error)
+        self._handling_error = True
+
+        try:
+            try:
+                self.feed_in(IoPipelineMessages.Error(e, direction, self._ref))
+
+            except self._pipeline._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+                raise
+
+            except BaseException as e2:  # noqa
+                raise
+
+        finally:
+            self._handling_error = False
+
+    ##
+    # The following overloads attempts to catch invalid inputs statically, but there's no explicit way to do this in
+    # mypy - the following trick only works if there's an unconditional statement after the attempted calls, but it's
+    # better than nothing.
+
+    @ta.overload
+    def feed_in(
+            self,
+            msg: ta.Union[
+                IoPipelineMessages.NeverInbound,
+                IoPipelineHandlerNotification,
+                type,
+                None,
+            ],
+    ) -> 'ta.Never':
+        ...
+
+    @ta.overload
+    def feed_in(self, msg: object) -> None:
+        ...
+
+    def feed_in(self, msg):  # ~ Netty `ChannelInboundInvoker::fireChannelRead`
+        nxt = self._next_in
+        while not nxt._handles_inbound:  # noqa
+            nxt = nxt._next_in  # noqa
+        nxt._inbound(msg)  # noqa
+
+    @ta.overload
+    def feed_out(
+            self,
+            msg: ta.Union[
+                IoPipelineMessages.NeverOutbound,
+                IoPipelineHandlerNotification,
+                type,
+                None,
+            ],
+    ) -> 'ta.Never':
+        ...
+
+    @ta.overload
+    def feed_out(self, msg: object) -> None:
+        ...
+
+    def feed_out(self, msg):  # ~ Netty `ChannelOutboundInvoker::write`
+        nxt = self._next_out  # noqa
+        while not nxt._handles_outbound:  # noqa
+            nxt = nxt._next_out  # noqa
+        nxt._outbound(msg)  # noqa
+
+    #
+
+    def feed_final_output(self) -> None:
+        self.feed_out(IoPipelineMessages.FinalOutput())
+
+    #
+
+    def mark_propagated(
+            self,
+            direction: 'IoPipelineDirection',
+            msg: IoPipelineMessages.MustPropagate,
+    ) -> None:
+        self._pipeline._propagation.remove_must(self, direction, msg)  # noqa
+
+
+##
+
+
+class IoPipelineHandler(Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if not (
+            cls.__hash__ is object.__hash__ and
+            cls.__eq__ is object.__eq__ and
+            cls.__ne__ is object.__ne__
+        ):
+            raise TypeError(
+                f'IoPipelineHandler subclass {cls.__name__} must not override __hash__, __eq__ or __ne__',
+            )
+
+    #
+
+    def notify(self, ctx: IoPipelineHandlerContext, no: IoPipelineHandlerNotification) -> None:
+        pass
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        ctx.feed_in(msg)
+
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        ctx.feed_out(msg)
+
+
+class ShareableIoPipelineHandler(IoPipelineHandler, Abstract):
+    pass
+
+
+##
+
+
+IoPipelineDirection = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'inbound',
+    'outbound',
+]
+
+IoPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    IoPipelineDirection,
+    'duplex',
+]
+
+IoPipelineUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'added',
+    'removed',
+]
+
+IoPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'adding',
+    'added',
+    'removing',
+    'removed',
+]
+
+
+##
+
+
+class IoPipelineService(Abstract):
+    def pipeline_update(self, pipeline: 'IoPipeline', kind: IoPipelineUpdate) -> None:
+        pass
+
+    def handler_update(self, handler_ref: IoPipelineHandlerRef, kind: IoPipelineHandlerUpdate) -> None:
+        pass
+
+    def pipeline_enter(self, pipeline: 'IoPipeline') -> None:
+        pass
+
+    def pipeline_exit(self, pipeline: 'IoPipeline') -> None:
+        pass
+
+
+@ta.final
+class IoPipelineServices:
+    def __init__(self, lst: ta.Sequence[IoPipelineService]) -> None:
+        self._lst = lst
+
+        self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
+        self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
+
+        self._handles_pipeline_update = handles_pipeline_update = []
+        self._handles_handler_update = handles_handler_update = []
+        self._handles_pipeline_enter = handles_pipeline_enter = []
+        self._handles_pipeline_exit = handles_pipeline_exit = []
+
+        for svc in lst:
+            sty = type(svc)
+            if sty.pipeline_update is not IoPipelineService.pipeline_update:
+                handles_pipeline_update.append(sty)
+            if sty.handler_update is not IoPipelineService.handler_update:
+                handles_handler_update.append(sty)
+            if sty.pipeline_enter is not IoPipelineService.pipeline_enter:
+                handles_pipeline_enter.append(sty)
+            if sty.pipeline_exit is not IoPipelineService.pipeline_exit:
+                handles_pipeline_exit.append(sty)
+
+    _handles_pipeline_update: ta.Sequence[IoPipelineService]
+    _handles_handler_update: ta.Sequence[IoPipelineService]
+    _handles_pipeline_enter: ta.Sequence[IoPipelineService]
+    _handles_pipeline_exit: ta.Sequence[IoPipelineService]
+
+    _EMPTY: ta.ClassVar['IoPipelineServices']
+
+    @classmethod
+    def of(cls, obj: ta.Union['IoPipelineServices', ta.Sequence[IoPipelineService]]) -> 'IoPipelineServices':  # noqa
+        if isinstance(obj, cls):
+            return obj
+        elif not obj:
+            return cls._EMPTY
+        else:
+            return cls(list(obj))
+
+    def __len__(self) -> int:
+        return len(self._lst)
+
+    def __iter__(self) -> ta.Iterator[IoPipelineService]:
+        return iter(self._lst)
+
+    def __contains__(self, item: IoPipelineService) -> bool:
+        return item in self._lst
+
+    @dc.dataclass(frozen=True)
+    class ServiceType(ta.Generic[T]):
+        """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+        ty: ta.Type[T]
+
+    def find_all(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
+        if isinstance(ty, self.ServiceType):
+            ty = ty.ty
+
+        try:
+            return self._by_type_cache[ty]
+        except KeyError:
+            pass
+
+        self._by_type_cache[ty] = ret = [svc for svc in self._lst if isinstance(svc, ty)]
+        return ret
+
+    def find(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
+        if isinstance(ty, self.ServiceType):
+            ty = ty.ty
+
+        try:
+            return self._single_by_type_cache[ty]
+        except KeyError:
+            pass
+
+        self._single_by_type_cache[ty] = ret = check.opt_single(self.find_all(ty))
+        return ret
+
+    def __getitem__(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> T:
+        if (svc := self.find(ty)) is None:
+            raise KeyError(ty)
+        return svc
+
+
+IoPipelineServices._EMPTY = IoPipelineServices([])  # noqa
+
+
+##
+
+
+class IoPipelineMetadata(Abstract):
+    pass
+
+
+@ta.final
+class IoPipelineMetadatas:
+    def __init__(self, lst: ta.Sequence[IoPipelineMetadata]) -> None:
+        dct: ta.Dict[type, ta.Any] = {}
+        for md in lst:
+            mty = type(md)
+            check.not_in(mty, dct)
+            dct[mty] = md
+        self._dct = dct
+
+    _EMPTY: ta.ClassVar['IoPipelineMetadatas']
+
+    @classmethod
+    def of(cls, obj: ta.Union['IoPipelineMetadatas', ta.Sequence[IoPipelineMetadata]]) -> 'IoPipelineMetadatas':  # noqa
+        if isinstance(obj, cls):
+            return obj
+        elif not obj:
+            return cls._EMPTY
+        else:
+            return cls(list(obj))
+
+    def __len__(self) -> int:
+        return len(self._dct)
+
+    def __contains__(self, ty: ta.Type[IoPipelineMetadata]) -> bool:
+        return ty in self._dct
+
+    def __iter__(self) -> ta.Iterator[IoPipelineMetadata]:
+        return iter(self._dct.values())
+
+    @dc.dataclass(frozen=True)
+    class MetadataType(ta.Generic[IoPipelineMetadataT]):
+        """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+        ty: ta.Type[IoPipelineMetadataT]
+
+    def __getitem__(
+            self,
+            ty: ta.Union[
+                MetadataType[IoPipelineMetadataT],
+                ta.Type[IoPipelineMetadataT],
+            ],
+    ) -> IoPipelineMetadataT:
+        if isinstance(ty, self.MetadataType):
+            ty = ty.ty
+
+        return self._dct[ty]
+
+    @ta.overload
+    def get(
+            self,
+            ty: ta.Union[
+                MetadataType[IoPipelineMetadataT],
+                ta.Type[IoPipelineMetadataT],
+            ],
+            default: IoPipelineMetadataT,
+            /,
+    ) -> IoPipelineMetadataT:
+        ...
+
+    @ta.overload
+    def get(
+            self,
+            ty: ta.Union[
+                MetadataType[IoPipelineMetadataT],
+                ta.Type[IoPipelineMetadataT],
+            ],
+            default: ta.Optional[IoPipelineMetadataT] = None,
+            /,
+    ) -> ta.Optional[IoPipelineMetadataT]:
+        ...
+
+    def get(self, ty, default=None, /):
+        if isinstance(ty, self.MetadataType):
+            ty = ty.ty
+
+        return self._dct.get(ty, default)
+
+
+IoPipelineMetadatas._EMPTY = IoPipelineMetadatas([])  # noqa
+
+
+##
+
+
+@ta.final
+class _IoPipelinePropagation:
+    @dc.dataclass()
+    class _PendingMustEntry:
+        msg: ta.Any
+        direction: IoPipelineDirection
+        last_seen: IoPipelineHandlerContext
+        pinned_by: ta.Optional[IoPipelineMessages.Pinning] = None
+
+    def __init__(self, p: 'IoPipeline') -> None:
+        self._p = p
+
+        if not self._p._config.disable_propagation_checking:  # noqa
+            self._pending_must: ta.Final[ta.Dict[int, _IoPipelinePropagation._PendingMustEntry]] = {}
+
+    def add_must(
+            self,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
+            msg: IoPipelineMessages.MustPropagate,
+    ) -> None:
+        if self._p._config.disable_propagation_checking:  # noqa
+            return
+
+        i = id(msg)
+        try:
+            x = self._pending_must[i]
+        except KeyError:
+            self._pending_must[i] = _IoPipelinePropagation._PendingMustEntry(  # noqa
+                msg,
+                direction,
+                ctx,
+            )
+            return
+
+        check.is_(msg, x.msg)
+        check.equal(direction, x.direction)
+        check.state(x.pinned_by is None)
+        x.last_seen = ctx
+
+    def pin_musts(
+            self,
+            pinning: IoPipelineMessages.Pinning,
+    ) -> None:
+        if self._p._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+            return
+
+        for msg in lst:
+            x = self._pending_must[id(msg)]
+            check.none(x.pinned_by)
+            x.pinned_by = pinning
+
+    def unpin_musts(
+            self,
+            pinning: IoPipelineMessages.Pinning,
+    ) -> None:
+        if self._p._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+            return
+
+        for msg in lst:
+            x = self._pending_must[id(msg)]
+            check.is_(x.pinned_by, pinning)
+            x.pinned_by = None
+
+    def remove_must(
+            self,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
+            msg: IoPipelineMessages.MustPropagate,
+    ) -> None:
+        if self._p._config.disable_propagation_checking:  # noqa
+            return
+
+        i = id(msg)
+        try:
+            x = self._pending_must.pop(i)
+        except KeyError:
+            raise MessageNotPropagatedIoPipelineError.new_single(
+                direction,
+                msg,
+                last_seen=ctx._ref,  # noqa
+            ) from None
+
+        if (
+                x.msg is not msg or
+                x.direction != direction or
+                x.pinned_by is not None
+        ):
+            raise MessageNotPropagatedIoPipelineError.new_single(
+                direction,
+                msg,
+                last_seen=ctx._ref,  # noqa
+            )
+
+    def check_and_clear(self) -> None:
+        if self._p._config.disable_propagation_checking:  # noqa
+            return
+
+        if not self._pending_must:
+            return
+
+        il: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
+        ol: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
+
+        for x in self._pending_must.values():
+            if x.pinned_by is None:
+                (il if x.direction == 'inbound' else ol).append((x.msg, x.last_seen._ref))  # noqa
+
+        if not (il or ol):
+            return
+
+        e = MessageNotPropagatedIoPipelineError.new(
+            inbound_with_last_seen=il,
+            outbound_with_last_seen=ol,
+        )
+
+        for lst in (il, ol):
+            for msg, _ in lst:
+                del self._pending_must[id(msg)]
+
+        raise e
+
+
+##
+
+
+@ta.final
+class IoPipeline:
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Config:
+        # TODO: 'close'? 'deadletter'? combination? composition? ...
+        inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
+
+        disable_propagation_checking: bool = False
+
+        raise_immediately: bool = False
+
+        def __post_init__(self) -> None:
+            check.in_(self.inbound_terminal, ('drop', 'raise'))
+
+        #
+
+        def update(self, **kwargs: ta.Any) -> 'IoPipeline.Config':
+            return dc.replace(self, **kwargs)
+
+        DEFAULT: ta.ClassVar['IoPipeline.Config']
+
+    Config.DEFAULT = Config()
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Spec:
+        # Initial handlers are optional - handlers may be freely added and removed later.
+        handlers: ta.Sequence[IoPipelineHandler] = ()
+
+        config: 'IoPipeline.Config' = dc.field(default_factory=lambda: IoPipeline.Config.DEFAULT)
+
+        # _: dc.KW_ONLY
+
+        # Metadata and ervices are fixed for the lifetime of the pipeline.
+        metadata: ta.Union[ta.Sequence[IoPipelineMetadata], IoPipelineMetadatas] = ()
+        services: ta.Union[ta.Sequence[IoPipelineService], IoPipelineServices] = ()
+
+        #
+
+        def update_config(self, **kwargs: ta.Any) -> 'IoPipeline.Spec':
+            return dc.replace(self, config=self.config.update(**kwargs))
+
+    @classmethod
+    def new(
+            cls,
+            handlers: ta.Sequence[IoPipelineHandler] = (),
+            config: 'IoPipeline.Config' = Config.DEFAULT,
+            *,
+            metadata: ta.Union[ta.Sequence[IoPipelineMetadata], IoPipelineMetadatas] = (),
+            services: ta.Union[ta.Sequence[IoPipelineService], IoPipelineServices] = (),
+    ) -> 'IoPipeline':
+        return cls(IoPipeline.Spec(
+            handlers=handlers,
+            config=config,
+            metadata=metadata,
+            services=services,
+        ))
+
+    #
+
+    def __init__(
+            self,
+            spec: Spec,
+            *,
+            never_handle_exceptions: ta.Tuple[type, ...] = (),
+    ) -> None:
+        super().__init__()
+
+        self._config: ta.Final[IoPipeline.Config] = spec.config
+        self._never_handle_exceptions = never_handle_exceptions
+
+        self._metadata: ta.Final[IoPipelineMetadatas] = IoPipelineMetadatas.of(spec.metadata)
+        self._services: ta.Final[IoPipelineServices] = IoPipelineServices.of(spec.services)
+
+        #
+
+        self._all_never_handle_exceptions: ta.Tuple[type, ...] = (
+            UnhandleableIoPipelineError,
+            *never_handle_exceptions,
+        )
+
+        self._propagation: _IoPipelinePropagation = _IoPipelinePropagation(self)
+
+        #
+
+        self._output: ta.Final[IoPipeline._Output] = IoPipeline._Output()
+
+        #
+
+        self._outermost = outermost = IoPipelineHandlerContext(
+            _pipeline=self,
+            _handler=IoPipeline._Outermost(),
+        )
+        self._innermost = innermost = IoPipelineHandlerContext(
+            _pipeline=self,
+            _handler=IoPipeline._Innermost(),
+        )
+
+        # Explicitly does not form a ring, iteration past the outermost/innermost is always an error and will
+        # intentionally raise AttributeError if not caught earlier.
+        outermost._next_in = innermost  # noqa
+        innermost._next_out = outermost  # noqa
+
+        self._unique_contexts: ta.Final[ta.Dict[IoPipelineHandler, IoPipelineHandlerContext]] = {}
+        self._shareable_contexts: ta.Final[ta.Dict[ShareableIoPipelineHandler, ta.Set[IoPipelineHandlerContext]]] = {}  # noqa
+
+        self._contexts_by_name: ta.Final[ta.Dict[str, IoPipelineHandlerContext]] = {}
+
+        #
+
+        self._state = IoPipeline.State.READY
+
+        #
+
+        try:
+            for svc in self._services._handles_pipeline_update:  # noqa
+                svc.pipeline_update(self, 'added')
+
+            for h in spec.handlers:
+                self.add_innermost(h)
+
+        except self._all_never_handle_exceptions:  # type: ignore[misc]
+            raise
+
+        except BaseException:  # noqa
+            self.destroy()
+            raise
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}@{id(self):x}'
+
+    @property
+    def config(self) -> Config:
+        return self._config
+
+    ##
+    # state
+
+    class State(enum.Enum):
+        NEW = 'new'
+        READY = 'ready'
+        DESTROYING = 'destroying'
+        DESTROYED = 'destroyed'
+
+    _state: State = State.NEW
+
+    @property
+    def state(self) -> State:
+        return self._state
+
+    @property
+    def is_ready(self) -> bool:
+        return self._state is IoPipeline.State.READY
+
+    #
+
+    _saw_any_input = False
+    _saw_initial_input = False
+    _saw_final_input = False
+    _saw_final_output = False
+
+    @property
+    def saw_any_input(self) -> bool:
+        return self._saw_any_input
+
+    @property
+    def saw_initial_input(self) -> bool:
+        return self._saw_initial_input
+
+    @property
+    def saw_final_input(self) -> bool:
+        return self._saw_final_input  # Note: only 'pipeline-level'
+
+    @property
+    def saw_final_output(self) -> bool:
+        return self._saw_final_output
+
+    ##
+    # sub-collections
+
+    @property
+    def metadata(self) -> IoPipelineMetadatas:
+        return self._metadata
+
+    @property
+    def services(self) -> IoPipelineServices:
+        return self._services
+
+    ##
+    # execution
+
+    _execution_depth = 0
+
+    def _step_in(self) -> None:
+        self._execution_depth += 1
+
+        if self._execution_depth == 1:
+            for svc in self._services._handles_pipeline_enter:  # noqa
+                svc.pipeline_enter(self)
+
+    def _step_out(self) -> None:
+        check.state(self._execution_depth > 0)
+
+        self._execution_depth -= 1
+
+        if not self._execution_depth:
+            for svc in self._services._handles_pipeline_exit:  # noqa
+                svc.pipeline_exit(self)
+
+            self._propagation.check_and_clear()
+
+    @ta.final
+    class _EnterContextManager:
+        def __init__(self, p: 'IoPipeline') -> None:
+            self._p = p
+
+        def __enter__(self) -> None:
+            self._p._step_in()  # noqa
+
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+            self._p._step_out()  # noqa
+
+    def enter(self) -> ta.ContextManager[None]:
+        return self._EnterContextManager(self)
+
+    #
+
+    def _notify(self, ctx: IoPipelineHandlerContext, no: IoPipelineHandlerNotification) -> None:
+        self._step_in()
+        try:
+            ctx._notify(no)  # noqa
+
+        finally:
+            self._step_out()
+
+    def notify(self, handler_ref: IoPipelineHandlerRef, no: IoPipelineHandlerNotification) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+        self._notify(ctx, no)
+
+    #
+
+    def _feed_in_to(self, ctx: IoPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+        self._step_in()
+        try:
+            for msg in msgs:
+                if self._saw_final_input:
+                    raise SawFinalInputIoPipelineError
+                elif isinstance(msg, IoPipelineMessages.FinalInput):
+                    self._saw_final_input = True
+
+                if isinstance(msg, IoPipelineMessages.InitialInput):
+                    if self._saw_any_input:
+                        raise SawInitialInputIoPipelineError
+                    check.state(not self._saw_initial_input)
+                    self._saw_initial_input = True
+                self._saw_any_input = True
+
+                ctx._inbound(msg)  # noqa
+
+        finally:
+            self._step_out()
+
+    def feed_in_to(self, handler_ref: IoPipelineHandlerRef, *msgs: ta.Any) -> None:
+        # TODO: remove? internal only? used by replace-self pattern
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+        self._feed_in_to(ctx, msgs)
+
+    def feed_in(self, *msgs: ta.Any) -> None:
+        self._feed_in_to(self._outermost, msgs)  # noqa
+
+    def feed_initial_input(self) -> None:
+        self._feed_in_to(self._outermost, (IoPipelineMessages.InitialInput(),))  # noqa
+
+    def feed_final_input(self) -> None:
+        self._feed_in_to(self._outermost, (IoPipelineMessages.FinalInput(),))  # noqa
+
+    #
+
+    def _defer(
+            self,
+            ctx: IoPipelineHandlerContext,
+            fn: ta.Union[
+                ta.Callable[[IoPipelineHandlerContext], T],
+                ta.Callable[[], T],
+            ],
+            *,
+            no_context: bool = False,
+            pin: ta.Optional[ta.Sequence[IoPipelineMessages.MustPropagate]] = None,
+    ) -> IoPipelineMessages.Defer[T]:
+        check.is_(ctx._pipeline, self)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        dfl = IoPipelineMessages.Defer(
+            fn,
+            no_context,
+            _ctx=ctx,
+            _pinned=pin,
+        )
+
+        if pin:
+            self._propagation.pin_musts(dfl)
+
+        ctx.feed_out(dfl)
+
+        return dfl
+
+    def run_deferred(self, dfl: IoPipelineMessages.Defer) -> None:
+        ctx = check.not_none(dfl._ctx)  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        self._step_in()
+        try:
+            if dfl._pinned:  # noqa
+                self._propagation.unpin_musts(dfl)
+
+            ctx._run_deferred(dfl)  # noqa
+
+        finally:
+            self._step_out()
+
+    ##
+    # output
+
+    @ta.final
+    class _Output:
+        def __init__(self) -> None:
+            self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+
+        def __repr__(self) -> str:
+            return (
+                f'{type(self).__qualname__}@{id(self):x}'
+                f'<len={len(self._q)}>'
+                '()'
+            )
+
+        def peek(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
+
+            return self._q[0]
+
+        def poll(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
+
+            return self._q.popleft()
+
+        def drain(self) -> ta.List[ta.Any]:
+            out: ta.List[ta.Any] = []
+
+            while self._q:
+                out.append(self._q.popleft())
+
+            return out
+
+    @property
+    def output(self) -> _Output:
+        return self._output
+
+    ##
+    # handlers
+
+    def _handler_update(self, ctx: IoPipelineHandlerContext, kind: IoPipelineHandlerUpdate) -> None:
+        for svc in self._services._handles_handler_update:  # noqa
+            svc.handler_update(ctx._ref, kind)  # noqa
+
+    #
+
+    def _terminal_inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if (tm := self._config.inbound_terminal) == 'drop':
+            pass
+
+        elif tm == 'raise':
+            if not isinstance(msg, IoPipelineMessages.MayPropagate):
+                raise MessageReachedTerminalIoPipelineError.new_single('inbound', msg)
+
+        else:
+            raise RuntimeError(f'unknown inbound terminal mode {tm}')
+
+    def _terminal_outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if isinstance(msg, IoPipelineMessages.FinalOutput):
+            self._saw_final_output = True
+        elif self._saw_final_output:
+            raise SawFinalOutputIoPipelineError
+
+        self._output._q.append(msg)  # noqa
+
+    #
+
+    _outermost: ta.Final[IoPipelineHandlerContext]
+    _innermost: ta.Final[IoPipelineHandlerContext]
+
+    def _check_can_add(
+            self,
+            handler: IoPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> IoPipelineHandler:
+        check.state(self._state == IoPipeline.State.READY)  # noqa
+
+        if not isinstance(handler, ShareableIoPipelineHandler):
+            check.not_in(handler, self._unique_contexts)
+
+        if name is not None:
+            check.not_in(name, self._contexts_by_name)
+
+        return handler
+
+    def _check_can_add_relative_to(self, ctx: IoPipelineHandlerContext) -> IoPipelineHandlerContext:
+        check.is_(ctx._pipeline, self)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        return ctx
+
+    def _add(
+            self,
+            handler: IoPipelineHandler,
+            *,
+            inner_to: ta.Optional[IoPipelineHandlerContext] = None,
+            outer_to: ta.Optional[IoPipelineHandlerContext] = None,
+
+            name: ta.Optional[str] = None,
+    ) -> IoPipelineHandlerRef:
+        self._check_can_add(handler, name=name)
+
+        if inner_to is not None:
+            check.none(outer_to)
+            check.is_not(inner_to, self._innermost)
+            self._check_can_add_relative_to(inner_to)
+        elif outer_to is not None:
+            check.none(inner_to)
+            check.is_not(outer_to, self._outermost)
+            self._check_can_add_relative_to(outer_to)
+        else:
+            raise ValueError('Must specify exactly one of inner_to or outer_to')
+
+        ctx = IoPipelineHandlerContext(
+            _pipeline=self,
+            _handler=handler,
+
+            _name=name,
+        )
+
+        self._handler_update(ctx, 'adding')  # noqa
+
+        if isinstance(handler, ShareableIoPipelineHandler):
+            self._shareable_contexts.setdefault(handler, set()).add(ctx)
+        else:
+            check.not_in(handler, self._unique_contexts)  # also pre-checked by _check_can_add
+            self._unique_contexts[handler] = ctx
+
+        if name is not None:
+            self._contexts_by_name[name] = ctx
+
+        if inner_to is not None:
+            prv = inner_to._next_in  # noqa
+            ctx._next_out = inner_to  # noqa
+            ctx._next_in = prv  # noqa
+            inner_to._next_in = ctx  # noqa
+            prv._next_out = ctx  # noqa
+
+        if outer_to is not None:
+            prv = outer_to._next_out  # noqa
+            ctx._next_out = prv  # noqa
+            ctx._next_in = outer_to  # noqa
+            prv._next_in = ctx  # noqa
+            outer_to._next_out = ctx  # noqa
+
+        self._clear_caches()
+
+        self._handler_update(ctx, 'added')  # noqa
+
+        # FIXME: exceptions?
+        self._notify(ctx, IoPipelineHandlerNotifications.Added(ctx))
+
+        return ctx._ref  # noqa
+
+    def add_innermost(
+            self,
+            handler: IoPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> IoPipelineHandlerRef:
+        return self._add(handler, outer_to=self._innermost, name=name)
+
+    def add_outermost(
+            self,
+            handler: IoPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> IoPipelineHandlerRef:
+        return self._add(handler, inner_to=self._outermost, name=name)
+
+    def add_inner_to(
+            self,
+            inner_to: IoPipelineHandlerRef,
+            handler: IoPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> IoPipelineHandlerRef:
+        ctx = inner_to._context   # noqa
+        return self._add(handler, inner_to=ctx, name=name)
+
+    def add_outer_to(
+            self,
+            outer_to: IoPipelineHandlerRef,
+            handler: IoPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> IoPipelineHandlerRef:
+        ctx = outer_to._context   # noqa
+        return self._add(handler, outer_to=ctx, name=name)
+
+    #
+
+    def _check_can_remove(self, handler_ref: IoPipelineHandlerRef) -> IoPipelineHandler:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+
+        check.state(self._state in (IoPipeline.State.READY, IoPipeline.State.DESTROYING))  # noqa
+
+        check.state(not ctx._invalidated)  # noqa
+
+        handler = ctx._handler  # noqa
+        if isinstance(handler, ShareableIoPipelineHandler):
+            check.in_(ctx, self._shareable_contexts[handler])
+        else:
+            check.equal(ctx, self._unique_contexts[handler])
+
+        check.is_not(ctx, self._innermost)
+        check.is_not(ctx, self._outermost)
+
+        return handler
+
+    def _remove(self, handler_ref: IoPipelineHandlerRef) -> None:
+        self._check_can_remove(handler_ref)
+
+        ctx = handler_ref._context  # noqa
+        handler = ctx._handler  # noqa
+
+        self._handler_update(ctx, 'removing')  # noqa
+
+        if ctx._name is not None:  # noqa
+            del self._contexts_by_name[ctx._name]  # noqa
+
+        if isinstance(handler, ShareableIoPipelineHandler):
+            cs = self._shareable_contexts[handler]
+            cs.remove(ctx)
+            if not cs:
+                del self._shareable_contexts[handler]
+        else:
+            del self._unique_contexts[handler]
+
+        ctx._next_in._next_out = ctx._next_out  # noqa
+        ctx._next_out._next_in = ctx._next_in  # noqa
+
+        ctx._invalidated = True  # noqa
+        del ctx._next_in  # noqa
+        del ctx._next_out  # noqa
+
+        self._clear_caches()
+
+        self._handler_update(ctx, 'removed')  # noqa
+
+        # FIXME: exceptions? defer?
+        self._notify(ctx, IoPipelineHandlerNotifications.Removed(ctx))
+
+    def remove(self, handler_ref: IoPipelineHandlerRef) -> None:
+        self._remove(handler_ref)
+
+    #
+
+    def replace(
+            self,
+            old_handler_ref: IoPipelineHandlerRef,
+            new_handler: IoPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> IoPipelineHandlerRef:
+        self._check_can_remove(old_handler_ref)
+        self._check_can_add(new_handler, name=name)
+
+        inner_to = old_handler_ref._context._next_out  # noqa
+        self._remove(old_handler_ref)
+        return self._add(new_handler, inner_to=inner_to, name=name)
+
+    #
+
+    @ta.final
+    class _Outermost(IoPipelineHandler):
+        """'Head' in Netty terms."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}'
+
+        def outbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+            if isinstance(msg, IoPipelineMessages.MustPropagate):
+                ctx._pipeline._propagation.remove_must(ctx, 'outbound', msg)  # noqa
+
+            ctx._pipeline._terminal_outbound(ctx, msg)  # noqa
+
+    @ta.final
+    class _Innermost(IoPipelineHandler):
+        """'Tail' in Netty terms."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}'
+
+        def inbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+            if isinstance(msg, IoPipelineMessages.MustPropagate):
+                ctx._pipeline._propagation.remove_must(ctx, 'inbound', msg)  # noqa
+
+            ctx._pipeline._terminal_inbound(ctx, msg)  # noqa
+
+    ##
+    # caches
+
+    @ta.final
+    class _Caches:
+        def __init__(self, p: 'IoPipeline') -> None:
+            self._p = p
+
+            self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[IoPipelineHandlerRef]] = {}
+            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[IoPipelineHandlerRef]] = {}
+
+        _handlers: ta.Sequence[IoPipelineHandlerRef_]
+
+        def handlers(self) -> ta.Sequence[IoPipelineHandlerRef_]:
+            try:
+                return self._handlers
+            except AttributeError:
+                pass
+
+            lst: ta.List[IoPipelineHandlerRef_] = []
+            ctx = self._p._outermost  # noqa
+            while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
+                lst.append(ctx._ref)  # noqa
+
+            self._handlers = lst
+            return lst
+
+        _handlers_by_name: ta.Mapping[str, IoPipelineHandlerRef_]
+
+        def handlers_by_name(self) -> ta.Mapping[str, IoPipelineHandlerRef_]:
+            try:
+                return self._handlers_by_name
+            except AttributeError:
+                pass
+
+            dct: ta.Dict[str, IoPipelineHandlerRef_] = {}
+            ctx = self._p._outermost  # noqa
+            while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
+                if (n := ctx._name) is not None:  # noqa
+                    dct[n] = ctx._ref  # noqa
+
+            self._handlers_by_name = dct
+            return dct
+
+        def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[IoPipelineHandlerRef[T]]:
+            try:
+                return self._handlers_by_type_cache[ty]
+            except KeyError:
+                pass
+
+            ret: ta.List[ta.Any] = []
+            ctx = self._p._outermost  # noqa
+            while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
+                if isinstance(ctx._handler, ty):  # noqa
+                    ret.append(ctx._ref)  # noqa
+
+            self._handlers_by_type_cache[ty] = ret
+            return ret
+
+        def find_single_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[IoPipelineHandlerRef[T]]:
+            try:
+                return self._single_handlers_by_type_cache[ty]
+            except KeyError:
+                pass
+
+            self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers_of_type(ty))
+            return ret
+
+    __caches: _Caches
+
+    def _caches(self) -> _Caches:
+        try:
+            return self.__caches
+        except AttributeError:
+            pass
+        self.__caches = caches = IoPipeline._Caches(self)
+        return caches
+
+    def _clear_caches(self) -> None:
+        try:
+            del self.__caches
+        except AttributeError:
+            pass
+
+    def handlers(self) -> ta.Sequence[IoPipelineHandlerRef]:
+        return self._caches().handlers()
+
+    def handlers_by_name(self) -> ta.Mapping[str, IoPipelineHandlerRef_]:
+        return self._caches().handlers_by_name()
+
+    @dc.dataclass(frozen=True)
+    class HandlerType(ta.Generic[T]):
+        """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+        ty: ta.Type[T]
+
+    def find_handlers_of_type(
+            self,
+            ty: ta.Union[HandlerType[T], ta.Type[T]],
+    ) -> ta.Sequence[IoPipelineHandlerRef[T]]:
+        if isinstance(ty, IoPipeline.HandlerType):
+            ty = ty.ty
+        return self._caches().find_handlers_of_type(ty)
+
+    def find_single_handler_of_type(
+            self,
+            ty: ta.Union[HandlerType[T], ta.Type[T]],
+    ) -> ta.Optional[IoPipelineHandlerRef[T]]:
+        if isinstance(ty, IoPipeline.HandlerType):
+            ty = ty.ty
+        return self._caches().find_single_handler_of_type(ty)
+
+    #
+
+    @ta.overload
+    def find_handler(  # type: ignore[overload-overlap]
+            self,
+            handler: ShareableIoPipelineHandlerT,
+    ) -> ta.Sequence[IoPipelineHandlerRef[ShareableIoPipelineHandlerT]]:
+        ...
+
+    @ta.overload
+    def find_handler(
+            self,
+            handler: IoPipelineHandlerT,
+    ) -> ta.Optional[IoPipelineHandlerRef[IoPipelineHandlerT]]:
+        ...
+
+    def find_handler(self, handler):
+        if isinstance(handler, ShareableIoPipelineHandler):
+            out: ta.List[ta.Any] = []
+            ctx = self._outermost
+            while (ctx := ctx._next_in) is not self._innermost:  # noqa
+                if handler == ctx._handler:  # noqa
+                    out.append(ctx._ref)  # noqa
+            return out
+
+        else:
+            # Relies on existing uniqueness checks
+            ctx = self._outermost
+            while (ctx := ctx._next_in) is not self._innermost:  # noqa
+                if handler == ctx._handler:  # noqa
+                    return ctx._ref  # noqa
+            return None
+
+    ##
+    # destroy
+
+    def __enter__(self) -> 'IoPipeline':
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.destroy()
+
+    def destroy(self) -> None:
+        if self._state == IoPipeline.State.DESTROYED:
+            return
+
+        check.state(self._state == IoPipeline.State.READY)
+        self._state = IoPipeline.State.DESTROYING
+
+        self._step_in()
+        try:
+            im_ctx = self._innermost  # noqa
+            om_ctx = self._outermost  # noqa
+            while (ctx := im_ctx._next_out) is not om_ctx:  # noqa
+                self.remove(ctx._ref)  # noqa
+
+        finally:
+            self._step_out()
+
+        for svc in self._services._handles_pipeline_update:  # noqa
+            svc.pipeline_update(self, 'removed')
+
+        self._state = IoPipeline.State.DESTROYED
+
+
+########################################
+# ../../../omlish/io/streams/types.py
+
+
+##
+
+
+class ByteStreamBufferLike(Abstract):
+    @ta.final
+    def __bool__(self) -> bool:
+        raise TypeError('Do not use bool() for ByteStreamBufferLike, use len().')
+
+    @abc.abstractmethod
+    def __len__(self) -> int:
+        """
+        Return the number of readable bytes.
+
+        This is expected to be O(1). Many drivers and codecs use `len(buf)` in tight loops to decide whether more data
+        is needed before attempting to parse a frame.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def peek(self) -> memoryview:
+        """
+        Return a contiguous, read-only `memoryview` of the first available bytes.
+
+        This is the "next chunk" fast-path: for segmented views, the returned memoryview may represent only the first
+        segment (and thus may be shorter than `len(self)`), but it must be non-copying. This is the fast-path for codecs
+        that can parse headers from an initial contiguous region.
+
+        The returned view should be treated as ephemeral: callers must assume it may be invalidated by subsequent buffer
+        mutations (advance/write/reserve/commit), depending on the implementation.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def segments(self) -> ta.Sequence[memoryview]:
+        """
+        Return the readable contents as an ordered sequence of non-copying `memoryview` segments.
+
+        This method is required because efficient operations in pure Python typically depend on delegating work to
+        CPython's optimized implementations for searching/slicing within contiguous regions. By exposing
+        already-contiguous segments, the buffer enables implementations of `find/rfind` and higher-level framing to
+        avoid Python-level per-byte iteration.
+
+        The returned segments must:
+          - collectively represent exactly the readable bytes, in order
+          - be 1-D, byte-oriented views (itemsize 1)
+          - be non-copying views of the underlying storage
+          - be non-empty - lack of data is represented by returning no segments, not empty segments
+
+        Callers must assume that the returned views may be invalidated by subsequent mutations of the originating
+        buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.
+        """
+
+        raise NotImplementedError
+
+
+class ByteStreamBufferView(ByteStreamBufferLike, Abstract):
+    """
+    A read-only, possibly non-contiguous view of bytes.
+
+    This is the result type of operations like `ByteStreamBuffer.split_to()`: it represents a *logical* byte sequence
+    without requiring a copy. A `ByteStreamBufferView` is intentionally minimal: it is not a general-purpose container
+    API, not a random-access sequence, and not intended for arbitrary indexing/slicing-heavy use.
+
+    `ByteStreamBufferView` exists to make copy boundaries explicit:
+      - Use `segments()` / `peek()` to access data without copying.
+      - Use `tobytes()` (or `bytes(view)`) to intentionally materialize a contiguous `bytes` object.
+
+    Implementations may be backed by one or many `memoryview` segments; the semantics are defined as if all readable
+    bytes were concatenated in order.
+    """
+
+    @abc.abstractmethod
+    def tobytes(self) -> bytes:
+        """
+        Materialize this view as a contiguous `bytes` object (copying).
+
+        This is the explicit copy boundary: callers should prefer `peek()` / `segments()` for zero-copy-ish access when
+        feasible, and use `tobytes()` only when a contiguous owned `bytes` is required.
+        """
+
+        raise NotImplementedError
+
+
+class ByteStreamBuffer(ByteStreamBufferLike, Abstract):
+    """
+    An incremental, consumption-oriented byte accumulator intended for protocol parsing.
+
+    A `ByteStreamBuffer` is a *stream buffer*: bytes are appended by a driver/transport and then consumed by codecs via
+    peeking, searching, splitting, and advancing-without forcing repeated concatenation or reallocation. It is
+    explicitly designed to support segmented storage (to avoid "a huge buffer pinned by a tiny tail") and to enable
+    low-copy pipeline-style decoding (Netty/Tokio-inspired).
+
+    What it is for:
+      - buffering raw bytes between I/O and protocol codecs,
+      - framing (delimiters/length-prefixed) using split/advance,
+      - efficient searching over buffered bytes using C-accelerated primitives via `memoryview` segments.
+
+    What it is *not* for:
+      - a general-purpose replacement for `bytes`/`bytearray`,
+      - a `collections.abc.Sequence` or random-access container abstraction,
+      - arbitrary indexing/slicing-heavy workloads (use `bytes`/`bytearray`/`memoryview` directly).
+
+    `ByteStreamBuffer` deliberately exposes `memoryview` at its boundary. This is foundational: it allows both immutable
+    (`bytes`) and mutable (`bytearray`) internal storage to be viewed in O(1) without copying. It also avoids relying
+    on `io.BytesIO` as a core backing store: while `BytesIO.getbuffer()` can expose a view, exported views pin the
+    underlying buffer against resizing, which makes it awkward as a general-purpose buffer substrate.
+
+    Semantics note:
+      Many methods describe behavior in terms of the *conceptual concatenation* of readable bytes, even if the buffer
+      is physically segmented. This is what "stream-correct" means here: results must be correct regardless of how the
+      buffered bytes are chunked internally.
+    """
+
+    @abc.abstractmethod
+    def advance(self, n: int, /) -> None:
+        """
+        Consume (discard) exactly `n` readable bytes from the front of the buffer.
+
+        This operation must not copy remaining bytes unnecessarily. For segmented buffers, this typically adjusts a head
+        offset and drops exhausted segments.
+
+        Implementations must raise if `n` is negative or greater than `len(self)`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
+        """
+        Split off and return a read-only view of the first `n` readable bytes, consuming them from this buffer.
+
+        This is the core "low-copy framing" primitive:
+          - codecs can `split_to(frame_len)` to obtain a view of an entire frame without copying,
+          - then immediately continue parsing subsequent frames from the remaining bytes.
+
+        Implementations should strive for O(1) or amortized O(1) behavior, returning a view that references underlying
+        segments rather than materializing a new contiguous `bytes`.
+
+        Implementations must raise if `n` is negative or greater than `len(self)`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def coalesce(self, n: int, /) -> memoryview:
+        """
+        Ensure the first `n` readable bytes are available contiguously and return a view of them.
+
+        Semantics:
+          - Non-consuming: does not advance.
+          - May restructure internal segments (content-preserving) to make the prefix contiguous.
+          - Returns a read-only-ish `memoryview` (callers must not mutate readable bytes).
+
+        Copying behavior:
+          - If `peek()` already exposes >= n contiguous bytes, this is zero-copy.
+          - Otherwise, it copies exactly the first `n` bytes into a new contiguous segment and rewrites the internal
+            segment list so that segment[0] contains that prefix.
+
+        Reserve interaction:
+          - Disallowed while an outstanding reservation exists, since reserve() hands out a view that must not be
+            invalidated by internal reshaping.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        """
+        Find the first occurrence of `sub` within the readable bytes and return its offset, or -1 if not found.
+
+        This operation is "stream-correct": it must behave as if searching within the conceptual concatenation of all
+        readable bytes, even if the buffer is physically segmented. In particular, matches that span segment boundaries
+        must be detected.
+
+        `start` and `end` are offsets into the readable region, matching the semantics of `bytes.find()`:
+          - `start` defaults to 0 (the beginning of readable bytes),
+          - `end` defaults to `len(self)`.
+
+        Rationale for being part of the core interface:
+          In pure Python, higher-level codecs cannot efficiently implement correct cross-segment searching byte-by-byte.
+          Keeping `find` near the owning storage allows implementations to exploit contiguous segments and CPython's
+          optimized search within each segment while still providing correct stream semantics.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        """
+        Find the last occurrence of `sub` within the readable bytes and return its offset, or -1 if not found.
+
+        This operation is also stream-correct and matches `bytes.rfind()` semantics for `start`/`end`, interpreted as
+        offsets into the readable region of this buffer.
+        """
+
+        raise NotImplementedError
+
+
+class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
+    """
+    A writable `ByteStreamBuffer`: supports appending bytes and (optionally) reserving writable space.
+
+    `MutableByteStreamBuffer` is the primary target for drivers/transports feeding data into protocol pipelines, and for
+    encoders building outbound byte sequences. It intentionally does not imply any particular I/O model (blocking,
+    asyncio, custom reactors); it is simply the mutable byte substrate.
+
+    Implementations may be linear (single `bytearray` + indices), segmented (multiple chunks), or adaptive.
+    """
+
+    @property
+    @abc.abstractmethod
+    def max_size(self) -> ta.Optional[int]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def write(self, data: BytesLike, /) -> None:
+        """
+        Append `data` to the end of the readable region (after any existing unread bytes).
+
+        Implementations should avoid needless copying; e.g., segmented buffers may store large `bytes` chunks directly,
+        while linear buffers may copy into a `bytearray`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reserve(self, n: int, /) -> memoryview:
+        """
+        Reserve writable space for at least `n` bytes and return a writable `memoryview` into that space.
+
+        This method exists to support "close to the metal" drivers that can fill buffers directly (e.g., `recv_into`,
+        `readinto`) without allocating temporary `bytes` objects.
+
+        The returned view represents capacity that is not yet part of the readable region. The caller must write into
+        some prefix of the view and then call `commit(written)` to make those bytes readable.
+
+        Implementations should document their rules regarding outstanding reservations; a simple and robust rule is:
+          - only one active reservation may exist at a time,
+          - mutations that would reallocate storage are forbidden while a reservation is outstanding.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def commit(self, n: int, /) -> None:
+        """
+        Commit `n` bytes from the most recent reservation, making them readable.
+
+        Conceptually, `reserve()` may provide more capacity than the caller actually uses; `commit(n)` "shrinks" that
+        over-reservation by only publishing the first `n` bytes as readable.
+
+        Implementations must validate:
+          - that a reservation is outstanding,
+          - that `0 <= n <= reserved_length`.
+
+        After commit, the reservation is considered consumed; subsequent reads and searches must include the committed
+        bytes as part of the readable region.
+        """
+
+        raise NotImplementedError
 
 
 ########################################
@@ -10119,6 +12653,292 @@ def yaml_detect_line_break_char(src: str) -> str:
 
 
 ########################################
+# ../../../omlish/http/pipelines/bodymodes.py
+
+
+##
+
+
+@dc.dataclass()
+class IoPipelineHttpBodyModeError(Exception):
+    reason: str
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpBodyMode:
+    mode: ta.Literal['empty', 'eof', 'cl', 'chunked']
+    length: ta.Optional[int]
+
+    @classmethod
+    def select(
+            cls,
+            headers: HttpHeaders,
+            *,
+            if_length_missing: ta.Literal['empty', 'eof'],
+    ) -> 'IoPipelineHttpBodyMode':
+        if headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
+            return cls('chunked', None)
+
+        cl = headers.single.get('content-length')
+        if not cl:
+            return cls(if_length_missing, None)
+
+        try:
+            n = int(cl)
+        except ValueError:
+            raise IoPipelineHttpBodyModeError('bad Content-Length') from None
+
+        if n < 0:
+            raise IoPipelineHttpBodyModeError('bad Content-Length')
+
+        if n == 0:
+            return cls('empty', None)
+
+        return cls('cl', n)
+
+
+########################################
+# ../../../omlish/http/pipelines/objects.py
+
+
+##
+
+
+class IoPipelineHttpMessageObject(Abstract):
+    pass
+
+
+#
+
+
+class IoPipelineHttpMessageHead(IoPipelineHttpMessageObject, Abstract):
+    @property
+    @abc.abstractmethod
+    def headers(self) -> HttpHeaders:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def parsed(self) -> ta.Optional[ParsedHttpMessage]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def version(self) -> HttpVersion:
+        raise NotImplementedError
+
+
+#
+
+
+class FullIoPipelineHttpMessage(IoPipelineHttpMessageObject, Abstract):
+    @property
+    @abc.abstractmethod
+    def head(self) -> IoPipelineHttpMessageHead:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def body(self) -> BytesLike:
+        raise NotImplementedError
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageChunk(IoPipelineHttpMessageObject, Abstract):
+    size: int
+    # ext: HttpHeaders
+
+    def __post_init__(self) -> None:
+        check.arg(self.size > 0)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageEndChunk(IoPipelineHttpMessageObject, Abstract):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageLastChunk(IoPipelineHttpMessageObject, Abstract):
+    # ext: HttpHeaders
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageChunkedTrailers(IoPipelineHttpMessageObject, Abstract):
+    # trailers: HttpHeaders
+    # parsed_trailers: ta.Optional[ParsedHttpMessage] = None
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageBodyData(IoPipelineHttpMessageObject, Abstract):
+    data: BytesLike
+
+    def __post_init__(self) -> None:
+        check.arg(len(self.data) > 0)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageEnd(IoPipelineHttpMessageObject, Abstract):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpMessageAborted(IoPipelineHttpMessageObject, Abstract):
+    reason: ta.Union[str, BaseException]
+
+    @property
+    def reason_str(self) -> str:
+        if isinstance(r := self.reason, str):
+            return r
+        elif isinstance(r, BaseException):
+            return repr(r)
+        else:
+            raise TypeError(r)
+
+
+##
+
+
+def _un_abstract_pipeline_http_object_classes() -> None:
+    # So this is regrettable, but I think the benefits of having the base objects be actual dataclasses outweighs the
+    # gnarliness here.
+    for cls in [IoPipelineHttpMessageHead, FullIoPipelineHttpMessage]:
+        atts = {a for a in cls.__dict__ if not a.startswith('_')}
+        for att in atts:
+            delattr(cls, att)
+        ams = check.isinstance(getattr(cls, '__abstractmethods__'), frozenset)
+        setattr(cls, '__abstractmethods__', ams - atts)
+
+
+_un_abstract_pipeline_http_object_classes()
+
+
+##
+
+
+class IoPipelineHttpMessageObjects(Abstract):
+    @property
+    @abc.abstractmethod
+    def _head_type(self) -> ta.Type[IoPipelineHttpMessageHead]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_head(self, parsed: ParsedHttpMessage) -> IoPipelineHttpMessageHead:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _full_type(self) -> ta.Type[FullIoPipelineHttpMessage]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpMessage:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _chunk_type(self) -> ta.Type[IoPipelineHttpMessageChunk]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_chunk(self, size: int) -> IoPipelineHttpMessageChunk:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _end_chunk_type(self) -> ta.Type[IoPipelineHttpMessageEndChunk]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_end_chunk(self) -> IoPipelineHttpMessageEndChunk:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _last_chunk_type(self) -> ta.Type[IoPipelineHttpMessageLastChunk]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_last_chunk(self) -> IoPipelineHttpMessageLastChunk:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _chunked_trailers_type(self) -> ta.Type[IoPipelineHttpMessageChunkedTrailers]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_chunked_trailers(self) -> IoPipelineHttpMessageChunkedTrailers:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _body_data_type(self) -> ta.Type[IoPipelineHttpMessageBodyData]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_body_data(self, data: BytesLike) -> IoPipelineHttpMessageBodyData:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _end_type(self) -> ta.Type[IoPipelineHttpMessageEnd]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_end(self) -> ta.Any:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _aborted_type(self) -> ta.Type[IoPipelineHttpMessageAborted]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> IoPipelineHttpMessageAborted:
+        raise NotImplementedError
+
+
+########################################
 # ../../../omlish/http/simple/handlers.py
 
 
@@ -10249,6 +13069,696 @@ class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
             data=data,
             close_connection=self.close_connection,
         )
+
+
+########################################
+# ../../../omlish/io/pipelines/bytes/buffering.py
+
+
+##
+
+
+class InboundBytesBufferingIoPipelineHandler(IoPipelineHandler, Abstract):
+    @abc.abstractmethod
+    def inbound_buffered_bytes(self) -> ta.Optional[int]:
+        """Returning `None` denotes currently unknown/unanswerable."""
+
+        raise NotImplementedError
+
+
+class OutboundBytesBufferingIoPipelineHandler(IoPipelineHandler, Abstract):
+    @abc.abstractmethod
+    def outbound_buffered_bytes(self) -> ta.Optional[int]:
+        """Returning `None` denotes currently unknown/unanswerable."""
+
+        raise NotImplementedError
+
+
+########################################
+# ../../../omlish/io/pipelines/drivers/metadata.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DriverIoPipelineMetadata(IoPipelineMetadata):
+    driver: ta.Any
+
+
+########################################
+# ../../../omlish/io/pipelines/flow/types.py
+
+
+##
+
+
+class IoPipelineFlowMessages(NamespaceClass):
+    """
+    Note: these inbound messages will never be sent without a `IoPipelineFlow` instance in `channel.services` -
+    thus it's safe to refer to `ctx.services[IoPipelineFlow]` when handling these.
+    """
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class FlushInput(  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
+        IoPipelineMessages.MayPropagate,
+        IoPipelineMessages.NeverOutbound,
+    ):
+        pass
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class FlushOutput(  # ~ Netty 'ChannelOutboundInvoker::flush'
+        IoPipelineMessages.MayPropagate,
+        IoPipelineMessages.NeverInbound,
+    ):
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ReadyForInput(  # ~ Netty `ChannelOutboundInvoker::read`
+        IoPipelineMessages.MayPropagate,
+        IoPipelineMessages.NeverInbound,
+    ):
+        pass
+
+    #
+
+    # # TODO:
+    # @ta.final
+    # @dc.dataclass(frozen=True)
+    # class ReadyForOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     IoPipelineMessages.MayPropagate,
+    #     IoPipelineMessages.NeverOutbound,
+    # ):
+    #     pass
+
+    # # TODO:
+    # @ta.final
+    # @dc.dataclass(frozen=True)
+    # class PauseOutput(  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+    #     IoPipelineMessages.MayPropagate,
+    #     IoPipelineMessages.NeverOutbound,
+    # ):
+    #     pass
+
+
+##
+
+
+class IoPipelineFlow(Abstract):
+    @abc.abstractmethod
+    def is_auto_read(
+            self: ta.Union[
+                'IoPipelineFlow',
+                IoPipeline,
+                IoPipelineHandlerContext,
+                None,
+            ],
+    ) -> bool:
+        # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
+        # increasingly frequently useful in real code.
+        if self is None:
+            return False
+
+        if isinstance(self, IoPipelineFlow):
+            return self.is_auto_read()
+
+        if isinstance(self, IoPipelineHandlerContext):
+            self = self._pipeline  # noqa
+
+        if isinstance(self, IoPipeline):
+            return (fc := self.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
+
+        raise TypeError(self)
+
+
+########################################
+# ../../../omlish/io/pipelines/sched/types.py
+
+
+##
+
+
+class IoPipelineScheduling(Abstract):
+    class Handle(Abstract):
+        @abc.abstractmethod
+        def cancel(self) -> None:
+            raise NotImplementedError
+
+    @abc.abstractmethod
+    def schedule(
+            self,
+            handler_ref: IoPipelineHandlerRef,
+            delay_s: float,
+            fn: ta.Callable[[], None],
+    ) -> Handle:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def cancel_all(self, handler_ref: ta.Optional[IoPipelineHandlerRef] = None) -> None:
+        raise NotImplementedError
+
+
+########################################
+# ../../../omlish/io/streams/base.py
+
+
+##
+
+
+class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
+    def _norm_slice(self, start: int, end: ta.Optional[int]) -> ta.Tuple[int, int]:
+        s, e, _ = slice(start, end, 1).indices(len(self))
+        return (s, s) if e < s else (s, e)
+
+
+########################################
+# ../../../omlish/io/streams/framing.py
+
+
+##
+
+
+class LongestMatchDelimiterByteStreamFrameDecoder:
+    """
+    A delimiter-based framing codec that supports *overlapping* delimiters with longest-match semantics.
+
+    This is intentionally decoupled from any I/O model: it operates purely on a `ByteStreamBuffer`-like object
+    (providing `__len__`, `find`, `split_to`, `advance`, and `segments`/`peek`).
+
+    Key property:
+      Given overlapping delimiters like [b'\\r', b'\\r\\n'], this codec will *not* emit a frame ending at '\\r' unless
+      it can prove the next byte is not '\\n' (or the stream is finalized).
+
+    Implementation note:
+      This codec relies on `ByteStreamBuffer.find(...)` being stream-correct and C-accelerated over the buffer's
+      underlying contiguous segments. In pure Python it is usually better to keep searching near the storage layer than
+      to re-implement scanning byte-by-byte in higher-level codecs.
+
+    Pairs well with `ScanningByteStreamBuffer`.
+    """
+
+    def __init__(
+            self,
+            delims: ta.Sequence[bytes],
+            *,
+            keep_ends: bool = False,
+            max_size: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        dl = list(delims)
+        if not dl:
+            raise ValueError('no delimiters')
+        if any(not isinstance(d, (bytes, bytearray)) for d in dl):
+            raise TypeError(delims)
+        if any(not d for d in dl):
+            raise ValueError('empty delimiter')
+
+        self._delims = tuple(bytes(d) for d in dl)
+        self._keep_ends = keep_ends
+        self._max_size = max_size
+
+        # Sort by length descending for "choose longest at same start".
+        self._delims_by_len = tuple(sorted(self._delims, key=len, reverse=True))
+
+        # Build prefix relationships for overlap deferral. For each short delimiter, store longer delimiters that start
+        # with it.
+        pref: ta.Dict[bytes, ta.List[bytes]] = {}
+        for d in self._delims:
+            for e in self._delims:
+                if d is e:
+                    continue
+                if len(e) > len(d) and e.startswith(d):
+                    pref.setdefault(d, []).append(e)
+        for k, vs in list(pref.items()):
+            pref[k] = sorted(vs, key=len, reverse=True)
+        self._prefix_longer = pref
+
+        self._max_delim_len = max(len(d) for d in self._delims)
+
+    @ta.overload
+    def decode(
+            self,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+            include_delims: ta.Literal[True],
+    ) -> ta.List[ta.Tuple[ByteStreamBufferView, bytes]]:
+        ...
+
+    @ta.overload
+    def decode(
+            self,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+            include_delims: ta.Literal[False] = False,
+    ) -> ta.List[ByteStreamBufferView]:
+        ...
+
+    def decode(
+            self,
+            buf,
+            *,
+            final=False,
+            include_delims=False,
+    ):
+        """
+        Consume as many complete frames as possible from `buf` and return them as views.
+
+        - Frames are produced without copying (via `buf.split_to(...)`) when possible.
+        - The delimiter is consumed from the buffer; it may be retained on the frame if `keep_ends=True`.
+        - If `final=True`, the codec will not defer on overlapping delimiter prefixes at the end of the buffer.
+
+        Raises:
+          - BufferTooLargeByteStreamBufferError if no delimiter is present and the buffered prefix exceeds max_size.
+          - FrameTooLargeByteStreamBufferError if the next frame payload (bytes before delimiter) exceeds max_size.
+
+        Note on `max_size`:
+          `max_size` is enforced as a limit on the *current* frame (bytes before the next delimiter). If the buffer
+          contains bytes for a subsequent frame that already exceed `max_size`, this codec will only raise when it would
+          otherwise need to make progress on that oversized frame. Concretely: if this call already emitted at least one
+          frame, it will return those frames rather than raising immediately on trailing oversized data, leaving the
+          remaining bytes buffered.
+        """
+
+        out: ta.List[ta.Any] = []
+
+        while True:
+            hit = self._find_next_delim(buf)
+            if hit is None:
+                if self._max_size is not None and len(buf) > self._max_size and not out:
+                    raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size without delimiter')
+                return out
+
+            pos, delim = hit
+
+            if self._max_size is not None and pos > self._max_size:
+                raise FrameTooLargeByteStreamBufferError('frame exceeded max_size')
+
+            if not final and self._should_defer(buf, pos, delim):
+                return out
+
+            if self._keep_ends:
+                frame = buf.split_to(pos + len(delim))
+            else:
+                frame = buf.split_to(pos)
+                buf.advance(len(delim))
+
+            if include_delims:
+                out.append((frame, delim))
+            else:
+                out.append(frame)
+
+    def _find_next_delim(self, buf: ByteStreamBuffer) -> ta.Optional[ta.Tuple[int, bytes]]:
+        """
+        Return (pos, delim) for the earliest delimiter occurrence. If multiple delimiters occur at the same position,
+        choose the longest matching delimiter.
+        """
+
+        ln = len(buf)
+        if not ln:
+            return None
+
+        best_pos = None  # type: ta.Optional[int]
+        best_delim = None  # type: ta.Optional[bytes]
+
+        # First pass: find the earliest position of any delimiter (cheap, uses buf.find).
+        for d in self._delims:
+            i = buf.find(d, 0, None)
+            if i == -1:
+                continue
+            if best_pos is None or i < best_pos:
+                best_pos = i
+                best_delim = d
+                if not best_pos:
+                    # Can't beat position 0; still need to choose longest at this position.
+                    pass
+            elif i == best_pos and best_delim is not None and len(d) > len(best_delim):
+                best_delim = d
+
+        if best_pos is None or best_delim is None:
+            return None
+
+        # Second pass: at that position, choose the longest delimiter that actually matches there. (We can't just rely
+        # on "which delimiter found it first" when overlaps exist.)
+        pos = best_pos
+        for d in self._delims_by_len:
+            if pos + len(d) > ln:
+                continue
+            if buf.find(d, pos, pos + len(d)) == pos:
+                return pos, d
+
+        # Shouldn't happen: best_pos came from some delimiter occurrence.
+        return pos, best_delim
+
+    def _should_defer(self, buf: ByteStreamBuffer, pos: int, matched: bytes) -> bool:
+        """
+        Return True if we must defer because a longer delimiter could still match starting at `pos` but we don't yet
+        have enough bytes to decide.
+
+        We only defer when:
+          - the current match ends at the end of the currently buffered bytes, and
+          - there exists some longer delimiter that has `matched` as a prefix, and
+          - the buffered bytes from pos match the available prefix of that longer delimiter.
+        """
+
+        ln = len(buf)
+        endpos = pos + len(matched)
+        if endpos != ln:
+            return False
+
+        longer = self._prefix_longer.get(matched)
+        if not longer:
+            return False
+
+        avail = ln - pos
+        for d2 in longer:
+            if avail >= len(d2):
+                # If we had enough bytes, we'd have matched d2 in _find_next_delim.
+                continue
+            # Check whether buffered bytes match the prefix of d2 that we have available.
+            # Use stream-correct find on the prefix.
+            prefix = d2[:avail]
+            if buf.find(prefix, pos, pos + avail) == pos:
+                return True
+
+        return False
+
+
+##
+
+
+class LengthFieldByteStreamFrameDecoder:
+    """
+    Decode length-prefixed frames from a BytesBuffer/MutableBytesBuffer.
+
+    This is modeled after the common Netty pattern:
+      total_frame_length = length_field_value + length_adjustment + length_field_end_offset
+    where:
+      length_field_end_offset = length_field_offset + length_field_length
+
+    Parameters:
+      - length_field_offset: byte offset of the length field from the start of the frame
+      - length_field_length: length of the length field in bytes (1, 2, 4, or 8)
+      - byteorder: 'big' or 'little'
+      - length_adjustment: adjustment added to computed frame length (may be negative)
+      - initial_bytes_to_strip: number of leading bytes to drop from the emitted frame (typically used to strip the
+        length field and/or header from the delivered payload)
+      - max_frame_length: maximum allowed total frame length (before stripping)
+
+    Notes:
+      - This decoder operates directly on the provided buffer and consumes bytes as frames are produced.
+      - It relies on `buf.coalesce(n)` for efficient header parsing in pure Python.
+      - It does not require async/await and is suitable for pipeline-style codecs.
+    """
+
+    def __init__(
+            self,
+            *,
+            length_field_offset: int = 0,
+            length_field_length: int = 4,
+            byteorder: ta.Literal['little', 'big'] = 'big',
+            length_adjustment: int = 0,
+            initial_bytes_to_strip: int = 0,
+            max_frame_length: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        if length_field_offset < 0:
+            raise ValueError(length_field_offset)
+        if length_field_length not in (1, 2, 4, 8):
+            raise ValueError(length_field_length)
+        if byteorder not in ('big', 'little'):
+            raise ValueError(byteorder)
+        if initial_bytes_to_strip < 0:
+            raise ValueError(initial_bytes_to_strip)
+        if max_frame_length is not None and max_frame_length < 0:
+            raise ValueError(max_frame_length)
+
+        self._off = int(length_field_offset)
+        self._llen = int(length_field_length)
+        self._byteorder = byteorder
+        self._adj = int(length_adjustment)
+        self._strip = int(initial_bytes_to_strip)
+        self._max = None if max_frame_length is None else int(max_frame_length)
+
+        self._end_off = self._off + self._llen
+
+    def decode(self, buf: ByteStreamBuffer) -> ta.List[ByteStreamBufferView]:
+        """
+        Consume as many complete frames as possible from `buf` and return them as views.
+
+        Returns:
+          - list of BytesView-like objects (from `split_to`) representing each decoded frame
+
+        Raises:
+          - FrameTooLarge if a frame exceeds max_frame_length
+          - BufferTooLarge if max_frame_length is set and the buffered unread prefix grows beyond it without making
+            progress (defensive; rarely hit if upstream caps buffer growth)
+        """
+
+        out: ta.List[ta.Any] = []
+
+        while True:
+            # Need at least enough bytes to read the length field.
+            if len(buf) < self._end_off:
+                return out
+
+            # Read header up through the length field contiguously.
+            # IMPORTANT: don't keep exported memoryviews alive across buffer mutation.
+            mv = buf.coalesce(self._end_off)
+            if len(mv) < self._end_off:
+                # Defensive: coalesce contract.
+                return out
+
+            # Copy just the length field bytes (1/2/4/8) so we can safely mutate the buffer afterward.
+            lf_bytes = bytes(mv[self._off:self._end_off])
+            # del mv
+
+            length_val = int.from_bytes(lf_bytes, self._byteorder, signed=False)
+
+            total_len = length_val + self._adj + self._end_off
+            if total_len < 0:
+                raise ValueError('negative frame length')
+
+            if self._max is not None and total_len > self._max:
+                raise FrameTooLargeByteStreamBufferError('frame exceeded max_frame_length')
+
+            # If we don't have the full frame yet, either wait or (optionally) fail fast if buffering is clearly out of
+            # control.
+            if len(buf) < total_len:
+                if self._max is not None and len(buf) > self._max:
+                    raise BufferTooLargeByteStreamBufferError(
+                        'buffer exceeded max_frame_length without completing a frame',
+                    )
+                return out
+
+            # We have a complete frame available.
+            if self._strip:
+                if self._strip > total_len:
+                    raise ValueError('initial_bytes_to_strip > frame length')
+                buf.advance(self._strip)
+                total_len -= self._strip
+
+            out.append(buf.split_to(total_len))
+
+            # Loop for additional frames
+
+
+########################################
+# ../../../omlish/io/streams/utils.py
+
+
+##
+
+
+class ByteStreamBuffers(NamespaceClass):
+    _BYTES_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        bytes,
+        bytearray,
+    )
+
+    _BYTES_LIKE_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_TYPES,
+        memoryview,
+    )
+
+    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        *_BYTES_LIKE_TYPES,
+        ByteStreamBufferLike,
+    )
+
+    #
+
+    @classmethod
+    def can_bytes(cls, obj: ta.Any, /) -> bool:
+        return type(obj) in (cts := cls._CAN_CONVERT_TYPES) or isinstance(obj, cts)
+
+    #
+
+    @classmethod
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[True],
+    ) -> ta.Optional[bytes]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[True],
+            or_none: ta.Literal[False] = False,
+    ) -> bytes:
+        ...
+
+    @classmethod
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[True],
+    ) -> ta.Union[bytes, bytearray, None]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def to_bytes(
+            cls,
+            obj: ta.Any,
+            /, *,
+            strict: ta.Literal[False] = False,
+            or_none: ta.Literal[False] = False,
+    ) -> ta.Union[bytes, bytearray]:
+        ...
+
+    @classmethod
+    def to_bytes(
+            cls,
+            obj,
+            /, *,
+            strict=False,
+            or_none=False,
+    ):
+        """
+        Returns a non-shared version of the given object. If a possibly shared memoryview is acceptable, use
+        `iter_segments`.
+        """
+
+        if strict:
+            if (ot := type(obj)) is bytes or isinstance(obj, bytes):
+                return obj
+
+            elif ot is bytearray:
+                return bytes(obj)
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes_strict(obj)
+
+        else:
+            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES):
+                return obj
+
+            elif isinstance(obj, memoryview):
+                return cls.memoryview_to_bytes(obj)
+
+        if isinstance(obj, ByteStreamBufferView):
+            return obj.tobytes()
+
+        elif isinstance(obj, ByteStreamBufferLike):
+            return b''.join(bytes(mv) for mv in obj.segments())
+
+        elif or_none:
+            return None
+
+        else:
+            raise TypeError(obj)
+
+    #
+
+    @classmethod
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int:
+        ...
+
+    @classmethod
+    def bytes_len(cls, obj, or_none=False):
+        if cls.can_bytes(obj):
+            return len(obj)
+
+        elif or_none:
+            return None
+
+        else:
+            raise TypeError(obj)
+
+    #
+
+    @staticmethod
+    def iter_segments(obj: ta.Any, /) -> ta.Iterator[memoryview]:
+        if (ot := type(obj)) is memoryview:
+            yield obj
+        elif ot is bytes or ot is bytearray:
+            yield memoryview(obj)
+
+        elif isinstance(obj, memoryview):
+            yield obj
+        elif isinstance(obj, (bytes, bytearray)):
+            yield memoryview(obj)
+
+        elif isinstance(obj, ByteStreamBufferLike):
+            yield from obj.segments()
+
+        else:
+            raise TypeError(obj)
+
+    #
+
+    @staticmethod
+    def split(buf: ByteStreamBuffer, sep: bytes, /, *, final: bool = False) -> ta.List[ByteStreamBufferView]:
+        out: ta.List[ByteStreamBufferView] = []
+        while (i := buf.find(sep)) >= 0:
+            out.append(buf.split_to(i + 1))
+        if final and len(buf):
+            out.append(buf.split_to(len(buf)))
+        return out
+
+    #
+
+    @classmethod
+    def memoryview_to_bytes(cls, mv: memoryview, /) -> ta.Union[bytes, bytearray]:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    @staticmethod
+    def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
 
 
 ########################################
@@ -17085,538 +20595,1490 @@ def _yaml_trim_right_func(s: str, predicate: ta.Callable[[str], bool]) -> str:
 
 
 ########################################
-# ../../../omlish/http/coro/server/server.py
-# PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
-# --------------------------------------------
-#
-# 1. This LICENSE AGREEMENT is between the Python Software Foundation ("PSF"), and the Individual or Organization
-# ("Licensee") accessing and otherwise using this software ("Python") in source or binary form and its associated
-# documentation.
-#
-# 2. Subject to the terms and conditions of this License Agreement, PSF hereby grants Licensee a nonexclusive,
-# royalty-free, world-wide license to reproduce, analyze, test, perform and/or display publicly, prepare derivative
-# works, distribute, and otherwise use Python alone or in any derivative version, provided, however, that PSF's License
-# Agreement and PSF's notice of copyright, i.e., "Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-# 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 Python Software Foundation; All Rights Reserved" are retained in Python
-# alone or in any derivative version prepared by Licensee.
-#
-# 3. In the event Licensee prepares a derivative work that is based on or incorporates Python or any part thereof, and
-# wants to make the derivative work available to others as provided herein, then Licensee hereby agrees to include in
-# any such work a brief summary of the changes made to Python.
-#
-# 4. PSF is making Python available to Licensee on an "AS IS" basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES,
-# EXPRESS OR IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND DISCLAIMS ANY REPRESENTATION OR WARRANTY
-# OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT INFRINGE ANY THIRD PARTY
-# RIGHTS.
-#
-# 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
-# DAMAGES OR LOSS AS A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON, OR ANY DERIVATIVE THEREOF, EVEN IF
-# ADVISED OF THE POSSIBILITY THEREOF.
-#
-# 6. This License Agreement will automatically terminate upon a material breach of its terms and conditions.
-#
-# 7. Nothing in this License Agreement shall be deemed to create any relationship of agency, partnership, or joint
-# venture between PSF and Licensee.  This License Agreement does not grant permission to use PSF trademarks or trade
-# name in a trademark sense to endorse or promote products or services of Licensee, or any third party.
-#
-# 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
-# License Agreement.
-"""
-"Test suite" lol:
-
-curl -v localhost:8000
-curl -v localhost:8000 -d 'foo'
-curl -v -XFOO localhost:8000 -d 'foo'
-curl -v -XPOST -H 'Expect: 100-Continue' localhost:8000 -d 'foo'
-
-curl -v -0 localhost:8000
-curl -v -0 localhost:8000 -d 'foo'
-curl -v -0 -XFOO localhost:8000 -d 'foo'
-
-curl -v -XPOST localhost:8000 -d 'foo' --next -XPOST localhost:8000 -d 'bar'
-curl -v -XPOST localhost:8000 -d 'foo' --next -XFOO localhost:8000 -d 'bar'
-curl -v -XFOO localhost:8000 -d 'foo' --next -XPOST localhost:8000 -d 'bar'
-curl -v -XFOO localhost:8000 -d 'foo' --next -XFOO localhost:8000 -d 'bar'
-"""
+# ../../../omlish/http/pipelines/chunking.py
 
 
 ##
 
 
-class CoroHttpServer:
+class IoPipelineHttpObjectChunker(
+    IoPipelineHttpMessageObjects,
+    IoPipelineHandler,
+    Abstract,
+):
     """
-    Adapted from stdlib:
-     - https://github.com/python/cpython/blob/4b4e0dbdf49adc91c35a357ad332ab3abd4c31b1/Lib/http/server.py#L146
+    Outbound handler that wraps BodyData messages in chunked transfer encoding framing (Chunk, EndChunk, LastChunk,
+    ChunkedTrailers).
+
+    Buffers outbound BodyData and flushes on FlushOutput, End, or when the buffer reaches an optional max_chunk_size.
+    Sits between the Compressor and Encoder so that chunk sizes reflect compressed data sizes.
     """
+
+    def __init__(self, *, max_chunk_size: ta.Optional[int] = None) -> None:
+        super().__init__()
+
+        self._max_chunk_size = max_chunk_size
+
+        self._active = False
+        self._buf: ta.List[BytesLike] = []
+        self._buf_size = 0
 
     #
 
+    def _reset(self) -> None:
+        self._active = False
+        self._buf.clear()
+        self._buf_size = 0
+
+    def _flush_buf(self, ctx: IoPipelineHandlerContext) -> None:
+        if self._buf_size < 1:
+            return
+
+        ctx.feed_out(self._make_chunk(self._buf_size))
+        for data in self._buf:
+            ctx.feed_out(self._make_body_data(data))
+        ctx.feed_out(self._make_end_chunk())
+
+        self._buf = []
+        self._buf_size = 0
+
+    def _buffer_data(self, ctx: IoPipelineHandlerContext, data: BytesLike) -> None:
+        dl = len(data)
+
+        if (mcs := self._max_chunk_size) is not None and (self._buf_size + dl) > mcs:
+            self._flush_buf(ctx)
+
+        self._buf.append(data)
+        self._buf_size += dl
+
+        if mcs is not None and dl >= mcs:
+            self._flush_buf(ctx)
+
+    #
+
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, self._head_type):
+            self._active = msg.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True)
+            ctx.feed_out(msg)
+            return
+
+        if isinstance(msg, self._full_type):
+            if msg.head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
+                ctx.feed_out(msg.head)
+
+                if len(msg.body) > 0:
+                    self._buffer_data(ctx, msg.body)
+
+                self._flush_buf(ctx)
+                ctx.feed_out(self._make_last_chunk())
+                ctx.feed_out(self._make_chunked_trailers())
+                ctx.feed_out(self._make_end())
+                return
+
+            ctx.feed_out(msg)
+            return
+
+        if self._active:
+            if isinstance(msg, self._body_data_type):
+                self._buffer_data(ctx, msg.data)
+                return
+
+            if isinstance(msg, IoPipelineFlowMessages.FlushOutput):
+                self._flush_buf(ctx)
+                ctx.feed_out(msg)
+                return
+
+            if isinstance(msg, self._end_type):
+                self._flush_buf(ctx)
+                ctx.feed_out(self._make_last_chunk())
+                ctx.feed_out(self._make_chunked_trailers())
+                self._reset()
+                ctx.feed_out(msg)
+                return
+
+            if isinstance(msg, self._aborted_type):
+                self._reset()
+                ctx.feed_out(msg)
+                return
+
+            if isinstance(msg, IoPipelineMessages.FinalOutput):
+                self._reset()
+                ctx.feed_out(self._make_aborted('eof before end of message'))
+                ctx.feed_out(msg)
+                return
+
+        ctx.feed_out(msg)
+
+
+##
+
+
+class IoPipelineHttpObjectDechunker(
+    IoPipelineHttpMessageObjects,
+    IoPipelineHandler,
+    Abstract,
+):
+    """
+    Inbound handler that strips chunked transfer encoding framing messages (Chunk, EndChunk, LastChunk,
+    ChunkedTrailers), leaving only Head + BodyData* + End for downstream handlers.
+
+    Sits between the Decoder and Decompressor in the pipeline so that the decompressor sees only content-level messages
+    without stale chunk sizes.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._active = False
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, self._head_type):
+            self._active = msg.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True)
+            ctx.feed_in(msg)
+            return
+
+        if self._active and isinstance(msg, (
+                self._chunk_type,
+                self._end_chunk_type,
+                self._last_chunk_type,
+                self._chunked_trailers_type,
+        )):
+            return
+
+        if isinstance(msg, (self._end_type, self._aborted_type)):
+            self._active = False
+
+        ctx.feed_in(msg)
+
+
+########################################
+# ../../../omlish/http/pipelines/compression/compressors.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpCompressionConfig:
+    DEFAULT: ta.ClassVar['IoPipelineHttpCompressionConfig']
+
+
+IoPipelineHttpCompressionConfig.DEFAULT = IoPipelineHttpCompressionConfig()
+
+
+#
+
+
+class IoPipelineHttpObjectCompressor(
+    IoPipelineHttpMessageObjects,
+    IoPipelineHandler,
+    Abstract,
+):
     def __init__(
             self,
-            client_address: SocketAddress,
-            *,
-            handler: SimpleHttpHandler,
-            parser: HttpParser = HttpParser(),
-
-            default_content_type: ta.Optional[str] = None,
-
-            error_message_format: ta.Optional[str] = None,
-            error_content_type: ta.Optional[str] = None,
+            codings: ta.Optional[IoPiplineHttpCompressorCodings] = None,
+            config: IoPipelineHttpCompressionConfig = IoPipelineHttpCompressionConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
-        self._client_address = client_address
+        self._config = config
+        if codings is None:
+            codings = DefaultIoPiplineHttpCompressionCodings.COMPRESSOR
+        self._codings = codings
 
-        self._handler = handler
-        self._parser = parser
-
-        self._default_content_type = default_content_type or self.DEFAULT_CONTENT_TYPE
-
-        self._error_message_format = error_message_format or self.DEFAULT_ERROR_MESSAGE
-        self._error_content_type = error_content_type or self.DEFAULT_ERROR_CONTENT_TYPE
+        self._compressor: ta.Optional[IoPiplineHttpCompressorCoding] = None
 
     #
 
-    @property
-    def client_address(self) -> SocketAddress:
-        return self._client_address
-
-    @property
-    def handler(self) -> SimpleHttpHandler:
-        return self._handler
+    def _reset(self) -> None:
+        self._compressor = None
 
     #
 
-    def _format_timestamp(self, timestamp: ta.Optional[float] = None) -> str:
-        if timestamp is None:
-            timestamp = time.time()
-        return email.utils.formatdate(timestamp, usegmt=True)
+    def _on_outbound_final_output(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalOutput) -> None:
+        if self._compressor is None:
+            ctx.feed_out(msg)
+            return
+
+        self._reset()
+
+        ctx.feed_out(self._make_aborted('eof before end of message'))
+        ctx.feed_out(msg)
+
+    def _on_outbound_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:
+        if self._compressor is not None:
+            ctx.feed_out(self._make_aborted('unexpected message sequence'))
+            return
+
+        enc = msg.headers.lower.get('content-encoding', ())
+
+        for coding_name, coding in self._codings.items():
+            if coding_name.lower() in enc:
+                self._compressor = coding()
+                break
+
+        ctx.feed_out(msg)
+
+    def _on_outbound_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:
+        if (z := self._compressor) is None:
+            ctx.feed_out(msg)
+            return
+
+        for mv in ByteStreamBuffers.iter_segments(msg.data):
+            out = z.compress(mv)
+            if out:
+                ctx.feed_out(self._make_body_data(out))
+
+    def _on_outbound_flush_output(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushOutput) -> None:
+        if (z := self._compressor) is None:
+            ctx.feed_out(msg)
+            return
+
+        if chunk := z.flush():
+            ctx.feed_out(self._make_body_data(chunk))
+
+        ctx.feed_out(msg)
+
+    def _on_outbound_end(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEnd) -> None:
+        if (z := self._compressor) is None:
+            ctx.feed_out(msg)
+            return
+
+        out = z.finish()
+        if out:
+            ctx.feed_out(self._make_body_data(out))
+
+        self._reset()
+        ctx.feed_out(msg)
+
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.FinalOutput):
+            self._on_outbound_final_output(ctx, msg)
+
+        elif isinstance(msg, self._head_type):
+            self._on_outbound_head(ctx, msg)
+
+        elif isinstance(msg, self._body_data_type):
+            self._on_outbound_body_data(ctx, msg)
+
+        elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
+            self._on_outbound_flush_output(ctx, msg)
+
+        elif isinstance(msg, self._end_type):
+            self._on_outbound_end(ctx, msg)
+
+        else:
+            ctx.feed_out(msg)
+
+
+########################################
+# ../../../omlish/http/pipelines/compression/decompressors.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpDecompressionConfig:
+    DEFAULT: ta.ClassVar['IoPipelineHttpDecompressionConfig']
+
+    max_decomp_chunk: int = 64 * 1024  # max bytes emitted per inflate step
+
+    max_decomp_total: ta.Optional[int] = None    # max total decompressed bytes per object
+    max_expansion_ratio: ta.Optional[int] = 200  # max_out <= max(1, in_total) * ratio (+ small slack)
+
+    max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
+
+    # CPU Bounding: how many decompress steps to perform before yielding to the driver
+    max_steps_per_call: ta.Optional[int] = None
+
+
+IoPipelineHttpDecompressionConfig.DEFAULT = IoPipelineHttpDecompressionConfig()
+
+
+#
+
+
+class IoPipelineHttpObjectDecompressor(
+    IoPipelineHttpMessageObjects,
+    InboundBytesBufferingIoPipelineHandler,
+    Abstract,
+):
+    def __init__(
+            self,
+            codings: ta.Optional[IoPiplineHttpDecompressorCodings] = None,
+            config: IoPipelineHttpDecompressionConfig = IoPipelineHttpDecompressionConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        if codings is None:
+            codings = DefaultIoPiplineHttpCompressionCodings.DECOMPRESSOR
+        self._codings = codings
+
+        self._decompressor: ta.Optional[IoPiplineHttpDecompressorCoding] = None
+
+        # Statistics for budget checks
+        self._in_total_bytes = 0
+        self._out_total_bytes = 0
+
+        # Internal buffering
+        self._in_pending: collections.deque[BytesLike] = collections.deque()
+        self._in_pending_bytes = 0
+        self._out_pending: collections.deque[BytesLike] = collections.deque()
+        self._out_pending_bytes = 0
+
+        # Flow Control and Deferral State
+        self._read_requested = False
+        self._pending_end: ta.Optional[IoPipelineHttpMessageEnd] = None
 
     #
 
-    def _header_encode(self, s: str) -> bytes:
-        return s.encode('latin-1', 'strict')
+    def inbound_buffered_bytes(self) -> int:
+        return self._in_pending_bytes + self._out_pending_bytes
 
-    class _Header(ta.NamedTuple):
-        key: str
-        value: str
+    #
 
-    def _format_header_line(self, h: _Header) -> str:
-        return f'{h.key}: {h.value}\r\n'
+    def _reset(self) -> None:
+        self._decompressor = None
 
-    def _get_header_close_connection_action(self, h: _Header) -> ta.Optional[bool]:
-        if h.key.lower() != 'connection':
-            return None
-        elif h.value.lower() == 'close':
+        self._in_total_bytes = 0
+        self._out_total_bytes = 0
+
+        self._in_pending.clear()
+        self._in_pending_bytes = 0
+        self._out_pending.clear()
+        self._out_pending_bytes = 0
+
+        self._pending_end = None
+
+    def _check_budgets(self) -> None:
+        if (mdt := self._config.max_decomp_total) is not None and self._out_total_bytes > mdt:
+            raise ValueError('decompressor output exceeds limit (possible zip bomb)')
+
+        if (mer := self._config.max_expansion_ratio) is not None:
+            slack = self._config.max_decomp_chunk
+            if self._out_total_bytes > (max(1, self._in_total_bytes) * mer + slack):
+                raise ValueError('decompressor expansion ratio exceeds limit (possible zip bomb)')
+
+    def _is_auto_read(self, ctx: IoPipelineHandlerContext) -> bool:
+        if (flow := ctx.services.find(IoPipelineFlow)) is None:
             return True
-        elif h.value.lower() == 'keep-alive':
+        return flow.is_auto_read()
+
+    def _emit_out_pending(self, ctx: IoPipelineHandlerContext) -> bool:
+        """Returns True if at least one message was emitted."""
+
+        emitted = False
+
+        while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
+            o = self._out_pending.popleft()
+            self._out_pending_bytes -= len(o)
+
+            if not self._is_auto_read(ctx):
+                self._read_requested = False
+
+            ctx.feed_in(self._make_body_data(o))
+            emitted = True
+
+            # In manual mode, we satisfy one 'read' at a time.
+            if not self._is_auto_read(ctx):
+                break
+
+        return emitted
+
+    def _pump(self, ctx: IoPipelineHandlerContext) -> bool:
+        """Returns True if it effectively satisfied a read request."""
+
+        z = self._decompressor
+        if z is None:
             return False
-        else:
-            return None
 
-    def _make_default_headers(self) -> ta.List[_Header]:
-        return [
-            self._Header('Date', self._format_timestamp()),
-        ]
+        steps = 0
+        max_steps = self._config.max_steps_per_call
+
+        # 1. Try to clear existing output.
+        if self._emit_out_pending(ctx):
+            if not self._is_auto_read(ctx):
+                return True
+
+        # 2. If blocked by downstream, we can't satisfy anything.
+        if self._out_pending:
+            return False
+
+        # 3. Decompression Loop
+        while self._in_pending:
+            # Enforce output buffer budget
+            if (mop := self._config.max_out_pending) is not None:
+                if self._out_pending_bytes >= mop:
+                    break
+
+            # Check for CPU step limit
+            if max_steps is not None and steps >= max_steps:
+                self._defer_resume(ctx)
+                return False  # We haven't satisfied it yet, we deferred.
+
+            steps += 1
+            chunk = self._in_pending.popleft()
+            cl = len(chunk)
+            self._in_pending_bytes -= cl
+
+            out = z.decompress(chunk, self._config.max_decomp_chunk)
+            if out:
+                ol = len(out)
+                self._out_total_bytes += ol
+                self._out_pending.append(out)
+                self._out_pending_bytes += ol
+                self._check_budgets()
+
+                if self._emit_out_pending(ctx):
+                    if not self._is_auto_read(ctx):
+                        return True  # Satisfied!
+
+            ut = z.unconsumed_tail()
+            if ut:
+                self._in_pending.appendleft(ut)
+                self._in_pending_bytes += len(ut)
+                if not out:
+                    break
+
+        # 4. Handle EOF
+        if not self._in_pending and self._pending_end is not None:
+            if max_steps is not None and steps >= max_steps:
+                self._defer_resume(ctx)
+                return False
+
+            out = z.finish()
+            if out:
+                ol = len(out)
+                self._out_total_bytes += ol
+                self._out_pending.append(out)
+                self._out_pending_bytes += ol
+                self._check_budgets()
+                self._emit_out_pending(ctx)
+
+            msg = self._pending_end
+            self._pending_end = None
+            self._read_requested = False
+            ctx.feed_in(msg)
+            return True  # FinalInput counts as satisfying the last read
+
+        return False
+
+    def _defer_resume(self, ctx: IoPipelineHandlerContext) -> None:
+        def resume(c: IoPipelineHandlerContext) -> None:
+            # If a deferred pump satisfies a read, it must provide the FlushInput
+            if self._pump(c) and not self._is_auto_read(c):
+                c.feed_in(IoPipelineFlowMessages.FlushInput())
+
+        ctx.defer(resume)
 
     #
 
-    _STATUS_RESPONSES: ta.Mapping[int, ta.Tuple[str, str]] = {
-        v: (v.phrase, v.description)
-        for v in http.HTTPStatus.__members__.values()
-    }
-
-    def _format_status_line(
-            self,
-            version: HttpVersion,
-            code: ta.Union[http.HTTPStatus, int],
-            message: ta.Optional[str] = None,
-    ) -> str:
-        if message is None:
-            if code in self._STATUS_RESPONSES:
-                message = self._STATUS_RESPONSES[code][0]
-            else:
-                message = ''
-
-        return f'{version} {int(code)} {message}\r\n'
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class _Response:
-        version: HttpVersion
-        code: http.HTTPStatus
-
-        message: ta.Optional[str] = None
-        headers: ta.Optional[ta.Sequence['CoroHttpServer._Header']] = None
-        data: ta.Optional[SimpleHttpHandlerResponseData] = None
-        close_connection: ta.Optional[bool] = False
-
-        def get_header(self, key: str) -> ta.Optional['CoroHttpServer._Header']:
-            for h in self.headers or []:
-                if h.key.lower() == key.lower():
-                    return h
-            return None
-
-        def close(self) -> None:
-            if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
-                d.close()
-
-    #
-
-    def _build_response_head_bytes(self, a: _Response) -> bytes:
-        out = io.BytesIO()
-
-        if a.version >= HttpVersions.HTTP_1_0:
-            out.write(self._header_encode(self._format_status_line(
-                a.version,
-                a.code,
-                a.message,
-            )))
-
-            for h in a.headers or []:
-                out.write(self._header_encode(self._format_header_line(h)))
-
-            out.write(b'\r\n')
-
-        return out.getvalue()
-
-    def _yield_response_data(self, a: _Response) -> ta.Iterator[bytes]:
-        if a.data is None:
+    def _on_inbound_final_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalInput) -> None:
+        if self._decompressor is None:
+            ctx.feed_in(msg)
             return
 
-        elif isinstance(a.data, bytes):
-            yield a.data
+        self._reset()
+
+        ctx.feed_in(self._make_aborted('eof before end of message'))
+        ctx.feed_in(msg)
+
+    def _on_inbound_flush_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushInput) -> None:
+        self._pump(ctx)
+        ctx.feed_in(msg)
+
+    def _on_inbound_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:
+        if self._decompressor is not None:
+            ctx.feed_in(self._make_aborted('unexpected message sequence'))
             return
 
-        elif isinstance(a.data, SimpleHttpHandlerResponseStreamedData):
-            yield from a.data.iter
+        enc = msg.headers.lower.get('content-encoding', ())
+
+        # TODO: spec is actually an ordered stack lol
+        for coding_name, coding in self._codings.items():
+            if coding_name.lower() in enc:
+                self._decompressor = coding()
+                break
+
+        ctx.feed_in(msg)
+
+    def _on_inbound_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:
+        if self._decompressor is None:
+            ctx.feed_in(msg)
+            return
+
+        for mv in ByteStreamBuffers.iter_segments(msg.data):
+            mvl = len(mv)
+            self._in_total_bytes += mvl
+            self._in_pending.append(mv)
+            self._in_pending_bytes += mvl
+            self._check_budgets()
+
+        self._pump(ctx)
+
+    def _on_inbound_end(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEnd) -> None:
+        if self._decompressor is None:
+            ctx.feed_in(msg)
+            return
+
+        self._pending_end = msg
+        self._pump(ctx)
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.FinalInput):
+            self._on_inbound_final_input(ctx, msg)
+
+        elif isinstance(msg, IoPipelineFlowMessages.FlushInput):
+            self._on_inbound_flush_input(ctx, msg)
+
+        elif isinstance(msg, self._head_type):
+            self._on_inbound_head(ctx, msg)
+
+        elif isinstance(msg, self._body_data_type):
+            self._on_inbound_body_data(ctx, msg)
+
+        elif isinstance(msg, self._end_type):
+            self._on_inbound_end(ctx, msg)
 
         else:
-            raise TypeError(a.data)
+            ctx.feed_in(msg)
 
     #
 
-    DEFAULT_CONTENT_TYPE = 'text/plain'
+    def _on_outbound_ready_for_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.ReadyForInput) -> None:  # Noqa
+        self._read_requested = True
 
-    def _preprocess_response(self, resp: _Response) -> _Response:
-        nh: ta.List[CoroHttpServer._Header] = []
-        kw: ta.Dict[str, ta.Any] = {}
+        if self._out_pending or (self._decompressor is not None and self._in_pending):
+            if self._pump(ctx):
+                if not self._is_auto_read(ctx):
+                    ctx.feed_in(IoPipelineFlowMessages.FlushInput())
 
-        if resp.get_header('Content-Type') is None:
-            nh.append(self._Header('Content-Type', self._default_content_type))
+                return  # Swallow since we satisfied it
 
-        if resp.data is not None and resp.get_header('Content-Length') is None:
-            cl: ta.Optional[int]
-            if isinstance(resp.data, bytes):
-                cl = len(resp.data)
-            elif isinstance(resp.data, SimpleHttpHandlerResponseStreamedData):
-                cl = resp.data.length
-            else:
-                raise TypeError(resp.data)
-            if cl is not None:
-                nh.append(self._Header('Content-Length', str(cl)))
+        ctx.feed_out(msg)
 
-        if nh:
-            kw.update(headers=[*(resp.headers or []), *nh])
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.ReadyForInput):
+            self._on_outbound_ready_for_input(ctx, msg)
 
-        if (clh := resp.get_header('Connection')) is not None:
-            if self._get_header_close_connection_action(clh):
-                kw.update(close_connection=True)
+        else:
+            ctx.feed_out(msg)
 
-        if not kw:
-            return resp
-        return dc.replace(resp, **kw)
+
+########################################
+# ../../../omlish/http/pipelines/encoders.py
+
+
+##
+
+
+class IoPipelineHttpObjectEncoder(
+    IoPipelineHttpMessageObjects,
+    IoPipelineHandler,
+    Abstract,
+):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._streaming = False
+
+        self._outbound_dispatch_dct: ta.Mapping[type, ta.Callable[[IoPipelineHandlerContext, ta.Any], None]] = {
+            self._head_type: self._handle_request_head,
+            self._full_type: self._handle_full_request,
+            self._chunk_type: self._handle_chunk,
+            self._end_chunk_type: self._handle_end_chunk,
+            self._last_chunk_type: self._handle_last_chunk,
+            self._chunked_trailers_type: self._handle_chunked_trailers,
+            self._body_data_type: self._handle_body_data,
+            self._end_type: self._handle_request_end,
+        }
 
     #
 
-    @dc.dataclass(frozen=True)
-    class Error:
-        version: HttpVersion
-        code: http.HTTPStatus
-        message: str
-        explain: str
+    @abc.abstractmethod
+    def _encode_head_line(self, head: IoPipelineHttpMessageHead) -> bytes:
+        raise NotImplementedError
 
-        method: ta.Optional[str] = None
+    #
 
-    def _build_error(
-            self,
-            code: ta.Union[http.HTTPStatus, int],
-            message: ta.Optional[str] = None,
-            explain: ta.Optional[str] = None,
+    def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if (fn := self._outbound_dispatch_dct.get(type(msg))) is not None:
+            fn(ctx, msg)
+            return
+
+        ctx.feed_out(msg)
+
+    #
+
+    def _handle_request_head(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageHead) -> None:  # noqa
+        self._streaming = True
+
+        ctx.feed_out(self._encode_head(msg))
+
+    #
+
+    def _handle_full_request(self, ctx: IoPipelineHandlerContext, msg: FullIoPipelineHttpMessage) -> ta.Any:
+        ctx.feed_out(self._encode_head(msg.head))
+        if len(msg.body) > 0:
+            ctx.feed_out(msg.body)
+
+    #
+
+    def _handle_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunk) -> None:  # noqa
+        ctx.feed_out(f'{msg.size:x}\r\n'.encode('ascii'))
+
+    #
+
+    def _handle_end_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEndChunk) -> None:  # noqa
+        ctx.feed_out(b'\r\n')
+
+    #
+
+    def _handle_last_chunk(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageLastChunk) -> None:  # noqa
+        ctx.feed_out(b'0\r\n')
+
+    #
+
+    def _handle_chunked_trailers(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageChunkedTrailers) -> None:  # noqa
+        ctx.feed_out(b'\r\n')
+
+    #
+
+    def _handle_body_data(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageBodyData) -> None:  # noqa
+        if not self._streaming:
+            # Not in streaming mode - pass through unchanged
+            ctx.feed_out(msg)
+
+        if len(msg.data) < 1:
+            pass
+
+        ctx.feed_out(msg.data)
+
+    #
+
+    def _handle_request_end(self, ctx: IoPipelineHandlerContext, msg: IoPipelineHttpMessageEnd) -> None:  # noqa
+        if not self._streaming:
+            # Not in streaming mode - pass through
+            ctx.feed_out(msg)
+            return
+
+        # Reset state
+        self._streaming = False
+
+    #
+
+    def _encode_head(self, head: IoPipelineHttpMessageHead) -> bytes:
+        buf = io.BytesIO()
+
+        buf.write(self._encode_head_line(head))
+
+        for hl in self._encode_headers(head.headers):
+            buf.write(hl)
+
+        buf.write(b'\r\n')
+
+        return buf.getvalue()
+
+    def _encode_headers(self, headers: HttpHeaders) -> ta.List[bytes]:
+        lines: ta.List[bytes] = []
+
+        # HttpHeaders stores entries as list of (name, value) tuples
+        for name, value in headers.raw:
+            # Header names and values should be ASCII-safe in practice
+            line = f'{name}: {value}\r\n'.encode('ascii')
+            lines.append(line)
+
+        return lines
+
+
+########################################
+# ../../../omlish/http/pipelines/requests.py
+
+
+##
+
+
+class IoPipelineHttpRequestObject(IoPipelineHttpMessageObject, Abstract):
+    pass
+
+
+#
+
+
+@ta.final
+@install_dataclass_kw_only_init()
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestHead(IoPipelineHttpMessageHead, IoPipelineHttpRequestObject):
+    method: str
+    target: str
+
+    headers: HttpHeaders
+    parsed: ta.Optional[ParsedHttpMessage] = None
+
+    version: HttpVersion = HttpVersions.HTTP_1_1
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class FullIoPipelineHttpRequest(FullIoPipelineHttpMessage, IoPipelineHttpRequestObject):
+    head: IoPipelineHttpRequestHead
+    body: BytesLike
+
+    @classmethod
+    def simple(
+            cls,
+            host: str,
+            target: str,
             *,
-            version: ta.Optional[HttpVersion] = None,
-            method: ta.Optional[str] = None,
-    ) -> Error:
-        code = http.HTTPStatus(code)
+            method: str = 'GET',
+            version: HttpVersion = HttpVersions.HTTP_1_1,
 
-        try:
-            short_msg, long_msg = self._STATUS_RESPONSES[code]
-        except KeyError:
-            short_msg, long_msg = '???', '???'
-        if message is None:
-            message = short_msg
-        if explain is None:
-            explain = long_msg
+            content_type: ta.Optional[str] = None,
+            body: bytes = b'',
+            connection: str = 'close',
 
-        if version is None:
-            version = HttpVersions.HTTP_1_1
-
-        return self.Error(
-            version=version,
-            code=code,
-            message=message,
-            explain=explain,
-
-            method=method,
+            headers: ta.Optional[CanHttpHeaders] = None,
+    ) -> 'FullIoPipelineHttpRequest':
+        headers = HttpHeaders.of(headers).update(
+            ('Host', host),
+            ('Content-Type', content_type),
+            ('Content-Length', lambda: str(len(body)) if body else None),
+            ('Connection', connection),
+            if_present='skip',
         )
 
-    #
-
-    DEFAULT_ERROR_MESSAGE = textwrap.dedent("""\
-        <!DOCTYPE HTML>
-        <html lang="en">
-            <head>
-                <meta charset="utf-8">
-                <title>Error response</title>
-            </head>
-            <body>
-                <h1>Error response</h1>
-                <p>Error code: %(code)d</p>
-                <p>Message: %(message)s.</p>
-                <p>Error code explanation: %(code)s - %(explain)s.</p>
-            </body>
-        </html>
-    """)
-
-    DEFAULT_ERROR_CONTENT_TYPE = 'text/html;charset=utf-8'
-
-    def _build_error_response(self, err: Error) -> _Response:
-        headers: ta.List[CoroHttpServer._Header] = [
-            *self._make_default_headers(),
-            self._Header('Connection', 'close'),
-        ]
-
-        # Message body is omitted for cases described in:
-        #  - RFC7230: 3.3. 1xx, 204(No Content), 304(Not Modified)
-        #  - RFC7231: 6.3.6. 205(Reset Content)
-        data: ta.Optional[bytes] = None
-        if (
-                err.code >= http.HTTPStatus.OK and
-                err.code not in (
-                    http.HTTPStatus.NO_CONTENT,
-                    http.HTTPStatus.RESET_CONTENT,
-                    http.HTTPStatus.NOT_MODIFIED,
-                )
-        ):
-            # HTML encode to prevent Cross Site Scripting attacks (see bug #1100201)
-            content = self._error_message_format.format(
-                code=err.code,
-                message=html.escape(err.message, quote=False),
-                explain=html.escape(err.explain, quote=False),
-            )
-            body = content.encode('UTF-8', 'replace')
-
-            headers.extend([
-                self._Header('Content-Type', self._error_content_type),
-                self._Header('Content-Length', str(len(body))),
-            ])
-
-            if err.method != 'HEAD' and body:
-                data = body
-
-        return self._Response(
-            version=err.version,
-            code=err.code,
-            message=err.message,
-            headers=headers,
-            data=data,
-            close_connection=True,
-        )
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class ParsedRequestLogIo(CoroHttpIo.AnyLogIo):
-        request: ParsedHttpMessage
-
-    @dc.dataclass(frozen=True)
-    class ErrorLogIo(CoroHttpIo.AnyLogIo):
-        error: 'CoroHttpServer.Error'
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class CoroHandleResult:
-        close_reason: ta.Literal['response', 'internal', None] = None
-
-    def coro_handle(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], CoroHandleResult]:
-        return self._coro_run_handler(self._coro_handle_one())
-
-    class Close(Exception):  # noqa
-        pass
-
-    def _coro_run_handler(
-            self,
-            gen: ta.Generator[
-                ta.Union[CoroHttpIo.AnyLogIo, CoroHttpIo.AnyReadIo, _Response],
-                ta.Optional[bytes],
-                None,
-            ],
-    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], CoroHandleResult]:
-        i: ta.Optional[bytes]
-        o: ta.Any = next(gen)
-        while True:
-            try:
-                if isinstance(o, CoroHttpIo.AnyLogIo):
-                    i = None
-                    yield o
-
-                elif isinstance(o, CoroHttpIo.AnyReadIo):
-                    i = check.isinstance((yield o), bytes)
-
-                elif isinstance(o, self._Response):
-                    i = None
-
-                    r = self._preprocess_response(o)
-                    hb = self._build_response_head_bytes(r)
-                    check.none((yield CoroHttpIo.WriteIo(hb)))
-
-                    for b in self._yield_response_data(r):
-                        yield CoroHttpIo.WriteIo(b)
-
-                    o.close()
-                    if o.close_connection:
-                        return self.CoroHandleResult(
-                            close_reason='response',
-                        )
-                    o = None
-
-                else:
-                    raise TypeError(o)  # noqa
-
-                try:
-                    o = gen.send(i)
-                except self.Close:
-                    return self.CoroHandleResult(
-                        close_reason='internal',
-                    )
-                except StopIteration:
-                    return self.CoroHandleResult()
-
-            except Exception:  # noqa
-                if hasattr(o, 'close'):
-                    o.close()
-
-                raise
-
-    def _coro_handle_one(self) -> ta.Generator[
-        ta.Union[CoroHttpIo.AnyLogIo, CoroHttpIo.AnyReadIo, _Response],
-        ta.Optional[bytes],
-        None,
-    ]:
-        # Parse request
-
-        head = check.not_none((yield CoroHttpIo.ReadUntilIo(b'\r\n\r\n')))
-
-        try:
-            o: ta.Any = self._parser.parse_message(head)
-        except HttpParseError as e:
-            o = e
-
-        # FIXME:
-        # if isinstance(parsed, EmptyParsedHttpResult):
-        #     raise self.Close
-
-        if isinstance(o, HttpParseError):
-            err = self._build_error(
-                400,  # FIXME: parsed.code,
-                # FIXME: *([parsed.message] if isinstance(parsed.message, str) else parsed.message),
-                f'Bad request ({o!r})',
-                version=HttpVersions.HTTP_1_1,  # FIXME: version=parsed.version,
-            )
-            yield self.ErrorLogIo(err)
-            yield self._build_error_response(err)
-            return
-
-        parsed = check.isinstance(o, ParsedHttpMessage)
-
-        # Log
-
-        check.none((yield self.ParsedRequestLogIo(parsed)))
-
-        # Handle CONTINUE
-
-        if parsed.prepared.expect_100_continue:
-            # https://bugs.python.org/issue1491
-            # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
-            yield self._Response(
-                version=parsed.request_line.http_version if parsed.request_line else HttpVersions.HTTP_1_1,
-                code=http.HTTPStatus.CONTINUE,
-            )
-
-        # Read data
-
-        request_data: ta.Optional[bytes]
-        if (cl := parsed.headers.get('Content-Length')) is not None:
-            request_data = check.isinstance((yield CoroHttpIo.ReadIo(int(cl))), bytes)
-        else:
-            request_data = None
-
-        # Build request
-
-        handler_request = SimpleHttpHandlerRequest(
-            client_address=self._client_address,
-            method=check.not_none(parsed.request_line).method,
-            path=check.not_none(parsed.request_line).request_target.decode('ascii'),  # FIXME: lol
-            headers=parsed.headers,
-            data=request_data,
-        )
-
-        # Build handler response
-
-        try:
-            handler_response = self._handler(handler_request)
-
-        except UnsupportedMethodSimpleHttpHandlerError:
-            err = self._build_error(
-                http.HTTPStatus.NOT_IMPLEMENTED,
-                f'Unsupported method ({(parsed.request_line.method if parsed.request_line else "?")!r})',
-                version=parsed.request_line.http_version if parsed.request_line else HttpVersions.HTTP_1_1,
-                method=parsed.request_line.method if parsed.request_line else None,
-            )
-            yield self.ErrorLogIo(err)
-            yield self._build_error_response(err)
-            return
-
-        try:
-            # Build internal response
-
-            response_headers = handler_response.headers or {}
-            response_data = handler_response.data
-
-            headers: ta.List[CoroHttpServer._Header] = [
-                *self._make_default_headers(),
-            ]
-
-            for k, v in response_headers.items():
-                headers.append(self._Header(k, v))
-
-            if handler_response.close_connection and 'Connection' not in headers:
-                headers.append(self._Header('Connection', 'close'))
-
-            yield self._Response(
-                version=parsed.request_line.http_version if parsed.request_line else HttpVersions.HTTP_1_1,
-                code=http.HTTPStatus(handler_response.status),
+        return cls(
+            head=IoPipelineHttpRequestHead(
+                method=method,
+                target=target,
+                version=version,
                 headers=headers,
-                data=response_data,
-                close_connection=handler_response.close_connection,
-            )
+            ),
+            body=body,
+        )
 
-        except Exception:  # noqa
-            handler_response.close()
 
-            raise
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestChunk(IoPipelineHttpMessageChunk, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestEndChunk(IoPipelineHttpMessageEndChunk, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestLastChunk(IoPipelineHttpMessageLastChunk, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestChunkedTrailers(IoPipelineHttpMessageChunkedTrailers, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestBodyData(IoPipelineHttpMessageBodyData, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestEnd(IoPipelineHttpMessageEnd, IoPipelineHttpRequestObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpRequestAborted(IoPipelineHttpMessageAborted, IoPipelineHttpRequestObject):
+    pass
+
+
+##
+
+
+class IoPipelineHttpRequestObjects(IoPipelineHttpMessageObjects):
+    _head_type: ta.Final = IoPipelineHttpRequestHead
+
+    def _make_head(self, parsed: ParsedHttpMessage) -> IoPipelineHttpRequestHead:
+        request = check.not_none(parsed.request_line)
+
+        return IoPipelineHttpRequestHead(
+            method=request.method,
+            target=check.not_none(request.request_target).decode('utf-8'),
+            version=request.http_version,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    #
+
+    _full_type: ta.Final = FullIoPipelineHttpRequest
+
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpRequest:
+        return FullIoPipelineHttpRequest(check.isinstance(head, IoPipelineHttpRequestHead), body)
+
+    #
+
+    _chunk_type: ta.Final = IoPipelineHttpRequestChunk
+
+    def _make_chunk(self, size: int) -> IoPipelineHttpRequestChunk:
+        return IoPipelineHttpRequestChunk(size)
+
+    #
+
+    _end_chunk_type: ta.Final = IoPipelineHttpRequestEndChunk
+
+    def _make_end_chunk(self) -> IoPipelineHttpRequestEndChunk:
+        return IoPipelineHttpRequestEndChunk()
+
+    #
+
+    _last_chunk_type: ta.Final = IoPipelineHttpRequestLastChunk
+
+    def _make_last_chunk(self) -> IoPipelineHttpRequestLastChunk:
+        return IoPipelineHttpRequestLastChunk()
+
+    #
+
+    _chunked_trailers_type: ta.Final = IoPipelineHttpRequestChunkedTrailers
+
+    def _make_chunked_trailers(self) -> IoPipelineHttpRequestChunkedTrailers:
+        return IoPipelineHttpRequestChunkedTrailers()
+
+    #
+
+    _body_data_type: ta.Final = IoPipelineHttpRequestBodyData
+
+    def _make_body_data(self, data: BytesLike) -> IoPipelineHttpRequestBodyData:
+        return IoPipelineHttpRequestBodyData(data)
+
+    #
+
+    _end_type: ta.Final = IoPipelineHttpRequestEnd
+
+    def _make_end(self) -> IoPipelineHttpRequestEnd:
+        return IoPipelineHttpRequestEnd()
+
+    #
+
+    _aborted_type: ta.Final = IoPipelineHttpRequestAborted
+
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> IoPipelineHttpRequestAborted:
+        return IoPipelineHttpRequestAborted(reason)
+
+
+########################################
+# ../../../omlish/http/pipelines/responses.py
+
+
+##
+
+
+class IoPipelineHttpResponseObject(IoPipelineHttpMessageObject, Abstract):
+    pass
+
+
+#
+
+
+@ta.final
+@install_dataclass_kw_only_init()
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpResponseObject):
+    status: int
+    reason: str
+
+    headers: HttpHeaders
+    parsed: ta.Optional[ParsedHttpMessage] = None
+
+    version: HttpVersion = HttpVersions.HTTP_1_1
+
+    @staticmethod
+    def get_reason_phrase(code: int) -> str:
+        try:
+            return http.HTTPStatus(code).phrase
+        except ValueError:
+            return ''
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class FullIoPipelineHttpResponse(FullIoPipelineHttpMessage, IoPipelineHttpResponseObject):
+    head: IoPipelineHttpResponseHead
+    body: BytesLike
+
+    @classmethod
+    def simple(
+            cls,
+            *,
+            version: HttpVersion = HttpVersions.HTTP_1_1,
+            status: int = 200,
+            reason: ta.Optional[str] = None,
+
+            content_type: str = 'text/plain; charset=utf-8',
+            body: bytes = b'',
+            connection: str = 'close',
+
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+    ):
+        return cls(
+            head=IoPipelineHttpResponseHead(
+                version=version,
+                status=status,
+                reason=IoPipelineHttpResponseHead.get_reason_phrase(status) if reason is None else reason,
+                headers=HttpHeaders([
+                    ('Content-Type', content_type),
+                    ('Content-Length', str(len(body))),
+                    ('Connection', connection),
+                    *(headers.items() if headers else []),
+                ]),
+            ),
+            body=body,
+        )
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseChunk(IoPipelineHttpMessageChunk, IoPipelineHttpResponseObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseEndChunk(IoPipelineHttpMessageEndChunk, IoPipelineHttpResponseObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseLastChunk(IoPipelineHttpMessageLastChunk, IoPipelineHttpResponseObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseChunkedTrailers(IoPipelineHttpMessageChunkedTrailers, IoPipelineHttpResponseObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseBodyData(IoPipelineHttpMessageBodyData, IoPipelineHttpResponseObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseEnd(IoPipelineHttpMessageEnd, IoPipelineHttpResponseObject):
+    pass
+
+
+#
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class IoPipelineHttpResponseAborted(IoPipelineHttpMessageAborted, IoPipelineHttpResponseObject):
+    pass
+
+
+##
+
+
+class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
+    _head_type: ta.Final = IoPipelineHttpResponseHead
+
+    def _make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        status = check.not_none(parsed.status_line)
+
+        return IoPipelineHttpResponseHead(
+            version=status.http_version,
+            status=status.status_code,
+            reason=status.reason_phrase,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    #
+
+    _full_type: ta.Final = FullIoPipelineHttpResponse
+
+    def _make_full(self, head: IoPipelineHttpMessageHead, body: BytesLike) -> FullIoPipelineHttpResponse:
+        return FullIoPipelineHttpResponse(check.isinstance(head, IoPipelineHttpResponseHead), body)
+
+    #
+
+    _chunk_type: ta.Final = IoPipelineHttpResponseChunk
+
+    def _make_chunk(self, size: int) -> IoPipelineHttpResponseChunk:
+        return IoPipelineHttpResponseChunk(size)
+
+    #
+
+    _end_chunk_type: ta.Final = IoPipelineHttpResponseEndChunk
+
+    def _make_end_chunk(self) -> IoPipelineHttpResponseEndChunk:
+        return IoPipelineHttpResponseEndChunk()
+
+    #
+
+    _last_chunk_type: ta.Final = IoPipelineHttpResponseLastChunk
+
+    def _make_last_chunk(self) -> IoPipelineHttpResponseLastChunk:
+        return IoPipelineHttpResponseLastChunk()
+
+    #
+
+    _chunked_trailers_type: ta.Final = IoPipelineHttpResponseChunkedTrailers
+
+    def _make_chunked_trailers(self) -> IoPipelineHttpResponseChunkedTrailers:
+        return IoPipelineHttpResponseChunkedTrailers()
+
+    #
+
+    _body_data_type: ta.Final = IoPipelineHttpResponseBodyData
+
+    def _make_body_data(self, data: BytesLike) -> IoPipelineHttpResponseBodyData:
+        return IoPipelineHttpResponseBodyData(data)
+
+    #
+
+    _end_type: ta.Final = IoPipelineHttpResponseEnd
+
+    def _make_end(self) -> IoPipelineHttpResponseEnd:
+        return IoPipelineHttpResponseEnd()
+
+    #
+
+    _aborted_type: ta.Final = IoPipelineHttpResponseAborted
+
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> IoPipelineHttpResponseAborted:
+        return IoPipelineHttpResponseAborted(reason)
+
+
+########################################
+# ../../../omlish/io/pipelines/handlers/decoders.py
+
+
+##
+
+
+class MessageToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
+    @abc.abstractmethod
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        raise NotImplementedError
+
+    _called_decode = False
+    _produced_messages = False
+
+    def _on_inbound_flush_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineFlowMessages.FlushInput) -> None:  # noqa
+        if not isinstance(self, ShareableIoPipelineHandler):
+            if (
+                    self._called_decode and
+                    not self._produced_messages and
+                    not ctx.services[IoPipelineFlow].is_auto_read()
+            ):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+
+            self._called_decode = False
+            self._produced_messages = False
+
+        ctx.feed_in(msg)
+
+    def _on_inbound_should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        self._called_decode = True
+
+        out: ta.List[ta.Any] = []
+
+        self._decode(ctx, msg, out)
+
+        if not out:
+            return
+
+        self._produced_messages = True
+
+        for out_msg in out:
+            ctx.feed_in(out_msg)
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.FlushInput):
+            self._on_inbound_flush_input(ctx, msg)
+
+        elif self._should_decode(ctx, msg):
+            self._on_inbound_should_decode(ctx, msg)
+
+        else:
+            ctx.feed_in(msg)
+
+
+##
+
+
+class FnMessageToMessageDecoderIoPipelineHandler(MessageToMessageDecoderIoPipelineHandler):
+    def __init__(
+            self,
+            filter_fn: IoPipelineHandlerFn[ta.Any, bool],  # noqa
+            decode_fn: IoPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]],
+    ) -> None:
+        super().__init__()
+
+        self._filter_fn = filter_fn
+        self._decode_fn = decode_fn
+
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
+        return self._filter_fn(ctx, msg)
+
+    def _decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        out.extend(self._decode_fn(ctx, msg))
+
+
+########################################
+# ../../../omlish/io/streams/direct.py
+
+
+##
+
+
+class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
+    def __init__(self, data: BytesLike) -> None:
+        super().__init__()
+
+        self._data = data
+        if isinstance(data, memoryview):
+            self._mv_ = data
+        else:
+            self._b_ = data
+
+    _mv_: memoryview
+    _b_: ta.Union[bytes, bytearray]
+
+    def _mv(self) -> memoryview:
+        try:
+            return self._mv_
+        except AttributeError:
+            pass
+
+        self._mv_ = mv = memoryview(self._b_)
+        return mv
+
+    def _b(self) -> ta.Union[bytes, bytearray]:
+        try:
+            return self._b_
+        except AttributeError:
+            pass
+
+        self._b_ = b = ByteStreamBuffers.memoryview_to_bytes(self._mv_)  # noqa
+        return b
+
+
+class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBufferView):
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def peek(self) -> memoryview:
+        return self._mv()
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        return (self._mv(),) if len(self._data) else ()
+
+    def tobytes(self) -> bytes:
+        if type(b := self._b()) is bytes:
+            return b
+        return bytes(b)
+
+
+class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
+    """
+    A read-only ByteStreamBuffer that wraps existing bytes without copying.
+
+    This is a lightweight, zero-copy wrapper around bytes/bytearray/memoryview that provides the full
+    ByteStreamBuffer interface (find, rfind, split_to, advance, coalesce) without mutation capabilities.
+
+    Strengths:
+      - Zero-copy construction from existing data
+      - Always contiguous (coalesce is trivial)
+      - Fast find/rfind delegating to optimized bytes methods
+      - Simple implementation with minimal overhead
+
+    Use cases:
+      - Parsing fixed/immutable data (HTTP requests, protocol messages)
+      - Using framers/codecs on data already in memory
+      - Avoiding buffer allocation/copying overhead when mutation isn't needed
+
+    Important notes:
+      - If constructed from a bytearray, the underlying data could still be mutated externally. This is by design -
+        we're wrapping directly, not defensively copying.
+      - This is a read-only buffer - it does not implement MutableByteStreamBuffer (no write/reserve/commit).
+      - All views returned from split_to() remain valid as they reference the original underlying data.
+
+    Example:
+        >>> data = b'GET /path HTTP/1.1\\r\\nHost: example.com\\r\\n\\r\\n'
+        >>> buf = DirectByteStreamBuffer(data)
+        >>> pos = buf.find(b'\\r\\n\\r\\n')
+        >>> headers = buf.split_to(pos)
+        >>> print(headers.tobytes())
+        b'GET /path HTTP/1.1\\r\\nHost: example.com'
+    """
+
+    def __init__(self, data: BytesLike) -> None:
+        super().__init__(data)
+
+        self._rpos = 0
+
+    def __len__(self) -> int:
+        return len(self._data) - self._rpos
+
+    def peek(self) -> memoryview:
+        mv = self._mv()
+        if self._rpos >= len(mv):
+            return memoryview(b'')
+        return mv[self._rpos:]
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        mv = self.peek()
+        return (mv,) if len(mv) else ()
+
+    def advance(self, n: int, /) -> None:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        self._rpos += n
+
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        if not n:
+            return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+
+        if not self._rpos and n == len(self._data):
+            self._rpos += n
+            return DirectByteStreamBufferView(self._data)
+
+        mv = self._mv()
+        view = mv[self._rpos:self._rpos + n]
+        self._rpos += n
+        return DirectByteStreamBufferView(view)
+
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        if not sub:
+            return start
+
+        b = self._b()
+        idx = b.find(sub, self._rpos + start, self._rpos + end)
+        return (idx - self._rpos) if idx >= 0 else -1
+
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        if not sub:
+            return end
+
+        b = self._b()
+        idx = b.rfind(sub, self._rpos + start, self._rpos + end)
+        return (idx - self._rpos) if idx >= 0 else -1
+
+    def coalesce(self, n: int, /) -> memoryview:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        if not n:
+            return memoryview(b'')
+
+        # Always contiguous - just return the requested slice
+        mv = self._mv()
+        return mv[self._rpos:self._rpos + n]
+
+
+##
+
+
+_EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW = DirectByteStreamBufferView(b'')
+
+
+def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
+    return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+
+
+########################################
+# ../../../omlish/io/streams/scanning.py
+
+
+##
+
+
+class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
+    """
+    A MutableByteStreamBuffer wrapper that caches negative-find progress to avoid repeated rescans in trickle scenarios.
+
+    It is intentionally conservative:
+      - It only caches progress for the default find range (start==0, end is None).
+      - It only caches *negative* results (i.e., "-1"): once a match is found, caching is not updated, to preserve the
+        property that repeated `find(sub)` on an unchanged buffer yields the same answer.
+
+    This is designed to help framing-style code that repeatedly does:
+      - buf.write(...small...)
+      - buf.find(delim)
+      - (not found) repeat
+
+    Pairs well with `LongestMatchDelimiterByteStreamFrameDecoder`.
+    """
+
+    def __init__(self, buf) -> None:
+        super().__init__()
+
+        self._buf = buf
+        self._scan_from_by_sub: dict[bytes, int] = {}
+
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._buf.max_size
+
+    #
+
+    def __len__(self) -> int:
+        return len(self._buf)
+
+    def peek(self) -> memoryview:
+        return self._buf.peek()
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        return self._buf.segments()
+
+    #
+
+    def advance(self, n: int, /) -> None:
+        self._buf.advance(n)
+        self._adjust_for_consume(n)
+
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
+        v = self._buf.split_to(n)
+        self._adjust_for_consume(n)
+        return v
+
+    def coalesce(self, n: int, /) -> memoryview:
+        return self._buf.coalesce(n)
+
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        if start != 0 or end is not None:
+            return self._buf.find(sub, start, end)
+
+        sub_len = len(sub)
+        if sub_len <= 0:
+            return self._buf.find(sub, start, end)
+
+        scan_from = self._scan_from_by_sub.get(sub, 0)
+
+        # Allow overlap so a match spanning old/new boundary is discoverable.
+        overlap = sub_len - 1
+        eff_start = scan_from - overlap
+        if eff_start < 0:
+            eff_start = 0
+
+        i = self._buf.find(sub, eff_start, None)
+        if i < 0:
+            self._scan_from_by_sub[sub] = len(self._buf)
+
+        return i
+
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        # rfind isn't the typical trickle hot-path; delegate.
+        return self._buf.rfind(sub, start, end)
+
+    #
+
+    def write(self, data: BytesLike, /) -> None:
+        self._buf.write(data)
+
+    def reserve(self, n: int, /) -> memoryview:
+        return self._buf.reserve(n)
+
+    def commit(self, n: int, /) -> None:
+        self._buf.commit(n)
+
+    #
+
+    def _adjust_for_consume(self, n: int) -> None:
+        if not self._scan_from_by_sub:
+            return
+
+        if n <= 0:
+            return
+
+        # Only front-consumption exists in this buffer model.
+        for k, v in list(self._scan_from_by_sub.items()):
+            nv = v - n
+            if nv <= 0:
+                self._scan_from_by_sub.pop(k, None)
+            else:
+                self._scan_from_by_sub[k] = nv
 
 
 ########################################
@@ -21778,81 +26240,752 @@ class YamlParser:
 
 
 ########################################
-# ../../../omlish/http/coro/server/sockets.py
+# ../../../omlish/http/pipelines/servers/responses.py
 
 
 ##
 
 
-class CoroHttpServerSocketHandler(SocketHandler_):
+class IoPipelineHttpResponseEncoder(IoPipelineHttpResponseObjects, IoPipelineHttpObjectEncoder):
+    def _encode_head_line(self, head: IoPipelineHttpMessageHead) -> bytes:
+        head = check.isinstance(head, IoPipelineHttpResponseHead)
+        version_str = f'HTTP/{head.version.major}.{head.version.minor}'
+        return f'{version_str} {head.status} {head.reason}\r\n'.encode('ascii')
+
+
+##
+
+
+class IoPipelineHttpResponseChunker(IoPipelineHttpResponseObjects, IoPipelineHttpObjectChunker):
+    pass
+
+
+##
+
+
+class IoPipelineHttpResponseCompressor(IoPipelineHttpResponseObjects, IoPipelineHttpObjectCompressor):
+    pass
+
+
+########################################
+# ../../../omlish/io/streams/segmented.py
+
+
+##
+
+
+class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferView):
+    """
+    A read-only, possibly non-contiguous view over a sequence of byte segments.
+
+    This is intended to be produced by `SegmentedByteStreamBuffer.split_to()` without copying.
+    """
+
+    def __init__(self, segs: ta.Sequence[memoryview]) -> None:
+        super().__init__()
+
+        self._segs = tuple(segs)
+        for mv in self._segs:
+            if (mvl := len(mv)) < 1:
+                raise ValueError('Empty segment')
+            self._len += mvl
+
+    @classmethod
+    def of_opt(cls, segs: ta.Sequence[memoryview]) -> ta.Optional['SegmentedByteStreamBufferView']:
+        if not segs:
+            return None
+        return cls(segs)
+
+    @classmethod
+    def or_else(cls, segs: ta.Sequence[memoryview], default: T) -> ta.Union['SegmentedByteStreamBufferView', T]:
+        if not segs:
+            return default
+        return cls(segs)
+
+    _len = 0
+
+    def __len__(self) -> int:
+        return self._len
+
+    def peek(self) -> memoryview:
+        if not self._segs:
+            return memoryview(b'')
+        return self._segs[0]
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        return self._segs
+
+    def tobytes(self) -> bytes:
+        if not self._segs:
+            return b''
+        if len(self._segs) == 1:
+            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
+        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
+
+
+class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
+    """
+    A segmented, consumption-oriented bytes buffer.
+
+    Internally stores a list of `bytes`/`bytearray` segments plus a head offset. Exposes readable data as `memoryview`
+    segments without copying.
+
+    Optional "chunked writes":
+      - If chunk_size > 0, small writes are accumulated into a lazily-allocated active bytearray "chunk" up to
+        chunk_size.
+      - Writes >= chunk_size are stored as their own segments (after flushing any active chunk).
+      - On flush, the active chunk is kept as a bytearray segment iff it is at least `chunk_compact_threshold` full;
+        otherwise it is materialized as bytes to avoid pinning a large capacity for tiny content.
+
+    Reserve/commit:
+      - If chunk_size > 0 and reserve(n) fits in the active chunk, the reservation is carved from the active chunk.
+        Reserved bytes are not readable until commit().
+      - If reserve(n) does not fit, the active chunk is flushed first.
+      - If n <= chunk_size after flushing, the reservation is served from a new active chunk (so the remainder becomes
+        the next active chunk).
+      - If n > chunk_size, reserve allocates a dedicated buffer and on commit it is "closed" (it does not become the
+        next active chunk).
+
+    Important exported-view caveat:
+      - reserve() returns a memoryview. As long as any exported memoryview exists, the underlying bytearray must not be
+        resized, or Python will raise BufferError. Therefore the active chunk bytearray is *fixed capacity*
+        (len==chunk_size) and we track "used" bytes separately, writing via slice assignment rather than extend().
+    """
+
     def __init__(
             self,
-            server_factory: CoroHttpServerFactory,
             *,
-            keep_alive: bool = False,
-            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpIo.AnyLogIo], None]] = None,
+            max_size: ta.Optional[int] = None,
+            chunk_size: int = 0,
+            chunk_compact_threshold: float = .25,
     ) -> None:
         super().__init__()
 
-        self._server_factory = server_factory
-        self._keep_alive = keep_alive
-        self._log_handler = log_handler
+        self._segs: ta.List[ta.Union[bytes, bytearray]] = []
 
-    def __call__(self, conn: SocketAndAddress) -> None:
-        server = self._server_factory(conn.address)
+        self._max_size = None if max_size is None else int(max_size)
 
-        fp = SocketIoPair.from_socket(conn.socket)
+        if chunk_size < 0:
+            raise ValueError(chunk_size)
+        self._chunk_size = chunk_size
 
-        pbr = PushbackReader(fp.r)
+        if not (0.0 <= chunk_compact_threshold <= 1.0):
+            raise ValueError(chunk_compact_threshold)
+        self._chunk_compact_threshold = chunk_compact_threshold
 
-        if self._keep_alive:
-            for i in itertools.count():  # noqa
-                res = self._handle_one(server, fp, pbr)
-                if res.close_reason is not None:
-                    break
+        self._active: ta.Optional[bytearray] = None
+        self._active_used = 0
+
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._max_size
+
+    _head_off = 0
+    _len = 0
+
+    _reserved: ta.Optional[bytearray] = None
+    _reserved_len = 0
+    _reserved_in_active = False
+
+    #
+
+    def __len__(self) -> int:
+        return self._len
+
+    def _active_readable_len(self) -> int:
+        if self._active is None:
+            return 0
+        if self._reserved_in_active and self._reserved is not None:
+            tail = self._reserved_len
+        else:
+            tail = 0
+        rl = self._active_used - tail
+        return rl if rl > 0 else 0
+
+    def peek(self) -> memoryview:
+        if not self._segs:
+            return memoryview(b'')
+
+        s0 = self._segs[0]
+        mv = memoryview(s0)
+        if self._head_off:
+            mv = mv[self._head_off:]
+
+        if s0 is self._active:
+            # Active is only meaningful by _active_used, not len(bytearray).
+            rl = self._active_readable_len()
+            if self._head_off >= rl:
+                return memoryview(b'')
+            mv = memoryview(self._active)[self._head_off:rl]
+            return mv
+
+        return mv
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        if not self._segs:
+            return ()
+
+        out: ta.List[memoryview] = []
+
+        last_i = len(self._segs) - 1
+        for i, s in enumerate(self._segs):
+            if s is self._active and i == last_i:
+                # Active chunk: create fresh view with readable length.
+                rl = self._active_readable_len()
+                if not i:
+                    # Active is also first segment; apply head_off.
+                    if self._head_off >= rl:
+                        continue
+                    mv = memoryview(self._active)[self._head_off:rl]
+                else:
+                    if rl <= 0:
+                        continue
+                    mv = memoryview(self._active)[:rl]
+            else:
+                # Non-active segment.
+                mv = memoryview(s)
+                if not i and self._head_off:
+                    mv = mv[self._head_off:]
+
+            if len(mv):
+                out.append(mv)
+
+        return out
+
+    #
+
+    def _ensure_active(self) -> bytearray:
+        if self._chunk_size <= 0:
+            raise RuntimeError('no active chunk without chunk_size')
+
+        a = self._active
+        if a is None:
+            a = bytearray(self._chunk_size)  # fixed capacity
+            self._segs.append(a)
+            self._active = a
+            self._active_used = 0
+
+        return a
+
+    def _flush_active(self) -> None:
+        if (a := self._active) is None:
+            return
+
+        if self._reserved_in_active:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        if (used := self._active_used) <= 0:
+            if self._segs and self._segs[-1] is a:
+                self._segs.pop()
+            self._active = None
+            self._active_used = 0
+            return
+
+        # If under threshold, always bytes() to avoid pinning.
+        if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
+            if not self._segs or self._segs[-1] is not a:
+                raise RuntimeError('active not at tail')
+            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         else:
-            self._handle_one(server, fp, pbr)
-
-    def _handle_one(
-            self,
-            server: CoroHttpServer,
-            fp: SocketIoPair,
-            pbr: PushbackReader,
-    ) -> CoroHttpServer.CoroHandleResult:
-        gen = server.coro_handle()
-
-        o = next(gen)
-        while True:
-            if isinstance(o, CoroHttpIo.AnyLogIo):
-                i = None
-                if self._log_handler is not None:
-                    self._log_handler(server, o)
-
-            elif isinstance(o, CoroHttpIo.ReadIo):
-                i = pbr.read(check.not_none(o.sz))
-
-            elif isinstance(o, CoroHttpIo.ReadLineIo):
-                i = pbr.readline(o.sz)
-
-            elif isinstance(o, CoroHttpIo.ReadUntilIo):
-                i = pbr.readuntil(o.b, max_bytes=o.sz)
-
-            elif isinstance(o, CoroHttpIo.WriteIo):
-                i = None
-                fp.w.write(o.data)
-                fp.w.flush()
-
-            else:
-                raise TypeError(o)
-
+            # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
+            # in that case.
+            if not self._segs or self._segs[-1] is not a:
+                raise RuntimeError('active not at tail')
             try:
-                if i is not None:
-                    o = gen.send(i)
+                del a[used:]  # may raise BufferError if any exports exist
+            except BufferError:
+                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
+
+        self._active = None
+        self._active_used = 0
+
+    def write(self, data: BytesLike, /) -> None:
+        if not data:
+            return
+        if isinstance(data, memoryview):
+            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+        # elif isinstance(data, bytearray):
+        #     pass
+        # else:
+        #     pass
+
+        dl = len(data)
+
+        if self._max_size is not None and self._len + dl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
+
+        if self._chunk_size <= 0:
+            self._segs.append(data)
+            self._len += dl
+            return
+
+        if self._reserved_in_active:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        if dl >= self._chunk_size:
+            self._flush_active()
+            self._segs.append(data)
+            self._len += dl
+            return
+
+        a = self._ensure_active()
+        if self._active_used + dl > self._chunk_size:
+            self._flush_active()
+            a = self._ensure_active()
+
+        # Copy into fixed-capacity buffer; do not resize.
+        memoryview(a)[self._active_used:self._active_used + dl] = data
+        self._active_used += dl
+        self._len += dl
+
+    def reserve(self, n: int, /) -> memoryview:
+        if n < 0:
+            raise ValueError(n)
+        if self._reserved is not None:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        if self._chunk_size <= 0:
+            b = bytearray(n)
+            self._reserved = b
+            self._reserved_len = n
+            self._reserved_in_active = False
+            return memoryview(b)
+
+        if n > self._chunk_size:
+            self._flush_active()
+            b = bytearray(n)
+            self._reserved = b
+            self._reserved_len = n
+            self._reserved_in_active = False
+            return memoryview(b)
+
+        # Ensure reservation fits in active; otherwise flush then create a new one.
+        if self._active is not None and (self._active_used + n > self._chunk_size):
+            self._flush_active()
+
+        a = self._ensure_active()
+
+        start = self._active_used
+        # Reservation does not change _active_used (not readable until commit).
+        self._reserved = a
+        self._reserved_len = n
+        self._reserved_in_active = True
+        return memoryview(a)[start:start + n]
+
+    def commit(self, n: int, /) -> None:
+        if self._reserved is None:
+            raise NoOutstandingReserveByteStreamBufferError('no outstanding reserve')
+        if n < 0 or n > self._reserved_len:
+            raise ValueError(n)
+
+        if self._reserved_in_active:
+            a = self._reserved
+            self._reserved = None
+            self._reserved_len = 0
+            self._reserved_in_active = False
+
+            if self._max_size is not None and self._len + n > self._max_size:
+                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
+
+            if n:
+                self._active_used += n
+                self._len += n
+
+            # Keep active for reuse.
+            self._active = a
+            return
+
+        b = self._reserved
+        self._reserved = None
+        self._reserved_len = 0
+        self._reserved_in_active = False
+
+        if self._max_size is not None and self._len + n > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
+
+        if not n:
+            return
+
+        if n == len(b):
+            self._segs.append(b)
+            self._len += n
+        else:
+            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
+            self._segs.append(bb)
+            self._len += n
+
+    #
+
+    def advance(self, n: int, /) -> None:
+        if n < 0 or n > self._len:
+            raise ValueError(n)
+        if not n:
+            return
+
+        self._len -= n
+
+        while n and self._segs:
+            s0 = self._segs[0]
+
+            if s0 is self._active:
+                avail0 = self._active_readable_len() - self._head_off
+            else:
+                avail0 = len(s0) - self._head_off
+
+            if avail0 <= 0:
+                popped = self._segs.pop(0)
+                if popped is self._active:
+                    self._active = None
+                    self._active_used = 0
+                self._head_off = 0
+                continue
+
+            if n < avail0:
+                self._head_off += n
+                return
+
+            n -= avail0
+            popped = self._segs.pop(0)
+            if popped is self._active:
+                self._active = None
+                self._active_used = 0
+            self._head_off = 0
+
+        if n:
+            raise RuntimeError(n)
+
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
+        if n < 0 or n > self._len:
+            raise ValueError(n)
+        if not n:
+            return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+
+        out: ta.List[memoryview] = []
+        rem = n
+
+        while rem:
+            if not self._segs:
+                raise RuntimeError(rem)
+
+            s0 = self._segs[0]
+
+            if s0 is self._active:
+                rl = self._active_readable_len()
+                if self._head_off >= rl:
+                    raise RuntimeError(rem)
+                mv0 = memoryview(s0)[self._head_off:rl]
+            else:
+                mv0 = memoryview(s0)
+                if self._head_off:
+                    mv0 = mv0[self._head_off:]
+
+            if rem < len(mv0):
+                out.append(mv0[:rem])
+                self._head_off += rem
+                self._len -= n
+                return byte_stream_buffer_view_from_segments(out)
+
+            out.append(mv0)
+            rem -= len(mv0)
+            popped = self._segs.pop(0)
+            if popped is self._active:
+                self._active = None
+                self._active_used = 0
+            self._head_off = 0
+
+        self._len -= n
+        return byte_stream_buffer_view_from_segments(out)
+
+    def coalesce(self, n: int, /) -> memoryview:
+        if n < 0:
+            raise ValueError(n)
+        if n > self._len:
+            raise ValueError(n)
+        if not n:
+            return memoryview(b'')
+
+        if self._reserved is not None:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        mv0 = self.peek()
+        if len(mv0) >= n:
+            return mv0[:n]
+
+        out = bytearray(n)
+        w = 0
+
+        new_segs: ta.List[ta.Union[bytes, bytearray]] = []
+
+        seg_i = 0
+        while w < n and seg_i < len(self._segs):
+            s = self._segs[seg_i]
+            off = self._head_off if not seg_i else 0
+
+            seg_len = len(s) - off
+            if s is self._active and seg_i == (len(self._segs) - 1):
+                seg_len = self._active_readable_len() - off
+
+            if seg_len <= 0:
+                seg_i += 1
+                continue
+
+            take = n - w
+            if take > seg_len:
+                take = seg_len
+
+            out[w:w + take] = memoryview(s)[off:off + take]
+            w += take
+
+            if take < seg_len:
+                rem = s[off + take:off + seg_len]
+                if rem:
+                    new_segs.append(rem)
+                seg_i += 1
+                break
+
+            seg_i += 1
+
+        if seg_i < len(self._segs):
+            new_segs.extend(self._segs[seg_i:])
+
+        self._segs = [bytes(out), *new_segs]
+        self._head_off = 0
+
+        self._active = None
+        self._active_used = 0
+
+        return memoryview(self._segs[0])[:n]
+
+    def _seg_readable_slice(
+            self,
+            si: int,
+            s: ta.Union[bytes, bytearray],
+            last_i: int,
+    ) -> ta.Tuple[int, int]:
+        """
+        Compute the readable offset and length for segment at index si.
+
+        Returns (offset, readable_len) where:
+          - offset: byte offset into segment (head_off for si==0, else 0)
+          - readable_len: number of readable bytes from offset (0 if segment empty/consumed)
+
+        Handles head offset for first segment and active chunk readable length for last segment.
+        """
+
+        off = self._head_off if not si else 0
+        seg_len = len(s) - off
+        if s is self._active and si == last_i:
+            seg_len = self._active_readable_len() - off
+        return off, max(0, seg_len)
+
+    def _seg_search_range(
+            self,
+            start: int,
+            limit: int,
+            m: int,
+            seg_gs: int,
+            seg_ge: int,
+            seg_len: int,
+    ) -> ta.Optional[ta.Tuple[int, int]]:
+        """
+        Compute local search range within a segment.
+
+        Args:
+            start: global start position (user-provided)
+            limit: global limit (end - m, last valid position where match can start)
+            m: pattern length
+            seg_gs: segment global start position
+            seg_ge: segment global end position
+            seg_len: segment readable length
+
+        Returns (local_start, local_end) if segment overlaps search range, else None.
+          - local_start: offset within segment to start searching
+          - local_end: offset within segment to end searching (exclusive)
+        """
+
+        # Check if segment overlaps search range
+        if limit < seg_gs or start >= seg_ge:
+            return None
+
+        # Compute local start within segment
+        ls = max(0, start - seg_gs)
+
+        # Compute local end: can start match anywhere up to limit, need m bytes
+        max_start_in_seg = limit - seg_gs
+        end_search = min(max_start_in_seg + m, seg_len)
+
+        # Validate range
+        if ls >= end_search:
+            return None
+
+        return ls, end_search
+
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        m = len(sub)
+        if m == 0:
+            return start
+        if end - start < m:
+            return -1
+
+        limit = end - m
+
+        tail = b''
+        tail_gstart = 0
+
+        gpos = 0
+
+        last_i = len(self._segs) - 1
+
+        for si, s in enumerate(self._segs):
+            off, seg_len = self._seg_readable_slice(si, s, last_i)
+            if seg_len <= 0:
+                continue
+
+            seg_gs = gpos
+            seg_ge = gpos + seg_len
+
+            # Within-segment search
+            search_range = self._seg_search_range(start, limit, m, seg_gs, seg_ge, seg_len)
+            if search_range is not None:
+                ls, end_search = search_range
+                idx = s.find(sub, off + ls, off + end_search)
+                if idx != -1:
+                    return seg_gs + (idx - off)
+
+            if m > 1 and tail:
+                head_need = m - 1
+                # Only read as many bytes as are actually available in this segment to avoid reading uninitialized data
+                # from active chunks.
+                head_avail = min(head_need, seg_len)
+                if head_avail > 0:
+                    head = s[off:off + head_avail]
+                    comb = tail + head
+                    j = comb.find(sub)
+                    if j != -1 and j < len(tail) < j + m:
+                        cand = tail_gstart + j
+                        if start <= cand <= limit:
+                            return cand
+
+            if m > 1:
+                take = m - 1
+                if seg_len >= take:
+                    tail = s[off + seg_len - take:off + seg_len]
+                    tail_gstart = seg_ge - take
                 else:
-                    o = next(gen)
-            except StopIteration as e:
-                return check.isinstance(e.value, CoroHttpServer.CoroHandleResult)
+                    tail = (tail + s[off:off + seg_len])[-(m - 1):]
+                    tail_gstart = seg_ge - len(tail)
+
+            gpos = seg_ge
+
+        return -1
+
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        m = len(sub)
+        if m == 0:
+            return end
+        if end - start < m:
+            return -1
+
+        limit = end - m
+
+        if not self._segs:
+            return -1
+
+        best = -1
+
+        seg_ge = self._len
+        prev_s: ta.Optional[ta.Union[bytes, bytearray]] = None
+        prev_off = 0
+        prev_seg_len = 0
+
+        last_i = len(self._segs) - 1
+
+        for si in range(len(self._segs) - 1, -1, -1):
+            s = self._segs[si]
+            off, seg_len = self._seg_readable_slice(si, s, last_i)
+            if seg_len <= 0:
+                continue
+
+            seg_gs = seg_ge - seg_len
+
+            # Within-segment search
+            search_range = self._seg_search_range(start, limit, m, seg_gs, seg_ge, seg_len)
+            if search_range is not None:
+                ls, end_search = search_range
+                idx = s.rfind(sub, off + ls, off + end_search)
+                if idx != -1:
+                    cand = seg_gs + (idx - off)
+                    if cand > best:
+                        best = cand
+
+            if m > 1 and prev_s is not None:
+                tail_need = m - 1
+                if seg_len >= tail_need:
+                    tail = s[off + seg_len - tail_need:off + seg_len]
+                    tail_gstart = seg_ge - tail_need
+
+                else:
+                    tail_parts = [s[off:off + seg_len]]
+                    tail_len = seg_len
+                    for sj in range(si - 1, -1, -1):
+                        if tail_len >= tail_need:
+                            break
+
+                        sj_s = self._segs[sj]
+                        sj_off, sj_len = self._seg_readable_slice(sj, sj_s, last_i)
+                        if sj_len <= 0:
+                            continue
+
+                        take = min(tail_need - tail_len, sj_len)
+                        tail_parts.insert(0, sj_s[sj_off + sj_len - take:sj_off + sj_len])
+                        tail_len += take
+
+                    tail_combined = b''.join(tail_parts)
+                    tail = tail_combined[-(m - 1):] if len(tail_combined) >= m - 1 else tail_combined
+                    tail_gstart = seg_ge - len(tail)
+
+                head_need = m - 1
+                # Only read as many bytes as are actually available in prev segment to avoid reading uninitialized data
+                # from active chunks.
+                head_avail = min(head_need, prev_seg_len)
+                if head_avail > 0:
+                    head = prev_s[prev_off:prev_off + head_avail]
+                else:
+                    head = b''
+
+                comb = tail + head
+                j = comb.rfind(sub)
+                if j != -1 and j < len(tail) < j + m:
+                    cand = tail_gstart + j
+                    if start <= cand <= limit and cand > best:
+                        best = cand
+
+            if best >= seg_gs:
+                return best
+
+            prev_s = s
+            prev_off = off
+            prev_seg_len = seg_len
+            seg_ge = seg_gs
+
+        return best
+
+
+##
+
+
+def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteStreamBufferView:
+    if not mvs:
+        return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+    elif len(mvs) == 1:
+        return DirectByteStreamBufferView(mvs[0])
+    else:
+        return SegmentedByteStreamBufferView(mvs)
 
 
 ########################################
@@ -23561,84 +28694,693 @@ def yaml_decode(s: str) -> ta.Any:
 
 
 ########################################
-# ../../../omlish/http/coro/server/simple.py
+# ../../../omlish/http/pipelines/aggregators.py
 """
 TODO:
- - logging
+ - validating mode?
 """
 
 
-@contextlib.contextmanager
-def make_simple_http_server(
-        bind: CanSocketBinder,
-        handler: SimpleHttpHandler,
-        *,
-        keep_alive: bool = False,
-        ssl_context: ta.Optional['ssl.SSLContext'] = None,
-        ignore_ssl_errors: bool = False,
-        executor: ta.Optional[cf.Executor] = None,
-        use_threads: bool = False,
-        **kwargs: ta.Any,
-) -> ta.Iterator[SocketHandlerServer]:
-    check.arg(not (executor is not None and use_threads))
+##
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpAggregationConfig:
+    DEFAULT: ta.ClassVar['IoPipelineHttpAggregationConfig']
+
+    @dc.dataclass(frozen=True)
+    class BufferConfig:
+        max_size: ta.Optional[int]
+        chunk_size: int
+
+    body_buffer: BufferConfig = BufferConfig(max_size=64 * 1024, chunk_size=64 * 1024)
+
+
+IoPipelineHttpAggregationConfig.DEFAULT = IoPipelineHttpAggregationConfig()
+
+
+#
+
+
+class IoPipelineHttpObjectAggregator(
+    IoPipelineHttpMessageObjects,
+    IoPipelineHandler,
+    Abstract,
+):
+    def __init__(
+            self,
+            *,
+            config: IoPipelineHttpAggregationConfig = IoPipelineHttpAggregationConfig.DEFAULT,
+            enabled: ta.Union[bool, ta.Literal['unless_chunked']] = True,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        self._enabled = enabled
+
+        self._handled_types: ta.Tuple[type, ...] = (
+            self._head_type,
+            self._chunk_type,
+            self._end_chunk_type,
+            self._last_chunk_type,
+            self._chunked_trailers_type,
+            self._body_data_type,
+            self._end_type,
+            self._aborted_type,
+            self._final_type,
+        )
+
+        self._state: IoPipelineHttpObjectAggregator._State = self._init_state()
+
+    @property
+    def enabled(self) -> ta.Union[bool, ta.Literal['unless_chunked']]:
+        return self._enabled
+
+    def set_enabled(self, enabled: ta.Union[bool, ta.Literal['unless_chunked']]) -> None:
+        self._enabled = enabled
 
     #
 
-    with contextlib.ExitStack() as es:
-        server_factory = functools.partial(
-            CoroHttpServer,
-            handler=handler,
-        )
+    @property
+    @abc.abstractmethod
+    def _if_content_length_missing(self) -> ta.Literal['empty', 'eof']:
+        raise NotImplementedError
 
-        socket_handler: SocketHandler = CoroHttpServerSocketHandler(
-            server_factory,
-            keep_alive=keep_alive,
-        )
+    @property
+    @abc.abstractmethod
+    def _final_type(self) -> type:
+        raise NotImplementedError
 
-        #
+    #
 
-        if ssl_context is not None:
-            socket_handler = SocketWrappingSocketHandler(
-                socket_handler,
-                SocketAndAddress.socket_wrapper(functools.partial(
-                    ssl_context.wrap_socket,
-                    server_side=True,
-                )),
-            )
+    def buffered_bytes(self) -> int:
+        if (buf := self._state.buf) is None:
+            return 0
+        return len(buf)
 
-        if ignore_ssl_errors:
-            socket_handler = SslErrorHandlingSocketHandler(
-                socket_handler,
-            )
+    #
 
-        #
+    def _should_handle(self, msg: ta.Any) -> bool:
+        return isinstance(msg, self._handled_types)
 
-        socket_handler = StandardSocketHandler(
-            socket_handler,
-        )
+    def _handle(
+            self,
+            ctx: IoPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        if isinstance(msg, self._aborted_type):
+            self._state = self._AbortedState(self)
+            out.append(msg)
+            return
 
-        #
+        while True:
+            if (ret := self._state.handle(ctx, msg, out)) is None:
+                return
 
-        if executor is not None:
-            socket_handler = ExecutorSocketHandler(
-                socket_handler,
-                executor,
-            )
+            self._state, next_msg = ret
 
-        elif use_threads:
-            socket_handler = es.enter_context(ThreadingSocketHandler(
-                socket_handler,
-            ))
+            if next_msg is None:
+                return
 
-        #
+            msg = next_msg
 
-        server = es.enter_context(SocketHandlerServer(
-            SocketBinder.of(bind),
-            socket_handler,
-            **kwargs,
+    #
+
+    def _init_state(self) -> '_State':
+        if self._enabled is True:
+            return self._HeadState(self)
+        elif self._enabled == 'unless_chunked':
+            return self._UnlessChunkedHeadState(self)
+        else:
+            return self._DisabledHeadState(self)
+
+    #
+
+    class _State(Abstract):
+        def __init__(self, a: 'IoPipelineHttpObjectAggregator') -> None:
+            super().__init__()
+
+            self._a = a
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return None
+
+        def _abort(
+                self,
+                out: ta.List[ta.Any],
+                reason: ta.Union[str, BaseException],
+                out_msg: ta.Optional[ta.Any] = None,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            nxt_state = self._a._AbortedState(self._a)  # noqa
+            out.append(self._a._make_aborted(reason))  # noqa
+            if out_msg is not None:
+                out.append(out_msg)
+            return (nxt_state, None)
+
+        @abc.abstractmethod
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            raise NotImplementedError
+
+    #
+
+    class _HeadState(_State):
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            if isinstance(msg, self._a._head_type):  # noqa
+                try:
+                    te = IoPipelineHttpBodyMode.select(
+                        msg.headers,
+                        if_length_missing=self._a._if_content_length_missing,  # noqa
+                    )
+                except IoPipelineHttpBodyModeError as e:
+                    return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
+
+                if te.mode == 'empty':
+                    return (self._a._EndState(self._a, msg, b''), None)  # noqa
+
+                if (
+                        te.length is not None and
+                        (max_body := self._a._config.body_buffer.max_size) is not None and  # noqa
+                        te.length > max_body
+                ):
+                    return self._abort(out, FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
+
+                return (self._a._BodyState(self._a, msg), None)  # noqa
+
+            elif isinstance(msg, self._a._final_type):  # noqa
+                out.append(msg)
+                return None
+
+            else:
+                raise TypeError(f'unexpected message type: {type(msg)}')
+
+    #
+
+    class _BodyState(_State):
+        def __init__(
+                self,
+                a: 'IoPipelineHttpObjectAggregator',
+                head: IoPipelineHttpMessageHead,
+        ) -> None:
+            super().__init__(a)
+
+            self._head = head
+
+        _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return self._buf
+
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            if isinstance(msg, self._a._body_data_type):  # noqa
+                if (buf := self._buf) is None:
+                    buf = self._buf = SegmentedByteStreamBuffer(
+                        max_size=self._a._config.body_buffer.max_size,  # noqa
+                        chunk_size=self._a._config.body_buffer.chunk_size,  # noqa
+                    )
+
+                for mv in ByteStreamBuffers.iter_segments(msg.data):
+                    buf.write(mv)
+
+                return None
+
+            elif isinstance(msg, (
+                    self._a._chunk_type,  # noqa
+                    self._a._end_chunk_type,  # noqa
+                    self._a._last_chunk_type,  # noqa
+                    self._a._chunked_trailers_type,  # noqa
+            )):
+                return None
+
+            elif isinstance(msg, self._a._end_type):  # noqa
+                body: CanByteStreamBuffer
+                if (buf := self._buf) is not None:
+                    body = buf.coalesce(len(buf))
+                else:
+                    body = b''
+
+                full = self._a._make_full(self._head, body)  # noqa
+                out.append(full)
+                return (self._a._init_state(), None)  # noqa
+
+            elif isinstance(msg, self._a._final_type):  # noqa
+                return self._abort(out, 'incomplete message body', msg)
+
+            else:
+                raise TypeError(f'unexpected message type: {type(msg)}')
+
+    #
+
+    class _EndState(_State):
+        def __init__(
+                self,
+                a: 'IoPipelineHttpObjectAggregator',
+                head: IoPipelineHttpMessageHead,
+                body: BytesLike,
+        ) -> None:
+            super().__init__(a)
+
+            self._head = head
+            self._body = body
+
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            if isinstance(msg, self._a._end_type):  # noqa
+                full = self._a._make_full(self._head, self._body)  # noqa
+                out.append(full)
+                return (self._a._init_state(), None)  # noqa
+
+            elif isinstance(msg, self._a._final_type):  # noqa
+                return self._abort(out, 'incomplete message sequence', msg)
+
+            else:
+                raise TypeError(f'unexpected message type: {type(msg)}')
+
+    #
+
+    class _UnlessChunkedHeadState(_State):
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            if isinstance(msg, self._a._head_type):  # noqa
+                try:
+                    te = IoPipelineHttpBodyMode.select(
+                        msg.headers,
+                        if_length_missing=self._a._if_content_length_missing,  # noqa
+                    )
+                except IoPipelineHttpBodyModeError as e:
+                    return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
+
+                if te.mode != 'chunked':
+                    return (self._a._HeadState(self._a), msg)  # noqa
+                else:
+                    out.append(msg)
+                    return (self._a._ReInitEndState(self._a), None)  # noqa
+
+            out.append(msg)
+            return None
+
+    class _DisabledHeadState(_State):
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            out.append(msg)
+
+            if isinstance(msg, self._a._head_type):  # noqa
+                return (self._a._ReInitEndState(self._a), None)  # noqa
+
+            return None
+
+    class _ReInitEndState(_State):
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            out.append(msg)
+
+            if isinstance(msg, self._a._end_type):  # noqa
+                return (self._a._init_state(), None)  # noqa
+
+            return None
+
+    #
+
+    class _AbortedState(_State):
+        def handle(
+                self,
+                ctx: IoPipelineHandlerContext,
+                msg: ta.Any,
+                out: ta.List[ta.Any],
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectAggregator._State', ta.Optional[ta.Any]]]:
+            if isinstance(msg, IoPipelineMessages.MustPropagate):
+                out.append(msg)
+                return None
+
+            raise NotImplementedError
+
+
+#
+
+
+class IoPipelineHttpObjectAggregatorDecoder(
+    InboundBytesBufferingIoPipelineHandler,
+    MessageToMessageDecoderIoPipelineHandler,
+    IoPipelineHttpObjectAggregator,
+    Abstract,
+):
+    _final_type: ta.Final[type] = IoPipelineMessages.FinalInput
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        return self.buffered_bytes()
+
+    #
+
+    def _should_decode(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> bool:
+        return self._should_handle(msg)
+
+    def _decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            msg: ta.Any,
+            out: ta.List[ta.Any],
+    ) -> None:
+        self._handle(ctx, msg, out)
+
+
+########################################
+# ../../../omlish/io/pipelines/bytes/decoders.py
+"""
+TODO:
+ - netty 'pending_removal' trick
+"""
+
+
+##
+
+
+class UnicodeDecoderIoPipelineHandler(IoPipelineHandler):
+    """bytes/view -> str (UTF-8, replacement)."""
+
+    def __init__(
+            self,
+            encoding: str = 'utf-8',
+            *,
+            errors: ta.Literal['strict', 'ignore', 'replace'] = 'strict',
+    ) -> None:
+        super().__init__()
+
+        self._encoding = encoding
+        self._errors = errors
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if ByteStreamBuffers.can_bytes(msg):
+            b = ByteStreamBuffers.to_bytes(msg)
+
+            msg = b.decode(self._encoding, errors=self._errors)
+
+        ctx.feed_in(msg)
+
+
+##
+
+
+class DelimiterFrameDecoderIoPipelineHandler(InboundBytesBufferingIoPipelineHandler):
+    """
+    bytes-like -> frames using longest-match delimiter semantics.
+
+    TODO:
+     - flow control, *or* replace with BytesToMessageDecoderIoPipelineHandler
+    """
+
+    def __init__(
+            self,
+            delims: ta.Sequence[bytes],
+            *,
+            keep_ends: bool = False,
+            max_size: ta.Optional[int] = None,
+            max_buffer: ta.Optional[int] = None,
+            buffer_chunk_size: int = 64 * 1024,
+            on_incomplete_final: ta.Literal['allow', 'raise'] = 'allow',
+    ) -> None:
+        super().__init__()
+
+        self._on_incomplete_final = on_incomplete_final
+
+        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+            max_size=max_buffer,
+            chunk_size=buffer_chunk_size,
         ))
 
-        yield server
+        self._fr = LongestMatchDelimiterByteStreamFrameDecoder(
+            delims,
+            keep_ends=keep_ends,
+            max_size=max_size,
+        )
+
+    def inbound_buffered_bytes(self) -> int:
+        return len(self._buf)
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.FinalInput):
+            self._produce_frames(ctx, final=True)
+            ctx.feed_in(msg)
+            return
+
+        if not ByteStreamBuffers.can_bytes(msg):
+            ctx.feed_in(msg)
+            return
+
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if mv:
+                self._buf.write(mv)
+
+        self._produce_frames(ctx)
+
+    def _produce_frames(self, ctx: IoPipelineHandlerContext, *, final: bool = False) -> None:
+        frames = self._fr.decode(self._buf, final=final)
+
+        if final and len(self._buf):
+            if (oif := self._on_incomplete_final) == 'allow':
+                frames.append(self._buf.split_to(len(self._buf)))
+            elif oif == 'raise':
+                raise IncompleteDecodingIoPipelineError
+            else:
+                raise RuntimeError(f'unexpected on_incomplete_final: {oif!r}')
+
+        for fr in frames:
+            ctx.feed_in(fr)
+
+
+##
+
+
+class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
+    @abc.abstractmethod
+    def _decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            data: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        raise NotImplementedError
+
+    #
+
+    _called_decode: bool = False  # ~ `selfFiredChannelRead`
+    _produced_messages: bool = False  # ~ `firedChannelRead`
+
+    def _call_decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            data: CanByteStreamBuffer,
+            *,
+            final: bool = False,
+    ) -> None:
+        self._called_decode = True
+
+        out: ta.List[ta.Any] = []
+        self._decode(ctx, data, out, final=final)
+
+        if not out:
+            return
+
+        self._produced_messages = True
+
+        for out_msg in out:
+            ctx.feed_in(out_msg)
+
+    #
+
+    def _on_bytes_input(self, ctx: IoPipelineHandlerContext, data: CanByteStreamBuffer) -> None:
+        check.arg(len(data) > 0)
+
+        self._call_decode(ctx, data)
+
+    def _on_flush_input(self, ctx: IoPipelineHandlerContext) -> None:
+        if (
+                self._called_decode and
+                not self._produced_messages and
+                not ctx.services[IoPipelineFlow].is_auto_read()
+        ):
+            ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+
+        self._called_decode = False
+        self._produced_messages = False
+
+        ctx.feed_in(IoPipelineFlowMessages.FlushInput())
+
+    def _on_final_input(self, ctx: IoPipelineHandlerContext, msg: IoPipelineMessages.FinalInput) -> None:
+        self._call_decode(ctx, DirectByteStreamBuffer(b''), final=True)
+
+        ctx.feed_in(msg)
+
+    #
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineFlowMessages.FlushInput):
+            self._on_flush_input(ctx)
+
+        elif isinstance(msg, IoPipelineMessages.FinalInput):
+            self._on_final_input(ctx, msg)
+
+        elif ByteStreamBuffers.can_bytes(msg):
+            self._on_bytes_input(ctx, msg)
+
+        else:
+            ctx.feed_in(msg)
+
+
+#
+
+
+@ta.final
+class FnBytesToMessageDecoderIoPipelineHandler(BytesToMessageDecoderIoPipelineHandler):
+    class DecodeFn(ta.Protocol):
+        def __call__(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> None:
+            ...
+
+    def __init__(
+            self,
+            decode_fn: DecodeFn,
+    ) -> None:
+        super().__init__()
+
+        self._decode_fn = decode_fn
+
+    def _decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            buf: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        self._decode_fn(ctx, buf, out, final=final)
+
+
+##
+
+
+class BufferedBytesToMessageDecoderIoPipelineHandler(
+    InboundBytesBufferingIoPipelineHandler,
+    BytesToMessageDecoderIoPipelineHandler,
+    Abstract,
+):
+    def __init__(
+            self,
+            *,
+            max_buffer_size: ta.Optional[int] = None,
+            buffer_chunk_size: int = 64 * 1024,
+            scanning_buffer: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._max_buffer_size = max_buffer_size
+        self._buffer_chunk_size = buffer_chunk_size
+        self._scanning_buffer = scanning_buffer
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        if (buf := self._buf) is None:
+            return 0
+        return len(buf)
+
+    _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+    def _new_buf(self) -> MutableByteStreamBuffer:
+        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(
+            max_size=self._max_buffer_size,
+            chunk_size=self._buffer_chunk_size,
+        )
+
+        if self._scanning_buffer:
+            buf = ScanningByteStreamBuffer(buf)
+
+        return buf
+
+    #
+
+    def _decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            data: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        if final:
+            check.arg(len(data) == 0)
+
+            if not isinstance(data, ByteStreamBuffer):
+                data = DirectByteStreamBuffer(b'')
+
+            self._decode_buffer(ctx, data, out, final=final)
+
+            return
+
+        check.arg(len(data) > 0)
+
+        if (buf := self._buf) is None:
+            buf = self._buf = self._new_buf()
+
+        for seg in ByteStreamBuffers.iter_segments(data):
+            buf.write(seg)
+
+        self._decode_buffer(ctx, buf, out, final=final)
+
+    #
+
+    @abc.abstractmethod
+    def _decode_buffer(
+            self,
+            ctx: IoPipelineHandlerContext,
+            buf: ByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        raise NotImplementedError
 
 
 ########################################
@@ -24121,201 +29863,6 @@ async def ensure_docker_image_setup(
 
 
 ########################################
-# ../docker/dataserver.py
-
-
-##
-
-
-@contextlib.asynccontextmanager
-async def start_docker_port_relay(
-        docker_port: int,
-        host_port: int,
-        **kwargs: ta.Any,
-) -> ta.AsyncGenerator[None, None]:
-    proc = await asyncio.create_subprocess_exec(*DockerPortRelay(
-        docker_port,
-        host_port,
-        **kwargs,
-    ).run_cmd())
-
-    try:
-        yield
-
-    finally:
-        try:
-            proc.kill()
-        except ProcessLookupError:
-            pass
-        await proc.wait()
-
-
-##
-
-
-class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
-    def __init__(
-            self,
-            port: int,
-            handler: SimpleHttpHandler,
-            *,
-            temp_ssl: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self._port = port
-        self._handler = handler
-
-        self._temp_ssl = temp_ssl
-
-        self._lock = threading.RLock()
-
-        self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
-        self._thread: ta.Optional[threading.Thread] = None
-        self._thread_exit_event = asyncio.Event()
-        self._server: ta.Optional[SocketHandlerServer] = None
-
-    @cached_nullary
-    def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
-        if not self._temp_ssl:
-            return None
-
-        ssl_cert = generate_temp_localhost_ssl_cert().cert  # FIXME: async blocking
-
-        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(
-            keyfile=ssl_cert.key_file,
-            certfile=ssl_cert.cert_file,
-        )
-
-        return ssl_context
-
-    @contextlib.contextmanager
-    def _make_server(self) -> ta.Iterator[SocketHandlerServer]:
-        with make_simple_http_server(
-                self._port,
-                self._handler,
-                ssl_context=self._ssl_context(),
-                ignore_ssl_errors=True,
-                use_threads=True,
-        ) as server:
-            yield server
-
-    def _thread_main(self) -> None:
-        try:
-            check.none(self._server)
-            with self._make_server() as server:
-                self._server = server
-
-                server.run()
-
-        finally:
-            check.not_none(self._loop).call_soon_threadsafe(self._thread_exit_event.set)
-
-    def is_running(self) -> bool:
-        return self._server is not None
-
-    def shutdown(self) -> None:
-        if (server := self._server) is not None:
-            server.shutdown(block=False)
-
-    async def run(self) -> None:
-        with self._lock:
-            check.none(self._loop)
-            check.none(self._thread)
-            check.state(not self._thread_exit_event.is_set())
-
-            if self._temp_ssl:
-                # Hit the ExitStack from this thread
-                self._ssl_context()
-
-            self._loop = check.not_none(asyncio.get_running_loop())
-            self._thread = threading.Thread(
-                target=self._thread_main,
-                daemon=True,
-            )
-            self._thread.start()
-
-        await self._thread_exit_event.wait()
-
-
-##
-
-
-class DockerDataServer(AsyncExitStacked):
-    def __init__(
-            self,
-            port: int,
-            data_server: DataServer,
-            *,
-            handler_log: ta.Optional[LoggerLike] = None,
-            stop_event: ta.Optional[asyncio.Event] = None,
-    ) -> None:
-        super().__init__()
-
-        self._port = port
-        self._data_server = data_server
-
-        self._handler_log = handler_log
-
-        if stop_event is None:
-            stop_event = asyncio.Event()
-        self._stop_event = stop_event
-
-    @property
-    def stop_event(self) -> asyncio.Event:
-        return self._stop_event
-
-    async def run(self) -> None:
-        # FIXME:
-        #  - shared single server with updatable routes
-        #  - get docker used ports with ns1
-        #  - discover server port with get_available_port
-        #  - discover relay port pair with get_available_ports
-        # relay_port: ta.Optional[ta.Tuple[int, int]] = None
-
-        relay_port: ta.Optional[int] = None
-        if sys.platform == 'darwin':
-            relay_port = self._port
-            server_port = self._port + 1
-        else:
-            server_port = self._port
-
-        #
-
-        handler: SimpleHttpHandler = DataServerSimpleHttpHandler(self._data_server)
-
-        if self._handler_log is not None:
-            handler = LoggingSimpleHttpHandler(
-                handler,
-                self._handler_log,
-            )
-
-        #
-
-        async with contextlib.AsyncExitStack() as es:
-            if relay_port is not None:
-                await es.enter_async_context(start_docker_port_relay(  # noqa
-                    relay_port,
-                    server_port,
-                    intermediate_port=server_port + 1,
-                ))
-
-            async with AsyncioManagedSimpleHttpServer(
-                    server_port,
-                    handler,
-                    temp_ssl=True,
-            ) as server:
-                server_run_task = asyncio.create_task(server.run())
-                try:
-                    await self._stop_event.wait()
-
-                finally:
-                    server.shutdown()
-                    await server_run_task
-
-
-########################################
 # ../utils.py
 
 
@@ -24332,6 +29879,954 @@ def read_yaml_file(yaml_file: str) -> ta.Any:
 
 def sha256_str(s: str) -> str:
     return hashlib.sha256(s.encode('utf-8')).hexdigest()
+
+
+########################################
+# ../../../omlish/http/pipelines/decoders.py
+"""
+TODO:
+ - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
+  - and make_body_data ...
+ - fix exception handling lol - do we raise ValueError?? do we return aborted??
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class IoPipelineHttpDecodingConfig:
+    DEFAULT: ta.ClassVar['IoPipelineHttpDecodingConfig']
+
+    parser_config: ta.Optional[HttpParser.Config] = None
+
+    @dc.dataclass(frozen=True)
+    class BufferConfig:
+        max_size: ta.Optional[int]
+        chunk_size: int
+
+    head_buffer: BufferConfig = BufferConfig(max_size=4 * 1024, chunk_size=4 * 1024)
+
+    max_chunk_size: ta.Optional[int] = None
+    chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
+
+
+IoPipelineHttpDecodingConfig.DEFAULT = IoPipelineHttpDecodingConfig()
+
+
+#
+
+
+class IoPipelineHttpObjectDecoder(
+    IoPipelineHttpMessageObjects,
+    InboundBytesBufferingIoPipelineHandler,
+    BytesToMessageDecoderIoPipelineHandler,
+    Abstract,
+):
+    def __init__(
+            self,
+            *,
+            config: IoPipelineHttpDecodingConfig = IoPipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+
+        self._state: IoPipelineHttpObjectDecoder._State = self._HeadState(self)
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        if (buf := self._state.buf) is None:
+            return 0
+        return len(buf)
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _parse_mode(self) -> HttpParser.Mode:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _if_content_length_missing(self) -> ta.Literal['empty', 'eof']:
+        raise NotImplementedError
+
+    #
+
+    def _decode(
+            self,
+            ctx: IoPipelineHandlerContext,
+            data: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        while True:
+            if (ret := self._state.decode(ctx, data, out, final=final)) is None:
+                return
+
+            self._state, next_data = ret
+
+            if next_data is None:
+                return
+
+            data = next_data
+
+    #
+
+    class _State(Abstract):
+        def __init__(self, d: 'IoPipelineHttpObjectDecoder') -> None:
+            super().__init__()
+
+            self._d = d
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return None
+
+        def _abort(
+                self,
+                out: ta.List[ta.Any],
+                reason: ta.Union[str, BaseException],
+                data: ta.Optional[CanByteStreamBuffer] = None,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            out.append(self._d._make_aborted(reason))  # noqa
+            return (self._d._AbortedState(self._d), data)  # noqa
+
+        @abc.abstractmethod
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+    #
+
+    class _HeadState(_State):
+        _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return self._buf
+
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            if final:
+                return self._abort(out, 'EOF before HTTP head complete')
+
+            done = False
+            next_mvs: ta.List[memoryview]
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if done:
+                    next_mvs.append(mv)  # noqa
+                    continue
+
+                if (buf := self._buf) is None:
+                    buf = self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+                        max_size=self._d._config.head_buffer.max_size,  # noqa
+                        chunk_size=self._d._config.head_buffer.chunk_size,  # noqa
+                    ))
+
+                rem_mv: ta.Optional[memoryview] = None
+
+                if (max_buf := buf.max_size) is not None:
+                    rem_buf = max_buf - len(buf)
+
+                    if len(mv) > rem_buf:
+                        buf.write(mv[:rem_buf])
+                        rem_mv = mv[rem_buf:]
+                    else:
+                        buf.write(mv)
+
+                # Look for end of head
+                i = buf.find(b'\r\n\r\n')
+                if i < 0:
+                    if rem_mv is not None:
+                        return self._abort(out, 'Head exceeded max buffer size')
+
+                    continue
+
+                # Extract head
+                head_view = buf.split_to(i + 4)
+
+                # Parse and emit head
+                raw = head_view.tobytes()
+                parsed = parse_http_message(
+                    raw,
+                    mode=self._d._parse_mode,  # noqa
+                    config=self._d._config.parser_config,  # noqa
+                )
+
+                head = self._d._make_head(parsed)  # noqa
+                out.append(head)
+
+                done = True
+                next_mvs = []
+
+                # Forward any remainder bytes (body bytes)
+                if len(buf):
+                    rem_view = buf.split_to(len(buf))
+                    next_mvs.extend(rem_view.segments())
+
+                if rem_mv is not None:
+                    next_mvs.append(rem_mv)
+
+            if done:
+                return (
+                    self._d._BodyModeState(self._d, head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
+            else:
+                return None
+
+    #
+
+    class _BodyModeState(_State):
+        def __init__(self, d: 'IoPipelineHttpObjectDecoder', head: IoPipelineHttpMessageHead) -> None:
+            super().__init__(d)
+
+            self._head = head
+
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            try:
+                te = IoPipelineHttpBodyMode.select(
+                    self._head.headers,
+                    if_length_missing=self._d._if_content_length_missing,  # noqa
+                )
+            except IoPipelineHttpBodyModeError as e:
+                return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
+
+            if te.mode == 'empty':
+                out.append(self._d._make_end())  # noqa
+                return (self._d._DoneState(self._d, self._head), data)  # noqa
+
+            elif te.mode == 'eof':
+                return (self._d._UntilEofContentState(self._d, self._head), data)  # noqa
+
+            elif te.mode == 'cl':
+                return (self._d._ContentLengthContentState(self._d, self._head, check.not_none(te.length)), data)  # noqa
+
+            elif te.mode == 'chunked':
+                return (self._d._HeaderChunkedContentState(self._d, self._head), data)  # noqa
+
+            else:
+                raise RuntimeError(f'unexpected mode {te!r}')
+
+    #
+
+    class _ContentState(_State, Abstract):
+        def __init__(
+                self,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: IoPipelineHttpMessageHead,
+        ) -> None:
+            super().__init__(d)
+
+            self._head = head
+
+    #
+
+    class _UntilEofContentState(_ContentState):
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if len(data):
+                    out.append(self._d._make_body_data(mv))  # noqa
+
+            if final:
+                out.append(self._d._make_end())  # noqa
+                return (self._d._DoneState(self._d, self._head), b'')  # noqa
+            else:
+                return None
+
+    #
+
+    class _ContentLengthContentState(_ContentState):
+        def __init__(
+                self,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: IoPipelineHttpMessageHead,
+                content_length: int,
+        ) -> None:
+            check.arg(content_length > 0)
+
+            super().__init__(d, head)
+
+            self._remaining = content_length
+
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            next_mvs: ta.List[memoryview]
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                mvl = len(mv)
+                if not mvl:
+                    continue
+
+                if self._remaining < 1:
+                    next_mvs.append(mv)  # noqa
+                    continue
+
+                if self._remaining > mvl:
+                    out.append(self._d._make_body_data(mv))  # noqa
+                    self._remaining -= mvl
+
+                elif self._remaining == mvl:
+                    out.append(self._d._make_body_data(mv))  # noqa
+                    out.append(self._d._make_end())  # noqa
+                    self._remaining = 0
+                    next_mvs = []
+
+                else:
+                    out.append(self._d._make_body_data(mv[:self._remaining]))  # noqa
+                    out.append(self._d._make_end())  # noqa
+                    ofs = self._remaining
+                    self._remaining = 0
+                    next_mvs = [mv[ofs:]]
+
+            if final and self._remaining > 0:
+                return self._abort(out, 'EOF before HTTP body complete')
+            elif self._remaining == 0:
+                return (
+                    self._d._DoneState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
+            else:
+                return None
+
+    #
+
+    class _ChunkedContentState(_ContentState, Abstract):
+        pass
+
+    #
+
+    class _HeaderChunkedContentState(_ChunkedContentState):
+        _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return self._buf
+
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            chunk_size: ta.Optional[int] = None
+            next_mvs: ta.List[memoryview]
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if chunk_size is not None:
+                    next_mvs.append(mv)  # noqa
+                    continue
+
+                if (buf := self._buf) is None:
+                    buf = self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+                        max_size=self._d._config.chunk_header_buffer.max_size,  # noqa
+                        chunk_size=self._d._config.chunk_header_buffer.chunk_size,  # noqa
+                    ))
+
+                rem_mv: ta.Optional[memoryview] = None
+
+                if (max_buf := buf.max_size) is not None:
+                    rem_buf = max_buf - len(buf)
+
+                    if len(mv) > rem_buf:
+                        buf.write(mv[:rem_buf])
+                        rem_mv = mv[rem_buf:]
+                    else:
+                        buf.write(mv)
+
+                # Parse chunk size line: <hex-size>\r\n
+                i = buf.find(b'\r\n')
+                if i < 0:
+                    if rem_mv is not None:
+                        return self._abort(out, 'Chunk header exceeded max buffer size')
+
+                    continue
+
+                size_line = buf.split_to(i + 2)
+
+                size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
+                try:
+                    chunk_size = int(size_bytes, 16)
+                except ValueError:
+                    return self._abort(out, f'Invalid chunk size: {size_bytes!r}')
+
+                if (mcs := self._d._config.max_chunk_size) is not None and chunk_size > mcs:  # noqa
+                    return self._abort(out, f'Content chunk size {chunk_size} exceeds maximum content chunk size: {mcs}')  # noqa
+
+                next_mvs = []
+
+                if len(buf) > 0:
+                    next_mvs.extend(buf.segments())
+
+                self._buf = None
+
+                if rem_mv is not None:
+                    next_mvs.append(rem_mv)
+
+            if chunk_size is not None:
+                if chunk_size == 0:
+                    out.append(self._d._make_last_chunk())  # noqa
+                    return (
+                        self._d._TrailerChunkedContentState(self._d, self._head),  # noqa
+                        SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                    )
+                else:
+                    out.append(self._d._make_chunk(chunk_size))  # noqa
+                    return (
+                        self._d._DataChunkedContentState(self._d, self._head, chunk_size),  # noqa
+                        SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                    )
+            elif final:
+                return self._abort(out, 'EOF before HTTP chunk header complete')
+            else:
+                return None
+
+    #
+
+    class _DataChunkedContentState(_ChunkedContentState):
+        def __init__(
+                self,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: IoPipelineHttpMessageHead,
+                chunk_size: int,
+        ) -> None:
+            check.arg(chunk_size > 0)
+
+            super().__init__(d, head)
+
+            self._remaining = chunk_size
+
+        _got_cr = False
+
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            next_mvs: ta.Optional[ta.List[memoryview]] = None
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if next_mvs is not None:
+                    next_mvs.append(mv)
+                    continue
+
+                mvl = len(mv)
+                if mvl < 1:
+                    continue
+
+                if mvl < self._remaining:
+                    self._remaining -= mvl
+                    out.append(self._d._make_body_data(mv))  # noqa
+                    continue
+
+                if self._remaining > 0:
+                    if mvl == self._remaining:
+                        out.append(self._d._make_body_data(mv))  # noqa
+                        self._remaining = 0
+                        continue
+
+                    out.append(self._d._make_body_data(mv[:self._remaining]))  # noqa
+                    mv = mv[self._remaining:]
+                    mvl = len(mv)
+                    self._remaining = 0
+
+                if mvl < 1:
+                    continue
+
+                if not self._got_cr:
+                    if mv[0] != 0x0d:
+                        return self._abort(out, f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+                    self._got_cr = True
+                    mv = mv[1:]
+                    mvl -= 1
+                    if mvl < 1:
+                        continue
+
+                if mv[0] != 0x0a:
+                    return self._abort(out, f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+                mv = mv[1:]
+                mvl -= 1
+
+                next_mvs = []
+
+                if mvl > 0:
+                    next_mvs.append(mv)
+
+            if next_mvs is not None:
+                out.append(self._d._make_end_chunk())  # noqa
+                return (
+                    self._d._HeaderChunkedContentState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
+            elif final:
+                return self._abort(out, 'EOF before HTTP chunk complete')
+            else:
+                return None
+
+    #
+
+    class _TrailerChunkedContentState(_ChunkedContentState):
+        _got_cr = False
+
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            next_mvs: ta.Optional[ta.List[memoryview]] = None
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if next_mvs is not None:
+                    next_mvs.append(mv)
+                    continue
+
+                mvl = len(mv)
+                if mvl < 1:
+                    continue
+
+                if not self._got_cr:
+                    if mv[0] != 0x0d:
+                        return self._abort(out, f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+                    self._got_cr = True
+                    mv = mv[1:]
+                    mvl -= 1
+                    if mvl < 1:
+                        continue
+
+                if mv[0] != 0x0a:
+                    return self._abort(out, f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+                mv = mv[1:]
+                mvl -= 1
+
+                out.append(self._d._make_chunked_trailers())  # noqa
+                out.append(self._d._make_end())  # noqa
+
+                next_mvs = []
+
+                if mvl > 0:
+                    next_mvs.append(mv)
+
+            if next_mvs is not None:
+                return (
+                    self._d._DoneState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.of_opt(next_mvs),
+                )
+            elif final:
+                return self._abort(out, 'EOF before HTTP trailer complete')
+            else:
+                return None
+
+    #
+
+    class _DoneState(_State):
+        def __init__(
+                self,
+                d: 'IoPipelineHttpObjectDecoder',
+                head: ta.Optional[IoPipelineHttpMessageHead] = None,
+        ) -> None:
+            super().__init__(d)
+
+            self._head = head
+
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            if not len(data):
+                return None
+
+            return (self._d._HeadState(self._d), data)  # noqa
+
+    #
+
+    class _AbortedState(_State):
+        def decode(
+                self,
+                ctx: IoPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['IoPipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+
+########################################
+# ../../../omlish/io/pipelines/drivers/sync.py
+"""
+TODO:
+ - can implement sched w/ settimeout
+ - sanity / upper bound read/write timeouts
+"""
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class SyncSocketIoPipelineDriver:
+    @dc.dataclass(frozen=True)
+    class Config:
+        DEFAULT: ta.ClassVar['SyncSocketIoPipelineDriver.Config']
+
+        read_chunk_size: int = 64 * 1024
+        write_chunk_max: ta.Optional[int] = None
+
+        strict_input_flow: bool = False
+
+    Config.DEFAULT = Config()
+
+    #
+
+    def __init__(
+            self,
+            spec: IoPipeline.Spec,
+            sock: ta.Any,
+            config: ta.Optional[Config] = None,
+    ) -> None:
+        super().__init__()
+
+        self._spec = spec
+        self._sock = sock
+        if config is None:
+            config = self.Config.DEFAULT
+        self._config = config
+
+        self._input_q: collections.deque[ta.Any] = collections.deque()
+        self._input_q.append(IoPipelineMessages.InitialInput())
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}@{id(self):x}'
+
+    @property
+    def config(self) -> Config:
+        return self._config
+
+    @property
+    def pipeline(self) -> IoPipeline:
+        return self._pipeline
+
+    #
+
+    _pipeline: IoPipeline
+
+    _flow: ta.Optional[IoPipelineFlow]
+
+    def _opt_pipeline(self) -> ta.Optional[IoPipeline]:
+        try:
+            return self._pipeline
+        except AttributeError:
+            return None
+
+    def _ensure_pipeline(self) -> IoPipeline:
+        try:
+            return self._pipeline
+        except AttributeError:
+            pass
+
+        self._sched = self._SchedulingService(self)
+
+        self._pipeline = pipeline = self._make_pipeline()
+
+        self._flow = flow = pipeline.services.find(IoPipelineFlow)
+        if flow is None:
+            self._want_read = True
+
+        return pipeline
+
+    def _make_pipeline(self) -> IoPipeline:
+        return IoPipeline(dc.replace(
+            self._spec,
+
+            metadata=[
+                *self._spec.metadata,
+                DriverIoPipelineMetadata(self),
+            ],
+
+            services=[
+                *self._spec.services,
+                self._sched,
+            ],
+        ))
+
+    @property
+    def is_running(self) -> bool:
+        if (pipeline := self._opt_pipeline()) is None:
+            return False
+        return pipeline.is_ready
+
+    #
+
+    def close(self) -> None:
+        if (pipeline := self._opt_pipeline()) is not None:
+            pipeline.destroy()
+
+    def __enter__(self) -> 'SyncSocketIoPipelineDriver':  # noqa
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    #
+
+    _want_read: bool = False
+
+    def _do_read(self) -> ta.List[ta.Any]:
+        out: ta.List[ta.Any] = []
+
+        # if (dl := self._sched.next_delay()) is not None:
+        #     self._sock.settimeout(dl)
+        # else:
+        #     self._sock.settimeout(None)
+
+        b = self._sock.recv(self._config.read_chunk_size)
+
+        if not b:
+            out.append(IoPipelineMessages.FinalInput())
+        else:
+            out.append(b)
+            if self._flow is not None:
+                out.append(IoPipelineFlowMessages.FlushInput())
+
+        if self._flow is not None:
+            self._want_read = False
+
+        return out
+
+    #
+
+    class _SchedulingService(IoPipelineScheduling, IoPipelineService):
+        def __init__(self, d: 'SyncSocketIoPipelineDriver') -> None:
+            super().__init__()
+
+            self._d = d
+
+            self._seq = 0
+            self._pending: ta.List[ta.Tuple[float, int, SyncSocketIoPipelineDriver._SchedulingService._Handle]] = []
+
+        def _clear_cancelled(self) -> None:
+            while self._pending and self._pending[0][2]._cancelled:  # noqa
+                heapq.heappop(self._pending)
+
+        def next_delay(self) -> ta.Optional[float]:
+            self._clear_cancelled()
+            if not self._pending:
+                return None
+            return time.time() - self._pending[0][0]
+
+        @ta.final
+        class _Handle(IoPipelineScheduling.Handle):
+            def __init__(
+                    self,
+                    handler_ref: IoPipelineHandlerRef,
+                    fn: ta.Callable[[], None],
+                    deadline: float,
+                    seq: int,
+            ) -> None:
+                self._deadline = deadline
+                self._seq = seq
+                self._handler_ref = handler_ref
+                self._fn = fn
+
+                self._cancelled = False
+
+            def cancel(self) -> None:
+                self._cancelled = True
+
+        def schedule(
+                self,
+                handler_ref: IoPipelineHandlerRef,
+                delay_s: float,
+                fn: ta.Callable[[], None],
+        ) -> IoPipelineScheduling.Handle:
+            h = self._Handle(
+                handler_ref,
+                fn,
+                time.time() + delay_s,
+                self._seq,
+            )
+            self._seq += 1
+            heapq.heappush(self._pending, (h._deadline, h._seq, h))  # noqa
+            return h
+
+        def cancel_all(self, handler_ref: ta.Optional[IoPipelineHandlerRef] = None) -> None:
+            raise NotImplementedError
+
+    _sched: _SchedulingService
+
+    #
+
+    def _handle_output(self, msg: ta.Any) -> ta.Literal['handled', 'unhandled', 'stop']:
+        if ByteStreamBuffers.can_bytes(msg):
+            for mv in ByteStreamBuffers.iter_segments(msg):
+                # self._sock.settimeout(None)
+                self._sock.send(mv)
+            return 'handled'
+
+        elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
+            # self._sock.flush()
+            return 'handled'
+
+        elif isinstance(msg, IoPipelineMessages.FinalOutput):
+            return 'stop'
+
+        elif isinstance(msg, IoPipelineMessages.Defer):
+            self._pipeline.run_deferred(msg)
+            return 'handled'
+
+        elif isinstance(msg, IoPipelineFlowMessages.ReadyForInput):
+            check.state(self._flow is not None)
+            if self._config.strict_input_flow:
+                check.state(not self._want_read)
+            self._want_read = True
+            return 'handled'
+
+        else:
+            return 'unhandled'
+
+    #
+
+    def enqueue(self, *in_msgs: ta.Any) -> None:
+        self._input_q.extend(in_msgs)
+
+    def poll(self) -> ta.Union[
+        ta.Tuple[ta.Literal['unhandled'], ta.Any],
+        ta.Literal['read', 'stop'],
+        None,
+    ]:
+        pipeline = self._ensure_pipeline()  # noqa
+        check.state(pipeline.is_ready)
+
+        while True:
+            if (out_msg := pipeline.output.poll()) is not None:
+                handled = self._handle_output(out_msg)
+
+                if handled == 'handled':
+                    continue
+
+                elif handled == 'unhandled':
+                    return ('unhandled', out_msg)
+
+                elif handled == 'stop':
+                    return 'stop'
+
+                else:
+                    raise RuntimeError(f'Unknown handled value: {handled!r}')
+
+            if self._input_q:
+                pipeline.feed_in(self._input_q.popleft())
+                continue
+
+            if not pipeline.saw_final_input and self._want_read:
+                return 'read'
+
+            return None
+
+    def next(
+            self,
+            *,
+            read: bool = True,
+            raise_on_stall: bool = True,
+    ) -> ta.Optional[ta.Any]:
+        pipeline = self._ensure_pipeline()  # noqa
+        check.state(pipeline.is_ready)
+
+        while True:
+            out = self.poll()
+
+            if isinstance(out, tuple):
+                ok, ov = out
+                if ok == 'unhandled':
+                    return ov
+
+                else:
+                    raise RuntimeError(f'Unknown output: {ok!r}')
+
+            elif out == 'read':
+                if read:
+                    self._input_q.extend(self._do_read())
+
+                else:
+                    return None
+
+            elif out == 'stop':
+                break
+
+            elif out is None:
+                if raise_on_stall:
+                    raise RuntimeError('Pipeline stalled')
+
+                else:
+                    return None
+
+            else:
+                raise RuntimeError(f'Unknown output: {out!r}')
+
+        pipeline.destroy()
+        return None
+
+    def loop_until_done(self) -> None:
+        try:
+            while True:
+                if (out := self.next()) is not None:
+                    raise TypeError(out)
+
+                if not self._pipeline.is_ready:
+                    break
+
+        finally:
+            self.close()
 
 
 ########################################
@@ -25515,6 +32010,42 @@ class OciPackedRepositoryBuilder(ExitStacked):
 
 
 ########################################
+# ../../../omlish/http/pipelines/servers/requests.py
+
+
+##
+
+
+class IoPipelineHttpRequestDecoder(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDecoder):
+    _parse_mode: ta.Final = HttpParser.Mode.REQUEST
+    _if_content_length_missing: ta.Final = 'empty'
+
+
+##
+
+
+class IoPipelineHttpRequestAggregatorDecoder(
+    IoPipelineHttpRequestObjects,
+    IoPipelineHttpObjectAggregatorDecoder,
+):
+    _if_content_length_missing: ta.Final = 'empty'
+
+
+##
+
+
+class IoPipelineHttpRequestDechunker(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDechunker):
+    pass
+
+
+##
+
+
+class IoPipelineHttpRequestDecompressor(IoPipelineHttpRequestObjects, IoPipelineHttpObjectDecompressor):
+    pass
+
+
+########################################
 # ../docker/buildcaching.py
 
 
@@ -25577,185 +32108,6 @@ class DockerBuildCachingImpl(DockerBuildCaching):
             await self._docker_cache.save_cache_docker_image(cache_key, image_id)
 
         return image_tag
-
-
-########################################
-# ../docker/cacheserved/cache.py
-
-
-log = get_module_logger(globals())  # noqa
-
-
-##
-
-
-class CacheServedDockerCache(DockerCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        port: int = 5021
-
-        repack: bool = True
-
-        key_prefix: ta.Optional[str] = 'cs'
-
-        #
-
-        pull_run_cmd: ta.Optional[str] = 'true'
-
-        #
-
-        server_start_timeout: TimeoutLike = 5.
-        server_start_sleep: float = .1
-
-    def __init__(
-            self,
-            *,
-            config: Config = Config(),
-
-            image_repo_opener: DockerImageRepositoryOpener,
-            data_cache: DataCache,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._image_repo_opener = image_repo_opener
-        self._data_cache = data_cache
-
-    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
-        if (kp := self._config.key_prefix) is not None:
-            key = key.append_prefix(kp)
-
-        if (manifest_data := await self._data_cache.get_data(str(key))) is None:
-            return None
-
-        manifest_bytes = await read_data_cache_data(manifest_data)
-
-        manifest: CacheServedDockerImageManifest = unmarshal_obj(
-            json.loads(manifest_bytes.decode('utf-8')),
-            CacheServedDockerImageManifest,
-        )
-
-        async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
-            cache_data = check.not_none(await self._data_cache.get_data(target_cache_key))
-
-            if isinstance(cache_data, DataCache.BytesData):
-                return DataServerTarget.of(
-                    cache_data.data,
-                    **target_kwargs,
-                )
-
-            elif isinstance(cache_data, DataCache.FileData):
-                return DataServerTarget.of(
-                    file_path=cache_data.file_path,
-                    **target_kwargs,
-                )
-
-            elif isinstance(cache_data, DataCache.UrlData):
-                return DataServerTarget.of(
-                    url=cache_data.url,
-                    methods=['GET'],
-                    **target_kwargs,
-                )
-
-            else:
-                raise TypeError(cache_data)
-
-        data_server_routes = await build_cache_served_docker_image_data_server_routes(
-            manifest,
-            make_cache_key_target,
-        )
-
-        data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
-
-        image_url = f'localhost:{self._config.port}/{key!s}'
-
-        async with DockerDataServer(
-                self._config.port,
-                data_server,
-                handler_log=log,
-        ) as dds:
-            dds_run_task = asyncio.create_task(dds.run())
-            try:
-                timeout = Timeout.of(self._config.server_start_timeout)
-
-                await asyncio_wait_until_can_connect(
-                    'localhost',
-                    self._config.port,
-                    timeout=timeout,
-                    on_fail=lambda _: log.exception('Failed to connect to cache server - will try again'),
-                    sleep_s=self._config.server_start_sleep,
-                )
-
-                if (prc := self._config.pull_run_cmd) is not None:
-                    pull_cmd = [
-                        'run',
-                        '--rm',
-                        image_url,
-                        prc,
-                    ]
-                else:
-                    pull_cmd = [
-                        'pull',
-                        image_url,
-                    ]
-
-                await asyncio_subprocesses.check_call(
-                    'docker',
-                    *pull_cmd,
-                )
-
-            finally:
-                dds.stop_event.set()
-                await dds_run_task
-
-        return image_url
-
-    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
-        if (kp := self._config.key_prefix) is not None:
-            key = key.append_prefix(kp)
-
-        async with contextlib.AsyncExitStack() as es:
-            image_repo: OciRepository = await es.enter_async_context(
-                self._image_repo_opener.open_docker_image_repository(image),
-            )
-
-            root_image_index = read_oci_repository_root_index(image_repo)
-            image_index = get_single_leaf_oci_image_index(root_image_index)
-
-            if self._config.repack:
-                prb: OciPackedRepositoryBuilder = es.enter_context(OciPackedRepositoryBuilder(
-                    image_repo,
-                ))
-                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)  # noqa
-
-            else:
-                built_repo = build_oci_index_repository(image_index)
-
-            data_server_routes = build_oci_repository_data_server_routes(
-                str(key),
-                built_repo,
-            )
-
-            async def make_file_cache_key(file_path: str) -> str:
-                target_cache_key = f'{key!s}--{os.path.basename(file_path).split(".")[0]}'
-                await self._data_cache.put_data(
-                    target_cache_key,
-                    DataCache.FileData(file_path),
-                )
-                return target_cache_key
-
-            cache_served_manifest = await build_cache_served_docker_image_manifest(
-                data_server_routes,
-                make_file_cache_key,
-            )
-
-        manifest_data = json_dumps_compact(marshal_obj(cache_served_manifest)).encode('utf-8')
-
-        await self._data_cache.put_data(
-            str(key),
-            DataCache.BytesData(manifest_data),
-        )
 
 
 ########################################
@@ -26169,6 +32521,198 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
 
 
 ########################################
+# ../../../omlish/http/simple/pipelines.py
+
+
+class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
+    def __init__(self, handler: SimpleHttpHandler) -> None:
+        super().__init__()
+
+        self._handler = handler
+
+    @dc.dataclass(frozen=True)
+    class SocketAndAddressMetadata(IoPipelineMetadata):
+        v: SocketAndAddress
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.InitialInput):
+            ctx.feed_in(msg)
+
+            if not IoPipelineFlow.is_auto_read(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+
+            return
+
+        if not isinstance(msg, FullIoPipelineHttpRequest):
+            ctx.feed_in(msg)
+            return
+
+        #
+
+        handler_req = SimpleHttpHandlerRequest(
+            client_address=ctx.pipeline.metadata[SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata],
+            method=msg.head.method,
+            path=msg.head.target,
+            headers=check.not_none(msg.head.parsed).headers,
+            data=ByteStreamBuffers.to_bytes(msg.body),
+        )
+
+        handler_resp = self._handler(handler_req)
+
+        try:
+            headers = HttpHeaders(handler_resp.headers or {})
+            new_headers: ta.Dict[str, str] = {}
+
+            data = handler_resp.data
+
+            if data is not None and headers.lower.get('content-length') is None:
+                cl: ta.Optional[int]
+                if isinstance(data, bytes):
+                    cl = len(data)
+                elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                    cl = data.length
+                else:
+                    raise TypeError(data)
+                if cl is not None:
+                    new_headers['Content-Length'] = str(cl)
+
+            # if headers.lower.get('connect') is None:
+            #     if h.key.lower() != 'connection':
+            #         return None
+            #     elif h.value.lower() == 'close':
+            #         return True
+            #     elif h.value.lower() == 'keep-alive':
+            #         return False
+            #     else:
+            #         return None
+            new_headers['Connection'] = 'close'  # TODO: handler_resp.close_connection
+
+            if new_headers:
+                headers = HttpHeaders({**headers, **new_headers})
+
+            head = IoPipelineHttpResponseHead(
+                status=handler_resp.status,
+                reason=IoPipelineHttpResponseHead.get_reason_phrase(handler_resp.status),
+                headers=headers,
+            )
+
+            if isinstance(data, (bytes, type(None))):
+                resp = FullIoPipelineHttpResponse(
+                    head=head,
+                    body=data or b'',
+                )
+
+                ctx.feed_out(resp)
+
+            elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                ctx.feed_out(head)
+
+                for b in data.iter:
+                    ctx.feed_out(IoPipelineHttpResponseBodyData(b))
+
+                ctx.feed_out(IoPipelineHttpResponseEnd())
+
+            else:
+                raise TypeError(data)
+
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
+
+        finally:
+            handler_resp.close()
+
+
+@contextlib.contextmanager
+def make_simple_http_server(
+        bind: CanSocketBinder,
+        handler: SimpleHttpHandler,
+        *,
+        # keep_alive: bool = False,  # TODO
+        ssl_context: ta.Optional['ssl.SSLContext'] = None,
+        ignore_ssl_errors: bool = False,
+        executor: ta.Optional[cf.Executor] = None,
+        use_threads: bool = False,
+        **kwargs: ta.Any,
+) -> ta.Iterator[SocketHandlerServer]:
+    check.arg(not (executor is not None and use_threads))
+
+    #
+
+    def pipeline_serve(conn: SocketAndAddress) -> None:
+        try:
+            conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno != errno.ENOPROTOOPT:
+                raise
+
+        drv = SyncSocketIoPipelineDriver(
+            IoPipeline.Spec(
+                [
+                    IoPipelineHttpRequestDecoder(),
+                    IoPipelineHttpRequestAggregatorDecoder(),
+                    IoPipelineHttpResponseEncoder(),
+                    SimpleHttpHandlerServerIoPipelineHandler(handler),
+                ],
+                metadata=[
+                    SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata(conn),
+                ],
+            ),
+            conn.socket,
+        )
+
+        drv.loop_until_done()
+
+    #
+
+    with contextlib.ExitStack() as es:
+        socket_handler: SocketHandler = pipeline_serve
+
+        #
+
+        if ssl_context is not None:
+            socket_handler = SocketWrappingSocketHandler(
+                socket_handler,
+                SocketAndAddress.socket_wrapper(functools.partial(
+                    ssl_context.wrap_socket,
+                    server_side=True,
+                )),
+            )
+
+        if ignore_ssl_errors:
+            socket_handler = SslErrorHandlingSocketHandler(
+                socket_handler,
+            )
+
+        #
+
+        socket_handler = StandardSocketHandler(
+            socket_handler,
+        )
+
+        #
+
+        if executor is not None:
+            socket_handler = ExecutorSocketHandler(
+                socket_handler,
+                executor,
+            )
+
+        elif use_threads:
+            socket_handler = es.enter_context(ThreadingSocketHandler(
+                socket_handler,
+            ))
+
+        #
+
+        server = es.enter_context(SocketHandlerServer(
+            SocketBinder.of(bind),
+            socket_handler,
+            **kwargs,
+        ))
+
+        yield server
+
+
+########################################
 # ../ci.py
 
 
@@ -26413,57 +32957,198 @@ class Ci(AsyncExitStacked):
 
 
 ########################################
-# ../docker/inject.py
+# ../docker/dataserver.py
 
 
 ##
 
 
-def bind_docker(
-        *,
-        build_caching_config: DockerBuildCachingImpl.Config,
-        cache_served_docker_cache_config: ta.Optional[CacheServedDockerCache.Config] = None,
-        image_pulling_config: DockerImagePullingImpl.Config = DockerImagePullingImpl.Config(),
-) -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = []
+@contextlib.asynccontextmanager
+async def start_docker_port_relay(
+        docker_port: int,
+        host_port: int,
+        **kwargs: ta.Any,
+) -> ta.AsyncGenerator[None, None]:
+    proc = await asyncio.create_subprocess_exec(*DockerPortRelay(
+        docker_port,
+        host_port,
+        **kwargs,
+    ).run_cmd())
 
-    #
+    try:
+        yield
 
-    lst.extend([
-        inj.bind(build_caching_config),
-        inj.bind(DockerBuildCachingImpl, singleton=True),
-        inj.bind(DockerBuildCaching, to_key=DockerBuildCachingImpl),
-    ])
+    finally:
+        try:
+            proc.kill()
+        except ProcessLookupError:
+            pass
+        await proc.wait()
 
-    #
 
-    if cache_served_docker_cache_config is not None:
-        lst.extend([
-            inj.bind(DockerImageRepositoryOpenerImpl, singleton=True),
-            inj.bind(DockerImageRepositoryOpener, to_key=DockerImageRepositoryOpenerImpl),
+##
 
-            inj.bind(cache_served_docker_cache_config),
-            inj.bind(CacheServedDockerCache, singleton=True),
-            inj.bind(DockerCache, to_key=CacheServedDockerCache),
-        ])
 
-    else:
-        lst.extend([
-            inj.bind(DockerCacheImpl, singleton=True),
-            inj.bind(DockerCache, to_key=DockerCacheImpl),
-        ])
+class AsyncioManagedSimpleHttpServer(AsyncExitStacked):
+    def __init__(
+            self,
+            port: int,
+            handler: SimpleHttpHandler,
+            *,
+            temp_ssl: bool = False,
+    ) -> None:
+        super().__init__()
 
-    #
+        self._port = port
+        self._handler = handler
 
-    lst.extend([
-        inj.bind(image_pulling_config),
-        inj.bind(DockerImagePullingImpl, singleton=True),
-        inj.bind(DockerImagePulling, to_key=DockerImagePullingImpl),
-    ])
+        self._temp_ssl = temp_ssl
 
-    #
+        self._lock = threading.RLock()
 
-    return inj.as_bindings(*lst)
+        self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
+        self._thread: ta.Optional[threading.Thread] = None
+        self._thread_exit_event = asyncio.Event()
+        self._server: ta.Optional[SocketHandlerServer] = None
+
+    @cached_nullary
+    def _ssl_context(self) -> ta.Optional['ssl.SSLContext']:
+        if not self._temp_ssl:
+            return None
+
+        ssl_cert = generate_temp_localhost_ssl_cert().cert  # FIXME: async blocking
+
+        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        ssl_context.load_cert_chain(
+            keyfile=ssl_cert.key_file,
+            certfile=ssl_cert.cert_file,
+        )
+
+        return ssl_context
+
+    @contextlib.contextmanager
+    def _make_server(self) -> ta.Iterator[SocketHandlerServer]:
+        with make_simple_http_server(
+                self._port,
+                self._handler,
+                ssl_context=self._ssl_context(),
+                ignore_ssl_errors=True,
+                use_threads=True,
+        ) as server:
+            yield server
+
+    def _thread_main(self) -> None:
+        try:
+            check.none(self._server)
+            with self._make_server() as server:
+                self._server = server
+
+                server.run()
+
+        finally:
+            check.not_none(self._loop).call_soon_threadsafe(self._thread_exit_event.set)
+
+    def is_running(self) -> bool:
+        return self._server is not None
+
+    def shutdown(self) -> None:
+        if (server := self._server) is not None:
+            server.shutdown(block=False)
+
+    async def run(self) -> None:
+        with self._lock:
+            check.none(self._loop)
+            check.none(self._thread)
+            check.state(not self._thread_exit_event.is_set())
+
+            if self._temp_ssl:
+                # Hit the ExitStack from this thread
+                self._ssl_context()
+
+            self._loop = check.not_none(asyncio.get_running_loop())
+            self._thread = threading.Thread(
+                target=self._thread_main,
+                daemon=True,
+            )
+            self._thread.start()
+
+        await self._thread_exit_event.wait()
+
+
+##
+
+
+class DockerDataServer(AsyncExitStacked):
+    def __init__(
+            self,
+            port: int,
+            data_server: DataServer,
+            *,
+            handler_log: ta.Optional[LoggerLike] = None,
+            stop_event: ta.Optional[asyncio.Event] = None,
+    ) -> None:
+        super().__init__()
+
+        self._port = port
+        self._data_server = data_server
+
+        self._handler_log = handler_log
+
+        if stop_event is None:
+            stop_event = asyncio.Event()
+        self._stop_event = stop_event
+
+    @property
+    def stop_event(self) -> asyncio.Event:
+        return self._stop_event
+
+    async def run(self) -> None:
+        # FIXME:
+        #  - shared single server with updatable routes
+        #  - get docker used ports with ns1
+        #  - discover server port with get_available_port
+        #  - discover relay port pair with get_available_ports
+        # relay_port: ta.Optional[ta.Tuple[int, int]] = None
+
+        relay_port: ta.Optional[int] = None
+        if sys.platform == 'darwin':
+            relay_port = self._port
+            server_port = self._port + 1
+        else:
+            server_port = self._port
+
+        #
+
+        handler: SimpleHttpHandler = DataServerSimpleHttpHandler(self._data_server)
+
+        if self._handler_log is not None:
+            handler = LoggingSimpleHttpHandler(
+                handler,
+                self._handler_log,
+            )
+
+        #
+
+        async with contextlib.AsyncExitStack() as es:
+            if relay_port is not None:
+                await es.enter_async_context(start_docker_port_relay(  # noqa
+                    relay_port,
+                    server_port,
+                    intermediate_port=server_port + 1,
+                ))
+
+            async with AsyncioManagedSimpleHttpServer(
+                    server_port,
+                    handler,
+                    temp_ssl=True,
+            ) as server:
+                server_run_task = asyncio.create_task(server.run())
+                try:
+                    await self._stop_event.wait()
+
+                finally:
+                    server.shutdown()
+                    await server_run_task
 
 
 ########################################
@@ -26596,6 +33281,187 @@ class GithubCli(ArgparseCli):
 
 
 ########################################
+# ../docker/cacheserved/cache.py
+
+
+log = get_module_logger(globals())  # noqa
+
+
+##
+
+
+class CacheServedDockerCache(DockerCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        port: int = 5021
+
+        repack: bool = True
+
+        key_prefix: ta.Optional[str] = 'cs'
+
+        #
+
+        pull_run_cmd: ta.Optional[str] = 'true'
+
+        #
+
+        server_start_timeout: TimeoutLike = 5.
+        server_start_sleep: float = .1
+
+    def __init__(
+            self,
+            *,
+            config: Config = Config(),
+
+            image_repo_opener: DockerImageRepositoryOpener,
+            data_cache: DataCache,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+
+        self._image_repo_opener = image_repo_opener
+        self._data_cache = data_cache
+
+    async def load_cache_docker_image(self, key: DockerCacheKey) -> ta.Optional[str]:
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
+
+        if (manifest_data := await self._data_cache.get_data(str(key))) is None:
+            return None
+
+        manifest_bytes = await read_data_cache_data(manifest_data)
+
+        manifest: CacheServedDockerImageManifest = unmarshal_obj(
+            json.loads(manifest_bytes.decode('utf-8')),
+            CacheServedDockerImageManifest,
+        )
+
+        async def make_cache_key_target(target_cache_key: str, **target_kwargs: ta.Any) -> DataServerTarget:  # noqa
+            cache_data = check.not_none(await self._data_cache.get_data(target_cache_key))
+
+            if isinstance(cache_data, DataCache.BytesData):
+                return DataServerTarget.of(
+                    cache_data.data,
+                    **target_kwargs,
+                )
+
+            elif isinstance(cache_data, DataCache.FileData):
+                return DataServerTarget.of(
+                    file_path=cache_data.file_path,
+                    **target_kwargs,
+                )
+
+            elif isinstance(cache_data, DataCache.UrlData):
+                return DataServerTarget.of(
+                    url=cache_data.url,
+                    methods=['GET'],
+                    **target_kwargs,
+                )
+
+            else:
+                raise TypeError(cache_data)
+
+        data_server_routes = await build_cache_served_docker_image_data_server_routes(
+            manifest,
+            make_cache_key_target,
+        )
+
+        data_server = DataServer(DataServer.HandlerRoute.of_(*data_server_routes))
+
+        image_url = f'localhost:{self._config.port}/{key!s}'
+
+        async with DockerDataServer(
+                self._config.port,
+                data_server,
+                handler_log=log,
+        ) as dds:
+            dds_run_task = asyncio.create_task(dds.run())
+            try:
+                timeout = Timeout.of(self._config.server_start_timeout)
+
+                await asyncio_wait_until_can_connect(
+                    'localhost',
+                    self._config.port,
+                    timeout=timeout,
+                    on_fail=lambda _: log.exception('Failed to connect to cache server - will try again'),
+                    sleep_s=self._config.server_start_sleep,
+                )
+
+                if (prc := self._config.pull_run_cmd) is not None:
+                    pull_cmd = [
+                        'run',
+                        '--rm',
+                        '--entrypoint',
+                        prc,
+                        image_url,
+                        prc,
+                    ]
+                else:
+                    pull_cmd = [
+                        'pull',
+                        image_url,
+                    ]
+
+                await asyncio_subprocesses.check_call(
+                    'docker',
+                    *pull_cmd,
+                )
+
+            finally:
+                dds.stop_event.set()
+                await dds_run_task
+
+        return image_url
+
+    async def save_cache_docker_image(self, key: DockerCacheKey, image: str) -> None:
+        if (kp := self._config.key_prefix) is not None:
+            key = key.append_prefix(kp)
+
+        async with contextlib.AsyncExitStack() as es:
+            image_repo: OciRepository = await es.enter_async_context(
+                self._image_repo_opener.open_docker_image_repository(image),
+            )
+
+            root_image_index = read_oci_repository_root_index(image_repo)
+            image_index = get_single_leaf_oci_image_index(root_image_index)
+
+            if self._config.repack:
+                prb: OciPackedRepositoryBuilder = es.enter_context(OciPackedRepositoryBuilder(
+                    image_repo,
+                ))
+                built_repo = await asyncio.get_running_loop().run_in_executor(None, prb.build)  # noqa
+
+            else:
+                built_repo = build_oci_index_repository(image_index)
+
+            data_server_routes = build_oci_repository_data_server_routes(
+                str(key),
+                built_repo,
+            )
+
+            async def make_file_cache_key(file_path: str) -> str:
+                target_cache_key = f'{key!s}--{os.path.basename(file_path).split(".")[0]}'
+                await self._data_cache.put_data(
+                    target_cache_key,
+                    DataCache.FileData(file_path),
+                )
+                return target_cache_key
+
+            cache_served_manifest = await build_cache_served_docker_image_manifest(
+                data_server_routes,
+                make_file_cache_key,
+            )
+
+        manifest_data = json_dumps_compact(marshal_obj(cache_served_manifest)).encode('utf-8')
+
+        await self._data_cache.put_data(
+            str(key),
+            DataCache.BytesData(manifest_data),
+        )
+
+
+########################################
 # ../github/inject.py
 
 
@@ -26608,6 +33474,60 @@ def bind_github() -> InjectorBindings:
         inj.bind(DataCache, to_key=GithubCache),
         inj.bind(FileCache, to_key=GithubCache),
     ]
+
+    return inj.as_bindings(*lst)
+
+
+########################################
+# ../docker/inject.py
+
+
+##
+
+
+def bind_docker(
+        *,
+        build_caching_config: DockerBuildCachingImpl.Config,
+        cache_served_docker_cache_config: ta.Optional[CacheServedDockerCache.Config] = None,
+        image_pulling_config: DockerImagePullingImpl.Config = DockerImagePullingImpl.Config(),
+) -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = []
+
+    #
+
+    lst.extend([
+        inj.bind(build_caching_config),
+        inj.bind(DockerBuildCachingImpl, singleton=True),
+        inj.bind(DockerBuildCaching, to_key=DockerBuildCachingImpl),
+    ])
+
+    #
+
+    if cache_served_docker_cache_config is not None:
+        lst.extend([
+            inj.bind(DockerImageRepositoryOpenerImpl, singleton=True),
+            inj.bind(DockerImageRepositoryOpener, to_key=DockerImageRepositoryOpenerImpl),
+
+            inj.bind(cache_served_docker_cache_config),
+            inj.bind(CacheServedDockerCache, singleton=True),
+            inj.bind(DockerCache, to_key=CacheServedDockerCache),
+        ])
+
+    else:
+        lst.extend([
+            inj.bind(DockerCacheImpl, singleton=True),
+            inj.bind(DockerCache, to_key=DockerCacheImpl),
+        ])
+
+    #
+
+    lst.extend([
+        inj.bind(image_pulling_config),
+        inj.bind(DockerImagePullingImpl, singleton=True),
+        inj.bind(DockerImagePulling, to_key=DockerImagePullingImpl),
+    ])
+
+    #
 
     return inj.as_bindings(*lst)
 

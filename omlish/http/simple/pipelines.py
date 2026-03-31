@@ -31,12 +31,15 @@ from ...sockets.handlers.threading import ThreadingSocketHandler
 from ..headers import HttpHeaders
 from ..pipelines.requests import FullIoPipelineHttpRequest
 from ..pipelines.responses import FullIoPipelineHttpResponse
+from ..pipelines.responses import IoPipelineHttpResponseBodyData
+from ..pipelines.responses import IoPipelineHttpResponseEnd
 from ..pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
 from ..pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from ..pipelines.servers.responses import IoPipelineHttpResponseEncoder
 from ..pipelines.servers.responses import IoPipelineHttpResponseHead
 from .handlers import SimpleHttpHandler
 from .handlers import SimpleHttpHandlerRequest
+from .handlers import SimpleHttpHandlerResponseStreamedData
 
 
 if ta.TYPE_CHECKING:
@@ -81,21 +84,66 @@ class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
 
         handler_resp = self._handler(handler_req)
 
-        # TODO: handler_resp.close_connection
+        try:
+            headers = HttpHeaders(handler_resp.headers or {})
+            new_headers: ta.Dict[str, str] = {}
 
-        resp = FullIoPipelineHttpResponse(
-            head=IoPipelineHttpResponseHead(
+            data = handler_resp.data
+
+            if data is not None and headers.lower.get('content-length') is None:
+                cl: ta.Optional[int]
+                if isinstance(data, bytes):
+                    cl = len(data)
+                elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                    cl = data.length
+                else:
+                    raise TypeError(data)
+                if cl is not None:
+                    new_headers['Content-Length'] = str(cl)
+
+            # if headers.lower.get('connect') is None:
+            #     if h.key.lower() != 'connection':
+            #         return None
+            #     elif h.value.lower() == 'close':
+            #         return True
+            #     elif h.value.lower() == 'keep-alive':
+            #         return False
+            #     else:
+            #         return None
+            new_headers['Connection'] = 'close'  # TODO: handler_resp.close_connection
+
+            if new_headers:
+                headers = HttpHeaders({**headers, **new_headers})
+
+            head = IoPipelineHttpResponseHead(
                 status=handler_resp.status,
                 reason=IoPipelineHttpResponseHead.get_reason_phrase(handler_resp.status),
-                headers=HttpHeaders(handler_resp.headers or {}),
-            ),
-            body=check.isinstance(handler_resp.data or b'', bytes),
-        )
+                headers=headers,
+            )
 
-        #
+            if isinstance(data, (bytes, type(None))):
+                resp = FullIoPipelineHttpResponse(
+                    head=head,
+                    body=data or b'',
+                )
 
-        ctx.feed_out(resp)
-        ctx.feed_out(IoPipelineMessages.FinalOutput())
+                ctx.feed_out(resp)
+
+            elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                ctx.feed_out(head)
+
+                for b in data.iter:
+                    ctx.feed_out(IoPipelineHttpResponseBodyData(b))
+
+                ctx.feed_out(IoPipelineHttpResponseEnd())
+
+            else:
+                raise TypeError(data)
+
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
+
+        finally:
+            handler_resp.close()
 
 
 @contextlib.contextmanager
