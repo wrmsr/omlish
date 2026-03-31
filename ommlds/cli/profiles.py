@@ -367,7 +367,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
             ap.arg('-k', '--skills', action='store_true'),
         ]
 
-        def configure_for_code(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+        def configure_for_skills(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
             cfg = dc.replace(
                 cfg,
                 modules=[
@@ -379,10 +379,10 @@ class ChatProfile(AspectProfile[ChatConfig]):
             return cfg
 
         def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
-            if not ctx.args.code:
+            if not ctx.args.skills:
                 return cfg
 
-            return self.configure_for_code(ctx, cfg)
+            return self.configure_for_skills(ctx, cfg)
 
     #
 

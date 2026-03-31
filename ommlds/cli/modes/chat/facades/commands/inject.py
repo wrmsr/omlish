@@ -11,6 +11,7 @@ with lang.auto_proxy_import(globals()):
     from . import permissions as _permissions
     from . import send as _send
     from . import simple as _simple
+    from . import tools as _tools
 
 
 ##
@@ -36,6 +37,7 @@ def bind_commands(cfg: CommandsConfig = CommandsConfig()) -> inj.Elements:
         _send.SendCommand,
         _simple.EchoCommand,
         _simple.QuitCommand,
+        _tools.ToolsCommand,
     ]:
         els.extend([
             inj.bind(cmd_cls, singleton=True),

@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from .....minichain.drivers.tools.injection import tool_catalog_entries
 from ...chat.facades.commands.injection import commands
 from .configs import SkillsConfig
 
@@ -8,6 +9,7 @@ from .configs import SkillsConfig
 with lang.auto_proxy_import(globals()):
     from . import commands as _commands
     from . import manager as _manager
+    from . import tools as _tools
 
 
 ##
@@ -28,6 +30,14 @@ def bind_skills(cfg: SkillsConfig = SkillsConfig()) -> inj.Elements:
         inj.bind(_commands.SkillCommand, singleton=True),
         commands().bind_item(to_key=_commands.SkillCommand),
     ])
+
+    #
+
+    els.append(
+        tool_catalog_entries().bind_item_consts(
+            _tools.skill_tool(),
+        ),
+    )
 
     #
 
