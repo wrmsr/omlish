@@ -1,3 +1,5 @@
+import contextlib
+
 import pytest
 
 from .. import default
@@ -5,12 +7,28 @@ from ..base import HttpClientError
 from ..base import HttpClientRequest
 from ..base import StatusHttpClientError
 from ..httpx import HttpxHttpClient
-from ..urllib import UrllibHttpClient
+from ..middleware import MiddlewareHttpClient
+from ..middleware import RedirectHandlingHttpClientMiddleware
+from ..pipelines.sync import IoPipelineHttpClient
+from ..urllib import UrllibHttpClient  # noqa
+
+
+@contextlib.contextmanager
+def middleware_pipeline_http_client():
+    with IoPipelineHttpClient() as client0:
+        with MiddlewareHttpClient(
+                client0,
+                [
+                    RedirectHandlingHttpClientMiddleware(),
+                ],
+        ) as client1:
+            yield client1
 
 
 CLIENTS: list = [
     UrllibHttpClient,
     HttpxHttpClient,
+    middleware_pipeline_http_client,
 ]
 
 

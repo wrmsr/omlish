@@ -16,7 +16,7 @@ from ...headers import HttpHeaders
 from ...pipelines.clients.clients import IoPipelineHttpClientHandler
 from ...pipelines.clients.requests import IoPipelineHttpRequestCompressor
 from ...pipelines.clients.requests import IoPipelineHttpRequestEncoder
-from ...pipelines.clients.responses import IoPipelineHttpResponseAggregatorDecoder
+from ...pipelines.clients.responses import IoPipelineHttpResponseDechunker
 from ...pipelines.clients.responses import IoPipelineHttpResponseDecoder
 from ...pipelines.clients.responses import IoPipelineHttpResponseDecompressor
 from ...pipelines.requests import FullIoPipelineHttpRequest
@@ -106,8 +106,9 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
                 *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
                 IoPipelineHttpResponseDecoder(),
+                IoPipelineHttpResponseDechunker(),
                 IoPipelineHttpResponseDecompressor(),
-                IoPipelineHttpResponseAggregatorDecoder(),
+                # IoPipelineHttpResponseAggregatorDecoder(enabled='unless_chunked'),
 
                 IoPipelineHttpRequestEncoder(),
                 IoPipelineHttpRequestCompressor(),

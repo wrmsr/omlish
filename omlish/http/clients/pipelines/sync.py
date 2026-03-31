@@ -2,6 +2,7 @@
 # @omlish-lite
 import collections  # noqa
 import errno
+import io
 import socket
 import typing as ta
 
@@ -9,6 +10,7 @@ from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from ....io.readers import BytesReader
 from ....io.readers import BytesReaders
+from ....io.streams.utils import ByteStreamBuffers
 from ....lite.check import check
 from ...clients.base import HttpClientContext
 from ...clients.base import HttpClientRequest
@@ -16,6 +18,10 @@ from ...clients.sync import HttpClient
 from ...clients.sync import StreamHttpClientResponse
 from ...pipelines.clients.clients import IoPipelineHttpClientMessages
 from ...pipelines.responses import FullIoPipelineHttpResponse
+from ...pipelines.responses import IoPipelineHttpResponseBodyData
+from ...pipelines.responses import IoPipelineHttpResponseEnd
+from ...pipelines.responses import IoPipelineHttpResponseHead
+from ..base import HttpClientError
 from .base import BaseIoPipelineHttpClient
 
 
@@ -37,10 +43,34 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
             self._done = False
 
         def read1(self, n: int = -1, /) -> bytes:
-            raise NotImplementedError
+            while True:
+                out = check.not_none(self._drv.next())
+
+                if isinstance(out, IoPipelineHttpClientMessages.Output):
+                    msg = out.msg
+
+                    if isinstance(msg, IoPipelineHttpResponseBodyData):
+                        return ByteStreamBuffers.to_bytes(msg.data)
+
+                    elif isinstance(msg, IoPipelineHttpResponseEnd):
+                        pass
+
+                    elif isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
+                        return b''
+
+                    else:
+                        raise TypeError(out)  # noqa
+
+                else:
+                    raise TypeError(out)  # noqa
 
         def read(self, n: int = -1, /) -> bytes:
-            raise NotImplementedError
+            buf = io.BytesIO()
+
+            while b := self.read1(n):
+                buf.write(b)
+
+            return buf.getvalue()
 
     #
 
@@ -52,83 +82,100 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
                 raise
 
     def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
-        prepared = self._prepare_request(req)
-
-        sock = socket.create_connection((prepared.parsed_url.host, prepared.parsed_url.port))
-
         try:
-            self._try_set_nodelay(sock)
+            prepared = self._prepare_request(req)
 
-            drv = SyncSocketIoPipelineDriver(prepared.pipeline_spec, sock)
+            sock = socket.create_connection((prepared.parsed_url.host, prepared.parsed_url.port))
 
-            drv.enqueue(IoPipelineHttpClientMessages.Request(
-                prepared.full_request,
-                # aggregate=...
-            ))
+            try:
+                self._try_set_nodelay(sock)
 
-            response: ta.Optional[FullIoPipelineHttpResponse] = None
+                drv = SyncSocketIoPipelineDriver(prepared.pipeline_spec, sock)
 
-            while True:
-                if (out := drv.next()) is not None:
-                    if isinstance(out, IoPipelineHttpClientMessages.Output):
-                        msg = out.msg
+                drv.enqueue(IoPipelineHttpClientMessages.Request(
+                    prepared.full_request,
+                    # aggregate=...
+                ))
 
-                        if isinstance(msg, FullIoPipelineHttpResponse):
-                            check.none(response)
-                            response = msg
+                response: ta.Union[IoPipelineHttpResponseHead, FullIoPipelineHttpResponse, None] = None
 
-                            drv.enqueue(IoPipelineHttpClientMessages.Close())
+                while True:
+                    if (out := drv.next()) is not None:
+                        if isinstance(out, IoPipelineHttpClientMessages.Output):
+                            msg = out.msg
 
-                        elif isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
-                            pass
+                            if isinstance(msg, IoPipelineHttpResponseHead):
+                                check.none(response)
+                                response = msg
+
+                                break
+
+                            if isinstance(msg, FullIoPipelineHttpResponse):
+                                check.none(response)
+                                response = msg
+
+                                drv.enqueue(IoPipelineHttpClientMessages.Close())
+
+                            elif isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
+                                pass
+
+                            else:
+                                raise TypeError(out)  # noqa
 
                         else:
                             raise TypeError(out)  # noqa
 
-                    else:
-                        raise TypeError(out)  # noqa
+                    if not drv.pipeline.is_ready:
+                        break
 
-                if not drv.pipeline.is_ready:
-                    break
+                #
 
-            #
+                response = check.not_none(response)  # type: ignore[assignment]
 
-            response = check.not_none(response)
+                head: IoPipelineHttpResponseHead
 
-            response_reader: BytesReader
+                response_reader: BytesReader
 
-            if isinstance(response, FullIoPipelineHttpResponse):
-                response_reader = BytesReaders.of_bytes(response.body)
+                if isinstance(response, FullIoPipelineHttpResponse):
+                    head = check.not_none(response).head
 
-                drv.close()
+                    response_reader = BytesReaders.of_bytes(response.body)
+
+                    drv.close()
+                    sock.close()
+
+                    def close() -> None:
+                        pass
+
+                elif isinstance(response, IoPipelineHttpResponseHead):
+                    head = response
+
+                    response_reader = self._DriverResponseReader(drv, sock)
+
+                    def close() -> None:
+                        try:
+                            drv.close()
+                        finally:
+                            sock.close()
+
+                else:
+                    raise TypeError(response)  # noqa
+
+                #
+
+                return StreamHttpClientResponse(
+                    status=head.status,
+                    headers=head.headers,
+                    request=req,
+                    underlying=drv,
+                    _stream=response_reader,
+                    _closer=close,
+                )
+
+            except BaseException:
                 sock.close()
 
-                def close() -> None:
-                    pass
+                raise
 
-            else:
-                response_reader = self._DriverResponseReader(drv, sock)  # type: ignore[unreachable]
-
-                def close() -> None:
-                    try:
-                        drv.close()
-                    finally:
-                        sock.close()
-
-            #
-
-            head = check.not_none(response).head
-
-            return StreamHttpClientResponse(
-                status=head.status,
-                headers=head.headers,
-                request=req,
-                underlying=drv,
-                _stream=response_reader,
-                _closer=close,
-            )
-
-        except BaseException:
-            sock.close()
-
-            raise
+        except Exception as e:
+            raise HttpClientError from e
