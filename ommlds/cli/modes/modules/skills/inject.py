@@ -1,8 +1,8 @@
 from omlish import inject as inj
 from omlish import lang
 
+from ..... import minichain as mc
 from .....minichain.drivers.tools.injection import tool_catalog_entries
-from ...chat.facades.commands.injection import commands
 from .configs import SkillsConfig
 
 
@@ -28,7 +28,7 @@ def bind_skills(cfg: SkillsConfig = SkillsConfig()) -> inj.Elements:
 
     els.extend([
         inj.bind(_commands.SkillCommand, singleton=True),
-        commands().bind_item(to_key=_commands.SkillCommand),
+        mc.facades.injection.commands().bind_item(to_key=_commands.SkillCommand),
     ])
 
     #

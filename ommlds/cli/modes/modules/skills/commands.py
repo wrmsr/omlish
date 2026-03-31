@@ -1,16 +1,16 @@
 from omlish.argparse import all as argparse
 
-from ...chat.facades.commands.base import Command
+from ..... import minichain as mc
 
 
 ##
 
 
-class SkillCommand(Command):
+class SkillCommand(mc.facades.Command):
     def _configure_parser(self, parser: argparse.ArgumentParser) -> None:
         super()._configure_parser(parser)
 
         parser.add_argument('args')
 
-    async def _run_args(self, ctx: Command.Context, args: argparse.Namespace) -> None:
+    async def _run_args(self, ctx: mc.facades.Command.Context, args: argparse.Namespace) -> None:
         raise NotImplementedError

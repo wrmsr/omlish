@@ -1,15 +1,14 @@
-from ...facades.chat import UserInputSender
-from ...facades.facade import ChatFacade
+from ...... import minichain as mc
 
 
 ##
 
 
-class BareUserInputSender(UserInputSender):
+class BareUserInputSender(mc.facades.UserInputSender):
     def __init__(
             self,
             *,
-            facade: ChatFacade,
+            facade: mc.facades.Facade,
     ) -> None:
         super().__init__()
 

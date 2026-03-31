@@ -9,8 +9,6 @@ from .configs import BareInterfaceConfig
 with lang.auto_proxy_import(globals()):
     from .....interfaces.bare.inputs import asyncs as _inputs_asyncs
     from .....interfaces.bare.inputs import sync as _inputs_sync
-    from ...facades import chat as _facades_chat
-    from ...facades import ui as _facades_ui
     from . import chat as _chat
     from . import interactive as _interactive
     from . import oneshot as _oneshot
@@ -63,14 +61,14 @@ def bind_bare(cfg: BareInterfaceConfig = BareInterfaceConfig()) -> inj.Elements:
 
     els.extend([
         inj.bind(_chat.BareUserInputSender, singleton=True),
-        inj.bind(_facades_chat.UserInputSender, to_key=_chat.BareUserInputSender),
+        inj.bind(mc.facades.UserInputSender, to_key=_chat.BareUserInputSender),
     ])
 
     #
 
     els.extend([
-        inj.bind(_facades_ui.PrintMessageDisplayer, singleton=True),
-        inj.bind(_facades_ui.UiMessageDisplayer, to_key=_facades_ui.PrintMessageDisplayer),
+        inj.bind(mc.facades.PrintMessageDisplayer, singleton=True),
+        inj.bind(mc.facades.UiMessageDisplayer, to_key=mc.facades.PrintMessageDisplayer),
     ])
 
     #

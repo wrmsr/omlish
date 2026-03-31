@@ -1,6 +1,6 @@
 from omlish.argparse import all as argparse
 
-from ..chat import UserInputSenderGetter
+from ..input import UserInputSenderGetter
 from .base import Command
 
 

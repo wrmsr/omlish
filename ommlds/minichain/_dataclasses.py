@@ -22982,7 +22982,7 @@ def _process_dataclass__2eae35290b327f0d934cd6747eeb9064b6f01259():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.minichain.facades.facade', 'ArgsCommandError'),
+        ('ommlds.minichain.facades.impl', 'ArgsCommandError'),
     ),
 )
 def _process_dataclass__0843ef2470048b534567b0a1d3bd52e06d96c21b():
@@ -23095,7 +23095,7 @@ def _process_dataclass__0843ef2470048b534567b0a1d3bd52e06d96c21b():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.facades.facade', 'Command.Context'),
+        ('ommlds.minichain.facades.impl', 'Command.Context'),
     ),
 )
 def _process_dataclass__b85c47820b05dab0f4c49061d498738fe67a73a4():
@@ -23231,7 +23231,7 @@ def _process_dataclass__b85c47820b05dab0f4c49061d498738fe67a73a4():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.facades.facade', 'ConcatFacadeText'),
+        ('ommlds.minichain.facades.impl', 'ConcatFacadeText'),
     ),
 )
 def _process_dataclass__d8fe535b51d70dc7c60329bed3f200e1230f614a():
@@ -23358,7 +23358,7 @@ def _process_dataclass__d8fe535b51d70dc7c60329bed3f200e1230f614a():
     plan_repr_sha1='32aca8223fa20a902d4408c1bd046d52b1c41318',
     op_ref_idents=(),
     cls_names=(
-        ('ommlds.minichain.facades.facade', 'FacadeText'),
+        ('ommlds.minichain.facades.impl', 'FacadeText'),
     ),
 )
 def _process_dataclass__32aca8223fa20a902d4408c1bd046d52b1c41318():
@@ -23498,7 +23498,7 @@ def _process_dataclass__32aca8223fa20a902d4408c1bd046d52b1c41318():
         '__dataclass__repr__default_fn',
     ),
     cls_names=(
-        ('ommlds.minichain.facades.facade', 'FacadeTextStyle'),
+        ('ommlds.minichain.facades.impl', 'FacadeTextStyle'),
     ),
 )
 def _process_dataclass__aaaaf67b231f933c820a9536a9ad09676619608d():
@@ -23671,7 +23671,7 @@ def _process_dataclass__aaaaf67b231f933c820a9536a9ad09676619608d():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.facades.facade', 'StrFacadeText'),
+        ('ommlds.minichain.facades.impl', 'StrFacadeText'),
     ),
 )
 def _process_dataclass__f4e6b81cb21510ffec9598279f74b9afddc6c1de():
@@ -23822,7 +23822,7 @@ def _process_dataclass__f4e6b81cb21510ffec9598279f74b9afddc6c1de():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.facades.facade', 'StyleFacadeText'),
+        ('ommlds.minichain.facades.impl', 'StyleFacadeText'),
     ),
 )
 def _process_dataclass__1146b322d3d7f9de2743046ef41ed24699798077():

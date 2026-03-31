@@ -10,7 +10,6 @@ from omlish.asyncs.relays import SchedulingAsyncBufferRelay
 from omlish.logs import all as logs
 
 from ...... import minichain as mc
-from ...facades.facade import ChatFacade
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
 from .suggestions import SuggestionsManager
@@ -92,7 +91,7 @@ class ChatApp(
     def __init__(
             self,
             *,
-            chat_facade: ChatFacade,
+            chat_facade: mc.facades.Facade,
             chat_driver: mc.drivers.Driver,
             chat_event_queue: ChatEventQueue,
             devtools_setup: tx.DevtoolsSetup | None = None,

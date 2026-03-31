@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from .... import minichain as mc
 from ..base import Mode
 from .configs import ChatConfig
 
@@ -9,7 +10,6 @@ with lang.auto_proxy_import(globals()):
     from ...interfaces.bare.printing import inject as _printing
     from . import mode as _mode
     from .drivers import inject as _drivers
-    from .facades import inject as _facades
     from .interfaces import inject as _interfaces
 
 
@@ -24,7 +24,7 @@ def bind_chat(cfg: ChatConfig = ChatConfig()) -> inj.Elements:
     els.extend([
         _drivers.bind_driver(cfg.driver),
 
-        _facades.bind_facade(cfg.facade),
+        mc.facades.inject.bind_facade(cfg.facade),
 
         _interfaces.bind_interface(cfg.interface),
 

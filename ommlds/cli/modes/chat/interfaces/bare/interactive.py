@@ -4,7 +4,6 @@ from ...... import minichain as mc
 from .....interfaces.bare.inputs.asyncs import AsyncStringInput
 from .....interfaces.bare.inputs.asyncs import SyncAsyncStringInput
 from .....interfaces.bare.inputs.sync import InputSyncStringInput
-from ...facades.chat import UserInputSender
 from ..base import ChatInterface
 
 
@@ -18,7 +17,7 @@ class InteractiveBareChatInterface(ChatInterface):
             self,
             *,
             driver: 'mc.drivers.Driver',
-            user_input_sender: UserInputSender,
+            user_input_sender: 'mc.facades.UserInputSender',
             string_input: AsyncStringInput | None = None,
     ) -> None:
         super().__init__()

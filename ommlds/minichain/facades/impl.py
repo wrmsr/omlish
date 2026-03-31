@@ -5,12 +5,13 @@ from ..chat.metadata import MessageUuid
 from ..drivers.actions import SendUserMessagesAction
 from ..drivers.types import Driver
 from .commands.manager import CommandsManager
+from .types import Facade
 
 
 ##
 
 
-class ChatFacade:
+class FacadeImpl(Facade):
     def __init__(
             self,
             *,

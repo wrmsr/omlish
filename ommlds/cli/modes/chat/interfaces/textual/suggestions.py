@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
-from ...facades.commands.manager import CommandsManager
+from ...... import minichain as mc
 
 
 ##
@@ -28,7 +28,7 @@ class SuggestionsManager:
             self,
             config: Config = Config(),
             *,
-            commands_manager: CommandsManager,
+            commands_manager: mc.facades.CommandsManager,
     ) -> None:
         super().__init__()
 

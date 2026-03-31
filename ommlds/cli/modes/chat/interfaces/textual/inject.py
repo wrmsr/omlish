@@ -17,8 +17,6 @@ from .types import ChatAppGetter
 with lang.auto_proxy_import(globals()):
     from omdev.tui import textual as tx
 
-    from ...facades import chat as _facades_chat
-    from ...facades import ui as _facades_ui
     from . import app as _app
     from . import chat as _chat
     from . import facades as _facades
@@ -95,14 +93,14 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
 
     els.extend([
         inj.bind(_chat.TextualUserInputSender, singleton=True),
-        inj.bind(_facades_chat.UserInputSender, to_key=_chat.TextualUserInputSender),
+        inj.bind(mc.facades.UserInputSender, to_key=_chat.TextualUserInputSender),
     ])
 
     #
 
     els.extend([
         inj.bind(_facades.ChatAppUiMessageDisplayer, singleton=True),
-        inj.bind(_facades_ui.UiMessageDisplayer, to_key=_facades.ChatAppUiMessageDisplayer),
+        inj.bind(mc.facades.UiMessageDisplayer, to_key=_facades.ChatAppUiMessageDisplayer),
     ])
 
     #

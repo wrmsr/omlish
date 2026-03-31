@@ -1,17 +1,16 @@
-from ...facades.chat import UserInputSender
-from ...facades.facade import ChatFacade
+from ...... import minichain as mc
 from .types import ChatAppGetter
 
 
 ##
 
 
-class TextualUserInputSender(UserInputSender):
+class TextualUserInputSender(mc.facades.UserInputSender):
     def __init__(
             self,
             *,
             app: ChatAppGetter,
-            facade: ChatFacade,
+            facade: mc.facades.Facade,
     ) -> None:
         super().__init__()
 

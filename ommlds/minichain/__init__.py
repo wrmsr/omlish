@@ -425,6 +425,10 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from . import facades  # noqa
+
+    ##
+
     from .llms.tokens import (  # noqa
         Token,
         Tokens,
