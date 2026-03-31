@@ -5,18 +5,19 @@ import socket
 import typing as ta
 import urllib.parse
 
-from ....lite.check import check
-from ...coro._buffers import ReadableListBuffer
+from omlish.http.clients.base import HttpClientContext
+from omlish.http.clients.base import HttpClientError
+from omlish.http.clients.base import HttpClientRequest
+from omlish.http.clients.sync import HttpClient
+from omlish.http.clients.sync import StreamHttpClientResponse
+from omlish.http.coro._buffers import ReadableListBuffer
+from omlish.http.coro.io import CoroHttpIo
+from omlish.http.headers import HttpHeaders
+from omlish.http.urls import unparse_url_request_path
+from omlish.lite.check import check
+
 from ...coro.client.connection import CoroHttpClientConnection
 from ...coro.client.response import CoroHttpClientResponse
-from ...coro.io import CoroHttpIo
-from ...headers import HttpHeaders
-from ...urls import unparse_url_request_path
-from ..base import HttpClientContext
-from ..base import HttpClientError
-from ..base import HttpClientRequest
-from ..sync import HttpClient
-from ..sync import StreamHttpClientResponse
 
 
 T = ta.TypeVar('T')

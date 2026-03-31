@@ -1,16 +1,33 @@
+import contextlib
+
 import pytest
 
-from .. import default
-from ..base import HttpClientError
-from ..base import HttpClientRequest
-from ..base import StatusHttpClientError
-from ..httpx import HttpxHttpClient
-from ..urllib import UrllibHttpClient
+from omlish.http.clients import default
+from omlish.http.clients.base import HttpClientError
+from omlish.http.clients.base import HttpClientRequest
+from omlish.http.clients.base import StatusHttpClientError
+from omlish.http.clients.middleware import MiddlewareHttpClient
+from omlish.http.clients.middleware import RedirectHandlingHttpClientMiddleware
+
+from ..coro.sync import CoroHttpClient
+
+
+@contextlib.contextmanager
+def middleware_coro_http_client():
+    with CoroHttpClient() as client0:
+        with MiddlewareHttpClient(
+                client0,
+                [
+                    RedirectHandlingHttpClientMiddleware(),
+                ],
+        ) as client1:
+            yield client1
 
 
 CLIENTS: list = [
-    UrllibHttpClient,
-    HttpxHttpClient,
+    # UrllibHttpClient,
+    # HttpxHttpClient,
+    middleware_coro_http_client,
 ]
 
 
@@ -103,7 +120,6 @@ def test_clients_error_url(cls):
 
 
 @pytest.mark.online
-@pytest.mark.parametrize('cls', [c for c in CLIENTS if c is not HttpxHttpClient])
 @pytest.mark.parametrize('abs', [False, True])
 def test_clients_redirect(cls, abs):  # noqa
     with cls() as cli:

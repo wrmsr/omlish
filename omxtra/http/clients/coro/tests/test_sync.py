@@ -1,6 +1,7 @@
 import pytest
 
-from ...base import HttpClientRequest
+from omlish.http.clients.base import HttpClientRequest
+
 from ..sync import CoroHttpClient
 
 
@@ -32,9 +33,9 @@ def test_clients_stream(data, readall):
 
 @pytest.mark.online
 def test_get_zombo():
-    from ....clients.default import request
-    from ....clients.httpx import HttpxHttpClient  # noqa
-    from ....clients.urllib import UrllibHttpClient  # noqa
+    from omlish.http.clients.default import request
+    # from ....clients.httpx import HttpxHttpClient  # noqa
+    # from ....clients.urllib import UrllibHttpClient  # noqa
 
     print(request(
         'https://zombo.com/',

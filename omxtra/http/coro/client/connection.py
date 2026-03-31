@@ -46,8 +46,9 @@ import io
 import typing as ta
 import urllib.parse
 
-from ....lite.check import check
-from ..io import CoroHttpIo
+from omlish.http.coro.io import CoroHttpIo
+from omlish.lite.check import check
+
 from .errors import CoroHttpClientErrors
 from .headers import CoroHttpClientHeaders
 from .response import CoroHttpClientResponse
