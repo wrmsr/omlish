@@ -29,7 +29,7 @@ from ..minichain.backends.impls.openai.chat import OpenaiChatChoicesService
 if ta.TYPE_CHECKING:
     from ..minichain.backends.impls.mlx import chat as mc_mlx_chat
 else:
-    mc_mlx_chat = lang.proxy_import('..minichain.backends.mlxchat', __package__)
+    mc_mlx_chat = lang.proxy_import('..minichain.backends.impls.mlx.chat', __package__)
 
 
 log = logs.get_module_logger(globals())
@@ -87,8 +87,8 @@ class McServer:
             return OpenaiChatChoicesService(mc.ApiKey(load_secrets().get('openai_api_key').reveal()))
 
         elif self._config.backend == 'local':
-            model = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
-            return mc_mlx_chat.MlxChatChoicesService(mc.ModelName(model))
+            model = mc.ModelRepo('mlx-community', 'Qwen2.5-Coder-32B-Instruct-8bit')
+            return mc_mlx_chat.MlxChatChoicesService(model)
 
         else:
             raise ValueError(self._config.backend)
@@ -97,36 +97,39 @@ class McServer:
         log.info('Server running')
 
         try:
-            llm = self.llm()
-
-            with make_simple_http_server(
-                    self._config.bind,
-                    ExceptionLoggingSimpleHttpHandler(
-                        LoggingSimpleHttpHandler(
-                            McServerHandlerSimple(llm),
+            with lang.maybe_managing(self.llm()) as llm:
+                with make_simple_http_server(
+                        self._config.bind,
+                        ExceptionLoggingSimpleHttpHandler(
+                            LoggingSimpleHttpHandler(
+                                McServerHandlerSimple(llm),
+                                log,
+                            ),
                             log,
                         ),
-                        log,
-                    ),
-            ) as server:
-                if (linger_s := self._config.linger_s) is None:
-                    linger_s = float('inf')
+                ) as server:
+                    if (linger_s := self._config.linger_s) is None:
+                        linger_s = float('inf')
 
-                deadline = time.monotonic() + linger_s
+                    deadline = time.monotonic() + linger_s
 
-                with server.poll_context() as pc:
-                    while True:
-                        if time.monotonic() >= deadline:
-                            log.info('Linger deadline exceeded')
-                            break
+                    with server.poll_context() as pc:
+                        while True:
+                            if time.monotonic() >= deadline:
+                                log.info('Linger deadline exceeded')
+                                break
 
-                        res = pc.poll(5.)
+                            res = pc.poll(5.)
 
-                        if res in (SocketHandlerServer.PollResult.ERROR, SocketHandlerServer.PollResult.SHUTDOWN):
-                            break
+                            if res in (SocketHandlerServer.PollResult.ERROR, SocketHandlerServer.PollResult.SHUTDOWN):
+                                break
 
-                        if res == SocketHandlerServer.PollResult.CONNECTION:
-                            deadline = time.monotonic() + linger_s
+                            if res == SocketHandlerServer.PollResult.CONNECTION:
+                                deadline = time.monotonic() + linger_s
+
+        except BaseException:
+            log.exception('Server error')
+            raise
 
         finally:
             log.info('Server exiting')

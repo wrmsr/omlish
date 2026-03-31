@@ -43,7 +43,7 @@ class Spawn(dc.Frozen, final=True):
     inherit_fds: ta.Collection[int] | None = None
 
 
-class Spawner(lang.ContextManaged, lang.Abstract):
+class Spawner(lang.SelfContextManaged, lang.Abstract):
     @abc.abstractmethod
     def spawn(self, spawn: Spawn) -> None:
         raise NotImplementedError
