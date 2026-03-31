@@ -120,6 +120,7 @@ def test_clients_error_url(cls):
 
 
 @pytest.mark.online
+@pytest.mark.parametrize('cls', CLIENTS)
 @pytest.mark.parametrize('abs', [False, True])
 def test_clients_redirect(cls, abs):  # noqa
     with cls() as cli:

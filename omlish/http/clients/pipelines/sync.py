@@ -7,13 +7,13 @@ import typing as ta
 
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
+from ....io.readers import BytesReader
+from ....io.readers import BytesReaders
 from ....lite.check import check
 from ...clients.base import HttpClientContext
 from ...clients.base import HttpClientRequest
 from ...clients.sync import HttpClient
 from ...clients.sync import StreamHttpClientResponse
-from ....io.readers import BytesReader
-from ....io.readers import BytesReaders
 from ...pipelines.clients.clients import IoPipelineHttpClientMessages
 from ...pipelines.responses import FullIoPipelineHttpResponse
 from .base import BaseIoPipelineHttpClient

@@ -8,35 +8,35 @@ import functools
 import socket
 import typing as ta
 
-from ....io.pipelines.core import IoPipeline
-from ....io.pipelines.core import IoPipelineHandler
-from ....io.pipelines.core import IoPipelineHandlerContext
-from ....io.pipelines.core import IoPipelineMessages
-from ....io.pipelines.core import IoPipelineMetadata
-from ....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
-from ....io.pipelines.flow.types import IoPipelineFlow
-from ....io.pipelines.flow.types import IoPipelineFlowMessages
-from ....io.streams.utils import ByteStreamBuffers
-from ....lite.check import check
-from ....sockets.addresses import SocketAndAddress
-from ....sockets.bind import CanSocketBinder
-from ....sockets.bind import SocketBinder
-from ....sockets.handlers.server import SocketServer
-from ....sockets.handlers.simple import ExecutorSocketHandler
-from ....sockets.handlers.simple import SocketHandler
-from ....sockets.handlers.simple import SocketWrappingSocketHandler
-from ....sockets.handlers.simple import StandardSocketHandler
-from ....sockets.handlers.ssl import SslErrorHandlingSocketHandler
-from ....sockets.handlers.threading import ThreadingSocketHandler
-from ...headers import HttpHeaders
-from ...simple.handlers import HttpHandler
-from ...simple.handlers import HttpHandlerRequest
-from ..requests import FullIoPipelineHttpRequest
-from ..responses import FullIoPipelineHttpResponse
-from ..responses import IoPipelineHttpResponseHead
-from .requests import IoPipelineHttpRequestAggregatorDecoder
-from .requests import IoPipelineHttpRequestDecoder
-from .responses import IoPipelineHttpResponseEncoder
+from ...io.pipelines.core import IoPipeline
+from ...io.pipelines.core import IoPipelineHandler
+from ...io.pipelines.core import IoPipelineHandlerContext
+from ...io.pipelines.core import IoPipelineMessages
+from ...io.pipelines.core import IoPipelineMetadata
+from ...io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
+from ...io.pipelines.flow.types import IoPipelineFlow
+from ...io.pipelines.flow.types import IoPipelineFlowMessages
+from ...io.streams.utils import ByteStreamBuffers
+from ...lite.check import check
+from ...sockets.addresses import SocketAndAddress
+from ...sockets.bind import CanSocketBinder
+from ...sockets.bind import SocketBinder
+from ...sockets.handlers.server import SocketServer
+from ...sockets.handlers.simple import ExecutorSocketHandler
+from ...sockets.handlers.simple import SocketHandler
+from ...sockets.handlers.simple import SocketWrappingSocketHandler
+from ...sockets.handlers.simple import StandardSocketHandler
+from ...sockets.handlers.ssl import SslErrorHandlingSocketHandler
+from ...sockets.handlers.threading import ThreadingSocketHandler
+from ..headers import HttpHeaders
+from ..pipelines.requests import FullIoPipelineHttpRequest
+from ..pipelines.responses import FullIoPipelineHttpResponse
+from ..pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from ..pipelines.servers.requests import IoPipelineHttpRequestDecoder
+from ..pipelines.servers.responses import IoPipelineHttpResponseEncoder
+from ..pipelines.servers.responses import IoPipelineHttpResponseHead
+from .handlers import HttpHandler
+from .handlers import HttpHandlerRequest
 
 
 if ta.TYPE_CHECKING:
