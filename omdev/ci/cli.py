@@ -8,7 +8,8 @@ Inputs:
 
 ==
 
-./python -m omdev.ci run --cache-dir omdev/ci/tests/cache omdev/ci/tests/project omlish-ci
+./python -m omdev.ci run --cache-dir omdev/ci/tests/cache omdev/ci/tests/project omlish-ci bash
+./python -m omdev.ci run --cache-dir ~/.cache/omlish/ci . omlish-ci bash
 """
 import argparse
 import asyncio
