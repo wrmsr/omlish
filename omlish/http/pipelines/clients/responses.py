@@ -4,6 +4,7 @@ import typing as ta
 
 from ...parsing import HttpParser
 from ..aggregators import IoPipelineHttpObjectAggregatorDecoder
+from ..chunking import IoPipelineHttpObjectDechunker
 from ..compression.decompressors import IoPipelineHttpObjectDecompressor
 from ..decoders import IoPipelineHttpObjectDecoder
 from ..responses import IoPipelineHttpResponseObjects
@@ -25,6 +26,13 @@ class IoPipelineHttpResponseAggregatorDecoder(
     IoPipelineHttpObjectAggregatorDecoder,
 ):
     _if_content_length_missing: ta.Final = 'eof'
+
+
+##
+
+
+class IoPipelineHttpResponseDechunker(IoPipelineHttpResponseObjects, IoPipelineHttpObjectDechunker):
+    pass
 
 
 ##
