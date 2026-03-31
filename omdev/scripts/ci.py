@@ -14,9 +14,12 @@ Inputs:
 
 ==
 
-./python -m omdev.ci run --cache-dir omdev/ci/tests/cache omdev/ci/tests/project omlish-ci bash
-./python -m omdev.ci run --cache-dir ~/.cache/omlish/ci . omlish-ci bash
-"""
+run --cache-dir omdev/ci/tests/cache -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
+
+run --cache-dir omdev/ci/tests/cache --cache-served-docker --always-build -e CI=1 omdev/ci/tests/project omlish-ci pytest tests
+
+run --cache-dir ~/.cache/omlish/ci . omlish-ci bash
+"""  # noqa
 import abc
 import argparse
 import asyncio
@@ -209,7 +212,7 @@ def __omlish_amalg__():  # noqa
             dict(path='github/cli.py', sha1='6d14b0eb4ca5f606ad2821b63b9707ce57f50406'),
             dict(path='github/inject.py', sha1='99c0dd7c55767e7c49f70b7edac25da67f718b2e'),
             dict(path='inject.py', sha1='e86b16d79a113a4f387e68ed0db1d067bcada93a'),
-            dict(path='cli.py', sha1='511afcac9df0f3aa445b78f92caf5d1b625b761e'),
+            dict(path='cli.py', sha1='0e9d5fe4982f8e5ef6aa70b34e17fe3d45f27901'),
         ],
     )
 
