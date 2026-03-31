@@ -20,7 +20,7 @@ from ....sockets.handlers.simple import SocketWrappingSocketHandler
 from ....sockets.handlers.simple import StandardSocketHandler
 from ....sockets.handlers.ssl import SslErrorHandlingSocketHandler
 from ....sockets.handlers.threading import ThreadingSocketHandler
-from ...handlers import HttpHandler
+from ...simple.handlers import HttpHandler
 from .server import CoroHttpServer
 from .sockets import CoroHttpServerSocketHandler
 

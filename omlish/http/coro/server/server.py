@@ -63,14 +63,14 @@ import typing as ta
 
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
-from ...handlers import HttpHandler
-from ...handlers import HttpHandlerRequest
-from ...handlers import HttpHandlerResponseData
-from ...handlers import HttpHandlerResponseStreamedData
-from ...handlers import UnsupportedMethodHttpHandlerError
 from ...parsing import HttpParseError
 from ...parsing import HttpParser
 from ...parsing import ParsedHttpMessage
+from ...simple.handlers import HttpHandler
+from ...simple.handlers import HttpHandlerRequest
+from ...simple.handlers import HttpHandlerResponseData
+from ...simple.handlers import HttpHandlerResponseStreamedData
+from ...simple.handlers import UnsupportedMethodHttpHandlerError
 from ...versions import HttpVersion
 from ...versions import HttpVersions
 from ..io import CoroHttpIo

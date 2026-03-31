@@ -8,8 +8,8 @@ import typing as ta
 
 from omlish.docker.ports import DockerPortRelay
 from omlish.http.coro.server.simple import make_simple_http_server
-from omlish.http.handlers import HttpHandler
-from omlish.http.handlers import LoggingHttpHandler
+from omlish.http.simple.handlers import HttpHandler
+from omlish.http.simple.handlers import LoggingHttpHandler
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.contextmanagers import AsyncExitStacked

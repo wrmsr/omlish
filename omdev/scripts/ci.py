@@ -146,7 +146,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/sockets.py', sha1='8d24dae988a30bb73f167a9ab62d4fc9eef4ad06'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
-            dict(path='../../omlish/http/handlers.py', sha1='2b97d76b8e2e507b5c5b6a241d077c00960ee638'),
+            dict(path='../../omlish/http/simple/handlers.py', sha1='18f545608e9708c9b1c9711bebde3e8d357cc484'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
@@ -163,7 +163,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
             dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
             dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
-            dict(path='../../omlish/http/coro/server/server.py', sha1='7c98ff3073835079b4170c1235332f1c620cbf52'),
+            dict(path='../../omlish/http/coro/server/server.py', sha1='0a2739bc15256194346c93efef37bbce8cb51e92'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
@@ -178,15 +178,15 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
-            dict(path='../dataserver/http.py', sha1='f85ca91015bac434281326ef7885babd9d6d834c'),
+            dict(path='../dataserver/http.py', sha1='ee3797df26d6fe434d226c8470c2b4b1d7909c49'),
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
-            dict(path='../../omlish/http/coro/server/simple.py', sha1='5a2c66c9aa9f1176d2054e1d5d9e59279d96d69f'),
+            dict(path='../../omlish/http/coro/server/simple.py', sha1='e4718a476a94b0f4f82ec55ae94a8248e8de9b78'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
-            dict(path='docker/dataserver.py', sha1='b5ca4ed8b9e2029b69dcced6db14444b80c0c664'),
+            dict(path='docker/dataserver.py', sha1='126c3ab0b41eb83308b73daf1380a9048c171b66'),
             dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
@@ -280,7 +280,7 @@ SocketHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 # ../../omlish/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
-# ../../omlish/http/handlers.py
+# ../../omlish/http/simple/handlers.py
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
 HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
@@ -10115,7 +10115,7 @@ def yaml_detect_line_break_char(src: str) -> str:
 
 
 ########################################
-# ../../../omlish/http/handlers.py
+# ../../../omlish/http/simple/handlers.py
 
 
 ##

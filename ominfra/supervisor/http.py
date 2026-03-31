@@ -5,10 +5,10 @@ import socket
 import typing as ta
 
 from omlish.http.coro.server.fdio import CoroHttpServerConnectionFdioHandler
-from omlish.http.handlers import HttpHandler
-from omlish.http.handlers import HttpHandler_
-from omlish.http.handlers import HttpHandlerRequest
-from omlish.http.handlers import HttpHandlerResponse
+from omlish.http.simple.handlers import HttpHandler
+from omlish.http.simple.handlers import HttpHandler_
+from omlish.http.simple.handlers import HttpHandlerRequest
+from omlish.http.simple.handlers import HttpHandlerResponse
 from omlish.io.fdio.handlers import SocketFdioHandler
 from omlish.lite.check import check
 from omlish.lite.json import JSON_PRETTY_KWARGS

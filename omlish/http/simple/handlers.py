@@ -6,10 +6,10 @@ import http.server
 import logging
 import typing as ta
 
-from ..lite.abstract import Abstract
-from ..logs.protocols import LoggerLike
-from ..sockets.addresses import SocketAddress
-from .parsing import ParsedHttpHeaders
+from ...lite.abstract import Abstract
+from ...logs.protocols import LoggerLike
+from ...sockets.addresses import SocketAddress
+from ..parsing import ParsedHttpHeaders
 
 
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias

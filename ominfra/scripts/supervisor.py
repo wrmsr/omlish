@@ -154,27 +154,27 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/http/coro/_buffers.py', sha1='842ebf09077a306689618a9a11ac7faba2a0a22e'),
-            dict(path='../../omlish/http/handlers.py', sha1='2b97d76b8e2e507b5c5b6a241d077c00960ee638'),
+            dict(path='../../omlish/http/simple/handlers.py', sha1='18f545608e9708c9b1c9711bebde3e8d357cc484'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='c90ba13e9e5ee795b6af752a6f25f8bcfd7f88a0'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
-            dict(path='../../omlish/http/coro/server/server.py', sha1='7c98ff3073835079b4170c1235332f1c620cbf52'),
+            dict(path='../../omlish/http/coro/server/server.py', sha1='0a2739bc15256194346c93efef37bbce8cb51e92'),
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
-            dict(path='../../omlish/http/coro/server/fdio.py', sha1='28217af764cfdd4d3447783da97a3217160a359f'),
+            dict(path='../../omlish/http/coro/server/fdio.py', sha1='7dd3710481ab161a8390714ee17221ae35690a45'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='9e65e562395ad04e3f3a314f946b7a4e58a601da'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
-            dict(path='http.py', sha1='6a144e4c93abefc5f9cdba207e807ea75f8f2d5d'),
+            dict(path='http.py', sha1='a232396660531ecedb9d18f7d97aa31fb3bdfe18'),
             dict(path='io.py', sha1='6ba708a8396c212afdd1d314c9b5804c2d66646e'),
             dict(path='processimpl.py', sha1='ac6cc63f2259d73b714522e028056f7944ed6084'),
             dict(path='setupimpl.py', sha1='b4b8b8c3e1d71a0e6794fb0a845181f3662a6bfd'),
@@ -248,7 +248,7 @@ LoggingContextInfo = ta.Any  # ta.TypeAlias
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
 
-# ../../omlish/http/handlers.py
+# ../../omlish/http/simple/handlers.py
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
 HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
@@ -9435,7 +9435,7 @@ class IncrementalWriteBuffer:
 
 
 ########################################
-# ../../../omlish/http/handlers.py
+# ../../../omlish/http/simple/handlers.py
 
 
 ##

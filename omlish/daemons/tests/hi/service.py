@@ -7,8 +7,8 @@ import typing as ta
 from .... import cached
 from .... import check
 from ....http.coro.server.simple import make_simple_http_server
-from ....http.handlers import LoggingHttpHandler
-from ....http.handlers import StringResponseHttpHandler
+from ....http.simple.handlers import LoggingHttpHandler
+from ....http.simple.handlers import StringResponseHttpHandler
 from ....logs import all as logs
 from ....sockets.bind import SocketBinder
 from ... import spawning

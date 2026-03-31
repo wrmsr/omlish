@@ -6,7 +6,7 @@ import typing as ta
 from ....io.fdio.handlers import SocketFdioHandler
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
-from ...handlers import HttpHandler
+from ...simple.handlers import HttpHandler
 from .._buffers import IncrementalWriteBuffer
 from .._buffers import ReadableListBuffer
 from ..io import CoroHttpIo

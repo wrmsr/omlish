@@ -12,11 +12,11 @@ from omlish import cached
 from omlish import check
 from omlish import lang
 from omlish.http.coro.server.simple import make_simple_http_server
-from omlish.http.handlers import ExceptionLoggingHttpHandler
-from omlish.http.handlers import HttpHandler_
-from omlish.http.handlers import HttpHandlerRequest
-from omlish.http.handlers import HttpHandlerResponse
-from omlish.http.handlers import LoggingHttpHandler
+from omlish.http.simple.handlers import ExceptionLoggingHttpHandler
+from omlish.http.simple.handlers import HttpHandler_
+from omlish.http.simple.handlers import HttpHandlerRequest
+from omlish.http.simple.handlers import HttpHandlerResponse
+from omlish.http.simple.handlers import LoggingHttpHandler
 from omlish.logs import all as logs
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder
