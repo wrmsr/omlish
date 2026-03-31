@@ -471,6 +471,10 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from . import modules  # noqa
+
+    ##
+
     from .registries.globals import (  # noqa
         get_registry_cls,
         register_type,

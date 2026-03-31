@@ -7,6 +7,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.argparse import all as ap
 
+from .. import minichain as mc
 from .modes.chat.configs import ChatConfig
 from .modes.chat.interfaces.bare.configs import BareInterfaceConfig
 from .modes.chat.interfaces.configs import InterfaceConfig
@@ -14,8 +15,6 @@ from .modes.chat.interfaces.textual.configs import TextualInterfaceConfig
 from .modes.completion.configs import CompletionConfig
 from .modes.configs import ModeConfig
 from .modes.embedding.configs import EmbeddingConfig
-from .modes.modules.code.configs import CodeConfig
-from .modes.modules.skills.configs import SkillsConfig
 
 
 ModeConfigT = ta.TypeVar('ModeConfigT', bound=ModeConfig)
@@ -341,7 +340,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                 cfg,
                 modules=[
                     *(cfg.modules or []),
-                    CodeConfig(),
+                    mc.modules.CodeConfig(),
                 ],
                 driver=dc.replace(
                     cfg.driver,
@@ -372,7 +371,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                 cfg,
                 modules=[
                     *(cfg.modules or []),
-                    SkillsConfig(),
+                    mc.modules.SkillsConfig(),
                 ],
             )
 

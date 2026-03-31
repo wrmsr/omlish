@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from ... import minichain as mc
 from .chat.configs import ChatConfig
 from .completion.configs import CompletionConfig
 from .configs import ModeConfig
@@ -12,7 +13,6 @@ with lang.auto_proxy_import(globals()):
     from .chat import inject as _chat
     from .completion import inject as _completion
     from .embedding import inject as _embedding
-    from .modules import inject as _modules
 
 
 ##
@@ -47,7 +47,7 @@ def bind_modes(
     #
 
     for mod_cfg in cfg.modules or []:
-        els.extend(_modules.bind_module(mod_cfg))
+        els.extend(mc.modules.inject.bind_module(mod_cfg))
 
     #
 

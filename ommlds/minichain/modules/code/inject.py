@@ -1,7 +1,8 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ..... import minichain as mc
+from ...drivers.preparing.injection import placeholder_contents_providers
+from ...drivers.preparing.injection import system_message_providers
 from .configs import CodeConfig
 
 
@@ -19,12 +20,12 @@ def bind_code(cfg: CodeConfig = CodeConfig()) -> inj.Elements:
 
     els.extend([
         inj.bind(_preparing.CodeSystemMessageProvider, singleton=True),
-        mc.drivers.injection.system_message_providers().bind_item(to_key=_preparing.CodeSystemMessageProvider),
+        system_message_providers().bind_item(to_key=_preparing.CodeSystemMessageProvider),
     ])
 
     els.extend([
         inj.bind(_preparing.CodePlaceholderContentsProvider, singleton=True),
-        mc.drivers.injection.placeholder_contents_providers().bind_item(to_key=_preparing.CodePlaceholderContentsProvider),  # noqa
+        placeholder_contents_providers().bind_item(to_key=_preparing.CodePlaceholderContentsProvider),  # noqa
     ])
 
     #
