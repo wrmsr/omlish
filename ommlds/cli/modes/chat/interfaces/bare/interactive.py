@@ -38,6 +38,6 @@ class InteractiveBareChatInterface(ChatInterface):
             except EOFError:
                 break
 
-            await self._user_input_sender.send_user_input(s)
+            await self._user_input_sender.send_user_input(s, no_echo=True)
 
         await self._driver.stop()
