@@ -7,12 +7,12 @@ socat TCP-LISTEN:8000,fork UNIX-CONNECT:foo.sock
 """
 import typing as ta
 
-from ....lite.check import check
+from .... import check
 from ...coro.server.server import UnsupportedMethodSimpleHttpHandlerError
-from ...coro.server.simple import make_simple_http_server
 from ..handlers import SimpleHttpHandlerRequest
 from ..handlers import SimpleHttpHandlerResponse
 from ..handlers import SimpleHttpHandlerResponseStreamedData
+from ..pipelines import make_simple_http_server
 
 
 ##

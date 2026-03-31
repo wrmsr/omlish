@@ -8,10 +8,10 @@ from omlish import codecs as cdu
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.http import all as hu
-from omlish.http.coro.server.simple import make_simple_http_server
-from omlish.http.handlers import HttpHandlerRequest
-from omlish.http.handlers import HttpHandlerResponse
-from omlish.http.handlers import HttpHandlerResponseStreamedData
+from omlish.http.simple.pipelines import make_simple_http_server
+from omlish.http.simple.handlers import SimpleHttpHandlerRequest
+from omlish.http.simple.handlers import SimpleHttpHandlerResponse
+from omlish.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
 from omlish.io.coro import iterable_bytes_stepped_coro
 
 
@@ -24,12 +24,12 @@ class SimpleMitmHandler:
     @dc.dataclass(frozen=True)
     class Request:
         when: datetime.datetime
-        request: HttpHandlerRequest
+        request: SimpleHttpHandlerRequest
 
     @dc.dataclass(frozen=True)
     class Response:
         when: datetime.datetime
-        response: HttpHandlerResponse
+        response: SimpleHttpHandlerResponse
         data: bytes
 
     def __init__(
@@ -60,7 +60,7 @@ class SimpleMitmHandler:
         self._handle_gzip = handle_gzip
         self._read_size = read_size
 
-    def __call__(self, h_req: HttpHandlerRequest) -> HttpHandlerResponse:
+    def __call__(self, h_req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         m_req = self.Request(
             lang.utcnow(),
             h_req,
@@ -137,10 +137,10 @@ class SimpleMitmHandler:
                                 ),
                             )
 
-                h_resp = HttpHandlerResponse(
+                h_resp = SimpleHttpHandlerResponse(
                     t_resp.status,
                     resp_hdrs,
-                    data=HttpHandlerResponseStreamedData(stream_data()),
+                    data=SimpleHttpHandlerResponseStreamedData(stream_data()),
                     # close_connection=True,
                 )
 
