@@ -39,6 +39,7 @@ class AnthropicSseDecoderEvents(lang.Namespace):
 
             stop_reason: str | None = None
             stop_sequence: str | None = None
+            stop_details: ta.Any | None = None
 
             usage: Usage | None = None
 
@@ -52,6 +53,7 @@ class AnthropicSseDecoderEvents(lang.Namespace):
         class Delta:
             stop_reason: str | None
             stop_sequence: ta.Any
+            stop_details: ta.Any | None = None
 
         delta: Delta
         usage: Usage

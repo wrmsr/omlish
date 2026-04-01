@@ -3118,32 +3118,40 @@ def _process_dataclass__f15496bc75cdbcdd674013e57d6709787f6f11e1():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('stop_reason', 'stop_sequence')), EqPlan(fields=('stop_reason', 'stop_sequence')),"
-        " FrozenPlan(fields=('stop_reason', 'stop_sequence'), allow_dynamic_dunder_attrs=False), HashPlan(action='add',"
-        " fields=('stop_reason', 'stop_sequence'), cache=False), InitPlan(fields=(InitPlan.Field(name='stop_reason', an"
-        "notation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='stop_seque"
-        "nce', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std"
-        "_params=('stop_reason', 'stop_sequence'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, "
-        "init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='stop_reason', kw_only=False, fn=None), Re"
-        "prPlan.Field(name='stop_sequence', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('stop_reason', 'stop_sequence', 'stop_details')), EqPlan(fields=('stop_reason', 's"
+        "top_sequence', 'stop_details')), FrozenPlan(fields=('stop_reason', 'stop_sequence', 'stop_details'), allow_dyn"
+        "amic_dunder_attrs=False), HashPlan(action='add', fields=('stop_reason', 'stop_sequence', 'stop_details'), cach"
+        "e=False), InitPlan(fields=(InitPlan.Field(name='stop_reason', annotation=OpRef(name='init.fields.0.annotation'"
+        "), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='stop_sequence', annotation=OpRef(name='init.fields.1.ann"
+        "otation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='stop_details', annotation=OpRef(name='init.field"
+        "s.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params="
+        "('stop_reason', 'stop_sequence', 'stop_details'), kw_only_params=(), frozen=True, slots=False, post_init_param"
+        "s=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='stop_reason', kw_only=False, fn=N"
+        "one), ReprPlan.Field(name='stop_sequence', kw_only=False, fn=None), ReprPlan.Field(name='stop_details', kw_onl"
+        "y=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='fe3509483510f358c6155be11388aae89ef18bf4',
+    plan_repr_sha1='488f51c37fdac06b1146fbfb101fd32db79a64bd',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
     ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse._marshal', 'AnthropicSseDecoderEvents.MessageDelta.Delta'),
     ),
 )
-def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
+def _process_dataclass__488f51c37fdac06b1146fbfb101fd32db79a64bd():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3164,6 +3172,7 @@ def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
             return __dataclass__cls(  # noqa
                 stop_reason=self.stop_reason,
                 stop_sequence=self.stop_sequence,
+                stop_details=self.stop_details,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -3178,7 +3187,8 @@ def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
                 return NotImplemented
             return (
                 self.stop_reason == other.stop_reason and
-                self.stop_sequence == other.stop_sequence
+                self.stop_sequence == other.stop_sequence and
+                self.stop_details == other.stop_details
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -3189,6 +3199,7 @@ def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
         __dataclass___setattr_frozen_fields = {
             'stop_reason',
             'stop_sequence',
+            'stop_details',
         }
 
         def __setattr__(self, name, value):
@@ -3207,6 +3218,7 @@ def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
         __dataclass___delattr_frozen_fields = {
             'stop_reason',
             'stop_sequence',
+            'stop_details',
         }
 
         def __delattr__(self, name):
@@ -3226,6 +3238,7 @@ def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
             return hash((
                 self.stop_reason,
                 self.stop_sequence,
+                self.stop_details,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -3235,9 +3248,11 @@ def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
             self,
             stop_reason: __dataclass__init__fields__0__annotation,
             stop_sequence: __dataclass__init__fields__1__annotation,
+            stop_details: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'stop_reason', stop_reason)
             __dataclass__object_setattr(self, 'stop_sequence', stop_sequence)
+            __dataclass__object_setattr(self, 'stop_details', stop_details)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -3249,6 +3264,7 @@ def _process_dataclass__fe3509483510f358c6155be11388aae89ef18bf4():
             parts = []
             parts.append(f"stop_reason={self.stop_reason!r}")
             parts.append(f"stop_sequence={self.stop_sequence!r}")
+            parts.append(f"stop_details={self.stop_details!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3399,37 +3415,40 @@ def _process_dataclass__824edbf0c69a77060c728451cc009c800d8bc247():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('id', 'role', 'model', 'content', 'stop_reason', 'stop_sequence', 'usage', 'type')"
-        "), EqPlan(fields=('id', 'role', 'model', 'content', 'stop_reason', 'stop_sequence', 'usage', 'type')), FrozenP"
-        "lan(fields=('id', 'role', 'model', 'content', 'stop_reason', 'stop_sequence', 'usage', 'type'), allow_dynamic_"
-        "dunder_attrs=False), HashPlan(action='add', fields=('id', 'role', 'model', 'content', 'stop_reason', 'stop_seq"
-        "uence', 'usage', 'type'), cache=False), InitPlan(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init"
-        ".fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.IN"
-        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='role', annotation=OpRef(name='init."
-        "fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='model', annotation=OpRef(name='init."
-        "fields.2.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content', annotation=OpRef(name='ini"
-        "t.fields.3.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='stop_reason', annotation=OpRef(nam"
-        "e='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='stop_sequence', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='usage', annotation=OpRef(name='init.fields.6.annotation'), default=O"
-        "pRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='type', annotation=OpRef(name='init.fi"
-        "elds.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_para"
-        "ms=('id', 'role', 'model', 'content', 'stop_reason', 'stop_sequence', 'usage', 'type'), kw_only_params=(), fro"
-        "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
-        "ame='id', kw_only=False, fn=None), ReprPlan.Field(name='role', kw_only=False, fn=None), ReprPlan.Field(name='m"
-        "odel', kw_only=False, fn=None), ReprPlan.Field(name='content', kw_only=False, fn=None), ReprPlan.Field(name='s"
-        "top_reason', kw_only=False, fn=None), ReprPlan.Field(name='stop_sequence', kw_only=False, fn=None), ReprPlan.F"
-        "ield(name='usage', kw_only=False, fn=None), ReprPlan.Field(name='type', kw_only=False, fn=None)), id=False, te"
-        "rse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('id', 'role', 'model', 'content', 'stop_reason', 'stop_sequence', 'stop_details', "
+        "'usage', 'type')), EqPlan(fields=('id', 'role', 'model', 'content', 'stop_reason', 'stop_sequence', 'stop_deta"
+        "ils', 'usage', 'type')), FrozenPlan(fields=('id', 'role', 'model', 'content', 'stop_reason', 'stop_sequence', "
+        "'stop_details', 'usage', 'type'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('id', 'rol"
+        "e', 'model', 'content', 'stop_reason', 'stop_sequence', 'stop_details', 'usage', 'type'), cache=False), InitPl"
+        "an(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='role', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='model', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='content', annotation=OpRef(name='init.fields.3.annotation'), default=None, default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='stop_reason', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(n"
+        "ame='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='stop_sequence', annotation=OpRef(name='init"
+        ".fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='stop"
+        "_details', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='usage', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(nam"
+        "e='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='type', annotation=OpRef(name='init.fields.8.a"
+        "nnotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('id'"
+        ", 'role', 'model', 'content', 'stop_reason', 'stop_sequence', 'stop_details', 'usage', 'type'), kw_only_params"
+        "=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan"
+        ".Field(name='id', kw_only=False, fn=None), ReprPlan.Field(name='role', kw_only=False, fn=None), ReprPlan.Field"
+        "(name='model', kw_only=False, fn=None), ReprPlan.Field(name='content', kw_only=False, fn=None), ReprPlan.Field"
+        "(name='stop_reason', kw_only=False, fn=None), ReprPlan.Field(name='stop_sequence', kw_only=False, fn=None), Re"
+        "prPlan.Field(name='stop_details', kw_only=False, fn=None), ReprPlan.Field(name='usage', kw_only=False, fn=None"
+        "), ReprPlan.Field(name='type', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='25e8b877e68b8885741739e5d7554a8dba665a07',
+    plan_repr_sha1='aa1259c521b427b1fd53158ab4afd680fde70f27',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -3443,12 +3462,14 @@ def _process_dataclass__824edbf0c69a77060c728451cc009c800d8bc247():
         '__dataclass__init__fields__6__default',
         '__dataclass__init__fields__7__annotation',
         '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
     ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol.sse._marshal', 'AnthropicSseDecoderEvents.MessageStart.Message'),
     ),
 )
-def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
+def _process_dataclass__aa1259c521b427b1fd53158ab4afd680fde70f27():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3464,6 +3485,8 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
+        __dataclass__init__fields__8__annotation,
+        __dataclass__init__fields__8__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3488,6 +3511,7 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
                 content=self.content,
                 stop_reason=self.stop_reason,
                 stop_sequence=self.stop_sequence,
+                stop_details=self.stop_details,
                 usage=self.usage,
                 type=self.type,
             )
@@ -3509,6 +3533,7 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
                 self.content == other.content and
                 self.stop_reason == other.stop_reason and
                 self.stop_sequence == other.stop_sequence and
+                self.stop_details == other.stop_details and
                 self.usage == other.usage and
                 self.type == other.type
             )
@@ -3525,6 +3550,7 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
             'content',
             'stop_reason',
             'stop_sequence',
+            'stop_details',
             'usage',
             'type',
         }
@@ -3549,6 +3575,7 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
             'content',
             'stop_reason',
             'stop_sequence',
+            'stop_details',
             'usage',
             'type',
         }
@@ -3574,6 +3601,7 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
                 self.content,
                 self.stop_reason,
                 self.stop_sequence,
+                self.stop_details,
                 self.usage,
                 self.type,
             ))
@@ -3589,8 +3617,9 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
             content: __dataclass__init__fields__3__annotation,
             stop_reason: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             stop_sequence: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            usage: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            type: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            stop_details: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            usage: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            type: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'id', id)
             __dataclass__object_setattr(self, 'role', role)
@@ -3598,6 +3627,7 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
             __dataclass__object_setattr(self, 'content', content)
             __dataclass__object_setattr(self, 'stop_reason', stop_reason)
             __dataclass__object_setattr(self, 'stop_sequence', stop_sequence)
+            __dataclass__object_setattr(self, 'stop_details', stop_details)
             __dataclass__object_setattr(self, 'usage', usage)
             __dataclass__object_setattr(self, 'type', type)
 
@@ -3615,6 +3645,7 @@ def _process_dataclass__25e8b877e68b8885741739e5d7554a8dba665a07():
             parts.append(f"content={self.content!r}")
             parts.append(f"stop_reason={self.stop_reason!r}")
             parts.append(f"stop_sequence={self.stop_sequence!r}")
+            parts.append(f"stop_details={self.stop_details!r}")
             parts.append(f"usage={self.usage!r}")
             parts.append(f"type={self.type!r}")
             return (
