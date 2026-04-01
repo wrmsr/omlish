@@ -120,11 +120,14 @@ class _AsgiDriver:
         self._ctx = ctx
         self._pump = _AsgiPump(fn)
 
+    #
+
     class State(enum.Enum):
         NEW = 'new'
 
         STARTING = 'starting'
-        STARTED = 'started'
+        RUNNING = 'running'
+        RECEIVING = 'receiving'
 
         RESPONSE_STARTED = 'response_started'
         RESPONSE_FINISHED = 'response_finished'
@@ -134,10 +137,16 @@ class _AsgiDriver:
 
     _state: State = State.NEW
 
+    @property
+    def state(self) -> State:
+        return self._state
+
+    #
+
     def start(self) -> None:
         self._state = _AsgiDriver.State.NEW
         self._pump.start()
-        self._state = _AsgiDriver.State.STARTED
+        self._state = _AsgiDriver.State.RUNNING
 
     def close(self) -> None:
         if self._state in (_AsgiDriver.State.CLOSING, _AsgiDriver.State.CLOSED):
@@ -182,6 +191,8 @@ class _AsgiDriver:
 
     #
 
+    _receiving_fut: ta.Optional[_AsgiFuture] = None
+
     def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
         if gv.k == 'y' and not isinstance(gv.v, _AsgiFuture):
             awm = AsyncIoPipelineMessages.Await(gv.v)
@@ -189,7 +200,7 @@ class _AsgiDriver:
             out.append(awm)
             return False
 
-        if self._state == _AsgiDriver.State.STARTED:
+        if self._state == _AsgiDriver.State.RUNNING:
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
 
@@ -210,7 +221,14 @@ class _AsgiDriver:
                 return True
 
             elif isinstance(f.arg, _ReceiveAsgiOp):
-                raise NotImplementedError
+                check.none(self._receiving_fut)
+                self._receiving_fut = f
+
+                IoPipelineFlow.maybe_ready_for_input(self._ctx)
+
+                self._state = _AsgiDriver.State.RECEIVING
+
+                return False
 
             else:
                 raise TypeError(f.arg)
@@ -293,3 +311,5 @@ class AsgiHandler(IoPipelineHandler):
         drv = _AsgiDriver(ctx, functools.partial(self._app, scope))
 
         drv.step()
+
+        check.state(drv.state == _AsgiDriver.State.CLOSED)
