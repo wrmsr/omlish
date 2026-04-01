@@ -8,7 +8,6 @@ socat TCP-LISTEN:8000,fork UNIX-CONNECT:foo.sock
 import typing as ta
 
 from .... import check
-from ...coro.server.server import UnsupportedMethodSimpleHttpHandlerError
 from ..handlers import SimpleHttpHandlerRequest
 from ..handlers import SimpleHttpHandlerResponse
 from ..handlers import SimpleHttpHandlerResponseStreamedData
@@ -20,7 +19,8 @@ from ..pipelines import make_simple_http_server
 
 def say_hi_handler(req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
     if req.method not in ('GET', 'POST'):
-        raise UnsupportedMethodSimpleHttpHandlerError
+        # raise UnsupportedMethodSimpleHttpHandlerError
+        raise ValueError(req.method)  # FIXME
 
     resp = '\n'.join([
         f'method: {req.method}',
