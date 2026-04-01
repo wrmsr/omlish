@@ -674,8 +674,8 @@ class JsonSchemaCodeGen:
             for name, td in unions:
                 w()
                 w()
-                # Unions of multiple complex types can't be marshaled without explicit polymorphism
-                # registration. Fall back to ta.Any unless all members are primitives.
+                # Unions of multiple complex types can't be marshaled without explicit polymorphism registration. Fall
+                # back to ta.Any unless all members are primitives.
                 all_primitive = all(isinstance(m, PrimitiveTypeRef) for m in td.members)
                 if not all_primitive:
                     w(f'{name}: ta.TypeAlias = ta.Any')
