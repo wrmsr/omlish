@@ -10,11 +10,12 @@ TODO:
  - launch / manage compose services
  - more cache dirs
  - --mount=type=bind,src="$(pwd)",dst=/omlish/pwd
-   - --mount=type=bind,src=/host/dir,dst=/container/dir,readonly (git)
  - build --no-cache / cache bust
    - build args
  - auto go/zig vers
  - `run --pull=never`, `build --pull=false`
+ - !! shadow config !!
+   - default autoexec, default env vars
 
 ====
 
@@ -180,6 +181,7 @@ class Cli(ap.Cli):
         ap.arg('--mount', action='append'),
         ap.arg('-C', '--mount-caches', action='store_true'),
         ap.arg('-D', '--mount-docker-sock', action='store_true'),
+        ap.arg('-G', '--mount-git', action='store_true'),
 
         ap.arg('-P', '--privileged', action='store_true'),
 
@@ -236,6 +238,11 @@ class Cli(ap.Cli):
                 check.state(is_path_in_dir(cache_dir, cld))
                 os.makedirs(cld, exist_ok=True)
                 run_args.append(f'--mount=type=bind,src={cld},dst={cr}')
+
+        if self.args.mount_git:
+            git_path = os.path.join(os.getcwd(), '.git')
+            check.state(os.path.isdir(git_path))
+            run_args.append(f'--mount=type=bind,src={git_path},dst=/git,ro')
 
         if not self.args.no_host_platform:
             run_args.extend([f'--env=DOCKER_HOST_PLATFORM={platform.system().lower()}'])

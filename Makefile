@@ -377,8 +377,12 @@ venv-15t:
 
 # 8
 
+.PHONY: venv-8
+venv-8:
+	${PYPROJECT} venv 8 exe
+
 .PHONY: test-8
-test-8:
+test-8: venv-8
 	LITE_PATHS=$$(${PYTHON} -m omdev.magic find --modules -k '@omlish-lite' ${SRCS}) ; \
 	$$(${PYPROJECT} venv 8 exe) -m omlish.testing.unittest -vb $$LITE_PATHS
 

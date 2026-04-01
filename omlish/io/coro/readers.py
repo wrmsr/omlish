@@ -9,7 +9,6 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from .consts import DEFAULT_BUFFER_SIZE
 
 
 T = ta.TypeVar('T')
@@ -129,62 +128,3 @@ class PrependableStrCoroReader(
 
 prependable_bytes_coro_reader = PrependableBytesCoroReader
 prependable_str_coro_reader = PrependableStrCoroReader
-
-
-##
-
-
-class BufferedCoroReader(PrependableCoroReader[AnyT], lang.Abstract):
-    def __init__(
-            self,
-            buffer_size: int = DEFAULT_BUFFER_SIZE,
-    ) -> None:
-        check.arg(buffer_size > 0)
-
-        super().__init__()
-
-        self._buffer_size = buffer_size
-
-    def read(self, sz: int | None) -> ReaderCoro[AnyT, AnyT]:
-        g = super().read(sz)
-        i: ta.Any = None
-        while True:
-            try:
-                q = g.send(i)
-            except StopIteration as e:
-                return e.value
-
-            check.state(not self._queue)
-
-            if q is None:
-                i = check.not_none((yield None))
-                continue
-
-            r = max(q, self._buffer_size)
-            d: AnyT = check.not_none((yield r))
-            if len(d) < q:
-                i = d
-                continue
-
-            i = d[:q]
-            self.prepend(d, q)
-
-
-class BufferedBytesCoroReader(
-    _BytesJoiner,
-    BufferedCoroReader[bytes],
-    PrependableCoroReader[bytes],
-):
-    pass
-
-
-class BufferedStrCoroReader(
-    _StrJoiner,
-    BufferedCoroReader[str],
-    PrependableCoroReader[str],
-):
-    pass
-
-
-buffered_bytes_coro_reader = BufferedBytesCoroReader
-buffered_str_coro_reader = BufferedStrCoroReader
