@@ -242,8 +242,13 @@
     like `__exit__` and `__eq__` may be omitted.
   - An exception to this is test code - in general don't bother type annotating test code, and in fact avoid test
     function parameter annotations due to the dynamic nature of pytest fixtures.
-- In standard code, use PEP-585 style annotations for builtin types - use `list[int]` instead of `ta.List[int]`, and
-  `int | None` instead of `ta.Optional[int]`.
+- Do **NOT** use `from __future__ import annotations`. Forward-refs must still be quoted.
+- In standard code, use PEP-585 and PEP-604 style annotations for builtin types - use `list[int]` instead of
+  `ta.List[int]`, and `int | None` instead of `ta.Optional[int]`.
+  - However, portions of type annotations quoted for forward refs must **ONLY** be simple identifiers, not 'type
+    expressions' - any annotation involving a forward ref must fallback to 'older-style', pre-PEP-604 style. For
+    example, use `ta.Optional['Foo']` instead of `'Foo | None'`, and use `ta.Union['Foo', int]` instead of `'Foo |
+    int'`.
   - Note that \[**lite**\] code must still use pre-PEP-585 annotations like `ta.List[int]` and `ta.Optional[int]` due to
     PEP-585 not being supported in python 3.8. Note that when doing this source files must `# ruff: noqa: ...` any
     relevant lint errors - usually things lke UP006, UP007, UP045, ...
@@ -281,8 +286,8 @@
   docstring (including triple-quotes and indentation) fits on a single 120-column wide line.
 - All docstrings should be followed by a blank line.
 - Reserve inline comments for 'surprising' or dangerous things, such as invariants which must be maintained. A comment
-  like `self._ensure_user_exists()  # ensure user exists` is worthless, but a comment like `self._ensure_user_exists()
-  # safe because we already hold the user lock` is valuable.
+  like `self._ensure_user_exists()  # ensure the user exists` is worthless, but a comment like
+  `self._ensure_user_exists() # safe because we already hold the user lock` is valuable.
 
 
 ### Documentation
