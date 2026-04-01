@@ -3,6 +3,7 @@
 import asyncio
 import typing as ta
 
+from omlish import lang
 from omlish.http.pipelines.servers.apps.asgi import AsgiHandler
 from omlish.http.pipelines.servers.apps.asgi import AsgiSpec
 from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
@@ -47,6 +48,46 @@ def serve_asgi_pipeline(spec: AsgiSpec) -> None:
 ##
 
 
+async def _serve_resource(
+        send: ta.Callable,
+        name: str,
+        content_type: str = 'text/plain',
+) -> None:
+    body = lang.get_relative_resources('resources', globals=globals()).get(name).read_bytes()
+
+    await send({
+        'type': 'http.response.start',
+        'status': 200,
+        'headers': [
+            (b'content-type', content_type.encode('ascii')),
+            (b'content-length', str(len(body)).encode('ascii')),
+        ],
+    })
+
+    await send({
+        'type': 'http.response.body',
+        'body': body,
+    })
+
+
+async def _serve_not_found(send: ta.Callable) -> None:
+    body = b'not found'
+
+    await send({
+        'type': 'http.response.start',
+        'status': 404,
+        'headers': [
+            (b'content-type', b'text/plain'),
+            (b'content-length', str(len(body)).encode('ascii')),
+        ],
+    })
+
+    await send({
+        'type': 'http.response.body',
+        'body': body,
+    })
+
+
 async def app(scope, receive, send):
     if scope['type'] != 'http':
         return
@@ -54,44 +95,14 @@ async def app(scope, receive, send):
     method = scope.get('method')
     path = scope.get('path')
 
-    if (method, path) != ('GET', '/ping'):
-        body = b'not found'
+    if (method, path) == ('GET', '/'):
+        await _serve_resource(send, 'index.html', 'text/html')
 
-        await send({
-            'type': 'http.response.start',
-            'status': 404,
-            'headers': [
-                (b'content-type', b'text/plain'),
-                (b'content-length', str(len(body)).encode('ascii')),
-            ],
-        })
+    elif (method, path) == ('GET', '/index.css'):
+        await _serve_resource(send, 'index.css', 'text/css')
 
-        await send({
-            'type': 'http.response.body',
-            'body': body,
-        })
-
-        return
-
-    body = b'pong'
-
-    await send({
-        'type': 'http.response.start',
-        'status': 200,
-        'headers': [
-            (b'content-type', b'text/plain'),
-            (b'content-length', str(len(body)).encode('ascii')),
-        ],
-    })
-
-    for i in range(len(body)):
-        await send({
-            'type': 'http.response.body',
-            'body': bytes([body[i]]),
-            'more_body': i < len(body) - 1,
-        })
-
-        await asyncio.sleep(.2)
+    else:
+        await _serve_not_found(send)
 
 
 ##
