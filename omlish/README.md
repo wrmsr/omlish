@@ -84,11 +84,6 @@ dependencies of any kind**.
 
   - **[clients](https://github.com/wrmsr/omlish/blob/master/omlish/http/clients)** - An abstraction over HTTP clients,
     with urllib and httpx implementations.
-  - **[coro](https://github.com/wrmsr/omlish/blob/master/omlish/http/coro)** - Coroutine /
-    [sans-io](https://sans-io.readthedocs.io/) style reformulation of some stdlib http machinery - namely `http.server`
-    (and soon `http.client`). This style of code can run the same in sync, async, or
-    [any](https://docs.python.org/3/library/selectors.html)
-    [other](https://github.com/wrmsr/omlish/blob/master/omlish/asyncs/bluelet) context.
 
 - **[inject](https://github.com/wrmsr/omlish/blob/master/omlish/inject)** - A
   [guice](https://github.com/google/guice)-style dependency injector.
@@ -98,8 +93,6 @@ dependencies of any kind**.
   - **[compress](https://github.com/wrmsr/omlish/blob/master/omlish/io/compress)** - Abstraction over various
     compression schemes, with particular attention to incremental operation. For example it includes
     [an incremental reformulation of stdlib's gzip](https://github.com/wrmsr/omlish/blob/master/omlish/io/compress/gzip.py).
-  - **[coro](https://github.com/wrmsr/omlish/blob/master/omlish/io/coro)** - Utilities for coroutine / sans-io style
-    code.
   - **[fdio](https://github.com/wrmsr/omlish/blob/master/omlish/io/fdio)** - An implementation of classic
     [selector](https://docs.python.org/3/library/selectors.html)-style IO dispatch, akin to the deprecated
     [asyncore](https://docs.python.org/3.11/library/asyncore.html). While more modern asyncio style code is generally

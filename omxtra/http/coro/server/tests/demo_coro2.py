@@ -1,18 +1,19 @@
 import socket
 import typing as ta
 
-from ....http.coro.server.fdio import CoroHttpServerConnectionFdioHandler
-from ....http.coro.server.server import UnsupportedMethodSimpleHttpHandlerError
-from ....http.simple.handlers import SimpleHttpHandlerRequest
-from ....http.simple.handlers import SimpleHttpHandlerResponse
-from ....http.simple.handlers import SimpleHttpHandlerResponseStreamedData
-from ....sockets.addresses import SocketAddress
-from ..handlers import ServerSocketFdioHandler
-from ..kqueue import KqueueFdioPoller  # noqa
-from ..manager import FdioManager
-from ..pollers import FdioPoller
-from ..pollers import PollFdioPoller  # noqa
-from ..pollers import SelectFdioPoller
+from omlish.http.simple.handlers import SimpleHttpHandlerRequest
+from omlish.http.simple.handlers import SimpleHttpHandlerResponse
+from omlish.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
+from omlish.io.fdio.handlers import ServerSocketFdioHandler
+from omlish.io.fdio.kqueue import KqueueFdioPoller  # noqa
+from omlish.io.fdio.manager import FdioManager
+from omlish.io.fdio.pollers import FdioPoller
+from omlish.io.fdio.pollers import PollFdioPoller  # noqa
+from omlish.io.fdio.pollers import SelectFdioPoller
+from omlish.sockets.addresses import SocketAddress
+
+from ...server.fdio import CoroHttpServerConnectionFdioHandler
+from ...server.server import UnsupportedMethodSimpleHttpHandlerError
 
 
 ##

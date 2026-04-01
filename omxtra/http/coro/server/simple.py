@@ -9,18 +9,19 @@ import contextlib
 import functools
 import typing as ta
 
-from ....lite.check import check
-from ....sockets.addresses import SocketAndAddress
-from ....sockets.bind import CanSocketBinder
-from ....sockets.bind import SocketBinder
-from ....sockets.handlers.server import SocketHandlerServer
-from ....sockets.handlers.simple import ExecutorSocketHandler
-from ....sockets.handlers.simple import SocketHandler
-from ....sockets.handlers.simple import SocketWrappingSocketHandler
-from ....sockets.handlers.simple import StandardSocketHandler
-from ....sockets.handlers.ssl import SslErrorHandlingSocketHandler
-from ....sockets.handlers.threading import ThreadingSocketHandler
-from ...simple.handlers import SimpleHttpHandler
+from omlish.http.simple.handlers import SimpleHttpHandler
+from omlish.lite.check import check
+from omlish.sockets.addresses import SocketAndAddress
+from omlish.sockets.bind import CanSocketBinder
+from omlish.sockets.bind import SocketBinder
+from omlish.sockets.handlers.server import SocketHandlerServer
+from omlish.sockets.handlers.simple import ExecutorSocketHandler
+from omlish.sockets.handlers.simple import SocketHandler
+from omlish.sockets.handlers.simple import SocketWrappingSocketHandler
+from omlish.sockets.handlers.simple import StandardSocketHandler
+from omlish.sockets.handlers.ssl import SslErrorHandlingSocketHandler
+from omlish.sockets.handlers.threading import ThreadingSocketHandler
+
 from .server import CoroHttpServer
 from .sockets import CoroHttpServerSocketHandler
 

@@ -61,18 +61,19 @@ import textwrap
 import time
 import typing as ta
 
-from ....lite.check import check
-from ....sockets.addresses import SocketAddress
-from ...parsing import HttpParseError
-from ...parsing import HttpParser
-from ...parsing import ParsedHttpMessage
-from ...simple.handlers import SimpleHttpHandler
-from ...simple.handlers import SimpleHttpHandlerRequest
-from ...simple.handlers import SimpleHttpHandlerResponseData
-from ...simple.handlers import SimpleHttpHandlerResponseStreamedData
-from ...simple.handlers import UnsupportedMethodSimpleHttpHandlerError
-from ...versions import HttpVersion
-from ...versions import HttpVersions
+from omlish.http.parsing import HttpParseError
+from omlish.http.parsing import HttpParser
+from omlish.http.parsing import ParsedHttpMessage
+from omlish.http.simple.handlers import SimpleHttpHandler
+from omlish.http.simple.handlers import SimpleHttpHandlerRequest
+from omlish.http.simple.handlers import SimpleHttpHandlerResponseData
+from omlish.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
+from omlish.http.simple.handlers import UnsupportedMethodSimpleHttpHandlerError
+from omlish.http.versions import HttpVersion
+from omlish.http.versions import HttpVersions
+from omlish.lite.check import check
+from omlish.sockets.addresses import SocketAddress
+
 from ..io import CoroHttpIo
 
 

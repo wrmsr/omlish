@@ -3,10 +3,11 @@
 import socket
 import typing as ta
 
-from ....io.fdio.handlers import SocketFdioHandler
-from ....lite.check import check
-from ....sockets.addresses import SocketAddress
-from ...simple.handlers import SimpleHttpHandler
+from omlish.http.simple.handlers import SimpleHttpHandler
+from omlish.io.fdio.handlers import SocketFdioHandler
+from omlish.lite.check import check
+from omlish.sockets.addresses import SocketAddress
+
 from .._buffers import IncrementalWriteBuffer
 from .._buffers import ReadableListBuffer
 from ..io import CoroHttpIo

@@ -10,14 +10,14 @@ from omlish.http.clients.base import HttpClientError
 from omlish.http.clients.base import HttpClientRequest
 from omlish.http.clients.sync import HttpClient
 from omlish.http.clients.sync import StreamHttpClientResponse
-from omlish.http.coro._buffers import ReadableListBuffer
-from omlish.http.coro.io import CoroHttpIo
 from omlish.http.headers import HttpHeaders
 from omlish.http.urls import unparse_url_request_path
 from omlish.lite.check import check
 
+from ...coro._buffers import ReadableListBuffer
 from ...coro.client.connection import CoroHttpClientConnection
 from ...coro.client.response import CoroHttpClientResponse
+from ...coro.io import CoroHttpIo
 
 
 T = ta.TypeVar('T')

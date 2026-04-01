@@ -6,9 +6,9 @@ import urllib.parse
 
 import pytest
 
-from omlish.http.coro.io import CoroHttpIo
 from omlish.lite.check import check
 
+from ...io import CoroHttpIo
 from ..connection import CoroHttpClientConnection
 from ..connection import CoroHttpClientResponse
 

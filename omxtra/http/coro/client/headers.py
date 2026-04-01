@@ -39,9 +39,9 @@ import email.message
 import email.parser
 import typing as ta
 
-from omlish.http.coro.io import CoroHttpIo
 from omlish.lite.check import check
 
+from ..io import CoroHttpIo
 from .errors import CoroHttpClientErrors
 
 

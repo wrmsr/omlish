@@ -10,11 +10,11 @@ Anything that would have used this should now use `omlish.io.streams`.
 import io
 import typing as ta
 
-from ...io.readers import AsyncBytesReader
-from ...io.readers import AsyncRawBytesReader
-from ...io.readers import BytesReader
-from ...io.readers import RawBytesReader
-from ...lite.check import check
+from omlish.io.readers import AsyncBytesReader
+from omlish.io.readers import AsyncRawBytesReader
+from omlish.io.readers import BytesReader
+from omlish.io.readers import RawBytesReader
+from omlish.lite.check import check
 
 
 ##

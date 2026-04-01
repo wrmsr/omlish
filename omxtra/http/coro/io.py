@@ -3,7 +3,7 @@
 import dataclasses as dc
 import typing as ta
 
-from ...lite.abstract import Abstract
+from omlish.lite.abstract import Abstract
 
 
 ##
