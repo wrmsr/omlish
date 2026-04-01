@@ -59,7 +59,8 @@ class KeywordParser:
                 ta.Mapping[str, type[KnownKeyword]],
                 None,
             ] = None,
-            allow_unknown: bool = False,
+            allow_unknown: bool | ta.Literal['x-only'] = False,
+            allow_specific_unknowns: ta.AbstractSet[str] | None = None,
     ) -> None:
         super().__init__()
 
@@ -71,6 +72,7 @@ class KeywordParser:
             self._keyword_types_by_tag = build_keyword_types_by_tag(keyword_types)
 
         self._allow_unknown = allow_unknown
+        self._allow_specific_unknowns = allow_specific_unknowns
 
     def parse_keyword(self, cls: type[KeywordT], v: ta.Any) -> KeywordT:
         if issubclass(cls, AnyKeyword):
@@ -124,10 +126,15 @@ class KeywordParser:
                 cls = self._keyword_types_by_tag[k]
 
             except KeyError:
-                if not self._allow_unknown:
-                    raise
+                if (
+                        self._allow_unknown is True or
+                        (self._allow_unknown == 'x-only' and k.startswith('x-')) or
+                        (self._allow_specific_unknowns is not None and k in self._allow_specific_unknowns)
+                ):
+                    lst.append(UnknownKeyword(k, v))
+                    continue
 
-                lst.append(UnknownKeyword(k, v))
+                raise
 
             else:
                 lst.append(self.parse_keyword(cls, v))

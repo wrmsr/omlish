@@ -1,4 +1,5 @@
 from .... import lang
+from .base import AnyKeyword
 from .base import KnownKeyword
 from .base import StrKeyword
 
@@ -18,4 +19,8 @@ class Title(StrKeyword, MetadataKeyword, lang.Final, tag='title'):
 
 
 class Description(StrKeyword, MetadataKeyword, lang.Final, tag='description'):
+    pass
+
+
+class Default(AnyKeyword, MetadataKeyword, lang.Final, tag='default'):
     pass

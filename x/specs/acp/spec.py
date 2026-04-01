@@ -1,23 +1,21 @@
 """
-blob/5ecc39d682b6e5d3da99706a286a9533f5664882/docs/spec/openapi.yaml
+https://github.com/agentclientprotocol/agent-client-protocol/tree/main
 """
 import os.path
 
 from omdev.cache import data as dcache
-from omlish import marshal as msh
 from omlish.formats import json
-from omlish.formats import yaml
-from omlish.specs import openapi
+from omlish.specs import jsonschema as js
 
 
 ##
 
 
 ACP_SPEC_DATA = dcache.GitSpec(
-    'https://github.com/i-am-bee/acp/',
-    rev='5ecc39d682b6e5d3da99706a286a9533f5664882',
+    'https://github.com/agentclientprotocol/agent-client-protocol',
+    rev='f21d317659af14c405716ccb3ca381482c8965e1',
     subtrees=[
-        'docs/spec/openapi.yaml',
+        ACP_SPEC_PATH := 'schema/schema.json',
     ],
 )
 
@@ -25,12 +23,16 @@ ACP_SPEC_DATA = dcache.GitSpec(
 def _main() -> None:
     spec_dir = dcache.default().get(ACP_SPEC_DATA)
 
-    with open(os.path.join(spec_dir, 'docs/spec/openapi.yaml')) as f:
-        spec_content = yaml.safe_load(f)
+    with open(os.path.join(spec_dir, ACP_SPEC_PATH)) as f:
+        spec_src = f.read()
 
-    spec: openapi.Openapi = msh.unmarshal(spec_content, openapi.Openapi)
+    spec_dct = json.loads(spec_src)
+    spec_js = js.KeywordParser(
+        allow_unknown='x-only',
+        allow_specific_unknowns={'discriminator'},
+    ).parse_keywords(spec_dct)
 
-    print(json.dumps_pretty(msh.marshal(spec)))
+    print(spec_js)
 
 
 if __name__ == '__main__':

@@ -86,6 +86,10 @@ class ExclusiveMinimum(NumberKeyword, ValidationKeyword, lang.Final, tag='exclus
 #
 
 
+class AllOf(KeywordsArrayKeyword, ValidationKeyword, lang.Final, tag='allOf'):
+    pass
+
+
 class AnyOf(KeywordsArrayKeyword, ValidationKeyword, lang.Final, tag='anyOf'):
     pass
 

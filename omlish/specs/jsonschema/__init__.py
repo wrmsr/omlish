@@ -19,6 +19,7 @@ from .keywords.format import (  # noqa
 )
 
 from .keywords.metadata import (  # noqa
+    Default,
     Description,
     MetadataKeyword,
     Title,
@@ -42,6 +43,7 @@ from .keywords.render import (  # noqa
 
 from .keywords.validation import (  # noqa
     AdditionalProperties,
+    AllOf,
     AnyOf,
     Const,
     Enum,
