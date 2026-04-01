@@ -2352,7 +2352,7 @@ class YamlParser:
         if isinstance(directive, YamlError):
             return directive
 
-        if directive.name == 'YAML':
+        if check.not_none(directive.name).string() == 'YAML':
             if len(g.tokens) != 2:
                 return YamlSyntaxError('unexpected format YAML directive', YamlParseToken.raw_token(g.first()))
             value_tk = g.tokens[1]
@@ -2369,7 +2369,7 @@ class YamlParser:
                 return version_node
             directive.values.append(version_node)
 
-        elif directive.name == 'TAG':
+        elif check.not_none(directive.name).string() == 'TAG':
             if len(g.tokens) != 3:
                 return YamlSyntaxError('unexpected format TAG directive', YamlParseToken.raw_token(g.first()))
             tag_key = YamlNodeMakers.new_string_node(ctx, g.tokens[1])

@@ -6,7 +6,7 @@ from ..imgur import ImageUploadData
 
 def test_marshal():
     ad = dict(
-        **{f.name: f.type() for f in dc.fields(ImageUploadData) if f.type in (int, str, bool)},  # type: ignore  # noqa
+        **{f.name: f.type() for f in dc.fields(ImageUploadData) if f.type in (int, str, bool)},  # noqa
         tags=(),
     )
 
@@ -18,6 +18,6 @@ def test_marshal():
     o = msh.unmarshal({**ad, **xd}, ImageUploadData)
 
     assert o == ImageUploadData(
-        **ad,
+        **ad,  # type: ignore[arg-type]
         x=xd,
     )

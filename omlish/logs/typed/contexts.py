@@ -126,10 +126,10 @@ class TypedLoggerContext:
 
     def resolve_field_value(self, fv: TypedLoggerFieldValue) -> ResolvedTypedLoggerFieldValue:
         if fv is ABSENT_TYPED_LOGGER_VALUE:
-            return fv  # type: ignore[return-value]
+            return fv
 
         elif isinstance(fv, type):
-            return self[fv]._typed_logger_resolve_field_value(self)  # type: ignore[type-var]  # noqa
+            return self[fv]._typed_logger_resolve_field_value(self)  # noqa
 
         else:
             return fv._typed_logger_resolve_field_value(self)  # noqa

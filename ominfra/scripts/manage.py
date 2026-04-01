@@ -116,7 +116,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../omlish/lite/timeouts.py', sha1='2f19c808e582877f999d7ea7dde0acd6382266a2'),
-            dict(path='../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='../../omlish/logs/infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
@@ -8090,7 +8090,7 @@ class LoggingContextInfos:
 
         @classmethod
         def build(cls, level: int) -> 'LoggingContextInfos.Level':
-            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
             return cls(
                 level=nl,
                 name=logging.getLevelName(nl),

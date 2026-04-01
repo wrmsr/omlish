@@ -522,8 +522,8 @@ def test_install_class_field_attrs():
         y: str = 'foo'
 
     dct = {f.name: f for f in dc.fields(A)}
-    assert A.x is dct['x']
-    assert A.y is dct['y']
+    assert A.x is dct['x']  # type: ignore[misc]
+    assert A.y is dct['y']  # type: ignore[unreachable]
 
     @dc.dataclass(frozen=True)
     @dc.extra_class_params(install_class_field_attrs=True)
@@ -536,4 +536,4 @@ def test_install_class_field_attrs():
     assert B.y is dct['y']
 
     with pytest.raises(dc.FrozenInstanceError):
-        B(4).y = 'bar'  # type: ignore[misc]  # noqa
+        B(4).y = 'bar'  # noqa

@@ -11,7 +11,6 @@ from omlish.lite.typing import Func1
 from omlish.logs.modules import get_module_logger
 
 from .configs import ProcessConfig
-from .configs import RestartUnconditionally
 from .dispatchers import Dispatchers
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
@@ -456,7 +455,7 @@ class ProcessImpl(Process):
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
                 if self._config.auto_restart:
-                    if self._config.auto_restart is RestartUnconditionally:
+                    if self._config.auto_restart == 'unconditional':
                         # EXITED -> STARTING
                         self._spawn()
                     elif self._exitstatus not in self._config.exitcodes:

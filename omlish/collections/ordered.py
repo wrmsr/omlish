@@ -84,6 +84,6 @@ class OrderedFrozenSet(ta.FrozenSet[T]):  # noqa
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._list)
 
-    def __sub__(self, other: ta.Iterable[T]) -> frozenset[T]:
+    def __sub__(self, other: ta.Iterable[T]) -> frozenset[T]:  # type: ignore[override]
         s = set(other)
         return type(self)(i for i in self if i not in s)

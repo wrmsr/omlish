@@ -24,8 +24,8 @@ class Business:
 
     name: str
 
-    categories: ta.ClassVar[orm.Backref[BusinessCategory]] = orm.backref(lambda: BusinessCategory.business)
-    reviews: ta.ClassVar[orm.Backref['Review']] = orm.backref(lambda: Review.business)
+    categories: ta.ClassVar[orm.Backref[BusinessCategory]] = orm.backref(lambda: BusinessCategory.business)  # type: ignore[misc]  # noqa
+    reviews: ta.ClassVar[orm.Backref['Review']] = orm.backref(lambda: Review.business)  # type: ignore[misc]  # noqa
 
 
 @dc.dataclass(kw_only=True)
@@ -39,10 +39,10 @@ class User:
 
     favorite_business: orm.Ref[Business, int] | None = None
 
-    src_relations: ta.ClassVar[orm.Backref['UserRelation']] = orm.backref(lambda: UserRelation.src)
-    dst_relations: ta.ClassVar[orm.Backref['UserRelation']] = orm.backref(lambda: UserRelation.dst)
+    src_relations: ta.ClassVar[orm.Backref['UserRelation']] = orm.backref(lambda: UserRelation.src)  # type: ignore[misc]  # noqa
+    dst_relations: ta.ClassVar[orm.Backref['UserRelation']] = orm.backref(lambda: UserRelation.dst)  # type: ignore[misc]  # noqa
 
-    reviews: ta.ClassVar[orm.Backref['Review']] = orm.backref(lambda: Review.user)
+    reviews: ta.ClassVar[orm.Backref['Review']] = orm.backref(lambda: Review.user)  # type: ignore[misc]  # noqa
 
 
 @dc.dataclass(kw_only=True)

@@ -48,7 +48,7 @@ class _Key(Key[K], lang.Final):
         return hash(self._k)
 
     def __eq__(self, other: object) -> bool:
-        return other.__class__ is _Key and self._k == other._k  # type: ignore[attr-defined]
+        return other.__class__ is _Key and self._k == other._k  # noqa
 
     def __lt__(self, other: object) -> bool:
         if (oc := other.__class__) is _Key:

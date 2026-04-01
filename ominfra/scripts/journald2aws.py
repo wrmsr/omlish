@@ -85,7 +85,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/io/streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='../../../../omlish/logs/infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
             dict(path='../../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
@@ -4877,7 +4877,7 @@ class LoggingContextInfos:
 
         @classmethod
         def build(cls, level: int) -> 'LoggingContextInfos.Level':
-            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
             return cls(
                 level=nl,
                 name=logging.getLevelName(nl),

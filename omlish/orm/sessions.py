@@ -199,7 +199,7 @@ class Session:
             self._entities_by_obj_id[id(obj)] = e
 
         if k.__class__ is _AutoKey:
-            self._entities_by_auto_key[k] = e  # type: ignore[index]  # noqa
+            self._entities_by_auto_key[k] = e  # noqa
 
         return e
 
@@ -325,7 +325,7 @@ class Session:
                     k = _Key(fr.inserted_auto_keys[ek])  # type: ignore[index]
 
                     check.not_in(k, ed)  # noqa
-                    check.is_(self._entities_by_auto_key[ek], e)  # type: ignore[index]
+                    check.is_(self._entities_by_auto_key[ek], e)  # noqa
 
                     del ed[ek]
 

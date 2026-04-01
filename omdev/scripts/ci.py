@@ -140,7 +140,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../omlish/lite/timeouts.py', sha1='2f19c808e582877f999d7ea7dde0acd6382266a2'),
-            dict(path='../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='../../omlish/logs/infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
@@ -198,7 +198,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/server.py', sha1='e1ba8ca6f85458a64ede4ca07836aa103246132a'),
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
-            dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='c92e4772e2d50f080bc1ca8a317d0c7aea5b710a'),
+            dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='aff489de2de0021d48486560a31fd2336bf39bf6'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
             dict(path='../../omlish/io/streams/segmented.py', sha1='8d112d08e066f69527091486f8817af0db586333'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
@@ -9938,7 +9938,7 @@ class LoggingContextInfos:
 
         @classmethod
         def build(cls, level: int) -> 'LoggingContextInfos.Level':
-            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
             return cls(
                 level=nl,
                 name=logging.getLevelName(nl),
@@ -26152,7 +26152,7 @@ class YamlParser:
         if isinstance(directive, YamlError):
             return directive
 
-        if directive.name == 'YAML':
+        if check.not_none(directive.name).string() == 'YAML':
             if len(g.tokens) != 2:
                 return YamlSyntaxError('unexpected format YAML directive', YamlParseToken.raw_token(g.first()))
             value_tk = g.tokens[1]
@@ -26169,7 +26169,7 @@ class YamlParser:
                 return version_node
             directive.values.append(version_node)
 
-        elif directive.name == 'TAG':
+        elif check.not_none(directive.name).string() == 'TAG':
             if len(g.tokens) != 3:
                 return YamlSyntaxError('unexpected format TAG directive', YamlParseToken.raw_token(g.first()))
             tag_key = YamlNodeMakers.new_string_node(ctx, g.tokens[1])

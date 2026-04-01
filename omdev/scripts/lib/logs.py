@@ -39,7 +39,7 @@ def __omlish_amalg__():  # noqa
             dict(path='std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
             dict(path='metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
@@ -517,7 +517,7 @@ class LoggingContextInfos:
 
         @classmethod
         def build(cls, level: int) -> 'LoggingContextInfos.Level':
-            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
             return cls(
                 level=nl,
                 name=logging.getLevelName(nl),

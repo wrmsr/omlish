@@ -114,7 +114,7 @@ class Vector(lang.Final, ta.Sequence[float]):
         s: VectorStorage
         si = _get_storage_impl()
         if isinstance(obj, si.cls):
-            s = obj  # type: ignore
+            s = obj
         else:
             l: ta.Iterable[float]
             if isinstance(obj, bytes):

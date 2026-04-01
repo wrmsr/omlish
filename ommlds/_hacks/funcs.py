@@ -38,7 +38,7 @@ def reserve_linecache_filename(prefix: str) -> str:
         cache_line = (1, None, (e.unique_id,), unique_filename)
         e.seq += 1
         if linecache.cache.setdefault(unique_filename, cache_line) == cache_line:  # type: ignore
-            return unique_filename
+            return unique_filename  # type: ignore[unreachable]
 
 
 ##

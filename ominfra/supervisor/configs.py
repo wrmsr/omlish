@@ -17,17 +17,6 @@ from .utils.strings import parse_octal
 ##
 
 
-class RestartWhenExitUnexpected:
-    pass
-
-
-class RestartUnconditionally:
-    pass
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class ProcessConfig:
     # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
@@ -105,7 +94,7 @@ class ProcessConfig:
     # started up (the process is in the RUNNING state). supervisord has a different restart mechanism for when the
     # process is starting up (the process is in the STARTING state). Retries during process startup are controlled by
     # startsecs and startretries.
-    auto_restart: str = 'unexpected'
+    auto_restart: str = 'unexpected'  # | 'unconditional'
 
     # The total number of seconds which the program needs to stay running after a startup to consider the start
     # successful (moving the process from the STARTING state to the RUNNING state). Set to 0 to indicate that the

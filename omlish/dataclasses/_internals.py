@@ -65,9 +65,9 @@ def _patch_missing_ctor() -> None:
     # dc.asdict uses copy.deepcopy which instantiates new _MISSING_TYPE objects which do not pass the 'foo is MISSING'
     # checks used throughout dataclasses code. Code should not depend on this behavior but it is a debugging landmine.
     if dc._MISSING_TYPE.__new__ is object.__new__:  # noqa
-        def _MISSING_TYPE_new(cls):  # noqa
+        def _MISSING_TYPE_new(cls):  # type: ignore[unreachable]  # noqa
             return dc.MISSING
-        dc._MISSING_TYPE.__new__ = _MISSING_TYPE_new  # type: ignore  # noqa
+        dc._MISSING_TYPE.__new__ = _MISSING_TYPE_new  # noqa
 
 
 ##

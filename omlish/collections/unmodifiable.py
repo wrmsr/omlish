@@ -65,7 +65,7 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
     def count(self, x: ta.Any) -> int:
         return self._target.count(x)
 
-    def index(self, x: ta.Any, *args, **kwargs) -> int:  # type: ignore
+    def index(self, x: ta.Any, *args, **kwargs) -> int:
         return self._target.index(x, *args, **kwargs)
 
 

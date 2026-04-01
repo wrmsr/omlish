@@ -84,7 +84,7 @@ class MinUniquePrefixNode(ta.Generic[T]):
         self.terminal_items[term] = item
 
     def _set_min_unique_prefix_len(self, depth_before: int, *, is_root: bool) -> int:
-        if self is is_root and self.count <= 1:
+        if is_root and self.count <= 1:
             ret = 0
 
         elif self.count == 1:

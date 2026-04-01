@@ -550,7 +550,7 @@ class Reflector:
                 raise ReflectTypeError(f'Generic origin {origin!r} is not a type')
 
             if origin is ta.Protocol:
-                if args != params:
+                if args != params:  # type: ignore[unreachable]
                     raise ReflectTypeError(f'Protocol argument not yet supported for {args=}, {params=}')
                 return Protocol(
                     ta.Protocol,

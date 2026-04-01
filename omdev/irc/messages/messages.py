@@ -215,11 +215,11 @@ class JoinMessage(Message):
     def _validate_channels(self) -> None:
         check.not_isinstance(self.channels, str)
         if self.has_keys:
-            for c, _ in self.channels:  # type: ignore[misc]
+            for c, _ in self.channels:  # type: ignore[str-unpack]
                 check.non_empty_str(c)
         else:
-            for c in self.channels:
-                check.non_empty_str(c)  # type: ignore
+            for c in self.channels:  # type: ignore[assignment]
+                check.non_empty_str(c)
 
 
 @_register_irc_message

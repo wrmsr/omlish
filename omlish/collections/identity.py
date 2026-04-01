@@ -139,8 +139,8 @@ class IdentityWeakKeyDictionary(ta.MutableMapping[K, V]):
         def __eq__(self, other: object) -> bool:
             return (
                 type(other) is type(self) and
-                self._id == other._id and  # type: ignore  # noqa
-                self._key_ref() is other._key_ref()  # type: ignore  # noqa
+                self._id == other._id and  # noqa
+                self._key_ref() is other._key_ref()  # noqa
             )
 
         def __ne__(self, other: object) -> bool:

@@ -46,7 +46,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='core.py', sha1='3dabd48ce0e19fd974a89ea7b4dd2b6c4118d36b'),
             dict(path='../streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
-            dict(path='../../logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='../../logs/infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
@@ -3425,7 +3425,7 @@ class LoggingContextInfos:
 
         @classmethod
         def build(cls, level: int) -> 'LoggingContextInfos.Level':
-            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
             return cls(
                 level=nl,
                 name=logging.getLevelName(nl),

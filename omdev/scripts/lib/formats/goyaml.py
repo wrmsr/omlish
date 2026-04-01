@@ -41,7 +41,7 @@ def __omlish_amalg__():  # noqa
             dict(path='tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
             dict(path='ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
             dict(path='scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
-            dict(path='parsing.py', sha1='c92e4772e2d50f080bc1ca8a317d0c7aea5b710a'),
+            dict(path='parsing.py', sha1='aff489de2de0021d48486560a31fd2336bf39bf6'),
             dict(path='decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
             dict(path='_amalg.py', sha1='85989224f581528c4a189dca142cb3ec086ecd3c'),
         ],
@@ -8600,7 +8600,7 @@ class YamlParser:
         if isinstance(directive, YamlError):
             return directive
 
-        if directive.name == 'YAML':
+        if check.not_none(directive.name).string() == 'YAML':
             if len(g.tokens) != 2:
                 return YamlSyntaxError('unexpected format YAML directive', YamlParseToken.raw_token(g.first()))
             value_tk = g.tokens[1]
@@ -8617,7 +8617,7 @@ class YamlParser:
                 return version_node
             directive.values.append(version_node)
 
-        elif directive.name == 'TAG':
+        elif check.not_none(directive.name).string() == 'TAG':
             if len(g.tokens) != 3:
                 return YamlSyntaxError('unexpected format TAG directive', YamlParseToken.raw_token(g.first()))
             tag_key = YamlNodeMakers.new_string_node(ctx, g.tokens[1])

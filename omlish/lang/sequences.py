@@ -87,8 +87,8 @@ def map_preserve(
 class SeqView(ta.Sequence[T]):
     def __init__(self, data: ta.Sequence[T], slice_: slice = slice(None)) -> None:
         if data.__class__ is SeqView:
-            self._data = data._data  # type: ignore[attr-defined]  # noqa
-            self._range = data._range[slice_]  # type: ignore[attr-defined]  # noqa
+            self._data = data._data  # noqa
+            self._range = data._range[slice_]  # noqa
         else:
             self._data = data
             self._range = range(*slice_.indices(len(data)))

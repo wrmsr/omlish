@@ -148,12 +148,12 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='../../omlish/logs/infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='5583f7376fa8160fe137fdf43ac6e2a3b8fa577e'),
+            dict(path='configs.py', sha1='3cb3d02f8b862329340ebb8655a72b13a657dc87'),
             dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
@@ -198,7 +198,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='io.py', sha1='6ba708a8396c212afdd1d314c9b5804c2d66646e'),
-            dict(path='processimpl.py', sha1='ac6cc63f2259d73b714522e028056f7944ed6084'),
+            dict(path='processimpl.py', sha1='9b69da768c22f93fe29286769127f1d044b62e0a'),
             dict(path='setupimpl.py', sha1='b4b8b8c3e1d71a0e6794fb0a845181f3662a6bfd'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
@@ -10423,7 +10423,7 @@ class LoggingContextInfos:
 
         @classmethod
         def build(cls, level: int) -> 'LoggingContextInfos.Level':
-            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # noqa
             return cls(
                 level=nl,
                 name=logging.getLevelName(nl),
@@ -11175,17 +11175,6 @@ def journald_logging_handler_factory(
 ##
 
 
-class RestartWhenExitUnexpected:
-    pass
-
-
-class RestartUnconditionally:
-    pass
-
-
-##
-
-
 @dc.dataclass(frozen=True)
 class ProcessConfig:
     # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
@@ -11263,7 +11252,7 @@ class ProcessConfig:
     # started up (the process is in the RUNNING state). supervisord has a different restart mechanism for when the
     # process is starting up (the process is in the STARTING state). Retries during process startup are controlled by
     # startsecs and startretries.
-    auto_restart: str = 'unexpected'
+    auto_restart: str = 'unexpected'  # | 'unconditional'
 
     # The total number of seconds which the program needs to stay running after a startup to consider the start
     # successful (moving the process from the STARTING state to the RUNNING state). Set to 0 to indicate that the
@@ -19959,7 +19948,7 @@ class ProcessImpl(Process):
             # dont start any processes if supervisor is shutting down
             if state == ProcessState.EXITED:
                 if self._config.auto_restart:
-                    if self._config.auto_restart is RestartUnconditionally:
+                    if self._config.auto_restart == 'unconditional':
                         # EXITED -> STARTING
                         self._spawn()
                     elif self._exitstatus not in self._config.exitcodes:

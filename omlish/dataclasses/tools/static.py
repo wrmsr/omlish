@@ -173,7 +173,7 @@ class Static(lang.Abstract):
         if (dc_cls := dataclass(frozen=True)(cls)) is not cls:
             raise TypeError(dc_cls)
 
-        dc_flds = dc.fields(cls)  # type: ignore[arg-type]  # noqa
+        dc_flds = dc.fields(cls)  # noqa
 
         if expected_fld_order is not None:
             dc_fld_order = [f.name for f in dc_flds]
@@ -186,7 +186,7 @@ class Static(lang.Abstract):
             # This is the only time the Statics are ever actually instantiated, and it's only to produce the kwargs
             # passed to the underlying dataclass.
             tmp_inst = cls()
-            inst_kw = dc.asdict(tmp_inst)  # type: ignore[call-overload]  # noqa
+            inst_kw = dc.asdict(tmp_inst)  # noqa
             inst = sdc_cls(**inst_kw)
 
             cls.__static_dataclass_instance__ = inst
@@ -204,9 +204,9 @@ class Static(lang.Abstract):
                 except KeyError:
                     return super().__new__(new_cls)
 
-            cls.__new__ = __new__  # type: ignore
+            cls.__new__ = __new__
 
-        cls.__init__ = Static.__init__  # type: ignore
+        cls.__init__ = Static.__init__
 
     @ta.final
     def __init__(self) -> None:

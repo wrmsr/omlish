@@ -90,3 +90,8 @@ def test_decode5():
 
     v = yaml_decode(src)
     print(v)
+
+
+def test_decode6():
+    v = yaml_decode('%YAML 1.2\n---\n1\n')
+    assert v == 1
