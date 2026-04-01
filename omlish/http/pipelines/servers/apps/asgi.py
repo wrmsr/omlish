@@ -224,8 +224,6 @@ class _AsgiDriver:
                 check.none(self._receiving_fut)
                 self._receiving_fut = f
 
-                IoPipelineFlow.maybe_ready_for_input(self._ctx)
-
                 self._state = _AsgiDriver.State.RECEIVING
 
                 return False
@@ -310,6 +308,19 @@ class AsgiHandler(IoPipelineHandler):
 
         drv = _AsgiDriver(ctx, functools.partial(self._app, scope))
 
-        drv.step()
+        while True:
+            drv.step()
 
-        check.state(drv.state == _AsgiDriver.State.CLOSED)
+            if drv.state == _AsgiDriver.State.CLOSED:
+                break
+
+            elif drv.state == _AsgiDriver.State.RECEIVING:
+                # TODO: stream lol
+                # IoPipelineFlow.maybe_ready_for_input(self)
+
+                # msg.body
+
+                raise NotImplementedError
+
+            else:
+                raise RuntimeError(f'Invalid state: {drv.state!r}')
