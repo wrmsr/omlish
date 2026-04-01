@@ -53,13 +53,13 @@ class FdioHandler(Abstract):
 class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
-            addr: SocketAddress,
             sock: socket.socket,
+            addr: SocketAddress,
     ) -> None:
         super().__init__()
 
-        self._addr = addr
         self._sock: ta.Optional[socket.socket] = sock
+        self._addr = addr
 
     def fd(self) -> int:
         return check.not_none(self._sock).fileno()
@@ -86,7 +86,7 @@ class ServerSocketFdioHandler(SocketFdioHandler):
         sock = socket.create_server(addr)
         sock.setblocking(False)
 
-        super().__init__(addr, sock)
+        super().__init__(sock, addr)
 
         self._on_connect = on_connect
 

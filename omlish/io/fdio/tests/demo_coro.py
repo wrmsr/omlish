@@ -65,8 +65,8 @@ def _main() -> None:
     def on_connect(sock: socket.socket, addr: SocketAddress) -> None:
         try:
             conn = CoroHttpServerConnectionFdioHandler(
-                addr,
                 sock,
+                addr,
                 say_hi_handler,
             )
 

@@ -137,7 +137,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
-            dict(path='../../omlish/io/fdio/handlers.py', sha1='38f8b525ca2fb16309735275bbc466622e74d1d4'),
+            dict(path='../../omlish/io/fdio/handlers.py', sha1='60ee5f66ab2fb38ad7f62c7d69b69f207d8c2853'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/io/readers.py', sha1='34b76d1938359c77b57539a25311f1f127accc5b'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
@@ -167,14 +167,14 @@ def __omlish_amalg__():  # noqa
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
-            dict(path='../../omlish/http/coro/server/fdio.py', sha1='024d5e99cffecb294313426a489ae4833fb4a834'),
+            dict(path='../../omlish/http/coro/server/fdio.py', sha1='7731842a698dc79a8e0b028c55a8e13e3d292c4b'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='9e65e562395ad04e3f3a314f946b7a4e58a601da'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
-            dict(path='http.py', sha1='7dfed48cb1241e4941266ed4e47f44cf9be8b1a0'),
+            dict(path='http.py', sha1='9955aa9662a0b22555524446fc8a7868b8136952'),
             dict(path='io.py', sha1='6ba708a8396c212afdd1d314c9b5804c2d66646e'),
             dict(path='processimpl.py', sha1='ac6cc63f2259d73b714522e028056f7944ed6084'),
             dict(path='setupimpl.py', sha1='b4b8b8c3e1d71a0e6794fb0a845181f3662a6bfd'),
@@ -6198,13 +6198,13 @@ class FdioHandler(Abstract):
 class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
-            addr: SocketAddress,
             sock: socket.socket,
+            addr: SocketAddress,
     ) -> None:
         super().__init__()
 
-        self._addr = addr
         self._sock: ta.Optional[socket.socket] = sock
+        self._addr = addr
 
     def fd(self) -> int:
         return check.not_none(self._sock).fileno()
@@ -6231,7 +6231,7 @@ class ServerSocketFdioHandler(SocketFdioHandler):
         sock = socket.create_server(addr)
         sock.setblocking(False)
 
-        super().__init__(addr, sock)
+        super().__init__(sock, addr)
 
         self._on_connect = on_connect
 
@@ -12955,8 +12955,8 @@ class PidHistory(ta.Dict[Pid, Process]):
 class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     def __init__(
             self,
-            addr: SocketAddress,
             sock: socket.socket,
+            addr: SocketAddress,
             handler: SimpleHttpHandler,
             *,
             read_size: int = 0x10000,
@@ -12965,7 +12965,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     ) -> None:
         check.state(not sock.getblocking())
 
-        super().__init__(addr, sock)
+        super().__init__(sock, addr)
 
         self._handler = handler
         self._read_size = read_size
@@ -13729,8 +13729,8 @@ class HttpServer(HasDispatchers):
 
     def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
         conn = CoroHttpServerConnectionFdioHandler(
-            addr,
             sock,
+            addr,
             self._handler,
         )
 

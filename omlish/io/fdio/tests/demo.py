@@ -1,11 +1,15 @@
 # import socket
 # import typing as ta
 #
-# from ....http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
+# from ....http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
+# from ....http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
+# from ....http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
 # from ....http.simple.handlers import SimpleHttpHandlerRequest
 # from ....http.simple.handlers import SimpleHttpHandlerResponse
 # from ....http.simple.handlers import SimpleHttpHandlerResponseStreamedData
+# from ....http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
 # from ....sockets.addresses import SocketAddress
+# from ...pipelines.core import IoPipeline
 # from ...pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 # from ..handlers import ServerSocketFdioHandler
 # from ..kqueue import KqueueFdioPoller  # noqa
@@ -13,10 +17,6 @@
 # from ..pollers import FdioPoller
 # from ..pollers import PollFdioPoller  # noqa
 # from ..pollers import SelectFdioPoller
-# from ...pipelines.core import IoPipeline
-# from ....http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
-# from ....http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
-# from ....http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
 #
 #
 # ##
@@ -70,6 +70,8 @@
 #     def on_connect(sock: socket.socket, addr: SocketAddress) -> None:
 #         try:
 #             conn = IoPipelineDriverSocketFdioHandler(
+#                 sock,
+#                 addr,
 #                 IoPipeline.Spec(
 #                     [
 #                         IoPipelineHttpRequestDecoder(),
@@ -81,7 +83,6 @@
 #                         SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata(sock, addr),
 #                     ],
 #                 ),
-#                 sock,
 #             )
 #
 #             man.register(conn)

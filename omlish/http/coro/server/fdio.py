@@ -19,8 +19,8 @@ from .server import CoroHttpServer
 class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     def __init__(
             self,
-            addr: SocketAddress,
             sock: socket.socket,
+            addr: SocketAddress,
             handler: SimpleHttpHandler,
             *,
             read_size: int = 0x10000,
@@ -29,7 +29,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
     ) -> None:
         check.state(not sock.getblocking())
 
-        super().__init__(addr, sock)
+        super().__init__(sock, addr)
 
         self._handler = handler
         self._read_size = read_size

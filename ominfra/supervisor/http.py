@@ -59,8 +59,8 @@ class HttpServer(HasDispatchers):
 
     def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
         conn = CoroHttpServerConnectionFdioHandler(
-            addr,
             sock,
+            addr,
             self._handler,
         )
 

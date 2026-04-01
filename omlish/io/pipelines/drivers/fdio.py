@@ -7,10 +7,12 @@
 # """
 # import collections
 # import dataclasses as dc
+# import socket
 # import typing as ta
 #
 # from ....lite.check import check
 # from ....logs.modules import get_module_logger
+# from ....sockets.addresses import SocketAddress
 # from ...fdio.handlers import SocketFdioHandler
 # from ...streams.utils import ByteStreamBuffers
 # from ..core import IoPipeline
@@ -42,14 +44,14 @@
 #
 #     def __init__(
 #             self,
+#             sock: socket.socket,
+#             addr: SocketAddress,
 #             spec: IoPipeline.Spec,
-#             sock: ta.Any,
 #             config: ta.Optional[Config] = None,
 #     ) -> None:
-#         super().__init__()
+#         super().__init__(sock, addr)
 #
 #         self._spec = spec
-#         self._sock = sock
 #         if config is None:
 #             config = self.Config.DEFAULT
 #         self._config = config
