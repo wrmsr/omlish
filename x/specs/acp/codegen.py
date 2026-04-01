@@ -555,7 +555,7 @@ class JsonSchemaCodeGen:
             self()
             self('##')
 
-    def _gen_module_header(self, w: _Writer) -> None:
+    def _write_header(self, w: _Writer) -> None:
         w('# @omlish-generated')
         w('# ruff: noqa: UP007')
         w('import typing as ta')
@@ -578,7 +578,7 @@ class JsonSchemaCodeGen:
         w('    )')
         w('    return cls')
 
-    def _gen_module_discriminated_union_base_classes(self, w: _Writer) -> None:
+    def _write_discriminated_union_base_classes(self, w: _Writer) -> None:
         if self._disc_unions:
             w.sep()
             for name in sorted(self._disc_unions):
@@ -587,7 +587,7 @@ class JsonSchemaCodeGen:
                 w(f'class {name}(lang.Abstract, lang.Sealed):')
                 w('    pass')
 
-    def _gen_module_object_types(self, w: _Writer) -> None:
+    def _write_object_types(self, w: _Writer) -> None:
         objects = sorted(
             (n, td)
             for n, td in self._type_defs.items()
@@ -600,7 +600,7 @@ class JsonSchemaCodeGen:
                 w()
                 w.lines(self._gen_class_lines(name, td.fields))
 
-    def _gen_module_empties(self, w: _Writer) -> None:
+    def _write_empties(self, w: _Writer) -> None:
         empties = sorted(
             (n, td)
             for n, td in self._type_defs.items()
@@ -616,7 +616,7 @@ class JsonSchemaCodeGen:
                 w(f'class {name}(lang.Final):')
                 w('    pass')
 
-    def _gen_module_variant_wrapper_types(self, w: _Writer) -> None:
+    def _write_variant_wrapper_types(self, w: _Writer) -> None:
         if self._variant_wrappers:
             w.sep()
             for vw in sorted(self._variant_wrappers, key=lambda v: v.class_name):
@@ -629,7 +629,7 @@ class JsonSchemaCodeGen:
                     tag_field=(vw.tag_field_python, vw.tag_value),
                 ))
 
-    def _gen_module_type_aliases(self, w: _Writer) -> None:
+    def _write_type_aliases(self, w: _Writer) -> None:
         # Emitted after object types so unquoted refs resolve
         aliases = sorted(
             (n, td)
@@ -646,7 +646,7 @@ class JsonSchemaCodeGen:
                 else:
                     w(f'{name}: ta.TypeAlias = ta.Any')
 
-    def _gen_module_string_enum_type_aliases(self, w: _Writer) -> None:
+    def _write_string_enum_type_aliases(self, w: _Writer) -> None:
         enums = sorted(
             (n, td)
             for n, td in self._type_defs.items()
@@ -667,7 +667,7 @@ class JsonSchemaCodeGen:
                         w(f'    {v!r},')
                     w(']')
 
-    def _gen_module_any_of_union_type_aliases(self, w: _Writer) -> None:
+    def _write_any_of_union_type_aliases(self, w: _Writer) -> None:
         unions = sorted(
             (n, td)
             for n, td in self._type_defs.items()
@@ -694,7 +694,7 @@ class JsonSchemaCodeGen:
                             w(f'    {self._render_type_ann(m, quote_refs=False)},')
                         w(']')
 
-    def _gen_module_polymorphism_registration(self, w: _Writer) -> None:
+    def _write_polymorphism_registration(self, w: _Writer) -> None:
         if self._disc_unions:
             w.sep()
             w()
@@ -718,14 +718,14 @@ class JsonSchemaCodeGen:
         out = io.StringIO()
         w = self._Writer(out)
 
-        self._gen_module_header(w)
-        self._gen_module_discriminated_union_base_classes(w)
-        self._gen_module_object_types(w)
-        self._gen_module_empties(w)
-        self._gen_module_variant_wrapper_types(w)
-        self._gen_module_type_aliases(w)
-        self._gen_module_string_enum_type_aliases(w)
-        self._gen_module_any_of_union_type_aliases(w)
-        self._gen_module_polymorphism_registration(w)
+        self._write_header(w)
+        self._write_discriminated_union_base_classes(w)
+        self._write_object_types(w)
+        self._write_empties(w)
+        self._write_variant_wrapper_types(w)
+        self._write_type_aliases(w)
+        self._write_string_enum_type_aliases(w)
+        self._write_any_of_union_type_aliases(w)
+        self._write_polymorphism_registration(w)
 
         return out.getvalue()
