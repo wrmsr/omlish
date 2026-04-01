@@ -12,7 +12,6 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.flow.types import IoPipelineFlow
-from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from ....headers import HttpHeaders
@@ -193,21 +192,28 @@ class _AsgiDriver:
         if self._state == _AsgiDriver.State.STARTED:
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
-            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, collections.abc.Mapping)
-            check.equal(md['type'], 'http.response.start')
 
-            out.append(IoPipelineHttpResponseHead(
-                status=(status_code := md['status']),
-                reason=IoPipelineHttpResponseHead.get_reason_phrase(status_code),
-                headers=HttpHeaders(md['headers']),
-            ))
-            if IoPipelineFlow.is_auto_read(self._ctx):
-                out.append(IoPipelineFlowMessages.FlushOutput())
+            if isinstance(f.arg, _SendAsgiOp):
+                md = check.isinstance(f.arg.msg, collections.abc.Mapping)
+                check.equal(md['type'], 'http.response.start')
 
-            self._state = _AsgiDriver.State.RESPONSE_STARTED
+                out.append(IoPipelineHttpResponseHead(
+                    status=(status_code := md['status']),
+                    reason=IoPipelineHttpResponseHead.get_reason_phrase(status_code),
+                    headers=HttpHeaders(md['headers']),
+                ))
+                IoPipelineFlow.maybe_flush_output(self._ctx)
 
-            f.result, f.done = None, True
-            return True
+                self._state = _AsgiDriver.State.RESPONSE_STARTED
+
+                f.result, f.done = None, True
+                return True
+
+            elif isinstance(f.arg, _ReceiveAsgiOp):
+                raise NotImplementedError
+
+            else:
+                raise TypeError(f.arg)
 
         elif self._state == _AsgiDriver.State.RESPONSE_STARTED:
             check.state(gv.k == 'y')
@@ -216,8 +222,7 @@ class _AsgiDriver:
             check.equal(md['type'], 'http.response.body')
 
             out.append(md['body'])
-            if IoPipelineFlow.is_auto_read(self._ctx):
-                out.append(IoPipelineFlowMessages.FlushOutput())
+            IoPipelineFlow.maybe_flush_output(self._ctx)
 
             if not md.get('more_body', False):
                 self._state = _AsgiDriver.State.RESPONSE_FINISHED
@@ -251,8 +256,7 @@ class AsgiHandler(IoPipelineHandler):
         if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not IoPipelineFlow.is_auto_read(ctx):
-                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+            IoPipelineFlow.maybe_ready_for_input(ctx)
 
             return
 

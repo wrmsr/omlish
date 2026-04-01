@@ -164,7 +164,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='c90ba13e9e5ee795b6af752a6f25f8bcfd7f88a0'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
-            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='f6d06c7d6ca41a88930811507c966eeb073c15b3'),
+            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='2826bfe5d7edada0ba6669b6696053f834423d55'),
             dict(path='../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../omlish/io/streams/utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
@@ -206,7 +206,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='a37597f417b8f2893a434335da42fcd58a38ebe2'),
             dict(path='supervisor.py', sha1='a97a13ec71deaf6eacabb1527f373b21b89209af'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
-            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='ee85890fd7e5e37e89aafd16aa642ccecb5de677'),  # noqa
+            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='983efc23b5ae5e28a528c3c4cefdf5e1259a6743'),  # noqa
             dict(path='http.py', sha1='35aac87aea283a4f6603ec1924381eb4b3cea625'),
             dict(path='inject.py', sha1='bd9596e612217fe2b968966a59c7a43d37ea84da'),
             dict(path='main.py', sha1='5c8aee376656d78008b6341fe12cae52065b8243'),
@@ -12655,6 +12655,32 @@ class IoPipelineFlowMessages(NamespaceClass):
 
 
 class IoPipelineFlow(Abstract):
+    def _get_instance(
+            self: ta.Union[
+                'IoPipelineFlow',
+                IoPipeline,
+                IoPipelineHandlerContext,
+                None,
+            ],
+    ) -> ta.Optional['IoPipelineFlow']:
+        # This strange construct grants the ability to do things like `IoPipelineFlow.is_auto_read(opt_flow)`, which are
+        # becoming increasingly frequently useful in real code.
+        if self is None:
+            return None
+
+        if isinstance(self, IoPipelineFlow):
+            return self
+
+        if isinstance(self, IoPipelineHandlerContext):
+            self = self._pipeline  # noqa
+
+        if isinstance(self, IoPipeline):
+            return self.services.find(IoPipelineFlow)
+
+        raise TypeError(self)
+
+    #
+
     @abc.abstractmethod
     def is_auto_read(
             self: ta.Union[
@@ -12664,21 +12690,21 @@ class IoPipelineFlow(Abstract):
                 None,
             ],
     ) -> bool:
-        # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
-        # increasingly frequently useful in real code.
-        if self is None:
-            return False
+        return (fc := IoPipelineFlow._get_instance(self)) is None or fc.is_auto_read()
 
-        if isinstance(self, IoPipelineFlow):
-            return self.is_auto_read()
+    #
 
-        if isinstance(self, IoPipelineHandlerContext):
-            self = self._pipeline  # noqa
+    @ta.final
+    @classmethod
+    def maybe_flush_output(cls, ctx: IoPipelineHandlerContext) -> None:
+        if cls._get_instance(ctx) is not None:
+            ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
 
-        if isinstance(self, IoPipeline):
-            return (fc := self.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
-
-        raise TypeError(self)
+    @ta.final
+    @classmethod
+    def maybe_ready_for_input(cls, ctx: IoPipelineHandlerContext) -> None:
+        if (fc := cls._get_instance(ctx)) is not None and not fc.is_auto_read():
+            ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
 
 ########################################
@@ -21880,8 +21906,7 @@ class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
         if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not IoPipelineFlow.is_auto_read(ctx):
-                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+            IoPipelineFlow.maybe_ready_for_input(ctx)
 
             return
 

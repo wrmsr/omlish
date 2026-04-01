@@ -52,7 +52,7 @@ def __omlish_amalg__():  # noqa
             dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
             dict(path='bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),
-            dict(path='flow/types.py', sha1='f6d06c7d6ca41a88930811507c966eeb073c15b3'),
+            dict(path='flow/types.py', sha1='2826bfe5d7edada0ba6669b6696053f834423d55'),
             dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
             dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
             dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
@@ -4075,6 +4075,32 @@ class IoPipelineFlowMessages(NamespaceClass):
 
 
 class IoPipelineFlow(Abstract):
+    def _get_instance(
+            self: ta.Union[
+                'IoPipelineFlow',
+                IoPipeline,
+                IoPipelineHandlerContext,
+                None,
+            ],
+    ) -> ta.Optional['IoPipelineFlow']:
+        # This strange construct grants the ability to do things like `IoPipelineFlow.is_auto_read(opt_flow)`, which are
+        # becoming increasingly frequently useful in real code.
+        if self is None:
+            return None
+
+        if isinstance(self, IoPipelineFlow):
+            return self
+
+        if isinstance(self, IoPipelineHandlerContext):
+            self = self._pipeline  # noqa
+
+        if isinstance(self, IoPipeline):
+            return self.services.find(IoPipelineFlow)
+
+        raise TypeError(self)
+
+    #
+
     @abc.abstractmethod
     def is_auto_read(
             self: ta.Union[
@@ -4084,21 +4110,21 @@ class IoPipelineFlow(Abstract):
                 None,
             ],
     ) -> bool:
-        # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
-        # increasingly frequently useful in real code.
-        if self is None:
-            return False
+        return (fc := IoPipelineFlow._get_instance(self)) is None or fc.is_auto_read()
 
-        if isinstance(self, IoPipelineFlow):
-            return self.is_auto_read()
+    #
 
-        if isinstance(self, IoPipelineHandlerContext):
-            self = self._pipeline  # noqa
+    @ta.final
+    @classmethod
+    def maybe_flush_output(cls, ctx: IoPipelineHandlerContext) -> None:
+        if cls._get_instance(ctx) is not None:
+            ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
 
-        if isinstance(self, IoPipeline):
-            return (fc := self.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
-
-        raise TypeError(self)
+    @ta.final
+    @classmethod
+    def maybe_ready_for_input(cls, ctx: IoPipelineHandlerContext) -> None:
+        if (fc := cls._get_instance(ctx)) is not None and not fc.is_auto_read():
+            ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
 
 
 ########################################

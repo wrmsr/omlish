@@ -7,7 +7,6 @@ from ....io.pipelines.core import IoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.flow.types import IoPipelineFlow
-from ....io.pipelines.flow.types import IoPipelineFlowMessages
 from ....lite.check import check
 from ....lite.namespaces import NamespaceClass
 from ..requests import FullIoPipelineHttpRequest
@@ -59,11 +58,8 @@ class IoPipelineHttpClientHandler(IoPipelineHandler):
 
             ctx.feed_out(msg.request)
 
-            if (fc := ctx.services.find(IoPipelineFlow)) is not None:
-                ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
-
-                if not fc.is_auto_read():
-                    ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+            IoPipelineFlow.maybe_flush_output(ctx)
+            IoPipelineFlow.maybe_ready_for_input(ctx)
 
             return
 

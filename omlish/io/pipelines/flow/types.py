@@ -72,6 +72,32 @@ class IoPipelineFlowMessages(NamespaceClass):
 
 
 class IoPipelineFlow(Abstract):
+    def _get_instance(
+            self: ta.Union[
+                'IoPipelineFlow',
+                IoPipeline,
+                IoPipelineHandlerContext,
+                None,
+            ],
+    ) -> ta.Optional['IoPipelineFlow']:
+        # This strange construct grants the ability to do things like `IoPipelineFlow.is_auto_read(opt_flow)`, which are
+        # becoming increasingly frequently useful in real code.
+        if self is None:
+            return None
+
+        if isinstance(self, IoPipelineFlow):
+            return self
+
+        if isinstance(self, IoPipelineHandlerContext):
+            self = self._pipeline  # noqa
+
+        if isinstance(self, IoPipeline):
+            return self.services.find(IoPipelineFlow)
+
+        raise TypeError(self)
+
+    #
+
     @abc.abstractmethod
     def is_auto_read(
             self: ta.Union[
@@ -81,18 +107,18 @@ class IoPipelineFlow(Abstract):
                 None,
             ],
     ) -> bool:
-        # This strange construct grants the ability to do `IoPipelineFlow.is_auto_read(opt_flow)`, which is becoming
-        # increasingly frequently useful in real code.
-        if self is None:
-            return False
+        return (fc := IoPipelineFlow._get_instance(self)) is None or fc.is_auto_read()
 
-        if isinstance(self, IoPipelineFlow):
-            return self.is_auto_read()
+    #
 
-        if isinstance(self, IoPipelineHandlerContext):
-            self = self._pipeline  # noqa
+    @ta.final
+    @classmethod
+    def maybe_flush_output(cls, ctx: IoPipelineHandlerContext) -> None:
+        if cls._get_instance(ctx) is not None:
+            ctx.feed_out(IoPipelineFlowMessages.FlushOutput())
 
-        if isinstance(self, IoPipeline):
-            return (fc := self.services.find(IoPipelineFlow)) is None or fc.is_auto_read()
-
-        raise TypeError(self)
+    @ta.final
+    @classmethod
+    def maybe_ready_for_input(cls, ctx: IoPipelineHandlerContext) -> None:
+        if (fc := cls._get_instance(ctx)) is not None and not fc.is_auto_read():
+            ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())

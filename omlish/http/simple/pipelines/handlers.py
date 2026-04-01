@@ -10,7 +10,6 @@ from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.core import IoPipelineMetadata
 from ....io.pipelines.flow.types import IoPipelineFlow
-from ....io.pipelines.flow.types import IoPipelineFlowMessages
 from ....io.streams.utils import ByteStreamBuffers
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
@@ -51,8 +50,7 @@ class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
         if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not IoPipelineFlow.is_auto_read(ctx):
-                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+            IoPipelineFlow.maybe_ready_for_input(ctx)
 
             return
 

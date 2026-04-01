@@ -7,7 +7,6 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.flow.types import IoPipelineFlow
-from .....io.pipelines.flow.types import IoPipelineFlowMessages
 from .....lite.check import check
 from ....headers import HttpHeaders
 from ...requests import FullIoPipelineHttpRequest
@@ -38,8 +37,7 @@ class WsgiHandler(IoPipelineHandler):
         if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
 
-            if not IoPipelineFlow.is_auto_read(ctx):
-                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+            IoPipelineFlow.maybe_ready_for_input(ctx)
 
             return
 
