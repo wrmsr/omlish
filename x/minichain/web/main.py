@@ -1,8 +1,10 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
 import asyncio
+import os.path
 import typing as ta
 
+from omdev.cache import data as dcache
 from omlish import lang
 from omlish.http.pipelines.servers.apps.asgi import AsgiHandler
 from omlish.http.pipelines.servers.apps.asgi import AsgiSpec
@@ -70,6 +72,32 @@ async def _serve_resource(
     })
 
 
+async def _serve_data_cache_url(
+        send: ta.Callable,
+        url: str,
+        content_type: str = 'text/plain',
+) -> None:
+    spec = dcache.UrlSpec(url)
+    file_pth = dcache.default().get(spec)
+
+    with open(dcache.default().get(spec), 'rb') as f:
+        body = f.read()
+
+    await send({
+        'type': 'http.response.start',
+        'status': 200,
+        'headers': [
+            (b'content-type', content_type.encode('ascii')),
+            (b'content-length', str(len(body)).encode('ascii')),
+        ],
+    })
+
+    await send({
+        'type': 'http.response.body',
+        'body': body,
+    })
+
+
 async def _serve_not_found(send: ta.Callable) -> None:
     body = b'not found'
 
@@ -88,6 +116,16 @@ async def _serve_not_found(send: ta.Callable) -> None:
     })
 
 
+_RESOURCE_ROUTES: ta.Mapping[str, tuple[str, str]] = {
+    '/': ('index.html', 'text/html'),
+    '/index.css': ('index.css', 'text/css'),
+}
+
+_DATA_CACHE_URL_ROUTES: ta.Mapping[str, tuple[str, str]] = {
+    '/marked.js': ('https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js', 'application/javascript'),
+}
+
+
 async def app(scope, receive, send):
     if scope['type'] != 'http':
         return
@@ -95,11 +133,11 @@ async def app(scope, receive, send):
     method = scope.get('method')
     path = scope.get('path')
 
-    if (method, path) == ('GET', '/'):
-        await _serve_resource(send, 'index.html', 'text/html')
+    if method == 'GET' and (rsrc_rt := _RESOURCE_ROUTES.get(path)) is not None:
+        await _serve_resource(send, *rsrc_rt)
 
-    elif (method, path) == ('GET', '/index.css'):
-        await _serve_resource(send, 'index.css', 'text/css')
+    elif method == 'GET' and (dcu_rt := _DATA_CACHE_URL_ROUTES.get(path)) is not None:
+        await _serve_data_cache_url(send, *dcu_rt)
 
     else:
         await _serve_not_found(send)
