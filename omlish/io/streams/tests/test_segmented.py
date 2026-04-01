@@ -740,3 +740,129 @@ class TestSegmentedByteStreamBufferActiveBoundaryBugs(unittest.TestCase):
         # Should handle the empty previous segment correctly
         pos = b.rfind(b'XXX')
         self.assertNotEqual(pos, -1)
+
+
+class TestSegmentedByteStreamBufferPrepend(unittest.TestCase):
+    def test_prepend_to_empty(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.prepend(b'abc')
+        self.assertEqual(len(b), 3)
+        self.assertEqual(bytes(b.peek()), b'abc')
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'abc')
+
+    def test_prepend_to_nonempty(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'world')
+        b.prepend(b'hello ')
+        self.assertEqual(len(b), 11)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'hello world')
+
+    def test_back_to_back_prepends(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'C')
+        b.prepend(b'B')
+        b.prepend(b'A')
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'ABC')
+
+    def test_prepend_with_head_offset(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'discardABC')
+        b.write(b'DEF')
+        b.advance(7)  # Skip 'discard', leaving 'ABCDEF'
+        self.assertEqual(b._head_off, 7)  # noqa: SLF001
+
+        b.prepend(b'XX')
+        self.assertEqual(b._head_off, 0)  # noqa: SLF001
+        self.assertEqual(len(b), 8)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'XXABCDEF')
+
+    def test_prepend_with_head_offset_active_chunk(self) -> None:
+        b = SegmentedByteStreamBuffer(chunk_size=16)
+        b.write(b'discardABC')
+        b.advance(7)  # head_off=7 into the active chunk
+        self.assertTrue(b._segs[0] is b._active)  # noqa: SLF001
+
+        b.prepend(b'XX')
+        self.assertEqual(b._head_off, 0)  # noqa: SLF001
+        self.assertIsNone(b._active)  # noqa: SLF001
+        self.assertEqual(len(b), 5)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'XXABC')
+
+    def test_prepend_empty_data(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'abc')
+        b.prepend(b'')
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'abc')
+
+    def test_prepend_max_size(self) -> None:
+        b = SegmentedByteStreamBuffer(max_size=5)
+        b.write(b'abc')
+        with self.assertRaises(BufferTooLargeByteStreamBufferError):
+            b.prepend(b'xyz')
+        # Buffer unchanged.
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'abc')
+
+    def test_prepend_find_rfind(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'world')
+        b.prepend(b'hello ')
+        # Cross-segment find.
+        self.assertEqual(b.find(b'o w'), 4)
+        self.assertEqual(b.rfind(b'o w'), 4)
+        # Within-segment find.
+        self.assertEqual(b.find(b'hello'), 0)
+        self.assertEqual(b.find(b'world'), 6)
+        self.assertEqual(b.rfind(b'world'), 6)
+        # Not found.
+        self.assertEqual(b.find(b'nope'), -1)
+
+    def test_prepend_split_to(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'DEF')
+        b.prepend(b'ABC')
+        v = b.split_to(4)
+        self.assertEqual(v.tobytes(), b'ABCD')
+        self.assertEqual(len(b), 2)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'EF')
+
+    def test_prepend_with_standalone_reserve(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'abc')
+        mv = b.reserve(4)
+        mv[:3] = b'xyz'
+        # Reserve is standalone (not in active chunk).
+        b.prepend(b'PRE')
+        self.assertEqual(len(b), 6)  # 'abc' + 'PRE', reserve not yet committed.
+        b.commit(3)
+        self.assertEqual(len(b), 9)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'PREabcxyz')
+
+    def test_prepend_with_active_reserve_no_head_off(self) -> None:
+        b = SegmentedByteStreamBuffer(chunk_size=16)
+        b.write(b'abc')
+        mv = b.reserve(4)
+        mv[:] = b'wxyz'
+        # Reserve is in active chunk, but head_off=0, so prepend is safe.
+        b.prepend(b'PRE')
+        self.assertEqual(len(b), 6)  # 'abc' + 'PRE', reserve not yet committed.
+        b.commit(4)
+        self.assertEqual(len(b), 10)
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'PREabcwxyz')
+
+    def test_prepend_with_active_reserve_and_head_off(self) -> None:
+        b = SegmentedByteStreamBuffer(chunk_size=16)
+        b.write(b'discardABC')
+        b.advance(7)  # head_off=7 into the active chunk
+        _ = b.reserve(4)
+        # Reserve is in active, head_off > 0, _segs[0] is active -> conflict.
+        with self.assertRaises(OutstandingReserveByteStreamBufferError):
+            b.prepend(b'XX')
+
+    def test_prepend_memoryview_input(self) -> None:
+        b = SegmentedByteStreamBuffer()
+        b.write(b'world')
+        b.prepend(memoryview(b'hello '))
+        self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'hello world')

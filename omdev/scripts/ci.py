@@ -200,7 +200,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='aff489de2de0021d48486560a31fd2336bf39bf6'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
-            dict(path='../../omlish/io/streams/segmented.py', sha1='8d112d08e066f69527091486f8817af0db586333'),
+            dict(path='../../omlish/io/streams/segmented.py', sha1='ae33f03c97fdc8b2d0983f8697cee2f4994cab89'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
@@ -26538,6 +26538,36 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         # Copy into fixed-capacity buffer; do not resize.
         memoryview(a)[self._active_used:self._active_used + dl] = data
         self._active_used += dl
+        self._len += dl
+
+    def prepend(self, data: BytesLike, /) -> None:
+        if not data:
+            return
+        if isinstance(data, memoryview):
+            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+
+        dl = len(data)
+
+        if self._max_size is not None and self._len + dl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
+
+        if self._head_off:
+            s0 = self._segs[0]
+            if s0 is self._active:
+                if self._reserved_in_active:
+                    raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+                rl = self._active_readable_len()
+                if self._head_off < rl:
+                    self._segs[0] = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
+                else:
+                    self._segs.pop(0)
+                self._active = None
+                self._active_used = 0
+            else:
+                self._segs[0] = s0[self._head_off:]
+            self._head_off = 0
+
+        self._segs.insert(0, data)
         self._len += dl
 
     def reserve(self, n: int, /) -> memoryview:

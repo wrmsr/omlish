@@ -285,6 +285,36 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active_used += dl
         self._len += dl
 
+    def prepend(self, data: BytesLike, /) -> None:
+        if not data:
+            return
+        if isinstance(data, memoryview):
+            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+
+        dl = len(data)
+
+        if self._max_size is not None and self._len + dl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
+
+        if self._head_off:
+            s0 = self._segs[0]
+            if s0 is self._active:
+                if self._reserved_in_active:
+                    raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+                rl = self._active_readable_len()
+                if self._head_off < rl:
+                    self._segs[0] = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
+                else:
+                    self._segs.pop(0)
+                self._active = None
+                self._active_used = 0
+            else:
+                self._segs[0] = s0[self._head_off:]
+            self._head_off = 0
+
+        self._segs.insert(0, data)
+        self._len += dl
+
     def reserve(self, n: int, /) -> memoryview:
         if n < 0:
             raise ValueError(n)
