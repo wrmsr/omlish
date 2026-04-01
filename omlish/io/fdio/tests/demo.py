@@ -1,16 +1,12 @@
 import socket
 import typing as ta
 
-from ....http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
-from ....http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
-from ....http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
 from ....http.simple.handlers import SimpleHttpHandlerRequest
 from ....http.simple.handlers import SimpleHttpHandlerResponse
 from ....http.simple.handlers import SimpleHttpHandlerResponseStreamedData
 from ....http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
-from ...pipelines.core import IoPipeline
 from ...pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 from ..handlers import ServerSocketFdioHandler
 from ..kqueue import KqueueFdioPoller  # noqa
@@ -73,16 +69,10 @@ def _main() -> None:
             conn = IoPipelineDriverSocketFdioHandler(
                 sock,
                 addr,
-                IoPipeline.Spec(
-                    [
-                        IoPipelineHttpRequestDecoder(),
-                        IoPipelineHttpRequestAggregatorDecoder(),
-                        IoPipelineHttpResponseEncoder(),
-                        SimpleHttpHandlerServerIoPipelineHandler(say_hi_handler),
-                    ],
-                    metadata=[
-                        SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata(sock, addr),
-                    ],
+                SimpleHttpHandlerServerIoPipelineHandler.build_standard_pipeline_spec(
+                    sock,
+                    addr,
+                    say_hi_handler,
                 ),
             )
 

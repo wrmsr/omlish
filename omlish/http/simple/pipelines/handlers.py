@@ -4,6 +4,7 @@ import dataclasses as dc
 import socket as socket_
 import typing as ta
 
+from ....io.pipelines.core import IoPipeline
 from ....io.pipelines.core import IoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
@@ -19,6 +20,9 @@ from ...pipelines.requests import FullIoPipelineHttpRequest
 from ...pipelines.responses import FullIoPipelineHttpResponse
 from ...pipelines.responses import IoPipelineHttpResponseBodyData
 from ...pipelines.responses import IoPipelineHttpResponseEnd
+from ...pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
+from ...pipelines.servers.requests import IoPipelineHttpRequestDecoder
+from ...pipelines.servers.responses import IoPipelineHttpResponseEncoder
 from ...pipelines.servers.responses import IoPipelineHttpResponseHead
 from ..handlers import SimpleHttpHandler
 from ..handlers import SimpleHttpHandlerRequest
@@ -130,3 +134,24 @@ class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
 
         finally:
             handler_resp.close()
+
+    #
+
+    @classmethod
+    def build_standard_pipeline_spec(
+            cls,
+            sock: socket_.socket,
+            addr: SocketAddress,
+            handler: SimpleHttpHandler,
+    ) -> IoPipeline.Spec:
+        return IoPipeline.Spec(
+            [
+                IoPipelineHttpRequestDecoder(),
+                IoPipelineHttpRequestAggregatorDecoder(),
+                IoPipelineHttpResponseEncoder(),
+                SimpleHttpHandlerServerIoPipelineHandler(handler),
+            ],
+            metadata=[
+                SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata(sock, addr),
+            ],
+        )

@@ -210,7 +210,6 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='a08bbe1feac5852f9609d6a5bf967a3e5767e7b5'),
-            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='b3c8006becdccb9d26833b71e905dbe3094f2988'),  # noqa
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
@@ -232,13 +231,14 @@ def __omlish_amalg__():  # noqa
             dict(path='docker/imagepulling.py', sha1='d6b1ca1ecb9aa5c593a25e6deb78e942c75ebcb4'),
             dict(path='github/api/v1/client.py', sha1='6ddd600cd8a7ff72a6a3408ded14240bafab6944'),
             dict(path='github/api/v2/client.py', sha1='e28f27c07011487d5a3f4ae32fdfa1a857d02459'),
-            dict(path='../../omlish/http/simple/pipelines/sync.py', sha1='fd0cbf75ace5b5da6200dacedbe920e782250487'),
+            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='ee85890fd7e5e37e89aafd16aa642ccecb5de677'),  # noqa
             dict(path='ci.py', sha1='87b82e2bd86aa886764f1e0067251b056e359650'),
-            dict(path='docker/dataserver.py', sha1='6af024e92498b1cea39933a0beb73c7ec031fefd'),
             dict(path='github/cache.py', sha1='d91f9c87d167574e94c99817e6c3a0f75925dfb9'),
             dict(path='github/cli.py', sha1='6d14b0eb4ca5f606ad2821b63b9707ce57f50406'),
-            dict(path='docker/cacheserved/cache.py', sha1='4f8c5c2b7451b8f0d7cccb12060ff609af4f44e8'),
+            dict(path='../../omlish/http/simple/pipelines/sync.py', sha1='fd0cbf75ace5b5da6200dacedbe920e782250487'),
+            dict(path='docker/dataserver.py', sha1='6af024e92498b1cea39933a0beb73c7ec031fefd'),
             dict(path='github/inject.py', sha1='99c0dd7c55767e7c49f70b7edac25da67f718b2e'),
+            dict(path='docker/cacheserved/cache.py', sha1='4f8c5c2b7451b8f0d7cccb12060ff609af4f44e8'),
             dict(path='docker/inject.py', sha1='69acac65fae413cb58c1f9aa739d2cc1c3ffa09d'),
             dict(path='inject.py', sha1='e86b16d79a113a4f387e68ed0db1d067bcada93a'),
             dict(path='cli.py', sha1='bf4845886c5e7b623e54fb98ce7c8f0fa6696d3a'),
@@ -29080,117 +29080,6 @@ class IoPipelineHttpObjectAggregatorDecoder(
 
 
 ########################################
-# ../../../omlish/http/simple/pipelines/handlers.py
-
-
-##
-
-
-class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
-    def __init__(self, handler: SimpleHttpHandler) -> None:
-        super().__init__()
-
-        self._handler = handler
-
-    @dc.dataclass(frozen=True)
-    class SocketAndAddressMetadata(IoPipelineMetadata):
-        socket: socket_.socket
-        address: SocketAddress
-
-        @classmethod
-        def of(cls, saa: SocketAndAddress) -> 'SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata':
-            return cls(saa.socket, saa.address)
-
-    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, IoPipelineMessages.InitialInput):
-            ctx.feed_in(msg)
-
-            if not IoPipelineFlow.is_auto_read(ctx):
-                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
-
-            return
-
-        if not isinstance(msg, FullIoPipelineHttpRequest):
-            ctx.feed_in(msg)
-            return
-
-        #
-
-        sam = ctx.pipeline.metadata[SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata]
-
-        handler_req = SimpleHttpHandlerRequest(
-            client_address=SocketAndAddress(sam.socket, sam.address),
-            method=msg.head.method,
-            path=msg.head.target,
-            headers=check.not_none(msg.head.parsed).headers,
-            data=ByteStreamBuffers.to_bytes(msg.body),
-        )
-
-        handler_resp = self._handler(handler_req)
-
-        try:
-            headers = HttpHeaders(handler_resp.headers or {})
-            new_headers: ta.Dict[str, str] = {}
-
-            data = handler_resp.data
-
-            if data is not None and headers.lower.get('content-length') is None:
-                cl: ta.Optional[int]
-                if isinstance(data, bytes):
-                    cl = len(data)
-                elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
-                    cl = data.length
-                else:
-                    raise TypeError(data)
-                if cl is not None:
-                    new_headers['Content-Length'] = str(cl)
-
-            # if headers.lower.get('connect') is None:
-            #     if h.key.lower() != 'connection':
-            #         return None
-            #     elif h.value.lower() == 'close':
-            #         return True
-            #     elif h.value.lower() == 'keep-alive':
-            #         return False
-            #     else:
-            #         return None
-            new_headers['Connection'] = 'close'  # TODO: handler_resp.close_connection
-
-            if new_headers:
-                headers = HttpHeaders({**headers, **new_headers})
-
-            head = IoPipelineHttpResponseHead(
-                status=handler_resp.status,
-                reason=IoPipelineHttpResponseHead.get_reason_phrase(handler_resp.status),
-                headers=headers,
-            )
-
-            if isinstance(data, (bytes, type(None))):
-                resp = FullIoPipelineHttpResponse(
-                    head=head,
-                    body=data or b'',
-                )
-
-                ctx.feed_out(resp)
-
-            elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
-                ctx.feed_out(head)
-
-                for b in data.iter:
-                    ctx.feed_out(IoPipelineHttpResponseBodyData(b))
-
-                ctx.feed_out(IoPipelineHttpResponseEnd())
-
-            else:
-                raise TypeError(data)
-
-            ctx.feed_out(IoPipelineMessages.FinalOutput())
-
-        finally:
-            handler_resp.close()
-
-
-########################################
 # ../../../omlish/io/pipelines/bytes/decoders.py
 """
 TODO:
@@ -32633,98 +32522,135 @@ class GithubCacheServiceV2Client(BaseGithubCacheClient):
 
 
 ########################################
-# ../../../omlish/http/simple/pipelines/sync.py
+# ../../../omlish/http/simple/pipelines/handlers.py
 
 
-@contextlib.contextmanager
-def make_simple_http_server(
-        bind: CanSocketBinder,
-        handler: SimpleHttpHandler,
-        *,
-        # keep_alive: bool = False,  # TODO
-        ssl_context: ta.Optional['ssl.SSLContext'] = None,
-        ignore_ssl_errors: bool = False,
-        executor: ta.Optional[cf.Executor] = None,
-        use_threads: bool = False,
-        **kwargs: ta.Any,
-) -> ta.Iterator[SocketHandlerServer]:
-    check.arg(not (executor is not None and use_threads))
+##
 
-    #
 
-    def pipeline_serve(conn: SocketAndAddress) -> None:
+class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
+    def __init__(self, handler: SimpleHttpHandler) -> None:
+        super().__init__()
+
+        self._handler = handler
+
+    @dc.dataclass(frozen=True)
+    class SocketAndAddressMetadata(IoPipelineMetadata):
+        socket: socket_.socket
+        address: SocketAddress
+
+        @classmethod
+        def of(cls, saa: SocketAndAddress) -> 'SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata':
+            return cls(saa.socket, saa.address)
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineMessages.InitialInput):
+            ctx.feed_in(msg)
+
+            if not IoPipelineFlow.is_auto_read(ctx):
+                ctx.feed_out(IoPipelineFlowMessages.ReadyForInput())
+
+            return
+
+        if not isinstance(msg, FullIoPipelineHttpRequest):
+            ctx.feed_in(msg)
+            return
+
+        #
+
+        sam = ctx.pipeline.metadata[SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata]
+
+        handler_req = SimpleHttpHandlerRequest(
+            client_address=SocketAndAddress(sam.socket, sam.address),
+            method=msg.head.method,
+            path=msg.head.target,
+            headers=check.not_none(msg.head.parsed).headers,
+            data=ByteStreamBuffers.to_bytes(msg.body),
+        )
+
+        handler_resp = self._handler(handler_req)
+
         try:
-            conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        except OSError as e:
-            if e.errno != errno.ENOPROTOOPT:
-                raise
+            headers = HttpHeaders(handler_resp.headers or {})
+            new_headers: ta.Dict[str, str] = {}
 
-        drv = SyncSocketIoPipelineDriver(
-            IoPipeline.Spec(
-                [
-                    IoPipelineHttpRequestDecoder(),
-                    IoPipelineHttpRequestAggregatorDecoder(),
-                    IoPipelineHttpResponseEncoder(),
-                    SimpleHttpHandlerServerIoPipelineHandler(handler),
-                ],
-                metadata=[
-                    SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata.of(conn),
-                ],
-            ),
-            conn.socket,
-        )
+            data = handler_resp.data
 
-        drv.loop_until_done()
+            if data is not None and headers.lower.get('content-length') is None:
+                cl: ta.Optional[int]
+                if isinstance(data, bytes):
+                    cl = len(data)
+                elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                    cl = data.length
+                else:
+                    raise TypeError(data)
+                if cl is not None:
+                    new_headers['Content-Length'] = str(cl)
+
+            # if headers.lower.get('connect') is None:
+            #     if h.key.lower() != 'connection':
+            #         return None
+            #     elif h.value.lower() == 'close':
+            #         return True
+            #     elif h.value.lower() == 'keep-alive':
+            #         return False
+            #     else:
+            #         return None
+            new_headers['Connection'] = 'close'  # TODO: handler_resp.close_connection
+
+            if new_headers:
+                headers = HttpHeaders({**headers, **new_headers})
+
+            head = IoPipelineHttpResponseHead(
+                status=handler_resp.status,
+                reason=IoPipelineHttpResponseHead.get_reason_phrase(handler_resp.status),
+                headers=headers,
+            )
+
+            if isinstance(data, (bytes, type(None))):
+                resp = FullIoPipelineHttpResponse(
+                    head=head,
+                    body=data or b'',
+                )
+
+                ctx.feed_out(resp)
+
+            elif isinstance(data, SimpleHttpHandlerResponseStreamedData):
+                ctx.feed_out(head)
+
+                for b in data.iter:
+                    ctx.feed_out(IoPipelineHttpResponseBodyData(b))
+
+                ctx.feed_out(IoPipelineHttpResponseEnd())
+
+            else:
+                raise TypeError(data)
+
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
+
+        finally:
+            handler_resp.close()
 
     #
 
-    with contextlib.ExitStack() as es:
-        socket_handler: SocketHandler = pipeline_serve
-
-        #
-
-        if ssl_context is not None:
-            socket_handler = SocketWrappingSocketHandler(
-                socket_handler,
-                SocketAndAddress.socket_wrapper(functools.partial(
-                    ssl_context.wrap_socket,
-                    server_side=True,
-                )),
-            )
-
-        if ignore_ssl_errors:
-            socket_handler = SslErrorHandlingSocketHandler(
-                socket_handler,
-            )
-
-        #
-
-        socket_handler = StandardSocketHandler(
-            socket_handler,
+    @classmethod
+    def build_standard_pipeline_spec(
+            cls,
+            sock: socket_.socket,
+            addr: SocketAddress,
+            handler: SimpleHttpHandler,
+    ) -> IoPipeline.Spec:
+        return IoPipeline.Spec(
+            [
+                IoPipelineHttpRequestDecoder(),
+                IoPipelineHttpRequestAggregatorDecoder(),
+                IoPipelineHttpResponseEncoder(),
+                SimpleHttpHandlerServerIoPipelineHandler(handler),
+            ],
+            metadata=[
+                SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata(sock, addr),
+            ],
         )
-
-        #
-
-        if executor is not None:
-            socket_handler = ExecutorSocketHandler(
-                socket_handler,
-                executor,
-            )
-
-        elif use_threads:
-            socket_handler = es.enter_context(ThreadingSocketHandler(
-                socket_handler,
-            ))
-
-        #
-
-        server = es.enter_context(SocketHandlerServer(
-            SocketBinder.of(bind),
-            socket_handler,
-            **kwargs,
-        ))
-
-        yield server
 
 
 ########################################
@@ -32972,6 +32898,230 @@ class Ci(AsyncExitStacked):
 
 
 ########################################
+# ../github/cache.py
+
+
+##
+
+
+class GithubCache(FileCache, DataCache):
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
+
+    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
+
+    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
+        1: GithubCacheServiceV1Client,
+        2: GithubCacheServiceV2Client,
+    }
+
+    def __init__(
+            self,
+            config: Config = Config(),
+            *,
+            client: ta.Optional[GithubCacheClient] = None,
+            default_client_version: ta.Optional[int] = None,
+
+            version: ta.Optional[CacheVersion] = None,
+
+            local: DirectoryFileCache,
+    ) -> None:
+        super().__init__(
+            version=version,
+        )
+
+        self._config = config
+
+        if client is None:
+            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
+            client = client_cls(
+                cache_version=self._version,
+            )
+        self._client: GithubCacheClient = client
+
+        self._local = local
+
+    #
+
+    async def get_file(self, key: str) -> ta.Optional[str]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return local_file
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        tmp_file = self._local.format_incomplete_file(local_file)
+        with unlinking_if_exists(tmp_file):
+            await self._client.download_file(entry, tmp_file)
+
+            os.replace(tmp_file, local_file)
+
+        return local_file
+
+    async def put_file(
+            self,
+            key: str,
+            file_path: str,
+            *,
+            steal: bool = False,
+    ) -> str:
+        cache_file_path = await self._local.put_file(
+            key,
+            file_path,
+            steal=steal,
+        )
+
+        await self._client.upload_file(key, cache_file_path)
+
+        return cache_file_path
+
+    #
+
+    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
+        local_file = self._local.get_cache_file_path(key)
+        if os.path.exists(local_file):
+            return DataCache.FileData(local_file)
+
+        if (entry := await self._client.get_entry(key)) is None:
+            return None
+
+        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
+
+    async def put_data(self, key: str, data: DataCache.Data) -> None:
+        await FileCacheDataCache(self).put_data(key, data)
+
+
+########################################
+# ../github/cli.py
+"""
+See:
+ - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
+"""
+
+
+##
+
+
+class GithubCli(ArgparseCli):
+    @argparse_cmd()
+    def list_referenced_env_vars(self) -> None:
+        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
+
+    @argparse_cmd(
+        argparse_arg('key'),
+    )
+    async def get_cache_entry(self) -> None:
+        client = GithubCacheServiceV1Client()
+        entry = await client.get_entry(self.args.key)
+        if entry is None:
+            return
+        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
+
+    @argparse_cmd(
+        argparse_arg('repository-id'),
+    )
+    def list_cache_entries(self) -> None:
+        raise NotImplementedError
+
+
+########################################
+# ../../../omlish/http/simple/pipelines/sync.py
+
+
+@contextlib.contextmanager
+def make_simple_http_server(
+        bind: CanSocketBinder,
+        handler: SimpleHttpHandler,
+        *,
+        # keep_alive: bool = False,  # TODO
+        ssl_context: ta.Optional['ssl.SSLContext'] = None,
+        ignore_ssl_errors: bool = False,
+        executor: ta.Optional[cf.Executor] = None,
+        use_threads: bool = False,
+        **kwargs: ta.Any,
+) -> ta.Iterator[SocketHandlerServer]:
+    check.arg(not (executor is not None and use_threads))
+
+    #
+
+    def pipeline_serve(conn: SocketAndAddress) -> None:
+        try:
+            conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno != errno.ENOPROTOOPT:
+                raise
+
+        drv = SyncSocketIoPipelineDriver(
+            IoPipeline.Spec(
+                [
+                    IoPipelineHttpRequestDecoder(),
+                    IoPipelineHttpRequestAggregatorDecoder(),
+                    IoPipelineHttpResponseEncoder(),
+                    SimpleHttpHandlerServerIoPipelineHandler(handler),
+                ],
+                metadata=[
+                    SimpleHttpHandlerServerIoPipelineHandler.SocketAndAddressMetadata.of(conn),
+                ],
+            ),
+            conn.socket,
+        )
+
+        drv.loop_until_done()
+
+    #
+
+    with contextlib.ExitStack() as es:
+        socket_handler: SocketHandler = pipeline_serve
+
+        #
+
+        if ssl_context is not None:
+            socket_handler = SocketWrappingSocketHandler(
+                socket_handler,
+                SocketAndAddress.socket_wrapper(functools.partial(
+                    ssl_context.wrap_socket,
+                    server_side=True,
+                )),
+            )
+
+        if ignore_ssl_errors:
+            socket_handler = SslErrorHandlingSocketHandler(
+                socket_handler,
+            )
+
+        #
+
+        socket_handler = StandardSocketHandler(
+            socket_handler,
+        )
+
+        #
+
+        if executor is not None:
+            socket_handler = ExecutorSocketHandler(
+                socket_handler,
+                executor,
+            )
+
+        elif use_threads:
+            socket_handler = es.enter_context(ThreadingSocketHandler(
+                socket_handler,
+            ))
+
+        #
+
+        server = es.enter_context(SocketHandlerServer(
+            SocketBinder.of(bind),
+            socket_handler,
+            **kwargs,
+        ))
+
+        yield server
+
+
+########################################
 # ../docker/dataserver.py
 
 
@@ -33167,132 +33317,20 @@ class DockerDataServer(AsyncExitStacked):
 
 
 ########################################
-# ../github/cache.py
+# ../github/inject.py
 
 
 ##
 
 
-class GithubCache(FileCache, DataCache):
-    @dc.dataclass(frozen=True)
-    class Config:
-        pass
+def bind_github() -> InjectorBindings:
+    lst: ta.List[InjectorBindingOrBindings] = [
+        inj.bind(GithubCache, singleton=True),
+        inj.bind(DataCache, to_key=GithubCache),
+        inj.bind(FileCache, to_key=GithubCache),
+    ]
 
-    DEFAULT_CLIENT_VERSION: ta.ClassVar[int] = 2
-
-    DEFAULT_CLIENTS_BY_VERSION: ta.ClassVar[ta.Mapping[int, ta.Callable[..., GithubCacheClient]]] = {
-        1: GithubCacheServiceV1Client,
-        2: GithubCacheServiceV2Client,
-    }
-
-    def __init__(
-            self,
-            config: Config = Config(),
-            *,
-            client: ta.Optional[GithubCacheClient] = None,
-            default_client_version: ta.Optional[int] = None,
-
-            version: ta.Optional[CacheVersion] = None,
-
-            local: DirectoryFileCache,
-    ) -> None:
-        super().__init__(
-            version=version,
-        )
-
-        self._config = config
-
-        if client is None:
-            client_cls = self.DEFAULT_CLIENTS_BY_VERSION[default_client_version or self.DEFAULT_CLIENT_VERSION]
-            client = client_cls(
-                cache_version=self._version,
-            )
-        self._client: GithubCacheClient = client
-
-        self._local = local
-
-    #
-
-    async def get_file(self, key: str) -> ta.Optional[str]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return local_file
-
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
-
-        tmp_file = self._local.format_incomplete_file(local_file)
-        with unlinking_if_exists(tmp_file):
-            await self._client.download_file(entry, tmp_file)
-
-            os.replace(tmp_file, local_file)
-
-        return local_file
-
-    async def put_file(
-            self,
-            key: str,
-            file_path: str,
-            *,
-            steal: bool = False,
-    ) -> str:
-        cache_file_path = await self._local.put_file(
-            key,
-            file_path,
-            steal=steal,
-        )
-
-        await self._client.upload_file(key, cache_file_path)
-
-        return cache_file_path
-
-    #
-
-    async def get_data(self, key: str) -> ta.Optional[DataCache.Data]:
-        local_file = self._local.get_cache_file_path(key)
-        if os.path.exists(local_file):
-            return DataCache.FileData(local_file)
-
-        if (entry := await self._client.get_entry(key)) is None:
-            return None
-
-        return DataCache.UrlData(check.non_empty_str(self._client.get_entry_url(entry)))
-
-    async def put_data(self, key: str, data: DataCache.Data) -> None:
-        await FileCacheDataCache(self).put_data(key, data)
-
-
-########################################
-# ../github/cli.py
-"""
-See:
- - https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28
-"""
-
-
-##
-
-
-class GithubCli(ArgparseCli):
-    @argparse_cmd()
-    def list_referenced_env_vars(self) -> None:
-        print('\n'.join(sorted(ev.k for ev in GITHUB_ENV_VARS)))
-
-    @argparse_cmd(
-        argparse_arg('key'),
-    )
-    async def get_cache_entry(self) -> None:
-        client = GithubCacheServiceV1Client()
-        entry = await client.get_entry(self.args.key)
-        if entry is None:
-            return
-        print(json_dumps_pretty(dc.asdict(entry)))  # noqa
-
-    @argparse_cmd(
-        argparse_arg('repository-id'),
-    )
-    def list_cache_entries(self) -> None:
-        raise NotImplementedError
+    return inj.as_bindings(*lst)
 
 
 ########################################
@@ -33474,23 +33512,6 @@ class CacheServedDockerCache(DockerCache):
             str(key),
             DataCache.BytesData(manifest_data),
         )
-
-
-########################################
-# ../github/inject.py
-
-
-##
-
-
-def bind_github() -> InjectorBindings:
-    lst: ta.List[InjectorBindingOrBindings] = [
-        inj.bind(GithubCache, singleton=True),
-        inj.bind(DataCache, to_key=GithubCache),
-        inj.bind(FileCache, to_key=GithubCache),
-    ]
-
-    return inj.as_bindings(*lst)
 
 
 ########################################
