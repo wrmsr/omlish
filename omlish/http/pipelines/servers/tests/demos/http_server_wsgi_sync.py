@@ -4,13 +4,13 @@ import errno
 import socket
 import typing as ta
 
-from .....io.pipelines.core import IoPipeline
-from .....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
-from ...servers.apps.wsgi import WsgiHandler
-from ...servers.apps.wsgi import WsgiSpec
-from ...servers.requests import IoPipelineHttpRequestAggregatorDecoder
-from ...servers.requests import IoPipelineHttpRequestDecoder
-from ...servers.responses import IoPipelineHttpResponseEncoder
+from ......io.pipelines.core import IoPipeline
+from ......io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
+from ...apps.wsgi import WsgiHandler
+from ...apps.wsgi import WsgiSpec
+from ...requests import IoPipelineHttpRequestAggregatorDecoder
+from ...requests import IoPipelineHttpRequestDecoder
+from ...responses import IoPipelineHttpResponseEncoder
 
 
 ##
