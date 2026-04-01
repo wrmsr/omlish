@@ -4,12 +4,14 @@ import json
 import socket
 import typing as ta
 
-from omlish.http.coro.server.fdio import CoroHttpServerConnectionFdioHandler
 from omlish.http.simple.handlers import SimpleHttpHandler
 from omlish.http.simple.handlers import SimpleHttpHandler_
 from omlish.http.simple.handlers import SimpleHttpHandlerRequest
 from omlish.http.simple.handlers import SimpleHttpHandlerResponse
+from omlish.http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
 from omlish.io.fdio.handlers import ServerSocketFdioHandler
+from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
+from omlish.lite.check import check
 from omlish.lite.json import JSON_PRETTY_KWARGS
 from omlish.sockets.addresses import SocketAddress
 
@@ -42,7 +44,7 @@ class HttpServer(HasDispatchers):
 
         self._server = ServerSocketFdioHandler(self._addr, self._on_connect)
 
-        self._conns: ta.List[CoroHttpServerConnectionFdioHandler] = []
+        self._conns: ta.List[IoPipelineDriverSocketFdioHandler] = []
 
         exit_stack.callback(self._server.close)
 
@@ -58,13 +60,29 @@ class HttpServer(HasDispatchers):
         ])
 
     def _on_connect(self, sock: socket.socket, addr: SocketAddress) -> None:
-        conn = CoroHttpServerConnectionFdioHandler(
-            sock,
-            addr,
-            self._handler,
-        )
+        try:
+            conn = IoPipelineDriverSocketFdioHandler(
+                sock,
+                addr,
+                SimpleHttpHandlerServerIoPipelineHandler.build_standard_pipeline_spec(
+                    sock,
+                    addr,
+                    self._handler,
+                ),
+            )
 
-        self._conns.append(conn)
+            check.none(conn.next())
+
+            if conn.is_running:
+                self._conns.append(conn)
+
+            else:
+                conn.close()
+
+        except BaseException:  # noqa
+            sock.close()
+
+            raise
 
 
 ##

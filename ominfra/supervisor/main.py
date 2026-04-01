@@ -37,7 +37,6 @@ import itertools
 import os.path
 import typing as ta
 
-from omlish.http.coro.server.server import CoroHttpServer
 from omlish.lite.configs import load_config_file_obj
 from omlish.lite.inject import inj
 from omlish.lite.runtime import is_debugger_attached
@@ -63,10 +62,6 @@ def main(
         *,
         no_logging: bool = False,
 ) -> None:
-    server_cls = CoroHttpServer  # noqa
-
-    #
-
     import argparse
 
     parser = argparse.ArgumentParser()
