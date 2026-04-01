@@ -5,6 +5,7 @@ import os.path
 import typing as ta
 
 from omdev.cache import data as dcache
+from omlish import check
 from omlish import lang
 from omlish.http.pipelines.servers.apps.asgi import AsgiHandler
 from omlish.http.pipelines.servers.apps.asgi import AsgiSpec
@@ -55,7 +56,7 @@ async def _serve_resource(
         name: str,
         content_type: str = 'text/plain',
 ) -> None:
-    body = lang.get_relative_resources('resources', globals=globals()).get(name).read_bytes()
+    body = check.not_none(lang.get_relative_resources('resources', globals=globals()).get(name)).read_bytes()
 
     await send({
         'type': 'http.response.start',
@@ -77,10 +78,9 @@ async def _serve_data_cache_url(
         url: str,
         content_type: str = 'text/plain',
 ) -> None:
-    spec = dcache.UrlSpec(url)
-    file_pth = dcache.default().get(spec)
+    file_path = dcache.default().get(dcache.UrlSpec(url))
 
-    with open(dcache.default().get(spec), 'rb') as f:
+    with open(file_path, 'rb') as f:
         body = f.read()
 
     await send({
