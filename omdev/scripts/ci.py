@@ -216,7 +216,7 @@ def __omlish_amalg__():  # noqa
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
             dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='836ddfc508c494a6fd15c2b597c50aecddcf5a04'),
-            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='7332a415bf10597be3c40f8d7557d9f6a3093eab'),
+            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='7597bdd0218cf975efc1adaa8ab3f0ab6f5e5590'),
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
             dict(path='docker/cache.py', sha1='07a9e3d00bdd60f1a0a9b55aca12430fa1b4e3d9'),

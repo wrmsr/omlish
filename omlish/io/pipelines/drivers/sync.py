@@ -11,9 +11,9 @@ import heapq
 import time
 import typing as ta
 
-from ....io.streams.utils import ByteStreamBuffers
 from ....lite.check import check
 from ....logs.modules import get_module_logger
+from ...streams.utils import ByteStreamBuffers
 from ..core import IoPipeline
 from ..core import IoPipelineHandlerRef
 from ..core import IoPipelineMessages
