@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
 import asyncio
-import os.path
 import typing as ta
 
 from omdev.cache import data as dcache
@@ -15,6 +14,9 @@ from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncode
 from omlish.io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from omlish.io.pipelines.core import IoPipeline
 from omlish.io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+
+from .chat import ChatClient
+from .chat import MockChatClient
 
 
 ##
@@ -118,13 +120,27 @@ async def _serve_not_found(send: ta.Callable) -> None:
 
 _RESOURCE_ROUTES: ta.Mapping[str, tuple[str, str]] = {
     '/': ('index.html', 'text/html'),
+
     '/index.css': ('index.css', 'text/css'),
+
+    '/sse-decoder.js': ('sse-decoder.js', 'application/javascript'),
+    '/chat-app.js': ('chat-app.js', 'application/javascript'),
 }
 
 _DATA_CACHE_URL_ROUTES: ta.Mapping[str, tuple[str, str]] = {
-    '/alpine.js': ('https://cdn.jsdelivr.net/npm/alpinejs@3.15.10/dist/cdn.min.js', 'application/javascript'),
     '/marked.js': ('https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js', 'application/javascript'),
+
+    '/alpine.js': ('https://cdn.jsdelivr.net/npm/alpinejs@3.15.10/dist/cdn.min.js', 'application/javascript'),
 }
+
+
+CHAT_CLIENT: ChatClient = MockChatClient()
+
+
+async def _serve_chat_completions(receive, send):
+    msg = await receive()
+
+    raise NotImplementedError
 
 
 async def app(scope, receive, send):
@@ -139,6 +155,9 @@ async def app(scope, receive, send):
 
     elif method == 'GET' and (dcu_rt := _DATA_CACHE_URL_ROUTES.get(path)) is not None:
         await _serve_data_cache_url(send, *dcu_rt)
+
+    elif (method, path) == ('POST', '/v1/chat/completions'):
+        await _serve_chat_completions(receive, send)
 
     else:
         await _serve_not_found(send)

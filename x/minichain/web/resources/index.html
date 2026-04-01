@@ -1,17 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>VibeChat</title>
-  <link rel="stylesheet" href="index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeChat</title>
+    <link rel="stylesheet" href="index.css">
 
-  <script src="alpine.js"></script>
-  <script src="marked.js"></script>
+    <!-- Marked.js for markdown rendering -->
+    <script src="marked.js"></script>
+
+    <!-- JavaScript files (load before Alpine) -->
+    <script src="sse-decoder.js"></script>
+    <script src="chat-app.js"></script>
+
+    <!-- Alpine.js (loads last) -->
+    <script defer src="alpine.js"></script>
 </head>
 
 <body>
-<div>
-  Hi dogg
-</div>
+    <div id="app" x-data="chatApp()" x-init="init()" class="app-container">
+        <!-- Messages Area -->
+        <div class="messages-container" x-ref="messagesContainer">
+            <template x-for="(message, index) in messages" :key="index">
+                <div :class="'message message-' + message.role">
+                    <div class="message-role" x-text="message.role === 'user' ? 'You' : 'Assistant'"></div>
+                    <div class="message-content">
+                        <div x-html="renderMarkdown(message.content)"></div>
+                        <!-- Loading indicator shown at bottom of last assistant message while streaming -->
+                        <div
+                            x-show="isLoading && message.role === 'assistant' && index === messages.length - 1"
+                            class="loading-indicator"
+                        >
+                            <span class="loading-dot"></span>
+                            <span class="loading-dot"></span>
+                            <span class="loading-dot"></span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <textarea
+                x-ref="input"
+                x-model="userInput"
+                @keydown.enter.prevent="handleEnter($event)"
+                placeholder="Type your message..."
+                class="chat-input"
+                rows="1"
+                :disabled="isLoading"
+            ></textarea>
+            <button
+                @click="isLoading ? cancelRequest() : sendMessage()"
+                :disabled="!isLoading && !userInput.trim()"
+                :class="isLoading ? 'cancel-button' : 'send-button'"
+            >
+                <span x-show="!isLoading">Send</span>
+                <span x-show="isLoading">Cancel</span>
+            </button>
+        </div>
+    </div>
 </body>
 </html>
