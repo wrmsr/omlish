@@ -47,6 +47,9 @@ class FdioHandler(Abstract):
         pass
 
 
+##
+
+
 class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
@@ -69,3 +72,31 @@ class SocketFdioHandler(FdioHandler, Abstract):
         if self._sock is not None:
             self._sock.close()
         self._sock = None
+
+
+#
+
+
+class ServerSocketFdioHandler(SocketFdioHandler):
+    def __init__(
+            self,
+            addr: SocketAddress,
+            on_connect: ta.Callable[[socket.socket, SocketAddress], None],
+    ) -> None:
+        sock = socket.create_server(addr)
+        sock.setblocking(False)
+
+        super().__init__(addr, sock)
+
+        self._on_connect = on_connect
+
+        sock.listen(1)
+
+    def readable(self) -> bool:
+        return True
+
+    def on_readable(self) -> None:
+        cli_sock, cli_addr = check.not_none(self._sock).accept()
+        cli_sock.setblocking(False)
+
+        self._on_connect(cli_sock, cli_addr)

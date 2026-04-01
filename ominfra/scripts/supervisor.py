@@ -137,7 +137,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
-            dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
+            dict(path='../../omlish/io/fdio/handlers.py', sha1='38f8b525ca2fb16309735275bbc466622e74d1d4'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/io/readers.py', sha1='34b76d1938359c77b57539a25311f1f127accc5b'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
@@ -174,7 +174,7 @@ def __omlish_amalg__():  # noqa
             dict(path='spawning.py', sha1='9e65e562395ad04e3f3a314f946b7a4e58a601da'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
-            dict(path='http.py', sha1='214b14ea812fb296473f9c78fdaefb4129ca3d67'),
+            dict(path='http.py', sha1='7dfed48cb1241e4941266ed4e47f44cf9be8b1a0'),
             dict(path='io.py', sha1='6ba708a8396c212afdd1d314c9b5804c2d66646e'),
             dict(path='processimpl.py', sha1='ac6cc63f2259d73b714522e028056f7944ed6084'),
             dict(path='setupimpl.py', sha1='b4b8b8c3e1d71a0e6794fb0a845181f3662a6bfd'),
@@ -6192,6 +6192,9 @@ class FdioHandler(Abstract):
         pass
 
 
+##
+
+
 class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
@@ -6214,6 +6217,34 @@ class SocketFdioHandler(FdioHandler, Abstract):
         if self._sock is not None:
             self._sock.close()
         self._sock = None
+
+
+#
+
+
+class ServerSocketFdioHandler(SocketFdioHandler):
+    def __init__(
+            self,
+            addr: SocketAddress,
+            on_connect: ta.Callable[[socket.socket, SocketAddress], None],
+    ) -> None:
+        sock = socket.create_server(addr)
+        sock.setblocking(False)
+
+        super().__init__(addr, sock)
+
+        self._on_connect = on_connect
+
+        sock.listen(1)
+
+    def readable(self) -> bool:
+        return True
+
+    def on_readable(self) -> None:
+        cli_sock, cli_addr = check.not_none(self._sock).accept()
+        cli_sock.setblocking(False)
+
+        self._on_connect(cli_sock, cli_addr)
 
 
 ########################################
@@ -13660,34 +13691,6 @@ class ProcessInputDispatcherImpl(BaseProcessDispatcherImpl, ProcessInputDispatch
 ##
 
 
-class SocketServerFdioHandler(SocketFdioHandler):
-    def __init__(
-            self,
-            addr: SocketAddress,
-            on_connect: ta.Callable[[socket.socket, SocketAddress], None],
-    ) -> None:
-        sock = socket.create_server(addr)
-        sock.setblocking(False)
-
-        super().__init__(addr, sock)
-
-        self._on_connect = on_connect
-
-        sock.listen(1)
-
-    def readable(self) -> bool:
-        return True
-
-    def on_readable(self) -> None:
-        cli_sock, cli_addr = check.not_none(self._sock).accept()
-        cli_sock.setblocking(False)
-
-        self._on_connect(cli_sock, cli_addr)
-
-
-##
-
-
 class HttpServer(HasDispatchers):
     class Address(ta.NamedTuple):
         a: SocketAddress
@@ -13707,7 +13710,7 @@ class HttpServer(HasDispatchers):
         self._handler = handler.h
         self._addr = addr.a
 
-        self._server = SocketServerFdioHandler(self._addr, self._on_connect)
+        self._server = ServerSocketFdioHandler(self._addr, self._on_connect)
 
         self._conns: ta.List[CoroHttpServerConnectionFdioHandler] = []
 

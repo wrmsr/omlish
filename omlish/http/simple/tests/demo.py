@@ -11,7 +11,7 @@ from .... import check
 from ..handlers import SimpleHttpHandlerRequest
 from ..handlers import SimpleHttpHandlerResponse
 from ..handlers import SimpleHttpHandlerResponseStreamedData
-from ..pipelines import make_simple_http_server
+from ..pipelines.sync import make_simple_http_server
 
 
 ##

@@ -113,14 +113,11 @@
 #     #
 #
 #     def close(self) -> None:
-#         if (pipeline := self._opt_pipeline()) is not None:
-#             pipeline.destroy()
-#
-#     def __enter__(self) -> 'IoPipelineDriverSocketFdioHandler':  # noqa
-#         return self
-#
-#     def __exit__(self, exc_type, exc_val, exc_tb):
-#         self.close()
+#         try:
+#             if (pipeline := self._opt_pipeline()) is not None:
+#                 pipeline.destroy()
+#         finally:
+#             super().close()
 #
 #     #
 #

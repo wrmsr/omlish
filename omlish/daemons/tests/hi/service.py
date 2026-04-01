@@ -8,7 +8,7 @@ from .... import cached
 from .... import check
 from ....http.simple.handlers import LoggingSimpleHttpHandler
 from ....http.simple.handlers import StringResponseSimpleHttpHandler
-from ....http.simple.pipelines import make_simple_http_server
+from ....http.simple.pipelines.sync import make_simple_http_server
 from ....logs import all as logs
 from ....sockets.bind import SocketBinder
 from ... import spawning

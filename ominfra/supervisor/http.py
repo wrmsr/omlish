@@ -9,42 +9,13 @@ from omlish.http.simple.handlers import SimpleHttpHandler
 from omlish.http.simple.handlers import SimpleHttpHandler_
 from omlish.http.simple.handlers import SimpleHttpHandlerRequest
 from omlish.http.simple.handlers import SimpleHttpHandlerResponse
-from omlish.io.fdio.handlers import SocketFdioHandler
-from omlish.lite.check import check
+from omlish.io.fdio.handlers import ServerSocketFdioHandler
 from omlish.lite.json import JSON_PRETTY_KWARGS
 from omlish.sockets.addresses import SocketAddress
 
 from .dispatchers import Dispatchers
 from .groups import ProcessGroupManager
 from .types import HasDispatchers
-
-
-##
-
-
-class SocketServerFdioHandler(SocketFdioHandler):
-    def __init__(
-            self,
-            addr: SocketAddress,
-            on_connect: ta.Callable[[socket.socket, SocketAddress], None],
-    ) -> None:
-        sock = socket.create_server(addr)
-        sock.setblocking(False)
-
-        super().__init__(addr, sock)
-
-        self._on_connect = on_connect
-
-        sock.listen(1)
-
-    def readable(self) -> bool:
-        return True
-
-    def on_readable(self) -> None:
-        cli_sock, cli_addr = check.not_none(self._sock).accept()
-        cli_sock.setblocking(False)
-
-        self._on_connect(cli_sock, cli_addr)
 
 
 ##
@@ -69,7 +40,7 @@ class HttpServer(HasDispatchers):
         self._handler = handler.h
         self._addr = addr.a
 
-        self._server = SocketServerFdioHandler(self._addr, self._on_connect)
+        self._server = ServerSocketFdioHandler(self._addr, self._on_connect)
 
         self._conns: ta.List[CoroHttpServerConnectionFdioHandler] = []
 
