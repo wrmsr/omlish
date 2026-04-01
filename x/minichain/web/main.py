@@ -122,6 +122,7 @@ _RESOURCE_ROUTES: ta.Mapping[str, tuple[str, str]] = {
 }
 
 _DATA_CACHE_URL_ROUTES: ta.Mapping[str, tuple[str, str]] = {
+    '/alpine.js': ('https://cdn.jsdelivr.net/npm/alpinejs@3.15.10/dist/cdn.min.js', 'application/javascript'),
     '/marked.js': ('https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js', 'application/javascript'),
 }
 
