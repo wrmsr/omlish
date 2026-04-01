@@ -537,22 +537,25 @@ class JsonSchemaCodeGen:
 
         return lines
 
-    def gen_module(self) -> str:
-        out = io.StringIO()
+    #
 
-        def w(s: str = '') -> None:
-            out.write(s + '\n')
+    class _Writer:
+        def __init__(self, out: io.TextIOBase) -> None:
+            self.out = out
 
-        def wlines(ls: ta.Sequence[str]) -> None:
+        def __call__(self, s: str = '') -> None:
+            self.out.write(s + '\n')
+
+        def lines(self, ls: ta.Sequence[str]) -> None:
             for l in ls:  # noqa: E741
-                w(l)
+                self(l)
 
-        def wsep() -> None:
-            w()
-            w()
-            w('##')
+        def sep(self) -> None:
+            self()
+            self()
+            self('##')
 
-        # Header
+    def _gen_module_header(self, w: _Writer) -> None:
         w('# @omlish-generated')
         w('# ruff: noqa: UP007')
         w('import typing as ta')
@@ -575,36 +578,36 @@ class JsonSchemaCodeGen:
         w('    )')
         w('    return cls')
 
-        # Discriminated union base classes
+    def _gen_module_discriminated_union_base_classes(self, w: _Writer) -> None:
         if self._disc_unions:
-            wsep()
+            w.sep()
             for name in sorted(self._disc_unions):
                 w()
                 w()
                 w(f'class {name}(lang.Abstract, lang.Sealed):')
                 w('    pass')
 
-        # Object types
+    def _gen_module_object_types(self, w: _Writer) -> None:
         objects = sorted(
             (n, td)
             for n, td in self._type_defs.items()
             if isinstance(td, ObjectTypeDef)
         )
         if objects:
-            wsep()
+            w.sep()
             for name, td in objects:
                 w()
                 w()
-                wlines(self._gen_class_lines(name, td.fields))
+                w.lines(self._gen_class_lines(name, td.fields))
 
-        # Empty types
+    def _gen_module_empties(self, w: _Writer) -> None:
         empties = sorted(
             (n, td)
             for n, td in self._type_defs.items()
             if isinstance(td, EmptyTypeDef)
         )
         if empties:
-            wsep()
+            w.sep()
             for name, td in empties:
                 w()
                 w()
@@ -613,27 +616,28 @@ class JsonSchemaCodeGen:
                 w(f'class {name}(lang.Final):')
                 w('    pass')
 
-        # Variant wrapper types
+    def _gen_module_variant_wrapper_types(self, w: _Writer) -> None:
         if self._variant_wrappers:
-            wsep()
+            w.sep()
             for vw in sorted(self._variant_wrappers, key=lambda v: v.class_name):
                 w()
                 w()
-                wlines(self._gen_class_lines(
+                w.lines(self._gen_class_lines(
                     vw.class_name,
                     vw.source_fields,
                     f'{vw.union_name}, lang.Final',
                     tag_field=(vw.tag_field_python, vw.tag_value),
                 ))
 
-        # Type aliases (emitted after object types so unquoted refs resolve)
+    def _gen_module_type_aliases(self, w: _Writer) -> None:
+        # Emitted after object types so unquoted refs resolve
         aliases = sorted(
             (n, td)
             for n, td in self._type_defs.items()
             if isinstance(td, TypeAliasTypeDef)
         )
         if aliases:
-            wsep()
+            w.sep()
             for name, td in aliases:
                 w()
                 w()
@@ -642,14 +646,14 @@ class JsonSchemaCodeGen:
                 else:
                     w(f'{name}: ta.TypeAlias = ta.Any')
 
-        # String enum type aliases
+    def _gen_module_string_enum_type_aliases(self, w: _Writer) -> None:
         enums = sorted(
             (n, td)
             for n, td in self._type_defs.items()
             if isinstance(td, StringEnumTypeDef)
         )
         if enums:
-            wsep()
+            w.sep()
             for name, td in enums:
                 w()
                 w()
@@ -663,14 +667,14 @@ class JsonSchemaCodeGen:
                         w(f'    {v!r},')
                     w(']')
 
-        # AnyOf union type aliases
+    def _gen_module_any_of_union_type_aliases(self, w: _Writer) -> None:
         unions = sorted(
             (n, td)
             for n, td in self._type_defs.items()
             if isinstance(td, AnyOfUnionTypeDef)
         )
         if unions:
-            wsep()
+            w.sep()
             for name, td in unions:
                 w()
                 w()
@@ -690,9 +694,9 @@ class JsonSchemaCodeGen:
                             w(f'    {self._render_type_ann(m, quote_refs=False)},')
                         w(']')
 
-        # Polymorphism registration
+    def _gen_module_polymorphism_registration(self, w: _Writer) -> None:
         if self._disc_unions:
-            wsep()
+            w.sep()
             w()
             w()
             w('@lang.static_init')
@@ -709,5 +713,19 @@ class JsonSchemaCodeGen:
                 w(f'    ))')
                 if i < len(items) - 1:
                     w()
+
+    def gen_module(self) -> str:
+        out = io.StringIO()
+        w = self._Writer(out)
+
+        self._gen_module_header(w)
+        self._gen_module_discriminated_union_base_classes(w)
+        self._gen_module_object_types(w)
+        self._gen_module_empties(w)
+        self._gen_module_variant_wrapper_types(w)
+        self._gen_module_type_aliases(w)
+        self._gen_module_string_enum_type_aliases(w)
+        self._gen_module_any_of_union_type_aliases(w)
+        self._gen_module_polymorphism_registration(w)
 
         return out.getvalue()
