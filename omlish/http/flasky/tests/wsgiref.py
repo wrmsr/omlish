@@ -26,6 +26,8 @@ def wsgiref_app_runner(params: flasky.AppRunParams) -> None:
         )
 
         with flasky.Cvs.REQUEST.set(request):
+            response: flasky.Response | None = None
+
             for brf in params.app.before_request_funcs:
                 if (response := brf()) is not None:
                     break
