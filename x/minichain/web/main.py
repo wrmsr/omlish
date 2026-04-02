@@ -1,9 +1,11 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
 import asyncio
+import json
 import typing as ta
 
 from omdev.cache import data as dcache
+from omdev.home.secrets import install_env_secrets
 from omlish import check
 from omlish import lang
 from omlish.http.pipelines.servers.apps.asgi import AsgiHandler
@@ -14,6 +16,7 @@ from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncode
 from omlish.io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from omlish.io.pipelines.core import IoPipeline
 from omlish.io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from ommlds import minichain as mc
 
 from .chat import ChatClient
 from .chat import MockChatClient
@@ -138,7 +141,30 @@ CHAT_CLIENT: ChatClient = MockChatClient()
 
 
 async def _serve_chat_completions(receive, send):
-    msg = await receive()
+    ev = await receive()
+
+    check.state(ev['type'] == 'http.request')
+    check.state(not ev['more_body'])
+
+    d = json.loads(ev['body'].decode('utf-8'))
+
+    check.state(d['stream'])
+
+    chat: list[mc.Message] = []
+    for md in d['messages']:
+        mr = md['role']
+        ms = md['content']
+        if not ms:
+            continue
+        if mr == 'user':
+            chat.append(mc.UserMessage(ms))
+        elif mr == 'assistant':
+            chat.append(mc.AiMessage(ms))
+        else:
+            raise ValueError(mr)
+
+    llm = mc.ChatChoicesServiceChatService(mc.registry_new(mc.ChatChoicesService, 'openai'))
+    cr = await llm.invoke(mc.ChatRequest(chat))
 
     raise NotImplementedError
 
@@ -167,6 +193,8 @@ async def app(scope, receive, send):
 
 
 def _main() -> None:
+    install_env_secrets('openai_api_key')
+
     app_spec = AsgiSpec(app)
 
     serve_asgi_pipeline(app_spec)

@@ -193,6 +193,22 @@ class _AsgiDriver:
 
     _receiving_fut: ta.Optional[_AsgiFuture] = None
 
+    def feed_receive(self, body: bytes, more_body: bool) -> None:
+        check.state(self._state == _AsgiDriver.State.RECEIVING)
+        f = check.not_none(self._receiving_fut)
+        self._receiving_fut = None
+
+        f.result = {
+            'type': 'http.request',
+            'body': body,
+            'more_body': more_body,
+        }
+        f.done = True
+
+        self._state = _AsgiDriver.State.RUNNING
+
+    ##
+
     def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
         if gv.k == 'y' and not isinstance(gv.v, _AsgiFuture):
             awm = AsyncIoPipelineMessages.Await(gv.v)
@@ -316,11 +332,7 @@ class AsgiHandler(IoPipelineHandler):
 
             elif drv.state == _AsgiDriver.State.RECEIVING:
                 # TODO: stream lol
-                # IoPipelineFlow.maybe_ready_for_input(self)
-
-                # msg.body
-
-                raise NotImplementedError
+                drv.feed_receive(bytes(msg.body), more_body=False)
 
             else:
                 raise RuntimeError(f'Invalid state: {drv.state!r}')
