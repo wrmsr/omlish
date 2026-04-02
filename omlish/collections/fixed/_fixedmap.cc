@@ -114,20 +114,13 @@ static PyObject* FixedMapIter_iternext(FixedMapIterObject* self) {
         }
     } else {  // ITER_MAP_ITEMS
         FixedMapObject* map = (FixedMapObject*)source;
-        FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(map->keys);
-        PyObject* values = Py_NewRef(map->values_tuple);
-
-        if (i >= PyTuple_GET_SIZE(values)) {
-            Py_DECREF(keys);
-            Py_DECREF(values);
+        if (i >= PyTuple_GET_SIZE(map->values_tuple)) {
             goto done;
         }
 
-        PyObject* key = PyTuple_GET_ITEM(keys->keys_tuple, i);
-        PyObject* val = PyTuple_GET_ITEM(values, i);
+        PyObject* key = PyTuple_GET_ITEM(map->keys->keys_tuple, i);
+        PyObject* val = PyTuple_GET_ITEM(map->values_tuple, i);
         result = PyTuple_Pack(2, key, val);
-        Py_DECREF(keys);
-        Py_DECREF(values);
     }
 
 done:
@@ -272,10 +265,7 @@ static Py_hash_t FixedMapKeys_hash(FixedMapKeysObject* self) {
         return cached;
     }
 
-    PyObject* keys_tuple = Py_NewRef(self->keys_tuple);
-
-    Py_hash_t computed = PyObject_Hash(keys_tuple);
-    Py_DECREF(keys_tuple);
+    Py_hash_t computed = PyObject_Hash(self->keys_tuple);
     if (computed == -1) {
         return -1;
     }
@@ -436,57 +426,48 @@ static Py_hash_t FixedMap_hash(FixedMapObject* self) {
         return cached;
     }
 
-    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(self->keys);
-    PyObject* values = Py_NewRef(self->values_tuple);
-
     if (Py_EnterRecursiveCall(" in computing FixedMap hash")) {
-        Py_DECREF(keys);
-        Py_DECREF(values);
         return -1;
     }
 
     // Get cached keys hash (delegates to FixedMapKeys_hash which caches internally)
-    Py_hash_t keys_hash = PyObject_Hash((PyObject*)keys);
+    Py_hash_t keys_hash = PyObject_Hash((PyObject*)self->keys);
     if (keys_hash == -1) {
-        goto error;
-    }
-
-    {
-        Py_ssize_t size = PyTuple_GET_SIZE(values);
-        Py_hash_t computed = 0x9e3779b9;  // Different seed from keys/tuple hash
-        Py_hash_t mult = 1000003;
-
-        for (Py_ssize_t i = 0; i < size; i++) {
-            PyObject* v = PyTuple_GET_ITEM(values, i);
-
-            Py_hash_t h_v = PyObject_Hash(v);
-            if (h_v == -1) {
-                goto error;
-            }
-            computed = (computed ^ h_v) * mult;
-            mult += (Py_hash_t)(82520L + size + size + 2);
-        }
-
-        // Combine keys hash and values hash
-        computed ^= keys_hash;
-
         Py_LeaveRecursiveCall();
-        Py_DECREF(keys);
-        Py_DECREF(values);
-
-        if (computed == -1) computed = -2;
-        if (computed == 0) computed = 1;
-
-        // Benign race: another thread may store the same value.
-        hash_cache_ref.store(computed, std::memory_order_release);
-        return computed;
+        return -1;
     }
 
-error:
+    Py_ssize_t size = PyTuple_GET_SIZE(self->values_tuple);
+    Py_hash_t computed = 0x9e3779b9;  // Different seed from keys/tuple hash
+    Py_hash_t mult = 1000003;
+
+    for (Py_ssize_t i = 0; i < size; i++) {
+        PyObject* v = PyTuple_GET_ITEM(self->values_tuple, i);
+
+        Py_hash_t h_v = PyObject_Hash(v);
+        if (h_v == -1) {
+            Py_LeaveRecursiveCall();
+            return -1;
+        }
+        computed = (computed ^ h_v) * mult;
+        mult += (Py_hash_t)(82520L + size + size + 2);
+    }
+
+    // Combine keys hash and values hash
+    computed ^= keys_hash;
+
     Py_LeaveRecursiveCall();
-    Py_DECREF(keys);
-    Py_DECREF(values);
-    return -1;
+
+    if (computed == -1) {
+        computed = -2;
+    }
+    if (computed == 0) {
+        computed = 1;
+    }
+
+    // Benign race: another thread may store the same value.
+    hash_cache_ref.store(computed, std::memory_order_release);
+    return computed;
 }
 
 static Py_ssize_t FixedMap_len(FixedMapObject* self) {
@@ -494,18 +475,11 @@ static Py_ssize_t FixedMap_len(FixedMapObject* self) {
 }
 
 static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
-    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(self->keys);
-    PyObject* values = Py_NewRef(self->values_tuple);
-
     PyObject* idx_obj;
-    if (PyDict_GetItemRef(keys->key_indexes, key, &idx_obj) < 0) {
-        Py_DECREF(keys);
-        Py_DECREF(values);
+    if (PyDict_GetItemRef(self->keys->key_indexes, key, &idx_obj) < 0) {
         return NULL;
     }
     if (!idx_obj) {
-        Py_DECREF(keys);
-        Py_DECREF(values);
         PyErr_SetObject(PyExc_KeyError, key);
         return NULL;
     }
@@ -513,22 +487,14 @@ static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
     Py_ssize_t idx = PyLong_AsSsize_t(idx_obj);
     Py_DECREF(idx_obj);
     if (idx == -1 && PyErr_Occurred()) {
-        Py_DECREF(keys);
-        Py_DECREF(values);
         return NULL;
     }
 
-    PyObject* result = Py_NewRef(PyTuple_GET_ITEM(values, idx));
-    Py_DECREF(keys);
-    Py_DECREF(values);
-    return result;
+    return Py_NewRef(PyTuple_GET_ITEM(self->values_tuple, idx));
 }
 
 static int FixedMap_contains(FixedMapObject* self, PyObject* key) {
-    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(self->keys);
-    int result = PyDict_Contains(keys->key_indexes, key);
-    Py_DECREF(keys);
-    return result;
+    return PyDict_Contains(self->keys->key_indexes, key);
 }
 
 static PyObject* FixedMap_iter(FixedMapObject* self) {
