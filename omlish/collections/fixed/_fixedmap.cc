@@ -373,6 +373,9 @@ static PyObject* FixedMapKeys_richcompare(PyObject* a, PyObject* b, int op) {
         }
     }
     fixedmap_state* state = get_type_state(Py_TYPE(a));
+    if (!PyObject_TypeCheck(a, state->FixedMapKeys_Type)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
     if (PyObject_TypeCheck(b, state->FixedMapKeys_Type)) {
         return PyObject_RichCompare(((FixedMapKeysObject*)a)->keys_tuple, ((FixedMapKeysObject*)b)->keys_tuple, op);
     }
@@ -408,7 +411,13 @@ static PyObject* FixedMapKeys_get_debug(FixedMapKeysObject* self, void* Py_UNUSE
 }
 
 static PyObject* FixedMapKeys_repr(FixedMapKeysObject* self) {
-    return PyUnicode_FromFormat("%s(%R)", Py_TYPE(self)->tp_name, self->key_indexes);
+    PyObject* name = PyType_GetName(Py_TYPE(self));
+    if (!name) {
+        return NULL;
+    }
+    PyObject *repr = PyUnicode_FromFormat("%U(%R)", name, self->key_indexes);
+    Py_DECREF(name);
+    return repr;
 }
 
 static PyObject* FixedMapKeys_iter(FixedMapKeysObject* self) {
@@ -729,6 +738,22 @@ static PyObject* FixedMap_get_debug(FixedMapObject* self, void* closure) {
     return d;
 }
 
+static PyObject* FixedMap_repr(FixedMapObject* self) {
+    PyObject* d = FixedMap_get_debug(self, NULL);
+    if (!d) {
+        return NULL;
+    }
+    PyObject* name = PyType_GetName(Py_TYPE(self));
+    if (!name) {
+        Py_DECREF(d);
+        return NULL;
+    }
+    PyObject* res = PyUnicode_FromFormat("%U(%R)", name, d);
+    Py_DECREF(name);
+    Py_DECREF(d);
+    return res;
+}
+
 static PyObject* FixedMap_keys(FixedMapObject* self, PyObject* Py_UNUSED(ignored)) {
     return Py_NewRef(self->keys);
 }
@@ -785,6 +810,7 @@ static PyType_Slot FixedMap_slots[] = {
     {Py_tp_clear, (void*)FixedMap_clear},
     {Py_tp_hash, (void*)FixedMap_hash},
     {Py_tp_richcompare, (void*)FixedMap_richcompare},
+    {Py_tp_repr, (void*)FixedMap_repr},
     {Py_tp_iter, (void*)FixedMap_iter},
     {Py_tp_methods, (void*)FixedMap_methods},
     {Py_tp_getset, (void*)FixedMap_getsets},
