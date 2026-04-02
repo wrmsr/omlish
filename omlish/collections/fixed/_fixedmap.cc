@@ -193,8 +193,6 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
     self->key_indexes = NULL;
     self->hash_cache = 0;
 
-    PyObject_GC_Track(self);
-
     PyObject* keys_tuple = PySequence_Tuple(keys_arg);
     if (!keys_tuple) {
         Py_DECREF(self);
@@ -229,6 +227,8 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
 
     self->keys_tuple = keys_tuple;
     self->key_indexes = key_indexes;
+
+    PyObject_GC_Track(self);
     return (PyObject*)self;
 
 error:
@@ -392,9 +392,6 @@ static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds
     self->values_tuple = NULL;
     self->hash_cache = 0;
 
-    // Explicitly track the object now so tp_dealloc is safe if we error out below
-    PyObject_GC_Track(self);
-
     PyObject* values_tuple;
     if (PyTuple_CheckExact(values_arg)) {
         values_tuple = Py_NewRef(values_arg);
@@ -416,6 +413,8 @@ static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds
 
     self->keys = (FixedMapKeysObject*)Py_NewRef(keys_obj);
     self->values_tuple = values_tuple;
+
+    PyObject_GC_Track(self);
     return (PyObject*)self;
 }
 
