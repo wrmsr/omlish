@@ -1,7 +1,7 @@
+import abc
 import typing as ta
 
-from ..mappings import IterItemsViewMapping
-from ..mappings import IterValuesViewMapping
+from ... import lang
 
 
 K = ta.TypeVar('K')
@@ -11,119 +11,64 @@ V = ta.TypeVar('V')
 ##
 
 
-@ta.final
-class FixedMapKeys(ta.Mapping[K, int], ta.Generic[K]):
-    def __init__(self, keys: ta.Iterable[K]) -> None:
-        self._keys = keys = tuple(keys)
-        key_indexes: dict[K, int] = {}
-        for k in keys:
-            if k in key_indexes:
-                raise KeyError(k)
-            key_indexes[k] = len(key_indexes)
-        self._key_indexes = key_indexes
-
+class FixedMapKeys(
+    ta.Mapping[K, int],
+    lang.Abstract,
+    ta.Generic[K],
+):
     @property
+    @abc.abstractmethod
     def fixed_keys(self) -> tuple[K, ...]:
-        return self._keys
+        raise NotImplementedError
 
     #
 
     @property
+    @abc.abstractmethod
     def debug(self) -> ta.Mapping[K, int]:
-        return self._key_indexes
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.debug!r})'
-
-    #
-
-    def __hash__(self) -> int:
-        return hash(self._keys)
-
-    def __getitem__(self, key: K, /) -> int:
-        return self._key_indexes[key]
-
-    def __len__(self) -> int:
-        return len(self._keys)
-
-    def __iter__(self) -> ta.Iterator[K]:
-        return iter(self._keys)
-
-    #
-
-    def keys(self) -> ta.KeysView[K]:
-        return self._key_indexes.keys()
-
-    def values(self) -> ta.ValuesView[int]:
-        return self._key_indexes.values()
-
-    def items(self) -> ta.ItemsView[K, int]:
-        return self._key_indexes.items()
+        raise NotImplementedError
 
 
-#
-
-
-@ta.final
 class FixedMap(
-    IterValuesViewMapping[K, V],
-    IterItemsViewMapping[K, V],
     ta.Mapping[K, V],
+    lang.Abstract,
     ta.Generic[K, V],
 ):
-    def __init__(self, keys: FixedMapKeys[K], values: ta.Sequence[V]) -> None:
-        self._keys, self._values = keys, tuple(values)
-
     @property
+    @abc.abstractmethod
     def fixed_keys(self) -> FixedMapKeys[K]:
-        return self._keys
+        raise NotImplementedError
 
     @property
+    @abc.abstractmethod
     def fixed_values(self) -> tuple[V, ...]:
-        return self._values
+        raise NotImplementedError
 
     #
 
     @property
+    @abc.abstractmethod
     def debug(self) -> ta.Mapping[K, V]:
-        return {k: self._values[i] for k, i in self._keys.items()}
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.debug!r})'
+        raise NotImplementedError
 
     #
 
-    _hash: int
-
-    def __hash__(self) -> int:
-        try:
-            return self._hash
-        except AttributeError:
-            pass
-        self._hash = h = hash(tuple(zip(self._keys, self._values, strict=True)))
-        return h
-
-    #
-
-    def __getitem__(self, key: K, /) -> V:
-        return self._values[self._keys[key]]
-
-    def __len__(self) -> int:
-        return len(self._values)
-
-    def __iter__(self) -> ta.Iterator[K]:
-        return iter(self._keys)
-
-    #
-
+    @abc.abstractmethod
     def itervalues(self) -> ta.Iterator[V]:
-        return iter(self._values)
+        raise NotImplementedError
 
+    @abc.abstractmethod
     def iteritems(self) -> ta.Iterator[tuple[K, V]]:
-        return iter(zip(self._keys, self._values, strict=True))
+        raise NotImplementedError
 
 
-#
+##
+
+
+try:
+    from . import _fixedmap as _impl  # type: ignore
+except ImportError:
+    from . import _fixedmap_py as _impl
 
 
 def new_fixed_map(src: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]]) -> FixedMap[K, V]:
@@ -134,4 +79,4 @@ def new_fixed_map(src: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]]) -> FixedMap[
     for k, v in src:
         keys.append(k)
         values.append(v)
-    return FixedMap(FixedMapKeys(keys), values)
+    return _impl.FixedMap(_impl.FixedMapKeys(keys), values)

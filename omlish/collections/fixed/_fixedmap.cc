@@ -228,7 +228,9 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
     self->keys_tuple = keys_tuple;
     self->key_indexes = key_indexes;
 
-    PyObject_GC_Track(self);
+    if (!PyObject_GC_IsTracked((PyObject*)self)) {
+        PyObject_GC_Track((PyObject*)self);
+    }
     return (PyObject*)self;
 
 error:
@@ -414,7 +416,9 @@ static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds
     self->keys = (FixedMapKeysObject*)Py_NewRef(keys_obj);
     self->values_tuple = values_tuple;
 
-    PyObject_GC_Track(self);
+    if (!PyObject_GC_IsTracked((PyObject*)self)) {
+        PyObject_GC_Track((PyObject*)self);
+    }
     return (PyObject*)self;
 }
 
