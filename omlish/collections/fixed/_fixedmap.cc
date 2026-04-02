@@ -59,6 +59,15 @@ static inline fixedmap_state* get_type_state(PyTypeObject* type) {
 }
 
 //
+// Common Utilities
+//
+
+static int dummy_init(PyObject* self, PyObject* args, PyObject* kwds) {
+    // Swallow the arguments since everything is handled in tp_new
+    return 0;
+}
+
+//
 // FixedMapIter Implementation
 //
 
@@ -79,10 +88,7 @@ static void FixedMapIter_dealloc(FixedMapIterObject* self) {
 }
 
 static PyObject* FixedMapIter_iternext(FixedMapIterObject* self) {
-    PyObject* source = Py_XNewRef(self->source);
-    if (!source) {
-        return NULL;
-    }
+    PyObject* source = Py_NewRef(self->source);
 
     std::atomic_ref<Py_ssize_t> index_ref(self->index);
     Py_ssize_t i = index_ref.fetch_add(1, std::memory_order_relaxed);
@@ -108,14 +114,9 @@ static PyObject* FixedMapIter_iternext(FixedMapIterObject* self) {
         }
     } else {  // ITER_MAP_ITEMS
         FixedMapObject* map = (FixedMapObject*)source;
-        FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_XNewRef(map->keys);
-        PyObject* values = Py_XNewRef(map->values_tuple);
-        if (!keys || !values) {
-            Py_XDECREF(keys);
-            Py_XDECREF(values);
-            PyErr_SetString(PyExc_RuntimeError, "FixedMap not initialized");
-            goto done;
-        }
+        FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(map->keys);
+        PyObject* values = Py_NewRef(map->values_tuple);
+
         if (i >= PyTuple_GET_SIZE(values)) {
             Py_DECREF(keys);
             Py_DECREF(values);
@@ -261,9 +262,6 @@ static PyObject* FixedMapKeys_getitem(FixedMapKeysObject* self, PyObject* key) {
 }
 
 static int FixedMapKeys_contains(FixedMapKeysObject* self, PyObject* key) {
-    if (!self->key_indexes) {
-        return 0;
-    }
     return PyDict_Contains(self->key_indexes, key);
 }
 
@@ -274,11 +272,7 @@ static Py_hash_t FixedMapKeys_hash(FixedMapKeysObject* self) {
         return cached;
     }
 
-    PyObject* keys_tuple = Py_XNewRef(self->keys_tuple);
-    if (!keys_tuple) {
-        PyErr_SetString(PyExc_RuntimeError, "FixedMapKeys not initialized");
-        return -1;
-    }
+    PyObject* keys_tuple = Py_NewRef(self->keys_tuple);
 
     Py_hash_t computed = PyObject_Hash(keys_tuple);
     Py_DECREF(keys_tuple);
@@ -356,6 +350,7 @@ static PyType_Slot FixedMapKeys_slots[] = {
     {Py_mp_subscript, (void *) FixedMapKeys_getitem},
     {Py_sq_contains, (void *) FixedMapKeys_contains},
     {Py_tp_new, (void *) FixedMapKeys_new},
+    {Py_tp_init, (void *) dummy_init},
     {0, NULL}
 };
 
@@ -407,6 +402,7 @@ static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds
     self->values_tuple = NULL;
     self->hash_cache = 0;
 
+    // Explicitly track the object now so tp_dealloc is safe if we error out below
     PyObject_GC_Track(self);
 
     PyObject* values_tuple;
@@ -440,14 +436,8 @@ static Py_hash_t FixedMap_hash(FixedMapObject* self) {
         return cached;
     }
 
-    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_XNewRef(self->keys);
-    PyObject* values = Py_XNewRef(self->values_tuple);
-    if (!keys || !values) {
-        Py_XDECREF(keys);
-        Py_XDECREF(values);
-        PyErr_SetString(PyExc_RuntimeError, "FixedMap not initialized");
-        return -1;
-    }
+    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(self->keys);
+    PyObject* values = Py_NewRef(self->values_tuple);
 
     if (Py_EnterRecursiveCall(" in computing FixedMap hash")) {
         Py_DECREF(keys);
@@ -500,21 +490,12 @@ error:
 }
 
 static Py_ssize_t FixedMap_len(FixedMapObject* self) {
-    if (!self->values_tuple) {
-        return 0;
-    }
     return PyTuple_GET_SIZE(self->values_tuple);
 }
 
 static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
-    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_XNewRef(self->keys);
-    PyObject* values = Py_XNewRef(self->values_tuple);
-    if (!keys || !values) {
-        Py_XDECREF(keys);
-        Py_XDECREF(values);
-        PyErr_SetString(PyExc_RuntimeError, "FixedMap not initialized");
-        return NULL;
-    }
+    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(self->keys);
+    PyObject* values = Py_NewRef(self->values_tuple);
 
     PyObject* idx_obj;
     if (PyDict_GetItemRef(keys->key_indexes, key, &idx_obj) < 0) {
@@ -544,11 +525,7 @@ static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
 }
 
 static int FixedMap_contains(FixedMapObject* self, PyObject* key) {
-    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_XNewRef(self->keys);
-    if (!keys || !keys->key_indexes) {
-        Py_XDECREF(keys);
-        return 0;
-    }
+    FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_NewRef(self->keys);
     int result = PyDict_Contains(keys->key_indexes, key);
     Py_DECREF(keys);
     return result;
@@ -635,6 +612,7 @@ static PyType_Slot FixedMap_slots[] = {
     {Py_mp_subscript, (void *) FixedMap_getitem},
     {Py_sq_contains, (void *) FixedMap_contains},
     {Py_tp_new, (void *) FixedMap_new},
+    {Py_tp_init, (void *) dummy_init},
     {0, NULL}
 };
 
