@@ -110,9 +110,15 @@ static PyObject* FixedMapIter_iternext(FixedMapIterObject* self) {
         FixedMapObject* map = (FixedMapObject*)source;
         FixedMapKeysObject* keys = (FixedMapKeysObject*)Py_XNewRef(map->keys);
         PyObject* values = Py_XNewRef(map->values_tuple);
-        if (!keys || !values || i >= PyTuple_GET_SIZE(values)) {
+        if (!keys || !values) {
             Py_XDECREF(keys);
             Py_XDECREF(values);
+            PyErr_SetString(PyExc_RuntimeError, "FixedMap not initialized");
+            goto done;
+        }
+        if (i >= PyTuple_GET_SIZE(values)) {
+            Py_DECREF(keys);
+            Py_DECREF(values);
             goto done;
         }
 
@@ -179,30 +185,33 @@ static void FixedMapKeys_dealloc(FixedMapKeysObject* self) {
 }
 
 static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
-    FixedMapKeysObject* self = (FixedMapKeysObject*)type->tp_alloc(type, 0);
-    if (self) {
-        self->keys_tuple = NULL;
-        self->key_indexes = NULL;
-        self->hash_cache = 0;
-    }
-    return (PyObject*)self;
-}
-
-static int FixedMapKeys_init(FixedMapKeysObject* self, PyObject* args, PyObject* kwds) {
     PyObject* keys_arg;
     if (!PyArg_ParseTuple(args, "O", &keys_arg)) {
-        return -1;
+        return NULL;
     }
+
+    FixedMapKeysObject* self = (FixedMapKeysObject*)type->tp_alloc(type, 0);
+    if (!self) {
+        return NULL;
+    }
+
+    self->keys_tuple = NULL;
+    self->key_indexes = NULL;
+    self->hash_cache = 0;
+
+    PyObject_GC_Track(self);
 
     PyObject* keys_tuple = PySequence_Tuple(keys_arg);
     if (!keys_tuple) {
-        return -1;
+        Py_DECREF(self);
+        return NULL;
     }
 
     PyObject* key_indexes = PyDict_New();
     if (!key_indexes) {
         Py_DECREF(keys_tuple);
-        return -1;
+        Py_DECREF(self);
+        return NULL;
     }
 
     Py_ssize_t size = PyTuple_GET_SIZE(keys_tuple);
@@ -224,26 +233,18 @@ static int FixedMapKeys_init(FixedMapKeysObject* self, PyObject* args, PyObject*
         if (err < 0) goto error;
     }
 
-    // Reset hash cache on re-init
-    {
-        std::atomic_ref<Py_hash_t> hash_cache_ref(self->hash_cache);
-        hash_cache_ref.store(0, std::memory_order_release);
-    }
-
-    Py_XSETREF(self->keys_tuple, keys_tuple);
-    Py_XSETREF(self->key_indexes, key_indexes);
-    return 0;
+    self->keys_tuple = keys_tuple;
+    self->key_indexes = key_indexes;
+    return (PyObject*)self;
 
 error:
     Py_DECREF(keys_tuple);
     Py_DECREF(key_indexes);
-    return -1;
+    Py_DECREF(self);
+    return NULL;
 }
 
 static Py_ssize_t FixedMapKeys_len(FixedMapKeysObject* self) {
-    if (!self->keys_tuple) {
-        return 0;
-    }
     return PyTuple_GET_SIZE(self->keys_tuple);
 }
 
@@ -346,7 +347,6 @@ static PyType_Slot FixedMapKeys_slots[] = {
     {Py_tp_dealloc, (void *) FixedMapKeys_dealloc},
     {Py_tp_traverse, (void *) FixedMapKeys_traverse},
     {Py_tp_clear, (void *) FixedMapKeys_clear},
-    {Py_tp_init, (void *) FixedMapKeys_init},
     {Py_tp_hash, (void *) FixedMapKeys_hash},
     {Py_tp_repr, (void *) FixedMapKeys_repr},
     {Py_tp_iter, (void *) FixedMapKeys_iter},
@@ -389,24 +389,25 @@ static void FixedMap_dealloc(FixedMapObject* self) {
 }
 
 static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
-    FixedMapObject* self = (FixedMapObject*)type->tp_alloc(type, 0);
-    if (self) {
-        self->keys = NULL;
-        self->values_tuple = NULL;
-        self->hash_cache = 0;
-    }
-    return (PyObject*)self;
-}
-
-static int FixedMap_init(FixedMapObject* self, PyObject* args, PyObject* kwds) {
     PyObject* keys_arg;
     PyObject* values_arg;
 
-    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    fixedmap_state* state = get_type_state(type);
 
     if (!PyArg_ParseTuple(args, "O!O", state->FixedMapKeys_Type, &keys_arg, &values_arg)) {
-        return -1;
+        return NULL;
     }
+
+    FixedMapObject* self = (FixedMapObject*)type->tp_alloc(type, 0);
+    if (!self) {
+        return NULL;
+    }
+
+    self->keys = NULL;
+    self->values_tuple = NULL;
+    self->hash_cache = 0;
+
+    PyObject_GC_Track(self);
 
     PyObject* values_tuple;
     if (PyTuple_CheckExact(values_arg)) {
@@ -414,7 +415,8 @@ static int FixedMap_init(FixedMapObject* self, PyObject* args, PyObject* kwds) {
     } else {
         values_tuple = PySequence_Tuple(values_arg);
         if (!values_tuple) {
-            return -1;
+            Py_DECREF(self);
+            return NULL;
         }
     }
 
@@ -422,18 +424,13 @@ static int FixedMap_init(FixedMapObject* self, PyObject* args, PyObject* kwds) {
     if (PyTuple_GET_SIZE(values_tuple) != PyTuple_GET_SIZE(keys_obj->keys_tuple)) {
         PyErr_SetString(PyExc_ValueError, "length of values does not match length of keys");
         Py_DECREF(values_tuple);
-        return -1;
+        Py_DECREF(self);
+        return NULL;
     }
 
-    // Reset hash cache on re-init
-    {
-        std::atomic_ref<Py_hash_t> hash_cache_ref(self->hash_cache);
-        hash_cache_ref.store(0, std::memory_order_release);
-    }
-
-    Py_XSETREF(self->keys, (FixedMapKeysObject*)Py_NewRef(keys_obj));
-    Py_XSETREF(self->values_tuple, values_tuple);
-    return 0;
+    self->keys = (FixedMapKeysObject*)Py_NewRef(keys_obj);
+    self->values_tuple = values_tuple;
+    return (PyObject*)self;
 }
 
 static Py_hash_t FixedMap_hash(FixedMapObject* self) {
@@ -629,7 +626,6 @@ static PyType_Slot FixedMap_slots[] = {
     {Py_tp_dealloc, (void *) FixedMap_dealloc},
     {Py_tp_traverse, (void *) FixedMap_traverse},
     {Py_tp_clear, (void *) FixedMap_clear},
-    {Py_tp_init, (void *) FixedMap_init},
     {Py_tp_hash, (void *) FixedMap_hash},
     {Py_tp_repr, (void *) FixedMap_repr},
     {Py_tp_iter, (void *) FixedMap_iter},
