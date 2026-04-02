@@ -404,7 +404,7 @@ static PyObject* FixedMapKeys_get_fixed_keys(FixedMapKeysObject* self, void* Py_
 }
 
 static PyObject* FixedMapKeys_get_debug(FixedMapKeysObject* self, void* Py_UNUSED(closure)) {
-    return Py_NewRef(self->key_indexes);
+    return PyDictProxy_New(self->key_indexes);
 }
 
 static PyObject* FixedMapKeys_repr(FixedMapKeysObject* self) {
@@ -557,10 +557,15 @@ static PyObject* FixedMap_richcompare(PyObject* a, PyObject* b, int op) {
         }
     }
 
+    if (Py_EnterRecursiveCall(" in FixedMap richcompare")) {
+        return NULL;
+    }
+
     fixedmap_state* state = get_type_state(Py_TYPE(a));
     if (PyObject_TypeCheck(b, state->FixedMap_Type)) {
         FixedMapObject *ma = (FixedMapObject*)a, *mb = (FixedMapObject*)b;
         if (PyTuple_GET_SIZE(ma->values_tuple) != PyTuple_GET_SIZE(mb->values_tuple)) {
+            Py_LeaveRecursiveCall();
             if (op == Py_EQ) {
                 Py_RETURN_FALSE;
             } else {
@@ -568,23 +573,33 @@ static PyObject* FixedMap_richcompare(PyObject* a, PyObject* b, int op) {
             }
         }
         if (ma->keys == mb->keys) {
-            return PyObject_RichCompare(ma->values_tuple, mb->values_tuple, op);
+            PyObject* ret = PyObject_RichCompare(ma->values_tuple, mb->values_tuple, op);
+            Py_LeaveRecursiveCall();
+            return ret;
         }
     }
 
-    Py_ssize_t al = PyObject_Length(a), bl = PyObject_Length(b);
-    if (al != -1 && bl != -1 && al != bl) {
+    Py_ssize_t al = PyObject_Length(a);
+    if (al < 0) {
+        PyErr_Clear();
+    }
+    Py_ssize_t bl = PyObject_Length(b);
+    if (bl < 0) {
+        PyErr_Clear();
+    }
+    if (al >= 0 && bl >= 0 && al != bl) {
+        Py_LeaveRecursiveCall();
         if (op == Py_EQ) {
             Py_RETURN_FALSE;
         } else {
             Py_RETURN_TRUE;
         }
     }
-    PyErr_Clear();
 
     PyObject *it = PyObject_GetIter(a), *k;
     if (!it) {
         PyErr_Clear();
+        Py_LeaveRecursiveCall();
         Py_RETURN_NOTIMPLEMENTED;
     }
     while ((k = PyIter_Next(it))) {
@@ -596,12 +611,14 @@ static PyObject* FixedMap_richcompare(PyObject* a, PyObject* b, int op) {
             Py_DECREF(it);
             if (!vb && PyErr_ExceptionMatches(PyExc_KeyError)) {
                 PyErr_Clear();
+                Py_LeaveRecursiveCall();
                 if (op == Py_EQ) {
                     Py_RETURN_FALSE;
                 } else {
                     Py_RETURN_TRUE;
                 }
             }
+            Py_LeaveRecursiveCall();
             return NULL;
         }
         int eq = PyObject_RichCompareBool(va, vb, Py_EQ);
@@ -611,15 +628,24 @@ static PyObject* FixedMap_richcompare(PyObject* a, PyObject* b, int op) {
         if (eq <= 0) {
             Py_DECREF(it);
             if (eq < 0) {
+                Py_LeaveRecursiveCall();
                 return NULL;
-            } else if (op == Py_EQ) {
-                Py_RETURN_FALSE;
             } else {
-                Py_RETURN_TRUE;
+                Py_LeaveRecursiveCall();
+                if (op == Py_EQ) {
+                    Py_RETURN_FALSE;
+                } else {
+                    Py_RETURN_TRUE;
+                }
             }
         }
     }
     Py_DECREF(it);
+    if (PyErr_Occurred()) {
+        Py_LeaveRecursiveCall();
+        return NULL;
+    }
+    Py_LeaveRecursiveCall();
     if (op == Py_EQ) {
         Py_RETURN_TRUE;
     } else {
@@ -643,6 +669,11 @@ static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
         return NULL;
     }
 
+    if (idx < 0 || idx >= PyTuple_GET_SIZE(self->values_tuple)) {
+        PyErr_SetString(PyExc_RuntimeError, "corrupt FixedMap index");
+        return NULL;
+    }
+
     return Py_NewRef(PyTuple_GET_ITEM(self->values_tuple, idx));
 }
 
@@ -657,9 +688,19 @@ static PyObject* FixedMap_get(FixedMapObject* self, PyObject* args) {
     if (!idx) {
         return Py_NewRef(def);
     }
-    PyObject* res = Py_NewRef(PyTuple_GET_ITEM(self->values_tuple, PyLong_AsSsize_t(idx)));
+
+    Py_ssize_t i = PyLong_AsSsize_t(idx);
     Py_DECREF(idx);
-    return res;
+    if (i == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+
+    if (i < 0 || i >= PyTuple_GET_SIZE(self->values_tuple)) {
+        PyErr_SetString(PyExc_RuntimeError, "corrupt FixedMap index");
+        return NULL;
+    }
+
+    return Py_NewRef(PyTuple_GET_ITEM(self->values_tuple, i));
 }
 
 static PyObject* FixedMap_get_fixed_keys(FixedMapObject* self, void* closure) {

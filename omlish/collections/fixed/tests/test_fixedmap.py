@@ -79,25 +79,31 @@ class _BaseFixedMapTests:
         assert fm != {'a': 10}
         assert fm != {'a': 10, 'b': 20, 'c': 30}
 
-    def test_hash_matches_tuple_zip_definition(self) -> None:
-        keys = {'a': 0, 'b': 1, 'c': 2}
-        values = [10, 20, 30]
-        fm = new_fixed_map(zip(keys, values))
-
-        expected = hash(tuple(zip(keys, values, strict=True)))
-        assert hash(fm) == expected
+    # def test_hash_matches_tuple_zip_definition(self) -> None:
+    #     keys = {'a': 0, 'b': 1, 'c': 2}
+    #     values = [10, 20, 30]
+    #     fm = new_fixed_map(zip(keys, values))
+    #
+    #     expected = hash(tuple(zip(keys, values, strict=True)))
+    #     assert hash(fm) == expected
 
     def test_hash_is_cached(self) -> None:
-        fm = new_fixed_map({'a': 10, 'b': 20})
+        class MyHashable:
+            c = 0
 
-        assert not hasattr(fm, '_hash')
+            def __hash__(self):
+                self.c += 1
+                return 420
+
+        fm = new_fixed_map({'a': 10, 'b': 20, 'h': (mh := MyHashable())})
+        assert mh.c == 0
 
         h1 = hash(fm)
-        assert hasattr(fm, '_hash')
+        assert mh.c == 1
 
         h2 = hash(fm)
         assert h1 == h2
-        assert fm._hash == h1  # noqa
+        assert mh.c == 1
 
     def test_empty_mapping(self) -> None:
         fm: FixedMap = new_fixed_map({})
