@@ -152,7 +152,7 @@ dep-about: venv
 ### Gen
 
 .PHONY: gen
-gen: gen-amalg gen-docker-dev gen-cmake gen-aws gen-manifest gen-dataclass gen-pkg
+gen: gen-amalg gen-dockerdev gen-cmake gen-aws gen-manifest gen-dataclass gen-pkg
 
 .PHONY: gen-amalg
 gen-amalg: venv
@@ -163,8 +163,8 @@ gen-amalg: venv
 		-m omxtra \
 		${SRCS}
 
-.PHONY: gen-docker-dev
-gen-docker-dev: venv
+.PHONY: gen-dockerdev
+gen-dockerdev: venv
 	${PYTHON} -m omdev.dockerdev gen> docker/dev/Dockerfile
 
 .PHONY: gen-cmake

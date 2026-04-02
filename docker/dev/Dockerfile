@@ -427,6 +427,13 @@ RUN echo '\
 #!/bin/bash\n\
 set -ex\n\
 \n\
+npm i -g @openai/codex\n\
+' > /omlish/scripts/install-codex
+
+RUN echo '\
+#!/bin/bash\n\
+set -ex\n\
+\n\
 sudo mkdir -p /var/run/dbus /run/dbus\n\
 sudo dbus-daemon --system --nofork --nopidfile\n\
 ' > /omlish/scripts/run-dbus
