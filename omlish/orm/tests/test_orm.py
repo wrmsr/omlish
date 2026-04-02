@@ -1,5 +1,4 @@
 from ... import orm
-
 from .models import Business
 from .models import Review
 from .models import User
