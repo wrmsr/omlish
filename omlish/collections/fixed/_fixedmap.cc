@@ -1,0 +1,594 @@
+// @omlish-cext
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+#include <structmember.h>
+#include <atomic>
+#include <new> // For placement new
+
+#define _MODULE_NAME "_fixedmap"
+#define _PACKAGE_NAME "omlish.collections.fixed"
+#define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
+
+//
+// Types & Structs
+//
+
+struct FixedMapKeysObject {
+    PyObject_HEAD
+    PyObject* keys_tuple;
+    PyObject* key_indexes;
+};
+
+struct FixedMapObject {
+    PyObject_HEAD
+    FixedMapKeysObject* keys;
+    PyObject* values_tuple;
+    std::atomic<Py_hash_t> hash_cache;
+};
+
+// Iterator modes
+enum IterMode {
+    ITER_KEYS_KEYS = 0,
+    ITER_KEYS_VALUES = 1,
+    ITER_KEYS_ITEMS = 2,
+    ITER_MAP_KEYS = 3,
+    ITER_MAP_VALUES = 4,
+    ITER_MAP_ITEMS = 5
+};
+
+struct FixedMapIterObject {
+    PyObject_HEAD
+    PyObject* source; // FixedMapKeysObject or FixedMapObject
+    int mode;
+    std::atomic<Py_ssize_t> index;
+};
+
+typedef struct fixedmap_state {
+    PyTypeObject* FixedMapKeys_Type;
+    PyTypeObject* FixedMap_Type;
+    PyTypeObject* FixedMapIter_Type;
+} fixedmap_state;
+
+static inline fixedmap_state* get_module_state(PyObject* module) {
+    void* state = PyModule_GetState(module);
+    assert(state != NULL);
+    return (fixedmap_state*)state;
+}
+
+static inline fixedmap_state* get_type_state(PyTypeObject* type) {
+    void* state = PyType_GetModuleState(type);
+    assert(state != NULL);
+    return (fixedmap_state*)state;
+}
+
+//
+// FixedMapIter Implementation
+//
+
+static int FixedMapIter_traverse(FixedMapIterObject* self, visitproc visit, void* arg) {
+    Py_VISIT(self->source);
+    return 0
+}
+
+static int FixedMapIter_clear(FixedMapIterObject* self) {
+    Py_CLEAR(self->source);
+    return 0;
+}
+
+static void FixedMapIter_dealloc(FixedMapIterObject* self) {
+    PyObject_GC_UnTrack(self);
+    FixedMapIter_clear(self);
+    self->index.~atomic(); // Explicitly destroy atomic
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static PyObject* FixedMapIter_iternext(FixedMapIterObject* self) {
+    // Atomic fetch_add for lock-free work-stealing iteration
+    Py_ssize_t i = self->index.fetch_add(1, std::memory_order_relaxed);
+
+    if (self->mode <= ITER_KEYS_ITEMS || self->mode == ITER_MAP_KEYS) {
+        FixedMapKeysObject* keys = (FixedMapKeysObject*)self->source;
+        if (self->mode == ITER_MAP_KEYS) {
+            keys = ((FixedMapObject*)self->source)->keys;
+        }
+
+        if (i >= PyTuple_GET_SIZE(keys->keys_tuple)) {
+            return NULL;
+        }
+
+        PyObject* key = PyTuple_GET_ITEM(keys->keys_tuple, i);
+
+        if (self->mode == ITER_KEYS_KEYS || self->mode == ITER_MAP_KEYS) {
+            return Py_NewRef(key);
+        } else if (self->mode == ITER_KEYS_VALUES) {
+            return PyLong_FromSsize_t(i);
+        } else { // ITER_KEYS_ITEMS
+            PyObject* val = PyLong_FromSsize_t(i);
+            if (!val) return NULL;
+            PyObject* tuple = PyTuple_Pack(2, key, val);
+            Py_DECREF(val);
+            return tuple;
+        }
+    } else { // ITER_MAP_VALUES or ITER_MAP_ITEMS
+        FixedMapObject* map = (FixedMapObject*)self->source;
+        if (i >= PyTuple_GET_SIZE(map->values_tuple)) {
+            return NULL;
+        }
+
+        PyObject* val = PyTuple_GET_ITEM(map->values_tuple, i);
+
+        if (self->mode == ITER_MAP_VALUES) {
+            return Py_NewRef(val);
+        } else { // ITER_MAP_ITEMS
+            PyObject* key = PyTuple_GET_ITEM(map->keys->keys_tuple, i);
+            return PyTuple_Pack(2, key, val);
+        }
+    }
+}
+
+static PyType_Slot FixedMapIter_slots[] = {
+    {Py_tp_dealloc, (void*)FixedMapIter_dealloc},
+    {Py_tp_traverse, (void*)FixedMapIter_traverse},
+    {Py_tp_clear, (void*)FixedMapIter_clear},
+    {Py_tp_iter, (void*)PyObject_SelfIter},
+    {Py_tp_iternext, (void*)FixedMapIter_iternext},
+    {0, NULL}
+};
+
+static PyType_Spec FixedMapIter_spec = {
+    .name = _MODULE_FULL_NAME ".FixedMapIter",
+    .basicsize = sizeof(FixedMapIterObject),
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = FixedMapIter_slots,
+};
+
+static PyObject* new_iterator(PyObject* source, int mode, fixedmap_state* state) {
+    FixedMapIterObject* iter = PyObject_GC_New(FixedMapIterObject, state->FixedMapIter_Type);
+    if (!iter) return NULL;
+    iter->source = Py_NewRef(source);
+    iter->mode = mode;
+    new (&iter->index) std::atomic<Py_ssize_t>(0); // Placement new for atomic
+    PyObject_GC_Track(iter);
+    return (PyObject*)iter;
+}
+
+//
+// FixedMapKeys Implementation
+//
+
+static int FixedMapKeys_traverse(FixedMapKeysObject* self, visitproc visit, void* arg) {
+    Py_VISIT(self->keys_tuple);
+    Py_VISIT(self->key_indexes);
+    return 0;
+}
+
+static int FixedMapKeys_clear(FixedMapKeysObject* self) {
+    Py_CLEAR(self->keys_tuple);
+    Py_CLEAR(self->key_indexes);
+    return 0;
+}
+
+static void FixedMapKeys_dealloc(FixedMapKeysObject* self) {
+    PyObject_GC_UnTrack(self);
+    FixedMapKeys_clear(self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static int FixedMapKeys_init(FixedMapKeysObject* self, PyObject* args, PyObject* kwds) {
+    PyObject* keys_arg;
+    if (!PyArg_ParseTuple(args, "O", &keys_arg)) return -1;
+
+    PyObject* keys_tuple = PySequence_Tuple(keys_arg);
+    if (!keys_tuple) return -1;
+
+    PyObject* key_indexes = PyDict_New();
+    if (!key_indexes) {
+        Py_DECREF(keys_tuple);
+        return -1;
+    }
+
+    Py_ssize_t size = PyTuple_GET_SIZE(keys_tuple);
+    for (Py_ssize_t i = 0; i < size; i++) {
+        PyObject* key = PyTuple_GET_ITEM(keys_tuple, i);
+
+        int contains = PyDict_Contains(key_indexes, key);
+        if (contains == -1) goto error;
+        if (contains == 1) {
+            PyErr_SetObject(PyExc_KeyError, key);
+            goto error;
+        }
+
+        PyObject* val = PyLong_FromSsize_t(i);
+        if (!val) goto error;
+        int err = PyDict_SetItem(key_indexes, key, val);
+        Py_DECREF(val);
+        if (err < 0) goto error;
+    }
+
+    Py_XSETREF(self->keys_tuple, keys_tuple);
+    Py_XSETREF(self->key_indexes, key_indexes);
+    return 0;
+
+error:
+    Py_DECREF(keys_tuple);
+    Py_DECREF(key_indexes);
+    return -1;
+}
+
+static Py_ssize_t FixedMapKeys_len(FixedMapKeysObject* self) {
+    if (!self->keys_tuple) return 0;
+    return PyTuple_GET_SIZE(self->keys_tuple);
+}
+
+static PyObject* FixedMapKeys_getitem(FixedMapKeysObject* self, PyObject* key) {
+    PyObject* val;
+    if (PyDict_GetItemRef(self->key_indexes, key, &val) < 0) {
+        return NULL; // Exception raised by GetItemRef
+    }
+    if (!val) {
+        PyErr_SetObject(PyExc_KeyError, key);
+        return NULL;
+    }
+    return val;
+}
+
+static Py_hash_t FixedMapKeys_hash(FixedMapKeysObject* self) {
+    return PyObject_Hash(self->keys_tuple);
+}
+
+static PyObject* FixedMapKeys_iter(FixedMapKeysObject* self) {
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    return new_iterator((PyObject*)self, ITER_KEYS_KEYS, state);
+}
+
+static PyObject* FixedMapKeys_keys(FixedMapKeysObject* self, PyObject* Py_UNUSED(ignored)) {
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    return new_iterator((PyObject*)self, ITER_KEYS_KEYS, state);
+}
+
+static PyObject* FixedMapKeys_values(FixedMapKeysObject* self, PyObject* Py_UNUSED(ignored)) {
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    return new_iterator((PyObject*)self, ITER_KEYS_VALUES, state);
+}
+
+static PyObject* FixedMapKeys_items(FixedMapKeysObject* self, PyObject* Py_UNUSED(ignored)) {
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    return new_iterator((PyObject*)self, ITER_KEYS_ITEMS, state);
+}
+
+static PyObject* FixedMapKeys_get_fixed_keys(FixedMapKeysObject* self, void* closure) {
+    return Py_NewRef(self->keys_tuple);
+}
+
+static PyObject* FixedMapKeys_get_debug(FixedMapKeysObject* self, void* closure) {
+    return Py_NewRef(self->key_indexes);
+}
+
+static PyObject* FixedMapKeys_repr(FixedMapKeysObject* self) {
+    PyObject* debug_repr = PyObject_Repr(self->key_indexes);
+    if (!debug_repr) return NULL;
+    PyObject* res = PyUnicode_FromFormat("%s(%U)", Py_TYPE(self)->tp_name, debug_repr);
+    Py_DECREF(debug_repr);
+    return res;
+}
+
+static PyMethodDef FixedMapKeys_methods[] = {
+    {"keys", (PyCFunction)FixedMapKeys_keys, METH_NOARGS, NULL},
+    {"values", (PyCFunction)FixedMapKeys_values, METH_NOARGS, NULL},
+    {"items", (PyCFunction)FixedMapKeys_items, METH_NOARGS, NULL},
+    {NULL, NULL, 0, NULL}
+};
+
+static PyGetSetDef FixedMapKeys_getseters[] = {
+    {"fixed_keys", (getter)FixedMapKeys_get_fixed_keys, NULL, NULL, NULL},
+    {"debug", (getter)FixedMapKeys_get_debug, NULL, NULL, NULL},
+    {NULL, NULL, NULL, NULL, NULL}
+};
+
+static PyMappingMethods FixedMapKeys_as_mapping = {
+    (lenfunc)FixedMapKeys_len,
+    (binaryfunc)FixedMapKeys_getitem,
+    NULL // no setting
+};
+
+static PyType_Slot FixedMapKeys_slots[] = {
+    {Py_tp_dealloc, (void*)FixedMapKeys_dealloc},
+    {Py_tp_traverse, (void*)FixedMapKeys_traverse},
+    {Py_tp_clear, (void*)FixedMapKeys_clear},
+    {Py_tp_init, (void*)FixedMapKeys_init},
+    {Py_tp_hash, (void*)FixedMapKeys_hash},
+    {Py_tp_repr, (void*)FixedMapKeys_repr},
+    {Py_tp_iter, (void*)FixedMapKeys_iter},
+    {Py_tp_methods, (void*)FixedMapKeys_methods},
+    {Py_tp_getset, (void*)FixedMapKeys_getseters},
+    {Py_tp_as_mapping, (void*)&FixedMapKeys_as_mapping},
+    {Py_tp_new, (void*)PyType_GenericNew},
+    {0, NULL}
+};
+
+static PyType_Spec FixedMapKeys_spec = {
+    .name = _MODULE_FULL_NAME ".FixedMapKeys",
+    .basicsize = sizeof(FixedMapKeysObject),
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_BASETYPE,
+    .slots = FixedMapKeys_slots,
+};
+
+//
+// FixedMap Implementation
+//
+
+static int FixedMap_traverse(FixedMapObject* self, visitproc visit, void* arg) {
+    Py_VISIT(self->keys);
+    Py_VISIT(self->values_tuple);
+    return 0;
+}
+
+static int FixedMap_clear(FixedMapObject* self) {
+    Py_CLEAR(self->keys);
+    Py_CLEAR(self->values_tuple);
+    return 0;
+}
+
+static void FixedMap_dealloc(FixedMapObject* self) {
+    PyObject_GC_UnTrack(self);
+    FixedMap_clear(self);
+    self->hash_cache.~atomic();
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static int FixedMap_init(FixedMapObject* self, PyObject* args, PyObject* kwds) {
+    PyObject* keys_arg;
+    PyObject* values_arg;
+
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+
+    if (!PyArg_ParseTuple(args, "O!O", state->FixedMapKeys_Type, &keys_arg, &values_arg)) return -1;
+
+    PyObject* values_tuple;
+    if (PyTuple_CheckExact(values_arg)) {
+        values_tuple = Py_NewRef(values_arg);
+    } else {
+        values_tuple = PySequence_Tuple(values_arg);
+        if (!values_tuple) return -1;
+    }
+
+    FixedMapKeysObject* keys_obj = (FixedMapKeysObject*)keys_arg;
+    if (PyTuple_GET_SIZE(values_tuple) != PyTuple_GET_SIZE(keys_obj->keys_tuple)) {
+        PyErr_SetString(PyExc_ValueError, "length of values does not match length of keys");
+        Py_DECREF(values_tuple);
+        return -1;
+    }
+
+    new (&self->hash_cache) std::atomic<Py_hash_t>(0); // Initialize atomic
+
+    Py_XSETREF(self->keys, (FixedMapKeysObject*)Py_NewRef(keys_obj));
+    Py_XSETREF(self->values_tuple, values_tuple);
+    return 0;
+}
+
+static Py_hash_t FixedMap_hash(FixedMapObject* self) {
+    Py_hash_t cached = self->hash_cache.load(std::memory_order_acquire);
+    if (cached != 0) return cached;
+
+    if (Py_EnterRecursiveCall(" in computing FixedMap hash")) {
+        return -1;
+    }
+
+    Py_ssize_t size = PyTuple_GET_SIZE(self->values_tuple);
+    Py_hash_t computed = 0x345678; // Base seed
+    Py_hash_t mult = 1000003;
+
+    for (Py_ssize_t i = 0; i < size; i++) {
+        PyObject* k = PyTuple_GET_ITEM(self->keys->keys_tuple, i);
+        PyObject* v = PyTuple_GET_ITEM(self->values_tuple, i);
+
+        Py_hash_t h_k = PyObject_Hash(k);
+        if (h_k == -1) goto error;
+        computed = (computed ^ h_k) * mult;
+        mult += (Py_hash_t)(82520 + 2);
+
+        Py_hash_t h_v = PyObject_Hash(v);
+        if (h_v == -1) goto error;
+        computed = (computed ^ h_v) * mult;
+        mult += (Py_hash_t)(82520 + 2);
+    }
+
+    Py_LeaveRecursiveCall();
+
+    if (computed == -1) computed = -2;
+    if (computed == 0) computed = 1;
+
+    // Benign race condition: if another thread beat us, it writes the same value.
+    self->hash_cache.store(computed, std::memory_order_release);
+    return computed;
+
+error:
+    Py_LeaveRecursiveCall();
+    return -1;
+}
+
+static Py_ssize_t FixedMap_len(FixedMapObject* self) {
+    if (!self->values_tuple) return 0;
+    return PyTuple_GET_SIZE(self->values_tuple);
+}
+
+static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
+    PyObject* idx_obj;
+    if (PyDict_GetItemRef(self->keys->key_indexes, key, &idx_obj) < 0) {
+        return NULL;
+    }
+    if (!idx_obj) {
+        PyErr_SetObject(PyExc_KeyError, key);
+        return NULL;
+    }
+
+    Py_ssize_t idx = PyLong_AsSsize_t(idx_obj);
+    Py_DECREF(idx_obj);
+    if (idx == -1 && PyErr_Occurred()) return NULL;
+
+    return Py_NewRef(PyTuple_GET_ITEM(self->values_tuple, idx));
+}
+
+static PyObject* FixedMap_iter(FixedMapObject* self) {
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    return new_iterator((PyObject*)self, ITER_MAP_KEYS, state);
+}
+
+static PyObject* FixedMap_itervalues(FixedMapObject* self, PyObject* Py_UNUSED(ignored)) {
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    return new_iterator((PyObject*)self, ITER_MAP_VALUES, state);
+}
+
+static PyObject* FixedMap_iteritems(FixedMapObject* self, PyObject* Py_UNUSED(ignored)) {
+    fixedmap_state* state = get_type_state(Py_TYPE(self));
+    return new_iterator((PyObject*)self, ITER_MAP_ITEMS, state);
+}
+
+static PyObject* FixedMap_get_fixed_keys(FixedMapObject* self, void* closure) {
+    return Py_NewRef(self->keys);
+}
+
+static PyObject* FixedMap_get_fixed_values(FixedMapObject* self, void* closure) {
+    return Py_NewRef(self->values_tuple);
+}
+
+static PyObject* FixedMap_get_debug(FixedMapObject* self, void* closure) {
+    PyObject* d = PyDict_New();
+    if (!d) return NULL;
+
+    Py_ssize_t size = PyTuple_GET_SIZE(self->values_tuple);
+    for (Py_ssize_t i = 0; i < size; i++) {
+        PyObject* k = PyTuple_GET_ITEM(self->keys->keys_tuple, i);
+        PyObject* v = PyTuple_GET_ITEM(self->values_tuple, i);
+        if (PyDict_SetItem(d, k, v) < 0) {
+            Py_DECREF(d);
+            return NULL;
+        }
+    }
+    return d;
+}
+
+static PyObject* FixedMap_repr(FixedMapObject* self) {
+    PyObject* d = FixedMap_get_debug(self, NULL);
+    if (!d) return NULL;
+    PyObject* debug_repr = PyObject_Repr(d);
+    Py_DECREF(d);
+    if (!debug_repr) return NULL;
+
+    PyObject* res = PyUnicode_FromFormat("%s(%U)", Py_TYPE(self)->tp_name, debug_repr);
+    Py_DECREF(debug_repr);
+    return res;
+}
+
+static PyMethodDef FixedMap_methods[] = {
+    {"itervalues", (PyCFunction)FixedMap_itervalues, METH_NOARGS, NULL},
+    {"iteritems", (PyCFunction)FixedMap_iteritems, METH_NOARGS, NULL},
+    {NULL, NULL, 0, NULL}
+};
+
+static PyGetSetDef FixedMap_getseters[] = {
+    {"fixed_keys", (getter)FixedMap_get_fixed_keys, NULL, NULL, NULL},
+    {"fixed_values", (getter)FixedMap_get_fixed_values, NULL, NULL, NULL},
+    {"debug", (getter)FixedMap_get_debug, NULL, NULL, NULL},
+    {NULL, NULL, NULL, NULL, NULL}
+};
+
+static PyMappingMethods FixedMap_as_mapping = {
+    (lenfunc)FixedMap_len,
+    (binaryfunc)FixedMap_getitem,
+    NULL
+};
+
+static PyType_Slot FixedMap_slots[] = {
+    {Py_tp_dealloc, (void*)FixedMap_dealloc},
+    {Py_tp_traverse, (void*)FixedMap_traverse},
+    {Py_tp_clear, (void*)FixedMap_clear},
+    {Py_tp_init, (void*)FixedMap_init},
+    {Py_tp_hash, (void*)FixedMap_hash},
+    {Py_tp_repr, (void*)FixedMap_repr},
+    {Py_tp_iter, (void*)FixedMap_iter},
+    {Py_tp_methods, (void*)FixedMap_methods},
+    {Py_tp_getset, (void*)FixedMap_getseters},
+    {Py_tp_as_mapping, (void*)&FixedMap_as_mapping},
+    {Py_tp_new, (void*)PyType_GenericNew},
+    {0, NULL}
+};
+
+static PyType_Spec FixedMap_spec = {
+    .name = _MODULE_FULL_NAME ".FixedMap",
+    .basicsize = sizeof(FixedMapObject),
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_BASETYPE,
+    .slots = FixedMap_slots,
+};
+
+//
+// Module Initialization
+//
+
+PyDoc_STRVAR(fixedmap_doc, "C++ optimized implementation of FixedMap.");
+
+static int fixedmap_exec(PyObject* module) {
+    fixedmap_state* state = get_module_state(module);
+
+    state->FixedMapIter_Type = (PyTypeObject*)PyType_FromModuleAndSpec(module, &FixedMapIter_spec, NULL);
+    if (!state->FixedMapIter_Type) return -1;
+
+    state->FixedMapKeys_Type = (PyTypeObject*)PyType_FromModuleAndSpec(module, &FixedMapKeys_spec, NULL);
+    if (!state->FixedMapKeys_Type) return -1;
+    if (PyModule_AddType(module, state->FixedMapKeys_Type) < 0) return -1;
+
+    state->FixedMap_Type = (PyTypeObject*)PyType_FromModuleAndSpec(module, &FixedMap_spec, NULL);
+    if (!state->FixedMap_Type) return -1;
+    if (PyModule_AddType(module, state->FixedMap_Type) < 0) return -1;
+
+    return 0;
+}
+
+static int fixedmap_traverse(PyObject* module, visitproc visit, void* arg) {
+    fixedmap_state* state = get_module_state(module);
+    Py_VISIT(state->FixedMapKeys_Type);
+    Py_VISIT(state->FixedMap_Type);
+    Py_VISIT(state->FixedMapIter_Type);
+    return 0;
+}
+
+static int fixedmap_clear(PyObject* module) {
+    fixedmap_state* state = get_module_state(module);
+    Py_CLEAR(state->FixedMapKeys_Type);
+    Py_CLEAR(state->FixedMap_Type);
+    Py_CLEAR(state->FixedMapIter_Type);
+    return 0;
+}
+
+static void fixedmap_free(void* module) {
+    fixedmap_clear((PyObject*)module);
+}
+
+static PyMethodDef fixedmap_methods[] = {
+    {NULL, NULL, 0, NULL}
+};
+
+static struct PyModuleDef_Slot fixedmap_slots[] = {
+    {Py_mod_exec, (void*)fixedmap_exec},
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+    {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED},
+    {0, NULL}
+};
+
+static struct PyModuleDef fixedmap_module = {
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = _MODULE_NAME,
+    .m_doc = fixedmap_doc,
+    .m_size = sizeof(fixedmap_state),
+    .m_methods = fixedmap_methods,
+    .m_slots = fixedmap_slots,
+    .m_traverse = fixedmap_traverse,
+    .m_clear = fixedmap_clear,
+    .m_free = fixedmap_free,
+};
+
+extern "C" {
+PyMODINIT_FUNC PyInit__fixedmap(void) {
+    return PyModuleDef_Init(&fixedmap_module);
+}
+}
