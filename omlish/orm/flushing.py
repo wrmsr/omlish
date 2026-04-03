@@ -154,74 +154,68 @@ class _SessionFlusher:
 
         check.state(not sess._aborted)
 
+        #
+
         des = self._dirty_entities()  # noqa
         akg = self._auto_key_graph()  # noqa
+
+        #
 
         iak: dict[_AutoKey, ta.Any] = {}
 
         def fix_snap(m: Mapper, snap: Snap) -> Snap:  # noqa
-            kf_sn = m._key_field_store_name
+            kf_sn = m._key_field_store_name  # noqa
+            if not any(v.__class__ is _AutoKey and k != kf_sn for k, v in snap.items()):
+                return snap
             return {k: iak[v] if v.__class__ is _AutoKey and k != kf_sn else v for k, v in snap.items()}
+
+        #
+
+        ent_writeback: dict[Session._Entity, tuple[ta.Any | None, Snap | None]] = {}
+
+        #
 
         for ak_step in akg.ak_toposort:
             for m, aks in ak_step.items():
                 m_des = des[m]
                 ak_snaps: list[Snap] = []
-                for ak in aks:
+                for ak in check.not_empty(aks):
                     _, snap = m_des.ak_inserts[ak]
                     ak_snaps.append(fix_snap(m, snap))
                 ak_upd = sess._store.auto_key_insert(m, ak_snaps)
                 iak.update(ak_upd)
+                for ak in aks:
+                    e, snap = m_des.ak_inserts[ak]
+                    ent_writeback[e] = (ak_upd[ak], {k: iak[v] if v.__class__ is _AutoKey else v for k, v in snap.items()})  # noqa
 
-        entity_ops: list[tuple[
-            Mapper,
-            Store.FlushResult,
-            list[tuple[
-                Session._Entity,
-                ta.Any | None,
-                Snap | None,
-            ]],
-        ]] = []
+        #
 
-        for cls, cd in sess._entities_by_key_by_cls.items():
-            eol: list = []
+        for m, m_des in des.items():
+            if m_des.vk_inserts:
+                vk_snaps: list[Snap] = []
+                for e, snap in m_des.vk_inserts:
+                    if (fx_snap := fix_snap(m, snap)) is not snap:
+                        ent_writeback[e] = (None, fx_snap)
+                    vk_snaps.append(fix_snap(m, fx_snap))
+                sess._store.insert(m, vk_snaps)
 
-            m = sess._registry.mapper_for_cls(cls)
+            if m_des.updates:
+                ud_diffs: list[tuple[ta.Any, Snap]] = []
+                for e, snap, diff_fs in m_des.updates:
+                    diff_snap = {k: v for k, v in snap.items() if k in diff_fs}
+                    if (fx_diff_snap := fix_snap(m, diff_snap)) is not diff_snap:
+                        ent_writeback[e] = (None, {**snap, **fx_diff_snap})
+                    ud_diffs.append((e.k, fx_diff_snap))
+                sess._store.update(ud_diffs)
 
-            insert: list[Snap] = []
-            update: list[tuple[ta.Any, Snap]] = []
-            delete: list[ta.Any] = []
+            if m_des.deletes:
+                del_ks: list[ta.Any] = []
+                for e in del_ks:
+                    ent_writeback[e] = (None, None)
+                    del_ks.append(e.k)
+                sess._store.delete(del_ks)
 
-            for e in cd.values():
-                if e.obj is None:
-                    if e.snap is None:
-                        continue
-                    delete.append(_unwrap_key(e.k))
-                    eol.append((e, None, None))
-
-                else:
-                    snap = e.m.obj_to_snap(e.obj)
-                    if snap == e.snap:
-                        continue
-                    eol.append((e, e.obj, snap))
-                    if (xs := e.snap) is None:
-                        insert.append(snap)
-                    else:
-                        ds = {k: nv for k, nv in snap.items() if xs[k] != nv}
-                        update.append((_unwrap_key(e.k), ds))
-
-            if not (insert or update or delete):
-                continue
-
-            batch = Store.FlushBatch(
-                insert=insert or None,
-                update=update or None,
-                delete=delete or None,
-            )
-
-            fr = sess._store.flush(m, batch)
-
-            entity_ops.append((m, fr, eol))
+        #
 
         for m, fr, eol in entity_ops:
             ed = sess._entities_by_key_by_cls[m._cls]

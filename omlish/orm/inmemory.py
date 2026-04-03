@@ -174,7 +174,7 @@ class InMemoryStore(Store):
                 ak += 1
             iak[k] = ak
             k = ak
-            snap[kf_sn] = k
+            snap = {**snap, kf_sn: k}
             for sk, sv in snap.items():  # noqa
                 check.not_in(sv.__class__, WRAPPER_TYPES)
             check.not_in(k, t.snaps)
