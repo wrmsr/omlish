@@ -7,6 +7,7 @@ TODO:
   - https://ops.tips/blog/inspecting-docker-image-without-pull/
 """  # noqa
 import datetime
+import platform
 import re
 import subprocess
 import typing as ta
@@ -96,6 +97,9 @@ def cli_inspect(ids: list[str]) -> list[Inspect]:
 
 
 def has_cli() -> bool:
+    if getattr(platform, 'machine')() == 'wasm32':
+        return False
+
     try:
         proc = subprocess.run(['docker', '--version'])  # noqa
     except (FileNotFoundError, subprocess.CalledProcessError):

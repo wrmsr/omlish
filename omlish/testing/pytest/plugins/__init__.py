@@ -11,6 +11,7 @@ from . import (  # noqa
     repeat,
     skips,
     spacing,
+    stubopts,
     switches,
 )
 
