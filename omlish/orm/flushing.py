@@ -149,7 +149,12 @@ class _SessionFlusher:
 
     #
 
-    def flush(self) -> None:
+    @dc.dataclass(frozen=True, kw_only=True)
+    class FlushResult:
+        inserted_auto_keys: ta.Mapping[_AutoKey, ta.Any]
+        ent_writeback: ta.Mapping['Session._Entity', tuple[ta.Any | None, Snap | None]]
+
+    def flush(self) -> FlushResult:
         sess = self._session
 
         check.state(not sess._aborted)
@@ -163,11 +168,11 @@ class _SessionFlusher:
 
         iak: dict[_AutoKey, ta.Any] = {}
 
-        def fix_snap(m: Mapper, snap: Snap) -> Snap:  # noqa
+        def fix_snap(m: Mapper, snap: Snap) -> Snap | None:  # noqa
             kf_sn = m._key_field_store_name  # noqa
             if not any(v.__class__ is _AutoKey and k != kf_sn for k, v in snap.items()):
-                return snap
-            return {k: iak[v] if v.__class__ is _AutoKey and k != kf_sn else v for k, v in snap.items()}
+                return None
+            return {k: iak[v] for k, v in snap.items() if v.__class__ is _AutoKey and k != kf_sn}
 
         #
 
@@ -181,12 +186,15 @@ class _SessionFlusher:
                 ak_snaps: list[Snap] = []
                 for ak in check.not_empty(aks):
                     _, snap = m_des.ak_inserts[ak]
-                    ak_snaps.append(fix_snap(m, snap))
+                    if (wb_snap := fix_snap(m, snap)) is not None:
+                        snap = {**snap, **wb_snap}
+                    ak_snaps.append(snap)
                 ak_upd = sess._store.auto_key_insert(m, ak_snaps)
                 iak.update(ak_upd)
                 for ak in aks:
                     e, snap = m_des.ak_inserts[ak]
-                    ent_writeback[e] = (ak_upd[ak], {k: iak[v] if v.__class__ is _AutoKey else v for k, v in snap.items()})  # noqa
+                    wb_snap = {k: iak[v] if v.__class__ is _AutoKey else v for k, v in snap.items()}
+                    ent_writeback[e] = (ak_upd[ak], wb_snap)
 
         #
 
@@ -194,47 +202,32 @@ class _SessionFlusher:
             if m_des.vk_inserts:
                 vk_snaps: list[Snap] = []
                 for e, snap in m_des.vk_inserts:
-                    if (fx_snap := fix_snap(m, snap)) is not snap:
-                        ent_writeback[e] = (None, fx_snap)
-                    vk_snaps.append(fix_snap(m, fx_snap))
+                    if (wb_snap := fix_snap(m, snap)) is not None:
+                        snap = {**snap, **wb_snap}
+                    ent_writeback[e] = (None, snap)
+                    vk_snaps.append(snap)
                 sess._store.insert(m, vk_snaps)
 
             if m_des.updates:
                 ud_diffs: list[tuple[ta.Any, Snap]] = []
                 for e, snap, diff_fs in m_des.updates:
                     diff_snap = {k: v for k, v in snap.items() if k in diff_fs}
-                    if (fx_diff_snap := fix_snap(m, diff_snap)) is not diff_snap:
-                        ent_writeback[e] = (None, {**snap, **fx_diff_snap})
-                    ud_diffs.append((e.k, fx_diff_snap))
-                sess._store.update(ud_diffs)
+                    if (wb_diff_snap := fix_snap(m, diff_snap)) is not None:
+                        diff_snap = {**diff_snap, **wb_diff_snap}
+                    ent_writeback[e] = (None, diff_snap)
+                    ud_diffs.append((e.k._k, diff_snap))  # must be a _ValKey
+                sess._store.update(m, ud_diffs)
 
             if m_des.deletes:
                 del_ks: list[ta.Any] = []
                 for e in del_ks:
                     ent_writeback[e] = (None, None)
-                    del_ks.append(e.k)
-                sess._store.delete(del_ks)
+                    del_ks.append(e.k._k)  # must be a _ValKey
+                sess._store.delete(m, del_ks)
 
         #
 
-        for m, fr, eol in entity_ops:
-            ed = sess._entities_by_key_by_cls[m._cls]
-
-            for e, e_obj, e_snap in eol:
-                if (ek := e.k).__class__ is _AutoKey:
-                    k = _Key(fr.inserted_auto_keys[ek])  # type: ignore[index]
-
-                    check.not_in(k, ed)  # noqa
-                    check.is_(sess._entities_by_auto_key[ek], e)  # noqa
-
-                    del ed[ek]
-
-                    e.k = k
-                    setattr(e_obj, m._key_field._name, k)
-                    ed[k] = e
-
-                if e_obj is None and (xo := e.obj) is not None:
-                    del sess._entities_by_obj_id[id(xo)]
-
-                e.obj = e_obj
-                e.snap = e_snap
+        return self.FlushResult(
+            inserted_auto_keys=iak,
+            ent_writeback=ent_writeback,
+        )

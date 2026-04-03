@@ -33,25 +33,28 @@ def test_orm():
     #     print(r3)
 
     with orm.session(registry, store):
-        alice = User(id=orm.key(1), name='Alice')
+        alice = User(name='Alice')
         bob = User(name='Bob')
+        charlie = User(id=orm.key(100), name='Charlie')
 
-        diner = Business(id=orm.key(1), name="Alice's Diner")
+        diner = Business(name="Alice's Diner")
         sushi = Business(name='Sushi Spot')
 
         orm.add(alice)
         orm.add(bob)
+        orm.add(charlie)
+
         orm.add(diner)
         orm.add(sushi)
 
-        orm.add(Review(id=orm.key(1), business=orm.ref(Business, 1), user=orm.ref(User, 1), text='great pie'))
+        orm.add(Review(business=orm.ref(Business, 1), user=orm.ref(User, 1), text='great pie'))
         orm.add(Review(business=orm.ref(diner), user=orm.ref(User, 2), text='solid brunch'))
 
         orm.add(Review(business=orm.ref(Business, 2), user=orm.ref(alice), text='fresh fish'))
         orm.add(Review(business=orm.ref(sushi), user=orm.ref(User, 2), text='it aight'))
         orm.add(Review(business=orm.ref(sushi), user=orm.ref(bob), text='it still aight'))
 
-        assert orm.get(User, 1) is alice
+        assert orm.get(User, 100) is charlie
 
         # pending = orm.query(Review).where_eq('business_id', 1).all()
         # print('pending reviews for business 1:', pending)

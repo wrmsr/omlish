@@ -265,7 +265,27 @@ class Session:
     #
 
     def flush(self) -> None:
-        _SessionFlusher(self).flush()
+        res = _SessionFlusher(self).flush()
+
+        #
+
+        for e, (wb_k, wb_snap) in res.ent_writeback.items():
+            m = e.m
+
+            if wb_k is not None:
+                ed = self._entities_by_key_by_cls[m._cls]
+                del ed[e.k]
+                e.k = _Key(wb_k)
+                ed[e.k] = e
+
+            if wb_snap is None:
+                e.snap = None
+            else:
+                e.snap = {**(e.snap or {}), **wb_snap}
+                for k, v in wb_snap.items():
+                    f = m._fields_by_store_name[k]
+                    ov = m.snap_value_to_field_value(f, v)
+                    setattr(e.obj, f._name, ov)
 
     #
 

@@ -21,11 +21,11 @@ class Store(lang.Abstract):
     #
 
     @abc.abstractmethod
-    def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
+    def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
+    def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod

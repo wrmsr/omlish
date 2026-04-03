@@ -152,17 +152,6 @@ class InMemoryStore(Store):
             if not iz:
                 del idc[ik]
 
-    def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
-        t = self._table_for_mapper(m)
-        kf_sn = m._key_field_store_name
-        for snap in snaps:
-            k = snap[kf_sn]
-            for sk, sv in snap.items():  # noqa
-                check.not_in(sv.__class__, WRAPPER_TYPES)
-            check.not_in(k, t.snaps)
-            t.snaps[k] = snap
-            self._index(k, snap)
-
     def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
         t = self._table_for_mapper(m)
         kf_sn = m._key_field_store_name
@@ -181,6 +170,17 @@ class InMemoryStore(Store):
             t.snaps[k] = snap
             self._index(t, k, snap)
         return iak
+
+    def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
+        t = self._table_for_mapper(m)
+        kf_sn = m._key_field_store_name
+        for snap in snaps:
+            k = snap[kf_sn]
+            for sk, sv in snap.items():  # noqa
+                check.not_in(sv.__class__, WRAPPER_TYPES)
+            check.not_in(k, t.snaps)
+            t.snaps[k] = snap
+            self._index(t, k, snap)
 
     def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
         t = self._table_for_mapper(m)
