@@ -1,5 +1,4 @@
 # ruff: noqa: SLF001
-import abc
 import typing as ta
 
 from .. import check
@@ -7,11 +6,8 @@ from .. import dataclasses as dc
 from .. import lang
 from ..algorithm.toposort import mut_toposort
 from .keys import _AutoKey
-from .keys import _Key
-from .keys import _unwrap_key
 from .mappers import Mapper
 from .snaps import Snap
-from .stores import Store
 
 
 if ta.TYPE_CHECKING:
@@ -128,7 +124,7 @@ class _SessionFlusher:
 
         ak_toposort: list[dict[Mapper, set[_AutoKey]]] = []
 
-        for i, step in enumerate(mut_toposort(ak_deps_by_ak)):
+        for step in mut_toposort(ak_deps_by_ak):
             akd: dict[Mapper, set[_AutoKey]] = {}
 
             for ak in check.not_empty(step):
@@ -215,14 +211,14 @@ class _SessionFlusher:
                     if (wb_diff_snap := fix_snap(m, diff_snap)) is not None:
                         diff_snap = {**diff_snap, **wb_diff_snap}
                     ent_writeback[e] = (None, diff_snap)
-                    ud_diffs.append((e.k._k, diff_snap))  # must be a _ValKey
+                    ud_diffs.append((e.k._k, diff_snap))  # type: ignore[attr-defined]  # must be a _ValKey
                 sess._store.update(m, ud_diffs)
 
             if m_des.deletes:
                 del_ks: list[ta.Any] = []
-                for e in del_ks:
+                for e in m_des.deletes:
                     ent_writeback[e] = (None, None)
-                    del_ks.append(e.k._k)  # must be a _ValKey
+                    del_ks.append(e.k._k)  # type: ignore[attr-defined]  # must be a _ValKey
                 sess._store.delete(m, del_ks)
 
         #

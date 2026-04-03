@@ -10,7 +10,7 @@ from .flushing import _SessionFlusher
 from .keys import _KEY_TYPES
 from .keys import Key
 from .keys import _AutoKey
-from .keys import _Key
+from .keys import _ValKey
 from .mappers import Mapper
 from .queries import Query
 from .refs import _KeyRef
@@ -223,7 +223,7 @@ class Session:
         check.state(not self._aborted)
 
         if k.__class__ not in _KEY_TYPES:
-            k = _Key(k)
+            k = _ValKey(k)
 
         cd = self._entities_by_key_by_cls.setdefault(cls, {})
 
@@ -275,7 +275,7 @@ class Session:
             if wb_k is not None:
                 ed = self._entities_by_key_by_cls[m._cls]
                 del ed[e.k]
-                e.k = _Key(wb_k)
+                e.k = _ValKey(wb_k)
                 ed[e.k] = e
 
             if wb_snap is None:

@@ -11,7 +11,7 @@ from .indexes import Index
 from .keys import _KEY_TYPES
 from .keys import Key
 from .keys import _AutoKey
-from .keys import _Key
+from .keys import _ValKey
 from .refs import _REF_TYPES
 from .refs import _KeyRef
 from .snaps import Snap
@@ -154,7 +154,7 @@ class Mapper(ta.Generic[K, T]):
         if kt is _AutoKey:
             return k
         check.not_in(kt, _KEY_TYPES)
-        return _Key(k)
+        return _ValKey(k)
 
     #
 
@@ -204,13 +204,13 @@ class Mapper(ta.Generic[K, T]):
     def snap_value_to_field_value(self, f: Field, v: ta.Any) -> ta.Any:
         ft = f.__class__
         if ft is KeyField:
-            v = _Key(v)
+            v = _ValKey(v)
 
         elif ft is RefField:
             if v is None:
                 check.state(f._optional)  # type: ignore[attr-defined]
             else:
-                v = _KeyRef(f._ref_obj_cls, _Key(v))  # type: ignore[attr-defined]
+                v = _KeyRef(f._ref_obj_cls, _ValKey(v))  # type: ignore[attr-defined]
 
         elif (co := self._registry._codec) is not None:
             v = co.decode(v, f._rty)

@@ -30,7 +30,7 @@ class Key(lang.Sealed, lang.Abstract, ta.Generic[K]):
 
 
 @ta.final
-class _Key(Key[K], lang.Final):
+class _ValKey(Key[K], lang.Final):
     def __init__(self, k: K) -> None:
         check.not_in(k.__class__, _KEY_TYPES)
         self._k = k
@@ -48,10 +48,10 @@ class _Key(Key[K], lang.Final):
         return hash(self._k)
 
     def __eq__(self, other: object) -> bool:
-        return other.__class__ is _Key and self._k == other._k  # noqa
+        return other.__class__ is _ValKey and self._k == other._k  # noqa
 
     def __lt__(self, other: object) -> bool:
-        if (oc := other.__class__) is _Key:
+        if (oc := other.__class__) is _ValKey:
             return self._k < other._k  # type: ignore[attr-defined]
         elif oc is _AutoKey:
             return False
@@ -72,7 +72,7 @@ def key(k: K) -> Key[K]:
 def key(k):
     if k.__class__ in _KEY_TYPES:
         return k
-    return _Key(k)
+    return _ValKey(k)
 
 
 ##
@@ -95,7 +95,7 @@ class _AutoKey(Key[K], lang.Final):
     #
 
     def __lt__(self, other: object) -> bool:
-        if (oc := other.__class__) is _Key:
+        if (oc := other.__class__) is _ValKey:
             return True
         elif oc is _AutoKey:
             return id(self) < id(other)
@@ -121,6 +121,6 @@ def _unwrap_key(k: Key) -> ta.Any:
 
 
 _KEY_TYPES: tuple[type[Key], ...] = (
-    _Key,
+    _ValKey,
     _AutoKey,
 )
