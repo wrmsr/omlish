@@ -16,7 +16,10 @@ struct FixedMapKeysObject {
     PyObject_HEAD
     PyObject* keys_tuple;
     PyObject* key_indexes;
-    Py_hash_t hash_cache;
+    Py_hash_t* key_hashes;
+    Py_ssize_t* table;
+    Py_ssize_t table_size;
+    Py_hash_t hash;
 };
 
 struct FixedMapObject {
@@ -252,6 +255,11 @@ static int FixedMapKeys_traverse(FixedMapKeysObject* self, visitproc visit, void
 static int FixedMapKeys_clear(FixedMapKeysObject* self) {
     Py_CLEAR(self->keys_tuple);
     Py_CLEAR(self->key_indexes);
+    PyMem_Free(self->key_hashes);
+    self->key_hashes = NULL;
+    PyMem_Free(self->table);
+    self->table = NULL;
+    self->table_size = 0;
     return 0;
 }
 
@@ -259,6 +267,56 @@ static void FixedMapKeys_dealloc(FixedMapKeysObject* self) {
     PyObject_GC_UnTrack(self);
     FixedMapKeys_clear(self);
     Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static int FixedMapKeys_lookup_index(FixedMapKeysObject* self, PyObject* key, Py_ssize_t* out_idx) {
+    Py_ssize_t size = PyTuple_GET_SIZE(self->keys_tuple);
+    if (size == 0) {
+        return 0;
+    }
+
+    if (!self->table || !self->key_hashes || self->table_size <= 0) {
+        PyErr_SetString(PyExc_RuntimeError, "corrupt FixedMapKeys table");
+        return -1;
+    }
+
+    Py_hash_t h = PyObject_Hash(key);
+    if (h == -1) {
+        return -1;
+    }
+
+    Py_ssize_t mask = self->table_size - 1;
+    Py_ssize_t slot = (Py_ssize_t)((Py_uhash_t)h & (Py_uhash_t)mask);
+    for (;;) {
+        Py_ssize_t idx = self->table[slot];
+        if (idx == -1) {
+            return 0;
+        }
+
+        if (idx < 0 || idx >= size) {
+            PyErr_SetString(PyExc_RuntimeError, "corrupt FixedMapKeys table");
+            return -1;
+        }
+
+        PyObject* stored_key = PyTuple_GET_ITEM(self->keys_tuple, idx);
+        if (stored_key == key) {
+            *out_idx = idx;
+            return 1;
+        }
+
+        if (self->key_hashes[idx] == h) {
+            int eq = PyObject_RichCompareBool(stored_key, key, Py_EQ);
+            if (eq < 0) {
+                return -1;
+            }
+            if (eq > 0) {
+                *out_idx = idx;
+                return 1;
+            }
+        }
+
+        slot = (slot + 1) & mask;
+    }
 }
 
 static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
@@ -278,33 +336,75 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
         return NULL;
     }
 
-    self->key_indexes = PyDict_New();
-    if (!self->key_indexes) {
+    Py_ssize_t size = PyTuple_GET_SIZE(self->keys_tuple);
+    self->table_size = 1;
+    while (self->table_size < size * 2) {
+        self->table_size <<= 1;
+    }
+
+    if (size > 0) {
+        self->key_hashes = PyMem_New(Py_hash_t, size);
+        if (!self->key_hashes) {
+            PyErr_NoMemory();
+            Py_DECREF(self);
+            return NULL;
+        }
+    }
+
+    self->table = PyMem_New(Py_ssize_t, self->table_size);
+    if (!self->table) {
+        PyErr_NoMemory();
+        Py_DECREF(self);
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < self->table_size; i++) {
+        self->table[i] = -1;
+    }
+
+    PyObject* seen = PyDict_New();
+    if (!seen) {
         Py_DECREF(self);
         return NULL;
     }
 
-    Py_ssize_t size = PyTuple_GET_SIZE(self->keys_tuple);
+    Py_ssize_t mask = self->table_size - 1;
     for (Py_ssize_t i = 0; i < size; i++) {
         PyObject* key = PyTuple_GET_ITEM(self->keys_tuple, i);
-        int contains = PyDict_Contains(self->key_indexes, key);
+
+        Py_hash_t h = PyObject_Hash(key);
+        if (h == -1) {
+            Py_DECREF(seen);
+            Py_DECREF(self);
+            return NULL;
+        }
+
+        int contains = PyDict_Contains(seen, key);
         if (contains == -1 || contains == 1) {
             if (contains == 1) {
                 PyErr_SetObject(PyExc_KeyError, key);
             }
+            Py_DECREF(seen);
             Py_DECREF(self);
             return NULL;
         }
-        PyObject* val = PyLong_FromSsize_t(i);
-        if (!val || PyDict_SetItem(self->key_indexes, key, val) < 0) {
-            Py_XDECREF(val);
+        if (PyDict_SetItem(seen, key, PyLong_FromSsize_t(i)) < 0) {
+            Py_DECREF(seen);
             Py_DECREF(self);
             return NULL;
         }
-        Py_DECREF(val);
+
+        self->key_hashes[i] = h;
+
+        Py_ssize_t slot = (Py_ssize_t)((Py_uhash_t)h & (Py_uhash_t)mask);
+        while (self->table[slot] != -1) {
+            slot = (slot + 1) & mask;
+        }
+        self->table[slot] = i;
     }
 
-    self->hash_cache = 0;
+    self->key_indexes = seen;
+
+    self->hash = PyObject_Hash(self->keys_tuple);
 
     if (!PyObject_GC_IsTracked((PyObject*)self)) {
         PyObject_GC_Track(self);
@@ -317,15 +417,16 @@ static Py_ssize_t FixedMapKeys_len(FixedMapKeysObject* self) {
 }
 
 static PyObject* FixedMapKeys_getitem(FixedMapKeysObject* self, PyObject* key) {
-    PyObject* val;
-    if (PyDict_GetItemRef(self->key_indexes, key, &val) < 0) {
+    Py_ssize_t idx;
+    int rc = FixedMapKeys_lookup_index(self, key, &idx);
+    if (rc < 0) {
         return NULL;
     }
-    if (!val) {
+    if (!rc) {
         PyErr_SetObject(PyExc_KeyError, key);
         return NULL;
     }
-    return val;
+    return PyLong_FromSsize_t(idx);
 }
 
 static PyObject* FixedMapKeys_get(FixedMapKeysObject* self, PyObject* args) {
@@ -334,31 +435,20 @@ static PyObject* FixedMapKeys_get(FixedMapKeysObject* self, PyObject* args) {
     if (!PyArg_ParseTuple(args, "O|O", &key, &def)) {
         return NULL;
     }
-    PyObject* val;
-    if (PyDict_GetItemRef(self->key_indexes, key, &val) < 0) {
+
+    Py_ssize_t idx;
+    int rc = FixedMapKeys_lookup_index(self, key, &idx);
+    if (rc < 0) {
         return NULL;
     }
-    return val ? val : Py_NewRef(def);
+    if (!rc) {
+        return Py_NewRef(def);
+    }
+    return PyLong_FromSsize_t(idx);
 }
 
 static Py_hash_t FixedMapKeys_hash(FixedMapKeysObject* self) {
-    std::atomic_ref<Py_hash_t> hash_cache_ref(self->hash_cache);
-    Py_hash_t cached = hash_cache_ref.load(std::memory_order_acquire);
-    if (cached != 0) {
-        return cached;
-    }
-
-    Py_hash_t computed = PyObject_Hash(self->keys_tuple);
-    if (computed == -1) {
-        return -1;
-    }
-    if (computed == 0) {
-        computed = 1;
-    }
-
-    // Benign race: another thread may store the same value.
-    hash_cache_ref.store(computed, std::memory_order_release);
-    return computed;
+    return self->hash;
 }
 
 static PyObject* FixedMapKeys_richcompare(PyObject* a, PyObject* b, int op) {
@@ -373,9 +463,6 @@ static PyObject* FixedMapKeys_richcompare(PyObject* a, PyObject* b, int op) {
         }
     }
     fixedmap_state* state = get_type_state(Py_TYPE(a));
-    if (!PyObject_TypeCheck(a, state->FixedMapKeys_Type)) {
-        Py_RETURN_NOTIMPLEMENTED;
-    }
     if (PyObject_TypeCheck(b, state->FixedMapKeys_Type)) {
         return PyObject_RichCompare(((FixedMapKeysObject*)a)->keys_tuple, ((FixedMapKeysObject*)b)->keys_tuple, op);
     }
@@ -425,7 +512,12 @@ static PyObject* FixedMapKeys_iter(FixedMapKeysObject* self) {
 }
 
 static int FixedMapKeys_contains(FixedMapKeysObject* self, PyObject* key) {
-    return PyDict_Contains(self->key_indexes, key);
+    Py_ssize_t idx;
+    int rc = FixedMapKeys_lookup_index(self, key, &idx);
+    if (rc < 0) {
+        return -1;
+    }
+    return rc > 0;
 }
 
 static PyGetSetDef FixedMapKeys_getsets[] = {
@@ -663,18 +755,13 @@ static PyObject* FixedMap_richcompare(PyObject* a, PyObject* b, int op) {
 }
 
 static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
-    PyObject* idx_obj;
-    if (PyDict_GetItemRef(self->keys->key_indexes, key, &idx_obj) < 0) {
+    Py_ssize_t idx;
+    int rc = FixedMapKeys_lookup_index(self->keys, key, &idx);
+    if (rc < 0) {
         return NULL;
     }
-    if (!idx_obj) {
+    if (!rc) {
         PyErr_SetObject(PyExc_KeyError, key);
-        return NULL;
-    }
-
-    Py_ssize_t idx = PyLong_AsSsize_t(idx_obj);
-    Py_DECREF(idx_obj);
-    if (idx == -1 && PyErr_Occurred()) {
         return NULL;
     }
 
@@ -687,29 +774,26 @@ static PyObject* FixedMap_getitem(FixedMapObject* self, PyObject* key) {
 }
 
 static PyObject* FixedMap_get(FixedMapObject* self, PyObject* args) {
-    PyObject *key, *def = Py_None, *idx;
+    PyObject *key, *def = Py_None;
     if (!PyArg_ParseTuple(args, "O|O", &key, &def)) {
         return NULL;
     }
-    if (PyDict_GetItemRef(self->keys->key_indexes, key, &idx) < 0) {
+
+    Py_ssize_t idx;
+    int rc = FixedMapKeys_lookup_index(self->keys, key, &idx);
+    if (rc < 0) {
         return NULL;
     }
-    if (!idx) {
+    if (!rc) {
         return Py_NewRef(def);
     }
 
-    Py_ssize_t i = PyLong_AsSsize_t(idx);
-    Py_DECREF(idx);
-    if (i == -1 && PyErr_Occurred()) {
-        return NULL;
-    }
-
-    if (i < 0 || i >= PyTuple_GET_SIZE(self->values_tuple)) {
+    if (idx < 0 || idx >= PyTuple_GET_SIZE(self->values_tuple)) {
         PyErr_SetString(PyExc_RuntimeError, "corrupt FixedMap index");
         return NULL;
     }
 
-    return Py_NewRef(PyTuple_GET_ITEM(self->values_tuple, i));
+    return Py_NewRef(PyTuple_GET_ITEM(self->values_tuple, idx));
 }
 
 static PyObject* FixedMap_get_fixed_keys(FixedMapObject* self, void* closure) {
@@ -736,22 +820,6 @@ static PyObject* FixedMap_get_debug(FixedMapObject* self, void* closure) {
         }
     }
     return d;
-}
-
-static PyObject* FixedMap_repr(FixedMapObject* self) {
-    PyObject* d = FixedMap_get_debug(self, NULL);
-    if (!d) {
-        return NULL;
-    }
-    PyObject* name = PyType_GetName(Py_TYPE(self));
-    if (!name) {
-        Py_DECREF(d);
-        return NULL;
-    }
-    PyObject* res = PyUnicode_FromFormat("%U(%R)", name, d);
-    Py_DECREF(name);
-    Py_DECREF(d);
-    return res;
 }
 
 static PyObject* FixedMap_keys(FixedMapObject* self, PyObject* Py_UNUSED(ignored)) {
@@ -783,7 +851,12 @@ static Py_ssize_t FixedMap_len(FixedMapObject* self) {
 }
 
 static int FixedMap_contains(FixedMapObject* self, PyObject* key) {
-    return PyDict_Contains(self->keys->key_indexes, key);
+    Py_ssize_t idx;
+    int rc = FixedMapKeys_lookup_index(self->keys, key, &idx);
+    if (rc < 0) {
+        return -1;
+    }
+    return rc > 0;
 }
 
 
@@ -810,7 +883,6 @@ static PyType_Slot FixedMap_slots[] = {
     {Py_tp_clear, (void*)FixedMap_clear},
     {Py_tp_hash, (void*)FixedMap_hash},
     {Py_tp_richcompare, (void*)FixedMap_richcompare},
-    {Py_tp_repr, (void*)FixedMap_repr},
     {Py_tp_iter, (void*)FixedMap_iter},
     {Py_tp_methods, (void*)FixedMap_methods},
     {Py_tp_getset, (void*)FixedMap_getsets},
