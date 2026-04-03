@@ -476,6 +476,9 @@ static PyObject* FixedMapKeys_richcompare(PyObject* a, PyObject* b, int op) {
         }
     }
     fixedmap_state* state = get_type_state(Py_TYPE(a));
+    if (!PyObject_TypeCheck(a, state->FixedMapKeys_Type)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
     if (PyObject_TypeCheck(b, state->FixedMapKeys_Type)) {
         return PyObject_RichCompare(((FixedMapKeysObject*)a)->keys_tuple, ((FixedMapKeysObject*)b)->keys_tuple, op);
     }
