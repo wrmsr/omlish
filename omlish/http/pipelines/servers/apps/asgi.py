@@ -13,6 +13,7 @@ from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.flow.types import IoPipelineFlow
 from .....io.streams.types import BytesLike
+from .....io.streams.utils import ByteStreamBuffers
 from .....lite.abstract import Abstract
 from .....lite.check import check
 from .....lite.namespaces import NamespaceClass
@@ -136,7 +137,7 @@ class _AsgiDriver:
         if isinstance(req, FullIoPipelineHttpRequest):
             self._head = req.head
             self._is_full_req = True
-            self._read_q.append(req.body)
+            self._read_q.append(ByteStreamBuffers.to_bytes(req.body))
         elif isinstance(req, IoPipelineHttpRequestHead):
             self._head = req
             self._is_full_req = False
@@ -244,26 +245,39 @@ class _AsgiDriver:
     _receiving_fut: ta.Optional[_AsgiFuture] = None
 
     def feed_in(self, msg: ta.Any) -> None:
-        if isinstance(msg, IoPipelineHttpRequestBodyData):
-            # check.state(self._state == _AsgiDriver.State.RECEIVING)
-            # f = check.not_none(self._receiving_fut)
-            # self._receiving_fut = None
-            #
-            # f.result = {
-            #     'type': 'http.request',
-            #     'body': body,
-            #     'more_body': more_body,
-            # }
-            # f.done = True
-            #
-            # self._state = _AsgiDriver.State.RUNNING
-            raise NotImplementedError
+        if isinstance(msg, (IoPipelineHttpRequestBodyData, IoPipelineHttpRequestEnd)):
+            check.state(not self._is_full_req)
 
-        elif isinstance(msg, IoPipelineHttpRequestEnd):
-            raise NotImplementedError
+            d: BytesLike
+            if isinstance(msg, IoPipelineHttpRequestBodyData):
+                d = ByteStreamBuffers.to_bytes(msg.data)
+            else:
+                d = b''
 
-        else:
-            raise TypeError(msg)
+            self._read_q.append(d)
+
+            if self._state == _AsgiDriver.State.RECEIVING:
+                f = check.not_none(self._receiving_fut)
+                self._receiving_fut = None
+
+                f.result = {
+                    'type': 'http.request',
+                    'body': d,
+                    'more_body': len(d) > 0,
+                }
+                f.done = True
+
+                self._state = _AsgiDriver.State.RUNNING
+
+                self._ctx.defer_no_context(self.step)
+
+            else:
+                # raise RuntimeError(f'Invalid state: {self._state!r}')
+                self._read_q.append(d)
+
+            return
+
+        self._ctx.feed_in(msg)
 
     ##
 
@@ -292,6 +306,7 @@ class _AsgiDriver:
                     reason=IoPipelineHttpResponseHead.get_reason_phrase(status_code),
                     headers=HttpHeaders(md['headers']),
                 ))
+
                 IoPipelineFlow.maybe_flush_output(self._ctx)
 
                 self._state = _AsgiDriver.State.RESPONSE_STARTED
@@ -302,13 +317,27 @@ class _AsgiDriver:
 
             elif isinstance(f.arg, _AsgiOps.Receive):
                 check.none(self._receiving_fut)
-                self._receiving_fut = f
 
-                self._state = _AsgiDriver.State.RECEIVING
+                if len(self._read_q):
+                    d = self._read_q.popleft()
 
-                IoPipelineFlow.maybe_ready_for_input(self._ctx)
+                    f.result = {
+                        'type': 'http.request',
+                        'body': d,
+                        'more_body': len(d) > 0 and not self._is_full_req,
+                    }
+                    f.done = True
 
-                return False
+                    return True
+
+                else:
+                    self._receiving_fut = f
+
+                    self._state = _AsgiDriver.State.RECEIVING
+
+                    IoPipelineFlow.maybe_ready_for_input(self._ctx)
+
+                    return False
 
             else:
                 raise TypeError(f.arg)

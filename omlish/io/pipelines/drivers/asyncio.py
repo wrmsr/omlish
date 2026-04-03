@@ -437,7 +437,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         try:
             result = await msg.obj
 
-        except Exception as e:  # noqa
+        except BaseException as e:  # noqa  # TODO: whitelist?
             with self._pipeline.enter():
                 msg.set_failed(e)
 

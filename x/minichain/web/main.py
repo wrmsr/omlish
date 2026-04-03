@@ -2,6 +2,7 @@
 # @omlish-lite
 import asyncio
 import json
+import time
 import typing as ta
 
 from omdev.cache import data as dcache
@@ -163,10 +164,61 @@ async def _serve_chat_completions(receive, send):
         else:
             raise ValueError(mr)
 
-    llm = mc.ChatChoicesServiceChatService(mc.registry_new(mc.ChatChoicesService, 'openai'))
-    cr = await llm.invoke(mc.ChatRequest(chat))
+    try:
+        llm = mc.ChatChoicesServiceChatService(mc.registry_new(mc.ChatChoicesService, 'openai'))
+        cr = await llm.invoke(mc.ChatRequest(chat))
 
-    raise NotImplementedError
+    except BaseException as e:
+        raise
+
+    aim = check.isinstance(check.single(cr.v), mc.AiMessage)
+
+    await send({
+        'type': 'http.response.start',
+        'status': 200,
+        'headers': [
+            (b'content-type', b'text/event-stream'),
+            (b'x-accel-buffering', b'no'),
+        ],
+    })
+
+    chunks = [
+        {
+            'id': 'chatcmpl-mock',
+            'object': 'chat.completion.chunk',
+            'created': int(time.time()),
+            'model': d['model'],
+            'choices': [{
+                'index': 0,
+                'delta': {'content': check.non_empty_str(aim.c)},
+                'finish_reason': None
+            }]
+        },
+        {
+            'id': 'chatcmpl-mock',
+            'object': 'chat.completion.chunk',
+            'created': int(time.time()),
+            'model': d['model'],
+            'choices': [{
+                'index': 0,
+                'delta': {},
+                'finish_reason': 'stop'
+            }]
+        },
+    ]
+
+    for chunk in chunks:
+        await send({
+            'type': 'http.response.body',
+            'body': f'data: {json.dumps(chunk)}\n\n'.encode('utf-8'),
+            'more_body': True,
+        })
+
+    await send({
+        'type': 'http.response.body',
+        'body': 'data: [DONE]\n\n',
+        'more_body': False,
+    })
 
 
 async def app(scope, receive, send):

@@ -72,7 +72,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='44e86ab5b903ea2780fc586aed267f72d501d21f'),
+            dict(path='drivers/asyncio.py', sha1='7690f08b43417471436b444737d8d24e3ea67d03'),
             dict(path='_amalg.py', sha1='14b67747b1e3b3c1483050a7948a29888d732ed9'),
         ],
     )
@@ -8515,7 +8515,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         try:
             result = await msg.obj
 
-        except Exception as e:  # noqa
+        except BaseException as e:  # noqa  # TODO: whitelist?
             with self._pipeline.enter():
                 msg.set_failed(e)
 

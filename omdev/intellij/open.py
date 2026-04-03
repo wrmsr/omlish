@@ -19,6 +19,7 @@ _DARWIN_OPEN_SCRIPT_APP_BY_IDE: ta.Mapping[Ide, str] = {
     Ide.IDEA: 'IntelliJ IDEA',
     Ide.WEBSTORM: 'WebStorm',
     Ide.GOLAND: 'GoLand',
+    Ide.RIDER: 'Rider',
 }
 
 _DARWIN_OPEN_SCRIPT = """
@@ -39,6 +40,7 @@ _LINUX_WM_CLASS_BY_IDE: ta.Mapping[Ide, str] = {
     Ide.IDEA: 'jetbrains-idea.jetbrains-idea',
     Ide.WEBSTORM: 'jetbrains-webstorm.jetbrains-webstorm',
     Ide.GOLAND: 'jetbrains-goland.jetbrains-goland',
+    Ide.RIDER: 'jetbrains-rider.jetbrains-rider',
 }
 
 

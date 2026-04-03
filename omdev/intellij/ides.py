@@ -3,6 +3,7 @@ TODO:
  - read .idea/ for inference?
 """
 import enum
+import fnmatch
 import os.path
 import typing as ta
 
@@ -18,12 +19,13 @@ class Ide(enum.Enum):
     CLION = enum.auto()
     WEBSTORM = enum.auto()
     GOLAND = enum.auto()
+    RIDER = enum.auto()
 
 
 ##
 
 
-_INFER_FILE_NAME_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
+_INFER_DIR_CONTENT_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
 
     Ide.PYCHARM: frozenset([
         'setup.py',
@@ -68,6 +70,11 @@ _INFER_FILE_NAME_SETS_BY_IDE: ta.Mapping[Ide, ta.AbstractSet[str]] = {
         'go.sum',
     ]),
 
+    Ide.RIDER: frozenset([
+        '*.slnx',
+        'NuGet.Config',
+    ]),
+
 }
 
 
@@ -75,9 +82,11 @@ def infer_directory_ide(cwd: str | None) -> Ide | None:
     if cwd is None:
         cwd = os.getcwd()
 
-    for i, fs in _INFER_FILE_NAME_SETS_BY_IDE.items():
-        for f in fs:
-            if os.path.exists(os.path.join(cwd, f)):
+    dir_contents = os.listdir(cwd)
+
+    for i, pats in _INFER_DIR_CONTENT_SETS_BY_IDE.items():
+        for pat in pats:
+            if any(fnmatch.fnmatch(n, pat) for n in dir_contents):
                 return i
 
     return None
