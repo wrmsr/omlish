@@ -35,7 +35,8 @@ def test_orm():
     with orm.session(registry, store):
         alice = User(id=orm.key(1), name='Alice')
         bob = User(name='Bob')
-        diner = Business(name="Alice's Diner")
+
+        diner = Business(id=orm.key(1), name="Alice's Diner")
         sushi = Business(name='Sushi Spot')
 
         orm.add(alice)
@@ -45,9 +46,10 @@ def test_orm():
 
         orm.add(Review(id=orm.key(1), business=orm.ref(Business, 1), user=orm.ref(User, 1), text='great pie'))
         orm.add(Review(business=orm.ref(diner), user=orm.ref(User, 2), text='solid brunch'))
-        orm.add(Review(business=orm.ref(Business, 2), user=orm.ref(User, 1), text='fresh fish'))
-        orm.add(Review(business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it aight'))
-        orm.add(Review(business=orm.ref(Business, 2), user=orm.ref(User, 2), text='it still aight'))
+
+        orm.add(Review(business=orm.ref(Business, 2), user=orm.ref(alice), text='fresh fish'))
+        orm.add(Review(business=orm.ref(sushi), user=orm.ref(User, 2), text='it aight'))
+        orm.add(Review(business=orm.ref(sushi), user=orm.ref(bob), text='it still aight'))
 
         assert orm.get(User, 1) is alice
 

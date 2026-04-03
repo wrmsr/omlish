@@ -24,7 +24,7 @@ class Business:
 
     name: str
 
-    categories: ta.ClassVar[orm.Backref[BusinessCategory]] = orm.backref(lambda: BusinessCategory.business)  # type: ignore[misc]  # noqa
+    categories: ta.ClassVar[orm.Backref[BusinessCategory]] = orm.backref(BusinessCategory.business)  # type: ignore[misc]  # noqa
     reviews: ta.ClassVar[orm.Backref['Review']] = orm.backref(lambda: Review.business)  # type: ignore[misc]  # noqa
 
 

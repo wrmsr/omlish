@@ -278,7 +278,17 @@ class Session:
         return check.not_none(self.get(lr._cls, lr._k))
 
     def _get_bound_backref_objs(self, bbr: _BoundBackref) -> ta.Sequence[ta.Any]:
-        rf = check.isinstance(self._registry._fields_by_backref_binding[bbr._br._binder()], RefField)
+        binder = bbr._br._binder
+
+        brd = self._registry._fields_by_backref_binding
+        try:
+            brf = brd[binder]
+        except KeyError:
+            if not callable(binder):
+                raise
+            brf = brd[binder()]
+        rf = check.isinstance(brf, RefField)
+
         return self.query(Query(rf._mapper._cls, {rf._name: _ObjRef(bbr._obj)}))
 
     #

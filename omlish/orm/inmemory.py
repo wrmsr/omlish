@@ -2,7 +2,6 @@
 import typing as ta
 
 from .. import check
-from .keys import _AutoKey
 from .mappers import Mapper
 from .snaps import Snap
 from .stores import Store
@@ -63,8 +62,6 @@ class InMemoryStore(Store):
         except KeyError:
             return None
         return t.snaps.get(k)
-
-    #
 
     def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
         t = self._table_for_mapper(m)
@@ -138,65 +135,71 @@ class InMemoryStore(Store):
 
     #
 
-    def flush(self, m: Mapper, b: Store.FlushBatch) -> Store.FlushResult:
-        kf_sn = m._key_field._store_name
-
-        t = self._table_for_mapper(m)
-
-        iak: dict[ta.Any, ta.Any] = {}
-
-        def index(k: ta.Any, snap: Snap) -> None:  # noqa
-            for it, idc in t.indexes.items():
-                ik = tuple(snap[f] for f in it)
-                try:
-                    iz = idc[ik]
-                except KeyError:
-                    iz = idc[ik] = set()
-                iz.add(k)
-
-        def deindex(k: ta.Any, snap: Snap) -> None:  # noqa
-            for it, idc in t.indexes.items():
-                ik = tuple(snap[f] for f in it)
+    def _index(self, t: _Table, k: ta.Any, snap: Snap) -> None:  # noqa
+        for it, idc in t.indexes.items():
+            ik = tuple(snap[f] for f in it)
+            try:
                 iz = idc[ik]
-                iz.remove(k)
-                if not iz:
-                    del idc[ik]
+            except KeyError:
+                iz = idc[ik] = set()
+            iz.add(k)
 
-        for snap in b.insert or ():
+    def _deindex(self, t: _Table, k: ta.Any, snap: Snap) -> None:  # noqa
+        for it, idc in t.indexes.items():
+            ik = tuple(snap[f] for f in it)
+            iz = idc[ik]
+            iz.remove(k)
+            if not iz:
+                del idc[ik]
+
+    def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
+        t = self._table_for_mapper(m)
+        kf_sn = m._key_field_store_name
+        for snap in snaps:
             k = snap[kf_sn]
-            kt = k.__class__
-            if kt is _AutoKey:
-                ak = len(t.snaps) + 1
-                while ak in t.snaps:
-                    ak += 1
-                iak[k] = ak
-                k = ak
-                snap[kf_sn] = k
-            # FIXME:
-            # for sk, sv in snap.items():  # noqa
-            #     check.not_in(sv.__class__, WRAPPER_TYPES)
+            for sk, sv in snap.items():  # noqa
+                check.not_in(sv.__class__, WRAPPER_TYPES)
             check.not_in(k, t.snaps)
             t.snaps[k] = snap
-            index(k, snap)
+            self._index(k, snap)
 
-        for k, snap in b.update or ():
+    def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
+        t = self._table_for_mapper(m)
+        kf_sn = m._key_field_store_name
+        iak: dict[ta.Any, ta.Any] = {}
+        for snap in snaps:
+            k = snap[kf_sn]
+            ak = len(t.snaps) + 1
+            while ak in t.snaps:
+                ak += 1
+            iak[k] = ak
+            k = ak
+            snap[kf_sn] = k
+            for sk, sv in snap.items():  # noqa
+                check.not_in(sv.__class__, WRAPPER_TYPES)
+            check.not_in(k, t.snaps)
+            t.snaps[k] = snap
+            self._index(t, k, snap)
+        return iak
+
+    def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
+        t = self._table_for_mapper(m)
+        kf_sn = m._key_field_store_name
+        for k, snap in diffs:
             check.not_in(kf_sn, snap)
             kt = k.__class__
             check.not_in(kt, WRAPPER_TYPES)
-            # FIXME:
-            # for sk, sv in snap.items():  # noqa
-            #     check.not_in(sv.__class__, WRAPPER_TYPES)
+            for sk, sv in snap.items():  # noqa
+                check.not_in(sv.__class__, WRAPPER_TYPES)
             x = t.snaps[k]
-            deindex(k, x)
+            self._deindex(t, k, x)
             snap = {**x, **snap}
             t.snaps[k] = snap
-            index(k, snap)
+            self._index(t, k, snap)
 
-        for k in b.delete or ():
+    def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
+        t = self._table_for_mapper(m)
+        for k in keys:
             snap = t.snaps[k]
             del t.snaps[k]
-            deindex(k, snap)
-
-        return self.FlushResult(
-            inserted_auto_keys=iak or None,
-        )
+            self._deindex(t, k, snap)

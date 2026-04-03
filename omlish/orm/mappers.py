@@ -62,6 +62,7 @@ class Mapper(ta.Generic[K, T]):
         self._store_name_by_field_name = {f.name: f.store_name for f in fields}
 
         self._key_field: KeyField = check.single(f for f in fields if f.__class__ is KeyField)  # noqa
+        self._key_field_store_name = self._key_field._store_name
         self._ref_fields: ta.Sequence[RefField] = [f for f in fields if f.__class__ is RefField]  # noqa
 
         self._indexes_by_store_name: ta.Mapping[str, Index] = col.make_map((

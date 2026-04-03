@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import functools
 import typing as ta
 
 
@@ -11,9 +10,11 @@ T = ta.TypeVar('T')
 
 
 def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
+    """data: {dependent: {dependencies}}"""
+
     for k, v in data.items():
         v.discard(k)
-    extra_items_in_deps = functools.reduce(set.union, data.values()) - set(data.keys())
+    extra_items_in_deps = set().union(*data.values()) - set(data.keys())
     data.update({item: set() for item in extra_items_in_deps})
     while True:
         ordered = {item for item, dep in data.items() if not dep}

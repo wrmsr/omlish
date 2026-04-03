@@ -2,7 +2,6 @@
 import abc
 import typing as ta
 
-from .. import check
 from .. import lang
 
 
@@ -45,8 +44,8 @@ class Backref(lang.Sealed, lang.Abstract, ta.Generic[T]):
 
 @ta.final
 class _Backref(Backref[T], lang.Final):
-    def __init__(self, binder: ta.Callable[[], ta.Any]) -> None:  # noqa
-        self._binder = check.callable(binder)
+    def __init__(self, binder: ta.Callable[[], ta.Any] | ta.Any) -> None:  # noqa
+        self._binder = binder
 
     def __repr__(self) -> str:
         return f'orm.backref@{id(self):x}()'
@@ -60,7 +59,7 @@ class _Backref(Backref[T], lang.Final):
 #
 
 
-def backref(binder: ta.Callable[[], ta.Any]) -> Backref:
+def backref(binder: ta.Callable[[], ta.Any] | ta.Any) -> Backref:
     return _Backref(binder)
 
 

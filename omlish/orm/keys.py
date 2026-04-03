@@ -89,6 +89,7 @@ class _AutoKey(Key[K], lang.Final):
 
     @property
     def k(self) -> K:
+        # TODO: return orm.active_session()._resolve_auto_key(self)
         raise AutoKeyNotSetError
 
     #
