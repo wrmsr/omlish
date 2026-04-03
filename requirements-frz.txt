@@ -29,8 +29,8 @@ bitsandbytes==0.49.2
 black==26.3.1
 bleach==6.3.0
 blobfile==3.2.0
-boto3==1.42.80
-botocore==1.42.80
+boto3==1.42.82
+botocore==1.42.82
 botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.2
@@ -38,7 +38,7 @@ cattrs==26.1.0
 cbor2==5.9.0
 certifi==2026.2.25
 cffi==2.0.0
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
 click==8.3.1
 cloudpickle==3.1.2
 comm==0.2.3
@@ -73,12 +73,12 @@ fqdn==1.5.1
 frozenlist==1.8.0
 fsspec==2026.2.0
 gguf==0.18.0
-google-api-core==2.30.1
+google-api-core==2.30.2
 google-api-python-client==2.193.0
 google-auth==2.49.1
 google-auth-httplib2==0.3.1
 google-cloud-compute==1.47.0
-googleapis-common-protos==1.73.1
+googleapis-common-protos==1.74.0
 gprof2dot==2025.4.14
 greenlet==3.3.2
 grpcio==1.80.0
@@ -119,7 +119,7 @@ jsonschema-specifications==2025.9.1
 jupyter==1.1.1
 jupyter-console==6.6.3
 jupyter-events==0.12.0
-jupyter-lsp==2.3.0
+jupyter-lsp==2.3.1
 jupyter_client==8.8.0
 jupyter_core==5.9.1
 jupyter_server==2.17.0
@@ -150,7 +150,7 @@ mistune==3.2.0
 mlx==0.31.1
 mlx-lm==0.31.1
 mlx-metal==0.31.1
-more-itertools==10.8.0
+more-itertools==11.0.1
 mpmath==1.3.0
 msgpack==1.1.2
 multidict==6.7.1
@@ -174,7 +174,7 @@ numpy==2.4.4
 objgraph==3.6.2
 onnxruntime==1.24.4
 opencv-python==4.13.0.92
-orjson==3.11.7
+orjson==3.11.8
 outcome==1.3.0.post0
 packaging==26.0
 pandas==3.0.2
@@ -253,7 +253,7 @@ rich==14.3.3
 ripgrep==15.0.0
 rpds-py==0.30.0
 rsa==4.9.1
-ruff==0.15.8
+ruff==0.15.9
 s3transfer==0.16.0
 safetensors==0.7.0
 scikit-image==0.26.0
@@ -319,7 +319,7 @@ twine==6.2.0
 typer==0.24.1
 typer-slim==0.24.0
 types-awscrt==0.31.3
-types-boto3==1.42.80
+types-boto3==1.42.82
 types-docutils==0.22.3.20260322
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20260322
@@ -340,7 +340,7 @@ uritemplate==4.2.0
 urllib3==2.6.3
 urwid==4.0.0
 urwid_readline==0.15.1
-uv==0.11.2
+uv==0.11.3
 uvicorn==0.42.0
 watchdog==6.0.0
 wcwidth==0.6.0
