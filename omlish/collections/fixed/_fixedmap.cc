@@ -387,11 +387,20 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
             Py_DECREF(self);
             return NULL;
         }
-        if (PyDict_SetItem(seen, key, PyLong_FromSsize_t(i)) < 0) {
+
+        PyObject* val = PyLong_FromSsize_t(i);
+        if (!val) {
             Py_DECREF(seen);
             Py_DECREF(self);
             return NULL;
         }
+        if (PyDict_SetItem(seen, key, val) < 0) {
+            Py_DECREF(val);
+            Py_DECREF(seen);
+            Py_DECREF(self);
+            return NULL;
+        }
+        Py_DECREF(val);
 
         self->key_hashes[i] = h;
 
@@ -405,6 +414,10 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
     self->key_indexes = seen;
 
     self->hash = PyObject_Hash(self->keys_tuple);
+    if (self->hash == -1) {
+        Py_DECREF(self);
+        return NULL;
+    }
 
     if (!PyObject_GC_IsTracked((PyObject*)self)) {
         PyObject_GC_Track(self);
