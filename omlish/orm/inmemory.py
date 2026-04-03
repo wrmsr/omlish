@@ -172,8 +172,9 @@ class InMemoryStore(Store):
                 iak[k] = ak
                 k = ak
                 snap[kf_sn] = k
-            else:
-                check.not_in(kt, WRAPPER_TYPES)
+            # FIXME:
+            # for sk, sv in snap.items():  # noqa
+            #     check.not_in(sv.__class__, WRAPPER_TYPES)
             check.not_in(k, t.snaps)
             t.snaps[k] = snap
             index(k, snap)
@@ -182,6 +183,9 @@ class InMemoryStore(Store):
             check.not_in(kf_sn, snap)
             kt = k.__class__
             check.not_in(kt, WRAPPER_TYPES)
+            # FIXME:
+            # for sk, sv in snap.items():  # noqa
+            #     check.not_in(sv.__class__, WRAPPER_TYPES)
             x = t.snaps[k]
             deindex(k, x)
             snap = {**x, **snap}
