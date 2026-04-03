@@ -403,7 +403,7 @@ class _MaysyncDriver:
                 try:
                     while True:
                         try:
-                            f = self.ctx.run(g.send, None)
+                            f = self.ctx.run(next, g)
                         except StopIteration as ex:
                             self.value = ex.value
                             return
@@ -415,7 +415,7 @@ class _MaysyncDriver:
                         del f
 
                 finally:
-                    if g is not a:
+                    if g is not a and hasattr(g, 'close'):
                         self.ctx.run(g.close)
 
             finally:

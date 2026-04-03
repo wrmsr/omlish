@@ -35,17 +35,17 @@ class Project(ProjectBase):
 
             'torch ~= 2.11',
 
-            'transformers ~= 5.4',
+            'transformers ~= 5.5',
             'sentence-transformers ~= 5.3',
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 1.8',
+            'huggingface-hub ~= 1.9',
             'datasets ~= 4.8',
         ],
 
         'nanochat': [
-            'regex >= 2026.2',
+            'regex >= 2026.3',
         ],
 
         'numpy': [
@@ -59,7 +59,7 @@ class Project(ProjectBase):
         ],
 
         'pillow': [
-            'pillow ~= 12.1',
+            'pillow ~= 12.2',
         ],
 
         'search': [

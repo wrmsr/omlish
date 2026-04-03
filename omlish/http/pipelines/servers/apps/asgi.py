@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP045
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import collections.abc
 import dataclasses as dc
@@ -12,10 +12,15 @@ from .....io.pipelines.core import IoPipelineHandler
 from .....io.pipelines.core import IoPipelineHandlerContext
 from .....io.pipelines.core import IoPipelineMessages
 from .....io.pipelines.flow.types import IoPipelineFlow
+from .....io.streams.types import BytesLike
 from .....lite.abstract import Abstract
 from .....lite.check import check
+from .....lite.namespaces import NamespaceClass
 from ....headers import HttpHeaders
 from ...requests import FullIoPipelineHttpRequest
+from ...requests import IoPipelineHttpRequestBodyData
+from ...requests import IoPipelineHttpRequestEnd
+from ...requests import IoPipelineHttpRequestHead
 from ...responses import IoPipelineHttpResponseHead
 
 
@@ -39,14 +44,14 @@ class _AsgiOp(Abstract):
     pass
 
 
-@dc.dataclass(frozen=True)
-class _ReceiveAsgiOp(_AsgiOp):
-    pass
+class _AsgiOps(NamespaceClass):
+    @dc.dataclass(frozen=True)
+    class Receive(_AsgiOp):
+        pass
 
-
-@dc.dataclass(frozen=True)
-class _SendAsgiOp(_AsgiOp):
-    msg: ta.Any
+    @dc.dataclass(frozen=True)
+    class Send(_AsgiOp):
+        msg: ta.Any
 
 
 #
@@ -97,7 +102,7 @@ class _AsgiPump:
         o = getattr(self, 'o', None)
         a = getattr(self, 'a', None)
         g = getattr(self, 'g', None)
-        if g is not None and g is not a:
+        if g is not None and g is not a and hasattr(g, 'close'):
             g.close()
         if a is not None:
             a.close()
@@ -106,19 +111,39 @@ class _AsgiPump:
 
     @types.coroutine
     def _receive(self) -> ta.Any:
-        return _AsgiFuture(_ReceiveAsgiOp())  # type: ignore
+        return _AsgiFuture(_AsgiOps.Receive())  # type: ignore
 
     @types.coroutine
     def _send(self, msg: ta.Any) -> ta.Any:
-        return _AsgiFuture(_SendAsgiOp(msg))  # type: ignore
+        return _AsgiFuture(_AsgiOps.Send(msg))  # type: ignore
 
 
 class _AsgiDriver:
-    def __init__(self, ctx: IoPipelineHandlerContext, fn: ta.Any) -> None:
+    def __init__(
+            self,
+            ctx: IoPipelineHandlerContext,
+            app: ta.Any,
+            req: ta.Union[IoPipelineHttpRequestHead, FullIoPipelineHttpRequest],
+    ) -> None:
         super().__init__()
 
         self._ctx = ctx
-        self._pump = _AsgiPump(fn)
+        self._app = app
+        self._req = req
+
+        self._read_q: collections.deque[BytesLike] = collections.deque()
+
+        if isinstance(req, FullIoPipelineHttpRequest):
+            self._head = req.head
+            self._is_full_req = True
+            self._read_q.append(req.body)
+        elif isinstance(req, IoPipelineHttpRequestHead):
+            self._head = req
+            self._is_full_req = False
+        else:
+            raise TypeError(req)
+
+        self._pump = _AsgiPump(functools.partial(app, self._build_request_scope()))
 
     #
 
@@ -157,6 +182,31 @@ class _AsgiDriver:
 
     #
 
+    def _build_request_scope(self) -> ta.Dict[str, ta.Any]:
+        return {
+            'asgi': {
+                'spec_version': '2.3',
+                'version': '3.0',
+            },
+            # 'client': ('127.0.0.1', 57782),
+            'headers': [
+                (k.encode(), v.encode())
+                for k, v in self._head.headers.all
+            ],
+            'http_version': '1.1',
+            'method': self._head.method,
+            'path': self._head.target,
+            # 'query_string': b'',
+            # 'raw_path': b'/ping',
+            # 'root_path': '',
+            'scheme': 'http',
+            # 'server': ('127.0.0.1', 8087),
+            'state': {},
+            'type': 'http',
+        }
+
+    #
+
     class _Gv(ta.NamedTuple):
         k: ta.Literal['y', 'r']
         v: ta.Any
@@ -175,7 +225,7 @@ class _AsgiDriver:
 
         while True:
             try:
-                y = self._pump.g.send(None)  # noqa
+                y = next(self._pump.g)  # noqa
             except StopIteration as si:
                 r = si.value  # noqa
                 check.not_isinstance(r, _AsgiFuture)
@@ -193,34 +243,47 @@ class _AsgiDriver:
 
     _receiving_fut: ta.Optional[_AsgiFuture] = None
 
-    def feed_receive(self, body: bytes, more_body: bool) -> None:
-        check.state(self._state == _AsgiDriver.State.RECEIVING)
-        f = check.not_none(self._receiving_fut)
-        self._receiving_fut = None
+    def feed_in(self, msg: ta.Any) -> None:
+        if isinstance(msg, IoPipelineHttpRequestBodyData):
+            # check.state(self._state == _AsgiDriver.State.RECEIVING)
+            # f = check.not_none(self._receiving_fut)
+            # self._receiving_fut = None
+            #
+            # f.result = {
+            #     'type': 'http.request',
+            #     'body': body,
+            #     'more_body': more_body,
+            # }
+            # f.done = True
+            #
+            # self._state = _AsgiDriver.State.RUNNING
+            raise NotImplementedError
 
-        f.result = {
-            'type': 'http.request',
-            'body': body,
-            'more_body': more_body,
-        }
-        f.done = True
+        elif isinstance(msg, IoPipelineHttpRequestEnd):
+            raise NotImplementedError
 
-        self._state = _AsgiDriver.State.RUNNING
+        else:
+            raise TypeError(msg)
 
     ##
 
     def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
         if gv.k == 'y' and not isinstance(gv.v, _AsgiFuture):
             awm = AsyncIoPipelineMessages.Await(gv.v)
-            awm.add_listener(lambda _: self.step())
+
+            @awm.add_listener
+            def awm_done(_):
+                self._ctx.defer_no_context(self.step)
+
             out.append(awm)
+
             return False
 
         if self._state == _AsgiDriver.State.RUNNING:
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
 
-            if isinstance(f.arg, _SendAsgiOp):
+            if isinstance(f.arg, _AsgiOps.Send):
                 md = check.isinstance(f.arg.msg, collections.abc.Mapping)
                 check.equal(md['type'], 'http.response.start')
 
@@ -234,13 +297,16 @@ class _AsgiDriver:
                 self._state = _AsgiDriver.State.RESPONSE_STARTED
 
                 f.result, f.done = None, True
+
                 return True
 
-            elif isinstance(f.arg, _ReceiveAsgiOp):
+            elif isinstance(f.arg, _AsgiOps.Receive):
                 check.none(self._receiving_fut)
                 self._receiving_fut = f
 
                 self._state = _AsgiDriver.State.RECEIVING
+
+                IoPipelineFlow.maybe_ready_for_input(self._ctx)
 
                 return False
 
@@ -250,7 +316,7 @@ class _AsgiDriver:
         elif self._state == _AsgiDriver.State.RESPONSE_STARTED:
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
-            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, collections.abc.Mapping)
+            md = check.isinstance(check.isinstance(f.arg, _AsgiOps.Send).msg, collections.abc.Mapping)
             check.equal(md['type'], 'http.response.body')
 
             out.append(md['body'])
@@ -260,6 +326,7 @@ class _AsgiDriver:
                 self._state = _AsgiDriver.State.RESPONSE_FINISHED
 
             f.result, f.done = None, True
+
             return True
 
         elif self._state == _AsgiDriver.State.RESPONSE_FINISHED:
@@ -269,6 +336,7 @@ class _AsgiDriver:
             out.append(IoPipelineMessages.FinalOutput())
 
             self.close()
+
             return False
 
         else:
@@ -284,55 +352,33 @@ class AsgiHandler(IoPipelineHandler):
 
         self._app = app
 
+    _drv: ta.Optional[_AsgiDriver] = None
+
+    def _maybe_reset_driver(self) -> None:
+        if (drv := self._drv) is None:
+            return
+        if drv.state == _AsgiDriver.State.CLOSED:
+            self._drv = None
+
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if (drv := self._drv) is not None:
+            drv.feed_in(msg)
+            self._maybe_reset_driver()
+            return
+
         if isinstance(msg, IoPipelineMessages.InitialInput):
             ctx.feed_in(msg)
-
             IoPipelineFlow.maybe_ready_for_input(ctx)
-
             return
 
-        if not isinstance(msg, FullIoPipelineHttpRequest):
-            ctx.feed_in(msg)
-            return
-
-        #
-
-        scope = {
-            'asgi': {
-                'spec_version': '2.3',
-                'version': '3.0',
-            },
-            # 'client': ('127.0.0.1', 57782),
-            'headers': [
-                (k.encode(), v.encode())
-                for k, v in msg.head.headers.all
-            ],
-            'http_version': '1.1',
-            'method': msg.head.method,
-            'path': msg.head.target,
-            # 'query_string': b'',
-            # 'raw_path': b'/ping',
-            # 'root_path': '',
-            'scheme': 'http',
-            # 'server': ('127.0.0.1', 8087),
-            'state': {},
-            'type': 'http',
-        }
-
-        #
-
-        drv = _AsgiDriver(ctx, functools.partial(self._app, scope))
-
-        while True:
+        if isinstance(msg, (FullIoPipelineHttpRequest, IoPipelineHttpRequestHead)):
+            self._drv = drv = _AsgiDriver(
+                ctx,
+                self._app,
+                msg,
+            )
             drv.step()
+            self._maybe_reset_driver()
+            return
 
-            if drv.state == _AsgiDriver.State.CLOSED:
-                break
-
-            elif drv.state == _AsgiDriver.State.RECEIVING:
-                # TODO: stream lol
-                drv.feed_receive(bytes(msg.body), more_body=False)
-
-            else:
-                raise RuntimeError(f'Invalid state: {drv.state!r}')
+        ctx.feed_in(msg)
