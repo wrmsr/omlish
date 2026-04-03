@@ -164,15 +164,6 @@ async def _serve_chat_completions(receive, send):
         else:
             raise ValueError(mr)
 
-    try:
-        llm = mc.ChatChoicesServiceChatService(mc.registry_new(mc.ChatChoicesService, 'openai'))
-        cr = await llm.invoke(mc.ChatRequest(chat))
-
-    except BaseException as e:
-        raise
-
-    aim = check.isinstance(check.single(cr.v), mc.AiMessage)
-
     await send({
         'type': 'http.response.start',
         'status': 200,
@@ -182,41 +173,64 @@ async def _serve_chat_completions(receive, send):
         ],
     })
 
-    chunks = [
-        {
-            'id': 'chatcmpl-mock',
-            'object': 'chat.completion.chunk',
-            'created': int(time.time()),
-            'model': d['model'],
-            'choices': [{
-                'index': 0,
-                'delta': {'content': check.non_empty_str(aim.c)},
-                'finish_reason': None
-            }]
-        },
-        {
-            'id': 'chatcmpl-mock',
-            'object': 'chat.completion.chunk',
-            'created': int(time.time()),
-            'model': d['model'],
-            'choices': [{
-                'index': 0,
-                'delta': {},
-                'finish_reason': 'stop'
-            }]
-        },
-    ]
+    llm = mc.registry_new(mc.ChatChoicesStreamService, 'openai')
 
-    for chunk in chunks:
-        await send({
-            'type': 'http.response.body',
-            'body': f'data: {json.dumps(chunk)}\n\n'.encode('utf-8'),
-            'more_body': True,
-        })
+    idx = 0
+
+    async with (await llm.invoke(mc.ChatChoicesStreamRequest(chat))).v as st_resp:
+        async for o in st_resp:
+            deltas = check.single(o.choices).deltas
+            for delta in deltas:
+                cd = check.isinstance(delta, mc.ContentAiDelta)
+                await send({
+                    'type': 'http.response.body',
+                    'body': ''.join([
+                        f'data: ',
+                        json.dumps(
+                            {
+                                'id': 'chatcmpl-mock',
+                                'object': 'chat.completion.chunk',
+                                'created': int(time.time()),
+                                'model': d['model'],
+                                'choices': [{
+                                    'index': idx,
+                                    'delta': {'content': check.isinstance(cd.c, str)},
+                                    'finish_reason': None
+                                }]
+                            },
+                        ),
+                        '\n\n',
+                    ]).encode('utf-8'),
+                    'more_body': True,
+                })
+                idx += 1
 
     await send({
         'type': 'http.response.body',
-        'body': 'data: [DONE]\n\n',
+        'body': ''.join([
+            f'data: ',
+            json.dumps(
+                {
+                    'id': 'chatcmpl-mock',
+                    'object': 'chat.completion.chunk',
+                    'created': int(time.time()),
+                    'model': d['model'],
+                    'choices': [{
+                        'index': idx,
+                        'delta': {},
+                        'finish_reason': 'stop'
+                    }]
+                },
+            ),
+            '\n\n',
+        ]).encode('utf-8'),
+        'more_body': True,
+    })
+    idx += 1
+
+    await send({
+        'type': 'http.response.body',
+        'body': 'data: [DONE]\n\n'.encode('utf-8'),
         'more_body': False,
     })
 

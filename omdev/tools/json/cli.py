@@ -90,6 +90,7 @@ def _build_args_parser() -> argparse.ArgumentParser:
     parser.add_argument('-F', '--flat', action='store_true')
     parser.add_argument('-e', '--prune-empty', action='store_true')
     parser.add_argument('-E', '--omit-empty', action='store_true')
+    parser.add_argument('-0', '--print0', action='store_true')
 
     parser.add_argument('-z', '--compact', action='store_true')
     parser.add_argument('-p', '--pretty', action='store_true')
@@ -228,6 +229,8 @@ def _main() -> None:
         else:
             out = sys.stdout
 
+        endl = '\0' if args.print0 else '\n'
+
         #
 
         parser: ta.Any
@@ -285,7 +288,7 @@ def _main() -> None:
                         print(s, file=out, end='')
 
                 if trailing_newline:
-                    print(file=out)
+                    print(file=out, end=endl)
 
         elif args.lines:
             parser = DelimitingParser(cfg.format)
@@ -296,7 +299,7 @@ def _main() -> None:
                 for v in parser.parse(buf):
                     for e in processor.process(v):
                         s = renderer.render(e)
-                        print(s, file=out)
+                        print(s, file=out, end=endl)
 
         else:
             parser = EagerParser(cfg.format)
@@ -308,7 +311,7 @@ def _main() -> None:
 
             for e in processor.process(v):
                 s = renderer.render(e)
-                print(s, file=out)
+                print(s, file=out, end=endl)
 
 
 if __name__ == '__main__':
