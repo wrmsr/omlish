@@ -1,5 +1,6 @@
 # ruff: noqa: SLF001
 import contextvars
+import enum
 import typing as ta
 
 from .. import check
@@ -45,30 +46,89 @@ class Session:
         self._store = store
         self._no_auto_flush = no_auto_flush
 
-        self._aborted = False
-
         self._entities_by_key_by_cls: dict[type, dict[Key, Session._Entity]] = {m._cls: {} for m in registry._mappers}
         self._entities_by_obj_id: dict[int, Session._Entity] = {}
         self._entities_by_auto_key: dict[_AutoKey, Session._Entity] = {}
 
+    _store_ctx: Store.Context
+
     def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}({"aborted=True" if self._aborted else ""})'
+        return f'{type(self).__name__}@{id(self):x}(state={self._state!r}'
 
     #
 
-    @property
-    def aborted(self) -> bool:
-        return self._aborted
+    class State(enum.StrEnum):
+        NEW = 'new'
 
-    def abort(self) -> None:
-        if self._aborted:
+        ENTERING = 'entering'
+        ENTERED = 'entered'
+
+        FINISHING = 'finishing'
+        FINISHED = 'finished'
+
+        ABORTING = 'aborting'
+        ABORTED = 'aborted'
+
+        FAILED = 'failed'
+
+    _state = State.NEW
+
+    @property
+    def state(self) -> State:
+        return self._state
+
+    @property
+    def is_alive(self) -> bool:
+        return self._state in (self.State.ENTERED, self.State.FINISHING)
+
+    #
+
+    def __enter__(self) -> ta.Self:
+        check.state(self._state == self.State.NEW)
+
+        self._state = self.State.ENTERING
+
+        self._store_ctx = self._store.create_context()
+
+        self._state = self.State.ENTERED
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._state == self.State.ENTERED:
+            if exc_type is None:
+                self.finish()
+            else:
+                self.abort()
+
+    def finish(self) -> None:
+        if self._state == self.State.FINISHED:
             return
 
-        self._aborted = True
+        check.state(self._state == self.State.ENTERED)
 
-        del self._entities_by_key_by_cls
-        del self._entities_by_obj_id
-        del self._entities_by_auto_key
+        self._state = self.State.FINISHING
+
+        if not self._no_auto_flush:
+            self.flush()
+
+        self._store_ctx.finish()
+        del self._store_ctx
+
+        self._state = self.State.FINISHED
+
+    def abort(self) -> None:
+        if self._state == self.State.ABORTED:
+            return
+
+        check.state(self._state == self.State.ENTERED)
+
+        self._state = self.State.ABORTING
+
+        self._store_ctx.abort()
+        del self._store_ctx
+
+        self._state = self.State.ABORTED
 
     #
 
@@ -112,7 +172,7 @@ class Session:
             obj: ta.Any | type[_NOT_SET] | None = _NOT_SET,
             snap: Snap | type[_NOT_SET] | None = _NOT_SET,
     ) -> _Entity:
-        check.state(not self._aborted)
+        check.state(self.is_alive)
 
         check.arg(not (
             obj is not _NOT_SET and
@@ -220,7 +280,7 @@ class Session:
         ...
 
     def get(self, cls, k):  # noqa
-        check.state(not self._aborted)
+        check.state(self.is_alive)
 
         if k.__class__ not in _KEY_TYPES:
             k = _ValKey(k)
@@ -236,7 +296,7 @@ class Session:
 
         m = self._registry.mapper_for_cls(cls)
 
-        snap = self._store.fetch(m, k.k)
+        snap = self._store_ctx.fetch(m, k.k)
         if snap is None:
             return None
 
@@ -257,7 +317,7 @@ class Session:
         del self._entities_by_obj_id[id(obj)]
 
     def delete(self, *objs: ta.Any) -> None:
-        check.state(not self._aborted)
+        check.state(self.is_alive)
 
         for obj in objs:
             self._delete(obj=obj)
@@ -265,6 +325,8 @@ class Session:
     #
 
     def flush(self) -> None:
+        check.state(self.is_alive)
+
         res = _SessionFlusher(self).flush()
 
         #
@@ -314,7 +376,7 @@ class Session:
     #
 
     def query(self, q: Query[T]) -> list[T]:
-        check.state(not self._aborted)
+        check.state(self.is_alive)
 
         if not self._no_auto_flush:
             self.flush()
@@ -327,7 +389,7 @@ class Session:
             f = m._fields_by_name[k]
             wh[f._store_name] = m.field_value_to_snap_value(f, v)
 
-        if not (snaps := self._store.lookup(m, wh)):
+        if not (snaps := self._store_ctx.lookup(m, wh)):
             return []
 
         out: list[T] = []
@@ -357,7 +419,7 @@ _ACTIVE_SESSION: contextvars.ContextVar[Session] = contextvars.ContextVar(f'{__n
 
 @ta.final
 class _SessionActivator:
-    def __init__(self, s) -> None:
+    def __init__(self, s: Session) -> None:
         self._s = s
 
     _tok: ta.Any
@@ -374,11 +436,12 @@ class _SessionActivator:
         return self._s
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is None:
-            if not self._s._aborted and not self._s._no_auto_flush:
-                self._s.flush()
-        else:
-            self._s.abort()
+        if self._s._state == Session.State.ENTERED:
+            if exc_type is None:
+                if not self._s._no_auto_flush:
+                    self._s.flush()
+            else:
+                self._s.abort()
 
         _ACTIVE_SESSION.reset(self._tok)
 

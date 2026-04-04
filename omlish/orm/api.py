@@ -1,4 +1,5 @@
 # ruff: noqa: SLF001
+import contextlib
 import typing as ta
 
 from .. import check
@@ -220,11 +221,17 @@ def session(
         *,
         no_auto_flush: bool = False,
 ) -> ta.ContextManager[Session]:
-    return Session(
-        registry,
-        store,
-        no_auto_flush=no_auto_flush,
-    ).activate()
+    @contextlib.contextmanager
+    def inner():
+        with Session(
+            registry,
+            store,
+            no_auto_flush=no_auto_flush,
+        ) as sess:
+            with sess.activate():
+                yield sess
+
+    return inner()
 
 
 def abort() -> None:

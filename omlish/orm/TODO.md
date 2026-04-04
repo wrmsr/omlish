@@ -3,3 +3,5 @@
 - marshal interop
   - options? for ref expansion/id replacement
   - hybrid schemaless-ish marshal'd storage - line? embedded?
+- storage-side defaults
+- same async story as injector obviously

@@ -153,8 +153,6 @@ class _SessionFlusher:
     def flush(self) -> FlushResult:
         sess = self._session
 
-        check.state(not sess._aborted)
-
         #
 
         des = self._dirty_entities()  # noqa
@@ -185,7 +183,7 @@ class _SessionFlusher:
                     if (wb_snap := fix_snap(m, snap)) is not None:
                         snap = {**snap, **wb_snap}
                     ak_snaps.append(snap)
-                ak_upd = sess._store.auto_key_insert(m, ak_snaps)
+                ak_upd = sess._store_ctx.auto_key_insert(m, ak_snaps)
                 iak.update(ak_upd)
                 for ak in aks:
                     e, snap = m_des.ak_inserts[ak]
@@ -202,7 +200,7 @@ class _SessionFlusher:
                         snap = {**snap, **wb_snap}
                     ent_writeback[e] = (None, snap)
                     vk_snaps.append(snap)
-                sess._store.insert(m, vk_snaps)
+                sess._store_ctx.insert(m, vk_snaps)
 
             if m_des.updates:
                 ud_diffs: list[tuple[ta.Any, Snap]] = []
@@ -212,14 +210,14 @@ class _SessionFlusher:
                         diff_snap = {**diff_snap, **wb_diff_snap}
                     ent_writeback[e] = (None, diff_snap)
                     ud_diffs.append((e.k._k, diff_snap))  # type: ignore[attr-defined]  # must be a _ValKey
-                sess._store.update(m, ud_diffs)
+                sess._store_ctx.update(m, ud_diffs)
 
             if m_des.deletes:
                 del_ks: list[ta.Any] = []
                 for e in m_des.deletes:
                     ent_writeback[e] = (None, None)
                     del_ks.append(e.k._k)  # type: ignore[attr-defined]  # must be a _ValKey
-                sess._store.delete(m, del_ks)
+                sess._store_ctx.delete(m, del_ks)
 
         #
 
