@@ -1,4 +1,15 @@
+import contextlib
+import os.path
+import sqlite3
+import tempfile
+
+import pytest
+
 from ... import orm
+from ... import sql
+from ..registries import Registry
+from ..sql import SqlStore
+from ..stores import Store
 from .models import Business
 from .models import Review
 from .models import User
@@ -8,10 +19,9 @@ from .models import build_registry
 ##
 
 
-def test_orm():
-    registry = build_registry()
-
-    store = orm.InMemoryStore()
+def _test_orm(store: Store, registry: Registry | None = None) -> None:
+    if registry is None:
+        registry = build_registry()
 
     # b = Business(id=orm.key(1), name='foo')  # noqa
     # u = User(id=orm.key(2), name='bar')  # noqa
@@ -104,3 +114,16 @@ def test_orm():
         [alice] = orm.query(User, name='Alice')
         print(alice)
         print(alice.favorite_business())  # type: ignore
+
+
+def test_orm_in_memory():
+    _test_orm(orm.InMemoryStore())
+
+
+@pytest.mark.skip_unless_alone
+def test_orm_sql():
+    db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
+    registry = build_registry()
+    db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(db_path, autocommit=True)))
+    store = SqlStore(registry, db)
+    _test_orm(store, registry)
