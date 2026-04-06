@@ -45,7 +45,7 @@ class Project(ProjectBase):
         ],
 
         'nanochat': [
-            'regex >= 2026.3',
+            'regex >= 2026.4',
         ],
 
         'numpy': [

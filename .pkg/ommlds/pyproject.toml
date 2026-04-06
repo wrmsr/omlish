@@ -42,7 +42,7 @@ all = [
     'sentence-transformers ~= 5.3',
     'huggingface-hub ~= 1.9',
     'datasets ~= 4.8',
-    'regex >= 2026.3',
+    'regex >= 2026.4',
     'numpy >= 1.26',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
@@ -73,7 +73,7 @@ huggingface = [
     'datasets ~= 4.8',
 ]
 nanochat = [
-    'regex >= 2026.3',
+    'regex >= 2026.4',
 ]
 numpy = [
     'numpy >= 1.26',
