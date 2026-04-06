@@ -1,5 +1,6 @@
 import concurrent.futures as cf
 import contextlib
+import datetime
 import sqlite3
 import typing as ta
 
@@ -28,11 +29,21 @@ class State:
     key: str
     value: str
 
+    created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
+    updated_at: datetime.datetime = orm.auto_value[datetime.datetime]()
+
 
 @lang.cached_function
 def registry() -> orm.Registry:
     return orm.registry(
-        orm.mapper(State, indexes=['key']),
+        orm.dataclass_mapper(
+            State,
+            indexes=['key'],
+            field_options=dict(
+                created_at=[orm.CreatedAt()],
+                updated_at=[orm.UpdatedAt()],
+            ),
+        ),
     )
 
 

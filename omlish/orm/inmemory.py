@@ -2,6 +2,7 @@
 import typing as ta
 
 from .. import check
+from .. import lang
 from .mappers import Mapper
 from .snaps import Snap
 from .stores import Store
@@ -180,9 +181,27 @@ class InMemoryStore(Store):
                 if not iz:
                     del idc[ik]
 
+        def _ts_snap(self, m: Mapper, *, create: bool) -> Snap | None:
+            ca_sn = m._created_at_store_name if create else None
+            ua_sn = m._updated_at_store_name
+            if ca_sn is None and ua_sn is None:
+                return None
+
+            now = lang.utcnow()
+
+            ts_snap: dict[str, ta.Any] = {}
+            if ca_sn is not None:
+                ts_snap[ca_sn] = now
+            if ua_sn is not None:
+                ts_snap[ua_sn] = now
+
+            return ts_snap
+
         async def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
             t = self._o._table_for_mapper(m)
             kf_sn = m._key_field_store_name
+            ts_snap = self._ts_snap(m, create=True)
+
             iak: dict[ta.Any, ta.Any] = {}
             for snap in snaps:
                 k = snap[kf_sn]
@@ -191,46 +210,75 @@ class InMemoryStore(Store):
                     ak += 1
                 iak[k] = ak
                 k = ak
+
                 snap = {**snap, kf_sn: k}
+                if ts_snap:
+                    snap.update(ts_snap)
+
                 for sk, sv in snap.items():  # noqa
                     check.not_in(sv.__class__, WRAPPER_TYPES)
+
                 check.not_in(k, t.snaps)
+
                 t.snaps[k] = snap
                 self._index(t, k, snap)
+
             return iak
 
         async def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
             t = self._o._table_for_mapper(m)
             kf_sn = m._key_field_store_name
+            ts_snap = self._ts_snap(m, create=True)
+
             for snap in snaps:
                 k = snap[kf_sn]
+
+                snap = {**snap}
+                if ts_snap:
+                    snap.update(ts_snap)
+
                 for sk, sv in snap.items():  # noqa
                     check.not_in(sv.__class__, WRAPPER_TYPES)
+
                 check.not_in(k, t.snaps)
+
                 t.snaps[k] = snap
                 self._index(t, k, snap)
 
         async def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             t = self._o._table_for_mapper(m)
             kf_sn = m._key_field_store_name
+            ts_snap = self._ts_snap(m, create=False)
+
             for k, snap in diffs:
                 check.not_in(kf_sn, snap)
+
                 kt = k.__class__
                 check.not_in(kt, WRAPPER_TYPES)
+
                 for sk, sv in snap.items():  # noqa
                     check.not_in(sv.__class__, WRAPPER_TYPES)
+
                 x = t.snaps[k]
+
                 self._deindex(t, k, x)
+                del t.snaps[k]
+
                 snap = {**x, **snap}
+                if ts_snap:
+                    snap.update(ts_snap)
+
                 t.snaps[k] = snap
                 self._index(t, k, snap)
 
         async def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
             t = self._o._table_for_mapper(m)
+
             for k in keys:
                 snap = t.snaps[k]
-                del t.snaps[k]
+
                 self._deindex(t, k, snap)
+                del t.snaps[k]
 
     #
 

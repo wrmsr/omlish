@@ -92,7 +92,9 @@ class Mapper(ta.Generic[K, T]):
         }
 
         self._created_at_field = self._single_field_with_option(CreatedAt)
+        self._created_at_store_name = f2._store_name if (f2 := self._created_at_field) is not None else None
         self._updated_at_field = self._single_field_with_option(UpdatedAt)
+        self._updated_at_store_name = f2._store_name if (f2 := self._updated_at_field) is not None else None
 
         self._auto_value_fields: ta.Sequence[Field] = (
             *filter(None, (
@@ -130,36 +132,6 @@ class Mapper(ta.Generic[K, T]):
 
     #
 
-    @property
-    def fields_by_name(self) -> ta.Mapping[str, Field]:
-        return self._fields_by_name
-
-    @property
-    def fields_by_store_name(self) -> ta.Mapping[str, Field]:
-        return self._fields_by_store_name
-
-    @property
-    def store_name_by_field_name(self) -> ta.Mapping[str, str]:
-        return self._store_name_by_field_name
-
-    @property
-    def key_field(self) -> KeyField:
-        return self._key_field
-
-    @property
-    def ref_fields(self) -> ta.Sequence[RefField]:
-        return self._ref_fields
-
-    @property
-    def indexes_by_store_name(self) -> ta.Mapping[str, Index]:
-        return self._indexes_by_store_name
-
-    @property
-    def index_field_store_names(self) -> ta.Mapping[Index, tuple[str, ...]]:
-        return self._index_field_store_names
-
-    #
-
     _registry: 'Registry'
 
     def _set_registry(self, r: 'Registry') -> None:
@@ -177,6 +149,38 @@ class Mapper(ta.Generic[K, T]):
 
     #
 
+    @property
+    def fields_by_name(self) -> ta.Mapping[str, Field]:
+        return self._fields_by_name
+
+    @property
+    def fields_by_store_name(self) -> ta.Mapping[str, Field]:
+        return self._fields_by_store_name
+
+    @property
+    def store_name_by_field_name(self) -> ta.Mapping[str, str]:
+        return self._store_name_by_field_name
+
+    @property
+    def key_field(self) -> KeyField:
+        return self._key_field
+
+    @property
+    def key_field_store_name(self) -> str:
+        return self._key_field_store_name
+
+    @property
+    def ref_fields(self) -> ta.Sequence[RefField]:
+        return self._ref_fields
+
+    @property
+    def indexes_by_store_name(self) -> ta.Mapping[str, Index]:
+        return self._indexes_by_store_name
+
+    @property
+    def index_field_store_names(self) -> ta.Mapping[Index, tuple[str, ...]]:
+        return self._index_field_store_names
+
     def _single_field_with_option(self, opt_cls: type[FieldOptionT]) -> Field | None:
         lst = [f for f in self._fields if opt_cls in f.options]
         if not lst:
@@ -188,8 +192,16 @@ class Mapper(ta.Generic[K, T]):
         return self._created_at_field
 
     @property
+    def created_at_store_name(self) -> str | None:
+        return self._created_at_store_name
+
+    @property
     def updated_at_field(self) -> Field | None:
         return self._updated_at_field
+
+    @property
+    def updated_at_store_name(self) -> str | None:
+        return self._updated_at_store_name
 
     @property
     def auto_value_fields(self) -> ta.Sequence[Field]:

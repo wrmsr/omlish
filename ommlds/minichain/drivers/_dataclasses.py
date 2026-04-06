@@ -3893,31 +3893,41 @@ def _process_dataclass__fd720d67fccfa25594baefbd6b158a2aa7946422():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('id', 'key', 'value')), EqPlan(fields=('id', 'key', 'value')), HashPlan(action='se"
-        "t_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init.fiel"
-        "ds.0.annotation'), default=None, default_factory=OpRef(name='init.fields.0.default_factory'), init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='k"
-        "ey', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='val"
-        "ue', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_"
-        "params=(), kw_only_params=('id', 'key', 'value'), frozen=False, slots=False, post_init_params=None, init_fns=("
-        "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), ReprPlan.Field(name='k"
-        "ey', kw_only=True, fn=None), ReprPlan.Field(name='value', kw_only=True, fn=None)), id=False, terse=False, defa"
-        "ult_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('id', 'key', 'value', 'created_at', 'updated_at')), EqPlan(fields=('id', 'key', 'v"
+        "alue', 'created_at', 'updated_at')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fields=(In"
+        "itPlan.Field(name='id', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=OpRef"
+        "(name='init.fields.0.default_factory'), init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='key', annotation=OpRef(name='init.fields.1.annotation')"
+        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='value', annotation=OpRef(name='init.fields.2.annotation')"
+        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='created_at', annotation=OpRef(name='init.fields.3.annotat"
+        "ion'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='updated_at', annotati"
+        "on=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, "
+        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_"
+        "param='self', std_params=(), kw_only_params=('id', 'key', 'value', 'created_at', 'updated_at'), frozen=False, "
+        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='key', kw_only=True, fn=None), ReprPlan.Field(name='value', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='created_at', kw_only=True, fn=None), ReprPlan.Field(name='updated_at', "
+        "kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8',
+    plan_repr_sha1='d4ba6472027be44925369f7fb5b7e1b4315ca07e',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default_factory',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
     ),
     cls_names=(
         ('ommlds.minichain.drivers.state.storage.orm', 'State'),
     ),
 )
-def _process_dataclass__f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8():
+def _process_dataclass__d4ba6472027be44925369f7fb5b7e1b4315ca07e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3925,6 +3935,10 @@ def _process_dataclass__f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8():
         __dataclass__init__fields__0__default_factory,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3946,6 +3960,8 @@ def _process_dataclass__f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8():
                 id=self.id,
                 key=self.key,
                 value=self.value,
+                created_at=self.created_at,
+                updated_at=self.updated_at,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -3961,7 +3977,9 @@ def _process_dataclass__f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8():
             return (
                 self.id == other.id and
                 self.key == other.key and
-                self.value == other.value
+                self.value == other.value and
+                self.created_at == other.created_at and
+                self.updated_at == other.updated_at
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -3977,12 +3995,16 @@ def _process_dataclass__f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8():
             id: __dataclass__init__fields__0__annotation = __dataclass__HAS_DEFAULT_FACTORY,
             key: __dataclass__init__fields__1__annotation,
             value: __dataclass__init__fields__2__annotation,
+            created_at: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            updated_at: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             if id is __dataclass__HAS_DEFAULT_FACTORY:
                 id = __dataclass__init__fields__0__default_factory()
             self.id = id
             self.key = key
             self.value = value
+            self.created_at = created_at
+            self.updated_at = updated_at
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -3995,6 +4017,8 @@ def _process_dataclass__f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8():
             parts.append(f"id={self.id!r}")
             parts.append(f"key={self.key!r}")
             parts.append(f"value={self.value!r}")
+            parts.append(f"created_at={self.created_at!r}")
+            parts.append(f"updated_at={self.updated_at!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

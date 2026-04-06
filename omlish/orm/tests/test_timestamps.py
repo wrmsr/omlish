@@ -46,6 +46,10 @@ async def _test_timestamps(store: orm.Store) -> None:
         kv = await orm.add_one(Kv(key='hi', value='abcdef'))  # noqa
         await orm.flush()
 
+    async with orm.session(registry(), store):
+        kv2 = await orm.query_one(Kv, key='hi')  # noqa
+        print(kv2)
+
 
 @pytest.mark.asyncs('asyncio')
 async def test_orm_in_memory():
