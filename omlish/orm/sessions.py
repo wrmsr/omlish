@@ -38,12 +38,15 @@ class Session:
             registry: Registry,
             store: Store,
             *,
+            transaction: bool | ta.Literal['default'] = 'default',
             no_auto_flush: bool = True,
     ) -> None:
         super().__init__()
 
         self._registry = registry
         self._store = store
+
+        self._transaction = transaction
         self._no_auto_flush = no_auto_flush
 
         self._entities_by_key_by_cls: dict[type, dict[Key, Session._Entity]] = {m._cls: {} for m in registry._mappers}
@@ -89,7 +92,9 @@ class Session:
 
         self._state = self.State.ENTERING
 
-        self._store_cm = self._store.create_context()
+        self._store_cm = self._store.create_context(
+            transaction=self._transaction,
+        )
         self._store_ctx = self._store_cm.__enter__()
 
         self._state = self.State.ENTERED

@@ -234,5 +234,10 @@ class InMemoryStore(Store):
 
     #
 
-    def create_context(self) -> ta.ContextManager[Store.Context]:
+    def create_context(
+            self,
+            *,
+            transaction: bool | ta.Literal['default'] = 'default',
+    ) -> ta.ContextManager[Store.Context]:
+        check.in_(transaction, ('default', False))
         return self._Context(self)

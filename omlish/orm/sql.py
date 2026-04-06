@@ -1,4 +1,5 @@
 # ruff: noqa: SLF001
+import contextlib
 import typing as ta
 
 from .. import check
@@ -86,10 +87,23 @@ class SqlStore(Store):
         self._has_created_schema = True
 
     class _Context(Store.Context):
-        def __init__(self, o: 'SqlStore') -> None:
+        def __init__(
+                self,
+                o: 'SqlStore',
+                *,
+                no_transaction: bool = False,
+        ) -> None:
             super().__init__()
 
             self._o = o
+
+            self._no_transaction = no_transaction
+
+            self._es = contextlib.ExitStack()
+
+        _conn: sql.api.Conn | None = None
+        _txn: sql.api.Transaction | None = None
+        _q: sql.api.Querier | None = None
 
         @property
         def store(self) -> 'SqlStore':
@@ -98,18 +112,30 @@ class SqlStore(Store):
         #
 
         def __enter__(self) -> ta.Self:
+            self._es.__enter__()
+
+            self._conn = self._es.enter_context(sql.api.connect(self._o._db))
+
+            if not self._no_transaction:
+                self._txn = self._es.enter_context(self._conn.begin())
+                self._q = self._txn
+            else:
+                self._q = self._conn
+
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            pass
+            self._es.__exit__(exc_type, exc_val, exc_tb)
 
         #
 
         def finish(self) -> None:
-            pass
+            if not self._no_transaction:
+                check.not_none(self._txn).commit()
 
         def abort(self) -> None:
-            pass
+            if not self._no_transaction:
+                check.not_none(self._txn).rollback()
 
         #
 
@@ -136,9 +162,8 @@ class SqlStore(Store):
 
             self._o._maybe_create_schema()
 
-            with sql.api.connect(self._o._db) as conn:
-                with sql.api.query(conn, stmt, params) as rows:
-                    return [row.to_dict() for row in rows]
+            with sql.api.query(check.not_none(self._q), stmt, params) as rows:
+                return [row.to_dict() for row in rows]
 
         #
 
@@ -173,12 +198,11 @@ class SqlStore(Store):
 
             iak: dict[ta.Any, ta.Any] = {}
 
-            with sql.api.connect(self._o._db) as conn:
-                for snap in snaps:
-                    ak = snap[m._key_field._store_name]
-                    params = [snap[f._store_name] for f in m._fields if f is not m._key_field]
-                    vk = sql.api.query_scalar(conn, stmt, params)
-                    iak[ak] = vk
+            for snap in snaps:
+                ak = snap[m._key_field._store_name]
+                params = [snap[f._store_name] for f in m._fields if f is not m._key_field]
+                vk = sql.api.query_scalar(check.not_none(self._q), stmt, params)
+                iak[ak] = vk
 
             return iak
 
@@ -187,28 +211,26 @@ class SqlStore(Store):
 
             stmt = self._build_insert_stmt(m)
 
-            with sql.api.connect(self._o._db) as conn:
-                for snap in snaps:
-                    params = [snap[f._store_name] for f in m._fields]
-                    sql.api.exec(conn, stmt, params)
+            for snap in snaps:
+                params = [snap[f._store_name] for f in m._fields]
+                sql.api.exec(check.not_none(self._q), stmt, params)
 
         def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             self._o._maybe_create_schema()
 
-            with sql.api.connect(self._o._db) as conn:
-                for vk, ud_diff in diffs:
-                    check.not_in(m._key_field_store_name, ud_diff)
-                    stmt = ' '.join([
-                        'update',
-                        m._store_name,
-                        'set',
-                        ', '.join([f'{k} = ?' for k in ud_diff]),
-                        'where',
-                        m._key_field_store_name,
-                        '= ?',
-                    ])
-                    params = [*ud_diff.values(), vk]
-                    sql.api.exec(conn, stmt, params)
+            for vk, ud_diff in diffs:
+                check.not_in(m._key_field_store_name, ud_diff)
+                stmt = ' '.join([
+                    'update',
+                    m._store_name,
+                    'set',
+                    ', '.join([f'{k} = ?' for k in ud_diff]),
+                    'where',
+                    m._key_field_store_name,
+                    '= ?',
+                ])
+                params = [*ud_diff.values(), vk]
+                sql.api.exec(check.not_none(self._q), stmt, params)
 
         def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
             self._o._maybe_create_schema()
@@ -221,11 +243,17 @@ class SqlStore(Store):
                 '= ?',
             ])
 
-            with sql.api.connect(self._o._db) as conn:
-                for k in keys:
-                    sql.api.exec(conn, stmt, [k])
+            for k in keys:
+                sql.api.exec(check.not_none(self._q), stmt, [k])
 
     #
 
-    def create_context(self) -> ta.ContextManager[Store.Context]:
-        return self._Context(self)
+    def create_context(
+            self,
+            *,
+            transaction: bool | ta.Literal['default'] = 'default',
+    ) -> ta.ContextManager[Store.Context]:
+        return self._Context(
+            self,
+            no_transaction=False if transaction == 'default' else not transaction,
+        )
