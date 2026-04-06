@@ -1,4 +1,43 @@
 # ruff: noqa: SLF001
+"""
+====
+
+return sql.api.query_opt_one(db, lang.static(lambda: Q.select(
+    [Q.i.value],
+    Q.n.states,
+    Q.eq(Q.n.key, Q.p.key),
+)), {
+    Q.p.key: key,
+})
+
+====
+
+if mj is None:
+    sql.api.exec(txn, Q.delete(
+        Q.n.states,
+        where=Q.eq(Q.n.key, key),
+    ))
+
+elif sql.api.query_scalar(txn, Q.select([
+    Q.f.exists(Q.select(
+        [1],
+        Q.n.states,
+        Q.eq(Q.n.key, key),
+    )),
+])):
+    sql.api.exec(txn, Q.update(
+        Q.n.states,
+        [(Q.i.value, mj)],
+        where=Q.eq(Q.i.key, key),
+    ))
+
+else:
+    sql.api.exec(txn, Q.insert(
+        [Q.i.key, Q.i.value],
+        Q.n.states,
+        [key, mj],
+    ))
+"""
 import contextlib
 import datetime
 import typing as ta

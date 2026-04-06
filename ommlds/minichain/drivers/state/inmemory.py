@@ -2,25 +2,25 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ...chat.messages import Chat
-from .manager import StateManager
-from .types import State
+from .manager import DriverStateManager
+from .types import DriverState
 
 
 ##
 
 
-class InMemoryStateManager(StateManager):
-    def __init__(self, initial_state: State | None = None) -> None:
+class InMemoryDriverStateManager(DriverStateManager):
+    def __init__(self, initial_state: DriverState | None = None) -> None:
         super().__init__()
 
         if initial_state is None:
-            initial_state = State()
+            initial_state = DriverState()
         self._state = initial_state
 
-    async def get_state(self) -> State:
+    async def get_driver_state(self) -> DriverState:
         return self._state
 
-    async def extend_chat(self, chat_additions: Chat) -> State:
+    async def extend_chat(self, chat_additions: Chat) -> DriverState:
         self._state = dc.replace(
             self._state,
             chat=[*self._state.chat, *chat_additions],

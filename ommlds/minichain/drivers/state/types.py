@@ -19,7 +19,7 @@ class ChatId(tv.UniqueScalarTypedValue[uuid.UUID]):
 
 
 @dc.dataclass(frozen=True)
-class State:
+class DriverState:
     name: str | None = None
 
     created_at: datetime.datetime = dc.field(default_factory=lang.utcnow)

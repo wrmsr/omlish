@@ -126,17 +126,17 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .state.inmemory import (  # noqa
-        InMemoryStateManager,
+        InMemoryDriverStateManager,
     )
 
     from .state.manager import (  # noqa
-        StateManager,
+        DriverStateManager,
     )
 
     from .state.types import (  # noqa
         ChatId,
 
-        State,
+        DriverState,
     )
 
     #

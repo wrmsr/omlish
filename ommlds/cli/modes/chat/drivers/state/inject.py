@@ -81,7 +81,7 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
 
         els.extend([
             inj.bind(mc.drivers.build_driver_storage_key),
-            inj.bind(mc.drivers.StateManager, to_ctor=mc.drivers.StateStorageDriverStateManager, singleton=True),
+            inj.bind(mc.drivers.DriverStateManager, to_ctor=mc.drivers.StateStorageDriverStateManager, singleton=True),
         ])
 
         #
@@ -101,7 +101,7 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
 
         els.extend([
             inj.bind(_new_chat_id()),
-            inj.bind(mc.drivers.StateManager, to_ctor=mc.drivers.InMemoryStateManager, singleton=True),
+            inj.bind(mc.drivers.DriverStateManager, to_ctor=mc.drivers.InMemoryDriverStateManager, singleton=True),
         ])
 
     else:
