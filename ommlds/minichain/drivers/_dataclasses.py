@@ -3768,6 +3768,7 @@ def _process_dataclass__61e69339fbc885327f4389d705747f188b874a91():
         '__dataclass__init__fields__0__coerce',
     ),
     cls_names=(
+        ('ommlds.minichain.drivers.state.storage.orm', 'OrmStateStorage.Config'),
         ('ommlds.minichain.drivers.state.storage.sql', 'SqlStateStorage.Config'),
     ),
 )
@@ -3876,6 +3877,124 @@ def _process_dataclass__fd720d67fccfa25594baefbd6b158a2aa7946422():
         def __repr__(self):
             parts = []
             parts.append(f"file={self.file!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('id', 'key', 'value')), EqPlan(fields=('id', 'key', 'value')), HashPlan(action='se"
+        "t_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init.fiel"
+        "ds.0.annotation'), default=None, default_factory=OpRef(name='init.fields.0.default_factory'), init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='k"
+        "ey', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='val"
+        "ue', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_"
+        "params=(), kw_only_params=('id', 'key', 'value'), frozen=False, slots=False, post_init_params=None, init_fns=("
+        "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), ReprPlan.Field(name='k"
+        "ey', kw_only=True, fn=None), ReprPlan.Field(name='value', kw_only=True, fn=None)), id=False, terse=False, defa"
+        "ult_fn=None)))"
+    ),
+    plan_repr_sha1='f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default_factory',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+    ),
+    cls_names=(
+        ('ommlds.minichain.drivers.state.storage.orm', 'State'),
+    ),
+)
+def _process_dataclass__f7cd8309dfd85bdce00a720c3ebe9be2e98c94f8():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default_factory,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                id=self.id,
+                key=self.key,
+                value=self.value,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.id == other.id and
+                self.key == other.key and
+                self.value == other.value
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        setattr(__dataclass__cls, '__hash__', None)
+
+        def __init__(
+            self,
+            *,
+            id: __dataclass__init__fields__0__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+            key: __dataclass__init__fields__1__annotation,
+            value: __dataclass__init__fields__2__annotation,
+        ) -> __dataclass__None:
+            if id is __dataclass__HAS_DEFAULT_FACTORY:
+                id = __dataclass__init__fields__0__default_factory()
+            self.id = id
+            self.key = key
+            self.value = value
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"id={self.id!r}")
+            parts.append(f"key={self.key!r}")
+            parts.append(f"value={self.value!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

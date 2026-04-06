@@ -86,6 +86,10 @@ from .stores import (  # noqa
     Store,
 )
 
+from .sql import (  # noqa
+    SqlStore,
+)
+
 from .wrappers import (  # noqa
     WRAPPER_TYPES,
 )

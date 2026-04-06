@@ -109,6 +109,10 @@ with _lang.auto_proxy_init(globals()):
         MarshaledStateStorage,
     )
 
+    from .state.storage.orm import (  # noqa
+        OrmStateStorage,
+    )
+
     from .state.storage.sql import (  # noqa
         SqlStateStorage,
     )

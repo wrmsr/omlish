@@ -46,7 +46,8 @@ def _provide_json_file_state_storage() -> 'mc.drivers.StateStorage':
 def _provide_sql_state_storage() -> 'mc.drivers.StateStorage':
     state_dir = _ensure_state_dir()
     state_file = os.path.join(state_dir, 'state.db')
-    return mc.drivers.SqlStateStorage(mc.drivers.SqlStateStorage.Config(
+    # return mc.drivers.OrmStateStorage(mc.drivers.SqlStateStorage.Config(
+    return mc.drivers.OrmStateStorage(mc.drivers.OrmStateStorage.Config(
         file=state_file,
     ))
 
