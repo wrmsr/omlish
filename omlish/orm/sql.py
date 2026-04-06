@@ -30,6 +30,41 @@ class SqlStore(Store):
         self._registry = registry
         self._db = db
 
+        self._mappers: ta.Mapping[Mapper, SqlStore._Mapper] = {m: self._Mapper(self, m) for m in registry.mappers}
+
+    #
+
+    class _Mapper:
+        def __init__(self, o: 'SqlStore', m: Mapper) -> None:
+            super().__init__()
+
+            self.o = o
+            self.m = m
+
+            self.field_decoders: dict[str, ta.Callable[[ta.Any], ta.Any]] = {}
+
+            for f in m.fields:
+                if f.rty is datetime.datetime:
+                    self.field_decoders[f._store_name] = o._decode_datetime
+
+        def decode(self, row: ta.Mapping[str, ta.Any]) -> Snap:
+            fds = self.field_decoders
+            return {
+                k: fd(v) if (fd := fds.get(k)) is not None else v
+                for k, v in row.items()
+            }
+
+    #
+
+    def _decode_datetime(self, o: ta.Any) -> datetime.datetime | None:
+        if o is None:
+            return None
+
+        if isinstance(o, datetime.datetime):
+            return o
+
+        return datetime.datetime.fromisoformat(o)
+
     #
 
     def _field_table_def(self, field: Field) -> list[sql.td.Element]:
@@ -132,6 +167,8 @@ class SqlStore(Store):
         await self._create_schema()
         self._has_created_schema = True
 
+    #
+
     class _Context(Store.Context):
         def __init__(
                 self,
@@ -208,8 +245,9 @@ class SqlStore(Store):
 
             await self._o._maybe_create_schema()
 
+            sm = self._o._mappers[m]
             async with sql.query(check.not_none(self._q), stmt, params) as rows:
-                return [row.to_dict() async for row in rows]
+                return [sm.decode(row.to_dict()) async for row in rows]
 
         #
 

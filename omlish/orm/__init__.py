@@ -12,6 +12,8 @@ from .api import (  # noqa
     get,
     delete,
     flush,
+    refresh,
+    refresh_one,
 
     make_query,
     query,

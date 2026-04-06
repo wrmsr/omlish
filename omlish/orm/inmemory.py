@@ -197,6 +197,8 @@ class InMemoryStore(Store):
 
             return ts_snap
 
+        #
+
         async def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
             t = self._o._table_for_mapper(m)
             kf_sn = m._key_field_store_name

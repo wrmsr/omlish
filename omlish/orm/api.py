@@ -288,6 +288,15 @@ async def flush() -> None:
     await active_session().flush()
 
 
+async def refresh(*objs: ta.Any) -> None:
+    await active_session().refresh(*objs)
+
+
+async def refresh_one(obj: T) -> T:
+    await active_session().refresh(obj)
+    return obj
+
+
 #
 
 

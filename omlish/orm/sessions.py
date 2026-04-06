@@ -337,12 +337,23 @@ class Session:
 
     #
 
+    def _writeback_snap(self, e: _Entity, wb_snap: Snap | None) -> None:
+        if wb_snap is None:
+            e.snap = None
+            return
+
+        e.snap = {**(e.snap or {}), **wb_snap}
+
+        m = e.m
+        for k, v in wb_snap.items():
+            f = m._fields_by_store_name[k]
+            ov = m.snap_value_to_field_value(f, v)
+            setattr(e.obj, f._name, ov)
+
     async def flush(self) -> None:
         check.state(self.is_alive)
 
         res = await _SessionFlusher(self).flush()
-
-        #
 
         for e, (wb_k, wb_snap) in res.ent_writeback.items():
             m = e.m
@@ -353,14 +364,16 @@ class Session:
                 e.k = _ValKey(wb_k)
                 ed[e.k] = e
 
-            if wb_snap is None:
-                e.snap = None
-            else:
-                e.snap = {**(e.snap or {}), **wb_snap}
-                for k, v in wb_snap.items():
-                    f = m._fields_by_store_name[k]
-                    ov = m.snap_value_to_field_value(f, v)
-                    setattr(e.obj, f._name, ov)
+            self._writeback_snap(e, wb_snap)
+
+    async def refresh(self, *objs: ta.Any) -> None:
+        for obj in objs:
+            e = self._entities_by_obj_id[id(obj)]
+            m = e.m
+
+            snap = await self._store_ctx.fetch(m, e.k.k)
+
+            self._writeback_snap(e, snap)
 
     #
 
@@ -408,6 +421,7 @@ class Session:
         out: list[T] = []
 
         for snap in snaps:
+            # FIXME: writeback? merge?
             e = self._attach(cls, snap=snap)
 
             if (obj := e.obj) is not None:

@@ -50,6 +50,12 @@ async def _test_timestamps(store: orm.Store) -> None:
         kv2 = await orm.query_one(Kv, key='hi')  # noqa
         print(kv2)
 
+    async with orm.session(registry(), store):
+        kv = await orm.add_one(Kv(key='hi again', value='ghijkl'))  # noqa
+        await orm.flush()
+        await orm.refresh(kv)
+        assert isinstance(kv.created_at, datetime.datetime)
+
 
 @pytest.mark.asyncs('asyncio')
 async def test_orm_in_memory():
