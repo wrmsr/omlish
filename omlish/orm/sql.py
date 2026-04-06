@@ -1,5 +1,6 @@
 # ruff: noqa: SLF001
 import contextlib
+import datetime
 import typing as ta
 
 from .. import check
@@ -8,6 +9,7 @@ from .. import sql
 from .fields import Field
 from .fields import KeyField
 from .fields import RefField
+from .indexes import Index
 from .mappers import Mapper
 from .registries import Registry
 from .snaps import Snap
@@ -27,55 +29,79 @@ class SqlStore(Store):
 
     #
 
-    def _field_column_def(self, field: Field) -> str:
-        sfx: list[str] = []
-        rty: rfl.Type
+    def _field_table_def(self, field: Field) -> list[sql.td.Element]:
+        out: list[sql.td.Element] = []
 
-        handled_optional = False
+        rty: rfl.Type
+        nullable: bool | None = None
 
         if isinstance(field, KeyField):
             rty = field.key_cls
-            sfx.append('primary key')
+            out.append(sql.td.PrimaryKey([field._store_name]))
 
         elif isinstance(field, RefField):
             rty = field.ref_key_cls
-            if not field.optional:
-                sfx.append('not null')
-            handled_optional = True
+            nullable = field.optional
 
         else:
             rty = field.rty
 
         if isinstance(rty, rfl.Union) and rty.is_optional:
             rty = rty.without_none()
+            nullable = True
         else:
-            if not handled_optional:
-                sfx.append('not null')
+            if nullable is None:
+                nullable = False
 
-        parts: list[str] = [field.store_name]
+        dty: sql.td.Dtype
 
         if rty is int:
-            parts.append('integer')
+            dty = sql.td.Integer()
         elif rty is str:
-            parts.append('text')
+            dty = sql.td.String()
+        elif rty is datetime.datetime:
+            dty = sql.td.Datetime()
         else:
             raise TypeError(f'unsupported sql field type: {rty!r}')
 
-        return ' '.join([*parts, *sfx])
+        out.append(sql.td.Column(
+            field._store_name,
+            dty,
+            nullable=nullable,
+        ))
+
+        return out
+
+    def _index_table_def(self, m: Mapper, idx: Index) -> list[sql.td.Element]:
+        return [sql.td.Index(
+            columns=[m._store_name_by_field_name[f] for f in idx.fields],
+            name=idx._store_name,
+        )]
+
+    def _mapper_table_def(self, m: Mapper) -> sql.td.TableDef:
+        els: list[sql.td.Element] = []
+
+        for f in m.fields:
+            els.extend(self._field_table_def(f))
+
+        for idx in m.indexes:
+            els.extend(self._index_table_def(m, idx))
+
+        return sql.td.table_def(
+            m._store_name,
+            *els,
+        )
 
     async def _create_schema(self) -> None:
         async with sql.connect(self._db) as conn:
-            for mapper in self._registry.mappers:
-                await sql.exec(conn, ' '.join([
-                    f'create table if not exists {mapper.store_name}',
-                    f'({", ".join(self._field_column_def(f) for f in mapper.fields)})',
-                ]))
+            for m in self._registry.mappers:
+                td = self._mapper_table_def(m)
 
-                for idx in mapper.indexes:
-                    await sql.exec(conn, ' '.join([
-                        f'create index if not exists {idx.store_name} on {mapper.store_name}'
-                        f'({" ".join(mapper.store_name_by_field_name[f] for f in idx.fields)})',
-                    ]))
+                for stmt in sql.td.render_create_statements(
+                        td,
+                        if_not_exists=True,
+                ):
+                    await sql.api.exec(conn, stmt)
 
     _has_created_schema: bool = False
 
