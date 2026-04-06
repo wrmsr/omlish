@@ -12,7 +12,7 @@ from .columns import Columns
 from .core import Conn
 from .core import Db
 from .core import Rows
-from .core import Transaction
+from .core import Txn
 from .queries import Query
 from .queries import Queryable
 from .rows import Row
@@ -64,7 +64,7 @@ class DbapiRows(Rows):
 #
 
 
-class DbapiTransaction(Transaction, SimpleResource):
+class DbapiTxn(Txn, SimpleResource):
     def __init__(self, conn: 'DbapiConn') -> None:
         super().__init__()
 
@@ -158,8 +158,8 @@ class DbapiConn(Conn):
 
         return inner()
 
-    def begin(self) -> ta.ContextManager[Transaction]:
-        return DbapiTransaction(self)
+    def begin(self) -> ta.ContextManager[Txn]:
+        return DbapiTxn(self)
 
 
 #

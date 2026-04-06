@@ -7,6 +7,7 @@ with _lang.auto_proxy_init(globals()):
         SqlalchemyApiWrapper,
 
         SqlalchemyApiRows,
+        SqlalchemyApiTxn,
         SqlalchemyApiConn,
         SqlalchemyApiDb,
         SqlalchemyApiAdapter,

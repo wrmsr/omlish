@@ -8,15 +8,24 @@ with _lang.auto_proxy_init(globals()):
     from . import api  # noqa
 
     from .api import (  # noqa
+        AsyncQuerier,
+        AsyncRows,
+        AsyncTxn,
+        AsyncConn,
+        AsyncDb,
+
         Querier,
         Rows,
-        Transaction,
+        Txn,
         Conn,
         Db,
+
         Adapter,
 
         Column,
         Columns,
+
+        connect,
 
         exec,  # noqa
 

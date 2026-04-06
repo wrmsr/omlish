@@ -45,11 +45,11 @@ class AsyncRows(AnyRows, ta.AsyncIterator[Row], lang.Abstract):
 ##
 
 
-class AnyTransaction(AnyQuerier, lang.Abstract):
+class AnyTxn(AnyQuerier, lang.Abstract):
     pass
 
 
-class Transaction(Querier, AnyTransaction, lang.Abstract):
+class Txn(Querier, AnyTxn, lang.Abstract):
     @abc.abstractmethod
     def commit(self) -> None:
         raise NotImplementedError
@@ -59,7 +59,7 @@ class Transaction(Querier, AnyTransaction, lang.Abstract):
         raise NotImplementedError
 
 
-class AsyncTransaction(AsyncQuerier, AnyTransaction, lang.Abstract):
+class AsyncTxn(AsyncQuerier, AnyTxn, lang.Abstract):
     @abc.abstractmethod
     def commit(self) -> ta.Awaitable[None]:
         raise NotImplementedError
@@ -78,13 +78,13 @@ class AnyConn(AnyQuerier, lang.Abstract):
 
 class Conn(Querier, AnyConn, lang.Abstract):
     @abc.abstractmethod
-    def begin(self) -> ta.ContextManager[Transaction]:
+    def begin(self) -> ta.ContextManager[Txn]:
         raise NotImplementedError
 
 
 class AsyncConn(AsyncQuerier, AnyConn, lang.Abstract):
     @abc.abstractmethod
-    def begin(self) -> ta.AsyncContextManager[AsyncTransaction]:
+    def begin(self) -> ta.AsyncContextManager[AsyncTxn]:
         raise NotImplementedError
 
 

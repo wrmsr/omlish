@@ -30,7 +30,7 @@ from .asquery import (  # noqa
 
 from .asyncs import (  # noqa
     SyncToAsyncRows,
-    SyncToAsyncTransaction,
+    SyncToAsyncTxn,
     SyncToAsyncConn,
     SyncToAsyncDb,
 )
@@ -45,9 +45,9 @@ from .core import (  # noqa
     Rows,
     AsyncRows,
 
-    AnyTransaction,
-    Transaction,
-    AsyncTransaction,
+    AnyTxn,
+    Txn,
+    AsyncTxn,
 
     AnyConn,
     Conn,

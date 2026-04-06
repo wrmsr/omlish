@@ -7,11 +7,11 @@ from .columns import Columns
 from .core import AsyncConn
 from .core import AsyncDb
 from .core import AsyncRows
-from .core import AsyncTransaction
+from .core import AsyncTxn
 from .core import Conn
 from .core import Db
 from .core import Rows
-from .core import Transaction
+from .core import Txn
 from .queries import Queryable
 from .rows import Row
 
@@ -75,8 +75,8 @@ class SyncToAsyncRows(AsyncRows):
         return v
 
 
-class SyncToAsyncTransaction(AsyncTransaction):
-    def __init__(self, runner: Runner, txn: Transaction) -> None:
+class SyncToAsyncTxn(AsyncTxn):
+    def __init__(self, runner: Runner, txn: Txn) -> None:
         super().__init__()
 
         self._runner = runner
@@ -107,8 +107,8 @@ class SyncToAsyncConn(AsyncConn):
     def adapter(self) -> Adapter:
         return self._conn.adapter
 
-    def begin(self) -> ta.AsyncContextManager[AsyncTransaction]:
-        return _RunnerContextManager(self._runner, self._conn.begin, SyncToAsyncTransaction)
+    def begin(self) -> ta.AsyncContextManager[AsyncTxn]:
+        return _RunnerContextManager(self._runner, self._conn.begin, SyncToAsyncTxn)
 
     def query(self, query: Queryable) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
         return _RunnerContextManager(self._runner, lambda: self._conn.query(query), SyncToAsyncRows)

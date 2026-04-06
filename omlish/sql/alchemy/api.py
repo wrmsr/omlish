@@ -59,7 +59,7 @@ class SqlalchemyApiRows(SimpleResource, api.Rows):
         return next(self._it)
 
 
-class SqlalchemyTransaction(SimpleResource, api.Transaction):
+class SqlalchemyApiTxn(SimpleResource, api.Txn):
     @property
     def adapter(self) -> api.Adapter:
         return DEFAULT_SQLALCHEMY_ADAPTER
@@ -94,7 +94,7 @@ class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
             ]
         return SqlalchemyApiRows(cols, rows)
 
-    def begin(self) -> ta.ContextManager[api.Transaction]:
+    def begin(self) -> ta.ContextManager[api.Txn]:
         raise NotImplementedError
 
 
