@@ -67,6 +67,14 @@ class InMemoryStore(Store):
 
         #
 
+        def __enter__(self) -> ta.Self:
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+        #
+
         def finish(self) -> None:
             pass
 
@@ -226,5 +234,5 @@ class InMemoryStore(Store):
 
     #
 
-    def create_context(self) -> Store.Context:
+    def create_context(self) -> ta.ContextManager[Store.Context]:
         return self._Context(self)

@@ -55,5 +55,5 @@ class Store(lang.Abstract):
             raise NotImplementedError
 
     @abc.abstractmethod
-    def create_context(self) -> Context:
+    def create_context(self) -> ta.ContextManager[Context]:
         raise NotImplementedError

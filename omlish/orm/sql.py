@@ -18,7 +18,7 @@ from .wrappers import WRAPPER_TYPES
 
 
 class SqlStore(Store):
-    def __init__(self, registry: Registry, db: sql.api.Db) -> None:
+    def __init__(self, registry: Registry, db: sql.api.Db | sql.api.Conn) -> None:
         super().__init__()
 
         self._registry = registry
@@ -63,7 +63,7 @@ class SqlStore(Store):
         return ' '.join([*parts, *sfx])
 
     def _create_schema(self) -> None:
-        with self._db.connect() as conn:
+        with sql.api.connect(self._db) as conn:
             for mapper in self._registry.mappers:
                 sql.api.exec(conn, ' '.join([
                     f'create table if not exists {mapper.store_name}',
@@ -94,6 +94,14 @@ class SqlStore(Store):
         @property
         def store(self) -> 'SqlStore':
             return self._o
+
+        #
+
+        def __enter__(self) -> ta.Self:
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
 
         #
 
@@ -128,7 +136,7 @@ class SqlStore(Store):
 
             self._o._maybe_create_schema()
 
-            with self._o._db.connect() as conn:
+            with sql.api.connect(self._o._db) as conn:
                 with sql.api.query(conn, stmt, params) as rows:
                     return [row.to_dict() for row in rows]
 
@@ -165,7 +173,7 @@ class SqlStore(Store):
 
             iak: dict[ta.Any, ta.Any] = {}
 
-            with self._o._db.connect() as conn:
+            with sql.api.connect(self._o._db) as conn:
                 for snap in snaps:
                     ak = snap[m._key_field._store_name]
                     params = [snap[f._store_name] for f in m._fields if f is not m._key_field]
@@ -179,7 +187,7 @@ class SqlStore(Store):
 
             stmt = self._build_insert_stmt(m)
 
-            with self._o._db.connect() as conn:
+            with sql.api.connect(self._o._db) as conn:
                 for snap in snaps:
                     params = [snap[f._store_name] for f in m._fields]
                     sql.api.exec(conn, stmt, params)
@@ -187,7 +195,7 @@ class SqlStore(Store):
         def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             self._o._maybe_create_schema()
 
-            with self._o._db.connect() as conn:
+            with sql.api.connect(self._o._db) as conn:
                 for vk, ud_diff in diffs:
                     check.not_in(m._key_field_store_name, ud_diff)
                     stmt = ' '.join([
@@ -213,11 +221,11 @@ class SqlStore(Store):
                 '= ?',
             ])
 
-            with self._o._db.connect() as conn:
+            with sql.api.connect(self._o._db) as conn:
                 for k in keys:
                     sql.api.exec(conn, stmt, [k])
 
     #
 
-    def create_context(self) -> Store.Context:
+    def create_context(self) -> ta.ContextManager[Store.Context]:
         return self._Context(self)

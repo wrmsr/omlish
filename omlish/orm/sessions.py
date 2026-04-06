@@ -50,6 +50,7 @@ class Session:
         self._entities_by_obj_id: dict[int, Session._Entity] = {}
         self._entities_by_auto_key: dict[_AutoKey, Session._Entity] = {}
 
+    _store_cm: ta.ContextManager[Store.Context]
     _store_ctx: Store.Context
 
     def __repr__(self) -> str:
@@ -88,7 +89,8 @@ class Session:
 
         self._state = self.State.ENTERING
 
-        self._store_ctx = self._store.create_context()
+        self._store_cm = self._store.create_context()
+        self._store_ctx = self._store_cm.__enter__()
 
         self._state = self.State.ENTERED
 
@@ -115,6 +117,9 @@ class Session:
         self._store_ctx.finish()
         del self._store_ctx
 
+        self._store_cm.__exit__(None, None, None)
+        del self._store_cm
+
         self._state = self.State.FINISHED
 
     def abort(self) -> None:
@@ -127,6 +132,9 @@ class Session:
 
         self._store_ctx.abort()
         del self._store_ctx
+
+        self._store_cm.__exit__(None, None, None)
+        del self._store_cm
 
         self._state = self.State.ABORTED
 

@@ -16,6 +16,12 @@ from .adapters import (  # noqa
     HasAdapter,
 )
 
+from .api import (  # noqa
+    sync_connect,
+    async_connect,
+    connect,
+)
+
 from .asquery import (  # noqa
     AsQueryContext,
     as_query,
