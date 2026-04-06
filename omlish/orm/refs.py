@@ -36,7 +36,7 @@ class Ref(lang.Sealed, lang.Abstract, ta.Generic[T, K]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def __call__(self) -> T:
+    def __call__(self) -> ta.Awaitable[T]:
         raise NotImplementedError
 
     _hash: int
@@ -81,7 +81,7 @@ class _ObjRef(Ref[T, K], lang.Final):
     def k(self) -> Key[K]:
         return _sessions.active_session()._get_obj_ref_key(self)
 
-    def __call__(self) -> T:
+    async def __call__(self) -> T:
         return self._obj
 
 
@@ -105,8 +105,8 @@ class _KeyRef(Ref[T, K], lang.Final):
     def k(self) -> Key[K]:
         return self._k
 
-    def __call__(self) -> T:
-        return _sessions.active_session()._get_key_ref_obj(self)
+    async def __call__(self) -> T:
+        return await _sessions.active_session()._get_key_ref_obj(self)
 
 
 ##

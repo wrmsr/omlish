@@ -53,7 +53,7 @@ class Session:
         self._entities_by_obj_id: dict[int, Session._Entity] = {}
         self._entities_by_auto_key: dict[_AutoKey, Session._Entity] = {}
 
-    _store_cm: ta.ContextManager[Store.Context]
+    _store_cm: ta.AsyncContextManager[Store.Context]
     _store_ctx: Store.Context
 
     def __repr__(self) -> str:
@@ -87,7 +87,7 @@ class Session:
 
     #
 
-    def __enter__(self) -> ta.Self:
+    async def __aenter__(self) -> ta.Self:
         check.state(self._state == self.State.NEW)
 
         self._state = self.State.ENTERING
@@ -95,20 +95,20 @@ class Session:
         self._store_cm = self._store.create_context(
             transaction=self._transaction,
         )
-        self._store_ctx = self._store_cm.__enter__()
+        self._store_ctx = await self._store_cm.__aenter__()
 
         self._state = self.State.ENTERED
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._state == self.State.ENTERED:
             if exc_type is None:
-                self.finish()
+                await self.finish()
             else:
-                self.abort()
+                await self.abort()
 
-    def finish(self) -> None:
+    async def finish(self) -> None:
         if self._state == self.State.FINISHED:
             return
 
@@ -117,17 +117,17 @@ class Session:
         self._state = self.State.FINISHING
 
         if not self._no_auto_flush:
-            self.flush()
+            await self.flush()
 
-        self._store_ctx.finish()
+        await self._store_ctx.finish()
         del self._store_ctx
 
-        self._store_cm.__exit__(None, None, None)
+        await self._store_cm.__aexit__(None, None, None)
         del self._store_cm
 
         self._state = self.State.FINISHED
 
-    def abort(self) -> None:
+    async def abort(self) -> None:
         if self._state == self.State.ABORTED:
             return
 
@@ -135,17 +135,17 @@ class Session:
 
         self._state = self.State.ABORTING
 
-        self._store_ctx.abort()
+        await self._store_ctx.abort()
         del self._store_ctx
 
-        self._store_cm.__exit__(None, None, None)
+        await self._store_cm.__aexit__(None, None, None)
         del self._store_cm
 
         self._state = self.State.ABORTED
 
     #
 
-    def activate(self) -> ta.ContextManager[ta.Self]:
+    def activate(self) -> ta.AsyncContextManager[ta.Self]:
         return _SessionActivator(self)
 
     #
@@ -278,21 +278,21 @@ class Session:
 
     #
 
-    def add(self, *objs: ta.Any) -> None:
+    async def add(self, *objs: ta.Any) -> None:
         for obj in objs:
             self._attach(obj=obj)
 
     #
 
     @ta.overload
-    def get(self, cls: type[T], k: Key[K]) -> T | None:
+    async def get(self, cls: type[T], k: Key[K]) -> T | None:
         ...
 
     @ta.overload
-    def get(self, cls: type[T], k: K) -> T | None:
+    async def get(self, cls: type[T], k: K) -> T | None:
         ...
 
-    def get(self, cls, k):  # noqa
+    async def get(self, cls, k):  # noqa
         check.state(self.is_alive)
 
         if k.__class__ not in _KEY_TYPES:
@@ -309,7 +309,7 @@ class Session:
 
         m = self._registry.mapper_for_cls(cls)
 
-        snap = self._store_ctx.fetch(m, k.k)
+        snap = await self._store_ctx.fetch(m, k.k)
         if snap is None:
             return None
 
@@ -329,7 +329,7 @@ class Session:
 
         del self._entities_by_obj_id[id(obj)]
 
-    def delete(self, *objs: ta.Any) -> None:
+    async def delete(self, *objs: ta.Any) -> None:
         check.state(self.is_alive)
 
         for obj in objs:
@@ -337,10 +337,10 @@ class Session:
 
     #
 
-    def flush(self) -> None:
+    async def flush(self) -> None:
         check.state(self.is_alive)
 
-        res = _SessionFlusher(self).flush()
+        res = await _SessionFlusher(self).flush()
 
         #
 
@@ -368,11 +368,11 @@ class Session:
         e = self._entities_by_obj_id[id(dr._obj)]
         return e.k
 
-    def _get_key_ref_obj(self, lr: _KeyRef) -> ta.Any:
+    async def _get_key_ref_obj(self, lr: _KeyRef) -> ta.Any:
         # TODO: writeback?
-        return check.not_none(self.get(lr._cls, lr._k))
+        return check.not_none(await self.get(lr._cls, lr._k))
 
-    def _get_bound_backref_objs(self, bbr: _BoundBackref) -> ta.Sequence[ta.Any]:
+    async def _get_bound_backref_objs(self, bbr: _BoundBackref) -> ta.Sequence[ta.Any]:
         binder = bbr._br._binder
 
         brd = self._registry._fields_by_backref_binding
@@ -384,15 +384,15 @@ class Session:
             brf = brd[binder()]
         rf = check.isinstance(brf, RefField)
 
-        return self.query(Query(rf._mapper._cls, {rf._name: _ObjRef(bbr._obj)}))
+        return await self.query(Query(rf._mapper._cls, {rf._name: _ObjRef(bbr._obj)}))
 
     #
 
-    def query(self, q: Query[T]) -> list[T]:
+    async def query(self, q: Query[T]) -> list[T]:
         check.state(self.is_alive)
 
         if not self._no_auto_flush:
-            self.flush()
+            await self.flush()
 
         cls = q._cls
         m = self._registry.mapper_for_cls(cls)
@@ -402,7 +402,7 @@ class Session:
             f = m._fields_by_name[k]
             wh[f._store_name] = m.field_value_to_snap_value(f, v)
 
-        if not (snaps := self._store_ctx.lookup(m, wh)):
+        if not (snaps := await self._store_ctx.lookup(m, wh)):
             return []
 
         out: list[T] = []
@@ -437,7 +437,7 @@ class _SessionActivator:
 
     _tok: ta.Any
 
-    def __enter__(self):
+    async def __aenter__(self):
         try:
             x = _ACTIVE_SESSION.get()
         except LookupError:
@@ -448,13 +448,13 @@ class _SessionActivator:
         self._tok = _ACTIVE_SESSION.set(self._s)
         return self._s
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._s._state == Session.State.ENTERED:
             if exc_type is None:
                 if not self._s._no_auto_flush:
-                    self._s.flush()
+                    await self._s.flush()
             else:
-                self._s.abort()
+                await self._s.abort()
 
         _ACTIVE_SESSION.reset(self._tok)
 

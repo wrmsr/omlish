@@ -28,6 +28,13 @@ from .asquery import (  # noqa
     as_query_,
 )
 
+from .asyncs import (  # noqa
+    SyncToAsyncRows,
+    SyncToAsyncTransaction,
+    SyncToAsyncConn,
+    SyncToAsyncDb,
+)
+
 from .columns import (  # noqa
     Column,
     Columns,

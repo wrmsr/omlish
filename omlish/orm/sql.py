@@ -19,7 +19,7 @@ from .wrappers import WRAPPER_TYPES
 
 
 class SqlStore(Store):
-    def __init__(self, registry: Registry, db: sql.api.Db | sql.api.Conn) -> None:
+    def __init__(self, registry: Registry, db: sql.api.AsyncDb | sql.api.AsyncConn) -> None:
         super().__init__()
 
         self._registry = registry
@@ -63,27 +63,27 @@ class SqlStore(Store):
 
         return ' '.join([*parts, *sfx])
 
-    def _create_schema(self) -> None:
-        with sql.api.connect(self._db) as conn:
+    async def _create_schema(self) -> None:
+        async with sql.api.connect(self._db) as conn:
             for mapper in self._registry.mappers:
-                sql.api.exec(conn, ' '.join([
+                await sql.api.exec(conn, ' '.join([
                     f'create table if not exists {mapper.store_name}',
                     f'({", ".join(self._field_column_def(f) for f in mapper.fields)})',
                 ]))
 
                 for idx in mapper.indexes:
-                    sql.api.exec(conn, ' '.join([
+                    await sql.api.exec(conn, ' '.join([
                         f'create index if not exists {idx.store_name} on {mapper.store_name}'
                         f'({" ".join(mapper.store_name_by_field_name[f] for f in idx.fields)})',
                     ]))
 
     _has_created_schema: bool = False
 
-    def _maybe_create_schema(self) -> None:
+    async def _maybe_create_schema(self) -> None:
         if self._has_created_schema:
             return
 
-        self._create_schema()
+        await self._create_schema()
         self._has_created_schema = True
 
     class _Context(Store.Context):
@@ -99,11 +99,11 @@ class SqlStore(Store):
 
             self._no_transaction = no_transaction
 
-            self._es = contextlib.ExitStack()
+            self._es = contextlib.AsyncExitStack()
 
-        _conn: sql.api.Conn | None = None
-        _txn: sql.api.Transaction | None = None
-        _q: sql.api.Querier | None = None
+        _conn: sql.api.AsyncConn | None = None
+        _txn: sql.api.AsyncTransaction | None = None
+        _q: sql.api.AsyncQuerier | None = None
 
         @property
         def store(self) -> 'SqlStore':
@@ -111,39 +111,39 @@ class SqlStore(Store):
 
         #
 
-        def __enter__(self) -> ta.Self:
-            self._es.__enter__()
+        async def __aenter__(self) -> ta.Self:
+            await self._es.__aenter__()
 
-            self._conn = self._es.enter_context(sql.api.connect(self._o._db))
+            self._conn = await self._es.enter_async_context(sql.api.connect(self._o._db))
 
             if not self._no_transaction:
-                self._txn = self._es.enter_context(self._conn.begin())
+                self._txn = await self._es.enter_async_context(self._conn.begin())
                 self._q = self._txn
             else:
                 self._q = self._conn
 
             return self
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            self._es.__exit__(exc_type, exc_val, exc_tb)
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            await self._es.__aexit__(exc_type, exc_val, exc_tb)
 
         #
 
-        def finish(self) -> None:
+        async def finish(self) -> None:
             if not self._no_transaction:
-                check.not_none(self._txn).commit()
+                await check.not_none(self._txn).commit()
 
-        def abort(self) -> None:
+        async def abort(self) -> None:
             if not self._no_transaction:
-                check.not_none(self._txn).rollback()
+                await check.not_none(self._txn).rollback()
 
         #
 
-        def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
-            rows = self.lookup(m, {m.key_field.store_name: k})
+        async def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
+            rows = await self.lookup(m, {m.key_field.store_name: k})
             return check.single(rows) if rows else None
 
-        def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
+        async def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
             clauses: list[str] = []
             params: list[ta.Any] = []
 
@@ -160,10 +160,10 @@ class SqlStore(Store):
                 *(['where', ' and '.join(clauses)] if clauses else []),
             ])
 
-            self._o._maybe_create_schema()
+            await self._o._maybe_create_schema()
 
-            with sql.api.query(check.not_none(self._q), stmt, params) as rows:
-                return [row.to_dict() for row in rows]
+            async with sql.api.query(check.not_none(self._q), stmt, params) as rows:
+                return [row.to_dict() async for row in rows]
 
         #
 
@@ -191,8 +191,8 @@ class SqlStore(Store):
                 *(['returning id'] if auto_key else []),
             ])
 
-        def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
-            self._o._maybe_create_schema()
+        async def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
+            await self._o._maybe_create_schema()
 
             stmt = self._build_insert_stmt(m, auto_key=True)
 
@@ -201,22 +201,22 @@ class SqlStore(Store):
             for snap in snaps:
                 ak = snap[m._key_field._store_name]
                 params = [snap[f._store_name] for f in m._fields if f is not m._key_field]
-                vk = sql.api.query_scalar(check.not_none(self._q), stmt, params)
+                vk = await sql.api.query_scalar(check.not_none(self._q), stmt, params)
                 iak[ak] = vk
 
             return iak
 
-        def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
-            self._o._maybe_create_schema()
+        async def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
+            await self._o._maybe_create_schema()
 
             stmt = self._build_insert_stmt(m)
 
             for snap in snaps:
                 params = [snap[f._store_name] for f in m._fields]
-                sql.api.exec(check.not_none(self._q), stmt, params)
+                await sql.api.exec(check.not_none(self._q), stmt, params)
 
-        def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
-            self._o._maybe_create_schema()
+        async def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
+            await self._o._maybe_create_schema()
 
             for vk, ud_diff in diffs:
                 check.not_in(m._key_field_store_name, ud_diff)
@@ -230,10 +230,10 @@ class SqlStore(Store):
                     '= ?',
                 ])
                 params = [*ud_diff.values(), vk]
-                sql.api.exec(check.not_none(self._q), stmt, params)
+                await sql.api.exec(check.not_none(self._q), stmt, params)
 
-        def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
-            self._o._maybe_create_schema()
+        async def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
+            await self._o._maybe_create_schema()
 
             stmt = ' '.join([
                 'delete from',
@@ -244,7 +244,7 @@ class SqlStore(Store):
             ])
 
             for k in keys:
-                sql.api.exec(check.not_none(self._q), stmt, [k])
+                await sql.api.exec(check.not_none(self._q), stmt, [k])
 
     #
 
@@ -252,7 +252,7 @@ class SqlStore(Store):
             self,
             *,
             transaction: bool | ta.Literal['default'] = 'default',
-    ) -> ta.ContextManager[Store.Context]:
+    ) -> ta.AsyncContextManager[Store.Context]:
         return self._Context(
             self,
             no_transaction=False if transaction == 'default' else not transaction,

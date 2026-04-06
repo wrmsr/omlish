@@ -67,23 +67,23 @@ class InMemoryStore(Store):
 
         #
 
-        def __enter__(self) -> ta.Self:
+        async def __aenter__(self) -> ta.Self:
             return self
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
 
         #
 
-        def finish(self) -> None:
+        async def finish(self) -> None:
             pass
 
-        def abort(self) -> None:
+        async def abort(self) -> None:
             pass
 
         #
 
-        def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
+        async def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
             check.not_in(k.__class__, WRAPPER_TYPES)
             try:
                 t = self._o._table_for_mapper(m)
@@ -91,14 +91,14 @@ class InMemoryStore(Store):
                 return None
             return t.snaps.get(k)
 
-        def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
+        async def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
             t = self._o._table_for_mapper(m)
 
             if not where:
                 return list(t.snaps.values())
 
             if t.m.key_field.store_name in where:
-                if (ks := self.fetch(m, where[t.m.key_field.store_name])) is not None:
+                if (ks := await self.fetch(m, where[t.m.key_field.store_name])) is not None:
                     return [ks]
                 else:
                     return []
@@ -180,7 +180,7 @@ class InMemoryStore(Store):
                 if not iz:
                     del idc[ik]
 
-        def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
+        async def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
             t = self._o._table_for_mapper(m)
             kf_sn = m._key_field_store_name
             iak: dict[ta.Any, ta.Any] = {}
@@ -199,7 +199,7 @@ class InMemoryStore(Store):
                 self._index(t, k, snap)
             return iak
 
-        def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
+        async def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
             t = self._o._table_for_mapper(m)
             kf_sn = m._key_field_store_name
             for snap in snaps:
@@ -210,7 +210,7 @@ class InMemoryStore(Store):
                 t.snaps[k] = snap
                 self._index(t, k, snap)
 
-        def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
+        async def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             t = self._o._table_for_mapper(m)
             kf_sn = m._key_field_store_name
             for k, snap in diffs:
@@ -225,7 +225,7 @@ class InMemoryStore(Store):
                 t.snaps[k] = snap
                 self._index(t, k, snap)
 
-        def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
+        async def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
             t = self._o._table_for_mapper(m)
             for k in keys:
                 snap = t.snaps[k]
@@ -238,6 +238,6 @@ class InMemoryStore(Store):
             self,
             *,
             transaction: bool | ta.Literal['default'] = 'default',
-    ) -> ta.ContextManager[Store.Context]:
+    ) -> ta.AsyncContextManager[Store.Context]:
         check.in_(transaction, ('default', False))
         return self._Context(self)

@@ -220,48 +220,48 @@ def session(
         store: Store,
         *,
         no_auto_flush: bool = False,
-) -> ta.ContextManager[Session]:
-    @contextlib.contextmanager
-    def inner():
-        with Session(
+) -> ta.AsyncContextManager[Session]:
+    @contextlib.asynccontextmanager
+    async def inner():
+        async with Session(
             registry,
             store,
             no_auto_flush=no_auto_flush,
         ) as sess:
-            with sess.activate():
+            async with sess.activate():
                 yield sess
 
     return inner()
 
 
-def abort() -> None:
-    active_session().abort()
+async def abort() -> None:
+    await active_session().abort()
 
 
-def add(*objs: ta.Any) -> None:
-    return active_session().add(*objs)
+async def add(*objs: ta.Any) -> None:
+    return await active_session().add(*objs)
 
 
 @ta.overload
-def get(cls: type[T], k: Key[K]) -> T | None:
+async def get(cls: type[T], k: Key[K]) -> T | None:
     ...
 
 
 @ta.overload
-def get(cls: type[T], k: K) -> T | None:
+async def get(cls: type[T], k: K) -> T | None:
     ...
 
 
-def get(cls, k):  # noqa
-    return active_session().get(cls, k)
+async def get(cls, k):  # noqa
+    return await active_session().get(cls, k)
 
 
-def delete(*objs: ta.Any) -> None:
-    active_session().delete(*objs)
+async def delete(*objs: ta.Any) -> None:
+    await active_session().delete(*objs)
 
 
-def flush() -> None:
-    active_session().flush()
+async def flush() -> None:
+    await active_session().flush()
 
 
 #
@@ -277,8 +277,8 @@ def make_query(
     )
 
 
-def query(
+async def query(
         cls: type[T],
         **where: ta.Any,
 ) -> list[T]:
-    return active_session().query(make_query(cls, **where))
+    return await active_session().query(make_query(cls, **where))

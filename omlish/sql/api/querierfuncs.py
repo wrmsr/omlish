@@ -136,7 +136,7 @@ def query(
         querier: AsyncQuerier,
         obj: ta.Any,
         *args: ta.Any,
-) -> ta.AsyncContextManager['Rows']:
+) -> ta.AsyncContextManager['AsyncRows']:
     ...
 
 

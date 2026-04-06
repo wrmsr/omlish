@@ -21,7 +21,7 @@ class _BoundBackref(lang.Final, ta.Generic[T]):
     def __init__(self, *, _br: '_Backref[T]', _obj: ta.Any) -> None:
         self._br, self._obj = _br, _obj
 
-    def __call__(self) -> ta.Sequence[T]:
+    def __call__(self) -> ta.Awaitable[ta.Sequence[T]]:
         return _sessions.active_session()._get_bound_backref_objs(self)
 
 
