@@ -2,10 +2,18 @@ import typing as ta
 
 from .. import check
 from .. import lang
+from .. import typedvalues as tv
 
 
 if ta.TYPE_CHECKING:
     from .mappers import Mapper
+
+
+##
+
+
+class IndexOption(tv.TypedValue, lang.Abstract):
+    pass
 
 
 ##
@@ -18,11 +26,13 @@ class Index(lang.Final):
             *,
             _fields: ta.Sequence[str],
             _store_name: str | None = None,
+            _options: ta.Sequence[IndexOption] | None = None,
     ) -> None:
         super().__init__()
 
         self._fields = tuple(check.non_empty_str(f) for f in check.not_empty(_fields))
         self._store_name = check.non_empty_str(_store_name) if _store_name is not None else None
+        self._options = tv.TypedValues(*(_options or []))
 
         check.unique(self._fields)
 
@@ -47,6 +57,10 @@ class Index(lang.Final):
     @property
     def store_name(self) -> str | None:
         return self._store_name
+
+    @property
+    def options(self) -> tv.TypedValues[IndexOption]:
+        return self._options
 
     #
 

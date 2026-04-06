@@ -11,11 +11,14 @@ from ..text import inflect
 from .backrefs import Backref
 from .codecs import Codec
 from .fields import Field
+from .fields import FieldOption
 from .fields import KeyField
 from .fields import RefField
 from .indexes import Index
+from .indexes import IndexOption
 from .keys import Key
 from .mappers import Mapper
+from .mappers import MapperOption
 from .queries import Query
 from .refs import Ref
 from .registries import Registry
@@ -34,6 +37,7 @@ T = ta.TypeVar('T')
 def index(
         *fields: str,
         store_name: str | None = None,
+        options: ta.Sequence[IndexOption] | None = None,
 ) -> Index:
     check.not_empty(fields)
     for f in fields:
@@ -42,6 +46,7 @@ def index(
     return Index(
         _fields=fields,
         _store_name=store_name,
+        _options=options,
     )
 
 
@@ -51,6 +56,7 @@ def field(
         *,
         store_name: str | None = None,
         backref_binding: ta.Any | None = None,
+        options: ta.Sequence[FieldOption] | None = None,
 ) -> Field:
     check.non_empty_str(name)
 
@@ -89,6 +95,7 @@ def field(
         _store_name=store_name,
         _rty=rty,
         _backref_binding=backref_binding,
+        _options=options,
     )
 
 
@@ -99,6 +106,7 @@ def mapper(
         store_name: str | None = None,
         indexes: ta.Sequence[Index | str | ta.Sequence[str]] | None = None,
         backrefs: ta.Sequence[Backref] | None = None,
+        options: ta.Sequence[MapperOption] | None = None,
 ) -> Mapper:
     check.isinstance(cls, type)
 
@@ -151,6 +159,7 @@ def mapper(
         fields,
         indexes=index_lst,
         backrefs=backrefs,
+        options=options,
     )
 
 
@@ -159,6 +168,7 @@ def dataclass_mapper(
         *,
         store_name: str | None = None,
         indexes: ta.Sequence[Index | str | ta.Sequence[str]] | None = None,
+        options: ta.Sequence[MapperOption] | None = None,
 ) -> Mapper:
     check.arg(dc.is_dataclass(cls))
 
@@ -189,6 +199,7 @@ def dataclass_mapper(
         store_name=store_name,
         indexes=indexes,
         backrefs=backrefs,
+        options=options,
     )
 
 

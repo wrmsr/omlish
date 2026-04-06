@@ -3,6 +3,8 @@ import typing as ta
 
 from .. import check
 from .. import collections as col
+from .. import lang
+from .. import typedvalues as tv
 from .backrefs import Backref
 from .fields import Field
 from .fields import KeyField
@@ -28,6 +30,13 @@ T = ta.TypeVar('T')
 ##
 
 
+class MapperOption(tv.TypedValue, lang.Abstract):
+    pass
+
+
+##
+
+
 class Mapper(ta.Generic[K, T]):
     def __init__(
             self,
@@ -37,6 +46,7 @@ class Mapper(ta.Generic[K, T]):
             *,
             indexes: ta.Sequence[Index] | None = None,
             backrefs: ta.Sequence[Backref] | None = None,
+            options: ta.Sequence[MapperOption] | None = None,
     ) -> None:
         super().__init__()
 
@@ -47,6 +57,8 @@ class Mapper(ta.Generic[K, T]):
         self._fields = fields = list(fields) if fields is not None else []
         self._indexes = indexes = list(indexes) if indexes is not None else []
         self._backrefs = backrefs = list(backrefs) if backrefs is not None else []
+
+        self._options = tv.TypedValues(*(options or []))
 
         for f in fields:
             check.isinstance(f, Field)
@@ -95,6 +107,10 @@ class Mapper(ta.Generic[K, T]):
     @property
     def backrefs(self) -> ta.Sequence[Backref]:
         return self._backrefs
+
+    @property
+    def options(self) -> tv.TypedValues[MapperOption]:
+        return self._options
 
     #
 

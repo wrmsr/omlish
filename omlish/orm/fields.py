@@ -3,12 +3,20 @@ import typing as ta
 from .. import check
 from .. import lang
 from .. import reflect as rfl
+from .. import typedvalues as tv
 from .keys import Key
 from .refs import Ref
 
 
 if ta.TYPE_CHECKING:
     from .mappers import Mapper
+
+
+##
+
+
+class FieldOption(tv.TypedValue, lang.Abstract):
+    pass
 
 
 ##
@@ -22,6 +30,7 @@ class Field(lang.Sealed):
             _store_name: str,
             _rty: rfl.Type,
             _backref_binding: ta.Any | None = None,
+            _options: ta.Sequence[FieldOption] | None = None,
     ) -> None:
         super().__init__()
 
@@ -29,6 +38,7 @@ class Field(lang.Sealed):
         self._store_name = check.non_empty_str(_store_name)
         self._rty = check.isinstance(_rty, rfl.Type)
         self._backref_binding = _backref_binding
+        self._options = tv.TypedValues(*(_options or []))
 
     @classmethod
     def _default_store_name(cls, name: str) -> str:
@@ -59,6 +69,10 @@ class Field(lang.Sealed):
     @property
     def backref_binding(self) -> ta.Any | None:
         return self._backref_binding
+
+    @property
+    def options(self) -> tv.TypedValues[FieldOption]:
+        return self._options
 
     #
 
