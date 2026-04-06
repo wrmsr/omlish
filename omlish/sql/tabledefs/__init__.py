@@ -15,6 +15,7 @@ from .dtypes import (  # noqa
     Integer,
     String,
     Datetime,
+    Uuid,
 )
 
 from .elements import (  # noqa

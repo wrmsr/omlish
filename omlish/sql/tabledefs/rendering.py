@@ -6,6 +6,7 @@ from ... import dataclasses as dc
 from .dtypes import Datetime
 from .dtypes import Integer
 from .dtypes import String
+from .dtypes import Uuid
 from .elements import Column
 from .elements import Index
 from .elements import PrimaryKey
@@ -61,7 +62,7 @@ def render_create_statements(
 
     for c in cols.values():
         ct: str
-        if isinstance(c.type, String):
+        if isinstance(c.type, (String, Uuid)):
             ct = 'string'
         elif isinstance(c.type, Integer):
             ct = 'integer'

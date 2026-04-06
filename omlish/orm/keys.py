@@ -8,6 +8,8 @@ from .. import lang
 
 K = ta.TypeVar('K')
 
+P = ta.ParamSpec('P')
+
 
 ##
 
@@ -73,6 +75,13 @@ def key(k):
     if k.__class__ in _KEY_TYPES:
         return k
     return _ValKey(k)
+
+
+def key_wrapping(fn: ta.Callable[P, K]) -> ta.Callable[P, Key[K]]:
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        return key(fn(*args, **kwargs))
+    return inner
 
 
 ##

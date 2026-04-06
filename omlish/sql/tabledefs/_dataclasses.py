@@ -328,6 +328,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         ('omlish.sql.tabledefs', 'Integer'),
         ('omlish.sql.tabledefs', 'Now'),
         ('omlish.sql.tabledefs', 'String'),
+        ('omlish.sql.tabledefs', 'Uuid'),
     ),
 )
 def _process_dataclass__63c05de795f82e8dacde3eceff4abc81b79a0bee():

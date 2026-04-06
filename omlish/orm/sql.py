@@ -41,8 +41,10 @@ else:
 import contextlib
 import datetime
 import typing as ta
+import uuid
 
 from .. import check
+from .. import lang
 from .. import reflect as rfl
 from .. import sql
 from .fields import Field
@@ -80,11 +82,31 @@ class SqlStore(Store):
             self.o = o
             self.m = m
 
+            self.field_encoders: dict[str, ta.Callable[[ta.Any], ta.Any]] = {}
             self.field_decoders: dict[str, ta.Callable[[ta.Any], ta.Any]] = {}
 
             for f in m.fields:
-                if f.rty is datetime.datetime:
+                rty = f.unwrapped_rty
+
+                if isinstance(rty, rfl.Union) and rty.is_optional:
+                    rty = rty.without_none()
+
+                if rty is datetime.datetime:
                     self.field_decoders[f._store_name] = o._decode_datetime
+
+                elif rty is uuid.UUID:
+                    self.field_encoders[f._store_name] = o._encode_uuid
+                    self.field_decoders[f._store_name] = o._decode_uuid
+
+            self.encode_key = self.field_encoders.get(m._key_field_store_name, lang.identity)
+            self.decode_key = self.field_decoders.get(m._key_field_store_name, lang.identity)
+
+        def encode(self, snap: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
+            fes = self.field_encoders
+            return {
+                k: fe(v) if (fe := fes.get(k)) is not None else v
+                for k, v in snap.items()
+            }
 
         def decode(self, row: ta.Mapping[str, ta.Any]) -> Snap:
             fds = self.field_decoders
@@ -96,13 +118,19 @@ class SqlStore(Store):
     #
 
     def _decode_datetime(self, o: ta.Any) -> datetime.datetime | None:
-        if o is None:
-            return None
-
-        if isinstance(o, datetime.datetime):
+        if o is None or isinstance(o, datetime.datetime):
             return o
-
         return datetime.datetime.fromisoformat(o)
+
+    def _encode_uuid(self, o: uuid.UUID | None) -> ta.Any | None:
+        if o is None:
+            return o
+        return str(check.isinstance(o, uuid.UUID))
+
+    def _decode_uuid(self, o: ta.Any) -> uuid.UUID | None:
+        if o is None or isinstance(o, uuid.UUID):
+            return o
+        return uuid.UUID(check.isinstance(o, str))
 
     #
 
@@ -149,7 +177,7 @@ class SqlStore(Store):
         if rty is int:
             dty = sql.td.Integer()
 
-        elif rty is str:
+        elif rty in (str, uuid.UUID):
             dty = sql.td.String()
 
         elif rty is datetime.datetime:
@@ -266,10 +294,12 @@ class SqlStore(Store):
             return check.single(rows) if rows else None
 
         async def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
+            sm = self._o._mappers[m]
+
             clauses: list[str] = []
             params: list[ta.Any] = []
 
-            for fk, fv in where.items():
+            for fk, fv in sm.encode(where).items():
                 check.not_in(fv.__class__, WRAPPER_TYPES)
                 clauses.append(f'{fk} = ?')
                 params.append(fv)
@@ -284,7 +314,6 @@ class SqlStore(Store):
 
             await self._o._maybe_create_schema()
 
-            sm = self._o._mappers[m]
             async with sql.query(check.not_none(self._q), stmt, params) as rows:
                 return [sm.decode(row.to_dict()) async for row in rows]
 
@@ -318,33 +347,41 @@ class SqlStore(Store):
         async def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
             await self._o._maybe_create_schema()
 
+            sm = self._o._mappers[m]
+
             stmt = self._build_insert_stmt(m, auto_key=True)
 
             iak: dict[ta.Any, ta.Any] = {}
 
             for snap in snaps:
                 ak = snap[m._key_field_store_name]
+                enc_snap = sm.encode(snap)
                 params = [
-                    snap[f._store_name]
+                    enc_snap[f._store_name]
                     for f in m._fields
                     if f is not m._key_field and f not in m._auto_value_fields
                 ]
                 vk = await sql.query_scalar(check.not_none(self._q), stmt, params)
-                iak[ak] = vk
+                iak[ak] = sm.decode_key(vk)
 
             return iak
 
         async def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
             await self._o._maybe_create_schema()
 
+            sm = self._o._mappers[m]
+
             stmt = self._build_insert_stmt(m)
 
             for snap in snaps:
-                params = [snap[f._store_name] for f in m._fields]
+                enc_snap = sm.encode(snap)
+                params = [enc_snap[f._store_name] for f in m._fields]
                 await sql.exec(check.not_none(self._q), stmt, params)
 
         async def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             await self._o._maybe_create_schema()
+
+            sm = self._o._mappers[m]
 
             for vk, ud_diff in diffs:
                 check.not_in(m._key_field_store_name, ud_diff)
@@ -357,11 +394,13 @@ class SqlStore(Store):
                     m._key_field_store_name,
                     '= ?',
                 ])
-                params = [*ud_diff.values(), vk]
+                params = [*sm.encode(ud_diff).values(), sm.encode_key(vk)]
                 await sql.exec(check.not_none(self._q), stmt, params)
 
         async def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
             await self._o._maybe_create_schema()
+
+            sm = self._o._mappers[m]
 
             stmt = ' '.join([
                 'delete from',
@@ -372,7 +411,7 @@ class SqlStore(Store):
             ])
 
             for k in keys:
-                await sql.exec(check.not_none(self._q), stmt, [k])
+                await sql.exec(check.not_none(self._q), stmt, [sm.encode_key(k)])
 
     #
 

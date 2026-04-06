@@ -67,6 +67,10 @@ class Field(lang.Sealed):
         return self._rty
 
     @property
+    def unwrapped_rty(self) -> rfl.Type:
+        return self._rty
+
+    @property
     def backref_binding(self) -> ta.Any | None:
         return self._backref_binding
 
@@ -105,6 +109,10 @@ class KeyField(Field, lang.Final):
     def key_cls(self) -> type:
         return self._key_cls
 
+    @property
+    def unwrapped_rty(self) -> rfl.Type:
+        return self._key_cls
+
 
 @ta.final
 class RefField(Field, lang.Final):
@@ -124,6 +132,11 @@ class RefField(Field, lang.Final):
         self._ref_obj_cls = check.isinstance(ort, type)
         self._ref_key_cls = check.isinstance(krt, type)
 
+        uw_rty = krt
+        if self._optional:
+            uw_rty = rfl.Union(frozenset([uw_rty, type(None)]))
+        self._unwrapped_rty = uw_rty
+
     @property
     def optional(self) -> bool:
         return self._optional
@@ -135,3 +148,7 @@ class RefField(Field, lang.Final):
     @property
     def ref_key_cls(self) -> type:
         return self._ref_key_cls
+
+    @property
+    def unwrapped_rty(self) -> rfl.Type:
+        return self._unwrapped_rty

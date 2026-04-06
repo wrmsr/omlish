@@ -23,3 +23,8 @@ class String(Dtype, lang.Singleton):
 @dc.dataclass(frozen=True)
 class Datetime(Dtype, lang.Singleton):
     pass
+
+
+@dc.dataclass(frozen=True)
+class Uuid(Dtype, lang.Singleton):
+    pass

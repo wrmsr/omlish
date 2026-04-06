@@ -1,0 +1,65 @@
+import concurrent.futures as cf
+import contextlib
+import os.path
+import sqlite3
+import tempfile
+import typing as ta
+import uuid
+
+import pytest
+
+from ... import dataclasses as dc
+from ... import lang
+from ... import orm
+from ... import sql
+from ...asyncs.asyncio import all as au
+
+
+@dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
+class Kv:
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+
+    key: str
+    value: str
+
+
+@lang.cached_function
+def registry() -> orm.Registry:
+    return orm.registry(
+        orm.dataclass_mapper(
+            Kv,
+            indexes=['key'],
+        ),
+    )
+
+
+async def _test_uuids(store: orm.Store) -> None:
+    async with orm.session(registry(), store):
+        kv = await orm.add_one(Kv(key='hi', value='abcdef'))  # noqa
+        await orm.flush()
+
+    async with orm.session(registry(), store):
+        kv2 = await orm.query_one(Kv, key='hi')  # noqa
+        print(kv2)
+
+    async with orm.session(registry(), store):
+        kv = await orm.add_one(Kv(key='hi again', value='ghijkl'))  # noqa
+        await orm.flush()
+        await orm.refresh(kv)
+        assert isinstance(kv.id.k, uuid.UUID)
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_orm_in_memory():
+    await _test_uuids(orm.InMemoryStore())
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_orm_sql():
+    db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
+    with cf.ThreadPoolExecutor(max_workers=1) as exe:
+        db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(db_path)))
+        adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
+        store = orm.SqlStore(registry(), adb)
+        await _test_uuids(store)

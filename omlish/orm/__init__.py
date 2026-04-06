@@ -51,6 +51,7 @@ from .keys import (  # noqa
     Key,
 
     key,
+    key_wrapping,
 
     AutoKeyNotSetError,
     auto_key,
