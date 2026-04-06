@@ -3,17 +3,11 @@ import typing as ta
 from .. import check
 from .. import lang
 from .. import typedvalues as tv
+from .options import IndexOption
 
 
 if ta.TYPE_CHECKING:
     from .mappers import Mapper
-
-
-##
-
-
-class IndexOption(tv.TypedValue, lang.Abstract):
-    pass
 
 
 ##

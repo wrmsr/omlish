@@ -1,9 +1,21 @@
 import abc
 import typing as ta
 
+from .. import dataclasses as dc
 from .. import lang
 from .. import marshal as msh
 from .. import reflect as rfl
+from .. import typedvalues as tv
+from .fields import FieldOption
+
+
+##
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class FieldCodec(tv.UniqueTypedValue, FieldOption, lang.Final):
+    v: 'Codec'
 
 
 ##

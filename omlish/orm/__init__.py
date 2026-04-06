@@ -35,7 +35,6 @@ from .codecs import (  # noqa
 )
 
 from .fields import (  # noqa
-    FieldOption,
     Field,
     KeyField,
     RefField,
@@ -43,8 +42,11 @@ from .fields import (  # noqa
 )
 
 from .indexes import (  # noqa
-    IndexOption,
     Index,
+)
+
+from .inmemory import (  # noqa
+    InMemoryStore,
 )
 
 from .keys import (  # noqa
@@ -58,13 +60,14 @@ from .keys import (  # noqa
     is_auto_key,
 )
 
-from .inmemory import (  # noqa
-    InMemoryStore,
+from .mappers import (  # noqa
+    Mapper,
 )
 
-from .mappers import (  # noqa
+from .options import (  # noqa
     MapperOption,
-    Mapper,
+    FieldOption,
+    IndexOption,
 )
 
 from .queries import (  # noqa

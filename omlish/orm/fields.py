@@ -5,18 +5,12 @@ from .. import lang
 from .. import reflect as rfl
 from .. import typedvalues as tv
 from .keys import Key
+from .options import FieldOption
 from .refs import Ref
 
 
 if ta.TYPE_CHECKING:
     from .mappers import Mapper
-
-
-##
-
-
-class FieldOption(tv.TypedValue, lang.Abstract):
-    pass
 
 
 ##

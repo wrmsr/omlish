@@ -3,9 +3,9 @@ import typing as ta
 
 from .. import check
 from .. import collections as col
-from .. import lang
 from .. import typedvalues as tv
 from .backrefs import Backref
+from .codecs import FieldCodec
 from .fields import Field
 from .fields import FieldOption
 from .fields import KeyField
@@ -15,6 +15,7 @@ from .keys import _KEY_TYPES
 from .keys import Key
 from .keys import _AutoKey
 from .keys import _ValKey
+from .options import MapperOption
 from .refs import _REF_TYPES
 from .refs import _KeyRef
 from .snaps import Snap
@@ -31,13 +32,6 @@ K = ta.TypeVar('K')
 T = ta.TypeVar('T')
 
 FieldOptionT = ta.TypeVar('FieldOptionT', bound=FieldOption)
-
-
-##
-
-
-class MapperOption(tv.TypedValue, lang.Abstract):
-    pass
 
 
 ##
@@ -253,8 +247,8 @@ class Mapper(ta.Generic[K, T]):
             check.state(not vk)
             check.state(not vr)
 
-            if (co := self._registry._codec) is not None:
-                v = co.decode(v, f._rty)
+            if (co := f._options.get(FieldCodec, None)) is not None:
+                v = co.v.encode(v, f.unwrapped_rty)
                 vt = v.__class__
 
         if vt is _AutoValue:
@@ -289,8 +283,8 @@ class Mapper(ta.Generic[K, T]):
             else:
                 v = _KeyRef(f._ref_obj_cls, _ValKey(v))  # type: ignore[attr-defined]
 
-        elif (co := self._registry._codec) is not None:
-            v = co.decode(v, f._rty)
+        elif (co := f._options.get(FieldCodec, None)) is not None:
+            v = co.v.decode(v, f.unwrapped_rty)
 
         return v
 

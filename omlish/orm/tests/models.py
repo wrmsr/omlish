@@ -75,5 +75,4 @@ def build_registry() -> orm.Registry:
         orm.mapper(User, indexes=['name']),
         orm.mapper(UserRelation, indexes=['src', 'dst']),
         orm.mapper(Review, indexes=['business', 'user']),
-        codec=orm.MarshalCodec(),
     )
