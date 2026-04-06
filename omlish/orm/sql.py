@@ -14,6 +14,9 @@ from .mappers import Mapper
 from .registries import Registry
 from .snaps import Snap
 from .stores import Store
+from .timestamps import CreatedAt
+from .timestamps import Timestamp
+from .timestamps import UpdatedAt
 from .wrappers import WRAPPER_TYPES
 
 
@@ -30,14 +33,28 @@ class SqlStore(Store):
     #
 
     def _field_table_def(self, field: Field) -> list[sql.td.Element]:
-        out: list[sql.td.Element] = []
+        if Timestamp in field.options:
+            check.is_(field.rty, datetime.datetime)
+
+            if CreatedAt in field.options:
+                check.equal(field.name, 'created_at')
+                return [sql.td.CreatedAt()]
+
+            elif UpdatedAt in field.options:
+                check.equal(field.name, 'updated_at')
+                return [sql.td.UpdatedAt()]
+
+            else:
+                raise RuntimeError(f'Unknown timestamp field type {field}')
+
+        els: list[sql.td.Element] = []
 
         rty: rfl.Type
         nullable: bool | None = None
 
         if isinstance(field, KeyField):
             rty = field.key_cls
-            out.append(sql.td.PrimaryKey([field._store_name]))
+            els.append(sql.td.PrimaryKey([field._store_name]))
 
         elif isinstance(field, RefField):
             rty = field.ref_key_cls
@@ -57,20 +74,23 @@ class SqlStore(Store):
 
         if rty is int:
             dty = sql.td.Integer()
+
         elif rty is str:
             dty = sql.td.String()
+
         elif rty is datetime.datetime:
             dty = sql.td.Datetime()
+
         else:
             raise TypeError(f'unsupported sql field type: {rty!r}')
 
-        out.append(sql.td.Column(
+        els.append(sql.td.Column(
             field._store_name,
             dty,
             nullable=nullable,
         ))
 
-        return out
+        return els
 
     def _index_table_def(self, m: Mapper, idx: Index) -> list[sql.td.Element]:
         return [sql.td.Index(
@@ -98,7 +118,7 @@ class SqlStore(Store):
                 td = self._mapper_table_def(m)
 
                 for stmt in sql.td.render_create_statements(
-                        td,
+                        sql.td.lower_table_elements(td),
                         if_not_exists=True,
                 ):
                     await sql.api.exec(conn, stmt)
@@ -201,7 +221,8 @@ class SqlStore(Store):
                     '(',
                     ', '.join([
                         f._store_name
-                        for f in m._fields if not (f is m._key_field and auto_key)
+                        for f in m._fields
+                        if not ((f is m._key_field and auto_key) or f in m._auto_value_fields)
                     ]),
                     ')',
                 ]),
@@ -210,7 +231,7 @@ class SqlStore(Store):
                     '(',
                     ', '.join([
                         '?'
-                        for _ in range(len(m._fields) - (1 if auto_key else 0))
+                        for _ in range(len(m._fields) - (1 if auto_key else 0) - len(m._auto_value_fields))
                     ]),
                     ')',
                 ]),
@@ -225,8 +246,12 @@ class SqlStore(Store):
             iak: dict[ta.Any, ta.Any] = {}
 
             for snap in snaps:
-                ak = snap[m._key_field._store_name]
-                params = [snap[f._store_name] for f in m._fields if f is not m._key_field]
+                ak = snap[m._key_field_store_name]
+                params = [
+                    snap[f._store_name]
+                    for f in m._fields
+                    if f is not m._key_field and f not in m._auto_value_fields
+                ]
                 vk = await sql.query_scalar(check.not_none(self._q), stmt, params)
                 iak[ak] = vk
 

@@ -8,12 +8,14 @@ from .api import (  # noqa
     session,
     abort,
     add,
+    add_one,
     get,
     delete,
     flush,
 
     make_query,
     query,
+    query_one,
 )
 
 from .backrefs import (  # noqa
@@ -91,6 +93,16 @@ from .stores import (  # noqa
 
 from .sql import (  # noqa
     SqlStore,
+)
+
+from .timestamps import (  # noqa
+    Timestamp,
+    CreatedAt,
+    UpdatedAt,
+)
+
+from .values import (  # noqa
+    auto_value,
 )
 
 from .wrappers import (  # noqa

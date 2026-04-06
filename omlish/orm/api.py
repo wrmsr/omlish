@@ -169,6 +169,7 @@ def dataclass_mapper(
         store_name: str | None = None,
         indexes: ta.Sequence[Index | str | ta.Sequence[str]] | None = None,
         options: ta.Sequence[MapperOption] | None = None,
+        field_options: ta.Mapping[str, ta.Sequence[FieldOption]] | None = None,
 ) -> Mapper:
     check.arg(dc.is_dataclass(cls))
 
@@ -176,14 +177,21 @@ def dataclass_mapper(
 
     #
 
+    field_options = dict(field_options or {})
+
     fields: list[Field] = []
 
     for df in dc_rfl.fields.values():  # noqa
+        df_os = field_options.pop(df.name, None)
+
         fields.append(field(
             df.name,
             dc_rfl.field_annotations[df.name],
             backref_binding=df,
+            options=df_os or None,
         ))
+
+    check.empty(field_options)
 
     backrefs: list[Backref] = []
 
@@ -253,6 +261,11 @@ async def add(*objs: ta.Any) -> None:
     return await active_session().add(*objs)
 
 
+async def add_one(obj: T) -> T:
+    await add(obj)
+    return obj
+
+
 @ta.overload
 async def get(cls: type[T], k: Key[K]) -> T | None:
     ...
@@ -293,3 +306,13 @@ async def query(
         **where: ta.Any,
 ) -> list[T]:
     return await active_session().query(make_query(cls, **where))
+
+
+async def query_one(
+        cls: type[T],
+        **where: ta.Any,
+) -> T | None:
+    objs = await query(cls, **where)
+    if not objs:
+        return None
+    return check.single(objs)

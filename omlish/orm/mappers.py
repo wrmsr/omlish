@@ -7,6 +7,7 @@ from .. import lang
 from .. import typedvalues as tv
 from .backrefs import Backref
 from .fields import Field
+from .fields import FieldOption
 from .fields import KeyField
 from .fields import RefField
 from .indexes import Index
@@ -17,6 +18,9 @@ from .keys import _ValKey
 from .refs import _REF_TYPES
 from .refs import _KeyRef
 from .snaps import Snap
+from .timestamps import CreatedAt
+from .timestamps import UpdatedAt
+from .values import _AutoValue
 
 
 if ta.TYPE_CHECKING:
@@ -25,6 +29,8 @@ if ta.TYPE_CHECKING:
 
 K = ta.TypeVar('K')
 T = ta.TypeVar('T')
+
+FieldOptionT = ta.TypeVar('FieldOptionT', bound=FieldOption)
 
 
 ##
@@ -84,6 +90,16 @@ class Mapper(ta.Generic[K, T]):
             idx: tuple(self._fields_by_name[f].store_name for f in idx.fields)
             for idx in indexes
         }
+
+        self._created_at_field = self._single_field_with_option(CreatedAt)
+        self._updated_at_field = self._single_field_with_option(UpdatedAt)
+
+        self._auto_value_fields: ta.Sequence[Field] = (
+            *filter(None, (
+                self._created_at_field,
+                self._updated_at_field,
+            )),
+        )
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}({self._cls!r}, {self._store_name!r})'
@@ -161,6 +177,26 @@ class Mapper(ta.Generic[K, T]):
 
     #
 
+    def _single_field_with_option(self, opt_cls: type[FieldOptionT]) -> Field | None:
+        lst = [f for f in self._fields if opt_cls in f.options]
+        if not lst:
+            return None
+        return check.single(lst)
+
+    @property
+    def created_at_field(self) -> Field | None:
+        return self._created_at_field
+
+    @property
+    def updated_at_field(self) -> Field | None:
+        return self._updated_at_field
+
+    @property
+    def auto_value_fields(self) -> ta.Sequence[Field]:
+        return self._auto_value_fields
+
+    #
+
     def key_for_obj(self, obj: T) -> Key[K]:
         return check.isinstance(getattr(obj, self.key_field.name), Key)
 
@@ -186,6 +222,7 @@ class Mapper(ta.Generic[K, T]):
                 pass
             else:
                 v = v.k
+                vt = v.__class__
 
         elif ft is RefField:
             if f._optional and v is None:  # type: ignore[attr-defined]
@@ -193,10 +230,12 @@ class Mapper(ta.Generic[K, T]):
             else:
                 check.state(vr)
                 v = v.k
-                if v.__class__ is _AutoKey:
+                vt = v.__class__
+                if vt is _AutoKey:
                     pass
                 else:
                     v = v.k
+                    vt = v.__class__
 
         else:
             check.state(not vk)
@@ -204,6 +243,10 @@ class Mapper(ta.Generic[K, T]):
 
             if (co := self._registry._codec) is not None:
                 v = co.decode(v, f._rty)
+                vt = v.__class__
+
+        if vt is _AutoValue:
+            raise TypeError(v)
 
         return v
 
@@ -211,7 +254,13 @@ class Mapper(ta.Generic[K, T]):
         dct: dict[str, ta.Any] = {}
 
         for f in self._fields:
-            dct[f._store_name] = self.field_value_to_snap_value(f, getattr(obj, f.name))
+            v = getattr(obj, f.name)
+            vt = v.__class__
+
+            if vt is _AutoValue:
+                continue
+
+            dct[f._store_name] = self.field_value_to_snap_value(f, v)
 
         return dct
 
