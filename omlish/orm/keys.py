@@ -84,8 +84,11 @@ class AutoKeyNotSetError(Exception):
 
 @ta.final
 class _AutoKey(Key[K], lang.Final):
+    def __init__(self, *, _cls: type[K] | None = None) -> None:
+        self._cls = _cls
+
     def __repr__(self) -> str:
-        return f'orm.auto_key@{id(self):x}'
+        return f'orm.auto_key{f"[{self._cls.__name__}]" if self._cls is not None else ""}@{id(self):x}'
 
     @property
     def k(self) -> K:
@@ -103,8 +106,15 @@ class _AutoKey(Key[K], lang.Final):
             raise TypeError(other)
 
 
-def auto_key() -> Key:
-    return _AutoKey()
+class _AutoKeyFactory:
+    def __getitem__(self, cls: type[K]) -> ta.Callable[[], Key[K]]:
+        return lambda: _AutoKey(_cls=cls)
+
+    def __call__(self) -> Key:
+        return _AutoKey()
+
+
+auto_key = _AutoKeyFactory()  # noqa
 
 
 def is_auto_key(k: ta.Any) -> bool:

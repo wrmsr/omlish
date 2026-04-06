@@ -10,7 +10,7 @@ from ... import orm
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class BusinessCategory:
-    id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+    id: orm.Key[int] = dc.field(default_factory=orm.auto_key[int])
 
     business: orm.Ref['Business', int]
 
@@ -20,7 +20,7 @@ class BusinessCategory:
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class Business:
-    id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+    id: orm.Key[int] = dc.field(default_factory=orm.auto_key[int])
 
     name: str
 
@@ -31,7 +31,7 @@ class Business:
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class User:
-    id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+    id: orm.Key[int] = dc.field(default_factory=orm.auto_key[int])
 
     name: str
 
@@ -48,7 +48,7 @@ class User:
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class UserRelation:
-    id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+    id: orm.Key[int] = dc.field(default_factory=orm.auto_key[int])
 
     src: orm.Ref[User, int]
     dst: orm.Ref[User, int]
@@ -57,7 +57,7 @@ class UserRelation:
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class Review:
-    id: orm.Key[int] = dc.field(default_factory=orm.auto_key)
+    id: orm.Key[int] = dc.field(default_factory=orm.auto_key[int])
 
     business: orm.Ref[Business, int]
     user: orm.Ref[User, int]
