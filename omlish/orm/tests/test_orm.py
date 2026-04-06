@@ -3,8 +3,6 @@ import os.path
 import sqlite3
 import tempfile
 
-import pytest
-
 from ... import orm
 from ... import sql
 from ..registries import Registry
@@ -120,7 +118,6 @@ def test_orm_in_memory():
     _test_orm(orm.InMemoryStore())
 
 
-@pytest.mark.skip_unless_alone
 def test_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     registry = build_registry()

@@ -138,9 +138,23 @@ class SqlStore(Store):
             return ' '.join([
                 'insert into',
                 m._store_name,
-                ''.join(['(', ', '.join([f._store_name for f in m._fields if not (f is m._key_field and auto_key)]), ')']),  # noqa
+                ''.join([
+                    '(',
+                    ', '.join([
+                        f._store_name
+                        for f in m._fields if not (f is m._key_field and auto_key)
+                    ]),
+                    ')',
+                ]),
                 'values',
-                ''.join(['(', ', '.join(['?' for _ in range(len(m._fields) - (1 if auto_key else 0))]), ')']),
+                ''.join([
+                    '(',
+                    ', '.join([
+                        '?'
+                        for _ in range(len(m._fields) - (1 if auto_key else 0))
+                    ]),
+                    ')',
+                ]),
                 *(['returning id'] if auto_key else []),
             ])
 
@@ -173,12 +187,35 @@ class SqlStore(Store):
         def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             self._o._maybe_create_schema()
 
-            raise NotImplementedError
+            with self._o._db.connect() as conn:
+                for vk, ud_diff in diffs:
+                    check.not_in(m._key_field_store_name, ud_diff)
+                    stmt = ' '.join([
+                        'update',
+                        m._store_name,
+                        'set',
+                        ', '.join([f'{k} = ?' for k in ud_diff]),
+                        'where',
+                        m._key_field_store_name,
+                        '= ?',
+                    ])
+                    params = [*ud_diff.values(), vk]
+                    sql.api.exec(conn, stmt, params)
 
         def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
             self._o._maybe_create_schema()
 
-            raise NotImplementedError
+            stmt = ' '.join([
+                'delete from',
+                m._store_name,
+                'where',
+                m._key_field_store_name,
+                '= ?',
+            ])
+
+            with self._o._db.connect() as conn:
+                for k in keys:
+                    sql.api.exec(conn, stmt, [k])
 
     #
 
