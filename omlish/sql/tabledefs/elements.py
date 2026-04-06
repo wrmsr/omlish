@@ -1,9 +1,9 @@
 import typing as ta
 
-from ... import check
 from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
+from ... import typedvalues as tv
 from .dtypes import Dtype
 from .values import SimpleValue
 
@@ -11,7 +11,7 @@ from .values import SimpleValue
 ##
 
 
-class Element(lang.Abstract, lang.Sealed):
+class Element(tv.TypedValue, lang.Abstract, lang.Sealed):
     pass
 
 
@@ -71,19 +71,4 @@ class CreatedAtUpdatedAt(Element, lang.Final):
 ##
 
 
-@dc.dataclass(frozen=True)
-class Elements(ta.Sequence[Element], lang.Final):
-    lst: ta.Sequence[Element] = dc.xfield(coerce=col.seq_of(check.of_isinstance(Element)))
-
-    def __iter__(self) -> ta.Iterator[Element]:
-        return iter(self.lst)
-
-    def __getitem__(self, index: ta.Any) -> Element:  # type: ignore[override]
-        return self.lst[index]
-
-    def __len__(self) -> int:
-        return len(self.lst)
-
-    @lang.cached_property
-    def by_type(self) -> col.DynamicTypeMap[Element]:
-        return col.DynamicTypeMap(self.lst)
+Elements: ta.TypeAlias = tv.TypedValues[Element]

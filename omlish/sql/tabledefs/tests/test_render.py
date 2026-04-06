@@ -14,7 +14,7 @@ from ..tabledefs import TableDef
 def test_render_create_table():
     tbl = TableDef(
         'users',
-        Elements([
+        Elements(*[
             IdIntegerPrimaryKey(),
             CreatedAtUpdatedAt(),
             Column('name', String()),

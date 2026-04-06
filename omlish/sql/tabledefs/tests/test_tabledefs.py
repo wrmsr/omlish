@@ -12,7 +12,7 @@ from ..tabledefs import TableDef
 def test_table_defs():
     users = TableDef(
         'users',
-        Elements([
+        Elements(*[
             IdIntegerPrimaryKey(),
             CreatedAtUpdatedAt(),
             Column('name', String()),
@@ -26,4 +26,4 @@ def test_table_defs():
     users_lowered = lower_table_elements(users)
     print(json.dumps_pretty(msh.marshal(users_lowered)))
 
-    print(users_lowered.elements.by_type[Column])
+    print(users_lowered.elements[Column])

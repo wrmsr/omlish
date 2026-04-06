@@ -51,7 +51,7 @@ def render_create_statements(
 ) -> list[str]:
     cols: ta.Mapping[str, Column] = col.make_map_by(
         lambda c: c.name,
-        tbl.elements.by_type[Column],
+        tbl.elements[Column],
         strict=True,
     )
 

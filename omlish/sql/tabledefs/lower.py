@@ -56,4 +56,4 @@ def lower_table_elements(td: TableDef) -> TableDef:
             case _:
                 raise TypeError(e)
 
-    return dc.replace(td, elements=Elements(out))
+    return dc.replace(td, elements=Elements(*out))

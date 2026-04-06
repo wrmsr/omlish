@@ -19,5 +19,5 @@ def table_def(
 ) -> TableDef:
     return TableDef(
         name,
-        Elements(elements),
+        Elements(*elements),
     )
