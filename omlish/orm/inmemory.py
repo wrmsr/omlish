@@ -2,6 +2,7 @@
 import typing as ta
 
 from .. import check
+from .. import dataclasses as dc
 from .. import lang
 from .mappers import Mapper
 from .snaps import Snap
@@ -56,6 +57,54 @@ class InMemoryStore(Store):
 
     #
 
+    @dc.dataclass(frozen=True, kw_only=True)
+    class _SelectedIndex:
+        index: tuple[str, ...]
+        index_set: frozenset[str]
+        index_key: tuple[ta.Any, ...]
+        where: ta.Sequence[tuple[str, ta.Any]]
+
+    def _select_index(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> _SelectedIndex | None:
+        t = self._table_for_mapper(m)
+
+        fl = frozenset(where)
+
+        bt: tuple[str, ...] | None = None
+        bs: frozenset[str] | None = None
+        bi: int | None = None
+
+        for il, it in t.index_lookup.items():
+            iz = il - fl
+            if iz:
+                continue
+            di = len(it)
+            if not di:
+                continue
+            if bi is not None and bi > di:
+                continue
+            bt = it
+            bs = il
+            bi = di
+
+        del il
+        del it
+
+        if bt is None:
+            return None
+        bs = check.not_none(bs)
+
+        ik = tuple(where[k] for k in bt)
+        ig = [(k, where[k]) for k in fl - bs]
+
+        return self._SelectedIndex(
+            index=bt,
+            index_set=bs,
+            index_key=ik,
+            where=ig,
+        )
+
+    #
+
     class _Context(Store.Context):
         def __init__(self, o: 'InMemoryStore') -> None:
             super().__init__()
@@ -104,29 +153,9 @@ class InMemoryStore(Store):
                 else:
                     return []
 
-            fl = frozenset(where)
+            si = self._o._select_index(m, where)
 
-            bt: tuple[str, ...] | None = None
-            bs: frozenset[str] | None = None
-            bi: int | None = None
-
-            for il, it in t.index_lookup.items():
-                iz = il - fl
-                if iz:
-                    continue
-                di = len(it)
-                if not di:
-                    continue
-                if bi is not None and bi > di:
-                    continue
-                bt = it
-                bs = il
-                bi = di
-
-            del il
-            del it
-
-            if bt is None:
+            if si is None:
                 lst: list[Snap] = []
 
                 for v in t.snaps.values():
@@ -138,27 +167,24 @@ class InMemoryStore(Store):
 
                 return lst
 
-            ik = tuple(where[k] for k in bt)
-            ig = [(k, where[k]) for k in fl - bs]  # type: ignore[operator]
-
-            ix = t.indexes[bt]  # noqa
+            ix = t.indexes[si.index]
             try:
-                xs = ix[ik]
+                xs = ix[si.index_key]
             except KeyError:
                 return []
 
-            if not ig:
-                return [t.snaps[k] for k in xs]
+            if not si.where:
+                return [t.snaps[xk] for xk in xs]
 
             lst = []
 
-            for k in ig:
-                v = t.snaps[k]
-                for fk, fv in ig:
-                    if v[fk] != fv:
+            for xk in xs:
+                x = t.snaps[xk]
+                for fk, fv in si.where:
+                    if x[fk] != fv:
                         break
                 else:
-                    lst.append(v)
+                    lst.append(x)
 
             return lst
 

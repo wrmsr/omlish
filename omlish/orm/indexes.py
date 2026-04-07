@@ -13,6 +13,21 @@ if ta.TYPE_CHECKING:
 ##
 
 
+class SortedIndexOption(tv.UniqueTypedValue, IndexOption):
+    pass
+
+
+class UniqueIndexOption(tv.UniqueTypedValue, IndexOption):
+    pass
+
+
+class ClusteredIndexOption(tv.UniqueTypedValue, IndexOption):
+    pass
+
+
+##
+
+
 @ta.final
 class Index(lang.Final):
     def __init__(

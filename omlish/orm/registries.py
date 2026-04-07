@@ -66,7 +66,7 @@ class Registry:
                     lst = self._fields_by_backref_binding[fbb]
                 except KeyError:
                     lst = self._fields_by_backref_binding[fbb] = []
-                lst.append(fbb)
+                lst.append(f)
 
     def register(self, *mappers: Mapper) -> None:
         for m in mappers:
