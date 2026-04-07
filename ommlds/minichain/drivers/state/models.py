@@ -7,6 +7,7 @@ from omlish import orm
 from omlish import sql
 
 from ...chat.messages import Chat
+from ...chat.messages import Message
 
 
 ##
@@ -25,6 +26,39 @@ class DriverState:
     name: str | None = None
 
     chat: Chat = ()
+
+
+@dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
+class DriverChat:
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+
+    created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
+    updated_at: datetime.datetime = orm.auto_value[datetime.datetime]()
+
+    #
+
+    name: str | None = None
+
+    num_messages: int = 0
+
+    messages: ta.ClassVar[orm.Backref['DriverMessage']] = orm.backref(lambda: DriverMessage.chat)  # type: ignore[misc]
+
+
+@dc.dataclass(kw_only=True)
+@dc.extra_class_params(install_class_field_attrs='instance')
+class DriverMessage:
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+
+    created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
+    updated_at: datetime.datetime = orm.auto_value[datetime.datetime]()
+
+    #
+
+    chat: orm.Ref[DriverChat, uuid.UUID]
+    seq: int
+
+    message: Message
 
 
 ##

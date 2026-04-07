@@ -251,7 +251,7 @@ class Mapper(ta.Generic[K, T]):
             check.state(not vr)
 
             if (co := f._options.get(FieldCodec, None)) is not None:
-                v = co.v.encode(v, f.unwrapped_rty)
+                v = co.v.encode(v, f)
                 vt = v.__class__
 
         if vt is _AutoValue:
@@ -287,7 +287,7 @@ class Mapper(ta.Generic[K, T]):
                 v = _KeyRef(f._ref_obj_cls, _ValKey(v))  # type: ignore[attr-defined]
 
         elif (co := f._options.get(FieldCodec, None)) is not None:
-            v = co.v.decode(v, f.unwrapped_rty)
+            v = co.v.decode(v, f)
 
         return v
 

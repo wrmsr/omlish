@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import abc
 import typing as ta
 
@@ -7,8 +8,12 @@ from .. import marshal as msh
 from .. import reflect as rfl
 from .. import typedvalues as tv
 from ..formats import json
+from .fields import Field
 from .fields import FieldOption
 
+
+if ta.TYPE_CHECKING:
+    from .mappers import Mapper
 
 ##
 
@@ -22,42 +27,38 @@ class FieldCodec(tv.UniqueTypedValue, FieldOption, lang.Final):
 ##
 
 
+CodecSubject: ta.TypeAlias = ta.Union[  # noqa
+    Field,
+    'Mapper',
+]
+
+
 class Codec(lang.Abstract):
     @abc.abstractmethod
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+    def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+    def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
         raise NotImplementedError
+
+    #
+
+    @staticmethod
+    def rty(cs: CodecSubject) -> rfl.Type:
+        if cs.__class__ is Field:
+            return cs.unwrapped_rty
+        else:
+            return cs._cls  # type: ignore[union-attr]
 
 
 @ta.final
 class NopCodec(Codec):
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+    def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
         return obj
 
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+    def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
         return val
-
-
-@ta.final
-class FnCodec(Codec):
-    def __init__(
-            self,
-            encode: ta.Callable[[ta.Any, rfl.Type], ta.Any],
-            decode: ta.Callable[[ta.Any, rfl.Type], ta.Any],
-    ) -> None:
-        super().__init__()
-
-        self._encode = encode
-        self._decode = decode
-
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
-        return self._encode(obj, rty)
-
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
-        return self._decode(val, rty)
 
 
 @ta.final
@@ -67,15 +68,15 @@ class OptionalCodec(Codec):
 
         self._child = child
 
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+    def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
         if obj is None:
             return None
-        return self._child.encode(obj, rty)
+        return self._child.encode(obj, cs)
 
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+    def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
         if val is None:
             return None
-        return self._child.decode(val, rty)
+        return self._child.decode(val, cs)
 
 
 @ta.final
@@ -85,14 +86,14 @@ class CompositeCodec(Codec):
 
         self._children = children
 
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+    def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
         for child in self._children:
-            obj = child.encode(obj, rty)
+            obj = child.encode(obj, cs)
         return obj
 
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+    def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
         for child in reversed(self._children):
-            val = child.decode(val, rty)
+            val = child.decode(val, cs)
         return val
 
 
@@ -101,17 +102,17 @@ class CompositeCodec(Codec):
 
 @ta.final
 class JsonCodec(Codec):
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+    def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
         return json.dumps_compact(obj)
 
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+    def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
         return json.loads(val)
 
 
 @ta.final
 class MarshalCodec(Codec):
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
-        return msh.marshal(obj, rty)
+    def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
+        return msh.marshal(obj, self.rty(cs))
 
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
-        return msh.unmarshal(val, rty)
+    def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
+        return msh.unmarshal(val, self.rty(cs))

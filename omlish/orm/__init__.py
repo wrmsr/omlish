@@ -41,9 +41,10 @@ from .backrefs import (  # noqa
 from .codecs import (  # noqa
     FieldCodec,
 
+    CodecSubject,
+
     Codec,
     NopCodec,
-    FnCodec,
     OptionalCodec,
     CompositeCodec,
 
