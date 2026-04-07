@@ -2,8 +2,10 @@
 import typing as ta
 
 from .. import check
+from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
+from .indexes import Index
 from .mappers import Mapper
 from .snaps import Snap
 from .stores import Store
@@ -20,6 +22,8 @@ class InMemoryStore(Store):
         self._tables_by_mapper: dict[Mapper, InMemoryStore._Table] = {}
         self._tables_by_name: dict[str, InMemoryStore._Table] = {}
 
+        self._state = self._State()
+
     #
 
     class _Table:
@@ -28,14 +32,13 @@ class InMemoryStore(Store):
 
             self.m = m
 
-            self.snaps: dict[ta.Any, Snap] = {}
-
-            self.indexes: dict[tuple[str, ...], dict[tuple[ta.Any, ...], set[ta.Any]]] = {
-                it: {}
-                for it in sorted(set(m.index_field_store_names.values()))
+            self.index_lookup: dict[frozenset[str], Index] = {
+                frozenset(idx_t): idx
+                for idx, idx_t in sorted(
+                    m.index_field_store_names.items(),
+                    key=lambda kv: kv[1],
+                )
             }
-
-            self.index_lookup: dict[frozenset[str], tuple[str, ...]] = {frozenset(t): t for t in self.indexes}
 
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}({self.m!r})'
@@ -57,50 +60,59 @@ class InMemoryStore(Store):
 
     #
 
+    @dc.dataclass(frozen=True)
+    class _State:
+        tables: col.PersistentMapping['InMemoryStore._Table', 'InMemoryStore._TableState'] = dc.field(default_factory=col.new_persistent_map)  # noqa
+
+    @dc.dataclass(frozen=True)
+    class _TableState:
+        snaps: col.PersistentMapping[ta.Any, Snap] = dc.field(default_factory=col.new_persistent_map)
+        indexes: col.PersistentMapping[str, 'InMemoryStore._IndexState'] = dc.field(default_factory=col.new_persistent_map)  # noqa
+
+    @dc.dataclass(frozen=True)
+    class _IndexState:
+        keys: col.PersistentMapping[tuple[ta.Any, ...], frozenset[ta.Any]] = dc.field(default_factory=col.new_persistent_map)  # noqa
+
+    #
+
     @dc.dataclass(frozen=True, kw_only=True)
     class _SelectedIndex:
-        index: tuple[str, ...]
+        index: Index
         index_set: frozenset[str]
         index_key: tuple[ta.Any, ...]
-        where: ta.Sequence[tuple[str, ta.Any]]
+        unindexed_where: ta.Sequence[tuple[str, ta.Any]]
 
-    def _select_index(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> _SelectedIndex | None:
-        t = self._table_for_mapper(m)
+    def _select_index(self, t: _Table, where: ta.Mapping[str, ta.Any]) -> _SelectedIndex | None:
+        where_set = frozenset(where)
 
-        fl = frozenset(where)
+        best_idx: Index | None = None
+        best_set: frozenset[str] | None = None
+        best_width: int | None = None
 
-        bt: tuple[str, ...] | None = None
-        bs: frozenset[str] | None = None
-        bi: int | None = None
-
-        for il, it in t.index_lookup.items():
-            iz = il - fl
-            if iz:
+        for cur_set, cur_idx in t.index_lookup.items():
+            if cur_set - where_set:
                 continue
-            di = len(it)
-            if not di:
+            cur_width = len(cur_set)
+            if not cur_width:
                 continue
-            if bi is not None and bi > di:
+            if best_width is not None and best_width > cur_width:
                 continue
-            bt = it
-            bs = il
-            bi = di
+            best_idx = cur_idx
+            best_set = cur_set
+            best_width = cur_width
 
-        del il
-        del it
-
-        if bt is None:
+        if best_idx is None:
             return None
-        bs = check.not_none(bs)
+        best_set = check.not_none(best_set)
 
-        ik = tuple(where[k] for k in bt)
-        ig = [(k, where[k]) for k in fl - bs]
+        idx_key = tuple(where[k] for k in t.m._index_field_store_names[best_idx])
+        un_idx_where = [(k, where[k]) for k in where_set - best_set]
 
         return self._SelectedIndex(
-            index=bt,
-            index_set=bs,
-            index_key=ik,
-            where=ig,
+            index=best_idx,
+            index_set=best_set,
+            index_key=idx_key,
+            unindexed_where=un_idx_where,
         )
 
     #
@@ -135,17 +147,31 @@ class InMemoryStore(Store):
 
         async def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
             check.not_in(k.__class__, WRAPPER_TYPES)
+
             try:
                 t = self._o._table_for_mapper(m)
             except KeyError:
                 return None
-            return t.snaps.get(k)
+
+            st = self._o._state
+            try:
+                ts = st.tables[t]
+            except KeyError:
+                return None
+
+            return ts.snaps.get(k)
 
         async def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
             t = self._o._table_for_mapper(m)
 
+            st = self._o._state
+            try:
+                ts = st.tables[t]
+            except KeyError:
+                return []
+
             if not where:
-                return list(t.snaps.values())
+                return list(ts.snaps.values())
 
             if t.m.key_field.store_name in where:
                 if (ks := await self.fetch(m, where[t.m.key_field.store_name])) is not None:
@@ -153,12 +179,12 @@ class InMemoryStore(Store):
                 else:
                     return []
 
-            si = self._o._select_index(m, where)
+            si = self._o._select_index(t, where)
 
             if si is None:
                 lst: list[Snap] = []
 
-                for v in t.snaps.values():
+                for v in ts.snaps.values():
                     for fk, fv in where.items():
                         if v[fk] != fv:
                             break
@@ -167,20 +193,20 @@ class InMemoryStore(Store):
 
                 return lst
 
-            ix = t.indexes[si.index]
+            ix = ts.indexes[si.index._store_name]  # type: ignore[index]
             try:
-                xs = ix[si.index_key]
+                xs = ix.keys[si.index_key]
             except KeyError:
                 return []
 
-            if not si.where:
-                return [t.snaps[xk] for xk in xs]
+            if not si.unindexed_where:
+                return [ts.snaps[xk] for xk in xs]
 
             lst = []
 
             for xk in xs:
-                x = t.snaps[xk]
-                for fk, fv in si.where:
+                x = ts.snaps[xk]
+                for fk, fv in si.unindexed_where:
                     if x[fk] != fv:
                         break
                 else:
@@ -190,24 +216,79 @@ class InMemoryStore(Store):
 
         #
 
-        def _index(self, t: 'InMemoryStore._Table', k: ta.Any, snap: Snap) -> None:  # noqa
-            for it, idc in t.indexes.items():
-                ik = tuple(snap[f] for f in it)
+        def _index(
+                self,
+                t: 'InMemoryStore._Table',
+                idx_sts: col.PersistentMapping[str, 'InMemoryStore._IndexState'],
+                k: ta.Any,
+                snap: Snap,
+        ) -> col.PersistentMapping[str, 'InMemoryStore._IndexState']:
+            if not t.m._indexes:
+                return idx_sts
+
+            for idx, idx_t in t.m._index_field_store_names.items():
+                idx_sn = check.not_none(idx._store_name)
                 try:
-                    iz = idc[ik]
+                    idx_st = idx_sts[idx_sn]
                 except KeyError:
-                    iz = idc[ik] = set()
-                iz.add(k)
+                    idx_st = self._o._IndexState()
 
-        def _deindex(self, t: 'InMemoryStore._Table', k: ta.Any, snap: Snap) -> None:  # noqa
-            for it, idc in t.indexes.items():
-                ik = tuple(snap[f] for f in it)
-                iz = idc[ik]
-                iz.remove(k)
+                idx_keys = idx_st.keys
+
+                ik = tuple(snap[f] for f in idx_t)
+
+                try:
+                    iz = idx_keys[ik]
+                except KeyError:
+                    iz = frozenset([k])
+                else:
+                    iz |= frozenset([k])
+
+                idx_keys = idx_st.keys.with_(ik, iz)
+
+                idx_st = dc.replace(idx_st, keys=idx_keys)
+
+                idx_sts = idx_sts.with_(idx_sn, idx_st)
+
+            return idx_sts
+
+        def _deindex(
+                self,
+                t: 'InMemoryStore._Table',
+                idx_sts: col.PersistentMapping[str, 'InMemoryStore._IndexState'],
+                k: ta.Any,
+                snap: Snap,
+        ) -> col.PersistentMapping[str, 'InMemoryStore._IndexState']:
+            if not t.m._indexes:
+                return idx_sts
+
+            for idx, idx_t in t.m._index_field_store_names.items():
+                idx_sn = check.not_none(idx._store_name)
+                try:
+                    idx_st = idx_sts[idx_sn]
+                except KeyError:
+                    idx_st = self._o._IndexState()
+
+                idx_keys = idx_st.keys
+
+                ik = tuple(snap[f] for f in idx_t)
+
+                iz = idx_keys[ik]
+                check.in_(k, iz)
+                iz -= frozenset([k])
+
                 if not iz:
-                    del idc[ik]
+                    idx_keys = idx_keys.without(ik)
+                else:
+                    idx_keys = idx_keys.with_(ik, iz)
 
-        def _ts_snap(self, m: Mapper, *, create: bool) -> Snap | None:
+                idx_st = dc.replace(idx_st, keys=idx_keys)
+
+                idx_sts = idx_sts.with_(idx_sn, idx_st)
+
+            return idx_sts
+
+        def _timestamp_snap(self, m: Mapper, *, create: bool) -> Snap | None:
             ca_sn = m._created_at_store_name if create else None
             ua_sn = m._updated_at_store_name
             if ca_sn is None and ua_sn is None:
@@ -215,68 +296,105 @@ class InMemoryStore(Store):
 
             now = lang.utcnow()
 
-            ts_snap: dict[str, ta.Any] = {}
+            ti_snap: dict[str, ta.Any] = {}
             if ca_sn is not None:
-                ts_snap[ca_sn] = now
+                ti_snap[ca_sn] = now
             if ua_sn is not None:
-                ts_snap[ua_sn] = now
+                ti_snap[ua_sn] = now
 
-            return ts_snap
+            return ti_snap
 
         #
 
         async def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
             t = self._o._table_for_mapper(m)
+
+            st = self._o._state
+            try:
+                ts = st.tables[t]
+            except KeyError:
+                ts = self._o._TableState()
+            ts_snaps = ts.snaps
+            idx_sts = ts.indexes
+
             kf_sn = m._key_field_store_name
-            ts_snap = self._ts_snap(m, create=True)
+            ti_snap = self._timestamp_snap(m, create=True)
 
             iak: dict[ta.Any, ta.Any] = {}
             for snap in snaps:
                 k = snap[kf_sn]
-                ak = len(t.snaps) + 1
-                while ak in t.snaps:
+                ak = len(ts_snaps) + 1
+                while ak in ts_snaps:
                     ak += 1
                 iak[k] = ak
                 k = ak
 
                 snap = {**snap, kf_sn: k}
-                if ts_snap:
-                    snap.update(ts_snap)
+                if ti_snap:
+                    snap.update(ti_snap)
 
                 for sk, sv in snap.items():  # noqa
                     check.not_in(sv.__class__, WRAPPER_TYPES)
 
-                check.not_in(k, t.snaps)
+                check.not_in(k, ts_snaps)
 
-                t.snaps[k] = snap
-                self._index(t, k, snap)
+                ts_snaps = ts_snaps.with_(k, snap)
+                idx_sts = self._index(t, idx_sts, k, snap)
+
+            ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
+            st = dc.replace(st, tables=st.tables.with_(t, ts))
+
+            self._o._state = st
 
             return iak
 
         async def insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> None:
             t = self._o._table_for_mapper(m)
+
+            st = self._o._state
+            try:
+                ts = st.tables[t]
+            except KeyError:
+                ts = self._o._TableState()
+            ts_snaps = ts.snaps
+            idx_sts = ts.indexes
+
             kf_sn = m._key_field_store_name
-            ts_snap = self._ts_snap(m, create=True)
+            ti_snap = self._timestamp_snap(m, create=True)
 
             for snap in snaps:
                 k = snap[kf_sn]
 
                 snap = {**snap}
-                if ts_snap:
-                    snap.update(ts_snap)
+                if ti_snap:
+                    snap.update(ti_snap)
 
                 for sk, sv in snap.items():  # noqa
                     check.not_in(sv.__class__, WRAPPER_TYPES)
 
-                check.not_in(k, t.snaps)
+                check.not_in(k, ts_snaps)
 
-                t.snaps[k] = snap
-                self._index(t, k, snap)
+                ts_snaps = ts_snaps.with_(k, snap)
+                idx_sts = self._index(t, idx_sts, k, snap)
+
+            ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
+            st = dc.replace(st, tables=st.tables.with_(t, ts))
+
+            self._o._state = st
 
         async def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             t = self._o._table_for_mapper(m)
+
+            st = self._o._state
+            try:
+                ts = st.tables[t]
+            except KeyError:
+                return
+            ts_snaps = ts.snaps
+            idx_sts = ts.indexes
+
             kf_sn = m._key_field_store_name
-            ts_snap = self._ts_snap(m, create=False)
+            ti_snap = self._timestamp_snap(m, create=False)
 
             for k, snap in diffs:
                 check.not_in(kf_sn, snap)
@@ -287,26 +405,44 @@ class InMemoryStore(Store):
                 for sk, sv in snap.items():  # noqa
                     check.not_in(sv.__class__, WRAPPER_TYPES)
 
-                x = t.snaps[k]
+                x = ts_snaps[k]
 
-                self._deindex(t, k, x)
-                del t.snaps[k]
+                idx_sts = self._deindex(t, idx_sts, k, x)
+                ts_snaps = ts_snaps.without(k)
 
                 snap = {**x, **snap}
-                if ts_snap:
-                    snap.update(ts_snap)
+                if ti_snap:
+                    snap.update(ti_snap)
 
-                t.snaps[k] = snap
-                self._index(t, k, snap)
+                ts_snaps = ts_snaps.with_(k, snap)
+                idx_sts = self._index(t, idx_sts, k, snap)
+
+            ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
+            st = dc.replace(st, tables=st.tables.with_(t, ts))
+
+            self._o._state = st
 
         async def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
             t = self._o._table_for_mapper(m)
 
-            for k in keys:
-                snap = t.snaps[k]
+            st = self._o._state
+            try:
+                ts = st.tables[t]
+            except KeyError:
+                return
+            ts_snaps = ts.snaps
+            idx_sts = ts.indexes
 
-                self._deindex(t, k, snap)
-                del t.snaps[k]
+            for k in keys:
+                snap = ts_snaps[k]
+
+                idx_sts = self._deindex(t, idx_sts, k, snap)
+                ts_snaps = ts_snaps.without(k)
+
+            ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
+            st = dc.replace(st, tables=st.tables.with_(t, ts))
+
+            self._o._state = st
 
     #
 

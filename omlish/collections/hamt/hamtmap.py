@@ -29,6 +29,10 @@ class HamtMap(
     def __init__(self, *, _h: ta.Any | None = None) -> None:
         self._h = _h if _h is not None else _hamt.new()
 
+    @property
+    def debug(self) -> ta.Mapping[K, V]:
+        return dict(self)
+
     def __len__(self) -> int:
         return _hamt.len(self._h)
 
