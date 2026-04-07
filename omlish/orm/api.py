@@ -103,7 +103,7 @@ def mapper(
         fields: ta.Sequence[Field] | None = None,
         *,
         store_name: str | None = None,
-        indexes: ta.Sequence[Index | str | ta.Sequence[str]] | None = None,
+        indexes: ta.Sequence[Index | ta.Sequence[str] | str] | None = None,
         backrefs: ta.Sequence[Backref] | None = None,
         options: ta.Sequence[MapperOption] | None = None,
 ) -> Mapper:
@@ -166,9 +166,9 @@ def dataclass_mapper(
         cls: type,
         *,
         store_name: str | None = None,
-        indexes: ta.Sequence[Index | str | ta.Sequence[str]] | None = None,
-        options: ta.Sequence[MapperOption] | None = None,
         field_options: ta.Mapping[str, ta.Sequence[FieldOption]] | None = None,
+        indexes: ta.Sequence[Index | ta.Sequence[str] | str] | None = None,
+        options: ta.Sequence[MapperOption] | None = None,
 ) -> Mapper:
     check.arg(dc.is_dataclass(cls))
 

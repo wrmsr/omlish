@@ -129,7 +129,10 @@ class SqlStore(Store):
     def _decode_datetime(self, o: ta.Any) -> datetime.datetime | None:
         if o is None or isinstance(o, datetime.datetime):
             return o
-        return datetime.datetime.fromisoformat(o)
+        dt = datetime.datetime.fromisoformat(o)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.UTC)
+        return dt
 
     def _encode_uuid(self, o: uuid.UUID | None) -> ta.Any | None:
         if o is None:

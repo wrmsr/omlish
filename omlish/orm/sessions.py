@@ -245,7 +245,21 @@ class Session:
                     check.is_(self._entities_by_obj_id[id(obj)], e)
 
             if snap is not _NOT_SET:
-                check.equal(e.snap, snap)
+                if (es := e.snap) is None:
+                    check.none(snap)
+
+                else:
+                    snap2 = check.not_none(snap)
+                    es_diff: dict[str, tuple[ta.Any, ta.Any]] = {}
+                    for dk, dv in es.items():
+                        try:
+                            dv2 = snap2[dk]  # type: ignore[index]
+                        except KeyError:
+                            continue
+                        if dv != dv2:
+                            es_diff[dk] = (dv, dv2)
+                    if es_diff:
+                        raise RuntimeError(f'Entity {e} snapshots differ: {es_diff}')
 
             return e
 

@@ -15,6 +15,7 @@ import uuid
 
 import pytest
 
+from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ... import orm
@@ -38,6 +39,8 @@ class _Base(lang.Abstract):
 @dc.extra_class_params(install_class_field_attrs='instance')
 class DriverChat(_Base):
     id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+
+    name: str | None = None
 
     num_messages: int = 0
 
@@ -71,6 +74,7 @@ def build_registry() -> orm.Registry:
             field_options=dict(
                 **base_field_options,
             ),
+            indexes=['name'],
         ),
 
         orm.dataclass_mapper(
@@ -78,6 +82,12 @@ def build_registry() -> orm.Registry:
             field_options=dict(
                 **base_field_options,
             ),
+            indexes=[
+                orm.index(
+                    'chat',
+                    'seq',
+                ),
+            ],
         ),
 
     )
@@ -90,7 +100,35 @@ async def _test_orm(store: Store, registry: Registry | None = None) -> None:
     if registry is None:
         registry = build_registry()  # noqa
 
-    pass  # noqa
+    async with orm.session(registry, store):
+        chat_a = await orm.add_one(DriverChat(name='a'))  # noqa
+        chat_b = await orm.add_one(DriverChat(name='b'))  # noqa
+
+        chat_a_2 = await orm.query_one(DriverChat, name='a')
+        assert chat_a_2 is chat_a
+
+        await orm.add(DriverMessage(chat=orm.ref(chat_a), seq=chat_a.num_messages + 1, text='a1'))
+        chat_a.num_messages += 1
+
+        await orm.add(DriverMessage(chat=orm.ref(chat_a), seq=chat_a.num_messages + 1, text='a2'))
+        chat_a.num_messages += 1
+
+        await orm.add(DriverMessage(chat=orm.ref(chat_b), seq=chat_b.num_messages + 1, text='b1'))
+        chat_b.num_messages += 1
+
+        await orm.add(DriverMessage(chat=orm.ref(chat_a), seq=chat_a.num_messages + 1, text='a3'))
+        chat_a.num_messages += 1
+
+        await orm.add(DriverMessage(chat=orm.ref(chat_b), seq=chat_b.num_messages + 1, text='b2'))
+        chat_b.num_messages += 1
+
+        await orm.add(DriverMessage(chat=orm.ref(chat_b), seq=chat_b.num_messages + 1, text='b3'))
+        chat_b.num_messages += 1
+
+    async with orm.session(registry, store):
+        chat_a = check.not_none(await orm.get(DriverChat, chat_a.id))
+        chat_a_msgs = await chat_a.messages()
+        print(chat_a_msgs)
 
 
 @pytest.mark.asyncs('asyncio')

@@ -100,6 +100,7 @@ class Mapper(ta.Generic[K, T]):
                 self._updated_at_field,
             )),
         )
+        self._auto_value_field_store_names: ta.Sequence[str] = tuple(f._store_name for f in self._auto_value_fields)
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}({self._cls!r}, {self._store_name!r})'
@@ -204,6 +205,10 @@ class Mapper(ta.Generic[K, T]):
     @property
     def auto_value_fields(self) -> ta.Sequence[Field]:
         return self._auto_value_fields
+
+    @property
+    def auto_value_field_store_names(self) -> ta.Sequence[str]:
+        return self._auto_value_field_store_names
 
     #
 

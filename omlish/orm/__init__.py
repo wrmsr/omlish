@@ -46,6 +46,10 @@ from .fields import (  # noqa
 )
 
 from .indexes import (  # noqa
+    SortedIndexOption,
+    UniqueIndexOption,
+    ClusteredIndexOption,
+
     Index,
 )
 
