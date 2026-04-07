@@ -63,9 +63,13 @@ class Mapper(ta.Generic[K, T]):
         for f in fields:
             check.isinstance(f, Field)
             f._set_mapper(self)
+            if isinstance(f, (KeyField, RefField)):
+                check.not_in(FieldCodec, f._options)
+
         for idx in indexes:
             check.isinstance(idx, Index)
             idx._set_mapper(self)
+
         for br in backrefs:
             check.isinstance(br, Backref)
 

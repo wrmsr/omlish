@@ -12,8 +12,6 @@ from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ..configs import DriverConfig
 from ..inject import bind_driver
-from ..state.inmemory import InMemoryDriverStateManager
-from ..state.manager import DriverStateManager
 from ..state.types import ChatId
 from ..types import Driver
 from ..user.configs import UserConfig
@@ -34,9 +32,6 @@ def bind_test_driver(
         bind_driver(cfg),
 
         inj.bind(ChatChoicesService, to_ctor=DummyChatChoicesService),
-
-        inj.bind(InMemoryDriverStateManager, singleton=True),
-        inj.bind(DriverStateManager, to_key=InMemoryDriverStateManager),
 
         inj.bind(ChatId(uuid.uuid4())),
     ])

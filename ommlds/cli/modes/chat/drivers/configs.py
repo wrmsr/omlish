@@ -16,8 +16,9 @@ DEFAULT_BACKEND = 'openai'
 
 @dc.dataclass(frozen=True, kw_only=True)
 class DriverConfig(mc.drivers.DriverConfig):
-    backend: BackendConfig = BackendConfig()
     state: StateConfig = StateConfig()
+
+    backend: BackendConfig = BackendConfig()
 
     print_ai_responses: bool = False
     print_tool_use: bool = False

@@ -8,6 +8,6 @@ from ..profiles import ChatProfile
 async def test_chat():
     await _run_mode_cfg(ChatProfile().configure([
         '-bdummy',
-        '--ephemeral',
+        '-n',
         'hi',
     ]))

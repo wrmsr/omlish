@@ -12,8 +12,6 @@ from ...standard import ApiKey
 from ..ai.configs import AiConfig
 from ..configs import DriverConfig
 from ..inject import bind_driver
-from ..state.inmemory import InMemoryDriverStateManager
-from ..state.manager import DriverStateManager
 from ..state.types import ChatId
 from ..types import Driver
 from ..user.configs import UserConfig
@@ -30,9 +28,6 @@ def bind_openai_driver(
 
         inj.bind(svc),
         inj.bind(ChatChoicesStreamService, to_key=OpenaiChatChoicesStreamService),
-
-        inj.bind(InMemoryDriverStateManager, singleton=True),
-        inj.bind(DriverStateManager, to_key=InMemoryDriverStateManager),
 
         inj.bind(ChatId(uuid.uuid4())),
     ])

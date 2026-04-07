@@ -1,7 +1,9 @@
 import abc
+import os.path
 import sys
 import typing as ta
 
+from omdev.home.paths import get_home_paths
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
@@ -233,17 +235,22 @@ class ChatProfile(AspectProfile[ChatConfig]):
     class State(ProfileAspect[ChatConfig]):
         parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
             ap.arg('-n', '--new', action='store_true'),
-            ap.arg('--ephemeral', action='store_true'),
         ]
 
         def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            db_file_path = os.path.join(get_home_paths().state_dir, 'minichain', 'cli', 'state.db')
+
             return dc.replace(
                 cfg,
                 driver=dc.replace(
                     cfg.driver,
+                    orm=dc.replace(
+                        cfg.driver.orm,
+                        file_path=db_file_path,
+                    ),
                     state=dc.replace(
                         cfg.driver.state,
-                        state='ephemeral' if ctx.args.ephemeral else 'new' if ctx.args.new else 'continue',
+                        state='new' if ctx.args.new else 'continue',
                     ),
                 ),
             )

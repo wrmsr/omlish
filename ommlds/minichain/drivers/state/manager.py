@@ -4,7 +4,7 @@ import typing as ta
 from omlish import lang
 
 from ...chat.messages import Chat
-from .types import DriverState
+from .models import DriverState
 
 
 ##

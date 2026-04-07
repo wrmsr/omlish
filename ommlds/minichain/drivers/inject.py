@@ -8,6 +8,7 @@ from .events.inject import bind_events
 from .impl import DriverImpl
 from .injection import placeholder_contents_providers
 from .injection import system_message_providers
+from .orm.inject import bind_orm
 from .phases.inject import bind_phases
 from .preparing.inject import bind_preparing
 from .state.inject import bind_state
@@ -28,17 +29,12 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     els.extend([
         bind_ai(cfg.ai),
-
         bind_events(),
-
+        bind_orm(cfg.orm),
         bind_phases(),
-
         bind_preparing(),
-
         bind_state(cfg.state),
-
         bind_tools(cfg.tools),
-
         bind_user(cfg.user),
     ])
 

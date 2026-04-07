@@ -64,6 +64,16 @@ with _lang.auto_proxy_init(globals()):
 
     #
 
+    from .orm.configs import (  # noqa
+        OrmConfig,
+    )
+
+    from .orm.types import (  # noqa
+        Orm,
+    )
+
+    #
+
     from .phases.manager import (  # noqa
         PhaseManager,
     )
@@ -90,53 +100,20 @@ with _lang.auto_proxy_init(globals()):
 
     #
 
-    from .state.storage.inmemory import (  # noqa
-        InMemoryStateStorage,
-    )
-
-    from .state.storage.json import (  # noqa
-        JsonFileStateStorage,
-    )
-
-    from .state.storage.manager import (  # noqa
-        DriverStateStorageKey,
-        build_driver_storage_key,
-
-        StateStorageDriverStateManager,
-    )
-
-    from .state.storage.marshaled import (  # noqa
-        MarshaledStateStorage,
-    )
-
-    from .state.storage.orm import (  # noqa
-        OrmStateStorage,
-    )
-
-    from .state.storage.sql import (  # noqa
-        SqlStateStorage,
-    )
-
-    from .state.storage.types import (  # noqa
-        StateStorage,
-    )
-
     from .state.configs import (  # noqa
         StateConfig,
-    )
-
-    from .state.inmemory import (  # noqa
-        InMemoryDriverStateManager,
     )
 
     from .state.manager import (  # noqa
         DriverStateManager,
     )
 
+    from .state.models import (  # noqa
+        DriverState,
+    )
+
     from .state.types import (  # noqa
         ChatId,
-
-        DriverState,
     )
 
     #

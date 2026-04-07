@@ -2,8 +2,10 @@ import datetime
 import uuid
 
 from omlish import dataclasses as dc
-from omlish import lang
 from omlish import orm
+from omlish import sql
+
+from ...chat.messages import Chat
 
 
 ##
@@ -17,15 +19,25 @@ class DriverState:
     created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
     updated_at: datetime.datetime = orm.auto_value[datetime.datetime]()
 
+    #
 
-@lang.cached_function
-def model_registry() -> orm.Registry:
-    return orm.registry(
-        orm.dataclass_mapper(
-            DriverState,
-            field_options=dict(
-                created_at=[orm.CreatedAt()],
-                updated_at=[orm.UpdatedAt()],
-            ),
+    name: str | None = None
+
+    chat: Chat = ()
+
+
+##
+
+
+def driver_state_mapper() -> orm.Mapper:
+    return orm.dataclass_mapper(
+        DriverState,
+        field_options=dict(
+            created_at=[orm.CreatedAt()],
+            updated_at=[orm.UpdatedAt()],
+            chat=[
+                orm.FieldCodec(orm.MarshalCodec()),
+                orm.FieldSqlType(sql.td.String()),
+            ],
         ),
     )

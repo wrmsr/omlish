@@ -27,6 +27,8 @@ from .backrefs import (  # noqa
 )
 
 from .codecs import (  # noqa
+    FieldCodec,
+
     Codec,
     NopCodec,
     FnCodec,
@@ -98,6 +100,7 @@ from .stores import (  # noqa
 )
 
 from .sql import (  # noqa
+    FieldSqlType,
     SqlStore,
 )
 

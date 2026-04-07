@@ -47,11 +47,13 @@ from .. import check
 from .. import lang
 from .. import reflect as rfl
 from .. import sql
+from .. import typedvalues as tv
 from .fields import Field
 from .fields import KeyField
 from .fields import RefField
 from .indexes import Index
 from .mappers import Mapper
+from .options import FieldOption
 from .registries import Registry
 from .snaps import Snap
 from .stores import Store
@@ -59,6 +61,13 @@ from .timestamps import CreatedAt
 from .timestamps import Timestamp
 from .timestamps import UpdatedAt
 from .wrappers import WRAPPER_TYPES
+
+
+##
+
+
+class FieldSqlType(tv.UniqueScalarTypedValue[sql.td.Dtype], FieldOption, lang.Final):
+    pass
 
 
 ##
@@ -174,7 +183,10 @@ class SqlStore(Store):
 
         dty: sql.td.Dtype
 
-        if rty is int:
+        if (dty_opt := field.options.get(FieldSqlType)) is not None:
+            dty = dty_opt.v
+
+        elif rty is int:
             dty = sql.td.Integer()
 
         elif rty in (str, uuid.UUID):
