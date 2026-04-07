@@ -1,6 +1,7 @@
 from omlish import orm
 
 from ...chat.messages import Chat
+from ...chat.metadata import MessageUuid
 from ..orm.types import Orm
 from ..types import DriverId
 from .manager import DriverStateManager
@@ -72,6 +73,7 @@ class DriverStateManagerImpl(DriverStateManager):
 
             for m in chat_additions:
                 await orm.add_one(OrmMessage(
+                    id=orm.key(m.metadata[MessageUuid].v),
                     chat=orm.ref(orm_chat),
                     seq=orm_chat.num_messages + 1,
                     message=m,

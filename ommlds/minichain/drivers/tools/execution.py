@@ -1,11 +1,13 @@
 import abc
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
 from ...chat.messages import ToolUseResultMessage
 from ...chat.tools.execution import execute_tool_use
+from ...chat.transform.metadata import MessageUuidAddingMessageTransform
 from ...tools.execution.catalog import ToolCatalog
 from ...tools.execution.catalog import ToolCatalogEntry
 from ...tools.execution.context import ToolContext
@@ -56,7 +58,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
         self._ctx_provider = ctx_provider
 
     async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResultMessage:
-        return await execute_tool_use(
+        res = await execute_tool_use(
             ToolContext(
                 tue,
                 tue.use,
@@ -66,3 +68,10 @@ class ToolUseExecutorImpl(ToolUseExecutor):
             tue.tce.executor(),
             tue.use,
         )
+
+        res = check.isinstance(
+            check.single(MessageUuidAddingMessageTransform().transform(res)),
+            ToolUseResultMessage,
+        )
+
+        return res
