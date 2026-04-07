@@ -390,11 +390,15 @@ class Session:
 
         brd = self._registry._fields_by_backref_binding
         try:
-            brf = brd[binder]
+            brf_lst = brd[binder]
         except KeyError:
             if not callable(binder):
                 raise
-            brf = brd[binder()]
+            brf_lst = brd[binder()]
+        check.not_empty(brf_lst)
+        if len(brf_lst) > 1:
+            raise RuntimeError(f'Ambiguous backref binding: {binder} -> {brf_lst}')
+        [brf] = brf_lst
         rf = check.isinstance(brf, RefField)
 
         return await self.query(Query(rf._mapper._cls, {rf._name: _ObjRef(bbr._obj)}))

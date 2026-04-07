@@ -23,7 +23,7 @@ class Registry:
         self._mappers_by_cls_name: dict[str, Mapper] = {}
         self._mappers_by_store_name: dict[str, Mapper] = {}
 
-        self._fields_by_backref_binding: ta.MutableMapping[ta.Any, Field] = col.IdentityKeyDict()
+        self._fields_by_backref_binding: ta.MutableMapping[ta.Any, list[Field]] = col.IdentityKeyDict()
 
         self.register(*mappers)
 
@@ -50,9 +50,6 @@ class Registry:
         check.not_in(m.cls, self._mappers_by_cls)
         check.not_in(m.cls.__name__, self._mappers_by_cls_name)
         check.not_in(m.store_name, self._mappers_by_store_name)
-        for f in m.fields:
-            if (fbb := f.backref_binding) is not None:
-                check.not_in(fbb, self._fields_by_backref_binding)
 
     def _register(self, m: Mapper) -> None:
         self._check_can_register(m)
@@ -65,7 +62,11 @@ class Registry:
         self._mappers_by_store_name[m.store_name] = m
         for f in m.fields:
             if (fbb := f.backref_binding) is not None:
-                self._fields_by_backref_binding[fbb] = f
+                try:
+                    lst = self._fields_by_backref_binding[fbb]
+                except KeyError:
+                    lst = self._fields_by_backref_binding[fbb] = []
+                lst.append(fbb)
 
     def register(self, *mappers: Mapper) -> None:
         for m in mappers:
