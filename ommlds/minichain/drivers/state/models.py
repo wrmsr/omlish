@@ -18,7 +18,7 @@ from ...chat.messages import Message
 
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
-class DriverChat:
+class OrmChat:
     id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
 
     created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
@@ -30,12 +30,12 @@ class DriverChat:
 
     num_messages: int = 0
 
-    messages: ta.ClassVar[orm.Backref['DriverMessage']] = orm.backref(lambda: DriverMessage.chat)  # type: ignore[misc]
+    messages: ta.ClassVar[orm.Backref['OrmMessage']] = orm.backref(lambda: OrmMessage.chat)  # type: ignore[misc]
 
 
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
-class DriverMessage:
+class OrmMessage:
     id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
 
     created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
@@ -43,7 +43,7 @@ class DriverMessage:
 
     #
 
-    chat: orm.Ref[DriverChat, uuid.UUID]
+    chat: orm.Ref[OrmChat, uuid.UUID]
     seq: int
 
     message: Message
@@ -51,7 +51,7 @@ class DriverMessage:
 
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
-class DriverState:
+class OrmDriver:
     id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
 
     created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
@@ -59,7 +59,7 @@ class DriverState:
 
     #
 
-    chat: orm.Ref[DriverChat, uuid.UUID]
+    chat: orm.Ref[OrmChat, uuid.UUID]
 
 
 ##
@@ -69,7 +69,8 @@ def state_mappers() -> ta.Sequence[orm.Mapper]:
     return [
 
         orm.dataclass_mapper(
-            DriverChat,
+            OrmChat,
+            store_name='chats',
             field_options=dict(
                 created_at=[orm.CreatedAt()],
                 updated_at=[orm.UpdatedAt()],
@@ -78,7 +79,8 @@ def state_mappers() -> ta.Sequence[orm.Mapper]:
         ),
 
         orm.dataclass_mapper(
-            DriverMessage,
+            OrmMessage,
+            store_name='messages',
             field_options=dict(
                 created_at=[orm.CreatedAt()],
                 updated_at=[orm.UpdatedAt()],
@@ -100,7 +102,8 @@ def state_mappers() -> ta.Sequence[orm.Mapper]:
         ),
 
         orm.dataclass_mapper(
-            DriverState,
+            OrmDriver,
+            store_name='drivers',
             field_options=dict(
                 created_at=[orm.CreatedAt()],
                 updated_at=[orm.UpdatedAt()],

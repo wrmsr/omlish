@@ -4,9 +4,9 @@ from ...chat.messages import Chat
 from ..orm.types import Orm
 from ..types import DriverId
 from .manager import DriverStateManager
-from .models import DriverChat
-from .models import DriverMessage
-from .models import DriverState
+from .models import OrmChat
+from .models import OrmDriver
+from .models import OrmMessage
 from .types import ChatId
 
 
@@ -27,38 +27,38 @@ class DriverStateManagerImpl(DriverStateManager):
         self._chat_id = chat_id
         self._orm = orm_
 
-    async def _get_d_chat(self) -> DriverChat:
-        if (d_chat := await orm.get(DriverChat, self._chat_id.v)) is not None:
-            return d_chat
+    async def _get_orm_chat(self) -> OrmChat:
+        if (orm_chat := await orm.get(OrmChat, self._chat_id.v)) is not None:
+            return orm_chat
 
-        return await orm.add_one(DriverChat(
+        return await orm.add_one(OrmChat(
             id=orm.key(self._chat_id.v),
         ))
 
-    async def _get_d_state(self) -> DriverState:
-        if (d_state := await orm.get(DriverState, self._driver_id.v)) is not None:
-            return d_state
+    async def _get_orm_state(self) -> OrmDriver:
+        if (orm_driver := await orm.get(OrmDriver, self._driver_id.v)) is not None:
+            return orm_driver
 
-        d_chat = await self._get_d_chat()
+        orm_chat = await self._get_orm_chat()
 
-        return await orm.add_one(DriverState(
+        return await orm.add_one(OrmDriver(
             id=orm.key(self._driver_id.v),
-            chat=orm.ref(d_chat),
+            chat=orm.ref(orm_chat),
         ))
 
     async def get_chat(self) -> Chat:
         async with self._orm.new_session():
-            d_state = await self._get_d_state()
+            orm_state = await self._get_orm_state()
 
-            d_chat = await d_state.chat()
+            orm_chat = await orm_state.chat()
 
-            d_messages = await d_chat.messages()
+            orm_messages = await orm_chat.messages()
 
             chat = [
-                d_m.message
-                for d_m in sorted(
-                    d_messages,
-                    key=lambda d_m: d_m.seq,
+                orm_m.message
+                for orm_m in sorted(
+                    orm_messages,
+                    key=lambda orm_m: orm_m.seq,
                 )
             ]
 
@@ -66,15 +66,15 @@ class DriverStateManagerImpl(DriverStateManager):
 
     async def extend_chat(self, chat_additions: Chat) -> None:
         async with self._orm.new_session():
-            d_state = await self._get_d_state()
+            orm_state = await self._get_orm_state()
 
-            d_chat = await d_state.chat()
+            orm_chat = await orm_state.chat()
 
             for m in chat_additions:
-                await orm.add_one(DriverMessage(
-                    chat=orm.ref(d_chat),
-                    seq=d_chat.num_messages + 1,
+                await orm.add_one(OrmMessage(
+                    chat=orm.ref(orm_chat),
+                    seq=orm_chat.num_messages + 1,
                     message=m,
                 ))
 
-                d_chat.num_messages += 1
+                orm_chat.num_messages += 1
