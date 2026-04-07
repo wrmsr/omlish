@@ -71,7 +71,7 @@ class InMemoryStore(Store):
 
     @dc.dataclass(frozen=True)
     class _IndexState:
-        keys: col.PersistentMapping[tuple[ta.Any, ...], frozenset[ta.Any]] = dc.field(default_factory=col.new_persistent_map)  # noqa
+        keys: col.PersistentMapping[tuple[ta.Any, ...] | ta.Any, frozenset[ta.Any] | ta.Any] = dc.field(default_factory=col.new_persistent_map)  # noqa
 
     #
 
@@ -105,7 +105,9 @@ class InMemoryStore(Store):
             return None
         best_set = check.not_none(best_set)
 
-        idx_key = tuple(where[k] for k in best_idx._field_store_names)
+        idx_key: ta.Any = tuple(where[k] for k in best_idx._field_store_names)
+        if len(idx_key) == 1:
+            [idx_key] = idx_key
         un_idx_where = [(k, where[k]) for k in where_set - best_set]
 
         return self._SelectedIndex(
@@ -199,6 +201,9 @@ class InMemoryStore(Store):
             except KeyError:
                 return []
 
+            if si.index._is_unique:
+                xs = [xs]
+
             if not si.unindexed_where:
                 return [ts.snaps[xk] for xk in xs]
 
@@ -234,16 +239,24 @@ class InMemoryStore(Store):
 
                 idx_keys = idx_st.keys
 
-                ik = tuple(snap[f] for f in idx._field_store_names)
+                idx_key = tuple(snap[f] for f in idx._field_store_names)
+                if len(idx_key) == 1:
+                    [idx_key] = idx_key
 
                 try:
-                    iz = idx_keys[ik]
+                    iz = idx_keys[idx_key]
                 except KeyError:
-                    iz = frozenset([k])
+                    if idx._is_unique:
+                        iz = k
+                    else:
+                        iz = frozenset([k])
                 else:
-                    iz |= frozenset([k])
+                    if idx._is_unique:
+                        raise RuntimeError(f'Duplicate key in {idx._store_name}: {idx_key}')
+                    else:
+                        iz |= frozenset([k])
 
-                idx_keys = idx_st.keys.with_(ik, iz)
+                idx_keys = idx_st.keys.with_(idx_key, iz)
 
                 idx_st = dc.replace(idx_st, keys=idx_keys)
 
@@ -269,16 +282,21 @@ class InMemoryStore(Store):
 
                 idx_keys = idx_st.keys
 
-                ik = tuple(snap[f] for f in idx._field_store_names)
+                idx_key = tuple(snap[f] for f in idx._field_store_names)
+                if len(idx_key) == 1:
+                    [idx_key] = idx_key
 
-                iz = idx_keys[ik]
+                iz = idx_keys[idx_key]
                 check.in_(k, iz)
-                iz -= frozenset([k])
 
-                if not iz:
-                    idx_keys = idx_keys.without(ik)
+                if idx._is_unique:
+                    idx_keys = idx_keys.without(idx_key)
                 else:
-                    idx_keys = idx_keys.with_(ik, iz)
+                    iz -= frozenset([k])
+                    if not iz:
+                        idx_keys = idx_keys.without(idx_key)
+                    else:
+                        idx_keys = idx_keys.with_(idx_key, iz)
 
                 idx_st = dc.replace(idx_st, keys=idx_keys)
 
