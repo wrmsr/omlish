@@ -5,6 +5,7 @@ from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from ..algorithm.toposort import mut_toposort
+from .errors import FinalFieldModifiedError
 from .keys import _AutoKey
 from .mappers import Mapper
 from .snaps import Snap
@@ -69,7 +70,7 @@ class _SessionFlusher:
                     check.state(not is_ak)
 
                     if ff_sns and (ds_fs := [k for k in ds if k in ff_sns]):
-                        raise RuntimeError(f'Cannot modify final fields: {ds_fs}')
+                        raise FinalFieldModifiedError(f'Cannot modify final fields: {ds_fs}')
 
                     updates.append((e, snap, ds))
 

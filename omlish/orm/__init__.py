@@ -52,6 +52,12 @@ from .codecs import (  # noqa
     MarshalCodec,
 )
 
+from .errors import (  # noqa
+    OrmError,
+    DuplicateIndexValueError,
+    FinalFieldModifiedError,
+)
+
 from .fields import (  # noqa
     FinalFieldOption,
 

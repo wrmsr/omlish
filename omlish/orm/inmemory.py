@@ -5,6 +5,7 @@ from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
+from .errors import DuplicateIndexValueError
 from .indexes import Index
 from .mappers import Mapper
 from .snaps import Snap
@@ -260,7 +261,7 @@ class InMemoryStore(Store):
                         iz = frozenset([k])
                 else:
                     if idx._is_unique:
-                        raise RuntimeError(f'Duplicate key in {idx._store_name}: {idx_key}')
+                        raise DuplicateIndexValueError(f'Duplicate key in {idx._store_name}: {idx_key}')
                     else:
                         iz |= frozenset([k])
 

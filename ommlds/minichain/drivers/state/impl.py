@@ -56,7 +56,10 @@ class DriverStateManagerImpl(DriverStateManager):
 
             chat = [
                 d_m.message
-                for d_m in d_messages
+                for d_m in sorted(
+                    d_messages,
+                    key=lambda d_m: d_m.seq,
+                )
             ]
 
         return chat
