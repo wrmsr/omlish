@@ -86,6 +86,11 @@ def build_registry() -> orm.Registry:
                 orm.index(
                     'chat',
                     'seq',
+                    options=[
+                        orm.SortedIndexOption(),
+                        orm.UniqueIndexOption(),
+                        orm.ClusteredIndexOption(),
+                    ],
                 ),
             ],
         ),
