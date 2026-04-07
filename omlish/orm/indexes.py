@@ -56,6 +56,7 @@ class Index(lang.Final):
         return Index(
             _fields=self._fields,
             _store_name=store_name,
+            _options=self._options,
         )
 
     def __repr__(self) -> str:

@@ -62,7 +62,7 @@ class InMemoryStore(Store):
 
     @dc.dataclass(frozen=True)
     class _State:
-        tables: col.PersistentMapping['InMemoryStore._Table', 'InMemoryStore._TableState'] = dc.field(default_factory=col.new_persistent_map)  # noqa
+        tables: col.PersistentMapping[str, 'InMemoryStore._TableState'] = dc.field(default_factory=col.new_persistent_map)  # noqa
 
     @dc.dataclass(frozen=True)
     class _TableState:
@@ -165,7 +165,7 @@ class InMemoryStore(Store):
 
             st = self._o._state
             try:
-                ts = st.tables[t]
+                ts = st.tables[t.m._store_name]
             except KeyError:
                 return None
 
@@ -176,7 +176,7 @@ class InMemoryStore(Store):
 
             st = self._o._state
             try:
-                ts = st.tables[t]
+                ts = st.tables[t.m._store_name]
             except KeyError:
                 return []
 
@@ -335,7 +335,7 @@ class InMemoryStore(Store):
 
             st = self._o._state
             try:
-                ts = st.tables[t]
+                ts = st.tables[t.m._store_name]
             except KeyError:
                 ts = self._o._TableState()
             ts_snaps = ts.snaps
@@ -366,7 +366,7 @@ class InMemoryStore(Store):
                 idx_sts = self._index(t, idx_sts, k, snap)
 
             ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
-            st = dc.replace(st, tables=st.tables.with_(t, ts))
+            st = dc.replace(st, tables=st.tables.with_(t.m._store_name, ts))
 
             self._o._state = st
 
@@ -377,7 +377,7 @@ class InMemoryStore(Store):
 
             st = self._o._state
             try:
-                ts = st.tables[t]
+                ts = st.tables[t.m._store_name]
             except KeyError:
                 ts = self._o._TableState()
             ts_snaps = ts.snaps
@@ -402,7 +402,7 @@ class InMemoryStore(Store):
                 idx_sts = self._index(t, idx_sts, k, snap)
 
             ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
-            st = dc.replace(st, tables=st.tables.with_(t, ts))
+            st = dc.replace(st, tables=st.tables.with_(t.m._store_name, ts))
 
             self._o._state = st
 
@@ -411,7 +411,7 @@ class InMemoryStore(Store):
 
             st = self._o._state
             try:
-                ts = st.tables[t]
+                ts = st.tables[t.m._store_name]
             except KeyError:
                 return
             ts_snaps = ts.snaps
@@ -442,7 +442,7 @@ class InMemoryStore(Store):
                 idx_sts = self._index(t, idx_sts, k, snap)
 
             ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
-            st = dc.replace(st, tables=st.tables.with_(t, ts))
+            st = dc.replace(st, tables=st.tables.with_(t.m._store_name, ts))
 
             self._o._state = st
 
@@ -450,10 +450,7 @@ class InMemoryStore(Store):
             t = self._o._table_for_mapper(m)
 
             st = self._o._state
-            try:
-                ts = st.tables[t]
-            except KeyError:
-                return
+            ts = st.tables[t.m._store_name]
             ts_snaps = ts.snaps
             idx_sts = ts.indexes
 
@@ -464,7 +461,7 @@ class InMemoryStore(Store):
                 ts_snaps = ts_snaps.without(k)
 
             ts = dc.replace(ts, snaps=ts_snaps, indexes=idx_sts)
-            st = dc.replace(st, tables=st.tables.with_(t, ts))
+            st = dc.replace(st, tables=st.tables.with_(t.m._store_name, ts))
 
             self._o._state = st
 

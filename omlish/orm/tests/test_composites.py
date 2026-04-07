@@ -87,8 +87,8 @@ def build_registry() -> orm.Registry:
                     'chat',
                     'seq',
                     options=[
-                        orm.SortedIndexOption(),
                         orm.UniqueIndexOption(),
+                        orm.SortedIndexOption(),
                         orm.ClusteredIndexOption(),
                     ],
                 ),
