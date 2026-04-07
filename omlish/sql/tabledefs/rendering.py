@@ -111,7 +111,7 @@ def render_create_statements(
 
         elif isinstance(e, PrimaryKey):
             check.not_empty(e.columns)
-            constraints.append(f'primary key({", ".join(e.columns)})')
+            constraints.append(f'primary key ({", ".join(e.columns)})')
 
         elif isinstance(e, UpdatedAtTrigger):
             if pk is not None:

@@ -51,6 +51,7 @@ from .. import typedvalues as tv
 from .fields import Field
 from .fields import KeyField
 from .fields import RefField
+from .indexes import ClusteredIndexOption
 from .indexes import Index
 from .mappers import Mapper
 from .options import FieldOption
@@ -223,11 +224,19 @@ class SqlStore(Store):
         for f in m.fields:
             els.extend(self._field_table_def(f))
 
-            if isinstance(f, KeyField):
-                els.append(sql.td.PrimaryKey([f._store_name]))
-
+        clu_idx: Index | None = None
         for idx in m.indexes:
+            if ClusteredIndexOption in idx.options:
+                check.none(clu_idx)
+                clu_idx = idx
+                continue
+
             els.extend(self._index_table_def(m, idx))
+
+        if clu_idx is not None:
+            els.append(sql.td.PrimaryKey(clu_idx._field_store_names))
+        else:
+            els.append(sql.td.PrimaryKey([m._key_field_store_name]))
 
         return sql.td.table_def(
             m._store_name,
