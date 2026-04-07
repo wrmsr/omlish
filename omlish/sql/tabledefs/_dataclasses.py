@@ -420,29 +420,40 @@ def _process_dataclass__63c05de795f82e8dacde3eceff4abc81b79a0bee():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('columns', 'name')), EqPlan(fields=('columns', 'name')), FrozenPlan(fields=('colum"
-        "ns', 'name'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('columns', 'name'), cache=Fals"
-        "e), InitPlan(fields=(InitPlan.Field(name='columns', annotation=OpRef(name='init.fields.0.annotation'), default"
-        "=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init"
-        ".fields.0.coerce'), validate=None, check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.f"
-        "ields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_par"
-        "ams=('columns', 'name'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), vali"
-        "date_fns=()), ReprPlan(fields=(ReprPlan.Field(name='columns', kw_only=False, fn=None), ReprPlan.Field(name='na"
-        "me', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('columns', 'name', 'unique', 'where')), EqPlan(fields=('columns', 'name', 'unique'"
+        ", 'where')), FrozenPlan(fields=('columns', 'name', 'unique', 'where'), allow_dynamic_dunder_attrs=False), Hash"
+        "Plan(action='add', fields=('columns', 'name', 'unique', 'where'), cache=False), InitPlan(fields=(InitPlan.Fiel"
+        "d(name='columns', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None,"
+        " check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.1.annotation'), default=OpRe"
+        "f(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='unique', annotation=OpRef(name='init.fie"
+        "lds.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='where', "
+        "annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        "), self_param='self', std_params=('columns',), kw_only_params=('name', 'unique', 'where'), frozen=True, slots="
+        "False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='columns', k"
+        "w_only=False, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='unique', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='where', kw_only=True, fn=None)), id=False, terse=False, default_fn=No"
+        "ne)))"
     ),
-    plan_repr_sha1='c7bd78fce32e61ebfcf028034f2e2a032c1ec2da',
+    plan_repr_sha1='1661045f489a61cb87b4d1a6cb69153fe73565e2',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
     cls_names=(
         ('omlish.sql.tabledefs', 'Index'),
     ),
 )
-def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
+def _process_dataclass__1661045f489a61cb87b4d1a6cb69153fe73565e2():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -450,6 +461,10 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
         __dataclass__init__fields__0__coerce,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -470,6 +485,8 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
             return __dataclass__cls(  # noqa
                 columns=self.columns,
                 name=self.name,
+                unique=self.unique,
+                where=self.where,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -484,7 +501,9 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
                 return NotImplemented
             return (
                 self.columns == other.columns and
-                self.name == other.name
+                self.name == other.name and
+                self.unique == other.unique and
+                self.where == other.where
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -495,6 +514,8 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
         __dataclass___setattr_frozen_fields = {
             'columns',
             'name',
+            'unique',
+            'where',
         }
 
         def __setattr__(self, name, value):
@@ -513,6 +534,8 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
         __dataclass___delattr_frozen_fields = {
             'columns',
             'name',
+            'unique',
+            'where',
         }
 
         def __delattr__(self, name):
@@ -532,6 +555,8 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
             return hash((
                 self.columns,
                 self.name,
+                self.unique,
+                self.where,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -540,11 +565,16 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
         def __init__(
             self,
             columns: __dataclass__init__fields__0__annotation,
+            *,
             name: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            unique: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            where: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             columns = __dataclass__init__fields__0__coerce(columns)
             __dataclass__object_setattr(self, 'columns', columns)
             __dataclass__object_setattr(self, 'name', name)
+            __dataclass__object_setattr(self, 'unique', unique)
+            __dataclass__object_setattr(self, 'where', where)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -556,6 +586,8 @@ def _process_dataclass__c7bd78fce32e61ebfcf028034f2e2a032c1ec2da():
             parts = []
             parts.append(f"columns={self.columns!r}")
             parts.append(f"name={self.name!r}")
+            parts.append(f"unique={self.unique!r}")
+            parts.append(f"where={self.where!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -719,13 +751,13 @@ def _process_dataclass__3fe3bb9ac13c6d7f416ca5fe3e49bc54d50d4126():
         "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default', anno"
         "tation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=No"
         "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), s"
-        "elf_param='self', std_params=('name', 'type', 'not_null', 'primary_key', 'default'), kw_only_params=(), frozen"
-        "=False, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(nam"
-        "e='name', kw_only=False, fn=None), ReprPlan.Field(name='type', kw_only=False, fn=None), ReprPlan.Field(name='n"
-        "ot_null', kw_only=False, fn=None), ReprPlan.Field(name='primary_key', kw_only=False, fn=None), ReprPlan.Field("
-        "name='default', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "elf_param='self', std_params=('name', 'type'), kw_only_params=('not_null', 'primary_key', 'default'), frozen=F"
+        "alse, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name="
+        "'name', kw_only=False, fn=None), ReprPlan.Field(name='type', kw_only=False, fn=None), ReprPlan.Field(name='not"
+        "_null', kw_only=True, fn=None), ReprPlan.Field(name='primary_key', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='default', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f7cbc7f9b3cc3d0cb5dfa2255eab21f6d8a87536',
+    plan_repr_sha1='b968668513180b12cea1d4309900175dc7670439',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -740,7 +772,7 @@ def _process_dataclass__3fe3bb9ac13c6d7f416ca5fe3e49bc54d50d4126():
         ('omlish.sql.tabledefs', 'RenderColumn'),
     ),
 )
-def _process_dataclass__f7cbc7f9b3cc3d0cb5dfa2255eab21f6d8a87536():
+def _process_dataclass__b968668513180b12cea1d4309900175dc7670439():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -806,6 +838,7 @@ def _process_dataclass__f7cbc7f9b3cc3d0cb5dfa2255eab21f6d8a87536():
             self,
             name: __dataclass__init__fields__0__annotation,
             type: __dataclass__init__fields__1__annotation,
+            *,
             not_null: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             primary_key: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             default: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,

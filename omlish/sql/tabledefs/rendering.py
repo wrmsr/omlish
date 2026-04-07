@@ -40,6 +40,9 @@ create index {preamble} {index_name} on {table_name} ({columns})
 class RenderColumn:
     name: str
     type: str
+
+    _: dc.KW_ONLY
+
     not_null: bool = False
     primary_key: bool = False
     default: str | None = None

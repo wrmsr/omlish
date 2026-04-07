@@ -6,7 +6,7 @@ from omlish import orm
 from .configs import StateConfig
 from .impl import DriverStateManagerImpl
 from .manager import DriverStateManager
-from .models import driver_state_mapper
+from .models import state_mappers
 
 
 ##
@@ -18,7 +18,8 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind_set_entry_const(ta.AbstractSet[orm.Mapper], driver_state_mapper()),
+        inj.bind_set_entry_const(ta.AbstractSet[orm.Mapper], m)
+        for m in state_mappers()
     ])
 
     #

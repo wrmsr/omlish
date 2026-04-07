@@ -1,4 +1,5 @@
 import datetime
+import typing as ta
 import uuid
 
 from omlish import dataclasses as dc
@@ -29,15 +30,17 @@ class DriverState:
 ##
 
 
-def driver_state_mapper() -> orm.Mapper:
-    return orm.dataclass_mapper(
-        DriverState,
-        field_options=dict(
-            created_at=[orm.CreatedAt()],
-            updated_at=[orm.UpdatedAt()],
-            chat=[
-                orm.FieldCodec(orm.CompositeCodec(orm.MarshalCodec(), orm.JsonCodec())),
-                orm.FieldSqlType(sql.td.String()),
-            ],
+def state_mappers() -> ta.Sequence[orm.Mapper]:
+    return [
+        orm.dataclass_mapper(
+            DriverState,
+            field_options=dict(
+                created_at=[orm.CreatedAt()],
+                updated_at=[orm.UpdatedAt()],
+                chat=[
+                    orm.FieldCodec(orm.CompositeCodec(orm.MarshalCodec(), orm.JsonCodec())),
+                    orm.FieldSqlType(sql.td.String()),
+                ],
+            ),
         ),
-    )
+    ]

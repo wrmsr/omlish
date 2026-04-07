@@ -22,8 +22,11 @@ class Element(tv.TypedValue, lang.Abstract, lang.Sealed):
 class Column(Element, lang.Final):
     name: str
     type: Dtype
-    nullable: bool = dc.field(default=False, kw_only=True)
-    default: lang.Maybe[SimpleValue] = dc.field(default=lang.empty(), kw_only=True)
+
+    _: dc.KW_ONLY
+
+    nullable: bool = False
+    default: lang.Maybe[SimpleValue] = lang.empty()
 
 
 @dc.dataclass(frozen=True)
@@ -33,8 +36,14 @@ class PrimaryKey(Element, lang.Final):
 
 @dc.dataclass(frozen=True)
 class Index(Element, lang.Final):
-    columns: ta.Sequence[str] = dc.xfield(coerce=col.seq)
+    columns: ta.Sequence[str] = dc.xfield(coerce=col.seq)  # noqa
+
+    _: dc.KW_ONLY
+
     name: str | None = None
+
+    unique: bool = False
+    where: str | None = None
 
 
 ##
