@@ -4,7 +4,6 @@ import typing as ta
 
 from omlish import check
 from omlish import inject as inj
-from omlish import lang
 from omlish import orm
 
 from .configs import OrmConfig
@@ -29,10 +28,16 @@ async def _provide_sql_store(
         file_path: _SqlStoreFilePath,
         registry: orm.Registry,
 ) -> orm.SqlStore:
+    import concurrent.futures as cf
     import sqlite3
 
     from omlish import sql
     from omlish.asyncs.asyncio import all as au
+
+    @contextlib.asynccontextmanager
+    async def executor():
+        with cf.ThreadPoolExecutor(max_workers=1) as exe:
+            yield au.ToThread(exe=exe)
 
     def connect():
         if not file_path.startswith(':'):
@@ -47,7 +52,7 @@ async def _provide_sql_store(
     db = sql.api.DbapiDb(lambda: contextlib.closing(connect()))
 
     adb = sql.api.SyncToAsyncDb(
-        ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread())),
+        executor,
         db,
     )
 

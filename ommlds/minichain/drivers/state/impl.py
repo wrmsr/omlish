@@ -1,5 +1,4 @@
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import orm
 
 from ...chat.messages import Chat
@@ -36,9 +35,6 @@ class DriverStateManagerImpl(DriverStateManager):
         async with self._orm.new_session():
             state = check.not_none(await orm.get(DriverState, self._chat_id.v))
 
-            state = dc.replace(
-                state,
-                chat=[*state.chat, *chat_additions],
-            )
+            state.chat = [*state.chat, *chat_additions]
 
         return state

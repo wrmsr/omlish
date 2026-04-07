@@ -387,7 +387,11 @@ class SqlStore(Store):
 
             for snap in snaps:
                 enc_snap = sm.encode(snap)
-                params = [enc_snap[f._store_name] for f in m._fields]
+                params = [
+                    enc_snap[f._store_name]
+                    for f in m._fields
+                    if f not in m._auto_value_fields
+                ]
                 await sql.exec(check.not_none(self._q), stmt, params)
 
         async def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:

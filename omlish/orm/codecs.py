@@ -6,6 +6,7 @@ from .. import lang
 from .. import marshal as msh
 from .. import reflect as rfl
 from .. import typedvalues as tv
+from ..formats import json
 from .fields import FieldOption
 
 
@@ -41,6 +42,24 @@ class NopCodec(Codec):
 
 
 @ta.final
+class CompositeCodec(Codec):
+    def __init__(self, *children: Codec) -> None:
+        super().__init__()
+
+        self._children = children
+
+    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+        for child in self._children:
+            obj = child.encode(obj, rty)
+        return obj
+
+    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+        for child in reversed(self._children):
+            val = child.decode(val, rty)
+        return val
+
+
+@ta.final
 class FnCodec(Codec):
     def __init__(
             self,
@@ -60,6 +79,15 @@ class FnCodec(Codec):
 
 
 ##
+
+
+@ta.final
+class JsonCodec(Codec):
+    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+        return json.dumps_compact(obj)
+
+    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+        return json.loads(val)
 
 
 @ta.final

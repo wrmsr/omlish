@@ -4,55 +4,51 @@ TODO:
  - delimited.py / jsonl
   - + record separators ala https://en.wikipedia.org/wiki/JSON_streaming
 """
-import typing as _ta
-
 from ... import lang as _lang
 
 
-from .backends import (  # noqa
-    Backend,
+with _lang.auto_proxy_init(globals()):
+    ##
 
-    default_backend,
+    from .backends import (  # noqa
+        Backend,
 
-    StdBackend,
-    std_backend,
-)
+        default_backend,
 
-from .backends.default import (  # noqa
-    dump,
-    dump_compact,
-    dump_pretty,
-    dumps,
-    dumps_compact,
-    dumps_pretty,
-    load,
-    loads,
-)
+        StdBackend,
+        std_backend,
+    )
 
-from .consts import (  # noqa
-    COMPACT_KWARGS,
-    COMPACT_SEPARATORS,
-    PRETTY_INDENT,
-    PRETTY_KWARGS,
-    PRETTY_SEPARATORS,
-    Separators,
-)
+    from .backends.default import (  # noqa
+        dump,
+        dump_compact,
+        dump_pretty,
+        dumps,
+        dumps_compact,
+        dumps_pretty,
+        load,
+        loads,
+    )
 
-from .encoding import (  # noqa
-    decodes,
-    detect_encoding,
-)
+    from .consts import (  # noqa
+        COMPACT_KWARGS,
+        COMPACT_SEPARATORS,
+        PRETTY_INDENT,
+        PRETTY_KWARGS,
+        PRETTY_SEPARATORS,
+        Separators,
+    )
 
-if _ta.TYPE_CHECKING:
+    from .encoding import (  # noqa
+        decodes,
+        detect_encoding,
+    )
+
     from .rendering import (  # noqa
         JsonRenderer,
     )
-else:
-    _lang.proxy_init(globals(), '.rendering', [
-        'JsonRenderer',
-    ])
 
-from .types import (  # noqa
-    SCALAR_TYPES,
-    Scalar,
-)
+    from .types import (  # noqa
+        SCALAR_TYPES,
+        Scalar,
+    )

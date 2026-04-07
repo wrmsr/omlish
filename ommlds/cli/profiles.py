@@ -235,10 +235,12 @@ class ChatProfile(AspectProfile[ChatConfig]):
     class State(ProfileAspect[ChatConfig]):
         parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
             ap.arg('-n', '--new', action='store_true'),
+            ap.arg('--db'),
         ]
 
         def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
-            db_file_path = os.path.join(get_home_paths().state_dir, 'minichain', 'cli', 'state.db')
+            if (db_file_path := ctx.args.db) is None:
+                db_file_path = os.path.join(get_home_paths().state_dir, 'minichain', 'cli', 'state.db')
 
             return dc.replace(
                 cfg,

@@ -36,7 +36,7 @@ def driver_state_mapper() -> orm.Mapper:
             created_at=[orm.CreatedAt()],
             updated_at=[orm.UpdatedAt()],
             chat=[
-                orm.FieldCodec(orm.MarshalCodec()),
+                orm.FieldCodec(orm.CompositeCodec(orm.MarshalCodec(), orm.JsonCodec())),
                 orm.FieldSqlType(sql.td.String()),
             ],
         ),
