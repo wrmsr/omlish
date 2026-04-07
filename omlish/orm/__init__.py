@@ -40,7 +40,6 @@ from .fields import (  # noqa
     Field,
     KeyField,
     RefField,
-
 )
 
 from .indexes import (  # noqa
