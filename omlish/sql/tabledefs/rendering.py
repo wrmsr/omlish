@@ -27,7 +27,7 @@ when new.{column_name} = old.{column_name}
   begin
   update {table_name}
   set {column_name} = current_timestamp
-  where rowid = new.rowid;
+  where {where};
 end\
 """
 
@@ -96,8 +96,14 @@ def render_create_statements(
     options: list[str] = []
 
     indexes: list[str] = []
-
     triggers: list[str] = []
+
+    if (pk := tbl.elements.get(PrimaryKey)) is not None:
+        has_rowid = len(pk.columns) == 1 and isinstance(cols[pk.columns[0]].type, Integer)
+    else:
+        has_rowid = False
+    if not has_rowid:
+        options.append('without rowid')
 
     for e in tbl.elements:
         if isinstance(e, Column):
@@ -108,11 +114,16 @@ def render_create_statements(
             constraints.append(f'primary key({", ".join(e.columns)})')
 
         elif isinstance(e, UpdatedAtTrigger):
+            if pk is not None:
+                pk_cols = check.not_empty(pk.columns)
+            else:
+                pk_cols = ['rowid']
             triggers.append(CREATE_UPDATED_AT_TRIGGER_SRC.format(
                 preamble='if not exists' if if_not_exists else '',
                 trigger_name=f'{tbl.name}__trigger__updated_at__{e.column}',
                 table_name=tbl.name,
                 column_name=e.column,
+                where=' and '.join(f'{c} = new.{c}' for c in pk_cols),
             ))
 
         elif isinstance(e, Index):
