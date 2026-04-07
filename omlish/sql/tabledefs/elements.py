@@ -30,7 +30,7 @@ class Column(Element, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class PrimaryKey(Element, lang.Final):
+class PrimaryKey(Element, tv.UniqueTypedValue, lang.Final):
     columns: ta.Sequence[str]
 
 

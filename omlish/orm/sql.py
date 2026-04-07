@@ -168,7 +168,6 @@ class SqlStore(Store):
 
         if isinstance(field, KeyField):
             rty = field.key_cls
-            els.append(sql.td.PrimaryKey([field._store_name]))
 
         elif isinstance(field, RefField):
             rty = field.ref_key_cls
@@ -210,16 +209,22 @@ class SqlStore(Store):
         return els
 
     def _index_table_def(self, m: Mapper, idx: Index) -> list[sql.td.Element]:
-        return [sql.td.Index(
-            columns=[m._store_name_by_field_name[f] for f in idx.fields],
-            name=idx._store_name,
-        )]
+        return [
+            sql.td.Index(
+                columns=[m._store_name_by_field_name[f] for f in idx.fields],
+                name=idx._store_name,
+                unique=idx._is_unique,
+            ),
+        ]
 
     def _mapper_table_def(self, m: Mapper) -> sql.td.TableDef:
         els: list[sql.td.Element] = []
 
         for f in m.fields:
             els.extend(self._field_table_def(f))
+
+            if isinstance(f, KeyField):
+                els.append(sql.td.PrimaryKey([f._store_name]))
 
         for idx in m.indexes:
             els.extend(self._index_table_def(m, idx))

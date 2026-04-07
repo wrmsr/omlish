@@ -1,6 +1,7 @@
 import io
 import typing as ta
 
+from ... import check
 from ... import collections as col
 from ... import dataclasses as dc
 from .dtypes import Datetime
@@ -44,7 +45,6 @@ class RenderColumn:
     _: dc.KW_ONLY
 
     not_null: bool = False
-    primary_key: bool = False
     default: str | None = None
 
 
@@ -92,6 +92,9 @@ def render_create_statements(
 
     #
 
+    constraints: list[str] = []
+    options: list[str] = []
+
     indexes: list[str] = []
 
     triggers: list[str] = []
@@ -101,9 +104,8 @@ def render_create_statements(
             pass  # Already handled
 
         elif isinstance(e, PrimaryKey):
-            for pc in e.columns:
-                rc = r_cols[pc]
-                rc.primary_key = True
+            check.not_empty(e.columns)
+            constraints.append(f'primary key({", ".join(e.columns)})')
 
         elif isinstance(e, UpdatedAtTrigger):
             triggers.append(CREATE_UPDATED_AT_TRIGGER_SRC.format(
@@ -146,18 +148,28 @@ def render_create_statements(
         if rc.not_null:
             cts.write(' not null')
 
-        if rc.primary_key:
-            cts.write(' primary key')
-
         if rc.default is not None:
             cts.write(f' default {rc.default}')
 
-        if i < len(r_cols) - 1:
+        if constraints or i < len(r_cols) - 1:
+            cts.write(',')
+
+        cts.write('\n')
+
+    for i, cs in enumerate(constraints):
+        cts.write(f'  {cs}')
+
+        if i < len(constraints) - 1:
             cts.write(',')
 
         cts.write('\n')
 
     cts.write(')')
+
+    for opt in options:
+        cts.write('\n')
+
+        cts.write(opt)
 
     #
 

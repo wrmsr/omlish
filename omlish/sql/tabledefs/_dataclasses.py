@@ -738,26 +738,23 @@ def _process_dataclass__3fe3bb9ac13c6d7f416ca5fe3e49bc54d50d4126():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('name', 'type', 'not_null', 'primary_key', 'default')), EqPlan(fields=('name', 'ty"
-        "pe', 'not_null', 'primary_key', 'default')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fi"
-        "elds=(InitPlan.Field(name='name', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='type', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='not_null', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='ini"
-        "t.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='primary_key', annotation=OpRef(name='init.fields.3."
-        "annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default', anno"
-        "tation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), s"
-        "elf_param='self', std_params=('name', 'type'), kw_only_params=('not_null', 'primary_key', 'default'), frozen=F"
-        "alse, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name="
-        "'name', kw_only=False, fn=None), ReprPlan.Field(name='type', kw_only=False, fn=None), ReprPlan.Field(name='not"
-        "_null', kw_only=True, fn=None), ReprPlan.Field(name='primary_key', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='default', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('name', 'type', 'not_null', 'default')), EqPlan(fields=('name', 'type', 'not_null'"
+        ", 'default')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='nam"
+        "e', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='type"
+        "', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='not_n"
+        "ull', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='default', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='"
+        "init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None)), self_param='self', std_params=('name', 'type'), kw_only_params=('not"
+        "_null', 'default'), frozen=False, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan("
+        "fields=(ReprPlan.Field(name='name', kw_only=False, fn=None), ReprPlan.Field(name='type', kw_only=False, fn=Non"
+        "e), ReprPlan.Field(name='not_null', kw_only=True, fn=None), ReprPlan.Field(name='default', kw_only=True, fn=No"
+        "ne)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b968668513180b12cea1d4309900175dc7670439',
+    plan_repr_sha1='9b840fb1b0ef724767198e1e22cbe352369b9cb0',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -765,14 +762,12 @@ def _process_dataclass__3fe3bb9ac13c6d7f416ca5fe3e49bc54d50d4126():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
     ),
     cls_names=(
         ('omlish.sql.tabledefs', 'RenderColumn'),
     ),
 )
-def _process_dataclass__b968668513180b12cea1d4309900175dc7670439():
+def _process_dataclass__9b840fb1b0ef724767198e1e22cbe352369b9cb0():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -782,8 +777,6 @@ def _process_dataclass__b968668513180b12cea1d4309900175dc7670439():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -805,7 +798,6 @@ def _process_dataclass__b968668513180b12cea1d4309900175dc7670439():
                 name=self.name,
                 type=self.type,
                 not_null=self.not_null,
-                primary_key=self.primary_key,
                 default=self.default,
             )
 
@@ -823,7 +815,6 @@ def _process_dataclass__b968668513180b12cea1d4309900175dc7670439():
                 self.name == other.name and
                 self.type == other.type and
                 self.not_null == other.not_null and
-                self.primary_key == other.primary_key and
                 self.default == other.default
             )
 
@@ -840,13 +831,11 @@ def _process_dataclass__b968668513180b12cea1d4309900175dc7670439():
             type: __dataclass__init__fields__1__annotation,
             *,
             not_null: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            primary_key: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            default: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            default: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             self.name = name
             self.type = type
             self.not_null = not_null
-            self.primary_key = primary_key
             self.default = default
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -860,7 +849,6 @@ def _process_dataclass__b968668513180b12cea1d4309900175dc7670439():
             parts.append(f"name={self.name!r}")
             parts.append(f"type={self.type!r}")
             parts.append(f"not_null={self.not_null!r}")
-            parts.append(f"primary_key={self.primary_key!r}")
             parts.append(f"default={self.default!r}")
             return (
                 f"{self.__class__.__qualname__}("
