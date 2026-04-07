@@ -16,6 +16,14 @@ if ta.TYPE_CHECKING:
 ##
 
 
+@ta.final
+class FinalFieldOption(FieldOption, tv.UniqueTypedValue, lang.Final):
+    pass
+
+
+##
+
+
 class Field(lang.Sealed):
     def __init__(
             self,
@@ -33,6 +41,8 @@ class Field(lang.Sealed):
         self._rty = check.isinstance(_rty, rfl.Type)
         self._backref_binding = _backref_binding
         self._options = tv.TypedValues(*(_options or []))
+
+        self._is_final = FinalFieldOption in self._options
 
     @classmethod
     def _default_store_name(cls, name: str) -> str:
@@ -71,6 +81,12 @@ class Field(lang.Sealed):
     @property
     def options(self) -> tv.TypedValues[FieldOption]:
         return self._options
+
+    #
+
+    @property
+    def is_final(self) -> bool:
+        return self._is_final
 
     #
 

@@ -53,6 +53,8 @@ from .codecs import (  # noqa
 )
 
 from .fields import (  # noqa
+    FinalFieldOption,
+
     Field,
     KeyField,
     RefField,

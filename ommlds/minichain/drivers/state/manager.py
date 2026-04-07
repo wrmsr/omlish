@@ -4,7 +4,6 @@ import typing as ta
 from omlish import lang
 
 from ...chat.messages import Chat
-from .models import DriverState
 
 
 ##
@@ -12,9 +11,9 @@ from .models import DriverState
 
 class DriverStateManager(lang.Abstract):
     @abc.abstractmethod
-    def get_driver_state(self) -> ta.Awaitable[DriverState]:
+    def get_chat(self) -> ta.Awaitable[Chat]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def extend_chat(self, chat_additions: Chat) -> ta.Awaitable[DriverState]:
+    def extend_chat(self, chat_additions: Chat) -> ta.Awaitable[None]:
         raise NotImplementedError

@@ -79,7 +79,7 @@ class DriverImpl(Driver):
 
         await self._events.emit_event(UserMessagesEvent(next_user_chat))
 
-        prev_chat = (await self._driver_state_manager.get_driver_state()).chat
+        prev_chat = await self._driver_state_manager.get_chat()
 
         prepared_chat: Chat = [*prev_chat, *next_user_chat]
         if self._chat_preparer is not None:

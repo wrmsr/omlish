@@ -1,7 +1,7 @@
-- sorted indexes
-- composite keys
 - marshal interop
   - options? for ref expansion/id replacement
   - hybrid schemaless-ish marshal'd storage - line? embedded?
-- storage-side defaults
-- same async story as injector obviously
+- storage-side defaults (expand auto_val)
+- same async story as injector ?
+- first class composite keys?
+  - `orm.Key[tuple[str, int]]` -> `pk: ta.ClassVar[orm.CompositeKey[tuple[int, str]]] = orm.composite_key()` ?

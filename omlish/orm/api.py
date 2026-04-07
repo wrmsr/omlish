@@ -34,10 +34,12 @@ T = ta.TypeVar('T')
 
 
 def index(
-        *fields: str,
+        fields: ta.Sequence[str] | str,
         store_name: str | None = None,
         options: ta.Sequence[IndexOption] | None = None,
 ) -> Index:
+    if isinstance(fields, str):
+        fields = [fields]
     check.not_empty(fields)
     for f in fields:
         check.non_empty_str(f)
@@ -137,9 +139,7 @@ def mapper(
 
     for ia in indexes or ():
         if not isinstance(ia, Index):
-            if isinstance(ia, str):
-                ia = [ia]
-            ia = index(*ia)
+            ia = index(ia)
 
         if ia._given_store_name is None:
             dsn = '__'.join([

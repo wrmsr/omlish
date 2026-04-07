@@ -42,6 +42,8 @@ class _SessionFlusher:
         updates: list[tuple[Session._Entity, Snap, ta.Sequence[str]]] = []
         deletes: list[Session._Entity] = []
 
+        ff_sns = m._final_field_store_names
+
         for e in self._session._entities_by_key_by_cls[m._cls].values():
             if e.obj is None:
                 if e.snap is None:
@@ -65,6 +67,10 @@ class _SessionFlusher:
 
                 elif (ds := tuple(k for k, nv in snap.items() if xs[k] != nv)):
                     check.state(not is_ak)
+
+                    if ff_sns and (ds_fs := [k for k in ds if k in ff_sns]):
+                        raise RuntimeError(f'Cannot modify final fields: {ds_fs}')
+
                     updates.append((e, snap, ds))
 
         if not (
