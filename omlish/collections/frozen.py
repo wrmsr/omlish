@@ -4,6 +4,7 @@ import itertools
 import typing as ta
 
 from .. import lang
+from .persistent import PersistentMapping
 
 
 T = ta.TypeVar('T')
@@ -19,7 +20,12 @@ class Frozen(ta.Hashable, abc.ABC):
 
 
 @ta.final
-class FrozenDict(ta.Mapping[K, V], Frozen, lang.Final):
+class FrozenDict(
+    PersistentMapping[K, V],
+    ta.Mapping[K, V],
+    Frozen,
+    lang.Final,
+):
     def __new__(cls, *args: ta.Any, **kwargs: ta.Any) -> 'FrozenDict[K, V]':  # noqa
         if len(args) == 1 and Frozen in type(args[0]).__bases__:
             return args[0]
@@ -41,19 +47,21 @@ class FrozenDict(ta.Mapping[K, V], Frozen, lang.Final):
     def __repr__(self) -> str:
         return f'({self._dct!r})'
 
-    def __eq__(self, other) -> bool:
-        return type(self) is type(other) and self._dct == other._dct
-
-    def __getitem__(self, key: K) -> V:
-        return self._dct[key]
-
-    def __getstate__(self):
-        return tuple(self.items())
+    #
 
     def __hash__(self) -> int:
         if self._hash is None:
             self._hash = hash(tuple((k, self[k]) for k in sorted(self)))  # type: ignore
         return self._hash
+
+    def __eq__(self, other) -> bool:
+        return type(self) is type(other) and self._dct == other._dct
+
+    def __ne__(self, other) -> bool:
+        return not (self == other)
+
+    def __contains__(self, item):
+        return item in self._dct
 
     def __iter__(self) -> ta.Iterator[K]:
         return iter(self._dct)
@@ -61,11 +69,18 @@ class FrozenDict(ta.Mapping[K, V], Frozen, lang.Final):
     def __len__(self) -> int:
         return len(self._dct)
 
-    def __ne__(self, other) -> bool:
-        return not (self == other)
+    def __getitem__(self, key: K) -> V:
+        return self._dct[key]
+
+    #
+
+    def __getstate__(self):
+        return tuple(self.items())
 
     def __setstate__(self, t):
         self.__init__(t)
+
+    #
 
     def drop(self, *keys: T) -> 'FrozenDict[K, V]':
         ks = frozenset(keys)
@@ -74,6 +89,22 @@ class FrozenDict(ta.Mapping[K, V], Frozen, lang.Final):
     def set(self, *args: ta.Any, **kwargs: ta.Any) -> 'FrozenDict[K, V]':
         new = type(self)(*args, **kwargs)
         return type(self)(itertools.chain(self.items(), new.items()))
+
+    #
+
+    def iteritems(self) -> ta.Iterator[tuple[K, V]]:
+        return iter(self.items())
+
+    def with_(self, k: K, v: V) -> ta.Self:
+        return self.set(k, v)
+
+    def without(self, k: K) -> ta.Self:
+        return self.drop(k)
+
+    def default(self, k: K, v: V) -> ta.Self:
+        if k in self:
+            return self
+        return self.set(k, v)
 
 
 @ta.final

@@ -29,7 +29,7 @@ def new_persistent_map[K, V](
     if hamtmap.is_hamt_available():
         return hamtmap.new_hamt_map(items)
     else:
-        return treapmap.new_treap_map(items)
+        return treapmap.new_treap_map(items, cmp=lang.hash_eq_id_cmp)
 
 
 #

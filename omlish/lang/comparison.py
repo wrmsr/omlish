@@ -16,7 +16,24 @@ V = ta.TypeVar('V')
 
 
 def cmp(l: ta.Any, r: ta.Any) -> int:
-    return int(l > r) - int(l < r)
+    return (l > r) - (l < r)
+
+
+def hash_eq_id_cmp(l: ta.Any, r: ta.Any) -> int:
+    if l is r or l == r:
+        return 0
+
+    hl = hash(l)
+    hr = hash(r)
+    if hl < hr:
+        return -1
+    elif hl > hr:
+        return 1
+
+    il = id(l)
+    ir = id(r)
+
+    return (il > ir) - (il < ir)
 
 
 def key_cmp(fn: ta.Callable[[K, K], int] | None = None) -> ta.Callable[[tuple[K, V], tuple[K, V]], int]:
@@ -28,6 +45,7 @@ def key_cmp(fn: ta.Callable[[K, K], int] | None = None) -> ta.Callable[[tuple[K,
 if _comparison is not None:
     globals().update({a: getattr(_comparison, a) for a in [
         'cmp',
+        'hash_eq_id_cmp',
         'key_cmp',
     ]})
 

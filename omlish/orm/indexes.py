@@ -13,11 +13,11 @@ if ta.TYPE_CHECKING:
 ##
 
 
-class SortedIndexOption(tv.UniqueTypedValue, IndexOption):
+class UniqueIndexOption(tv.UniqueTypedValue, IndexOption):
     pass
 
 
-class UniqueIndexOption(tv.UniqueTypedValue, IndexOption):
+class SortedIndexOption(tv.UniqueTypedValue, IndexOption):
     pass
 
 
@@ -48,6 +48,7 @@ class Index(lang.Final):
         check.unique(self._fields)
 
         self._is_unique = UniqueIndexOption in self._options
+        self._is_sorted = SortedIndexOption in self._options
 
     _store_name: str
 
@@ -86,6 +87,10 @@ class Index(lang.Final):
     @property
     def is_unique(self) -> bool:
         return self._is_unique
+
+    @property
+    def is_sorted(self) -> bool:
+        return self._is_sorted
 
     #
 

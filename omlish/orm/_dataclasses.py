@@ -293,27 +293,25 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('keys',)), EqPlan(fields=('keys',)), FrozenPlan(fields=('keys',), allow_dynamic_du"
         "nder_attrs=False), HashPlan(action='add', fields=('keys',), cache=False), InitPlan(fields=(InitPlan.Field(name"
-        "='keys', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=OpRef(name='init.fie"
-        "lds.0.default_factory'), init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None),), self_param='self', std_params=('keys',), kw_only_params=(), frozen=True, slots=False, pos"
-        "t_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='keys', kw_only=False,"
-        " fn=None),), id=False, terse=False, default_fn=None)))"
+        "='keys', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self',"
+        " std_params=('keys',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), valida"
+        "te_fns=()), ReprPlan(fields=(ReprPlan.Field(name='keys', kw_only=False, fn=None),), id=False, terse=False, def"
+        "ault_fn=None)))"
     ),
-    plan_repr_sha1='e3ace0c55f00ffa2a7f46136b0431af1b4b7a426',
+    plan_repr_sha1='90fe5172beb2792e8eb451a4d9902225b057118d',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default_factory',
     ),
     cls_names=(
         ('omlish.orm', 'InMemoryStore._IndexState'),
     ),
 )
-def _process_dataclass__e3ace0c55f00ffa2a7f46136b0431af1b4b7a426():
+def _process_dataclass__90fe5172beb2792e8eb451a4d9902225b057118d():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default_factory,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -398,10 +396,8 @@ def _process_dataclass__e3ace0c55f00ffa2a7f46136b0431af1b4b7a426():
 
         def __init__(
             self,
-            keys: __dataclass__init__fields__0__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+            keys: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
-            if keys is __dataclass__HAS_DEFAULT_FACTORY:
-                keys = __dataclass__init__fields__0__default_factory()
             __dataclass__object_setattr(self, 'keys', keys)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"

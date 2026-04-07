@@ -1,8 +1,10 @@
+import dataclasses as dc
 import random
 import typing as ta
 
 import pytest
 
+from .... import lang
 from .. import treapmap as tm
 
 
@@ -356,3 +358,26 @@ def test_randomized_items_from_agrees_with_sorted_dict():
 
         expect_desc = [(k, v) for (k, v) in reversed(sorted_items) if k <= probe]
         assert list(m.items_from_desc(probe)) == expect_desc
+
+
+def test_hash_eq_id():
+    @dc.dataclass(frozen=True)
+    class Foo:
+        s: str
+
+    a = Foo('a')
+    b = Foo('b')
+    c = Foo('c')
+
+    assert a == Foo('a')
+
+    with pytest.raises(TypeError):
+        a < b  # type: ignore[operator]  # noqa
+
+    m: tm.TreapMap[Foo, str] = tm.new_treap_map(cmp=lang.hash_eq_id_cmp)
+    m = m.with_(a, 'a!')
+    m = m.with_(b, 'b!')
+    assert m[a] == 'a!'
+    assert m[b] == 'b!'
+    with pytest.raises(KeyError):
+        m[c]  # noqa

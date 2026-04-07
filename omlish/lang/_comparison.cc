@@ -58,6 +58,58 @@ static PyObject * comparison_cmp(PyObject *module, PyObject *const *args, Py_ssi
 
 //
 
+PyDoc_STRVAR(comparison_hash_eq_id_cmp_doc, "hash_eq_id_cmp(l, r)");
+
+static PyObject * comparison_hash_eq_id_cmp(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 2) {
+        PyErr_Format(
+            PyExc_TypeError,
+            "hash_eq_id_cmp() takes exactly 2 positional arguments (%zd given)",
+            nargs
+        );
+        return nullptr;
+    }
+
+    PyObject *l = args[0];
+    PyObject *r = args[1];
+
+    if (l == r) {
+        return PyLong_FromLong(0);
+    }
+
+    int eq = PyObject_RichCompareBool(l, r, Py_EQ);
+    if (eq < 0) {
+        return nullptr;
+    }
+    if (eq) {
+        return PyLong_FromLong(0);
+    }
+
+    Py_hash_t hl = PyObject_Hash(l);
+    if (hl == -1 && PyErr_Occurred()) {
+        return nullptr;
+    }
+
+    Py_hash_t hr = PyObject_Hash(r);
+    if (hr == -1 && PyErr_Occurred()) {
+        return nullptr;
+    }
+
+    if (hl < hr) {
+        return PyLong_FromLong(-1);
+    } else if (hl > hr) {
+        return PyLong_FromLong(1);
+    }
+
+    uintptr_t il = reinterpret_cast<uintptr_t>(l);
+    uintptr_t ir = reinterpret_cast<uintptr_t>(r);
+
+    return PyLong_FromLong((il > ir) - (il < ir));
+}
+
+//
+
 typedef struct {
     PyObject_HEAD
     PyObject *fn;
@@ -315,6 +367,7 @@ static void comparison_free(void *module)
 
 static PyMethodDef comparison_methods[] = {
     {"cmp", (PyCFunction)comparison_cmp, METH_FASTCALL, comparison_cmp_doc},
+    {"hash_eq_id_cmp", (PyCFunction)comparison_hash_eq_id_cmp, METH_FASTCALL, comparison_hash_eq_id_cmp_doc},
     {"key_cmp", (PyCFunction)comparison_key_cmp, METH_FASTCALL, comparison_key_cmp_doc},
     {nullptr, nullptr, 0, nullptr}
 };

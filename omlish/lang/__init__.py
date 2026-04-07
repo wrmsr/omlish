@@ -170,6 +170,7 @@ with _auto_proxy_init(globals(), update_exports=True):
 
     from .comparison import (  # noqa
         cmp,
+        hash_eq_id_cmp,
         key_cmp,
 
         InfinityType,

@@ -71,7 +71,15 @@ class InMemoryStore(Store):
 
     @dc.dataclass(frozen=True)
     class _IndexState:
-        keys: col.PersistentMapping[tuple[ta.Any, ...] | ta.Any, frozenset[ta.Any] | ta.Any] = dc.field(default_factory=col.new_persistent_map)  # noqa
+        keys: col.PersistentMapping[tuple[ta.Any, ...] | ta.Any, frozenset[ta.Any] | ta.Any]
+
+    #
+
+    def _new_index_state(self, idx: Index) -> _IndexState:
+        if idx.is_sorted:
+            return self._IndexState(keys=col.new_persistent_sorted_map())
+        else:
+            return self._IndexState(keys=col.new_persistent_map())
 
     #
 
@@ -235,7 +243,7 @@ class InMemoryStore(Store):
                 try:
                     idx_st = idx_sts[idx._store_name]
                 except KeyError:
-                    idx_st = self._o._IndexState()
+                    idx_st = self._o._new_index_state(idx)
 
                 idx_keys = idx_st.keys
 
@@ -278,7 +286,7 @@ class InMemoryStore(Store):
                 try:
                     idx_st = idx_sts[idx._store_name]
                 except KeyError:
-                    idx_st = self._o._IndexState()
+                    idx_st = self._o._new_index_state(idx)
 
                 idx_keys = idx_st.keys
 

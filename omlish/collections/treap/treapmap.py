@@ -51,6 +51,10 @@ class TreapMap(
     ) -> None:
         self._n, self._c = _n, _c
 
+    @property
+    def debug(self) -> ta.Mapping[K, V]:
+        return dict(self)
+
     def __len__(self) -> int:
         return self._n.count if self._n is not None else 0
 
