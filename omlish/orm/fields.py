@@ -132,7 +132,7 @@ class RefField(Field, lang.Final):
         self._unwrapped_rty = uw_rty
 
     @property
-    def optional(self) -> bool:
+    def is_optional(self) -> bool:
         return self._optional
 
     @property

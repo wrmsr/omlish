@@ -172,7 +172,7 @@ class SqlStore(Store):
 
         elif isinstance(field, RefField):
             rty = field.ref_key_cls
-            nullable = field.optional
+            nullable = field.is_optional
 
         else:
             rty = field.rty

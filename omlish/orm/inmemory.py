@@ -33,10 +33,10 @@ class InMemoryStore(Store):
             self.m = m
 
             self.index_lookup: dict[frozenset[str], Index] = {
-                frozenset(idx_t): idx
-                for idx, idx_t in sorted(
-                    m.index_field_store_names.items(),
-                    key=lambda kv: kv[1],
+                frozenset(idx._field_store_names): idx
+                for idx in sorted(
+                    m._indexes,
+                    key=lambda idx: idx._field_store_names,
                 )
             }
 
@@ -105,7 +105,7 @@ class InMemoryStore(Store):
             return None
         best_set = check.not_none(best_set)
 
-        idx_key = tuple(where[k] for k in t.m._index_field_store_names[best_idx])
+        idx_key = tuple(where[k] for k in best_idx._field_store_names)
         un_idx_where = [(k, where[k]) for k in where_set - best_set]
 
         return self._SelectedIndex(
@@ -193,7 +193,7 @@ class InMemoryStore(Store):
 
                 return lst
 
-            ix = ts.indexes[si.index._store_name]  # type: ignore[index]
+            ix = ts.indexes[si.index._store_name]
             try:
                 xs = ix.keys[si.index_key]
             except KeyError:
@@ -226,16 +226,15 @@ class InMemoryStore(Store):
             if not t.m._indexes:
                 return idx_sts
 
-            for idx, idx_t in t.m._index_field_store_names.items():
-                idx_sn = check.not_none(idx._store_name)
+            for idx in t.m._indexes:
                 try:
-                    idx_st = idx_sts[idx_sn]
+                    idx_st = idx_sts[idx._store_name]
                 except KeyError:
                     idx_st = self._o._IndexState()
 
                 idx_keys = idx_st.keys
 
-                ik = tuple(snap[f] for f in idx_t)
+                ik = tuple(snap[f] for f in idx._field_store_names)
 
                 try:
                     iz = idx_keys[ik]
@@ -248,7 +247,7 @@ class InMemoryStore(Store):
 
                 idx_st = dc.replace(idx_st, keys=idx_keys)
 
-                idx_sts = idx_sts.with_(idx_sn, idx_st)
+                idx_sts = idx_sts.with_(idx._store_name, idx_st)
 
             return idx_sts
 
@@ -262,16 +261,15 @@ class InMemoryStore(Store):
             if not t.m._indexes:
                 return idx_sts
 
-            for idx, idx_t in t.m._index_field_store_names.items():
-                idx_sn = check.not_none(idx._store_name)
+            for idx in t.m._indexes:
                 try:
-                    idx_st = idx_sts[idx_sn]
+                    idx_st = idx_sts[idx._store_name]
                 except KeyError:
                     idx_st = self._o._IndexState()
 
                 idx_keys = idx_st.keys
 
-                ik = tuple(snap[f] for f in idx_t)
+                ik = tuple(snap[f] for f in idx._field_store_names)
 
                 iz = idx_keys[ik]
                 check.in_(k, iz)
@@ -284,7 +282,7 @@ class InMemoryStore(Store):
 
                 idx_st = dc.replace(idx_st, keys=idx_keys)
 
-                idx_sts = idx_sts.with_(idx_sn, idx_st)
+                idx_sts = idx_sts.with_(idx._store_name, idx_st)
 
             return idx_sts
 
@@ -333,10 +331,10 @@ class InMemoryStore(Store):
                 if ti_snap:
                     snap.update(ti_snap)
 
+                check.not_in(k, ts_snaps)
+
                 for sk, sv in snap.items():  # noqa
                     check.not_in(sv.__class__, WRAPPER_TYPES)
-
-                check.not_in(k, ts_snaps)
 
                 ts_snaps = ts_snaps.with_(k, snap)
                 idx_sts = self._index(t, idx_sts, k, snap)

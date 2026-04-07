@@ -141,7 +141,7 @@ def mapper(
                 ia = [ia]
             ia = index(*ia)
 
-        if ia.store_name is None:
+        if ia._given_store_name is None:
             dsn = '__'.join([
                 store_name,
                 *[fields_by_name[f].store_name for f in ia.fields],

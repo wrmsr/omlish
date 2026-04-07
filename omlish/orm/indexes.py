@@ -40,10 +40,16 @@ class Index(lang.Final):
         super().__init__()
 
         self._fields = tuple(check.non_empty_str(f) for f in check.not_empty(_fields))
-        self._store_name = check.non_empty_str(_store_name) if _store_name is not None else None
+        self._given_store_name = _store_name
+        if _store_name is not None:
+            self._store_name = check.non_empty_str(_store_name)
         self._options = tv.TypedValues(*(_options or []))
 
         check.unique(self._fields)
+
+        self._is_unique = UniqueIndexOption in self._options
+
+    _store_name: str
 
     def _with_store_name(self, store_name: str) -> 'Index':
         return Index(
@@ -52,10 +58,14 @@ class Index(lang.Final):
         )
 
     def __repr__(self) -> str:
+        try:
+            sn = self._store_name
+        except AttributeError:
+            sn = None
         return (
             f'{type(self).__name__}('
             f'{list(self._fields)!r}'
-            f"{f', store_name={self._store_name!r})' if self._store_name else ''}"
+            f"{f', store_name={sn!r})' if sn else ''}"
             f')'
         )
 
@@ -64,12 +74,18 @@ class Index(lang.Final):
         return self._fields
 
     @property
-    def store_name(self) -> str | None:
+    def store_name(self) -> str:
         return self._store_name
 
     @property
     def options(self) -> tv.TypedValues[IndexOption]:
         return self._options
+
+    #
+
+    @property
+    def is_unique(self) -> bool:
+        return self._is_unique
 
     #
 
@@ -87,3 +103,12 @@ class Index(lang.Final):
     @property
     def mapper(self) -> 'Mapper':
         return self._mapper
+
+    ##
+    # Set by mapper
+
+    _field_store_names: tuple[str, ...]
+
+    @property
+    def field_store_names(self) -> tuple[str, ...]:
+        return self._field_store_names

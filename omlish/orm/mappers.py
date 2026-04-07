@@ -84,10 +84,8 @@ class Mapper(ta.Generic[K, T]):
         self._indexes_by_store_name: ta.Mapping[str, Index] = col.make_map((
             (check.non_empty_str(idx.store_name), idx) for idx in indexes
         ), strict=True)
-        self._index_field_store_names: ta.Mapping[Index, tuple[str, ...]] = {
-            idx: tuple(self._fields_by_name[f].store_name for f in idx.fields)
-            for idx in indexes
-        }
+        for idx in indexes:
+            idx._field_store_names = tuple(self._fields_by_name[f].store_name for f in idx.fields)
 
         self._created_at_field = self._single_field_with_option(CreatedAt)
         self._created_at_store_name = f2._store_name if (f2 := self._created_at_field) is not None else None
@@ -175,10 +173,6 @@ class Mapper(ta.Generic[K, T]):
     @property
     def indexes_by_store_name(self) -> ta.Mapping[str, Index]:
         return self._indexes_by_store_name
-
-    @property
-    def index_field_store_names(self) -> ta.Mapping[Index, tuple[str, ...]]:
-        return self._index_field_store_names
 
     def _single_field_with_option(self, opt_cls: type[FieldOptionT]) -> Field | None:
         lst = [f for f in self._fields if opt_cls in f.options]
