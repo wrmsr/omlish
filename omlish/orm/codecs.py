@@ -42,24 +42,6 @@ class NopCodec(Codec):
 
 
 @ta.final
-class CompositeCodec(Codec):
-    def __init__(self, *children: Codec) -> None:
-        super().__init__()
-
-        self._children = children
-
-    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
-        for child in self._children:
-            obj = child.encode(obj, rty)
-        return obj
-
-    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
-        for child in reversed(self._children):
-            val = child.decode(val, rty)
-        return val
-
-
-@ta.final
 class FnCodec(Codec):
     def __init__(
             self,
@@ -76,6 +58,42 @@ class FnCodec(Codec):
 
     def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
         return self._decode(val, rty)
+
+
+@ta.final
+class OptionalCodec(Codec):
+    def __init__(self, child: Codec) -> None:
+        super().__init__()
+
+        self._child = child
+
+    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+        if obj is None:
+            return None
+        return self._child.encode(obj, rty)
+
+    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+        if val is None:
+            return None
+        return self._child.decode(val, rty)
+
+
+@ta.final
+class CompositeCodec(Codec):
+    def __init__(self, *children: Codec) -> None:
+        super().__init__()
+
+        self._children = children
+
+    def encode(self, obj: ta.Any, rty: rfl.Type) -> ta.Any:
+        for child in self._children:
+            obj = child.encode(obj, rty)
+        return obj
+
+    def decode(self, val: ta.Any, rty: rfl.Type) -> ta.Any:
+        for child in reversed(self._children):
+            val = child.decode(val, rty)
+        return val
 
 
 ##

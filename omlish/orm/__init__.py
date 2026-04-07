@@ -31,8 +31,9 @@ from .codecs import (  # noqa
 
     Codec,
     NopCodec,
-    CompositeCodec,
     FnCodec,
+    OptionalCodec,
+    CompositeCodec,
 
     JsonCodec,
     MarshalCodec,
