@@ -63,7 +63,7 @@ class Project(ProjectBase):
         ],
 
         'search': [
-            'ddgs ~= 9.12',
+            'ddgs ~= 9.13',
 
             'tavily-python ~= 0.7',
         ],

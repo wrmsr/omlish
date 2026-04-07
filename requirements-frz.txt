@@ -29,8 +29,8 @@ bitsandbytes==0.49.2
 black==26.3.1
 bleach==6.3.0
 blobfile==3.2.0
-boto3==1.42.84
-botocore==1.42.84
+boto3==1.42.85
+botocore==1.42.85
 botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.2
@@ -48,7 +48,7 @@ cryptography==46.0.6
 cycler==0.12.1
 Cython==3.2.4
 datasets==4.8.4
-ddgs==9.12.1
+ddgs==9.13.0
 debugpy==1.8.20
 decorator==5.2.1
 defusedxml==0.7.1
@@ -91,7 +91,7 @@ hpack==4.1.0
 httpcore==1.0.9
 httplib2==0.31.2
 httpx==0.28.1
-huggingface_hub==1.9.0
+huggingface_hub==1.9.1
 hyperframe==6.1.0
 id==1.6.1
 idna==3.11
@@ -148,7 +148,7 @@ mdit-py-plugins==0.5.0
 mdurl==0.1.2
 mistune==3.2.0
 mlx==0.31.1
-mlx-lm==0.31.1
+mlx-lm==0.31.2
 mlx-metal==0.31.1
 more-itertools==11.0.1
 mpmath==1.3.0
@@ -225,7 +225,7 @@ pyparsing==3.3.2
 pyproject_hooks==1.2.0
 pyright==1.1.408
 pytesseract==0.3.13
-pytest==9.0.2
+pytest==9.0.3
 pytest-benchmark==5.2.3
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
@@ -319,12 +319,12 @@ twine==6.2.0
 typer==0.24.1
 typer-slim==0.24.0
 types-awscrt==0.31.3
-types-boto3==1.42.84
+types-boto3==1.42.85
 types-docutils==0.22.3.20260322
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20260402
 types-psutil==7.2.2.20260402
-types-Pygments==2.20.0.20260406
+types-Pygments==2.20.0.20260407
 types-PyYAML==6.0.12.20250915
 types-regex==2026.4.4.20260405
 types-s3transfer==0.16.0
