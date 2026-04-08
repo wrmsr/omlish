@@ -85,7 +85,6 @@ class UvxInstallManager(InstallManager):
             'uv', 'tool',
             'install',
             '--refresh',
-            '--prerelease=allow',
             f'--python={opts.py_ver}',
             _format_install_cli_pkg(opts),
             *itertools.chain.from_iterable(['--with', e] for e in (opts.extras or [])),
