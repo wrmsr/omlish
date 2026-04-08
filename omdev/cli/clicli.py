@@ -90,6 +90,69 @@ class CliCli(ap.Cli):
 
     #
 
+    def _build_deps(
+            self,
+            *,
+            no_deps: bool = False,
+            extra_deps: ta.Sequence[str] | None = None,
+    ) -> ta.Sequence[str]:
+        dep_set: set[str] = set(extra_deps or [])
+        if not no_deps:
+            root_dists = get_root_dists()
+            dep_set.update(set(root_dists))
+        return sorted(dep_set - {install.DEFAULT_CLI_PKG})
+
+    @ap.cmd(name='deps')
+    def deps_cmd(self) -> None:
+        print('\n'.join(self._build_deps()))
+
+    #
+
+    def _build_recovery_command(
+            self,
+            target_version: str,
+            *,
+            url: str | None = None,
+            deps: ta.Sequence[str] | None = None,
+    ) -> str:
+        if url is None:
+            url = DEFAULT_REINSTALL_URL
+        if deps is None:
+            deps = self._build_deps()
+
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in ('https', 'file'):
+            raise RuntimeError(f'Insecure url schem: {url}')
+
+        reco_cmd = ' '.join([
+            'curl -LsSf',
+            f"'{url}'" if (qu := shlex.quote(url)) == url else qu,
+            f'| python3 - --version {shlex.quote(target_version)}',
+            *deps,
+        ])
+
+        return reco_cmd
+
+    @ap.cmd(
+        ap.arg('--url', default=DEFAULT_REINSTALL_URL),
+        ap.arg('--no-deps', action='store_true'),
+        ap.arg('--version'),
+        ap.arg('extra_deps', nargs='*'),
+    )
+    def recovery(self) -> None:
+        reco_cmd = self._build_recovery_command(
+            self.args.version or __about__.__version__,
+            url=self.args.url,
+            deps=self._build_deps(
+                no_deps=self.args.no_deps,
+                extra_deps=self.args.extra_deps,
+            ),
+        )
+
+        print(reco_cmd)
+
+    #
+
     @dc.dataclass()
     class ReinstallWouldNotUpgradeError(Exception):
         current_version: str
@@ -136,11 +199,10 @@ class CliCli(ap.Cli):
 
         #
 
-        dep_set: set[str] = set(self.args.extra_deps or [])
-        if not self.args.no_deps:
-            root_dists = get_root_dists()
-            dep_set.update(set(root_dists))
-        deps = sorted(dep_set - {install.DEFAULT_CLI_PKG})  # noqa
+        deps = self._build_deps(
+            no_deps=self.args.no_deps,
+            extra_deps=self.args.extra_deps,
+        )
 
         #
 
@@ -233,16 +295,13 @@ class CliCli(ap.Cli):
 
         else:
             url = self.args.url
-            parsed = urllib.parse.urlparse(url)
-            if parsed.scheme not in ('https', 'file'):
-                raise RuntimeError(f'Insecure url schem: {url}')
 
-            reco_cmd = ' '.join([
-                'curl -LsSf',
-                f"'{url}'" if (qu := shlex.quote(url)) == url else qu,
-                f'| python3 - --version {shlex.quote(target_version)}',
-                *deps,
-            ])
+            reco_cmd = self._build_recovery_command(
+                target_version,
+                url=url,
+                deps=deps,
+            )
+
             print(f'Recovery command:\n\n{reco_cmd}\n')
 
             with urllib.request.urlopen(urllib.request.Request(url)) as resp:  # noqa
