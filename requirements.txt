@@ -1,8 +1,6 @@
 #### optional
 
-greenlet==3.3.2
-
-wrapt==2.1.2
+greenlet==3.4.0
 
 pyyaml==6.0.3
 
