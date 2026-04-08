@@ -36,3 +36,11 @@ class SkillHeader:
 class Skill:
     header: SkillHeader
     body: str
+
+    @property
+    def name(self) -> str:
+        return self.header.name
+
+    @property
+    def description(self) -> str:
+        return self.header.description

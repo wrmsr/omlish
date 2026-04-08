@@ -14,9 +14,11 @@ def build_welcome_message(
         backend_name: BackendName | None = None,
         mode_profile_name: ProfileName | None = None,
         driver_id: mc.drivers.DriverId,
+        chat_id: mc.drivers.ChatId,
 ) -> WelcomeMessage:
     return WelcomeMessage('\n'.join([
         *([f'Profile: {mode_profile_name}'] if mode_profile_name is not None else []),
+        f'Chat Id: {chat_id.v}',
         f'Driver Id: {driver_id.v}',
         f'Backend: {backend_name or "?"}',
         f'Working Dir: {os.getcwd()}',

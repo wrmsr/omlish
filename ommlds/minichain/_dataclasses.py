@@ -1468,7 +1468,6 @@ def _process_dataclass__b4a9277b8c9559fb4e325a8c35bc504f30ab2294():
         ('ommlds.minichain.modules.configs', 'ModuleConfig'),
         ('ommlds.minichain.modules.inject', 'BashConfig'),
         ('ommlds.minichain.modules.inject', 'CodeConfig'),
-        ('ommlds.minichain.modules.inject', 'SkillsConfig'),
         ('ommlds.minichain.modules.inject', 'TodoConfig'),
     ),
 )
@@ -24852,6 +24851,153 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('skill_paths',)), EqPlan(fields=('skill_paths',)), FrozenPlan(fields=('skill_paths"
+        "',), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('skill_paths',), cache=False), InitPlan"
+        "(fields=(InitPlan.Field(name='skill_paths', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(n"
+        "ame='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None),), self_param='self', std_params=(), kw_only_params=('skill_paths"
+        "',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=(InitPlan.ValidateFnWithParams"
+        "(fn=OpRef(name='init.validate_fns.0'), params=('self',)),)), ReprPlan(fields=(ReprPlan.Field(name='skill_paths"
+        "', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='c088fcf850721e4dcac4781f19820a6668f38121',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__validate_fns__0',
+    ),
+    cls_names=(
+        ('ommlds.minichain.modules.inject', 'SkillsConfig'),
+    ),
+)
+def _process_dataclass__c088fcf850721e4dcac4781f19820a6668f38121():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__validate_fns__0,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                skill_paths=self.skill_paths,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.skill_paths == other.skill_paths
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'skill_paths',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'skill_paths',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.skill_paths,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            skill_paths: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'skill_paths', skill_paths)
+            if not __dataclass__init__validate_fns__0(
+                self,
+            ):
+                raise __dataclass__FnValidationError(
+                    obj=self,
+                    fn=__dataclass__init__validate_fns__0,
+                )
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"skill_paths={self.skill_paths!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('header', 'body')), EqPlan(fields=('header', 'body')), FrozenPlan(fields=('header'"
         ", 'body'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('header', 'body'), cache=False), "
         "InitPlan(fields=(InitPlan.Field(name='header', annotation=OpRef(name='init.fields.0.annotation'), default=None"
@@ -24869,7 +25015,7 @@ def _process_dataclass__1bfce0db085f37de5c2dcfdf7b174bafdfaea6cd():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.modules.skills.parsing', 'Skill'),
+        ('ommlds.minichain.modules.skills.commands', 'Skill'),
     ),
 )
 def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
@@ -25039,7 +25185,7 @@ def _process_dataclass__883b94b4b8e3efa5ad1ef4a7e4a87fa6444cc38d():
         '__dataclass__repr__default_fn',
     ),
     cls_names=(
-        ('ommlds.minichain.modules.skills.parsing', 'SkillHeader'),
+        ('ommlds.minichain.modules.skills.commands', 'SkillHeader'),
     ),
 )
 def _process_dataclass__62dee6166588a1c4268bef1e4fdb39a238534707():

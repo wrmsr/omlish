@@ -21,15 +21,20 @@ def bind_skills(cfg: SkillsConfig = SkillsConfig()) -> inj.Elements:
     #
 
     els.extend([
+        inj.bind(cfg),
         inj.bind(_manager.SkillsManager, singleton=True),
     ])
 
     #
 
-    els.extend([
-        inj.bind(_commands.SkillCommand, singleton=True),
-        commands().bind_item(to_key=_commands.SkillCommand),
-    ])
+    for cmd_cls in [
+        _commands.SkillsCommand,
+        _commands.SkillCommand,
+    ]:
+        els.extend([
+            inj.bind(cmd_cls, singleton=True),
+            commands().bind_item(to_key=cmd_cls),
+        ])
 
     #
 
