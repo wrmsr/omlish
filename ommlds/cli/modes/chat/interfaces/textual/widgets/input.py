@@ -1,8 +1,6 @@
 # ruff: noqa: SLF001
 import typing as ta
 
-from textual import events
-
 from omdev.tui import textual as tx
 from omlish import dataclasses as dc
 
@@ -156,7 +154,7 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
             if not self.set_mode('/'):
                 self._update_suggestions()
 
-    async def on_key(self, event: events.Key) -> None:
+    async def on_key(self, event: tx.Key) -> None:
         if event.key == 'tab':
             if self._mode == '/':
                 if (sgs := self._ic._suggestions_manager.get_suggestions()) is not None:

@@ -605,7 +605,7 @@ def _tabulate(
 
     rows = [tuple(map(str, row)) for row in rows]
     sizes = [max(map(len, col)) for col in itertools.zip_longest(*rows, fillvalue='')]
-    table = [sep.join(map(str.ljust, row, sizes)).rstrip() for row in rows]
+    table = [sep.join(map(str.ljust, row, sizes, strict=True)).rstrip() for row in rows]
     return table, sizes
 
 

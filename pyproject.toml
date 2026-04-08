@@ -336,6 +336,8 @@ ignore = [
     'T201',      # print
     'T203',      # p-print
     'TC001',     # typing-only-first-party-import
+    'TC002',     # typing-only-third-party-import
+    'TC003',     # typing-only-standard-library-import
     'TC006',     # runtime-cast-value
     'TD001',     # invalid-todo-tag
     'TD002',     # missing-todo-author
@@ -357,12 +359,8 @@ ignore = [
 
     # TODO: 3.14
     'UP037',  # quoted-annotation
-    'TC003',  # typing-only-standard-library-import
     'UP045',  # non-pep604-annotation-optional
     'UP007',  # non-pep604-annotation-union
-    'TC002',  # typing-only-third-party-import
-    'UP036',  # outdated-version-block
-    'B912',   # map-without-explicit-strict
 
 ]
 
