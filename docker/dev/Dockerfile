@@ -359,7 +359,7 @@ done ;\
 RUN \
   --mount=target=/omlish/.pyenv_cache,type=cache,sharing=locked,uid=2000,gid=2000 \
 ( \
-export PYENV_VERSIONS='3.8.20 3.13.12 3.14.3' ;\
+export PYENV_VERSIONS='3.8.20 3.13.13 3.14.4' ;\
 \
 set -ex ;\
 \
