@@ -12,12 +12,26 @@ from .sync import HttpClient
 
 
 with lang.auto_proxy_import(globals()):
-    from . import httpx as _httpx
-    from . import urllib as _urllib
+    from . import httpx as _httpx  # noqa
+    from . import urllib as _urllib  # noqa
+    from .pipelines import asyncio as _pipelines_asyncio  # noqa
+    from .pipelines import sync as _pipelines_sync  # noqa
 
 
 C = ta.TypeVar('C')
 R = ta.TypeVar('R')
+
+
+##
+
+
+def _default_client() -> HttpClient:
+    return _urllib.UrllibHttpClient()
+
+
+def _default_async_client() -> AsyncHttpClient:
+    return _httpx.HttpxAsyncHttpClient()
+    # return _pipelines_asyncio.AsyncioIoPipelineAsyncHttpClient()
 
 
 ##
@@ -72,10 +86,6 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
 
 
 ##
-
-
-def _default_client() -> HttpClient:
-    return _urllib.UrllibHttpClient()
 
 
 def client() -> HttpClient:
@@ -156,10 +166,6 @@ request = _SyncDefaultRequester()
 
 
 ##
-
-
-def _default_async_client() -> AsyncHttpClient:
-    return _httpx.HttpxAsyncHttpClient()
 
 
 def async_client() -> AsyncHttpClient:

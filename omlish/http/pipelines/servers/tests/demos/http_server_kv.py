@@ -7,7 +7,7 @@ from ......io.pipelines.asyncs import AsyncIoPipelineMessages
 from ......io.pipelines.core import IoPipeline
 from ......io.pipelines.core import IoPipelineHandler
 from ......io.pipelines.core import IoPipelineHandlerContext
-from ......io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 from ......io.pipelines.flow.stub import StubIoPipelineFlowService
 from ......io.streams.utils import ByteStreamBuffers
 from ......logs.modules import get_module_loggers
@@ -169,7 +169,7 @@ async def serve_kv(
     items: ta.Dict[str, str] = {}
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamIoPipelineDriver(
+        drv = LoopAsyncioStreamIoPipelineDriver(
             build_http_kv_spec(items),
             reader,
             writer,

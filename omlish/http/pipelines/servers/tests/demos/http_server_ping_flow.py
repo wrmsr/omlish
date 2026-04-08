@@ -8,7 +8,7 @@ from ......io.pipelines.core import IoPipeline
 from ......io.pipelines.core import IoPipelineHandler
 from ......io.pipelines.core import IoPipelineHandlerContext
 from ......io.pipelines.core import IoPipelineMessages
-from ......io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 from ......io.pipelines.flow.stub import StubIoPipelineFlowService
 from ......io.pipelines.flow.types import IoPipelineFlow
 from ....requests import IoPipelineHttpRequestHead
@@ -86,7 +86,7 @@ async def serve_ping(
     """
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamIoPipelineDriver(
+        drv = LoopAsyncioStreamIoPipelineDriver(
             build_http_ping_spec(),
             reader,
             writer,

@@ -6,7 +6,7 @@ import typing as ta
 from ......io.pipelines.core import IoPipeline
 from ......io.pipelines.core import IoPipelineHandler
 from ......io.pipelines.core import IoPipelineHandlerContext
-from ......io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 from ....requests import IoPipelineHttpRequestHead
 from ....requests import IoPipelineHttpRequestObject
 from ....responses import FullIoPipelineHttpResponse
@@ -53,7 +53,7 @@ async def serve_ping(
         port: int = 8087,
 ) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamIoPipelineDriver(
+        drv = LoopAsyncioStreamIoPipelineDriver(
             build_http_ping_spec(),
             reader,
             writer,

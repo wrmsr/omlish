@@ -28,6 +28,31 @@ from ..chat import OpenaiChatChoicesService
 
 
 @pytest.mark.online
+@pytest.mark.asyncs('asyncio')
+async def test_openai_async(harness):
+    llm = OpenaiChatChoicesService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+    )
+
+    req = ChatChoicesRequest(
+        [UserMessage('Is water dry?')],
+        [
+            # Temperature(.1),
+            MaxCompletionTokens(64),
+        ],
+    )
+
+    rm = msh.marshal(req)
+    print(rm)
+    req2 = msh.unmarshal(rm, ChatChoicesRequest)
+    print(req2)
+
+    resp = await llm.invoke(req)
+    print(resp)
+    assert resp.v
+
+
+@pytest.mark.online
 def test_openai(harness):
     llm = OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),

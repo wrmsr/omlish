@@ -6,7 +6,7 @@ import typing as ta
 
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
-from ....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from ....io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 from ....io.pipelines.handlers.flatmap import FlatMapIoPipelineHandlers
 from ....io.readers import AsyncBytesReader
 from ....io.readers import AsyncBytesReaders
@@ -27,7 +27,7 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
     class _DriverResponseReader:
         def __init__(
                 self,
-                drv: SimpleAsyncioStreamIoPipelineDriver,
+                drv: LoopAsyncioStreamIoPipelineDriver,
         ) -> None:
             super().__init__()
 
@@ -85,7 +85,7 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
         reader, writer = await asyncio.open_connection(prepared.parsed_url.host, prepared.parsed_url.port)
 
         try:
-            drv = SimpleAsyncioStreamIoPipelineDriver(
+            drv = LoopAsyncioStreamIoPipelineDriver(
                 pipeline_spec,
                 reader,
                 writer,

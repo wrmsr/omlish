@@ -11,6 +11,22 @@ from ..chat import GoogleChatChoicesService
 
 
 @pytest.mark.online
+@pytest.mark.asyncs('asyncio')
+async def test_chat_async(harness):
+    llm = GoogleChatChoicesService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('gemini_api_key').reveal()),
+    )
+
+    resp = await llm.invoke(Request(
+        [UserMessage('Is water dry?')],
+        # Temperature(.1),
+        # MaxTokens(64),
+    ))
+    print(resp)
+    assert resp.v
+
+
+@pytest.mark.online
 def test_chat(harness):
     llm = GoogleChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('gemini_api_key').reveal()),

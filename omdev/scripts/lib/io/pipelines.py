@@ -8620,7 +8620,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 ##
 
 
-class SimpleAsyncioStreamIoPipelineDriver(AsyncioStreamIoPipelineDriver):
+class LoopAsyncioStreamIoPipelineDriver(AsyncioStreamIoPipelineDriver):
     _read_task: ta.Optional[asyncio.Task] = None
 
     def _ensure_read_task(self) -> None:

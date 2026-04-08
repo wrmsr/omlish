@@ -12,6 +12,27 @@ from ..chat import CerebrasChatChoicesService
 
 
 @pytest.mark.online
+@pytest.mark.asyncs('asyncio')
+async def test_cerebras_async(harness):
+    llm = CerebrasChatChoicesService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('cerebras_api_key').reveal()),
+    )
+
+    req = ChatChoicesRequest(
+        [UserMessage('Is water dry?')],
+    )
+
+    rm = msh.marshal(req)
+    print(rm)
+    req2 = msh.unmarshal(rm, ChatChoicesRequest)
+    print(req2)
+
+    resp = await llm.invoke(req)
+    print(resp)
+    assert resp.v
+
+
+@pytest.mark.online
 def test_cerebras(harness):
     llm = CerebrasChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('cerebras_api_key').reveal()),

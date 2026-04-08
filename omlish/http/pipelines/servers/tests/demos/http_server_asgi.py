@@ -5,7 +5,7 @@ import typing as ta
 
 from ......io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from ......io.pipelines.core import IoPipeline
-from ......io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 from ....responses import FullIoPipelineHttpResponse  # noqa
 from ....responses import IoPipelineHttpResponseHead  # noqa
 from ...apps.asgi import AsgiHandler
@@ -33,7 +33,7 @@ def build_asgi_spec(app: ta.Any) -> IoPipeline.Spec:
 
 async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamIoPipelineDriver(
+        drv = LoopAsyncioStreamIoPipelineDriver(
             build_asgi_spec(spec.app),
             reader,
             writer,

@@ -16,6 +16,26 @@ from .....standard import ApiKey
 from ..stream import OpenaiChatChoicesStreamService
 
 
+@pytest.mark.asyncs('asyncio')
+@pytest.mark.online
+async def test_openai_chat_stream_model_async(harness):
+    llm = OpenaiChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+    )
+
+    foo_req: ChatChoicesStreamRequest
+    for foo_req in [
+        ChatChoicesStreamRequest([UserMessage('Is water dry?')]),
+        ChatChoicesStreamRequest([UserMessage('Is air wet?')]),
+    ]:
+        print(foo_req)
+
+        async with (await llm.invoke(foo_req)).v as it:
+            async for o in it:
+                print(o)
+            print(it.outputs)
+
+
 @pytest.mark.online
 def test_openai_chat_stream_model(harness):
     llm = OpenaiChatChoicesStreamService(

@@ -6,8 +6,7 @@ import threading
 import typing as ta
 
 from .....io.pipelines.core import IoPipeline
-from .....io.pipelines.drivers.asyncio import AsyncioStreamIoPipelineDriver
-from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from .....io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 
 
 ##
@@ -89,9 +88,7 @@ class HttpServerRunner:
         """Serve requests until shutdown."""
 
         async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-            drv: AsyncioStreamIoPipelineDriver
-
-            drv = SimpleAsyncioStreamIoPipelineDriver(
+            drv = LoopAsyncioStreamIoPipelineDriver(
                 self._spec_builder(),
                 reader,
                 writer,

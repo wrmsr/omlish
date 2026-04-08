@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import collections  # noqa
-import errno
 import io
 import socket
 import typing as ta
@@ -73,13 +72,6 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
             return buf.getvalue()
 
     #
-
-    def _try_set_nodelay(self, sock: 'socket.socket') -> None:
-        try:
-            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        except OSError as e:
-            if e.errno != errno.ENOPROTOOPT:
-                raise
 
     def _stream_request(self, ctx: HttpClientContext, req: HttpClientRequest) -> StreamHttpClientResponse:
         try:

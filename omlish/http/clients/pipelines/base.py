@@ -1,6 +1,8 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import dataclasses as dc
+import errno
+import socket
 import typing as ta
 
 from ....io.pipelines.bytes.buffers import OutboundBytesBufferIoPipelineHandler
@@ -10,6 +12,7 @@ from ....io.pipelines.flow.stub import StubIoPipelineFlowService
 from ....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from ....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from ....lite.abstract import Abstract
+from ....lite.check import check
 from ...clients.base import BaseHttpClient
 from ...clients.base import HttpClientRequest
 from ...headers import HttpHeaders
@@ -153,6 +156,7 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
                 ('User-Agent', 'omlish-http-client/0.1'),
                 if_present='skip',
             ),
+            body=check.isinstance(req.data, bytes) if req.data is not None else b'',
         )
 
         pipeline_spec = self._build_pipeline_spec(
@@ -175,3 +179,12 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
             full_request,
             pipeline_spec,
         )
+
+    #
+
+    def _try_set_nodelay(self, sock: 'socket.socket') -> None:
+        try:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno != errno.ENOPROTOOPT:
+                raise
