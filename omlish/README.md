@@ -183,15 +183,14 @@ examples are:
 
 - **asttokens / executing** - For getting runtime source representations of function call arguments, an optional
   capability of [check](https://github.com/wrmsr/omlish/blob/master/omlish/check.py).
-- **anyio** - While lite code must use only asyncio, non-trivial async standard code sometimes prefers to be written to
-  anyio.
 - **pytest** - What is used for all standard testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
+- **anyio** - While lite code must use only asyncio, some async standard code sometimes is be written to anyio.
 - **sqlalchemy** - The codebase has migrated away from SQLAlchemy in favor of the internal api but it retains it as an
   optional dep to support adapting the internal api to it.
 
 Additionally, some catchall dep categories include:
 
-- **compression** - Various preferred compression backends like lz4, python-snappy, zstandard, and brotli.
+- **compression** - Various preferred compression backends like lz4, python-snappy, and brotli.
 - **formats** - Various preferred data format backends like orjson/ujson, pyyaml, cbor2, and cloudpickle.
 - **sql drivers** - Various preferred and tested sql drivers.

@@ -51,8 +51,6 @@ class Project(ProjectBase):
 
             'python-snappy ~= 0.7',
 
-            'zstandard ~= 0.25; python_version < "3.14"',
-
             'brotli ~= 1.2',
         ],
 

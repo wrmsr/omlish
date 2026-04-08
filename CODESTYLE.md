@@ -21,8 +21,8 @@
     prefer correctness to speed.
   - Text formats: `jinja2`, `markdown-it-py`, etc. Particularly in LLM stuff the full versions of these are unavoidable,
     but simplified internal 'equivalents' exist for simpler usecases.
-  - Compression algorithms: `lz4`, `zstandard`, `python-snappy`, `brotli`, etc. These generally have no internal
-    fallback if not present in the standard library, but are usually optional at runtime in practice.
+  - Compression algorithms: `lz4`, `python-snappy`, `brotli`, etc. These generally have no internal fallback if not
+    present in the standard library, but are usually optional at runtime in practice.
   - Database drivers: `pg8000`, `psycopg`, `psycopg2`, `mysql-connecteor-python`, `mysqlclient`, `pymysql`,
     `snowflake-connector-python`, `duckdb`, etc. These also generally have no internal fallback.
   - Large <span aria-label="math">m̶̡̢̡̢̠̥͎͇̯̥̹̪͇͇͇̺̟͋̓͂̇͝͝a̴̧̛̞̾̊͒̈́̿͗̓̐̊͝t̸̥͖͂̀̆͛́̅́͝͠ȟ̴̢͎͙͍̱̒͂́̆̽̽̈́͝</span>

@@ -18,7 +18,6 @@ lz4==4.4.5
 # git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED
 
 python-snappy==0.7.3
-zstandard==0.25.0
 brotli==1.2.0
 
 
