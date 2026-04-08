@@ -78,10 +78,6 @@ class Project(ProjectBase):
             'httpx[http2] ~= 0.28',
         ],
 
-        'misc': [
-            'wrapt ~= 2.1',
-        ],
-
         'secrets': [
             'cryptography ~= 46.0',
         ],
@@ -134,8 +130,6 @@ class Project(ProjectBase):
 
         'orjson',
         'pyyaml',
-
-        'wrapt',
     ]
 
     _dependency_specs_by_name = (lambda od: {  # noqa
