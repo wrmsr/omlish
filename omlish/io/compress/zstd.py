@@ -1,5 +1,4 @@
 import dataclasses as dc
-import sys
 import typing as ta
 
 from ... import lang
@@ -8,17 +7,10 @@ from .codecs import make_compression_codec
 from .codecs import make_compression_lazy_loaded_codec
 
 
-if sys.version_info >= (3, 14):
-    if ta.TYPE_CHECKING:
-        from compression import zstd  # noqa
-    else:
-        zstd = lang.proxy_import('compression.zstd')
-
-else:  # noqa
-    if ta.TYPE_CHECKING:
-        import zstandard as zstd
-    else:
-        zstd = lang.proxy_import('zstandard')
+if ta.TYPE_CHECKING:
+    from compression import zstd  # noqa
+else:
+    zstd = lang.proxy_import('compression.zstd')
 
 
 ##
@@ -33,7 +25,7 @@ class ZstdCompression(Compression):
     def compress(self, d: bytes) -> bytes:
         return zstd.compress(
             d,
-            **(dict(level=self.level) if self.level is not None else {}),
+            **(dict(level=self.level) if self.level is not None else {}),  # type: ignore[arg-type]
         )
 
     def decompress(self, d: bytes) -> bytes:

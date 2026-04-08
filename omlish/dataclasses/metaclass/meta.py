@@ -5,8 +5,8 @@ TODO:
  - Enum - enforce Abstract or Final
 """
 import abc
+import annotationlib
 import dataclasses as dc
-import sys
 import typing as ta
 
 from ... import lang
@@ -23,21 +23,14 @@ T = ta.TypeVar('T')
 ##
 
 
-if sys.version_info >= (3, 14):
-    annotationlib = __import__('annotationlib')  # noqa
-
-    # See:
-    #  - https://github.com/python/cpython/pull/132345
-    #  - https://github.com/python/cpython/pull/132490
-    def _get_ns_annotation_names(ns: ta.Mapping[str, ta.Any]) -> ta.Sequence[str]:
-        if (fn := annotationlib.get_annotate_from_class_namespace(ns)) is not None:  # noqa
-            return list(annotationlib.call_annotate_function(fn, annotationlib.Format.FORWARDREF))  # noqa
-        else:
-            return []
-
-else:
-    def _get_ns_annotation_names(ns: ta.Mapping[str, ta.Any]) -> ta.Sequence[str]:
-        return list(ns.get('__annotations__', []))
+# See:
+#  - https://github.com/python/cpython/pull/132345
+#  - https://github.com/python/cpython/pull/132490
+def _get_ns_annotation_names(ns: ta.Mapping[str, ta.Any]) -> ta.Sequence[str]:
+    if (fn := annotationlib.get_annotate_from_class_namespace(ns)) is not None:  # noqa
+        return list(annotationlib.call_annotate_function(fn, annotationlib.Format.FORWARDREF))  # noqa
+    else:
+        return []
 
 
 ##

@@ -33,7 +33,7 @@ def ast_unparse(node: ast.AST) -> str | None:
     if hasattr(ast, 'unparse'):
         return ast.unparse(node)
     # Support simple cases in Python < 3.9
-    if isinstance(node, (ast.Num, ast.NameConstant, ast.Constant)):
+    if isinstance(node, ast.Constant):
         return str(ast_get_constant_value(node))
     if isinstance(node, ast.Name):
         return node.id

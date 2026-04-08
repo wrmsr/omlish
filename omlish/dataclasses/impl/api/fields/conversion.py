@@ -1,5 +1,4 @@
 import dataclasses as dc
-import sys
 import typing as ta
 
 from ..... import check
@@ -12,12 +11,6 @@ from ....specs import FieldSpec
 from ....specs import FieldType
 from .metadata import _ExtraFieldParamsMetadata
 from .metadata import set_field_spec_metadata
-
-
-##
-
-
-_IS_PY_3_14 = sys.version_info >= (3, 14)
 
 
 ##
@@ -107,7 +100,7 @@ def std_field_to_field_spec(
         kw_only=None if f.kw_only is dc.MISSING else (check.isinstance(f.kw_only, bool) if DEBUG else f.kw_only),
 
         **lang.opt_kw(
-            doc=extra_params.get('doc', f.doc if _IS_PY_3_14 else None),  # type: ignore[attr-defined]  # noqa
+            doc=extra_params.get('doc', f.doc),
         ),
 
         **lang.opt_kw(
@@ -142,9 +135,9 @@ def field_spec_to_std_field(fs: FieldSpec) -> dc.Field:
         repr=fs.repr,
         hash=fs.hash,
         compare=fs.compare,
-        **lang.opt_kw(metadata=fs.metadata),
+        **lang.opt_kw(metadata=fs.metadata),  # type: ignore[arg-type]
         kw_only=dc.MISSING if fs.kw_only is None else fs.kw_only,  # type: ignore[arg-type]
-        **(dict(doc=fs.doc) if _IS_PY_3_14 else {}),
+        **(dict(doc=fs.doc)),
     )
 
     f.name = fs.name
@@ -174,7 +167,7 @@ def check_field_spec_against_field(f: dc.Field, fs: FieldSpec) -> None:
         'compare': f.compare,
         # f.metadata,
         'kw_only': f.kw_only if f.kw_only is not dc.MISSING else None,
-        **({'doc': f.doc} if _IS_PY_3_14 else {}),  # type: ignore[attr-defined]  # noqa
+        'doc': f.doc,
 
         'std_field_type': f._field_type,  # type: ignore[attr-defined]  # noqa
     }
@@ -191,7 +184,7 @@ def check_field_spec_against_field(f: dc.Field, fs: FieldSpec) -> None:
         'compare': fs.compare,
         # fs.metadata,
         'kw_only': fs.kw_only,
-        **({'doc': fs.doc} if _IS_PY_3_14 else {}),
+        'doc': fs.doc,
 
         'std_field_type': STD_FIELD_TYPE_BY_SPEC_FIELD_TYPE[fs.field_type].value,
     }

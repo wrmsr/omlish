@@ -1,6 +1,5 @@
 import collections
 import dataclasses as dc
-import sys
 import typing as ta
 
 from ..... import lang
@@ -12,9 +11,6 @@ from .metadata import extra_field_params
 
 
 ##
-
-
-_IS_PY_3_14 = sys.version_info >= (3, 14)
 
 
 def field(
@@ -64,5 +60,5 @@ def field(
         compare=compare,
         metadata=md,
         kw_only=kw_only,
-        **(dict(doc=doc) if _IS_PY_3_14 else {}),
+        **(dict(doc=doc)),
     )

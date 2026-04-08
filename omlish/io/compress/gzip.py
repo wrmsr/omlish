@@ -78,7 +78,7 @@ class GzipCompression(Compression, IncrementalCompression):
         return gzip.compress(
             d,
             self.level,
-            mtime=self.mtime,
+            **lang.opt_kw(mtime=self.mtime),
         )
 
     def decompress(self, d: bytes) -> bytes:

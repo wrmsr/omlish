@@ -7,6 +7,7 @@ from ....dataclasses import *
 from .... import dataclasses
 
 import abc
+import annotationlib
 import builtins
 import collections
 import functools
@@ -38,10 +39,6 @@ from typing import (
 from unittest.mock import Mock
 
 from .helpers import CleanImport
-
-
-if sys.version_info >= (3, 14):
-    import annotationlib  # noqa
 
 
 # Just any custom exception we can catch.
@@ -2342,10 +2339,7 @@ class TestDocString(unittest.TestCase):
         class C:
             x: Union[int, type(None)] = None
 
-        if sys.version_info >= (3, 14):
-            self.assertDocStrEqual(C.__doc__, "C(x:int|None=None)")
-        else:
-            self.assertDocStrEqual(C.__doc__, "C(x:Optional[int]=None)")
+        self.assertDocStrEqual(C.__doc__, "C(x:int|None=None)")
 
     def test_docstring_list_field(self):
         @dataclass
@@ -2375,31 +2369,30 @@ class TestDocString(unittest.TestCase):
 
         self.assertDocStrEqual(C.__doc__, "C(x:collections.deque=<factory>)")
 
-    if sys.version_info >= (3, 14):
-        def test_docstring_undefined_name(self):
-            @dataclass
-            class C:
-                x: undef
+    def test_docstring_undefined_name(self):
+        @dataclass
+        class C:
+            x: undef
 
-            self.assertDocStrEqual(C.__doc__, "C(x:undef)")
+        self.assertDocStrEqual(C.__doc__, "C(x:undef)")
 
-        def test_docstring_with_unsolvable_forward_ref_in_init(self):
-            # See: https://github.com/python/cpython/issues/128184
-            ns = {}
-            exec(
-                textwrap.dedent(
-                    """
-                    from dataclasses import dataclass
+    def test_docstring_with_unsolvable_forward_ref_in_init(self):
+        # See: https://github.com/python/cpython/issues/128184
+        ns = {}
+        exec(
+            textwrap.dedent(
+                """
+                from dataclasses import dataclass
 
-                    @dataclass
-                    class C:
-                        def __init__(self, x: X, num: int) -> None: ...
-                    """,
-                ),
-                ns,
-            )
+                @dataclass
+                class C:
+                    def __init__(self, x: X, num: int) -> None: ...
+                """,
+            ),
+            ns,
+        )
 
-            self.assertDocStrEqual(ns['C'].__doc__, "C(x:X,num:int)")
+        self.assertDocStrEqual(ns['C'].__doc__, "C(x:X,num:int)")
 
     def test_docstring_with_no_signature(self):
         # See https://github.com/python/cpython/issues/103449
@@ -4320,87 +4313,66 @@ class TestMakeDataclass(unittest.TestCase):
 
         c = C(1, 2, 3)
         self.assertEqual(vars(c), {'x': 1, 'y': 2, 'z': 3})
-        if sys.version_info >= (3, 14):
-            self.assertEqual(
-                C.__annotations__,
-                {
-                    'x': typing.Any,
-                    'y': typing.Any,
-                    'z': typing.Any,
-                },
-            )
-        else:
-            self.assertEqual(
-                C.__annotations__,
-                {
-                    'x': 'typing.Any',
-                    'y': 'typing.Any',
-                    'z': 'typing.Any',
-                },
-            )
+        self.assertEqual(
+            C.__annotations__,
+            {
+                'x': typing.Any,
+                'y': typing.Any,
+                'z': typing.Any,
+            },
+        )
 
         C = make_dataclass('Point', ['x', ('y', int), 'z'])
         c = C(1, 2, 3)
         self.assertEqual(vars(c), {'x': 1, 'y': 2, 'z': 3})
-        if sys.version_info >= (3, 14):
+        self.assertEqual(
+            C.__annotations__,
+            {
+                'x': typing.Any,
+                'y': int,
+                'z': typing.Any,
+            },
+        )
+
+    def test_no_types_get_annotations(self):
+        C = make_dataclass('C', ['x', ('y', int), 'z'])
+
+        self.assertEqual(
+            annotationlib.get_annotations(C, format=annotationlib.Format.VALUE),
+            {'x': typing.Any, 'y': int, 'z': typing.Any},
+        )
+        self.assertEqual(
+            annotationlib.get_annotations(
+                C, format=annotationlib.Format.FORWARDREF),
+            {'x': typing.Any, 'y': int, 'z': typing.Any},
+        )
+        self.assertEqual(
+            annotationlib.get_annotations(
+                C, format=annotationlib.Format.STRING),
+            {'x': 'typing.Any', 'y': 'int', 'z': 'typing.Any'},
+        )
+
+    def test_no_types_no_typing_import(self):
+        with CleanImport('typing'):
+            self.assertNotIn('typing', sys.modules)
+            C = make_dataclass('C', ['x', ('y', int)])
+
+            self.assertNotIn('typing', sys.modules)
             self.assertEqual(
-                C.__annotations__,
+                C.__annotate__(annotationlib.Format.FORWARDREF),
                 {
-                    'x': typing.Any,
+                    'x': annotationlib.ForwardRef('Any', module='typing'),
                     'y': int,
-                    'z': typing.Any,
                 },
             )
-        else:
-            self.assertEqual(
-                C.__annotations__,
-                {
-                    'x': 'typing.Any',
-                    'y': int,
-                    'z': 'typing.Any',
-                },
-            )
+            self.assertNotIn('typing', sys.modules)
 
-    if sys.version_info >= (3, 14):
-        def test_no_types_get_annotations(self):
-            C = make_dataclass('C', ['x', ('y', int), 'z'])
-
-            self.assertEqual(
-                annotationlib.get_annotations(C, format=annotationlib.Format.VALUE),
-                {'x': typing.Any, 'y': int, 'z': typing.Any},
-            )
-            self.assertEqual(
-                annotationlib.get_annotations(
-                    C, format=annotationlib.Format.FORWARDREF),
-                {'x': typing.Any, 'y': int, 'z': typing.Any},
-            )
-            self.assertEqual(
-                annotationlib.get_annotations(
-                    C, format=annotationlib.Format.STRING),
-                {'x': 'typing.Any', 'y': 'int', 'z': 'typing.Any'},
-            )
-
-        def test_no_types_no_typing_import(self):
-            with CleanImport('typing'):
-                self.assertNotIn('typing', sys.modules)
-                C = make_dataclass('C', ['x', ('y', int)])
-
-                self.assertNotIn('typing', sys.modules)
-                self.assertEqual(
-                    C.__annotate__(annotationlib.Format.FORWARDREF),
-                    {
-                        'x': annotationlib.ForwardRef('Any', module='typing'),
-                        'y': int,
-                    },
-                )
-                self.assertNotIn('typing', sys.modules)
-
-                for field in fields(C):
-                    if field.name == "x":
-                        self.assertEqual(field.type, annotationlib.ForwardRef('Any', module='typing'))
-                    else:
-                        self.assertEqual(field.name, "y")
-                        self.assertIs(field.type, int)
+            for field in fields(C):
+                if field.name == "x":
+                    self.assertEqual(field.type, annotationlib.ForwardRef('Any', module='typing'))
+                else:
+                    self.assertEqual(field.name, "y")
+                    self.assertIs(field.type, int)
 
     def test_module_attr(self):
         self.assertEqual(ByMakeDataClass.__module__, __name__)
