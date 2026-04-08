@@ -69,6 +69,7 @@ deps = [
   'libgdbm6',
   'libpq-dev',
   'postgresql-client',
+  'sqlite3',
 
   # terminal UX & interactive tools
   'btop',

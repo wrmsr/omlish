@@ -72,7 +72,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='7690f08b43417471436b444737d8d24e3ea67d03'),
+            dict(path='drivers/asyncio.py', sha1='d7303a66eabe5dfdfb2df30d2f8b5291a7d5695c'),
             dict(path='_amalg.py', sha1='14b67747b1e3b3c1483050a7948a29888d732ed9'),
         ],
     )
@@ -8165,6 +8165,8 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     ##
     # init
 
+    _has_init = False
+
     _sched: 'AsyncioStreamIoPipelineDriver._SchedulingService'
 
     _pipeline: IoPipeline
@@ -8175,6 +8177,9 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
 
     async def _init(self) -> None:
+        check.state(not self._has_init)
+        self._has_init = True
+
         self._sched = self._SchedulingService(self)
 
         services = IoPipelineServices.of(self._spec.services)
@@ -8401,9 +8406,40 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         if not self._has_read_eof and (self._want_read or self._is_auto_read()):
             self._ensure_read_task()
 
-    @abc.abstractmethod
+    _read_task: ta.Optional[asyncio.Task] = None
+
     def _ensure_read_task(self) -> None:
-        raise NotImplementedError
+        if self._read_task is not None or self._shutdown_event.is_set():
+            return
+
+        self._read_task = asyncio.create_task(self._reader.read(self._config.read_chunk_size))
+
+        def _done(task: 'asyncio.Task[bytes]') -> None:
+            check.state(task is self._read_task)
+            self._read_task = None
+
+            if self._shutdown_event.is_set():
+                return
+
+            cmd: AsyncioStreamIoPipelineDriver._Command
+            eof = False
+            try:
+                data = task.result()
+
+            except asyncio.CancelledError:
+                cmd = AsyncioStreamIoPipelineDriver._ReadCancelledCommand()  # noqa
+
+            else:
+                cmd = AsyncioStreamIoPipelineDriver._ReadCompletedCommand(data)  # noqa
+                eof = not data
+
+            self._command_queue.put_nowait(cmd)
+
+            # FIXME: disable? toggle? this pre-reads till told to stop to try to reduce stalling
+            if not eof:
+                self._maybe_ensure_read_task()
+
+        self._read_task.add_done_callback(_done)
 
     ##
     # scheduling
@@ -8586,78 +8622,11 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     async def _shutdown_task_main(self) -> None:
         await self._shutdown_event.wait()
 
-    ##
-    # main loop
-
-    @abc.abstractmethod
-    def _run(self) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-    @async_exception_logging(alog)
-    async def run(self) -> None:
-        try:
-            self._shutdown_task  # noqa
-        except AttributeError:
-            pass
-        else:
-            raise RuntimeError('Already running')
-
-        await self._init()
-
-        self._shutdown_task = asyncio.create_task(self._shutdown_task_main())
-
-        try:
-            try:
-                await self._run()
-
-            finally:
-                self._pipeline.destroy()
-
-        finally:
-            await self._cancel_tasks(self._shutdown_task, check_running=True)
-
 
 ##
 
 
 class LoopAsyncioStreamIoPipelineDriver(AsyncioStreamIoPipelineDriver):
-    _read_task: ta.Optional[asyncio.Task] = None
-
-    def _ensure_read_task(self) -> None:
-        if self._read_task is not None or self._shutdown_event.is_set():
-            return
-
-        self._read_task = asyncio.create_task(self._reader.read(self._config.read_chunk_size))
-
-        def _done(task: 'asyncio.Task[bytes]') -> None:
-            check.state(task is self._read_task)
-            self._read_task = None
-
-            if self._shutdown_event.is_set():
-                return
-
-            cmd: AsyncioStreamIoPipelineDriver._Command
-            eof = False
-            try:
-                data = task.result()
-
-            except asyncio.CancelledError:
-                cmd = AsyncioStreamIoPipelineDriver._ReadCancelledCommand()  # noqa
-
-            else:
-                cmd = AsyncioStreamIoPipelineDriver._ReadCompletedCommand(data)  # noqa
-                eof = not data
-
-            self._command_queue.put_nowait(cmd)
-
-            # FIXME: disable? toggle? this pre-reads till told to stop to try to reduce stalling
-            if not eof:
-                self._maybe_ensure_read_task()
-
-        self._read_task.add_done_callback(_done)
-
-    #
-
     async def _run(self) -> None:
         self._maybe_ensure_read_task()
 
@@ -8704,6 +8673,29 @@ class LoopAsyncioStreamIoPipelineDriver(AsyncioStreamIoPipelineDriver):
                 self._read_task,
                 check_running=True,
             )
+
+    @async_exception_logging(alog)
+    async def run(self) -> None:
+        try:
+            self._shutdown_task  # noqa
+        except AttributeError:
+            pass
+        else:
+            raise RuntimeError('Already running')
+
+        await self._init()
+
+        self._shutdown_task = asyncio.create_task(self._shutdown_task_main())
+
+        try:
+            try:
+                await self._run()
+
+            finally:
+                self._pipeline.destroy()
+
+        finally:
+            await self._cancel_tasks(self._shutdown_task, check_running=True)
 
 
 ########################################

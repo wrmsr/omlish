@@ -92,6 +92,7 @@ DEPS="$DEPS\
   silversearcher-ag\
   socat\
   software-properties-common\
+  sqlite3\
   strace\
   subversion\
   sudo\
@@ -389,6 +390,13 @@ RUN echo '\
 handle SIGUSR1 nostop noprint\n\
 handle SIGUSR2 nostop noprint\n\
 ' > /omlish/.gdbinit
+
+RUN echo '\
+.headers on\n\
+.mode line\n\
+.timer on\n\
+.changes on\n\
+' > /omlish/.sqliterc
 
 RUN echo '\
 setw -g mode-keys vi\n\
