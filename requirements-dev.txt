@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.46.2
 
-uv>=0.11.3
+uv>=0.11.4
 
 pytest==9.0.3
 pytest-benchmark==5.2.3
@@ -19,14 +19,14 @@ ruff==0.15.9
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
-types-docutils==0.22.3.20260322
-types-greenlet==3.3.0.20251206
-types-paramiko==4.0.0.20260402  # @omlish-venv !13t !13dt  # cffi ????
-types-psutil==7.2.2.20260402
-types-pygments==2.20.0.20260407
-types-pyyaml==6.0.12.20250915
-types-regex==2026.4.4.20260405
-types-setuptools==82.0.0.20260402
+types-docutils==0.22.3.20260408
+types-greenlet==3.3.0.20260408
+types-paramiko==4.0.0.20260408  # @omlish-venv !13t !13dt  # cffi ????
+types-psutil==7.2.2.20260408
+types-pygments==2.20.0.20260408
+types-pyyaml==6.0.12.20260408
+types-regex==2026.4.4.20260408
+types-setuptools==82.0.0.20260408
 types-ujson==5.10.0.20250822
 
 black==26.3.1
@@ -121,7 +121,7 @@ snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !13t !13
 
 trino==0.337.0  # @omlish-venv !13t !13dt !14t !14dt  # orjson
 
-huggingface-hub==1.9.1  # @omlish-venv !14t !14dt
+huggingface-hub==1.9.2  # @omlish-venv !14t !14dt
 hf-xet==1.4.3  # @omlish-venv !14t !14dt
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
