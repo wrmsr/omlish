@@ -10,7 +10,7 @@ and published to pypi.
 The toplevel libraries have no required dependencies besides each other - `omlish` in particular has none at all - but
 there are a number of optional ones - see their respective `pyproject.toml` files for details.
 
-Standard code is written for python 3.13+, '[lite](https://github.com/wrmsr/omlish/blob/master/omlish#lite-code)' code
+Standard code is written for python 3.14+, '[lite](https://github.com/wrmsr/omlish/blob/master/omlish#lite-code)' code
 for 3.8+.
 
 # Toplevel libraries

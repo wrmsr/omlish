@@ -32,9 +32,14 @@ def _main() -> None:
             continue
         parts = m.groupdict()['version'].split('.')
         rp = parts[-1]
-        ni = [i for i in range(len(rp)) if rp[i] not in string.digits][-1] + 1
-        tp, np = rp[:ni], rp[ni:]
-        n = int(np)
+        try:
+            n = int(rp)
+        except ValueError:
+            ni = [i for i in range(len(rp)) if rp[i] not in string.digits][-1] + 1
+            tp, np = rp[:ni], rp[ni:]
+            n = int(np)
+        else:
+            tp = ''
         nv = '.'.join([*parts[:-1], tp + str(n + 1)])
         lines[i] = f"__version__ = '{nv}'\n"
     new_src = ''.join(lines)
