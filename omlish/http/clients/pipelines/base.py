@@ -12,7 +12,6 @@ from ....io.pipelines.flow.stub import StubIoPipelineFlowService
 from ....io.pipelines.handlers.logs import LoggingIoPipelineHandler
 from ....io.pipelines.ssl.handlers import SslIoPipelineHandler
 from ....lite.abstract import Abstract
-from ....lite.check import check
 from ...clients.base import BaseHttpClient
 from ...clients.base import HttpClientRequest
 from ...headers import HttpHeaders
@@ -148,6 +147,16 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
     ) -> _PreparedRequest:
         parsed_url = self.parse_url(req.url)
 
+        data: bytes
+        if isinstance(req.data, bytes):
+            data = req.data
+        elif isinstance(req.data, str):
+            data = req.data.encode('utf-8')  # FIXME: lol
+        elif req.data is None:
+            data = b''
+        else:
+            raise TypeError(req.data)
+
         full_request = FullIoPipelineHttpRequest.simple(
             parsed_url.host,
             parsed_url.path,
@@ -156,7 +165,7 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
                 ('User-Agent', 'omlish-http-client/0.1'),
                 if_present='skip',
             ),
-            body=check.isinstance(req.data, bytes) if req.data is not None else b'',
+            body=data,
         )
 
         pipeline_spec = self._build_pipeline_spec(
