@@ -10,8 +10,8 @@
 #endif
 #undef Py_BUILD_CORE
 
-#if PY_VERSION_HEX < 0x030D0000
-#error "This extension requires CPython 3.13+"
+#if PY_VERSION_HEX < 0x030E0000
+#error "This extension requires CPython 3.14+"
 #endif
 
 //

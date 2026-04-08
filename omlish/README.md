@@ -113,7 +113,7 @@ dependencies of any kind**.
 
 - **[reflect](https://github.com/wrmsr/omlish/blob/master/omlish/reflect)** - Reflection utilities, including primarily
   a formalization of stdlib type annotations for use at runtime, decoupled from stdlib impl detail. Keeping this working
-  is notoriously difficult across python versions (one of the primary reasons for only supporting 3.13+).
+  is notoriously difficult across python versions (one of the primary reasons for only supporting 3.14+).
 
 - **[sql](https://github.com/wrmsr/omlish/blob/master/omlish/sql)** - A collection of SQL utilities, including:
 
@@ -153,7 +153,7 @@ dependencies of any kind**.
 # Lite code
 
 A subset of this codebase is written in a 'lite' style (non-'lite' code is referred to as *standard* code). While
-standard code is written for python 3.13+, 'lite' code is written for 3.8+, and is written in a style conducive to
+standard code is written for python 3.14+, 'lite' code is written for 3.8+, and is written in a style conducive to
 [amalgamation](https://github.com/wrmsr/omlish/blob/master/omdev#amalgamation) in which multiple python source files are
 stitched together into one single self-contained python script.
 
@@ -167,7 +167,7 @@ Code written in this style has notable differences from standard code, including
   their contents. Where standard code would `from .. import x; x.y`, lite code would `from ..x import y; y`. As a result
   there are frequently 'api' non-instantiated namespace classes serving the purpose of modules - just handy bags of
   stuff with shortened names.
-- As lite code is tested in 3.8+ but core code requires 3.13+, packages containing lite code can't import anything
+- As lite code is tested in 3.8+ but core code requires 3.14+, packages containing lite code can't import anything
   standard in their (and their ancestors') `__init__.py`'s. Furthermore, `__init__.py` files are omitted outright in
   amalgamation, so they effectively must be empty in any package containing any lite code. As a result there are
   frequently [`all.py`](https://github.com/wrmsr/omlish/blob/master/omlish/configs/all.py) files in mixed-lite packages

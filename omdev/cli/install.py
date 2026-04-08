@@ -20,7 +20,7 @@ import typing as ta
 
 
 DEFAULT_CLI_PKG = 'omdev-cli'
-DEFAULT_PY_VER = '3.13'
+DEFAULT_PY_VER = '3.14'
 
 
 @dc.dataclass(frozen=True)

@@ -28,7 +28,7 @@ all = [
 #
 
 [tool.omlish.pyproject.venvs._default]
-interp = '@13'
+interp = '@14'
 requires = ['-rrequirements-dev.txt']
 srcs = ['@main']
 use_uv = true
@@ -38,7 +38,7 @@ inherits = ['_default']
 requires = ['-rrequirements-ext.txt']
 
 [tool.omlish.pyproject.venvs.debug]
-interp = '@13d'
+interp = '@14d'
 inherits = ['_default']
 
 [tool.omlish.pyproject.venvs.check]
@@ -49,27 +49,18 @@ requires_pats = [
     'mypy',
 ]
 
-[tool.omlish.pyproject.venvs.'13d']
+[tool.omlish.pyproject.venvs.'14d']
 inherits = ['_default']
-interp = '@13d'
+interp = '@14d'
 requires = ['-rrequirements-ext.txt']
-
-[tool.omlish.pyproject.venvs.'13t']
-inherits = ['_default']
-interp = '@13t'
-
-[tool.omlish.pyproject.venvs.'13dt']
-inherits = ['_default']
-interp = '@13dt'
-
-[tool.omlish.pyproject.venvs.'14']
-inherits = ['_default']
-requires = ['-rrequirements-ext.txt']
-interp = '@14'
 
 [tool.omlish.pyproject.venvs.'14t']
 inherits = ['_default']
 interp = '@14t'
+
+[tool.omlish.pyproject.venvs.'14dt']
+inherits = ['_default']
+interp = '@14dt'
 
 [tool.omlish.pyproject.venvs.'15']
 inherits = ['_default']
@@ -87,6 +78,10 @@ interp = '@15t'
 [tool.omlish.pyproject.venvs._lite]
 requires = []
 srcs = []
+
+[tool.omlish.pyproject.venvs.'13']
+inherits = ['_lite']
+interp = '@13'
 
 [tool.omlish.pyproject.venvs.'12']
 inherits = ['_lite']
@@ -121,7 +116,7 @@ docker_service = 'omlish-dev-amd64'
 #
 
 [tool.omlish.pyproject.venvs.deploy]
-interp = '3.13'
+interp = '3.14'
 requires = ['-rrequirements.txt']
 
 
@@ -235,7 +230,7 @@ session_timeout = 600
 # ruff
 
 [tool.ruff]
-target-version = 'py313'
+target-version = 'py314'
 line-length = 120
 indent-width = 4
 
@@ -244,121 +239,130 @@ select = ['ALL']
 
 ignore = [
 
-    'A005',  # stdlib-module-shadowing
-    'ANN001',  # missing-type-function-argument
-    'ANN002',  # missing-type-args
-    'ANN003',  # missing-type-kwargs
-    'ANN201',  # missing-return-type-undocumented-public-function
-    'ANN202',  # missing-return-type-private-function
-    'ANN204',  # missing-return-type-special-method
-    'ANN205',  # missing-return-type-static-method
-    'ANN206',  # missing-return-type-class-method
-    'ANN401',  # any-type
-    'ARG001',  # unused-function-argument
-    'ARG002',  # unused-method-argument
-    'ARG005',  # unused-lambda-argument
+    'A005',      # stdlib-module-shadowing
+    'ANN001',    # missing-type-function-argument
+    'ANN002',    # missing-type-args
+    'ANN003',    # missing-type-kwargs
+    'ANN201',    # missing-return-type-undocumented-public-function
+    'ANN202',    # missing-return-type-private-function
+    'ANN204',    # missing-return-type-special-method
+    'ANN205',    # missing-return-type-static-method
+    'ANN206',    # missing-return-type-class-method
+    'ANN401',    # any-type
+    'ARG001',    # unused-function-argument
+    'ARG002',    # unused-method-argument
+    'ARG005',    # unused-lambda-argument
     'ASYNC109',  # async-function-with-timeout
     'ASYNC115',  # async-zero-sleep (bugged)
-    'B008',  # function-call-in-default-argument
-    'B009',  # get-attr-with-constant
-    'B010',  # set-attr-with-constant
-    'B023',  # function-uses-loop-variable
-    'B027',  # empty-method-without-abstract-decorator
-    'B028',  # no-explicit-stacklevel
-    'B905',  # zip-without-explicit-strict
-    'B911',  # batched-without-explicit-strict
-    'C408',  # unnecessary-collection-call
-    'C420',  # unnecessary-dict-comprehension-for-iterable
-    'C901',  # complex-structure
-    'D',  # docstrings
-    'E731',  # lambda-assignment
-    'E741',  # ambiguous-variable-name
-    'E742',  # ambiguous-class-name
-    'EM101',  # raw-string-in-exception
-    'EM102',  # f-string-in-exception
-    'ERA001',  # commented-out-code
-    'F541',  # f-string-missing-placeholders
-    'FA102',  # future-required-type-annotation
-    'FBT001',  # boolean-type-hint-positional-argument
-    'FBT002',  # boolean-default-value-positional-argument
-    'FBT003',  # boolean-positional-value-in-call
-    'FIX',  # fixmes
-    'FLY002',  # static-join-to-f-string
-    'FURB122',  # for-loop-writes
-    'FURB136',  # if-expr-min-max
-    'N804',  # invalid-first-argument-name-for-class-method
-    'PERF203',  # try-except-in-loop
-    'PERF401',  # manual-list-comprehension
-    'PGH003',  # blanket-type-ignore
-    'PGH004',  # blanket-noqa
-    'PLC0206',  # dict-index-missing-items
-    'PLC0208',  # iteration-over-set
-    'PLC0415',  # import-outside-top-level
-    'PLR0911',  # too-many-return-statements
-    'PLR0912',  # too-many-branches
-    'PLR0913',  # too-many-arguments
-    'PLR0915',  # too-many-statements
-    'PLR1714',  # repeated-equality-comparison
-    'PLR1730',  # if-stmt-min-max
-    'PLR2004',  # magic-value-comparison
-    'PLR2044',  # empty-comment
-    'PLR5501',  # collapsible-else-if
-    'PLW0108',  # unnecessary-lambda
-    'PLW0603',  # global-statement
-    'PLW2901',  # redefined-loop-name
-    'PT009',  # pytest-unittest-assertion (lite tests use unittest)
-    'PT016',  # pytest-fail-without-message
-    'PT018',  # pytest-composite-assertion
-    'PT027',  # pytest-unittest-raises-assertion (lite tests use unittest)
-    'PTH',  # pathlib
-    'PYI019',  # custom-type-var-for-self
-    'PYI061',  # redundant-none-literal
-    'Q003',  # avoidable-escaped-quote
-    'RET504',  # unnecessary-assign
-    'RET505',  # superfluous-else-return
-    'RET506',  # superfluous-else-raise
-    'RET507',  # superfluous-else-continue
-    'RET508',  # superfluous-else-break
-    'RUF001',  # ambiguous-unicode-character-string
-    'RUF009',  # function-call-in-dataclass-default-argument
-    'RUF018',  # assignment-in-assert
-    'RUF023',  # unsorted-dunder-slots
-    'RUF059',  # unused-unpacked-variable
-    'RUF100',  # unused-noqa
-    'S102',  # exec-builtin
-    'S311',  # suspicious-non-cryptographic-random-usage
-    'S603',  # subprocess-without-shell-equals-true
-    'S604',  # call-with-shell-equals-true
-    'S606',  # start-process-with-no-shell
-    'S607',  # start-process-with-partial-path
-    'SIM102',  # collapsible-if
-    'SIM103',  # needless-bool
-    'SIM105',  # suppressible-exception
-    'SIM108',  # if-else-block-instead-of-if-exp
-    'SIM114',  # if-with-same-arms
-    'SIM117',  # multiple-with-statements
-    'SIM300',  # yoda-conditions
-    'T201',  # print
-    'T203',  # p-print
-    'TC001',  # typing-only-first-party-import
-    'TC006',  # runtime-cast-value
-    'TD001',  # invalid-todo-tag
-    'TD002',  # missing-todo-author
-    'TD003',  # missing-todo-link
-    'TD004',  # missing-todo-colon
-    'TD005',  # missing-todo-description
-    'TID252',  # relative-imports
-    'TRY002',  # raise-vanilla-class
-    'TRY003',  # raise-vanilla-args
-    'TRY300',  # try-consider-else
+    'B008',      # function-call-in-default-argument
+    'B009',      # get-attr-with-constant
+    'B010',      # set-attr-with-constant
+    'B023',      # function-uses-loop-variable
+    'B027',      # empty-method-without-abstract-decorator
+    'B028',      # no-explicit-stacklevel
+    'B905',      # zip-without-explicit-strict
+    'B911',      # batched-without-explicit-strict
+    'C408',      # unnecessary-collection-call
+    'C420',      # unnecessary-dict-comprehension-for-iterable
+    'C901',      # complex-structure
+    'D',         # docstrings
+    'E731',      # lambda-assignment
+    'E741',      # ambiguous-variable-name
+    'E742',      # ambiguous-class-name
+    'EM101',     # raw-string-in-exception
+    'EM102',     # f-string-in-exception
+    'ERA001',    # commented-out-code
+    'F541',      # f-string-missing-placeholders
+    'FA102',     # future-required-type-annotation
+    'FBT001',    # boolean-type-hint-positional-argument
+    'FBT002',    # boolean-default-value-positional-argument
+    'FBT003',    # boolean-positional-value-in-call
+    'FIX',       # fixmes
+    'FLY002',    # static-join-to-f-string
+    'FURB122',   # for-loop-writes
+    'FURB136',   # if-expr-min-max
+    'N804',      # invalid-first-argument-name-for-class-method
+    'PERF203',   # try-except-in-loop
+    'PERF401',   # manual-list-comprehension
+    'PGH003',    # blanket-type-ignore
+    'PGH004',    # blanket-noqa
+    'PLC0206',   # dict-index-missing-items
+    'PLC0208',   # iteration-over-set
+    'PLC0415',   # import-outside-top-level
+    'PLR0911',   # too-many-return-statements
+    'PLR0912',   # too-many-branches
+    'PLR0913',   # too-many-arguments
+    'PLR0915',   # too-many-statements
+    'PLR1714',   # repeated-equality-comparison
+    'PLR1730',   # if-stmt-min-max
+    'PLR2004',   # magic-value-comparison
+    'PLR2044',   # empty-comment
+    'PLR5501',   # collapsible-else-if
+    'PLW0108',   # unnecessary-lambda
+    'PLW0603',   # global-statement
+    'PLW2901',   # redefined-loop-name
+    'PT009',     # pytest-unittest-assertion (lite tests use unittest)
+    'PT016',     # pytest-fail-without-message
+    'PT018',     # pytest-composite-assertion
+    'PT027',     # pytest-unittest-raises-assertion (lite tests use unittest)
+    'PTH',       # pathlib
+    'PYI019',    # custom-type-var-for-self
+    'PYI061',    # redundant-none-literal
+    'Q003',      # avoidable-escaped-quote
+    'RET504',    # unnecessary-assign
+    'RET505',    # superfluous-else-return
+    'RET506',    # superfluous-else-raise
+    'RET507',    # superfluous-else-continue
+    'RET508',    # superfluous-else-break
+    'RUF001',    # ambiguous-unicode-character-string
+    'RUF009',    # function-call-in-dataclass-default-argument
+    'RUF018',    # assignment-in-assert
+    'RUF023',    # unsorted-dunder-slots
+    'RUF059',    # unused-unpacked-variable
+    'RUF100',    # unused-noqa
+    'S102',      # exec-builtin
+    'S311',      # suspicious-non-cryptographic-random-usage
+    'S603',      # subprocess-without-shell-equals-true
+    'S604',      # call-with-shell-equals-true
+    'S606',      # start-process-with-no-shell
+    'S607',      # start-process-with-partial-path
+    'SIM102',    # collapsible-if
+    'SIM103',    # needless-bool
+    'SIM105',    # suppressible-exception
+    'SIM108',    # if-else-block-instead-of-if-exp
+    'SIM114',    # if-with-same-arms
+    'SIM117',    # multiple-with-statements
+    'SIM300',    # yoda-conditions
+    'T201',      # print
+    'T203',      # p-print
+    'TC001',     # typing-only-first-party-import
+    'TC006',     # runtime-cast-value
+    'TD001',     # invalid-todo-tag
+    'TD002',     # missing-todo-author
+    'TD003',     # missing-todo-link
+    'TD004',     # missing-todo-colon
+    'TD005',     # missing-todo-description
+    'TID252',    # relative-imports
+    'TRY002',    # raise-vanilla-class
+    'TRY003',    # raise-vanilla-args
+    'TRY300',    # try-consider-else
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
     'UP040',  # non-pep695-type-alias
 
     # TODO:
     'ASYNC240',  # blocking-path-method-in-async-function
-    'UP046',  # non-pep695-generic-class
-    'UP047',  # non-pep695-generic-function
+    'UP046',     # non-pep695-generic-class
+    'UP047',     # non-pep695-generic-function
+
+    # TODO: 3.14
+    'UP037',  # quoted-annotation
+    'TC003',  # typing-only-standard-library-import
+    'UP045',  # non-pep604-annotation-optional
+    'UP007',  # non-pep604-annotation-union
+    'TC002',  # typing-only-third-party-import
+    'UP036',  # outdated-version-block
+    'B912',   # map-without-explicit-strict
 
 ]
 

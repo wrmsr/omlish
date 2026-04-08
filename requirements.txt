@@ -11,7 +11,7 @@ sniffio==1.3.1
 
 jinja2==3.1.6
 
-cryptography==46.0.7  # @omlish-venv !13t !13dt  # cffi
+cryptography==46.0.7  # @omlish-venv !14t !14dt  # cffi
 
 
 ### compress:
@@ -51,7 +51,7 @@ psutil==7.2.2
 ## json
 
 #> ujson==5.10.0
-orjson==3.11.8  # @omlish-venv !13t !13dt !14t !14dt
+orjson==3.11.8  # @omlish-venv !14t !14dt
 
 ## pickle
 
@@ -81,6 +81,6 @@ trio==0.33.0
 
 aiomysql==0.3.2
 aiosqlite==0.22.1
-asyncpg==0.31.0  # @omlish-venv !13t !13dt !14t  # won't build
+asyncpg==0.31.0  # @omlish-venv !14t !14dt  # won't build
 
-asyncssh==2.22.0  # @omlish-venv !13t !13dt  # cffi
+asyncssh==2.22.0  # @omlish-venv !14t !14dt  # cffi

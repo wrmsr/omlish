@@ -11,7 +11,7 @@ class ProjectBase:
     urls = {'source': 'https://github.com/wrmsr/omlish'}
     license = 'BSD-3-Clause'
     readme = 'README.md'
-    requires_python = '>=3.13'
+    requires_python = '>=3.14'
 
     version = __version__
 
@@ -24,7 +24,7 @@ class ProjectBase:
         'Operating System :: POSIX',
 
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
     ]
 
 

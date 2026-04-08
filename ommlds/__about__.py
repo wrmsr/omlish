@@ -75,7 +75,7 @@ class Project(ProjectBase):
         ],
 
         'xml': [
-            'lxml >= 5.3; python_version < "3.13"',
+            'lxml >= 5.3',
         ],
     }
 

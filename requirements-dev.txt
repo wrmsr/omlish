@@ -21,7 +21,7 @@ docutils-stubs==0.0.22
 lxml-stubs==0.5.1
 types-docutils==0.22.3.20260408
 types-greenlet==3.3.0.20260408
-types-paramiko==4.0.0.20260408  # @omlish-venv !13t !13dt  # cffi ????
+types-paramiko==4.0.0.20260408  # @omlish-venv !14t !14dt  # cffi ????
 types-psutil==7.2.2.20260408
 types-pygments==2.20.0.20260408
 types-pyyaml==6.0.12.20260408
@@ -36,14 +36,14 @@ pipdeptree==2.34.0
 astpretty==3.0.0
 
 gprof2dot==2025.4.14
-guppy3==3.1.6  # @omlish-venv !13t !13dt
+guppy3==3.1.6  # @omlish-venv !14t !14dt
 objgraph==3.6.2
 
 ipython==9.12.0
 
 # litecli==1.15.0  # @omlish-venv  # FIXME: MAKE LLM DEP OPTIONAL
-# mycli==1.42.0  # @omlish-venv !13t !13dt !14t
-# pgcli==4.3.0  # @omlish-venv !13t !13dt !14t
+# mycli==1.42.0  # @omlish-venv !14t !14dt
+# pgcli==4.3.0  # @omlish-venv !14t !14dt
 
 # pydevd-pycharm==241.18034.82
 
@@ -73,7 +73,7 @@ psycopg==3.3.3
 mysql-connector-python==9.6.0
 mysqlclient==2.2.8; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
-ujson==5.12.0  # @omlish-venv !13t !13dt !14t !14dt  # https://github.com/ultrajson/ultrajson/issues/684
+ujson==5.12.0  # @omlish-venv !14t !14dt  # https://github.com/ultrajson/ultrajson/issues/684
 
 markupsafe==3.0.3
 
@@ -91,7 +91,7 @@ pycparser==3.0
 pcpp==1.30
 
 # !! LGPL
-paramiko==4.0.0  # @omlish-venv !13t !13dt  # cffi
+paramiko==4.0.0  # @omlish-venv !14t !14dt  # cffi
 
 docutils==0.22.4
 
@@ -109,17 +109,17 @@ asttokens==3.0.1
 numpy>=1.26
 
 # must be kept in sync
-textual==8.2.3  # @omlish-venv 13t 13dt 14t
-textual[syntax]==8.2.3  # @omlish-venv !13t !13dt !14t
+textual==8.2.3  # @omlish-venv 14t 14dt
+textual[syntax]==8.2.3  # @omlish-venv !14t !14dt
 
 rich==14.3.3
 textual-dev==1.8.0
 textual-speedups==0.2.1
 
-snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !13t !13dt  # cffi
-# snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt  # cffi
+snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !14t !14dt  # cffi
+# snowflake-sqlalchemy==1.7.7  # @omlish-venv !14t !14dt  # cffi
 
-trino==0.337.0  # @omlish-venv !13t !13dt !14t !14dt  # orjson
+trino==0.337.0  # @omlish-venv !14t !14dt  # orjson
 
 huggingface-hub==1.9.2  # @omlish-venv !14t !14dt
 hf-xet==1.4.3  # @omlish-venv !14t !14dt
@@ -146,13 +146,13 @@ botocore-stubs>=1.42.41
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.31.1; sys_platform == "darwin"  # @omlish-venv !13t !13dt !14t
-mlx-lm==0.31.2; sys_platform == "darwin"  # @omlish-venv !13t !13dt !14t
+mlx==0.31.1; sys_platform == "darwin"  # @omlish-venv !14t !43dt
+mlx-lm==0.31.2; sys_platform == "darwin"  # @omlish-venv !14t !14dt
 
 apsw==3.51.3.0
 
-rapidocr-onnxruntime==1.4.4  # @omlish-venv !13t !13dt !14t
-# opencv-python==4.12.0.88  # @omlish-venv !13t !13dt !14t  # FIXME: downgrades numpy
+rapidocr-onnxruntime==1.4.4  # @omlish-venv !14t !14dt
+# opencv-python==4.12.0.88  # @omlish-venv !14t !14dt  # FIXME: downgrades numpy
 
 pillow==12.2.0
 

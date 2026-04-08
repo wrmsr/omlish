@@ -290,7 +290,7 @@ pre-commit:
 PYTEST_OPTS=
 
 .PHONY: test-all
-test-all: test test-docker test-13t test-lite
+test-all: test test-docker test-14t test-lite
 
 .PHONY: test
 test:
@@ -311,47 +311,17 @@ test:
 
 # all
 .PHONY: venv-all
-venv-all: venv venv-13d venv-13t venv-lite
+venv-all: venv venv-14d venv-14t venv-lite
 
-# 13d
+# 14d
 
-.PHONY: venv-13d
-venv-13d:
-	${PYPROJECT} venv 13d exe
+.PHONY: venv-14d
+venv-14d:
+	${PYPROJECT} venv 14d exe
 
-.PHONY: test-13d
-test-13d:
-	${PYPROJECT} venv 13d test -- ${PYTEST_OPTS} --ignore=omlish/sql
-
-# 13t
-
-.PHONY: venv-13t
-venv-13t:
-	${PYPROJECT} venv 13t exe
-
-.PHONY: test-13t
-test-13t:
-	${PYPROJECT} venv 13t test -- ${PYTEST_OPTS} --ignore=omlish/sql
-
-# 13dt
-
-.PHONY: venv-13dt
-venv-13dt:
-	${PYPROJECT} venv 13dt exe
-
-.PHONY: test-13dt
-test-13dt:
-	${PYPROJECT} venv 13dt test -- ${PYTEST_OPTS} --ignore=omlish/sql
-
-# 14
-
-.PHONY: venv-14
-venv-14:
-	${PYPROJECT} venv 14 exe
-
-.PHONY: test-14
-test-14:
-	${PYPROJECT} venv 14 test -- ${PYTEST_OPTS} --ignore=omlish/sql
+.PHONY: test-14d
+test-14d:
+	${PYPROJECT} venv 14d test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
 # 14t
 
@@ -362,6 +332,16 @@ venv-14t:
 .PHONY: test-14t
 test-14t:
 	${PYPROJECT} venv 14t test -- ${PYTEST_OPTS} --ignore=omlish/sql
+
+# 14dt
+
+.PHONY: venv-14dt
+venv-14dt:
+	${PYPROJECT} venv 14dt exe
+
+.PHONY: test-14dt
+test-14dt:
+	${PYPROJECT} venv 14dt test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
 # 15
 
@@ -394,6 +374,7 @@ LITE_VENVS=\
 	10 \
 	11 \
 	12 \
+	13 \
 
 .PHONY: venv-lite
 venv-lite:

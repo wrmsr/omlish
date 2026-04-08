@@ -110,7 +110,6 @@ class FailNTimesStreamService:
             raise FailNTimesStreamServiceError(f'fail_attempt_{self._attempt}({request.v})')
 
         from ...resources import UseResources
-        from ...stream.services import StreamResponseSink
         from ...stream.services import new_stream_response
 
         async with UseResources.or_new(request.options) as rs:

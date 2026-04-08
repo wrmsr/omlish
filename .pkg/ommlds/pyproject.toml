@@ -12,7 +12,7 @@ authors = [
 urls = {source = 'https://github.com/wrmsr/omlish'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
-requires-python = '>=3.13'
+requires-python = '>=3.14'
 version = '0.0.0.dev557'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
@@ -20,7 +20,7 @@ classifiers = [
     'Operating System :: OS Independent',
     'Operating System :: POSIX',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
 ]
 description = 'ommlds'
 dependencies = [
@@ -51,7 +51,7 @@ all = [
     'tavily-python ~= 0.7',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
-    'lxml >= 5.3; python_version < "3.13"',
+    'lxml >= 5.3',
 ]
 omdev = [
     'omdev == 0.0.0.dev557',
@@ -94,7 +94,7 @@ wiki = [
     'wikitextparser ~= 0.56',
 ]
 xml = [
-    'lxml >= 5.3; python_version < "3.13"',
+    'lxml >= 5.3',
 ]
 
 [project.entry-points]
