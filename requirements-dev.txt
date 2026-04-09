@@ -21,7 +21,7 @@ docutils-stubs==0.0.22
 lxml-stubs==0.5.1
 types-docutils==0.22.3.20260408
 types-greenlet==3.3.0.20260408
-types-paramiko==4.0.0.20260408  # @omlish-venv !14t !14dt  # cffi ????
+types-paramiko==4.0.0.20260408
 types-psutil==7.2.2.20260408
 types-pygments==2.20.0.20260408
 types-pyyaml==6.0.12.20260408
@@ -40,12 +40,6 @@ guppy3==3.1.6  # @omlish-venv !14t !14dt
 objgraph==3.6.2
 
 ipython==9.12.0
-
-# litecli==1.15.0  # @omlish-venv  # FIXME: MAKE LLM DEP OPTIONAL
-# mycli==1.42.0  # @omlish-venv !14t !14dt
-# pgcli==4.3.0  # @omlish-venv !14t !14dt
-
-# pydevd-pycharm==241.18034.82
 
 pudb==2025.1.5
 
@@ -73,7 +67,7 @@ psycopg==3.3.3
 mysql-connector-python==9.6.0
 mysqlclient==2.2.8; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
-ujson==5.12.0  # @omlish-venv !14t !14dt  # https://github.com/ultrajson/ultrajson/issues/684
+ujson==5.12.0  # https://github.com/ultrajson/ultrajson/issues/684
 
 markupsafe==3.0.3
 
@@ -91,7 +85,7 @@ pycparser==3.0
 pcpp==1.30
 
 # !! LGPL
-paramiko==4.0.0  # @omlish-venv !14t !14dt  # cffi
+paramiko==4.0.0
 
 docutils==0.22.4
 
@@ -109,31 +103,31 @@ asttokens==3.0.1
 numpy>=1.26
 
 # must be kept in sync
-textual==8.2.3  # @omlish-venv 14t 14dt
+textual==8.2.3
 textual[syntax]==8.2.3  # @omlish-venv !14t !14dt
 
 rich==14.3.3
 textual-dev==1.8.0
 textual-speedups==0.2.1
 
-snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !14t !14dt  # cffi
-# snowflake-sqlalchemy==1.7.7  # @omlish-venv !14t !14dt  # cffi
+snowflake-connector-python[secure-local-storage]==4.4.0
+# snowflake-sqlalchemy==1.7.7
 
 trino==0.337.0  # @omlish-venv !14t !14dt  # orjson
 
-huggingface-hub==1.9.2  # @omlish-venv !14t !14dt
-hf-xet==1.4.3  # @omlish-venv !14t !14dt
+huggingface-hub==1.9.2
+hf-xet==1.4.3
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
 datasets==4.8.4  # !! includes arrow and pandas and shit
 
-transformers==5.5.0  # @omlish-venv !14t !14dt
-sentence-transformers==5.3.0  # @omlish-venv !14t !14dt
+transformers==5.5.0
+sentence-transformers==5.3.0
 
 sentencepiece==0.2.1
 tiktoken==0.12.0
-tokenizers==0.22.2  # @omlish-venv !14t !14dt
+tokenizers==0.22.2
 
 llama-cpp-python; sys_platform == "darwin"
 
@@ -156,7 +150,7 @@ rapidocr-onnxruntime==1.4.4  # @omlish-venv !14t !14dt
 
 pillow==12.2.0
 
-accelerate==1.13.0  # @omlish-venv !14t !14dt
+accelerate==1.13.0
 
 bitsandbytes==0.49.2
 
