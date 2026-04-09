@@ -10,7 +10,7 @@ wrapt==2.1.2
 ##
 # infra
 
-google-api-python-client==2.193.0
+google-api-python-client==2.194.0
 google-cloud-compute==1.47.0
 
 

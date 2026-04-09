@@ -1,5 +1,6 @@
 import pytest
 
+from .... import lang
 from .. import _fixedmap_py
 from .. import fixedmap
 from ..fixedmap import FixedMap
@@ -79,13 +80,9 @@ class _BaseFixedMapTests:
         assert fm != {'a': 10}
         assert fm != {'a': 10, 'b': 20, 'c': 30}
 
-    # def test_hash_matches_tuple_zip_definition(self) -> None:
-    #     keys = {'a': 0, 'b': 1, 'c': 2}
-    #     values = [10, 20, 30]
-    #     fm = new_fixed_map(zip(keys, values))
-    #
-    #     expected = hash(tuple(zip(keys, values, strict=True)))
-    #     assert hash(fm) == expected
+    def test_duplicate_key(self) -> None:
+        with pytest.raises(lang.DuplicateKeyError):
+            new_fixed_map([('a', 1), ('b', 2), ('a', 3)])
 
     def test_hash_is_cached(self) -> None:
         class MyHashable:

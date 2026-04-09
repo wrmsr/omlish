@@ -55,6 +55,7 @@ typedef struct fixedmap_state {
     PyTypeObject* FixedMapIter_Type;
     PyTypeObject* FixedMapValuesView_Type;
     PyTypeObject* FixedMapItemsView_Type;
+    PyObject *DuplicateKeyError;
 } fixedmap_state;
 
 static inline fixedmap_state* get_module_state(PyObject* module) {
@@ -381,7 +382,8 @@ static PyObject* FixedMapKeys_new(PyTypeObject* type, PyObject* args, PyObject* 
         int contains = PyDict_Contains(seen, key);
         if (contains == -1 || contains == 1) {
             if (contains == 1) {
-                PyErr_SetObject(PyExc_KeyError, key);
+                fixedmap_state* state = get_type_state(type);
+                PyErr_SetObject(state->DuplicateKeyError, key);
             }
             Py_DECREF(seen);
             Py_DECREF(self);
@@ -966,6 +968,22 @@ static int fixedmap_exec(PyObject* module) {
         return -1;
     }
 
+    PyObject *errors_module = PyImport_ImportModule("omlish.lang.errors");
+    if (!errors_module) {
+        return -1;
+    }
+
+    state->DuplicateKeyError = PyObject_GetAttrString(
+        errors_module,
+        "DuplicateKeyError"
+    );
+    Py_DECREF(errors_module);
+
+    if (!state->DuplicateKeyError) {
+        return -1;
+    }
+
+
     return 0;
 }
 
@@ -976,6 +994,7 @@ static int fixedmap_traverse(PyObject* module, visitproc visit, void* arg) {
     Py_VISIT(state->FixedMapIter_Type);
     Py_VISIT(state->FixedMapValuesView_Type);
     Py_VISIT(state->FixedMapItemsView_Type);
+    Py_VISIT(state->DuplicateKeyError);
     return 0;
 }
 
@@ -986,6 +1005,7 @@ static int fixedmap_clear(PyObject* module) {
     Py_CLEAR(state->FixedMapIter_Type);
     Py_CLEAR(state->FixedMapValuesView_Type);
     Py_CLEAR(state->FixedMapItemsView_Type);
+    Py_CLEAR(state->DuplicateKeyError);
     return 0;
 }
 

@@ -1,5 +1,6 @@
 import typing as ta
 
+from ... import lang
 from ..mappings import IterItemsViewMapping
 from ..mappings import IterValuesViewMapping
 from .fixedmap import FixedMap as BaseFixedMap
@@ -23,7 +24,7 @@ class FixedMapKeys(
         key_indexes: dict[K, int] = {}
         for k in keys:
             if k in key_indexes:
-                raise KeyError(k)
+                raise lang.DuplicateKeyError(k)
             key_indexes[k] = len(key_indexes)
         self._key_indexes = key_indexes
 

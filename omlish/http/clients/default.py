@@ -13,6 +13,7 @@ from .sync import HttpClient
 
 with lang.auto_proxy_import(globals()):
     from . import httpx as _httpx  # noqa
+    from . import middleware as _middleware  # noqa
     from . import urllib as _urllib  # noqa
     from .pipelines import asyncio as _pipelines_asyncio  # noqa
     from .pipelines import sync as _pipelines_sync  # noqa
@@ -30,8 +31,14 @@ def _default_client() -> HttpClient:
 
 
 def _default_async_client() -> AsyncHttpClient:
-    return _httpx.HttpxAsyncHttpClient()
-    # return _pipelines_asyncio.AsyncioIoPipelineAsyncHttpClient()
+    # return _httpx.HttpxAsyncHttpClient()
+
+    return _middleware.MiddlewareAsyncHttpClient(
+        _pipelines_asyncio.AsyncioIoPipelineAsyncHttpClient(),
+        [
+            _middleware.RedirectHandlingHttpClientMiddleware(),
+        ],
+    )
 
 
 ##

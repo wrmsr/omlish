@@ -28,6 +28,12 @@ class FixedMapKeys(
     def debug(self) -> ta.Mapping[K, int]:
         raise NotImplementedError
 
+    #
+
+    @abc.abstractmethod
+    def __hash__(self) -> int:
+        raise NotImplementedError
+
 
 class FixedMap(
     ta.Mapping[K, V],
@@ -49,6 +55,12 @@ class FixedMap(
     @property
     @abc.abstractmethod
     def debug(self) -> ta.Mapping[K, V]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def __hash__(self) -> int:
         raise NotImplementedError
 
     #
