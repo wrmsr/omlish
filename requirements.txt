@@ -15,10 +15,8 @@ cryptography==46.0.7  # @omlish-venv !15t
 ### compress:
 
 lz4==4.4.5
-# git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED
-
 python-snappy==0.7.3  # @omlish-venv !15 !15t
-brotli==1.2.0
+brotli==1.2.0  # !! USES_GIL - https://github.com/google/brotli/commit/51be27dbd9782f9fe27bc6e06cee6ff18311702d
 
 
 ### db:

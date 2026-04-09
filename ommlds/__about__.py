@@ -36,11 +36,11 @@ class Project(ProjectBase):
             'torch ~= 2.11',
 
             'transformers ~= 5.5',
-            'sentence-transformers ~= 5.3',
+            'sentence-transformers ~= 5.4',
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 1.9',
+            'huggingface-hub ~= 1.10',
             'datasets ~= 4.8',
         ],
 
@@ -75,7 +75,7 @@ class Project(ProjectBase):
         ],
 
         'xml': [
-            'lxml >= 5.3',
+            'lxml >= 5.4',
         ],
     }
 

@@ -39,8 +39,8 @@ all = [
     'tokenizers ~= 0.22',
     'torch ~= 2.11',
     'transformers ~= 5.5',
-    'sentence-transformers ~= 5.3',
-    'huggingface-hub ~= 1.9',
+    'sentence-transformers ~= 5.4',
+    'huggingface-hub ~= 1.10',
     'datasets ~= 4.8',
     'regex >= 2026.4',
     'numpy >= 1.26',
@@ -51,7 +51,7 @@ all = [
     'tavily-python ~= 0.7',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
-    'lxml >= 5.3',
+    'lxml >= 5.4',
 ]
 omdev = [
     'omdev == 0.0.3',
@@ -66,10 +66,10 @@ backends = [
     'tokenizers ~= 0.22',
     'torch ~= 2.11',
     'transformers ~= 5.5',
-    'sentence-transformers ~= 5.3',
+    'sentence-transformers ~= 5.4',
 ]
 huggingface = [
-    'huggingface-hub ~= 1.9',
+    'huggingface-hub ~= 1.10',
     'datasets ~= 4.8',
 ]
 nanochat = [
@@ -94,7 +94,7 @@ wiki = [
     'wikitextparser ~= 0.56',
 ]
 xml = [
-    'lxml >= 5.3',
+    'lxml >= 5.4',
 ]
 
 [project.entry-points]
