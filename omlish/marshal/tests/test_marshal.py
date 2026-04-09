@@ -24,7 +24,7 @@ class E(enum.Enum):
 @dc.dataclass(frozen=True)
 class Foo(Foox):
     s: str
-    f: ta.Optional['Foo'] = None
+    f: Foo | None = None
     e: E | None = None
     frac: fractions.Fraction = fractions.Fraction(1, 9)
     dec: decimal.Decimal = decimal.Decimal('3.140000000000000124344978758017532527446746826171875')

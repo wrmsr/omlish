@@ -65,7 +65,7 @@ class DbapiRows(Rows):
 
 
 class DbapiTxn(Txn, SimpleResource):
-    def __init__(self, conn: 'DbapiConn') -> None:
+    def __init__(self, conn: DbapiConn) -> None:
         super().__init__()
 
         self._conn = conn
@@ -122,7 +122,7 @@ class DbapiConn(Conn):
             self,
             conn: dbapi_abc.DbapiConnection,
             *,
-            adapter: ta.Optional['DbapiAdapter'] = None,
+            adapter: DbapiAdapter | None = None,
     ) -> None:
         super().__init__()
 
@@ -170,7 +170,7 @@ class DbapiDb(Db):
             self,
             connector: ta.Callable[[], ta.ContextManager[dbapi_abc.DbapiConnection]],
             *,
-            adapter: ta.Optional['DbapiAdapter'] = None,
+            adapter: DbapiAdapter | None = None,
             param_style: ParamStyle | None = None,
     ) -> None:
         super().__init__()

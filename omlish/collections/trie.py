@@ -34,7 +34,7 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
             return self._value
 
         @property
-        def children(self) -> ta.Mapping[K2, 'Trie.Node[K2, V2]']:
+        def children(self) -> ta.Mapping[K2, Trie.Node[K2, V2]]:
             return self._children
 
     def __init__(self, items: ta.Iterable[tuple[ta.Iterable[K], V]] | None = None) -> None:
@@ -110,7 +110,7 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
             self,
             *,
             share_key: bool = False,
-            root: ta.Optional['Trie.Node[K, V]'] = None,
+            root: Trie.Node[K, V] | None = None,
             sort_children: bool | ta.Callable[[list[tuple[K, Node[K, V]]]], None] = False,
     ) -> ta.Iterator[tuple[ta.Sequence[K], Node[K, V]]]:
         if root is None:

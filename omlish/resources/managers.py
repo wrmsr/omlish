@@ -105,7 +105,7 @@ class BaseResourceManager(
     #
 
     @abc.abstractmethod
-    def new_managed(self, v: U) -> 'BaseResourceManaged[U, ta.Self]':
+    def new_managed(self, v: U) -> BaseResourceManaged[U, ta.Self]:
         raise NotImplementedError
 
     #
@@ -196,7 +196,7 @@ class ResourceManager(
     #
 
     @classmethod
-    def new(cls, **kwargs: ta.Any) -> ta.ContextManager['ResourceManager']:
+    def new(cls, **kwargs: ta.Any) -> ta.ContextManager[ResourceManager]:
         @contextlib.contextmanager
         def inner():
             init_ref = BaseResourceManager._InitRef()  # noqa
@@ -216,7 +216,7 @@ class ResourceManager(
     @classmethod
     def or_new(
             cls,
-            resources: ta.Optional['ResourceManager'],
+            resources: ResourceManager | None,
             **kwargs: ta.Any,
     ) -> ta.ContextManager['ResourceManager']:
         if resources is None:
@@ -333,9 +333,9 @@ class AsyncResourceManager(
     @classmethod
     def or_new(
             cls,
-            resources: ta.Optional['AsyncResourceManager'],
+            resources: AsyncResourceManager | None,
             **kwargs: ta.Any,
-    ) -> ta.AsyncContextManager['AsyncResourceManager']:
+    ) -> ta.AsyncContextManager[AsyncResourceManager]:
         if resources is None:
             return cls.new(**kwargs)
 
@@ -373,7 +373,7 @@ class AsyncResourceManager(
 
     #
 
-    def new_managed(self, v: U) -> 'AsyncResourceManaged[U]':
+    def new_managed(self, v: U) -> AsyncResourceManaged[U]:
         return AsyncResourceManaged(v, self)  # noqa
 
     #

@@ -37,7 +37,7 @@ class _RegexItem(lang.Abstract):
         raise NotImplementedError
 
     @classmethod
-    def of_op(cls, op: Op) -> ta.Optional['_RegexItem']:
+    def of_op(cls, op: Op) -> _RegexItem | None:
         if isinstance(op, StringLiteral):
             return _StringLiteralRegexItem(op.value)
 

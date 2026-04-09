@@ -48,10 +48,10 @@ class BaseContext(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class MarshalFactoryContext(BaseContext, lang.Final):
-    marshaler_factory: ta.Optional['MarshalerFactory'] = None
+    marshaler_factory: MarshalerFactory | None = None
     configs: Configs = EMPTY_CONFIG_REGISTRY
 
-    def make_marshaler(self, o: ta.Any) -> 'Marshaler':
+    def make_marshaler(self, o: ta.Any) -> Marshaler:
         rty = self._reflect(o)
         fac = check.not_none(self.marshaler_factory)
         if (m := fac.make_marshaler(self, rty)) is None:
@@ -61,10 +61,10 @@ class MarshalFactoryContext(BaseContext, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalFactoryContext(BaseContext, lang.Final):
-    unmarshaler_factory: ta.Optional['UnmarshalerFactory'] = None
+    unmarshaler_factory: UnmarshalerFactory | None = None
     configs: Configs = EMPTY_CONFIG_REGISTRY
 
-    def make_unmarshaler(self, o: ta.Any) -> 'Unmarshaler':
+    def make_unmarshaler(self, o: ta.Any) -> Unmarshaler:
         rty = self._reflect(o)
         fac = check.not_none(self.unmarshaler_factory)
         if (m := fac.make_unmarshaler(self, rty)) is None:
@@ -84,7 +84,7 @@ class MarshalContext(BaseContext, lang.Final):
     def configs(self) -> Configs:
         return self.marshal_factory_context.configs
 
-    def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> 'Value':
+    def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> Value:
         return self.marshal_factory_context.make_marshaler(ty if ty is not None else type(obj)).marshal(self, obj)
 
 
@@ -98,11 +98,11 @@ class UnmarshalContext(BaseContext, lang.Final):
         return self.unmarshal_factory_context.configs
 
     @ta.overload
-    def unmarshal(self, v: 'Value', ty: type[T]) -> T:
+    def unmarshal(self, v: Value, ty: type[T]) -> T:
         ...
 
     @ta.overload
-    def unmarshal(self, v: 'Value', ty: ta.Any) -> ta.Any:
+    def unmarshal(self, v: Value, ty: ta.Any) -> ta.Any:
         ...
 
     def unmarshal(self, v, ty):

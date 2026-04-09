@@ -20,7 +20,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def configure_markdown_parser(parser: ta.Optional['md.MarkdownIt'] = None) -> 'md.MarkdownIt':
+def configure_markdown_parser(parser: md.MarkdownIt | None = None) -> md.MarkdownIt:
     if parser is None:
         parser = md.MarkdownIt()
 
@@ -31,20 +31,20 @@ def configure_markdown_parser(parser: ta.Optional['md.MarkdownIt'] = None) -> 'm
     )
 
 
-def markdown_from_tokens(tokens: ta.Sequence['md.token.Token'], **kwargs: ta.Any) -> 'rich.markdown.Markdown':
+def markdown_from_tokens(tokens: ta.Sequence[md.token.Token], **kwargs: ta.Any) -> rich.markdown.Markdown:
     rmd = rich.markdown.Markdown('', **kwargs)
     rmd.parsed = tokens  # type: ignore[assignment]
     return rmd
 
 
-def flatten_tokens_filter(token: 'md.token.Token') -> bool:
+def flatten_tokens_filter(token: md.token.Token) -> bool:
     return (
         token.type != 'fence' and
         token.tag != 'img'
     )
 
 
-def flatten_tokens(tokens: ta.Iterable['md.token.Token']) -> ta.Iterable['md.token.Token']:
+def flatten_tokens(tokens: ta.Iterable[md.token.Token]) -> ta.Iterable[md.token.Token]:
     return _flatten_tokens(tokens, filter=flatten_tokens_filter)
 
 
@@ -55,8 +55,8 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
-            console: ta.Optional['rich.console.Console'] = None,
+            parser: md.MarkdownIt | None = None,
+            console: rich.console.Console | None = None,
             render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
@@ -75,10 +75,10 @@ class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
 
         self._lines_printed_to_scrollback = 0
 
-    def _markdown_from_tokens(self, tokens: ta.Sequence['md.token.Token']) -> 'rich.markdown.Markdown':
+    def _markdown_from_tokens(self, tokens: ta.Sequence[md.token.Token]) -> rich.markdown.Markdown:
         return markdown_from_tokens(tokens, **(self._markdown_kwargs or {}))
 
-    _live: 'rich.live.Live'  # noqa
+    _live: rich.live.Live  # noqa
 
     def _enter_contexts(self) -> None:
         super()._enter_contexts()
@@ -144,8 +144,8 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
-            console: ta.Optional['rich.console.Console'] = None,
+            parser: md.MarkdownIt | None = None,
+            console: rich.console.Console | None = None,
             render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
@@ -210,8 +210,8 @@ class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
-            console: ta.Optional['rich.console.Console'] = None,
+            parser: md.MarkdownIt | None = None,
+            console: rich.console.Console | None = None,
             render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
             scroll_step: int | None = None,
@@ -294,8 +294,8 @@ class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
-            console: ta.Optional['rich.console.Console'] = None,
+            parser: md.MarkdownIt | None = None,
+            console: rich.console.Console | None = None,
             render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
@@ -380,8 +380,8 @@ class GptIncrementalMarkdownLiveStream(MarkdownLiveStream):
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
-            console: ta.Optional['rich.console.Console'] = None,
+            parser: md.MarkdownIt | None = None,
+            console: rich.console.Console | None = None,
             render_console_kwargs: ta.Mapping[str, ta.Any] | None = None,
             markdown_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:

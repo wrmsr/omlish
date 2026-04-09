@@ -16,7 +16,7 @@ class IncrementalMarkdownParser:
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
+            parser: md.MarkdownIt | None = None,
     ) -> None:
         super().__init__()
 
@@ -29,9 +29,9 @@ class IncrementalMarkdownParser:
         self._num_stable_lines = 0  # Number of lines in stable tokens
 
     class FeedOutput(ta.NamedTuple):
-        stable: ta.Sequence['md.token.Token']
-        new_stable: ta.Sequence['md.token.Token']
-        unstable: ta.Sequence['md.token.Token']
+        stable: ta.Sequence[md.token.Token]
+        new_stable: ta.Sequence[md.token.Token]
+        unstable: ta.Sequence[md.token.Token]
 
     def feed2(self, chunk: str) -> FeedOutput:
         self._buffer += chunk
@@ -77,11 +77,11 @@ class IncrementalMarkdownParser:
             unstable=adjusted_tokens[stable_count:],
         )
 
-    def feed(self, chunk: str) -> list['md.token.Token']:
+    def feed(self, chunk: str) -> list[md.token.Token]:
         out = self.feed2(chunk)
         return [*out.stable, *out.unstable]
 
-    def _find_stable_token_count(self, tokens: list['md.token.Token']) -> int:
+    def _find_stable_token_count(self, tokens: list[md.token.Token]) -> int:
         if not tokens:
             return 0
 
@@ -100,9 +100,9 @@ class IncrementalMarkdownParser:
 
     def _adjust_token_line_numbers(
             self,
-            tokens: list['md.token.Token'],
+            tokens: list[md.token.Token],
             line_offset: int,
-    ) -> list['md.token.Token']:
+    ) -> list[md.token.Token]:
         adjusted = []
         for token in tokens:
             if token.map:
@@ -125,7 +125,7 @@ class ClaudeIncrementalMarkdownParser:
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
+            parser: md.MarkdownIt | None = None,
     ) -> None:
         super().__init__()
 
@@ -138,9 +138,9 @@ class ClaudeIncrementalMarkdownParser:
         self._num_stable_lines = 0
 
     class FeedOutput(ta.NamedTuple):
-        stable: ta.Sequence['md.token.Token']
-        new_stable: ta.Sequence['md.token.Token']
-        unstable: ta.Sequence['md.token.Token']
+        stable: ta.Sequence[md.token.Token]
+        new_stable: ta.Sequence[md.token.Token]
+        unstable: ta.Sequence[md.token.Token]
 
     def feed2(self, chunk: str) -> FeedOutput:
         self._buffer += chunk
@@ -177,13 +177,13 @@ class ClaudeIncrementalMarkdownParser:
             unstable=adjusted_tokens[stable_count:],
         )
 
-    def feed(self, chunk: str) -> list['md.token.Token']:
+    def feed(self, chunk: str) -> list[md.token.Token]:
         out = self.feed2(chunk)
         return [*out.stable, *out.unstable]
 
     def _find_stable_token_count(
             self,
-            tokens: list['md.token.Token'],
+            tokens: list[md.token.Token],
             buffer: str,
     ) -> int:
         if not tokens:
@@ -253,9 +253,9 @@ class ClaudeIncrementalMarkdownParser:
 
     def _adjust_token_line_numbers(
             self,
-            tokens: list['md.token.Token'],
+            tokens: list[md.token.Token],
             line_offset: int,
-    ) -> list['md.token.Token']:
+    ) -> list[md.token.Token]:
         adjusted = []
         for token in tokens:
             if token.map:
@@ -275,7 +275,7 @@ class GptIncrementalMarkdownParser:
     def __init__(
             self,
             *,
-            parser: ta.Optional['md.MarkdownIt'] = None,
+            parser: md.MarkdownIt | None = None,
     ) -> None:
         super().__init__()
 
@@ -288,9 +288,9 @@ class GptIncrementalMarkdownParser:
         self._num_stable_lines = 0  # Number of *source* lines removed from the buffer and committed.
 
     class FeedOutput(ta.NamedTuple):
-        stable: ta.Sequence['md.token.Token']
-        new_stable: ta.Sequence['md.token.Token']
-        unstable: ta.Sequence['md.token.Token']
+        stable: ta.Sequence[md.token.Token]
+        new_stable: ta.Sequence[md.token.Token]
+        unstable: ta.Sequence[md.token.Token]
 
     def feed2(self, chunk: str) -> FeedOutput:
         self._buffer += chunk
@@ -470,12 +470,12 @@ class GptIncrementalMarkdownParser:
 
     def _adjust_token_line_numbers(
             self,
-            tokens: list['md.token.Token'],
+            tokens: list[md.token.Token],
             line_offset: int,
-    ) -> list['md.token.Token']:
+    ) -> list[md.token.Token]:
         adjusted: list[md.token.Token] = []
 
-        def adj_tok(t: 'md.token.Token') -> 'md.token.Token':
+        def adj_tok(t: md.token.Token) -> md.token.Token:
             nt = t
             if nt.map:
                 nt = dc.replace(

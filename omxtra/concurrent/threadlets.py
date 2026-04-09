@@ -35,7 +35,7 @@ class Threadlet(lang.Abstract):
 
     @property
     @abc.abstractmethod
-    def parent(self) -> ta.Optional['Threadlet']:
+    def parent(self) -> Threadlet | None:
         raise NotImplementedError
 
     @property
@@ -67,14 +67,14 @@ class Threadlets(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class GreenletThreadlet(Threadlet):
-    g: 'greenlet.greenlet'
+    g: greenlet.greenlet
 
     @property
-    def underlying(self) -> 'greenlet.greenlet':
+    def underlying(self) -> greenlet.greenlet:
         return self.g
 
     @property
-    def parent(self) -> ta.Optional['GreenletThreadlet']:
+    def parent(self) -> GreenletThreadlet | None:
         return GreenletThreadlet(p) if (p := self.g.parent) is not None else None
 
     @property

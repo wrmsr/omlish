@@ -13,7 +13,7 @@ if ta.TYPE_CHECKING:
 
 
 class ClipboardAppMixin:
-    _driver: ta.Optional['Driver']
+    _driver: Driver | None
     _clipboard: str
 
     #

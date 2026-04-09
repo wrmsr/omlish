@@ -52,7 +52,7 @@ def __omlish_amalg__():  # noqa
             dict(path='asyncs.py', sha1='a78bd64bada44716809c19e95d6ca4a96f3a28d7'),
             dict(path='bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),
-            dict(path='flow/types.py', sha1='2156c6eeb997b3ffa00fd742d07aad6aaf96b828'),
+            dict(path='flow/types.py', sha1='614495500ec251f3ade46bce1d3afa0ece7a71c9'),
             dict(path='handlers/fns.py', sha1='6dd1901ebdbdb31caeffab06d239f1c41e3f2726'),
             dict(path='handlers/queues.py', sha1='f49d19c5dd7de77299bedbfb3a77a36479fd1edf'),
             dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),

@@ -68,7 +68,7 @@ class _ProxyImporter:
                 name: str,
                 getattr_handler: ta.Callable[['_ProxyImporter._Module', str], ta.Any],
                 *,
-                parent: ta.Optional['_ProxyImporter._Module'] = None,
+                parent: _ProxyImporter._Module | None = None,
         ) -> None:
             super().__init__()
 

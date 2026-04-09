@@ -87,7 +87,7 @@ class Pep292Templater(Templater):
         return self.tmpl.substitute(ctx.env or {})
 
     @classmethod
-    def from_string(cls, src: str) -> 'Pep292Templater':
+    def from_string(cls, src: str) -> Pep292Templater:
         return cls(string.Template(src))
 
 
@@ -99,7 +99,7 @@ pep292_templater = Pep292Templater.from_string
 
 @dc.dataclass(frozen=True)
 class MinjaTemplater(Templater):
-    tmpl: 'minja.MinjaTemplate'
+    tmpl: minja.MinjaTemplate
 
     ENV_IDENT: ta.ClassVar[str] = 'env'
 
@@ -111,7 +111,7 @@ class MinjaTemplater(Templater):
             cls,
             src: str,
             **ns: ta.Any,
-    ) -> 'MinjaTemplater':
+    ) -> MinjaTemplater:
         tmpl = minja.compile_minja_template(
             src,
             [
@@ -134,7 +134,7 @@ minja_templater = MinjaTemplater.from_string
 
 @dc.dataclass(frozen=True)
 class JinjaTemplater(Templater):
-    tmpl: 'jinja2.Template'
+    tmpl: jinja2.Template
 
     def render(self, ctx: Templater.Context) -> str:
         return self.tmpl.render(**(ctx.env or {}))
@@ -144,9 +144,9 @@ class JinjaTemplater(Templater):
             cls,
             src: str,
             *,
-            env: ta.Optional['jinja2.Environment'] = None,
+            env: jinja2.Environment | None = None,
             **kwargs: ta.Any,
-    ) -> 'JinjaTemplater':
+    ) -> JinjaTemplater:
         if env is None:
             env = jinja2.Environment()
         tmpl = env.from_string(src)

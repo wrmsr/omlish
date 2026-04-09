@@ -31,7 +31,7 @@ else:
 
 
 class MarkdownContentParser(ContentParser, lang.Final):
-    def __init__(self, *, parser: ta.Optional['md.MarkdownIt'] = None) -> None:
+    def __init__(self, *, parser: md.MarkdownIt | None = None) -> None:
         super().__init__()
 
         if parser is None:

@@ -24,8 +24,8 @@ class SkipList(SortedCollection[T]):
             'prev',
         ]
 
-        next: list[ta.Optional['SkipList._Node']]
-        prev: ta.Optional['SkipList._Node']
+        next: list[SkipList._Node | None]
+        prev: SkipList._Node | None
 
         def __init__(
                 self,

@@ -38,8 +38,8 @@ class TreapNode(ta.Generic[T]):
             *,
             _value: T,
             _priority: int,
-            _left: ta.Optional['TreapNode[T]'],
-            _right: ta.Optional['TreapNode[T]'],
+            _left: TreapNode[T] | None,
+            _right: TreapNode[T] | None,
     ) -> None:
         self._value, self._priority, self._left, self._right = _value, _priority, _left, _right
         self._set_count()
@@ -65,11 +65,11 @@ class TreapNode(ta.Generic[T]):
         return self._priority
 
     @property
-    def left(self) -> ta.Optional['TreapNode[T]']:
+    def left(self) -> TreapNode[T] | None:
         return self._left
 
     @property
-    def right(self) -> ta.Optional['TreapNode[T]']:
+    def right(self) -> TreapNode[T] | None:
         return self._right
 
     @property

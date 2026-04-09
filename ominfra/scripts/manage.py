@@ -122,7 +122,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/atomics.py', sha1='4e88b1a207d253811f334cb6dce46e27165513fc'),
             dict(path='../../omlish/text/indent.py', sha1='cc23647bdcd8d26c8afe9e36a0aefb32da58cbb8'),
-            dict(path='../../omdev/interp/types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
+            dict(path='../../omdev/interp/types.py', sha1='32aca8ff7200fa7f169c33766f8274019c270b49'),
             dict(path='commands/base.py', sha1='17310f7272b6ac7b6438e32bfd7b24004d284399'),
             dict(path='deploy/conf/specs.py', sha1='d191fa887c59198f5eff5c62414031204a76fa65'),
             dict(path='deploy/tags.py', sha1='e6e7a1f4fcee9f5764acbe7f307b31e26f81bbc3'),

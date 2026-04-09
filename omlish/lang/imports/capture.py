@@ -112,9 +112,9 @@ class _ImportCaptureHook:
         def __init__(
                 self,
                 name: str,
-                getattr_handler: ta.Callable[['_ImportCaptureHook._Module', str], ta.Any],
+                getattr_handler: ta.Callable[[_ImportCaptureHook._Module, str], ta.Any],
                 *,
-                parent: ta.Optional['_ImportCaptureHook._Module'] = None,
+                parent: _ImportCaptureHook._Module | None = None,
         ) -> None:
             super().__init__()
 
@@ -697,7 +697,7 @@ class ImportCapture:
         def __init__(
                 self,
                 name: str,
-                children: ta.Mapping[str, 'ImportCapture.Module'] | None = None,
+                children: ta.Mapping[str, ImportCapture.Module] | None = None,
                 attrs: ta.Sequence[str] | None = None,
         ) -> None:
             self.name = name
@@ -713,7 +713,7 @@ class ImportCapture:
             else:
                 self.kind = 'parent'
 
-        parent: ta.Optional['ImportCapture.Module']
+        parent: ImportCapture.Module | None
 
         kind: ImportCaptureModuleKind
 
@@ -727,10 +727,10 @@ class ImportCapture:
                 ')',
             ])
 
-        _root: 'ImportCapture.Module'
+        _root: ImportCapture.Module
 
         @property
-        def root(self) -> 'ImportCapture.Module':
+        def root(self) -> ImportCapture.Module:
             try:
                 return self._root
             except AttributeError:
@@ -746,7 +746,7 @@ class ImportCapture:
     class Import:
         def __init__(
                 self,
-                module: 'ImportCapture.Module',
+                module: ImportCapture.Module,
                 as_: ta.Sequence[str] | None,
                 attrs: ta.Sequence[tuple[str, str]] | None,  # ('foo', 'bar') -> `import foo as bar` - explicitly not a dict  # noqa
         ) -> None:
@@ -768,10 +768,10 @@ class ImportCapture:
         def __init__(
                 self,
 
-                imports: ta.Mapping[str, 'ImportCapture.Import'],
+                imports: ta.Mapping[str, ImportCapture.Import],
 
-                modules: ta.Mapping[str, 'ImportCapture.Module'],
-                root_modules: ta.Mapping[str, 'ImportCapture.Module'],
+                modules: ta.Mapping[str, ImportCapture.Module],
+                root_modules: ta.Mapping[str, ImportCapture.Module],
 
                 unreferenced: ta.Sequence[str] | None,
         ) -> None:
@@ -822,7 +822,7 @@ class ImportCapture:
     #
 
     class _Result(ta.NamedTuple):
-        captured: 'ImportCapture.Captured'
+        captured: ImportCapture.Captured
 
     _result_: _Result | None = None
 

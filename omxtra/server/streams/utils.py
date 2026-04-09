@@ -46,8 +46,8 @@ class ResponseSummary(ta.TypedDict):
 
 def log_access(
         config: Config,
-        request: 'Scope',
-        response: ta.Optional['ResponseSummary'],
+        request: Scope,
+        response: ResponseSummary | None,
         request_time: float,
 ) -> None:
     # if self.access_logger is not None:

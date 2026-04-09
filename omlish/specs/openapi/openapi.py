@@ -82,7 +82,7 @@ class Schema:
 
     discriminator: Discriminator | None = None
     xml: Xml | None = None
-    external_docs: ta.Optional['ExternalDocumentation'] = None
+    external_docs: ExternalDocumentation | None = None
     example: ta.Any | None = None
 
     keywords: jsch.Keywords | None = None
@@ -106,7 +106,7 @@ class Tag:
 
     name: str
     description: str | None = None
-    external_docs: ta.Optional['ExternalDocumentation'] = None
+    external_docs: ExternalDocumentation | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -116,7 +116,7 @@ class Header:
     """https://swagger.io/specification/#header-object"""
 
     # TODO: marshal embedding, shared with Parameter
-    common: 'ParameterCommon'
+    common: ParameterCommon
 
 
 @dc.dataclass(frozen=True)
@@ -129,7 +129,7 @@ class Link:
     parameters: ta.Mapping[str, ta.Any] | None = None
     request_body: ta.Any = None
     description: str | None = None
-    server: ta.Optional['Server'] = None
+    server: Server | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -154,7 +154,7 @@ class Response:
 
     description: str
     headers: ta.Mapping[str, Header | Reference] | None = None
-    content: ta.Mapping[str, 'MediaType'] | None = None
+    content: ta.Mapping[str, MediaType] | None = None
     links: ta.Mapping[str, Link | Reference] | None = None
 
 
@@ -260,7 +260,7 @@ class Operation:
     callbacks: ta.Mapping[str, Callback | Reference] | None = None
     deprecated: bool | None = None
     security: ta.Sequence[SecurityRequirement] | None = None
-    servers: ta.Sequence['Server'] | None = None
+    servers: ta.Sequence[Server] | None = None
 
     #
 
@@ -289,7 +289,7 @@ class PathItem:
     head: Operation | None = None
     patch: Operation | None = None
     trace: Operation | None = None
-    servers: ta.Sequence['Server'] | None = None
+    servers: ta.Sequence[Server] | None = None
     parameters: ta.Sequence[Parameter | Reference] | None = None
 
 

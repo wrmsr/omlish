@@ -25,7 +25,7 @@ class Context(lang.Abstract, lang.Sealed):
             obj: Object,
             *,
             dependencies: VersionMap = col.frozendict(),
-            parent: ta.Optional['Context'] = None,
+            parent: Context | None = None,
     ) -> None:
         super().__init__()
 
@@ -53,11 +53,11 @@ class Context(lang.Abstract, lang.Sealed):
         return self._dependencies
 
     @property
-    def parent(self) -> ta.Optional['Context']:
+    def parent(self) -> Context | None:
         return self._parent
 
     @property
-    def children(self) -> ta.Sequence['Context']:
+    def children(self) -> ta.Sequence[Context]:
         return self._children
 
     @property

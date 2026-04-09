@@ -44,7 +44,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
     def __init__(
             self,
             ec: CollectedElements,
-            p: ta.Optional['AsyncInjectorImpl'] = None,
+            p: AsyncInjectorImpl | None = None,
             *,
             internal_consts: dict[Key, ta.Any] | None = None,
     ) -> None:
@@ -81,9 +81,9 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         if self._p is not None:
             self._p._add_child(self)  # noqa
 
-    _cs: weakref.WeakSet['AsyncInjectorImpl'] | None = None  # noqa
+    _cs: weakref.WeakSet[AsyncInjectorImpl] | None = None  # noqa
 
-    __cur_req: ta.Optional['AsyncInjectorImpl._Request'] = None
+    __cur_req: AsyncInjectorImpl._Request | None = None
 
     #
 
@@ -102,7 +102,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
 
     #
 
-    _root: 'AsyncInjectorImpl'
+    _root: AsyncInjectorImpl
 
     async def _instantiate_eagers(self, sc: Scope) -> None:
         for k in self._ekbs.get(sc, ()):
@@ -111,7 +111,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
     def get_scope_impl(self, sc: Scope) -> ScopeImpl:
         return self._scopes[sc]
 
-    def _add_child(self, c: 'AsyncInjectorImpl') -> AsyncInjector:
+    def _add_child(self, c: AsyncInjectorImpl) -> AsyncInjector:
         check.isinstance(c, AsyncInjectorImpl)
         if self._cs is None:
             self._cs = weakref.WeakSet()
@@ -122,7 +122,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         raise e
 
     class _Request:
-        def __init__(self, injector: 'AsyncInjectorImpl') -> None:
+        def __init__(self, injector: AsyncInjectorImpl) -> None:
             super().__init__()
 
             self._injector = injector

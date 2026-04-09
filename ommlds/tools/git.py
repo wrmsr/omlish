@@ -68,7 +68,7 @@ class StandardGitAiBackend(GitAiBackend['StandardGitAiBackend.Config']):
             self,
             config: Config = Config(),
             *,
-            backend_catalog: ta.Optional['mc.BackendCatalog'] = None,
+            backend_catalog: mc.BackendCatalog | None = None,
     ) -> None:
         super().__init__(config)
 

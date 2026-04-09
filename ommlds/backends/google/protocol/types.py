@@ -241,7 +241,7 @@ class Schema(lang.Final):
     enum: ta.Sequence[str] | None = None
     max_items: str | None = None  # int64
     min_items: str | None = None  # int64
-    properties: ta.Mapping[str, 'Schema'] | None = None
+    properties: ta.Mapping[str, Schema] | None = None
     required: ta.Sequence[str] | None = None
     min_properties: str | None = None  # int64
     max_properties: str | None = None  # int64
@@ -249,10 +249,10 @@ class Schema(lang.Final):
     max_length: str | None = None  # int64
     pattern: str | None = None
     example: Value | None = None
-    any_of: ta.Sequence['Schema'] | None = None
+    any_of: ta.Sequence[Schema] | None = None
     property_ordering: ta.Sequence[str] | None = None
     default: Value | None = None
-    items: ta.Optional['Schema'] = None
+    items: Schema | None = None
     minimum: float | None = None
     maximum: float | None = None
 

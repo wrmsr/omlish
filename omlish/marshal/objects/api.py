@@ -84,7 +84,7 @@ class FieldOptions(lang.Final):
     ##
     # Merging
 
-    def merge(self, *overrides: ta.Optional['FieldOptions']) -> 'FieldOptions':
+    def merge(self, *overrides: FieldOptions | None) -> FieldOptions:
         kw: dict[str, ta.Any] = {}
         for obj in [self, *overrides]:
             if obj is None:
@@ -164,7 +164,7 @@ class ObjectOptions(lang.Final):
     ##
     # Merging
 
-    def merge(self, *overrides: ta.Optional['ObjectOptions']) -> 'ObjectOptions':
+    def merge(self, *overrides: ObjectOptions | None) -> ObjectOptions:
         kw: dict[str, ta.Any] = {}
         for obj in [self, *overrides]:
             if obj is None:

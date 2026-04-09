@@ -23,11 +23,11 @@ else:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Override(Config, lang.Final):
-    marshaler: ta.Optional['Marshaler'] = None
-    marshaler_factory: ta.Optional['MarshalerFactory'] = None
+    marshaler: Marshaler | None = None
+    marshaler_factory: MarshalerFactory | None = None
 
-    unmarshaler: ta.Optional['Unmarshaler'] = None
-    unmarshaler_factory: ta.Optional['UnmarshalerFactory'] = None
+    unmarshaler: Unmarshaler | None = None
+    unmarshaler_factory: UnmarshalerFactory | None = None
 
     def __post_init__(self) -> None:
         check.isinstance(self.marshaler, (_types.Marshaler, None))
