@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/omlish'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
-version = '0.0.3'
+version = '0.0.4'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -24,12 +24,12 @@ classifiers = [
 ]
 description = 'ommlds'
 dependencies = [
-    'omlish == 0.0.3',
+    'omlish == 0.0.4',
 ]
 
 [project.optional-dependencies]
 all = [
-    'omdev == 0.0.3',
+    'omdev == 0.0.4',
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.31; sys_platform == "darwin"',
     'mlx-lm ~= 0.31; sys_platform == "darwin"',
@@ -54,7 +54,7 @@ all = [
     'lxml >= 5.4',
 ]
 omdev = [
-    'omdev == 0.0.3',
+    'omdev == 0.0.4',
 ]
 backends = [
     'llama-cpp-python ~= 0.3',
