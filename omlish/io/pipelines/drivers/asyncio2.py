@@ -55,6 +55,8 @@ class PollAsyncioStreamIoPipelineDriver:
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             config: ta.Optional[Config] = None,
+            *,
+            _pipeline_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
     ) -> None:
         super().__init__()
 
@@ -64,6 +66,7 @@ class PollAsyncioStreamIoPipelineDriver:
         if config is None:
             config = PollAsyncioStreamIoPipelineDriver.Config.DEFAULT
         self._config = config
+        self._pipeline_kwargs = _pipeline_kwargs
 
         #
 
@@ -125,11 +128,14 @@ class PollAsyncioStreamIoPipelineDriver:
 
         #
 
-        self._pipeline = IoPipeline(dc.replace(
-            self._spec,
-            metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
-            services=(*self._spec.services, self._sched),
-        ))
+        self._pipeline = IoPipeline(
+            dc.replace(
+                self._spec,
+                metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
+                services=(*self._spec.services, self._sched),
+            ),
+            **(self._pipeline_kwargs or {}),
+        )
 
         #
 

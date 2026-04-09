@@ -7,6 +7,7 @@ from ....io.pipelines.core import IoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.flow.types import IoPipelineFlow
+from ....io.pipelines.flow.types import IoPipelineFlowMessages
 from ....lite.check import check
 from ....lite.namespaces import NamespaceClass
 from ..requests import FullIoPipelineHttpRequest
@@ -64,12 +65,20 @@ class IoPipelineHttpClientHandler(IoPipelineHandler):
             return
 
         if isinstance(msg, IoPipelineHttpResponseObject):
+            # FIXME: lame
+            if ctx.pipeline.saw_final_output:
+                return
+
             ctx.feed_out(IoPipelineHttpClientMessages.Output(msg, request=self._request))
 
             if isinstance(msg, (FullIoPipelineHttpResponse, IoPipelineHttpResponseEnd)):
                 self._request = None
 
             return
+
+        if isinstance(msg, IoPipelineFlowMessages.FlushInput):
+            if self._request is not None:
+                IoPipelineFlow.maybe_ready_for_input(ctx)
 
         if isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
             ctx.feed_out(IoPipelineHttpClientMessages.Output(msg, request=self._request))

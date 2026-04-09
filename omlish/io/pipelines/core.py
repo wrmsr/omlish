@@ -487,6 +487,9 @@ class IoPipelineHandlerContext:
 
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
 
+        if (mt := self._pipeline._message_tap) is not None:  # noqa
+            mt(self, 'inbound', msg)
+
         if isinstance(msg, IoPipelineMessages.MustPropagate):
             self._pipeline._propagation.add_must(self, 'inbound', msg)  # noqa
 
@@ -513,6 +516,9 @@ class IoPipelineHandlerContext:
         check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
+
+        if (mt := self._pipeline._message_tap) is not None:  # noqa
+            mt(self, 'outbound', msg)
 
         if isinstance(msg, IoPipelineMessages.MustPropagate):
             self._pipeline._propagation.add_must(self, 'outbound', msg)  # noqa
@@ -1021,6 +1027,16 @@ class _IoPipelinePropagation:
 ##
 
 
+IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    [
+        IoPipelineHandlerContext,
+        IoPipelineDirection,
+        ta.Any,
+    ],
+    None,
+]
+
+
 @ta.final
 class IoPipeline:
     @ta.final
@@ -1089,11 +1105,13 @@ class IoPipeline:
             spec: Spec,
             *,
             never_handle_exceptions: ta.Tuple[type, ...] = (),
+            message_tap: ta.Optional[IoPipelineMessageTap] = None,
     ) -> None:
         super().__init__()
 
         self._config: ta.Final[IoPipeline.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
+        self._message_tap = message_tap
 
         self._metadata: ta.Final[IoPipelineMetadatas] = IoPipelineMetadatas.of(spec.metadata)
         self._services: ta.Final[IoPipelineServices] = IoPipelineServices.of(spec.services)

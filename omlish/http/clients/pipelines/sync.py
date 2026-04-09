@@ -51,10 +51,11 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
                     if isinstance(msg, IoPipelineHttpResponseBodyData):
                         return ByteStreamBuffers.to_bytes(msg.data)
 
-                    elif isinstance(msg, IoPipelineHttpResponseEnd):
-                        pass
-
-                    elif isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
+                    elif isinstance(msg, (
+                            IoPipelineHttpResponseEnd,
+                            IoPipelineMessages.FinalInput,
+                            IoPipelineHttpClientMessages.Close,
+                    )):
                         return b''
 
                     else:

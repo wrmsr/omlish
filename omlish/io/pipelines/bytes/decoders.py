@@ -5,6 +5,7 @@ TODO:
  - netty 'pending_removal' trick
 """
 import abc
+import collections
 import typing as ta
 
 from ....lite.abstract import Abstract
@@ -139,6 +140,12 @@ class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
 
     #
 
+    _decode_state: ta.Literal['ready', 'decoding'] = 'ready'
+
+    _allow_decode_reentrance: bool = False
+    _decode_output: ta.Optional['collections.deque[ta.Any]'] = None
+    _decode_pending_input: ta.Optional['collections.deque[ta.Any]'] = None
+
     _called_decode: bool = False  # ~ `selfFiredChannelRead`
     _produced_messages: bool = False  # ~ `firedChannelRead`
 
@@ -149,18 +156,53 @@ class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
             *,
             final: bool = False,
     ) -> None:
-        self._called_decode = True
+        if self._decode_state == 'ready':
+            check.none(self._decode_output)
+            check.none(self._decode_pending_input)
 
-        out: ta.List[ta.Any] = []
-        self._decode(ctx, data, out, final=final)
+            self._decode_state = 'decoding'
+            doq: 'collections.deque[ta.Any]' = collections.deque()
+            diq: 'collections.deque[ta.Any]' = collections.deque()
+            self._decode_output = doq
+            self._decode_pending_input = diq
 
-        if not out:
-            return
+            self._called_decode = True
 
-        self._produced_messages = True
+            try:
+                out: ta.List[ta.Any] = []
+                self._decode(ctx, data, out, final=final)
+                doq.extend(out)
 
-        for out_msg in out:
-            ctx.feed_in(out_msg)
+                if not doq:
+                    return
+
+                self._produced_messages = True
+
+                while doq:
+                    out_msg = doq.popleft()
+                    ctx.feed_in(out_msg)
+
+            finally:
+                self._decode_output = None
+                self._decode_pending_input = None
+                self._decode_state = 'ready'
+
+                while diq:
+                    in_msg = diq.popleft()
+                    self.inbound(ctx, in_msg)
+
+        elif self._decode_state == 'decoding':
+            if not self._allow_decode_reentrance:
+                raise RuntimeError('already decoding')
+
+            doq = check.not_none(self._decode_output)
+
+            out = []
+            self._decode(ctx, data, out, final=final)
+            doq.extend(out)
+
+        else:
+            raise RuntimeError(f'unexpected decode state: {self._decode_state!r}')
 
     #
 
@@ -191,10 +233,16 @@ class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, IoPipelineFlowMessages.FlushInput):
-            self._on_flush_input(ctx)
+            if (diq := self._decode_pending_input) is not None:
+                diq.append(msg)
+            else:
+                self._on_flush_input(ctx)
 
         elif isinstance(msg, IoPipelineMessages.FinalInput):
-            self._on_final_input(ctx, msg)
+            if (diq := self._decode_pending_input) is not None:
+                diq.append(msg)
+            else:
+                self._on_final_input(ctx, msg)
 
         elif ByteStreamBuffers.can_bytes(msg):
             self._on_bytes_input(ctx, msg)

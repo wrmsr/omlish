@@ -95,7 +95,7 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
             with_ssl: bool = False,
             ssl_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
 
-            with_flow: bool = False,
+            without_flow: bool = False,
             flow_auto_read: bool = False,
 
             raise_immediately: bool = False,
@@ -106,7 +106,7 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
 
                 *([LoggingIoPipelineHandler()] if with_logging else []),
 
-                *([OutboundBytesBufferIoPipelineHandler()] if with_flow else []),
+                *([OutboundBytesBufferIoPipelineHandler()] if not without_flow else []),
 
                 *([SslIoPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
@@ -128,7 +128,7 @@ class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
             ),
 
             services=[
-                *([StubIoPipelineFlowService(auto_read=flow_auto_read)] if with_flow else []),
+                *([StubIoPipelineFlowService(auto_read=flow_auto_read)] if not without_flow else []),
             ],
         )
 

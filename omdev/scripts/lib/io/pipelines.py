@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='3dabd48ce0e19fd974a89ea7b4dd2b6c4118d36b'),
+            dict(path='core.py', sha1='d9fa19b2f9d87123dba0bbc964f0a31e722f603d'),
             dict(path='../streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='../../logs/infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -70,7 +70,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../streams/segmented.py', sha1='ae33f03c97fdc8b2d0983f8697cee2f4994cab89'),
             dict(path='../../logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
+            dict(path='bytes/decoders.py', sha1='c99bfa344f3dd51ec4706a383f19b00f9fbcc2f3'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='drivers/asyncio.py', sha1='d7303a66eabe5dfdfb2df30d2f8b5291a7d5695c'),
             dict(path='_amalg.py', sha1='14b67747b1e3b3c1483050a7948a29888d732ed9'),
@@ -1791,6 +1791,9 @@ class IoPipelineHandlerContext:
 
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
 
+        if (mt := self._pipeline._message_tap) is not None:  # noqa
+            mt(self, 'inbound', msg)
+
         if isinstance(msg, IoPipelineMessages.MustPropagate):
             self._pipeline._propagation.add_must(self, 'inbound', msg)  # noqa
 
@@ -1817,6 +1820,9 @@ class IoPipelineHandlerContext:
         check.state(self._pipeline._state == IoPipeline.State.READY and self._pipeline._execution_depth > 0)  # noqa
 
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
+
+        if (mt := self._pipeline._message_tap) is not None:  # noqa
+            mt(self, 'outbound', msg)
 
         if isinstance(msg, IoPipelineMessages.MustPropagate):
             self._pipeline._propagation.add_must(self, 'outbound', msg)  # noqa
@@ -2325,6 +2331,16 @@ class _IoPipelinePropagation:
 ##
 
 
+IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    [
+        IoPipelineHandlerContext,
+        IoPipelineDirection,
+        ta.Any,
+    ],
+    None,
+]
+
+
 @ta.final
 class IoPipeline:
     @ta.final
@@ -2393,11 +2409,13 @@ class IoPipeline:
             spec: Spec,
             *,
             never_handle_exceptions: ta.Tuple[type, ...] = (),
+            message_tap: ta.Optional[IoPipelineMessageTap] = None,
     ) -> None:
         super().__init__()
 
         self._config: ta.Final[IoPipeline.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
+        self._message_tap = message_tap
 
         self._metadata: ta.Final[IoPipelineMetadatas] = IoPipelineMetadatas.of(spec.metadata)
         self._services: ta.Final[IoPipelineServices] = IoPipelineServices.of(spec.services)
@@ -7887,6 +7905,12 @@ class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
 
     #
 
+    _decode_state: ta.Literal['ready', 'decoding'] = 'ready'
+
+    _allow_decode_reentrance: bool = False
+    _decode_output: ta.Optional['collections.deque[ta.Any]'] = None
+    _decode_pending_input: ta.Optional['collections.deque[ta.Any]'] = None
+
     _called_decode: bool = False  # ~ `selfFiredChannelRead`
     _produced_messages: bool = False  # ~ `firedChannelRead`
 
@@ -7897,18 +7921,53 @@ class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
             *,
             final: bool = False,
     ) -> None:
-        self._called_decode = True
+        if self._decode_state == 'ready':
+            check.none(self._decode_output)
+            check.none(self._decode_pending_input)
 
-        out: ta.List[ta.Any] = []
-        self._decode(ctx, data, out, final=final)
+            self._decode_state = 'decoding'
+            doq: 'collections.deque[ta.Any]' = collections.deque()
+            diq: 'collections.deque[ta.Any]' = collections.deque()
+            self._decode_output = doq
+            self._decode_pending_input = diq
 
-        if not out:
-            return
+            self._called_decode = True
 
-        self._produced_messages = True
+            try:
+                out: ta.List[ta.Any] = []
+                self._decode(ctx, data, out, final=final)
+                doq.extend(out)
 
-        for out_msg in out:
-            ctx.feed_in(out_msg)
+                if not doq:
+                    return
+
+                self._produced_messages = True
+
+                while doq:
+                    out_msg = doq.popleft()
+                    ctx.feed_in(out_msg)
+
+            finally:
+                self._decode_output = None
+                self._decode_pending_input = None
+                self._decode_state = 'ready'
+
+                while diq:
+                    in_msg = diq.popleft()
+                    self.inbound(ctx, in_msg)
+
+        elif self._decode_state == 'decoding':
+            if not self._allow_decode_reentrance:
+                raise RuntimeError('already decoding')
+
+            doq = check.not_none(self._decode_output)
+
+            out = []
+            self._decode(ctx, data, out, final=final)
+            doq.extend(out)
+
+        else:
+            raise RuntimeError(f'unexpected decode state: {self._decode_state!r}')
 
     #
 
@@ -7939,10 +7998,16 @@ class BytesToMessageDecoderIoPipelineHandler(IoPipelineHandler, Abstract):
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, IoPipelineFlowMessages.FlushInput):
-            self._on_flush_input(ctx)
+            if (diq := self._decode_pending_input) is not None:
+                diq.append(msg)
+            else:
+                self._on_flush_input(ctx)
 
         elif isinstance(msg, IoPipelineMessages.FinalInput):
-            self._on_final_input(ctx, msg)
+            if (diq := self._decode_pending_input) is not None:
+                diq.append(msg)
+            else:
+                self._on_final_input(ctx, msg)
 
         elif ByteStreamBuffers.can_bytes(msg):
             self._on_bytes_input(ctx, msg)

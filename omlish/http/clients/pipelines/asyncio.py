@@ -46,10 +46,11 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
                     if isinstance(msg, IoPipelineHttpResponseBodyData):
                         return ByteStreamBuffers.to_bytes(msg.data)
 
-                    elif isinstance(msg, IoPipelineHttpResponseEnd):
-                        pass
-
-                    elif isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
+                    elif isinstance(msg, (
+                            IoPipelineHttpResponseEnd,
+                            IoPipelineMessages.FinalInput,
+                            IoPipelineHttpClientMessages.Close,
+                    )):
                         return b''
 
                     else:
@@ -75,7 +76,11 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
             reader, writer = await asyncio.open_connection(prepared.parsed_url.host, prepared.parsed_url.port)
 
             try:
-                drv = PollAsyncioStreamIoPipelineDriver(prepared.pipeline_spec, reader, writer)
+                drv = PollAsyncioStreamIoPipelineDriver(
+                    prepared.pipeline_spec,
+                    reader,
+                    writer,
+                )
 
                 drv.enqueue(IoPipelineHttpClientMessages.Request(
                     prepared.full_request,
