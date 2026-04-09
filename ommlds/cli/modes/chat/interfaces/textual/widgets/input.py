@@ -68,6 +68,7 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
         self._ic = ic
 
         self._mode: InputMode = '>'
+        self._suppress_suggestions_update: bool = False
 
     @dc.dataclass()
     class Submitted(tx.Message):
@@ -145,6 +146,15 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
         self.post_message(self.HistoryNext(self.text))
 
     async def on_text_area_changed(self, event: tx.TextArea.Changed) -> None:
+        if self._suppress_suggestions_update:
+            self._suppress_suggestions_update = False
+            return
+
+        was_cycling = self._ic._suggestions_manager.is_cycling
+        if was_cycling:
+            self._ic._suggestions_manager.end_cycling()
+            self._ic._suggestions_popup.hide()
+
         text = self.text
 
         if not text:
@@ -152,21 +162,25 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
 
         elif text[0] == '/':
             if not self.set_mode('/'):
-                self._update_suggestions()
+                if not was_cycling:
+                    self._update_suggestions()
 
     async def on_key(self, event: tx.Key) -> None:
         if event.key == 'tab':
             if self._mode == '/':
-                if (sgs := self._ic._suggestions_manager.get_suggestions()) is not None:
-                    for sg in sgs:
-                        if sg.selected:
-                            if not self.text.startswith(sg.label):
-                                self.text = sg.label + ' '
-                                end = self.document.end
-                                self.selection = tx.Selection(end, end)
-                            event.prevent_default()
-                            event.stop()
-                            break
+                selected = self._ic._suggestions_manager.select_next()
+                if selected is not None:
+                    self._suppress_suggestions_update = True
+                    self.text = selected.label + ' '
+                    end = self.document.end
+                    self.selection = tx.Selection(end, end)
+
+                    self._ic._suggestions_popup.update_suggestions(
+                        self._ic._suggestions_manager.get_suggestions() or [],
+                    )
+
+                    event.prevent_default()
+                    event.stop()
 
 
 class InputContainer(tx.InitAddClass, tx.ComposeOnce, tx.Static):

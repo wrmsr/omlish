@@ -2,10 +2,8 @@
 TODO:
  - bootstrap lol
 """
-import functools
+import asyncio
 import typing as ta
-
-import anyio
 
 from omlish import inject as inj
 from omlish.argparse import all as ap
@@ -88,12 +86,7 @@ async def _a_main(argv: ta.Any = None) -> None:
 
 
 def _main(args: ta.Any = None) -> None:
-    anyio.run(
-        functools.partial(
-            _a_main,
-            args,
-        ),
-    )  # noqa
+    asyncio.run(_a_main(args))
 
 
 if __name__ == '__main__':

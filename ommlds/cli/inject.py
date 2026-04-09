@@ -39,7 +39,7 @@ def bind_main(
     #
 
     els.extend([
-        inj.bind(asyncs.AsyncThreadRunner, to_ctor=asyncs.AnyioAsyncThreadRunner),
+        inj.bind(asyncs.AsyncThreadRunner, to_ctor=asyncs.AsyncioAsyncThreadRunner),
     ])
 
     #

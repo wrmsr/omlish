@@ -1,12 +1,9 @@
 import abc
+import asyncio
 import functools
 import typing as ta
 
 from omlish import lang
-
-
-with lang.auto_proxy_import(globals()):
-    import anyio
 
 
 T = ta.TypeVar('T')
@@ -25,6 +22,6 @@ class AsyncThreadRunner(lang.Abstract):
 ##
 
 
-class AnyioAsyncThreadRunner(AsyncThreadRunner):
+class AsyncioAsyncThreadRunner(AsyncThreadRunner):
     def run_in_thread(self, fn: ta.Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> ta.Awaitable[T]:
-        return anyio.to_thread.run_sync(functools.partial(fn, *args, **kwargs))
+        return asyncio.to_thread(functools.partial(fn, *args, **kwargs))
