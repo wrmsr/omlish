@@ -73,6 +73,10 @@ class PollAsyncioStreamIoPipelineDriver:
         self._want_read = False
         self._want_read_event = asyncio.Event()
 
+        self._command_queue.put_nowait(PollAsyncioStreamIoPipelineDriver._FeedInCommand([
+            IoPipelineMessages.InitialInput(),
+        ]))
+
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
@@ -134,12 +138,6 @@ class PollAsyncioStreamIoPipelineDriver:
         if self._is_auto_read():
             self._want_read = True
             self._want_read_event.set()
-
-        #
-
-        self._command_queue.put_nowait(PollAsyncioStreamIoPipelineDriver._FeedInCommand([
-            IoPipelineMessages.InitialInput(),
-        ]))
 
         return self._pipeline
 

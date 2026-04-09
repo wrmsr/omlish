@@ -10,6 +10,9 @@ from ..base import HttpClientRequest
 from ..base import StatusHttpClientError
 from ..executor import ExecutorAsyncHttpClient
 from ..httpx import HttpxAsyncHttpClient
+from ..middleware import MiddlewareAsyncHttpClient
+from ..middleware import RedirectHandlingHttpClientMiddleware
+from ..pipelines.asyncio import AsyncioIoPipelineAsyncHttpClient
 from ..syncasync import SyncAsyncHttpClient
 from ..urllib import UrllibHttpClient
 
@@ -32,10 +35,23 @@ async def sync_async_urllib_async_http_client():
         yield SyncAsyncHttpClient(client)
 
 
+@contextlib.asynccontextmanager
+async def middleware_pipeline_async_http_client():
+    async with AsyncioIoPipelineAsyncHttpClient() as client0:
+        async with MiddlewareAsyncHttpClient(
+                client0,
+                [
+                    RedirectHandlingHttpClientMiddleware(),
+                ],
+        ) as client1:
+            yield client1
+
+
 CLIENTS: list = [
     HttpxAsyncHttpClient,
     thread_executor_urllib_async_http_client,
     sync_async_urllib_async_http_client,
+    middleware_pipeline_async_http_client,
 ]
 
 
