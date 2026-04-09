@@ -63,12 +63,12 @@ class InMemoryStore(Store):
 
     @dc.dataclass(frozen=True)
     class _State:
-        tables: col.PersistentMapping[str, 'InMemoryStore._TableState'] = dc.field(default_factory=col.new_persistent_map)  # noqa
+        tables: col.PersistentMapping[str, InMemoryStore._TableState] = dc.field(default_factory=col.new_persistent_map)  # noqa
 
     @dc.dataclass(frozen=True)
     class _TableState:
         snaps: col.PersistentMapping[ta.Any, Snap] = dc.field(default_factory=col.new_persistent_map)
-        indexes: col.PersistentMapping[str, 'InMemoryStore._IndexState'] = dc.field(default_factory=col.new_persistent_map)  # noqa
+        indexes: col.PersistentMapping[str, InMemoryStore._IndexState] = dc.field(default_factory=col.new_persistent_map)  # noqa
 
     @dc.dataclass(frozen=True)
     class _IndexState:
@@ -202,11 +202,11 @@ class InMemoryStore(Store):
 
     def _index(
             self,
-            t: 'InMemoryStore._Table',
-            idx_sts: col.PersistentMapping[str, 'InMemoryStore._IndexState'],
+            t: InMemoryStore._Table,
+            idx_sts: col.PersistentMapping[str, InMemoryStore._IndexState],
             k: ta.Any,
             snap: Snap,
-    ) -> col.PersistentMapping[str, 'InMemoryStore._IndexState']:
+    ) -> col.PersistentMapping[str, InMemoryStore._IndexState]:
         if not t.m._indexes:
             return idx_sts
 
@@ -245,11 +245,11 @@ class InMemoryStore(Store):
 
     def _deindex(
             self,
-            t: 'InMemoryStore._Table',
-            idx_sts: col.PersistentMapping[str, 'InMemoryStore._IndexState'],
+            t: InMemoryStore._Table,
+            idx_sts: col.PersistentMapping[str, InMemoryStore._IndexState],
             k: ta.Any,
             snap: Snap,
-    ) -> col.PersistentMapping[str, 'InMemoryStore._IndexState']:
+    ) -> col.PersistentMapping[str, InMemoryStore._IndexState]:
         if not t.m._indexes:
             return idx_sts
 
@@ -455,7 +455,7 @@ class InMemoryStore(Store):
     #
 
     class _Context(Store.Context):
-        def __init__(self, o: 'InMemoryStore') -> None:
+        def __init__(self, o: InMemoryStore) -> None:
             super().__init__()
 
             self._o = o
@@ -465,7 +465,7 @@ class InMemoryStore(Store):
             self._state = st
 
         @property
-        def store(self) -> 'InMemoryStore':
+        def store(self) -> InMemoryStore:
             return self._o
 
         #

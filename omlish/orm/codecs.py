@@ -21,7 +21,7 @@ if ta.TYPE_CHECKING:
 @ta.final
 @dc.dataclass(frozen=True)
 class FieldCodec(tv.UniqueTypedValue, FieldOption, lang.Final):
-    v: 'Codec'
+    v: Codec
 
 
 ##

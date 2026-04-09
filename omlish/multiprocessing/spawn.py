@@ -21,13 +21,13 @@ class SpawnExtras:
 
 
 class ExtrasSpawnPosixPopen(mp.popen_spawn_posix.Popen):
-    def __init__(self, process_obj: 'ExtrasSpawnProcess', *, extras: SpawnExtras) -> None:
+    def __init__(self, process_obj: ExtrasSpawnProcess, *, extras: SpawnExtras) -> None:
         self.__extras = extras
         self.__pass_fds = extras.pass_fds
 
         super().__init__(process_obj)
 
-    def _launch(self, process_obj: 'ExtrasSpawnProcess') -> None:
+    def _launch(self, process_obj: ExtrasSpawnProcess) -> None:
         if self.__pass_fds:
             for fd in self.__pass_fds:
                 self.duplicate_for_child(fd)
@@ -42,7 +42,7 @@ class ExtrasSpawnProcess(mp.context.SpawnProcess):
 
         super().__init__(*args, **kwargs)
 
-    def _Popen(self, process_obj: 'ExtrasSpawnProcess') -> ExtrasSpawnPosixPopen:  # type: ignore  # noqa
+    def _Popen(self, process_obj: ExtrasSpawnProcess) -> ExtrasSpawnPosixPopen:  # type: ignore  # noqa
         return ExtrasSpawnPosixPopen(
             check.isinstance(process_obj, ExtrasSpawnProcess),
             extras=self.__extras,

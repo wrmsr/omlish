@@ -131,9 +131,9 @@ class Mapper(ta.Generic[K, T]):
 
     #
 
-    _registry: 'Registry'
+    _registry: Registry
 
-    def _set_registry(self, r: 'Registry') -> None:
+    def _set_registry(self, r: Registry) -> None:
         try:
             self._registry  # noqa
         except AttributeError:
@@ -143,7 +143,7 @@ class Mapper(ta.Generic[K, T]):
         self._registry = r
 
     @property
-    def registry(self) -> 'Registry':
+    def registry(self) -> Registry:
         return self._registry
 
     #
