@@ -36,7 +36,7 @@ class DriverStateManagerImpl(DriverStateManager):
             id=orm.key(self._chat_id.v),
         ))
 
-    async def _get_orm_state(self) -> OrmDriver:
+    async def _get_orm_driver(self) -> OrmDriver:
         if (orm_driver := await orm.get(OrmDriver, self._driver_id.v)) is not None:
             return orm_driver
 
@@ -49,9 +49,9 @@ class DriverStateManagerImpl(DriverStateManager):
 
     async def get_chat(self) -> Chat:
         async with self._orm.new_session():
-            orm_state = await self._get_orm_state()
+            orm_driver = await self._get_orm_driver()
 
-            orm_chat = await orm_state.chat()
+            orm_chat = await orm_driver.chat()
 
             orm_messages = await orm_chat.messages()
 
@@ -67,9 +67,9 @@ class DriverStateManagerImpl(DriverStateManager):
 
     async def extend_chat(self, chat_additions: Chat) -> None:
         async with self._orm.new_session():
-            orm_state = await self._get_orm_state()
+            orm_driver = await self._get_orm_driver()
 
-            orm_chat = await orm_state.chat()
+            orm_chat = await orm_driver.chat()
 
             for m in chat_additions:
                 await orm.add_one(OrmMessage(

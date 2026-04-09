@@ -66,7 +66,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../../../omlish/lite/check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
+            dict(path='../../../../omlish/lite/check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
             dict(path='../../../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
             dict(path='../../../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
@@ -1772,10 +1772,6 @@ class Checks:
         self._args_renderer: ta.Optional[CheckArgsRenderer] = None
         self._late_configure_fns: ta.Sequence[CheckLateConfigureFn] = []
 
-    @staticmethod
-    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
-        return exc_cls(*args, **kwargs)  # noqa
-
     #
 
     def register_on_raise(self, fn: CheckOnRaiseFn) -> None:
@@ -1798,6 +1794,10 @@ class Checks:
         self.register_on_raise(on_raise)
 
     #
+
+    @staticmethod
+    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
+        return exc_cls(*args, **kwargs)  # noqa
 
     def set_exception_factory(self, factory: CheckExceptionFactory) -> None:
         self._exception_factory = factory

@@ -1037,6 +1037,42 @@ IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
 ]
 
 
+IoPipelineMessageTapTuple = ta.Tuple[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    IoPipelineHandlerContext,
+    IoPipelineDirection,
+    ta.Any,
+]
+
+
+class ListIoPipelineMessageTap(ta.Sequence[IoPipelineMessageTapTuple]):
+    def __init__(self, lst: ta.Optional[ta.List[IoPipelineMessageTapTuple]] = None) -> None:
+        super().__init__()
+
+        if lst is None:
+            lst = []
+        self.lst: ta.List[IoPipelineMessageTapTuple] = lst  # noqa
+
+    def __iter__(self) -> ta.Iterator[IoPipelineMessageTapTuple]:
+        return iter(self.lst)
+
+    def __len__(self) -> int:
+        return len(self.lst)
+
+    def __getitem__(self, index):
+        return self.lst[index]
+
+    def __call__(
+            self,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
+            msg: ta.Any,
+    ) -> None:
+        self.lst.append((ctx, direction, msg))
+
+
+##
+
+
 @ta.final
 class IoPipeline:
     @ta.final

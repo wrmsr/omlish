@@ -34,10 +34,6 @@ class Checks:
         self._args_renderer: ta.Optional[CheckArgsRenderer] = None
         self._late_configure_fns: ta.Sequence[CheckLateConfigureFn] = []
 
-    @staticmethod
-    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
-        return exc_cls(*args, **kwargs)  # noqa
-
     #
 
     def register_on_raise(self, fn: CheckOnRaiseFn) -> None:
@@ -60,6 +56,10 @@ class Checks:
         self.register_on_raise(on_raise)
 
     #
+
+    @staticmethod
+    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
+        return exc_cls(*args, **kwargs)  # noqa
 
     def set_exception_factory(self, factory: CheckExceptionFactory) -> None:
         self._exception_factory = factory

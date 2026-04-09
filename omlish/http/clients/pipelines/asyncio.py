@@ -1,9 +1,11 @@
-# ruff: noqa: UP006 UP007 UP045
+# ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
 import asyncio
+import dataclasses as dc
 import io
 import typing as ta
 
+from ....asyncs.asyncio.timeouts import asyncio_maybe_timeout
 from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriver
 from ....io.readers import AsyncBytesReader
@@ -26,7 +28,25 @@ from .base import BaseIoPipelineHttpClient
 ##
 
 
-class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient):
+class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient['AsyncioIoPipelineAsyncHttpClient.Config']):  # noqa
+    @dc.dataclass(frozen=True)
+    class Config(BaseIoPipelineHttpClient.Config):
+        DEFAULT: ta.ClassVar['AsyncioIoPipelineAsyncHttpClient.Config']
+
+    Config.DEFAULT = Config()
+
+    def __init__(
+            self,
+            config: Config = Config.DEFAULT,
+            **pipeline_kwargs: ta.Any,
+    ) -> None:
+        super().__init__(
+            config,
+            **pipeline_kwargs,
+        )
+
+    #
+
     class _DriverResponseReader:
         def __init__(
                 self,
@@ -73,7 +93,13 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
         try:
             prepared = self._prepare_request(req)
 
-            reader, writer = await asyncio.open_connection(prepared.parsed_url.host, prepared.parsed_url.port)
+            reader, writer = await asyncio_maybe_timeout(
+                asyncio.open_connection(
+                    prepared.parsed_url.host,
+                    prepared.parsed_url.port,
+                ),
+                self._config.connect_timeout_s,
+            )
 
             try:
                 drv = PollAsyncioStreamIoPipelineDriver(

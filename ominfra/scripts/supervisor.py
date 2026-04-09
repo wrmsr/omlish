@@ -119,7 +119,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
+            dict(path='../../omlish/lite/check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
             dict(path='../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
@@ -143,7 +143,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='5cdb46afb542d4b6be8d4e4f8369ea190fa99fb4'),  # noqa
             dict(path='../../omlish/io/fdio/handlers.py', sha1='60ee5f66ab2fb38ad7f62c7d69b69f207d8c2853'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
-            dict(path='../../omlish/io/pipelines/core.py', sha1='dc3a8a4ad0509b907b4a878d9a5de1c8d1416047'),
+            dict(path='../../omlish/io/pipelines/core.py', sha1='8d6fd4e81969f9e6558aee3aea99f0a42d94ceee'),
             dict(path='../../omlish/io/streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
@@ -2565,10 +2565,6 @@ class Checks:
         self._args_renderer: ta.Optional[CheckArgsRenderer] = None
         self._late_configure_fns: ta.Sequence[CheckLateConfigureFn] = []
 
-    @staticmethod
-    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
-        return exc_cls(*args, **kwargs)  # noqa
-
     #
 
     def register_on_raise(self, fn: CheckOnRaiseFn) -> None:
@@ -2591,6 +2587,10 @@ class Checks:
         self.register_on_raise(on_raise)
 
     #
+
+    @staticmethod
+    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
+        return exc_cls(*args, **kwargs)  # noqa
 
     def set_exception_factory(self, factory: CheckExceptionFactory) -> None:
         self._exception_factory = factory
@@ -8326,6 +8326,42 @@ IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
     ],
     None,
 ]
+
+
+IoPipelineMessageTapTuple = ta.Tuple[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    IoPipelineHandlerContext,
+    IoPipelineDirection,
+    ta.Any,
+]
+
+
+class ListIoPipelineMessageTap(ta.Sequence[IoPipelineMessageTapTuple]):
+    def __init__(self, lst: ta.Optional[ta.List[IoPipelineMessageTapTuple]] = None) -> None:
+        super().__init__()
+
+        if lst is None:
+            lst = []
+        self.lst: ta.List[IoPipelineMessageTapTuple] = lst  # noqa
+
+    def __iter__(self) -> ta.Iterator[IoPipelineMessageTapTuple]:
+        return iter(self.lst)
+
+    def __len__(self) -> int:
+        return len(self.lst)
+
+    def __getitem__(self, index):
+        return self.lst[index]
+
+    def __call__(
+            self,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
+            msg: ta.Any,
+    ) -> None:
+        self.lst.append((ctx, direction, msg))
+
+
+##
 
 
 @ta.final

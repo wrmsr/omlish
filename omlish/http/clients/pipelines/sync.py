@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
 import collections  # noqa
+import dataclasses as dc
 import io
 import socket
 import typing as ta
@@ -27,7 +28,25 @@ from .base import BaseIoPipelineHttpClient
 ##
 
 
-class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
+class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient['IoPipelineHttpClient.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(BaseIoPipelineHttpClient.Config):
+        DEFAULT: ta.ClassVar['IoPipelineHttpClient.Config']
+
+    Config.DEFAULT = Config()
+
+    def __init__(
+            self,
+            config: Config = Config.DEFAULT,
+            **pipeline_kwargs: ta.Any,
+    ) -> None:
+        super().__init__(
+            config,
+            **pipeline_kwargs,
+        )
+
+    #
+
     class _DriverResponseReader:
         def __init__(
                 self,
@@ -78,6 +97,7 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient):
         try:
             prepared = self._prepare_request(req)
 
+            # FIXME: timeout
             sock = socket.create_connection((prepared.parsed_url.host, prepared.parsed_url.port))
 
             try:

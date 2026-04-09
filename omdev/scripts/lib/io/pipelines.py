@@ -40,11 +40,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
-            dict(path='../../lite/check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
+            dict(path='../../lite/check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='dc3a8a4ad0509b907b4a878d9a5de1c8d1416047'),
+            dict(path='core.py', sha1='8d6fd4e81969f9e6558aee3aea99f0a42d94ceee'),
             dict(path='../streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='../../logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -639,10 +639,6 @@ class Checks:
         self._args_renderer: ta.Optional[CheckArgsRenderer] = None
         self._late_configure_fns: ta.Sequence[CheckLateConfigureFn] = []
 
-    @staticmethod
-    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
-        return exc_cls(*args, **kwargs)  # noqa
-
     #
 
     def register_on_raise(self, fn: CheckOnRaiseFn) -> None:
@@ -665,6 +661,10 @@ class Checks:
         self.register_on_raise(on_raise)
 
     #
+
+    @staticmethod
+    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
+        return exc_cls(*args, **kwargs)  # noqa
 
     def set_exception_factory(self, factory: CheckExceptionFactory) -> None:
         self._exception_factory = factory
@@ -2339,6 +2339,42 @@ IoPipelineMessageTap = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-mo
     ],
     None,
 ]
+
+
+IoPipelineMessageTapTuple = ta.Tuple[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    IoPipelineHandlerContext,
+    IoPipelineDirection,
+    ta.Any,
+]
+
+
+class ListIoPipelineMessageTap(ta.Sequence[IoPipelineMessageTapTuple]):
+    def __init__(self, lst: ta.Optional[ta.List[IoPipelineMessageTapTuple]] = None) -> None:
+        super().__init__()
+
+        if lst is None:
+            lst = []
+        self.lst: ta.List[IoPipelineMessageTapTuple] = lst  # noqa
+
+    def __iter__(self) -> ta.Iterator[IoPipelineMessageTapTuple]:
+        return iter(self.lst)
+
+    def __len__(self) -> int:
+        return len(self.lst)
+
+    def __getitem__(self, index):
+        return self.lst[index]
+
+    def __call__(
+            self,
+            ctx: IoPipelineHandlerContext,
+            direction: IoPipelineDirection,
+            msg: ta.Any,
+    ) -> None:
+        self.lst.append((ctx, direction, msg))
+
+
+##
 
 
 @ta.final

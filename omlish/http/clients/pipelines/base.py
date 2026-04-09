@@ -25,14 +25,30 @@ from ...pipelines.clients.responses import IoPipelineHttpResponseDecompressor
 from ...pipelines.requests import FullIoPipelineHttpRequest
 
 
+BaseIoPipelineHttpClientConfigT = ta.TypeVar('BaseIoPipelineHttpClientConfigT', bound='BaseIoPipelineHttpClient.Config')
+
+
 ##
 
 
-class BaseIoPipelineHttpClient(BaseHttpClient, Abstract):
-    def __init__(self, **pipeline_kwargs: ta.Any) -> None:
+class BaseIoPipelineHttpClient(BaseHttpClient, Abstract, ta.Generic[BaseIoPipelineHttpClientConfigT]):
+    @dc.dataclass(frozen=True)
+    class Config:
+        connect_timeout_s: ta.Optional[float] = 3.
+
+    def __init__(
+            self,
+            config: BaseIoPipelineHttpClientConfigT,
+            **pipeline_kwargs: ta.Any,
+    ) -> None:
         super().__init__()
 
+        self._config = config
         self._pipeline_kwargs = pipeline_kwargs
+
+    @property
+    def config(self) -> BaseIoPipelineHttpClientConfigT:
+        return self._config
 
     #
 

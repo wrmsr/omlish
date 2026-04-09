@@ -76,6 +76,34 @@ def unregister_on_raise(fn: OnRaiseFn) -> None:
     check.unregister_on_raise(fn)
 
 
+#
+
+
+def register_on_raise_breakpoint_if_env_var_set(key: str) -> None:
+    check.register_on_raise_breakpoint_if_env_var_set(key)
+
+
+#
+
+
+default_exception_factory = check.default_exception_factory
+
+
+def set_exception_factory(factory: ExceptionFactory) -> None:
+    check.set_exception_factory(factory)
+
+
+def set_args_renderer(renderer: ArgsRenderer | None) -> None:
+    check.set_args_renderer(renderer)
+
+
+#
+
+
+def register_late_configure(fn: LateConfigureFn) -> None:
+    check.register_late_configure(fn)
+
+
 ##
 
 
@@ -325,9 +353,4 @@ def inline(v: T, c: bool, msg: Message = None, /) -> T:
 ##
 
 
-def _install_direct_check_proxy_functions() -> None:
-    for n in _CHECK_PROXY_FUNCTIONS:
-        globals()[n] = getattr(check, n)
-
-
-_install_direct_check_proxy_functions()
+globals().update({n: getattr(check, n) for n in _CHECK_PROXY_FUNCTIONS})

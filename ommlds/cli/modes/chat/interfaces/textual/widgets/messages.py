@@ -296,6 +296,8 @@ class StreamAiMessage(AiMessage):
         self._final_content = self._stream_content.getvalue()
         del self._stream_content
 
+        self._state = 'finalized'
+
         self.post_message(MessageFinalized(self))
 
     async def finalize_stream(self) -> None:

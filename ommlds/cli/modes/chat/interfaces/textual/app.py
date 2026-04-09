@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 import typing as ta
 import uuid
 import weakref
@@ -241,8 +242,17 @@ class ChatApp(
             )
 
         except Exception as e:  # noqa
-            # raise
-            await self.display_ui_message(tx.Text(repr(e)))
+            # TODO: rich lol
+            e_msg = '\n\n'.join([
+                *(
+                    [''.join(traceback.format_exception(type(e), e, e.__traceback__)).strip()]
+                    if e.__traceback__ is not None else []
+                ),
+                repr(e).strip(),
+                *([e_str] if (e_str := str(e)).strip() else []),
+            ])
+
+            await self.display_ui_message(tx.Text(e_msg))
 
     #
 

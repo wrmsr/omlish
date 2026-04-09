@@ -41,7 +41,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
+            dict(path='check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
             dict(path='objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
@@ -235,10 +235,6 @@ class Checks:
         self._args_renderer: ta.Optional[CheckArgsRenderer] = None
         self._late_configure_fns: ta.Sequence[CheckLateConfigureFn] = []
 
-    @staticmethod
-    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
-        return exc_cls(*args, **kwargs)  # noqa
-
     #
 
     def register_on_raise(self, fn: CheckOnRaiseFn) -> None:
@@ -261,6 +257,10 @@ class Checks:
         self.register_on_raise(on_raise)
 
     #
+
+    @staticmethod
+    def default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
+        return exc_cls(*args, **kwargs)  # noqa
 
     def set_exception_factory(self, factory: CheckExceptionFactory) -> None:
         self._exception_factory = factory
