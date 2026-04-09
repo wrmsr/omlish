@@ -313,7 +313,7 @@ class _ImportCaptureHook:
             mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
             *,
             collect_unreferenced: bool = False,
-    ) -> 'ImportCapture.Captured':
+    ) -> ImportCapture.Captured:
         rem_explicit_mods: set[_ImportCaptureHook._Module] = set()
         if collect_unreferenced:
             rem_explicit_mods.update(
@@ -496,7 +496,7 @@ class _SomewhatThreadSafeGlobalBuiltinsImportCaptureHook(_AbstractBuiltinsImport
             self.__uninstalled = False
 
         @classmethod
-        def _add_hook(cls, mod_globals, new_import) -> '_SomewhatThreadSafeGlobalBuiltinsImportCaptureHook._Patch':
+        def _add_hook(cls, mod_globals, new_import) -> _SomewhatThreadSafeGlobalBuiltinsImportCaptureHook._Patch:
             gi = id(mod_globals)
             for _ in range(1_000):
                 try:
@@ -661,7 +661,7 @@ def _new_import_capture_hook(
         stack_offset: int = 0,
         capture_impl: str | None = None,
         **kwargs: ta.Any,
-) -> '_ImportCaptureHook':
+) -> _ImportCaptureHook:
     if '_frame' not in kwargs:
         frame: types.FrameType | None = sys._getframe(1 + stack_offset)  # noqa
         if frame is None or frame.f_globals is not mod_globals:

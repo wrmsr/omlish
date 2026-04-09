@@ -55,7 +55,7 @@ from ... import inject as inj
 
 @dc.dataclass()
 class CycA:
-    b: 'CycB'
+    b: CycB
 
 
 @dc.dataclass()

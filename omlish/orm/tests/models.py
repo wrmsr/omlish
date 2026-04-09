@@ -12,7 +12,7 @@ from ... import orm
 class BusinessCategory:
     id: orm.Key[int] = dc.field(default_factory=orm.auto_key[int])
 
-    business: orm.Ref['Business', int]
+    business: orm.Ref[Business, int]
 
     tag: str
 

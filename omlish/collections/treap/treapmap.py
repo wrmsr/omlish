@@ -73,40 +73,40 @@ class TreapMap(
 
     itervalues = iteritems_itervalues
 
-    def iteritems(self) -> 'TreapMapIterator[K, V]':
+    def iteritems(self) -> TreapMapIterator[K, V]:
         i = TreapMapIterator(_st=[], _n=self._n)
         while (n := i._n) is not None and n.left is not None:  # noqa
             i._st.append(n)  # noqa
             i._n = n.left  # noqa
         return i
 
-    def items_desc(self) -> 'TreapMapReverseIterator[K, V]':
+    def items_desc(self) -> TreapMapReverseIterator[K, V]:
         i = TreapMapReverseIterator(_st=[], _n=self._n)
         while (n := i._n) is not None and n.right is not None:  # noqa
             i._st.append(n)  # noqa
             i._n = n.right  # noqa
         return i
 
-    def items_from(self, k: K) -> 'TreapMapIterator[K, V]':
+    def items_from(self, k: K) -> TreapMapIterator[K, V]:
         lst: list = treap.place(self._n, (k, None), self._c, False)  # type: ignore
         i = TreapMapIterator(_st=lst, _n=lst.pop() if lst else None)
         return i
 
-    def items_from_desc(self, k: K) -> 'TreapMapReverseIterator[K, V]':
+    def items_from_desc(self, k: K) -> TreapMapReverseIterator[K, V]:
         lst: list = treap.place(self._n, (k, None), self._c, True)  # type: ignore
         i = TreapMapReverseIterator(_st=lst, _n=lst.pop() if lst else None)
         return i
 
-    def with_(self, k: K, v: V) -> 'TreapMap[K, V]':
+    def with_(self, k: K, v: V) -> TreapMap[K, V]:
         node = treap.new((k, v))
         n = treap.union(self._n, node, self._c, True)  # type: ignore[arg-type]
         return TreapMap(_n=n, _c=self._c)
 
-    def without(self, k: K) -> 'TreapMap[K, V]':
+    def without(self, k: K) -> TreapMap[K, V]:
         n = treap.delete(self._n, (k, None), self._c)  # type: ignore
         return TreapMap(_n=n, _c=self._c)  # type: ignore[arg-type]
 
-    def default(self, k: K, v: V) -> 'TreapMap[K, V]':
+    def default(self, k: K, v: V) -> TreapMap[K, V]:
         try:
             self[k]  # noqa
         except KeyError:

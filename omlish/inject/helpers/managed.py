@@ -27,7 +27,7 @@ T = ta.TypeVar('T')
 ##
 
 
-def create_async_managed_injector(*args: Elemental) -> ta.AsyncContextManager['_injector.AsyncInjector']:
+def create_async_managed_injector(*args: Elemental) -> ta.AsyncContextManager[_injector.AsyncInjector]:
     @contextlib.asynccontextmanager
     async def inner():
         async with contextlib.AsyncExitStack() as aes:
@@ -62,7 +62,7 @@ def make_async_managed_provider(
 ##
 
 
-def create_managed_injector(*args: Elemental) -> ta.ContextManager['_sync.Injector']:
+def create_managed_injector(*args: Elemental) -> ta.ContextManager[_sync.Injector]:
     @contextlib.contextmanager
     def inner():
         with contextlib.ExitStack() as es:
@@ -97,7 +97,7 @@ def make_managed_provider(
 ##
 
 
-def create_maysync_managed_injector(*args: Elemental) -> ta.ContextManager['_maysync.MaysyncInjector']:
+def create_maysync_managed_injector(*args: Elemental) -> ta.ContextManager[_maysync.MaysyncInjector]:
     @contextlib.contextmanager
     def inner():
         with contextlib.ExitStack() as es:

@@ -34,10 +34,10 @@ class WrapperBinderHelper:
 
     @dc.dataclass(frozen=True)
     class _Level:
-        root: 'WrapperBinderHelper._Root'
+        root: WrapperBinderHelper._Root
         level: int
 
-        def next(self) -> 'WrapperBinderHelper._Level':
+        def next(self) -> WrapperBinderHelper._Level:
             return WrapperBinderHelper._Level(self.root, self.level + 1)
 
         @cached.property

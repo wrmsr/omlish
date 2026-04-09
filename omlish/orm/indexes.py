@@ -52,7 +52,7 @@ class Index(lang.Final):
 
     _store_name: str
 
-    def _with_store_name(self, store_name: str) -> 'Index':
+    def _with_store_name(self, store_name: str) -> Index:
         return Index(
             _fields=self._fields,
             _store_name=store_name,
@@ -95,9 +95,9 @@ class Index(lang.Final):
 
     #
 
-    _mapper: 'Mapper'
+    _mapper: Mapper
 
-    def _set_mapper(self, r: 'Mapper') -> None:
+    def _set_mapper(self, r: Mapper) -> None:
         try:
             self._mapper  # noqa
         except AttributeError:
@@ -107,7 +107,7 @@ class Index(lang.Final):
         self._mapper = r
 
     @property
-    def mapper(self) -> 'Mapper':
+    def mapper(self) -> Mapper:
         return self._mapper
 
     ##

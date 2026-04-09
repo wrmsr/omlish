@@ -110,7 +110,7 @@ class ParamSpec(ta.Sequence[Param], Final):
     #
 
     @classmethod
-    def of(cls, obj: CanParamSpec) -> 'ParamSpec':
+    def of(cls, obj: CanParamSpec) -> ParamSpec:
         if isinstance(obj, ParamSpec):
             return obj
         elif isinstance(obj, inspect.Signature):
@@ -126,7 +126,7 @@ class ParamSpec(ta.Sequence[Param], Final):
             offset: int = 0,
             strip_annotations: bool = False,
             strip_defaults: bool = False,
-    ) -> 'ParamSpec':
+    ) -> ParamSpec:
         ps: list[Param] = []
 
         ip: inspect.Parameter
@@ -162,7 +162,7 @@ class ParamSpec(ta.Sequence[Param], Final):
             cls,
             obj: ta.Any,
             **kwargs: ta.Any,
-    ) -> 'ParamSpec':
+    ) -> ParamSpec:
         return cls.of_signature(
             inspect.signature(obj),
             **kwargs,

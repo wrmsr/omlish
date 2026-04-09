@@ -33,7 +33,7 @@ class Foo:
             self,
             config: Config,
             *,
-            bar: 'Bar',
+            bar: Bar,
     ) -> None:
         super().__init__()
 

@@ -75,7 +75,7 @@ class InfinityType:
     def __ge__(self, other: ta.Any) -> bool:
         return True
 
-    def __neg__(self: ta.Any) -> 'NegativeInfinityType':
+    def __neg__(self: ta.Any) -> NegativeInfinityType:
         return NegativeInfinity
 
 

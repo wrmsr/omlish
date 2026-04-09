@@ -55,7 +55,7 @@ def capture(
         sync_fn: ta.Callable[ArgsT, ta.NoReturn],
         *args: ArgsT.args,
         **kwargs: ArgsT.kwargs,
-) -> 'Error':
+) -> Error:
     ...
 
 

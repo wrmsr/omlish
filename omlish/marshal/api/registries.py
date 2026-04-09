@@ -83,7 +83,7 @@ class Registry(RegistryView[RegistryItemT]):
         items: ta.Sequence[RegistryItemU] = ()
         item_lists_by_ty: ta.Mapping[type[RegistryItemU], ta.Sequence[RegistryItemU]] = dc.field(default_factory=dict)
 
-        def add(self, *items: RegistryItemU) -> 'Registry._KeyItems[RegistryItemU]':
+        def add(self, *items: RegistryItemU) -> Registry._KeyItems[RegistryItemU]:
             item_lists_by_ty: dict[type[RegistryItemU], list[RegistryItemU]] = {}
 
             for i in items:
@@ -101,8 +101,8 @@ class Registry(RegistryView[RegistryItemT]):
 
     @dc.dataclass(frozen=True, kw_only=True)
     class _State(ta.Generic[RegistryItemU]):
-        dct: ta.Mapping[ta.Any, 'Registry._KeyItems[RegistryItemU]']
-        id_dct: ta.Mapping[ta.Any, 'Registry._KeyItems[RegistryItemU]']
+        dct: ta.Mapping[ta.Any, Registry._KeyItems[RegistryItemU]]
+        id_dct: ta.Mapping[ta.Any, Registry._KeyItems[RegistryItemU]]
         version: int
 
         #
@@ -112,7 +112,7 @@ class Registry(RegistryView[RegistryItemT]):
                 key: ta.Any,
                 *items: RegistryItemT,
                 identity: bool = False,
-        ) -> 'Registry._State[RegistryItemU]':
+        ) -> Registry._State[RegistryItemU]:
             if not items:
                 return self
 

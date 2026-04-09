@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../ci/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: FURB188 N802 PYI034 TC003 UP006 UP007 UP036 UP043 UP045 UP046
+# ruff: noqa: FURB188 N802 PYI034 TC003 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 """
 Inputs:
  - requirements.txt
@@ -130,7 +130,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/datarefs.py', sha1='793ce5f2774e052b28d04b226a5f1eff6eec0a72'),
             dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
-            dict(path='../../omlish/formats/yaml/goyaml/errors.py', sha1='8fa73c90292f56f8faaedebb2f478ff6a3b95460'),
+            dict(path='../../omlish/formats/yaml/goyaml/errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
             dict(path='../../omlish/http/headers.py', sha1='6023f8b08e4f9ac1e35dbac3837aab2858bfb217'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='5cdb46afb542d4b6be8d4e4f8369ea190fa99fb4'),  # noqa
@@ -154,7 +154,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/tars.py', sha1='3ed00e97a494bd92c6a6149d22d51469bc0af384'),
             dict(path='../../omlish/asyncs/asyncio/sockets.py', sha1='8d24dae988a30bb73f167a9ab62d4fc9eef4ad06'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
-            dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
+            dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='05183c2980204609c9787a24c55e5ed806886962'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='82fa249cf910b5fd854582850bcc2fc51c0ec712'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='3de6f87e2a56375cc8a539321b1205e2d1d3900e'),
             dict(path='../../omlish/http/simple/handlers.py', sha1='9e49c2ba5518616ce15bed6bac80ab4c88ed3b83'),
@@ -179,8 +179,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/routes.py', sha1='0186bb2e84ff4d5c05af2a57c61f6fd605eba790'),
             dict(path='../oci/media.py', sha1='a20324c5b0661c9a9a7679406d019ab3ba4acd98'),
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
-            dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
-            dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
+            dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='6d21da91079afcd58467a58153951a6b97a97c20'),
+            dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='35114ed9cf2db0d910261b7c861617147f9ed5d3'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='8585190368d96ee8d6e31c91f55f2690628711c5'),  # noqa
             dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='b7e1d61e1a2cb722b6c69a61ec59d02ebd1a5615'),  # noqa
@@ -198,7 +198,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/server.py', sha1='e1ba8ca6f85458a64ede4ca07836aa103246132a'),
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
-            dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='aff489de2de0021d48486560a31fd2336bf39bf6'),
+            dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
             dict(path='../../omlish/io/streams/segmented.py', sha1='ae33f03c97fdc8b2d0983f8697cee2f4994cab89'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
@@ -208,7 +208,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/http.py', sha1='41a6e39c6d66807b6189e2d78d8cf2ff10e45bc3'),
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
+            dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='7b0282593ca9fec2d70964ddd3ec6214e29bd864'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='a08bbe1feac5852f9609d6a5bf967a3e5767e7b5'),
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='6f6d8bc1adc6a5277543389814bc26ef63e34561'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),

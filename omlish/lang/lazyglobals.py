@@ -63,11 +63,11 @@ class LazyGlobals:
 
             return lm
 
-    def set_fn(self, attr: str, fn: ta.Callable[[], ta.Any]) -> 'LazyGlobals':
+    def set_fn(self, attr: str, fn: ta.Callable[[], ta.Any]) -> LazyGlobals:
         self._attr_fns[attr] = fn
         return self
 
-    def add_fallback_fn(self, fn: ta.Callable[[str], ta.Callable[[], ta.Any]]) -> 'LazyGlobals':
+    def add_fallback_fn(self, fn: ta.Callable[[str], ta.Callable[[], ta.Any]]) -> LazyGlobals:
         self._fallback_fns.append(fn)
         return self
 

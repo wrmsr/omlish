@@ -44,7 +44,7 @@ class DriverChat(_Base):
 
     num_messages: int = 0
 
-    messages: ta.ClassVar[orm.Backref['DriverMessage']] = orm.backref(lambda: DriverMessage.chat)  # type: ignore[misc]
+    messages: ta.ClassVar[orm.Backref[DriverMessage]] = orm.backref(lambda: DriverMessage.chat)  # type: ignore[misc]
 
 
 @dc.dataclass(kw_only=True)

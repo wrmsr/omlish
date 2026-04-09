@@ -8,7 +8,7 @@ from ... import lang
 
 
 class ServiceA:
-    def __init__(self, b: 'ServiceB') -> None:
+    def __init__(self, b: ServiceB) -> None:
         self.b = b
 
     def foo(self) -> ta.Any:
@@ -22,7 +22,7 @@ class ServiceA:
 
 
 class ServiceB:
-    def __init__(self, c: 'ServiceC') -> None:
+    def __init__(self, c: ServiceC) -> None:
         self.c = c
 
 
@@ -72,7 +72,7 @@ def test_late_inj_helper_explicit():
 
 
 class AsyncServiceA:
-    def __init__(self, b: 'AsyncServiceB') -> None:
+    def __init__(self, b: AsyncServiceB) -> None:
         self.b = b
 
     async def foo(self) -> ta.Any:
@@ -86,7 +86,7 @@ class AsyncServiceA:
 
 
 class AsyncServiceB:
-    def __init__(self, c: 'AsyncServiceC') -> None:
+    def __init__(self, c: AsyncServiceC) -> None:
         self.c = c
 
 

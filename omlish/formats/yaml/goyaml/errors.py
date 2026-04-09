@@ -1,4 +1,4 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP007 UP037
 # @omlish-lite
 import abc
 import dataclasses as dc

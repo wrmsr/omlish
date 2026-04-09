@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../../../../omlish/formats/yaml/goyaml/_amalg.py
 # @omlish-git-diff-omit
-# ruff: noqa: UP006 UP007 UP036 UP043 UP045
+# ruff: noqa: UP006 UP007 UP036 UP037 UP043 UP045
 import abc
 import base64
 import collections
@@ -37,12 +37,12 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../lite/check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
             dict(path='../../../lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
-            dict(path='errors.py', sha1='8fa73c90292f56f8faaedebb2f478ff6a3b95460'),
-            dict(path='tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
-            dict(path='ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
-            dict(path='scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
-            dict(path='parsing.py', sha1='aff489de2de0021d48486560a31fd2336bf39bf6'),
-            dict(path='decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
+            dict(path='errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
+            dict(path='tokens.py', sha1='05183c2980204609c9787a24c55e5ed806886962'),
+            dict(path='ast.py', sha1='6d21da91079afcd58467a58153951a6b97a97c20'),
+            dict(path='scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
+            dict(path='parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
+            dict(path='decoding.py', sha1='7b0282593ca9fec2d70964ddd3ec6214e29bd864'),
             dict(path='_amalg.py', sha1='85989224f581528c4a189dca142cb3ec086ecd3c'),
         ],
     )

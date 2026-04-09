@@ -66,7 +66,7 @@ class _ProxyImporter:
         def __init__(
                 self,
                 name: str,
-                getattr_handler: ta.Callable[['_ProxyImporter._Module', str], ta.Any],
+                getattr_handler: ta.Callable[[_ProxyImporter._Module, str], ta.Any],
                 *,
                 parent: _ProxyImporter._Module | None = None,
         ) -> None:

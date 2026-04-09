@@ -19,7 +19,7 @@ if ta.TYPE_CHECKING:
 
 
 class _SessionFlusher:
-    def __init__(self, session: 'Session') -> None:
+    def __init__(self, session: Session) -> None:
         super().__init__()
 
         self._session = session
@@ -32,10 +32,10 @@ class _SessionFlusher:
 
         _: dc.KW_ONLY
 
-        ak_inserts: ta.Mapping[_AutoKey, tuple['Session._Entity', Snap]]
-        vk_inserts: ta.Sequence[tuple['Session._Entity', Snap]]
-        updates: ta.Sequence[tuple['Session._Entity', Snap, ta.Sequence[str]]]
-        deletes: ta.Sequence['Session._Entity']
+        ak_inserts: ta.Mapping[_AutoKey, tuple[Session._Entity, Snap]]
+        vk_inserts: ta.Sequence[tuple[Session._Entity, Snap]]
+        updates: ta.Sequence[tuple[Session._Entity, Snap, ta.Sequence[str]]]
+        deletes: ta.Sequence[Session._Entity]
 
     def _build_mapper_dirty_entities(self, m: Mapper) -> _DirtyEntities | None:
         ak_inserts: dict[_AutoKey, tuple[Session._Entity, Snap]] = {}
@@ -105,7 +105,7 @@ class _SessionFlusher:
 
     @dc.dataclass(frozen=True, kw_only=True)
     class _AutoKeyGraph:
-        ents_by_ak: ta.Mapping[_AutoKey, 'Session._Entity']
+        ents_by_ak: ta.Mapping[_AutoKey, Session._Entity]
         ak_toposort: ta.Sequence[ta.Mapping[Mapper, ta.AbstractSet[_AutoKey]]]
 
     def _auto_key_graph(self) -> _AutoKeyGraph:
@@ -155,7 +155,7 @@ class _SessionFlusher:
     @dc.dataclass(frozen=True, kw_only=True)
     class FlushResult:
         inserted_auto_keys: ta.Mapping[_AutoKey, ta.Any]
-        ent_writeback: ta.Mapping['Session._Entity', tuple[ta.Any | None, Snap | None]]
+        ent_writeback: ta.Mapping[Session._Entity, tuple[ta.Any | None, Snap | None]]
 
     async def flush(self) -> FlushResult:
         sess = self._session

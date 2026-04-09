@@ -18,7 +18,7 @@ T = ta.TypeVar('T')
 
 
 class _BoundBackref(lang.Final, ta.Generic[T]):
-    def __init__(self, *, _br: '_Backref[T]', _obj: ta.Any) -> None:
+    def __init__(self, *, _br: _Backref[T], _obj: ta.Any) -> None:
         self._br, self._obj = _br, _obj
 
     def __call__(self) -> ta.Awaitable[ta.Sequence[T]]:
@@ -27,7 +27,7 @@ class _BoundBackref(lang.Final, ta.Generic[T]):
 
 class Backref(lang.Sealed, lang.Abstract, ta.Generic[T]):
     @ta.overload
-    def __get__(self, instance: None, owner: ta.Any = None) -> 'Backref[T]':
+    def __get__(self, instance: None, owner: ta.Any = None) -> Backref[T]:
         ...
 
     @ta.overload

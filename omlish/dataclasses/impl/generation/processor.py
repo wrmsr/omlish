@@ -51,7 +51,7 @@ class CompileCallback(ta.Protocol):
     def __call__(
             self,
             ctx: ProcessingContext,
-            prepared: 'GeneratorProcessor.Prepared',
+            prepared: GeneratorProcessor.Prepared,
             comp: OpCompiler.CompileResult,
     ) -> None:
         ...
@@ -74,11 +74,11 @@ class GeneratorProcessor(Processor):
 
     class Mode(lang.Abstract):
         @abc.abstractmethod
-        def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
+        def _process(self, gp: GeneratorProcessor, cls: type) -> None:
             raise NotImplementedError
 
     class ExecutorMode(Mode):
-        def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
+        def _process(self, gp: GeneratorProcessor, cls: type) -> None:
             opx = OpExecutor(
                 cls,
                 gp.prepare().ref_map,
@@ -106,7 +106,7 @@ class GeneratorProcessor(Processor):
             })
             return kw
 
-        def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
+        def _process(self, gp: GeneratorProcessor, cls: type) -> None:
             style: OpCompiler.Style = {
                 'jit': OpCompiler.JitStyle,
                 'aot': OpCompiler.AotStyle,

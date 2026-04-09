@@ -90,9 +90,9 @@ class Field(lang.Sealed):
 
     #
 
-    _mapper: 'Mapper'
+    _mapper: Mapper
 
-    def _set_mapper(self, r: 'Mapper') -> None:
+    def _set_mapper(self, r: Mapper) -> None:
         try:
             self._mapper  # noqa
         except AttributeError:
@@ -102,7 +102,7 @@ class Field(lang.Sealed):
         self._mapper = r
 
     @property
-    def mapper(self) -> 'Mapper':
+    def mapper(self) -> Mapper:
         return self._mapper
 
 

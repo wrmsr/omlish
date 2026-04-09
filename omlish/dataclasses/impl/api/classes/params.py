@@ -70,7 +70,7 @@ class SpecDataclassParams(StdParams):
         return f'{self.__class__.__name__}{r[r.index("("):]}'
 
 
-def build_spec_std_params(cs: ClassSpec) -> 'SpecDataclassParams':
+def build_spec_std_params(cs: ClassSpec) -> SpecDataclassParams:
     return SpecDataclassParams(
         init=cs.init,
         repr=cs.repr,

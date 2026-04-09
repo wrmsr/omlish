@@ -37,7 +37,7 @@ class TestFactories:
     @dc.dataclass(frozen=True)
     class Bar:
         y: int
-        foo: 'TestFactories.Foo'
+        foo: TestFactories.Foo
 
     BarFactory = ta.NewType('BarFactory', lang.AnyFunc[Bar])
 

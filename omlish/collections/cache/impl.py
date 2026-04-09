@@ -74,12 +74,12 @@ class CacheImpl(Cache[K, V]):
         ]
 
         seq: int
-        ins_prev: 'CacheImpl.Link'
-        ins_next: 'CacheImpl.Link'
-        lru_prev: 'CacheImpl.Link'
-        lru_next: 'CacheImpl.Link'
-        lfu_prev: 'CacheImpl.Link'
-        lfu_next: 'CacheImpl.Link'
+        ins_prev: CacheImpl.Link
+        ins_next: CacheImpl.Link
+        lru_prev: CacheImpl.Link
+        lru_next: CacheImpl.Link
+        lfu_prev: CacheImpl.Link
+        lfu_next: CacheImpl.Link
         key: ta.Any | weakref.ref
         value: ta.Any | weakref.ref
         weight: float

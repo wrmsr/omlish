@@ -73,7 +73,7 @@ class StandardFactories(ta.NamedTuple):
                     UnmarshalerFactory | None,
                 ],
             ],
-    ) -> 'StandardFactories':
+    ) -> StandardFactories:
         return cls(
             tuple(mf for mf, _ in pairs if mf is not None),
             tuple(uf for _, uf in pairs if uf is not None),

@@ -13,7 +13,7 @@ class Store(lang.Abstract):
     class Context(lang.Abstract):
         @property
         @abc.abstractmethod
-        def store(self) -> 'Store':
+        def store(self) -> Store:
             raise NotImplementedError
 
         #

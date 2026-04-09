@@ -100,7 +100,7 @@ class SeqView(ta.Sequence[T]):
     _range: range
 
     @classmethod
-    def _from_range(cls, base: ta.Sequence[T], rng: range) -> 'SeqView[T]':
+    def _from_range(cls, base: ta.Sequence[T], rng: range) -> SeqView[T]:
         self = object.__new__(cls)
         self._data = base
         self._range = rng

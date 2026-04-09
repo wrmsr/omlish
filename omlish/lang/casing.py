@@ -52,7 +52,7 @@ class StringCasing(Abstract):
 
     #
 
-    def to(self, other: 'StringCasing') -> ta.Callable[[str], str]:
+    def to(self, other: StringCasing) -> ta.Callable[[str], str]:
         def inner(s: str) -> str:
             return other.join(*self.split(s))
         return inner

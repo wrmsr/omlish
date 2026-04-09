@@ -90,7 +90,7 @@ def bind_scope_seed(k: ta.Any, ss: SeededScope) -> Element:
 
 
 def async_enter_seeded_scope(
-        i: '_injector.AsyncInjector',
+        i: _injector.AsyncInjector,
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.AsyncContextManager[None]:
@@ -102,7 +102,7 @@ def async_enter_seeded_scope(
 
 
 def enter_seeded_scope(
-        i: '_sync.Injector',
+        i: _sync.Injector,
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.ContextManager[None]:
@@ -114,7 +114,7 @@ def enter_seeded_scope(
 
 
 def maysync_enter_seeded_scope(
-        i: '_maysync.MaysyncInjector',
+        i: _maysync.MaysyncInjector,
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.ContextManager[None]:

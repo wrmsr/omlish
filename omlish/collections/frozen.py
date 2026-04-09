@@ -82,11 +82,11 @@ class FrozenDict(
 
     #
 
-    def drop(self, *keys: T) -> 'FrozenDict[K, V]':
+    def drop(self, *keys: T) -> FrozenDict[K, V]:
         ks = frozenset(keys)
         return type(self)((k, self[k]) for k in self if k not in ks)
 
-    def set(self, *args: ta.Any, **kwargs: ta.Any) -> 'FrozenDict[K, V]':
+    def set(self, *args: ta.Any, **kwargs: ta.Any) -> FrozenDict[K, V]:
         new = type(self)(*args, **kwargs)
         return type(self)(itertools.chain(self.items(), new.items()))
 
@@ -122,7 +122,7 @@ class FrozenList(ta.Sequence[T], Frozen, lang.Final):
     def __repr__(self) -> str:
         return f'([{", ".join(map(repr, self._tup))}])'
 
-    def __add__(self, o) -> 'FrozenList[T]':
+    def __add__(self, o) -> FrozenList[T]:
         if type(o) is FrozenList:
             return FrozenList(self._tup + o._tup)
         elif isinstance(o, collections.abc.Sequence):
@@ -146,7 +146,7 @@ class FrozenList(ta.Sequence[T], Frozen, lang.Final):
             self._hash = hash(self._tup)
         return self._hash
 
-    def __getitem__(self, idx: int | slice) -> 'FrozenList[T]':  # type: ignore
+    def __getitem__(self, idx: int | slice) -> FrozenList[T]:  # type: ignore
         if isinstance(idx, int):
             return self._tup[idx]
         else:
@@ -161,7 +161,7 @@ class FrozenList(ta.Sequence[T], Frozen, lang.Final):
     def __ne__(self, o: object) -> bool:
         return not self.__eq__(o)
 
-    def __radd__(self, o) -> 'FrozenList[T]':
+    def __radd__(self, o) -> FrozenList[T]:
         if type(o) is FrozenList:
             return FrozenList(o._tup + self._tup)
         elif isinstance(o, collections.abc.Sequence):

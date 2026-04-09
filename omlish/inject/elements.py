@@ -28,7 +28,7 @@ class ElementGenerator(lang.Abstract, lang.PackageSealed):
 @dc.dataclass(frozen=True)
 class Elements(lang.Final):
     es: ta.Collection[Element] | None = None
-    cs: ta.Collection['Elements'] | None = None
+    cs: ta.Collection[Elements] | None = None
 
     def __iter__(self) -> ta.Generator[Element]:
         if self.es:

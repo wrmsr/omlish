@@ -86,7 +86,7 @@ class SqlStore(Store):
     #
 
     class _Mapper:
-        def __init__(self, o: 'SqlStore', m: Mapper) -> None:
+        def __init__(self, o: SqlStore, m: Mapper) -> None:
             super().__init__()
 
             self.o = o
@@ -268,7 +268,7 @@ class SqlStore(Store):
     class _Context(Store.Context):
         def __init__(
                 self,
-                o: 'SqlStore',
+                o: SqlStore,
                 *,
                 no_transaction: bool = False,
         ) -> None:
@@ -285,7 +285,7 @@ class SqlStore(Store):
         _q: sql.AsyncQuerier | None = None
 
         @property
-        def store(self) -> 'SqlStore':
+        def store(self) -> SqlStore:
             return self._o
 
         #

@@ -101,7 +101,7 @@ class Bytes:
     )
 
     @classmethod
-    def parse(cls, s: str) -> 'Bytes':
+    def parse(cls, s: str) -> Bytes:
         m = cls._PARSE_RE.match(s)
         if not m:
             raise ValueError(f'Invalid Bytes string: {s!r}')
@@ -159,31 +159,31 @@ class Bytes:
         else:
             raise TypeError(f'Bytes can only add/sub Bytes or exact int, got {type(other).__name__}')
 
-    def __add__(self, other: object) -> 'Bytes':
+    def __add__(self, other: object) -> Bytes:
         return Bytes(self._v + self._coerce_other(other))
 
-    def __radd__(self, other: object) -> 'Bytes':
+    def __radd__(self, other: object) -> Bytes:
         return self.__add__(other)
 
-    def __sub__(self, other: object) -> 'Bytes':
+    def __sub__(self, other: object) -> Bytes:
         return Bytes(self._v - self._coerce_other(other))
 
-    def __rsub__(self, other: object) -> 'Bytes':
+    def __rsub__(self, other: object) -> Bytes:
         if isinstance(other, Bytes):
             return Bytes(other._v - self._v)
         if _is_exact_int(other):
             return Bytes(other - self._v)  # type: ignore[operator]
         return NotImplemented  # will raise TypeError
 
-    def __mul__(self, other: object) -> 'Bytes':
+    def __mul__(self, other: object) -> Bytes:
         if _is_exact_int(other):
             return Bytes(self._v * other)  # type: ignore[operator]
         raise TypeError(f'Bytes can only be multiplied by exact int, got {type(other).__name__}')
 
-    def __rmul__(self, other: object) -> 'Bytes':
+    def __rmul__(self, other: object) -> Bytes:
         return self.__mul__(other)
 
-    def _div_exact(self, other: object) -> 'Bytes':
+    def _div_exact(self, other: object) -> Bytes:
         if not _is_exact_int(other):
             raise TypeError(f'Bytes can only be divided by exact int, got {type(other).__name__}')
         if other == 0:
@@ -194,10 +194,10 @@ class Bytes:
             raise ValueError(f'Non-exact byte division: {n} / {other} has remainder {r}')
         return Bytes(q)
 
-    def __truediv__(self, other: object) -> 'Bytes':
+    def __truediv__(self, other: object) -> Bytes:
         return self._div_exact(other)
 
-    def __floordiv__(self, other: object) -> 'Bytes':
+    def __floordiv__(self, other: object) -> Bytes:
         return self._div_exact(other)
 
 
@@ -294,7 +294,7 @@ class Seconds:
     )
 
     @classmethod
-    def parse(cls, s: str) -> 'Seconds':
+    def parse(cls, s: str) -> Seconds:
         m = cls._PARSE_RE.match(s)
         if not m:
             raise ValueError(f'Invalid Seconds string: {s!r}')
@@ -351,31 +351,31 @@ class Seconds:
         else:
             raise TypeError(f'Seconds can only add/sub Seconds or exact int/float, got {type(other).__name__}')
 
-    def __add__(self, other: object) -> 'Seconds':
+    def __add__(self, other: object) -> Seconds:
         return Seconds(self._v + self._coerce_other(other))
 
-    def __radd__(self, other: object) -> 'Seconds':
+    def __radd__(self, other: object) -> Seconds:
         return self.__add__(other)
 
-    def __sub__(self, other: object) -> 'Seconds':
+    def __sub__(self, other: object) -> Seconds:
         return Seconds(self._v - self._coerce_other(other))
 
-    def __rsub__(self, other: object) -> 'Seconds':
+    def __rsub__(self, other: object) -> Seconds:
         if isinstance(other, Seconds):
             return Seconds(other._v - self._v)
         if _is_exact_int_or_float(other):
             return Seconds(float(other) - self._v)  # type: ignore[arg-type]
         return NotImplemented
 
-    def __mul__(self, other: object) -> 'Seconds':
+    def __mul__(self, other: object) -> Seconds:
         if _is_exact_int_or_float(other):
             return Seconds(self._v * float(other))  # type: ignore[arg-type]
         raise TypeError(f'Seconds can only be multiplied by exact int/float, got {type(other).__name__}')
 
-    def __rmul__(self, other: object) -> 'Seconds':
+    def __rmul__(self, other: object) -> Seconds:
         return self.__mul__(other)
 
-    def __truediv__(self, other: object) -> 'Seconds':
+    def __truediv__(self, other: object) -> Seconds:
         if _is_exact_int_or_float(other):
             other_f = float(other)  # type: ignore[arg-type]
             if other_f == 0.0:
@@ -383,7 +383,7 @@ class Seconds:
             return Seconds(self._v / other_f)
         raise TypeError(f'Seconds can only be divided by exact int/float, got {type(other).__name__}')
 
-    def __pow__(self, other: object, modulo: object = None) -> 'Seconds':
+    def __pow__(self, other: object, modulo: object = None) -> Seconds:
         raise TypeError('Seconds exponentiation is nonsensical for this unit type')
 
     # timedelta interop
@@ -392,7 +392,7 @@ class Seconds:
         return datetime.timedelta(seconds=self._v)
 
     @classmethod
-    def from_timedelta(cls, td: datetime.timedelta) -> 'Seconds':
+    def from_timedelta(cls, td: datetime.timedelta) -> Seconds:
         return cls(td.total_seconds())
 
 

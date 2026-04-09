@@ -135,7 +135,7 @@ class SeededScopeImpl(ScopeImpl):
     def scope(self) -> SeededScope:
         return self._ss
 
-    def must_state(self) -> 'SeededScopeImpl.State':
+    def must_state(self) -> SeededScopeImpl.State:
         if (st := self._st) is None:
             raise ScopeNotOpenError(self._ss)
         return st

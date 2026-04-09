@@ -29,7 +29,7 @@ class Kwarg(ta.NamedTuple):
             key: Key,
             *,
             has_default: bool = False,
-    ) -> 'Kwarg':
+    ) -> Kwarg:
         return cls(
             name,
             key,
@@ -47,7 +47,7 @@ class KwargsTarget(ta.NamedTuple):
             obj: ta.Any,
             *kws: Kwarg,
             **kwargs: tuple[Key, bool] | Key | ta.Any,
-    ) -> 'KwargsTarget':
+    ) -> KwargsTarget:
         kw_kwargs: list[Kwarg] = []
         for n, v in kwargs.items():
             if isinstance(v, tuple):

@@ -17,7 +17,7 @@ V2 = ta.TypeVar('V2')
 
 class BiMap(ta.Mapping[K, V], lang.Abstract):
     @abc.abstractmethod
-    def inverse(self) -> 'BiMap[V, K]':
+    def inverse(self) -> BiMap[V, K]:
         raise NotImplementedError
 
 
@@ -35,7 +35,7 @@ class _BaseBiMapImpl(BiMap[K, V], lang.Abstract):
         self._dct = dct
         self._inverse = inverse
 
-    def inverse(self) -> 'BiMap[V, K]':
+    def inverse(self) -> BiMap[V, K]:
         return self._inverse
 
     def __getitem__(self, key, /):

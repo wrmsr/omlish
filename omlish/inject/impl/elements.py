@@ -91,7 +91,7 @@ class ElementCollection(CollectedElements, lang.Final):
 
     ##
 
-    def _get_private_info(self, p: Private) -> '_privates.PrivateInfo':
+    def _get_private_info(self, p: Private) -> _privates.PrivateInfo:
         if (pis := self._private_infos) is None:
             self._private_infos = pis = col.IdentityKeyDict()
         try:

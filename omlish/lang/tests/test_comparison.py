@@ -39,10 +39,10 @@ def test_cmp_custom_objects_with_rich_comparison() -> None:
         def __init__(self, value: int) -> None:
             self.value = value
 
-        def __lt__(self, other: 'Box') -> bool:
+        def __lt__(self, other: Box) -> bool:
             return self.value < other.value
 
-        def __gt__(self, other: 'Box') -> bool:
+        def __gt__(self, other: Box) -> bool:
             return self.value > other.value
 
     assert cmp(Box(1), Box(1)) == 0

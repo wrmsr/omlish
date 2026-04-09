@@ -39,10 +39,10 @@ class OpRef(_OpRef[T]):
     #
 
     @classmethod
-    def numbered(cls, limit: int) -> ta.Callable[[str, int], 'OpRef[T]']:
+    def numbered(cls, limit: int) -> ta.Callable[[str, int], OpRef[T]]:
         z = len(str(limit))
 
-        def inner(s: str, i: int) -> 'OpRef[T]':
+        def inner(s: str, i: int) -> OpRef[T]:
             check.arg(i < limit)
 
             return OpRef(s.format(i=str(i).zfill(z)))
