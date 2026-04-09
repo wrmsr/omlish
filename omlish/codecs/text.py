@@ -78,7 +78,7 @@ class TextEncodingComboCodec(ComboCodec[str, bytes]):
             cls,
             name: str,
             options: TextEncodingOptions = TextEncodingOptions(),
-    ) -> 'TextEncodingComboCodec':
+    ) -> TextEncodingComboCodec:
         return cls(codecs.lookup(name), options)
 
     def encode(self, i: str) -> bytes:

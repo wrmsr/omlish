@@ -30,7 +30,7 @@ class FieldHashField(lang.Final):
 @dc.dataclass(frozen=True)
 class FieldHashObject(lang.Final):
     name: str
-    fields: tuple['FieldHashField', ...]
+    fields: tuple[FieldHashField, ...]
 
 
 class FieldHashable(lang.Abstract):

@@ -23,7 +23,7 @@ class MemoryStats:
     self_allocated_b: int | None = dc.xfield(default=None, repr_fn=_mem_b_repr)
     self_reserved_b: int | None = dc.xfield(default=None, repr_fn=_mem_b_repr)
 
-    def __add__(self, other: 'MemoryStats') -> ta.Self:
+    def __add__(self, other: MemoryStats) -> ta.Self:
         return dc.replace(self, **{
             f.name: ((l or 0) + (r or 0)) if l is not None or r is not None else None
             for f in dc.fields(MemoryStats)  # noqa

@@ -170,7 +170,7 @@ class BaseTransformersChatChoicesService(lang.ExitStacked):
             self._huggingface_hub_token = HuggingfaceHubToken.pop_secret(cc, env='HUGGINGFACE_HUB_TOKEN')
 
     @lang.cached_function(transient=True)
-    def _load_pipeline(self) -> 'tfm.Pipeline':
+    def _load_pipeline(self) -> tfm.Pipeline:
         # FIXME: unload
         check.not_none(self._exit_stack)
 

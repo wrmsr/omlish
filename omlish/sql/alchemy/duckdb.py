@@ -21,14 +21,14 @@ else:
 
 
 class ConnectionWrapper:
-    def __init__(self, c: 'duckdb.DuckDBPyConnection') -> None:
+    def __init__(self, c: duckdb.DuckDBPyConnection) -> None:
         super().__init__()
 
         self.__c = c
         self.autocommit = None
         self.closed = False
 
-    def cursor(self) -> 'CursorWrapper':
+    def cursor(self) -> CursorWrapper:
         return CursorWrapper(self.__c, self)
 
     def __getattr__(self, name: str) -> ta.Any:
@@ -46,8 +46,8 @@ def _is_transaction_context_message(e: Exception) -> bool:
 class CursorWrapper:
     def __init__(
             self,
-            c: 'duckdb.DuckDBPyConnection',
-            connection_wrapper: 'ConnectionWrapper',
+            c: duckdb.DuckDBPyConnection,
+            connection_wrapper: ConnectionWrapper,
     ) -> None:
         super().__init__()
 

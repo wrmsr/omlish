@@ -9,7 +9,7 @@ class OneshotBareChatInterface(ChatInterface):
     def __init__(
             self,
             *,
-            driver: 'mc.drivers.Driver',
+            driver: mc.drivers.Driver,
     ) -> None:
         super().__init__()
 

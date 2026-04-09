@@ -109,7 +109,7 @@ class BinaryFileBody:
 
 
 class PatchedFileHeader:
-    def __init__(self, patch: '_CompatPatchedFile') -> None:
+    def __init__(self, patch: _CompatPatchedFile) -> None:
         self.patch = patch
         if patch.is_rename:
             self.path_prefix = (
@@ -132,7 +132,7 @@ class PatchedFileHeader:
 class OnlyRenamedFileBody:
     """Represents a file that was renamed but the content was not changed."""
 
-    def __init__(self, patch: '_CompatPatchedFile') -> None:
+    def __init__(self, patch: _CompatPatchedFile) -> None:
         self.patch = patch
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:

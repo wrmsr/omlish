@@ -40,10 +40,10 @@ class Columns(lang.Final):
 
     #
 
-    _EMPTY: ta.ClassVar['Columns']
+    _EMPTY: ta.ClassVar[Columns]
 
     @classmethod
-    def empty(cls) -> 'Columns':
+    def empty(cls) -> Columns:
         return cls._EMPTY
 
     #

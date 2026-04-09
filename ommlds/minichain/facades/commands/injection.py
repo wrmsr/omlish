@@ -11,5 +11,5 @@ with lang.auto_proxy_import(globals()):
 
 
 @lang.cached_function
-def commands() -> 'inj.ItemsBinderHelper[_base.Command]':
+def commands() -> inj.ItemsBinderHelper[_base.Command]:
     return inj.items_binder_helper[_base.Command](_types.Commands)

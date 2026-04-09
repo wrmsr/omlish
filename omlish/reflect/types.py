@@ -24,7 +24,7 @@ from ..lite.dataclasses import install_dataclass_cache_hash
 
 _NoneType = types.NoneType  # type: ignore
 
-_NONE_TYPE_FROZENSET: frozenset['Type'] = frozenset([_NoneType])
+_NONE_TYPE_FROZENSET: frozenset[Type] = frozenset([_NoneType])
 
 
 _AnnotatedAlias = ta._AnnotatedAlias  # type: ignore  # noqa
@@ -58,7 +58,7 @@ class _Special:
     nparams: int
 
     @classmethod
-    def from_alias(cls, sa: _SpecialGenericAlias) -> '_Special':  # type: ignore
+    def from_alias(cls, sa: _SpecialGenericAlias) -> _Special:  # type: ignore
         return cls(
             sa._name,  # type: ignore  # noqa
             sa,
@@ -340,7 +340,7 @@ class GenericLike(TypeInfo, Abstract, ta.Generic[GenericLikeCls]):
         if len(self.args) != len(self.params):
             raise ReflectTypeError(f'GenericLike {self.args=} must be same length as {self.params=}')
 
-    def full_eq(self, other: 'GenericLike') -> bool:
+    def full_eq(self, other: GenericLike) -> bool:
         return (
             type(self) is type(other) and
             self.cls == other.cls and

@@ -218,7 +218,7 @@ class ResourceManager(
             cls,
             resources: ResourceManager | None,
             **kwargs: ta.Any,
-    ) -> ta.ContextManager['ResourceManager']:
+    ) -> ta.ContextManager[ResourceManager]:
         if resources is None:
             return cls.new(**kwargs)
 
@@ -251,7 +251,7 @@ class ResourceManager(
 
     #
 
-    def new_managed(self, v: U) -> 'ResourceManaged[U]':
+    def new_managed(self, v: U) -> ResourceManaged[U]:
         return ResourceManaged(v, self)  # noqa
 
     #
@@ -313,7 +313,7 @@ class AsyncResourceManager(
     #
 
     @classmethod
-    def new(cls, **kwargs: ta.Any) -> ta.AsyncContextManager['AsyncResourceManager']:
+    def new(cls, **kwargs: ta.Any) -> ta.AsyncContextManager[AsyncResourceManager]:
         @contextlib.asynccontextmanager
         async def inner():
             init_ref = BaseResourceManager._InitRef()  # noqa

@@ -98,7 +98,7 @@ class LazyLoadedCodec(ModAttrManifest):
             module: str,
             attr: str,
             codec: Codec,
-    ) -> 'LazyLoadedCodec':
+    ) -> LazyLoadedCodec:
         return cls(
             module=module,
             attr=attr,

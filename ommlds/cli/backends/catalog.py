@@ -25,7 +25,7 @@ class CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
             self,
             *,
             name: BackendName | None = None,
-            catalog: 'mc.BackendCatalog',
+            catalog: mc.BackendCatalog,
             configs: BackendConfigs | None = None,
             instantiator: Instantiator | None = None,
     ) -> None:
@@ -60,7 +60,7 @@ class CatalogChatChoicesServiceBackendProvider(
     CatalogBackendProvider['mc.ChatChoicesService'],
     ChatChoicesServiceBackendProvider,
 ):
-    def provide_backend(self) -> ta.AsyncContextManager['mc.ChatChoicesService']:
+    def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesService]:
         return self._provide_backend(mc.ChatChoicesService)  # type: ignore[type-abstract]
 
 
@@ -68,7 +68,7 @@ class CatalogChatChoicesStreamServiceBackendProvider(
     CatalogBackendProvider['mc.ChatChoicesStreamService'],
     ChatChoicesStreamServiceBackendProvider,
 ):
-    def provide_backend(self) -> ta.AsyncContextManager['mc.ChatChoicesStreamService']:
+    def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesStreamService]:
         return self._provide_backend(mc.ChatChoicesStreamService)  # type: ignore[type-abstract]
 
 
@@ -76,7 +76,7 @@ class CatalogCompletionServiceBackendProvider(
     CatalogBackendProvider['mc.CompletionService'],
     CompletionServiceBackendProvider,
 ):
-    def provide_backend(self) -> ta.AsyncContextManager['mc.CompletionService']:
+    def provide_backend(self) -> ta.AsyncContextManager[mc.CompletionService]:
         return self._provide_backend(mc.CompletionService)  # type: ignore[type-abstract]
 
 
@@ -84,5 +84,5 @@ class CatalogEmbeddingServiceBackendProvider(
     CatalogBackendProvider['mc.EmbeddingService'],
     EmbeddingServiceBackendProvider,
 ):
-    def provide_backend(self) -> ta.AsyncContextManager['mc.EmbeddingService']:
+    def provide_backend(self) -> ta.AsyncContextManager[mc.EmbeddingService]:
         return self._provide_backend(mc.EmbeddingService)  # type: ignore[type-abstract]

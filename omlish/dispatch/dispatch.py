@@ -64,7 +64,7 @@ class Dispatcher(ta.Generic[T]):
     class _CacheParams(ta.NamedTuple):
         impls_by_arg_cls: dict[type, ta.Any]
         find_impl: ta.Callable[[type, ta.Mapping[type, ta.Any]], ta.Any | None]
-        reset_cache_for_token: ta.Callable[['Dispatcher._Cache[ta.Any]'], None]
+        reset_cache_for_token: ta.Callable[[Dispatcher._Cache[ta.Any]], None]
         uncached_miss: bool
         token: ta.Any | None
 
@@ -84,7 +84,7 @@ class Dispatcher(ta.Generic[T]):
     #
 
     class _StrongCache:
-        def __init__(self, params: 'Dispatcher._CacheParams') -> None:
+        def __init__(self, params: Dispatcher._CacheParams) -> None:
             token = params.token
             impls_by_arg_cls = params.impls_by_arg_cls
             find_impl = params.find_impl
@@ -117,7 +117,7 @@ class Dispatcher(ta.Generic[T]):
             self.dispatch: ta.Callable[[type], ta.Any | None] = dispatch
 
     class _WeakCache:
-        def __init__(self, params: 'Dispatcher._CacheParams') -> None:
+        def __init__(self, params: Dispatcher._CacheParams) -> None:
             token = params.token
             impls_by_arg_cls = params.impls_by_arg_cls
             find_impl = params.find_impl

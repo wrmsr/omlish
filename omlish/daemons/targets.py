@@ -24,7 +24,7 @@ else:
 
 class Target(dc.Case):
     @classmethod
-    def of(cls, obj: ta.Any) -> 'Target':
+    def of(cls, obj: ta.Any) -> Target:
         if isinstance(obj, Target):
             return obj
 
@@ -91,7 +91,7 @@ class NameTarget(Target):
             *,
             globals: ta.Mapping[str, ta.Any] | None = None,  # noqa
             no_module_name_lookup: bool = False,
-    ) -> 'NameTarget':
+    ) -> NameTarget:
         if globals is None:
             globals = obj.__globals__  # noqa
         if not no_module_name_lookup:

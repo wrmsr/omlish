@@ -31,7 +31,7 @@ class DbapiColumnDescription_(ta.NamedTuple):  # noqa
     null_ok: bool | None
 
     @classmethod
-    def of(cls, obj: ta.Any) -> 'DbapiColumnDescription_':
+    def of(cls, obj: ta.Any) -> DbapiColumnDescription_:
         if isinstance(obj, cls):
             return obj
         else:
@@ -104,7 +104,7 @@ class DbapiConnection(ta.Protocol):
     # optional:
     autocommit: int
 
-    def cursor(self) -> 'DbapiCursor': ...
+    def cursor(self) -> DbapiCursor: ...
 
 
 ##

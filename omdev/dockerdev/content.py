@@ -33,7 +33,7 @@ StaticEnv: ta.TypeAlias = ta.Union[
 
 @dc.dataclass(frozen=True)
 class WithStaticEnv:
-    body: 'Content'
+    body: Content
     env: StaticEnv
 
 
@@ -42,7 +42,7 @@ class WithStaticEnv:
 
 @dc.dataclass(frozen=True)
 class LazyContent:
-    fn: ta.Callable[[], 'Content']
+    fn: ta.Callable[[], Content]
 
 
 #

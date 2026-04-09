@@ -38,7 +38,7 @@ class McpServerConnection:
             cls,
             proc: asyncio.subprocess.Process,
             **kwargs: ta.Any,
-    ) -> 'McpServerConnection':
+    ) -> McpServerConnection:
         return cls(
             jr2.AsyncioStreamAdapter(
                 check.not_none(proc.stdout),
@@ -53,9 +53,9 @@ class McpServerConnection:
             cmd: ta.Sequence[str],
             open_kwargs: ta.Mapping[str, ta.Any] | None = None,
             **kwargs: ta.Any,
-    ) -> ta.AsyncContextManager[tuple[asyncio.subprocess.Process, 'McpServerConnection']]:
+    ) -> ta.AsyncContextManager[tuple[asyncio.subprocess.Process, McpServerConnection]]:
         @contextlib.asynccontextmanager
-        async def inner() -> ta.AsyncIterator[tuple[asyncio.subprocess.Process, 'McpServerConnection']]:
+        async def inner() -> ta.AsyncIterator[tuple[asyncio.subprocess.Process, McpServerConnection]]:
             proc = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdin=subprocess.PIPE,

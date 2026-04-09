@@ -40,7 +40,7 @@ class DomNodeInfo:
     content_size: dict[str, int] | None
 
     # Hierarchy
-    children: list['DomNodeInfo'] = dc.field(default_factory=list)
+    children: list[DomNodeInfo] = dc.field(default_factory=list)
 
 
 def inspect_dom_node(node: DOMNode) -> DomNodeInfo:

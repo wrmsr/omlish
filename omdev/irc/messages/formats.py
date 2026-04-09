@@ -21,7 +21,7 @@ class MessageFormat(dc.Frozen, final=True):
 
     class Param(dc.Case):
         @classmethod
-        def of(cls, obj: ta.Any) -> 'MessageFormat.Param':
+        def of(cls, obj: ta.Any) -> MessageFormat.Param:
             if isinstance(obj, MessageFormat.Param):
                 return obj
 
@@ -84,7 +84,7 @@ class MessageFormat(dc.Frozen, final=True):
             name: str,
             *params: ta.Any,
             **kwargs: ta.Any,
-    ) -> 'MessageFormat':
+    ) -> MessageFormat:
         return cls(
             name,
             [MessageFormat.Param.of(p) for p in params],

@@ -23,7 +23,7 @@ class CodecRegistry:
     def __init__(
             self,
             *,
-            late_load_callbacks: ta.Iterable[ta.Callable[['CodecRegistry'], None]] | None = None,
+            late_load_callbacks: ta.Iterable[ta.Callable[[CodecRegistry], None]] | None = None,
     ) -> None:
         super().__init__()
 

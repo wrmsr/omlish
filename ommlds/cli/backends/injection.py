@@ -12,5 +12,5 @@ with lang.auto_proxy_import(globals()):
 
 
 @lang.cached_function
-def backend_configs() -> 'inj.ItemsBinderHelper[mc.Config]':
+def backend_configs() -> inj.ItemsBinderHelper[mc.Config]:
     return inj.items_binder_helper[mc.Config](_types.BackendConfigs)

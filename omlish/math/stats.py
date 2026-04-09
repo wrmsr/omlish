@@ -149,7 +149,7 @@ class Stats(ta.Sequence[float]):
                 return float('-inf')
         return (float(value) - mean) / self.std_dev
 
-    def trim_relative(self, amount: float = 0.15) -> 'Stats':
+    def trim_relative(self, amount: float = 0.15) -> Stats:
         trim = float(amount)
         check.arg(0.0 <= trim < 0.5)
         size = len(self.data)

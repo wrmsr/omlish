@@ -42,7 +42,7 @@ class McpServerConnection:
             tg: anyio.abc.TaskGroup,
             proc: anyio.abc.Process,
             **kwargs: ta.Any,
-    ) -> 'McpServerConnection':
+    ) -> McpServerConnection:
         return cls(
             tg,
             aiu.StapledByteStream(
@@ -59,7 +59,7 @@ class McpServerConnection:
             cmd: ta.Sequence[str],
             open_kwargs: ta.Mapping[str, ta.Any] | None = None,
             **kwargs: ta.Any,
-    ) -> ta.AsyncContextManager[tuple[anyio.abc.Process, 'McpServerConnection']]:
+    ) -> ta.AsyncContextManager[tuple[anyio.abc.Process, McpServerConnection]]:
         @contextlib.asynccontextmanager
         async def inner():
             async with await anyio.open_process(

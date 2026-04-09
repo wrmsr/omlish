@@ -88,7 +88,7 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
             *add: OptionU,
             discard: ta.Iterable[type] | None = None,
             override: bool = False,
-    ) -> 'Request[V_co, OptionT_co | OptionU]':
+    ) -> Request[V_co, OptionT_co | OptionU]:
         new = (old := self.options).update(
             *add,
             discard=discard,

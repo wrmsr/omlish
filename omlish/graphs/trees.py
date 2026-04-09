@@ -141,7 +141,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             *,
             identity: bool = False,
             **kwargs,
-    ) -> 'BasicTreeAnalysis[NodeT]':
+    ) -> BasicTreeAnalysis[NodeT]:
         pairs: ta.Sequence[tuple[NodeT, NodeT]]
         if isinstance(src, ta.Mapping):
             pairs = list(src.items())  # type: ignore
@@ -175,7 +175,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             *,
             identity: bool = False,
             **kwargs,
-    ) -> 'BasicTreeAnalysis[NodeT]':
+    ) -> BasicTreeAnalysis[NodeT]:
         pairs: ta.Sequence[tuple[NodeT, ta.Sequence[NodeT]]]
         if isinstance(src, ta.Mapping):
             pairs = list(src.items())  # type: ignore

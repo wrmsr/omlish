@@ -27,7 +27,7 @@ FacadeTextColor: ta.TypeAlias = ta.Literal[
 @dc.dataclass(frozen=True, kw_only=True)
 @dc.extra_class_params(cache_hash=True, default_repr_fn=lang.opt_repr)
 class FacadeTextStyle(lang.Final):
-    DEFAULT: ta.ClassVar['FacadeTextStyle']
+    DEFAULT: ta.ClassVar[FacadeTextStyle]
 
     color: FacadeTextColor | None = None
 
@@ -43,16 +43,16 @@ FacadeTextStyle.DEFAULT = FacadeTextStyle()
 
 @dc.dataclass(frozen=True)
 class FacadeText(lang.Abstract, lang.Sealed):
-    _BLANK: ta.ClassVar['StrFacadeText']
+    _BLANK: ta.ClassVar[StrFacadeText]
 
     @classmethod
-    def blank(cls) -> 'StrFacadeText':
+    def blank(cls) -> StrFacadeText:
         check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
 
         return cls._BLANK
 
     @classmethod
-    def of(cls, obj: CanFacadeText) -> 'FacadeText':
+    def of(cls, obj: CanFacadeText) -> FacadeText:
         check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
 
         if isinstance(obj, FacadeText):
@@ -85,7 +85,7 @@ class FacadeText(lang.Abstract, lang.Sealed):
     def join(
             self: CanFacadeText,
             items: ta.Iterable[CanFacadeText],
-    ) -> 'FacadeText':
+    ) -> FacadeText:
         delim = FacadeText.of(self)
 
         if not delim:
@@ -100,7 +100,7 @@ class FacadeText(lang.Abstract, lang.Sealed):
 
             bold: bool | None = None,
             italic: bool | None = None,
-    ) -> 'FacadeText':
+    ) -> FacadeText:
         x = FacadeText.of(self)
 
         if (

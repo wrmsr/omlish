@@ -21,7 +21,7 @@ class AnyQuerier(HasAdapter, lang.Abstract):
 
 class Querier(AnyQuerier, lang.Abstract):
     @abc.abstractmethod
-    def query(self, query: Queryable) -> ta.ContextManager['Rows']:  # ta.Raises[QueryError]
+    def query(self, query: Queryable) -> ta.ContextManager[Rows]:  # ta.Raises[QueryError]
         raise NotImplementedError
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
@@ -32,7 +32,7 @@ class Querier(AnyQuerier, lang.Abstract):
 
 class AsyncQuerier(AnyQuerier, lang.Abstract):
     @abc.abstractmethod
-    def query(self, query: Queryable) -> ta.AsyncContextManager['AsyncRows']:  # ta.Raises[QueryError]
+    def query(self, query: Queryable) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
         raise NotImplementedError
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:

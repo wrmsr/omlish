@@ -13,14 +13,14 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def build_vocab(spm_tokenizer: 'spm.SentencePieceProcessor') -> tks.Vocab:
+def build_vocab(spm_tokenizer: spm.SentencePieceProcessor) -> tks.Vocab:
     return tks.Vocab([
         (ta.cast(tks.Token, i), tks.TokenStr(spm_tokenizer.id_to_piece(i)))  # noqa
         for i in range(spm_tokenizer.get_piece_size())  # noqa
     ])
 
 
-def build_specials(spm_tokenizer: 'spm.SentencePieceProcessor') -> tks.SpecialTokens:
+def build_specials(spm_tokenizer: spm.SentencePieceProcessor) -> tks.SpecialTokens:
     # FIXME
     return tks.SpecialTokens([])
 
@@ -31,7 +31,7 @@ def build_specials(spm_tokenizer: 'spm.SentencePieceProcessor') -> tks.SpecialTo
 class SentencepieceTokenizer(tks.BaseTokenizer):
     def __init__(
             self,
-            spm_tokenizer: 'spm.SentencePieceProcessor',
+            spm_tokenizer: spm.SentencePieceProcessor,
     ) -> None:
         self._spm_tokenizer = check.isinstance(spm_tokenizer, spm.SentencePieceProcessor)
 
@@ -41,7 +41,7 @@ class SentencepieceTokenizer(tks.BaseTokenizer):
         )
 
     @property
-    def spm_tokenizer(self) -> 'spm.SentencePieceProcessor':
+    def spm_tokenizer(self) -> spm.SentencePieceProcessor:
         return self._spm_tokenizer
 
     #

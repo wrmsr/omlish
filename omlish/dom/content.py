@@ -58,19 +58,19 @@ class Dom:
     attrs: dict[str, ta.Any | None] | None = dc.xfield(None, repr_fn=lang.opt_repr)
     body: list[Content] | None = dc.xfield(None, repr_fn=lang.opt_repr)
 
-    def set(self, **kwargs: ta.Any) -> 'Dom':
+    def set(self, **kwargs: ta.Any) -> Dom:
         if self.attrs is None:
             self.attrs = {}
         self.attrs.update(**kwargs_to_attrs(**kwargs))
         return self
 
-    def unset(self, *keys: str) -> 'Dom':
+    def unset(self, *keys: str) -> Dom:
         if self.attrs is not None:
             for k in keys:
                 self.attrs.pop(k, None)
         return self
 
-    def add(self, *contents: Content) -> 'Dom':
+    def add(self, *contents: Content) -> Dom:
         if self.body is None:
             self.body = []
         for c in contents:
@@ -78,7 +78,7 @@ class Dom:
         self.body.extend(contents)
         return self
 
-    def remove(self, *contents: Content, strict: bool = False) -> 'Dom':
+    def remove(self, *contents: Content, strict: bool = False) -> Dom:
         if self.body is not None:
             i = 0
             while i < len(self.body):

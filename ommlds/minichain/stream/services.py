@@ -86,12 +86,12 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
 
     @ta.final
     class _Emit(ta.Generic[V2]):
-        def __init__(self, ssr: '_StreamServiceResponse', value: V2) -> None:
+        def __init__(self, ssr: _StreamServiceResponse, value: V2) -> None:
             self.ssr, self.value = ssr, value
 
         done: bool = False
 
-        def __await__(self) -> ta.Generator['_StreamServiceResponse._Emit[V2]']:
+        def __await__(self) -> ta.Generator[_StreamServiceResponse._Emit[V2]]:
             if not self.done:
                 yield self
             if not self.done:
@@ -99,7 +99,7 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
 
     @ta.final
     class _Sink(StreamResponseSink[V2]):
-        def __init__(self, ssr: '_StreamServiceResponse') -> None:
+        def __init__(self, ssr: _StreamServiceResponse) -> None:
             super().__init__()
 
             self._ssr = ssr

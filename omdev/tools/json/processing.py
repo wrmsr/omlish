@@ -46,7 +46,7 @@ class Processor:
         self._jmespath_expr: ta.Any | None = jmespath_expr
 
     @lang.cached_function
-    def _marshaler_factory(self) -> 'msh.MarshalerFactory':
+    def _marshaler_factory(self) -> msh.MarshalerFactory:
         return msh.new_standard_marshaler_factory(
             first=[msh.BASE64_MARSHALER_FACTORY],
         )

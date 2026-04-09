@@ -15,7 +15,7 @@ from ..suggestions import SuggestionsManager
 class SuggestionsPopup(tx.InitAddClass, tx.Static):
     init_add_class = 'suggestions-popup'
 
-    def __init__(self, ic: 'InputContainer', **kwargs: ta.Any) -> None:
+    def __init__(self, ic: InputContainer, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
         self._ic = ic
@@ -59,7 +59,7 @@ InputMode: ta.TypeAlias = ta.Literal['>', '/']
 class InputTextArea(tx.InitAddClass, tx.TextArea):
     init_add_class = 'input'
 
-    def __init__(self, ic: 'InputContainer', **kwargs: ta.Any) -> None:
+    def __init__(self, ic: InputContainer, **kwargs: ta.Any) -> None:
         super().__init__(
             placeholder='...',
             **kwargs,

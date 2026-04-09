@@ -36,7 +36,7 @@ class _LsLine:
 
     s: str | None = None
 
-    children: dict[str, '_LsLine'] | None = None
+    children: dict[str, _LsLine] | None = None
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}<{self.item.path!r}, {self.s!r}>'

@@ -32,7 +32,7 @@ CanFuncArg: ta.TypeAlias = FuncArg | CanExpr
 
 
 class FuncArgsAccessor:
-    def __init__(self, fb: 'FuncBuilder', k: CanKeyword) -> None:
+    def __init__(self, fb: FuncBuilder, k: CanKeyword) -> None:
         self.__fb = fb
         self.__k = k
 
@@ -41,7 +41,7 @@ class FuncArgsAccessor:
 
 
 class FuncAccessor:
-    def __init__(self, fb: 'FuncBuilder') -> None:
+    def __init__(self, fb: FuncBuilder) -> None:
         self.__fb = fb
 
     def __getattr__(self, k: CanKeyword) -> FuncArgsAccessor:

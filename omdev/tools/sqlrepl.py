@@ -35,7 +35,7 @@ class ServerSpec:
     db: str | None = None
 
     @classmethod
-    def from_url(cls, url: str) -> 'ServerSpec':
+    def from_url(cls, url: str) -> ServerSpec:
         parsed = urllib.parse.urlparse(url)
         if not parsed.hostname:
             raise NameError(parsed.hostname)

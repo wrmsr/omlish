@@ -30,7 +30,7 @@ class OrmChat:
 
     num_messages: int = 0
 
-    messages: ta.ClassVar[orm.Backref['OrmMessage']] = orm.backref(lambda: OrmMessage.chat)  # type: ignore[misc]
+    messages: ta.ClassVar[orm.Backref[OrmMessage]] = orm.backref(lambda: OrmMessage.chat)  # type: ignore[misc]
 
 
 @dc.dataclass(kw_only=True)

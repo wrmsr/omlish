@@ -33,7 +33,7 @@ class HttpStreamResponseError(Exception):
     data_exception: Exception | None = None
 
     @classmethod
-    async def from_response(cls, response: http.AsyncStreamHttpClientResponse) -> 'HttpStreamResponseError':
+    async def from_response(cls, response: http.AsyncStreamHttpClientResponse) -> HttpStreamResponseError:
         data: bytes | None = None
         data_exception: Exception | None = None
 

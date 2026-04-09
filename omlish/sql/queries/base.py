@@ -17,7 +17,7 @@ Value: ta.TypeAlias = ta.Any
 
 
 class NodeComparisonTypeError(TypeError):
-    def __init__(self, cls: type['Node'], *args: ta.Any) -> None:
+    def __init__(self, cls: type[Node], *args: ta.Any) -> None:
         super().__init__(
             'Query node types are not comparable or hashable - this would be a common source of confusion when '
             'constructing query filters',
@@ -88,7 +88,7 @@ class Node(
         object.__setattr__(self, '_hash', h)
         return h
 
-    def eq(self, other: 'Node') -> bool | types.NotImplementedType:
+    def eq(self, other: Node) -> bool | types.NotImplementedType:
         if self is other:
             return True
 

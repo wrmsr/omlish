@@ -51,7 +51,7 @@ class ProfileAspect(lang.Abstract, ta.Generic[ModeConfigT]):
     @ta.final
     @dc.dataclass(frozen=True)
     class ConfigureContext(ta.Generic[ModeConfigU]):
-        profile: 'Profile[ModeConfigU]'
+        profile: Profile[ModeConfigU]
         args: ap.Namespace
 
     @abc.abstractmethod

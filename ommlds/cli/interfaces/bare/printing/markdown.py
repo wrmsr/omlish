@@ -38,7 +38,7 @@ class MarkdownContentPrinting(ContentPrinting, HasContentStringifier):
     ) -> None:
         super().__init__(content_stringifier=content_stringifier)
 
-    async def print_content(self, content: 'mc.Content') -> None:
+    async def print_content(self, content: mc.Content) -> None:
         rm = rich_markdown()
         if (s := self._content_stringifier.stringify_content(content)) is not None and (s := s.strip()):
             rich.Console(theme=rm.theme).print(rich.Markdown(s, code_theme=rm.code_theme))
@@ -54,7 +54,7 @@ class MarkdownStreamContentPrinting(StreamContentPrinting, HasContentStringifier
 
     @ta.final
     class _ContextInstance(ContentPrinting, lang.AsyncExitStacked):
-        def __init__(self, owner: 'MarkdownStreamContentPrinting') -> None:
+        def __init__(self, owner: MarkdownStreamContentPrinting) -> None:
             self._owner = owner
 
         _ir: rich.MarkdownLiveStream
@@ -66,7 +66,7 @@ class MarkdownStreamContentPrinting(StreamContentPrinting, HasContentStringifier
                 markdown_kwargs=dict(code_theme=rm.code_theme),
             ))
 
-        async def print_content(self, content: 'mc.Content') -> None:
+        async def print_content(self, content: mc.Content) -> None:
             if (s := self._owner._content_stringifier.stringify_content(content)) is not None:  # noqa: SLF001
                 self._ir.feed(s)
 

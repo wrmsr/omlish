@@ -51,7 +51,7 @@ class IrcCommand(lang.Abstract):
     #
 
     @ta.final
-    async def run(self, app: 'IrcApp', argv: list[str]) -> None:
+    async def run(self, app: IrcApp, argv: list[str]) -> None:
         try:
             args = self.__parser.parse_args(argv)
         except argparse.ArgumentError:
@@ -61,7 +61,7 @@ class IrcCommand(lang.Abstract):
         await self._run_args(app, args)
 
     @abc.abstractmethod
-    async def _run_args(self, app: 'IrcApp', args: argparse.Namespace) -> None:
+    async def _run_args(self, app: IrcApp, args: argparse.Namespace) -> None:
         raise NotImplementedError
 
 
@@ -80,7 +80,7 @@ class ConnectIrcCommand(IrcCommand):
             help='Use SSL/TLS (auto-detected for common ports)',
         )
 
-    async def _run_args(self, app: 'IrcApp', args: argparse.Namespace) -> None:
+    async def _run_args(self, app: IrcApp, args: argparse.Namespace) -> None:
         use_ssl = args.ssl or None  # None triggers auto-detection
         ssl_msg = ' (SSL)' if args.ssl or args.port in (6697, 6698, 7000, 7070, 9999) else ''
         await app.add_message('system', f'Connecting to {args.server}:{args.port}{ssl_msg} as {args.nickname}...')
@@ -102,7 +102,7 @@ class JoinIrcCommand(IrcCommand):
     def _configure_parser(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('channel', help='Channel name (# prefix optional)')
 
-    async def _run_args(self, app: 'IrcApp', args: argparse.Namespace) -> None:
+    async def _run_args(self, app: IrcApp, args: argparse.Namespace) -> None:
         channel = args.channel
         if not channel.startswith('#'):
             channel = '#' + channel
@@ -123,7 +123,7 @@ class PartIrcCommand(IrcCommand):
     def _configure_parser(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('reason', nargs='*', help='Part message (optional)')
 
-    async def _run_args(self, app: 'IrcApp', args: argparse.Namespace) -> None:
+    async def _run_args(self, app: IrcApp, args: argparse.Namespace) -> None:
         if app.current_channel:
             reason = ' '.join(args.reason) if args.reason else 'Leaving'
             if app.client and app.client.connected:
@@ -137,7 +137,7 @@ class NamesIrcCommand(IrcCommand):
 
     description: ta.ClassVar[str] = 'Request names list for current channel'
 
-    async def _run_args(self, app: 'IrcApp', args: argparse.Namespace) -> None:
+    async def _run_args(self, app: IrcApp, args: argparse.Namespace) -> None:
         if app.current_channel:
             if app.client and app.client.connected:
                 await app.client.names(app.current_channel)
@@ -155,7 +155,7 @@ class QuitIrcCommand(IrcCommand):
     def _configure_parser(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('message', nargs='*', help='Quit message (optional)')
 
-    async def _run_args(self, app: 'IrcApp', args: argparse.Namespace) -> None:
+    async def _run_args(self, app: IrcApp, args: argparse.Namespace) -> None:
         reason = ' '.join(args.message) if args.message else 'Quit'
         if app.client and app.client.connected:
             await app.client.quit(reason)

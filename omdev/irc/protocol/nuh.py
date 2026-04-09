@@ -21,7 +21,7 @@ class Nuh:
         return iter(self.tuple)
 
     @classmethod
-    def parse(cls, inp: str) -> 'Nuh':
+    def parse(cls, inp: str) -> Nuh:
         if not inp:
             raise MalformedNuhError
 

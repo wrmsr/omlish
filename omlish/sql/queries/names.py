@@ -80,7 +80,7 @@ class NameAccessor(NameLike, lang.Final):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.__query_name_parts__!r})'
 
-    def __getattr__(self, s: str) -> 'NameAccessor':
+    def __getattr__(self, s: str) -> NameAccessor:
         return NameAccessor((*self.__query_name_parts__, s))
 
     def __call__(self, o: CanName) -> Name:

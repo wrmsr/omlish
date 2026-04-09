@@ -18,7 +18,7 @@ class CommandError(Exception):
 
 @dc.dataclass()
 class ArgsCommandError(CommandError):
-    command: 'Command'
+    command: Command
     argv: ta.Sequence[str]
     help: str
 

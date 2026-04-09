@@ -44,7 +44,7 @@ class StandardContentRenderer(ContentStrRenderer):
     class _Visitor(ContentVisitor[None, None]):
         def __init__(
                 self,
-                o: 'StandardContentRenderer',
+                o: StandardContentRenderer,
                 w: ta.Callable[[str], None],
         ) -> None:
             super().__init__()

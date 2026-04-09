@@ -80,9 +80,9 @@ class MultiprocessingSpawning(Spawning, kw_only=True):
 
     @dc.dataclass(frozen=True, kw_only=True)
     class EntrypointArgs:
-        spawning: 'MultiprocessingSpawning'
+        spawning: MultiprocessingSpawning
         spawn: Spawn
-        start_method: 'MultiprocessingSpawning.StartMethod'
+        start_method: MultiprocessingSpawning.StartMethod
 
     entrypoint: ta.Callable[[EntrypointArgs], None] | None = None
 
@@ -95,7 +95,7 @@ class MultiprocessingSpawner(Spawner):
         self._process: ta.Optional['mp.process.BaseProcess'] = None  # noqa
 
     @lang.cached_function
-    def _determine_start_method(self) -> 'MultiprocessingSpawning.StartMethod':
+    def _determine_start_method(self) -> MultiprocessingSpawning.StartMethod:
         if (start_method := self._spawning.start_method) is not None:
             return start_method
 
@@ -106,7 +106,7 @@ class MultiprocessingSpawner(Spawner):
 
         return MultiprocessingSpawning.StartMethod.SPAWN
 
-    def _process_cls(self, spawn: Spawn) -> type['mp.process.BaseProcess']:
+    def _process_cls(self, spawn: Spawn) -> type[mp.process.BaseProcess]:
         start_method = self._determine_start_method()
 
         ctx: 'mp.context.BaseContext'  # noqa

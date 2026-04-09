@@ -160,7 +160,7 @@ class Vector(lang.Final, ta.Sequence[float]):
     def bytes(self) -> bytes:
         return _encode_float_bytes(self._s)  # type: ignore
 
-    def np(self) -> 'np.ndarray':
+    def np(self) -> np.ndarray:
         si = _get_storage_impl()
 
         if not si.is_np:

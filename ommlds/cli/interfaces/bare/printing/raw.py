@@ -25,7 +25,7 @@ class RawContentPrinting(ContentPrinting, HasContentStringifier):
             printer = lang.as_async(print)
         self._printer = printer
 
-    async def print_content(self, content: 'mc.Content') -> None:
+    async def print_content(self, content: mc.Content) -> None:
         if (s := self._content_stringifier.stringify_content(content)) is not None:
             await self._printer(s)
 
@@ -56,7 +56,7 @@ class RawStreamContentPrinting(StreamContentPrinting, HasContentStringifier):
 
     @ta.final
     class _ContextInstance(ContentPrinting, ta.AsyncContextManager):
-        def __init__(self, owner: 'RawStreamContentPrinting') -> None:
+        def __init__(self, owner: RawStreamContentPrinting) -> None:
             self._owner = owner
 
         async def __aenter__(self) -> ta.Self:
@@ -65,7 +65,7 @@ class RawStreamContentPrinting(StreamContentPrinting, HasContentStringifier):
         async def __aexit__(self, *exc_info) -> None:
             await self._owner._output.flush()  # noqa: SLF001
 
-        async def print_content(self, content: 'mc.Content') -> None:
+        async def print_content(self, content: mc.Content) -> None:
             if (s := self._owner._content_stringifier.stringify_content(content)) is not None:  # noqa: SLF001
                 await self._owner._output.write(s)  # noqa: SLF001
 

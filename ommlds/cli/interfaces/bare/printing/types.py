@@ -17,7 +17,7 @@ from ..... import minichain as mc
 
 class ContentPrinting(lang.Abstract):
     @abc.abstractmethod
-    def print_content(self, content: 'mc.Content') -> ta.Awaitable[None]:
+    def print_content(self, content: mc.Content) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 

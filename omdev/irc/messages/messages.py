@@ -22,7 +22,7 @@ from .base import list_pair_params_unpacker
 ##
 
 
-_REGISTERED_IRC_MESSAGES_BY_NAME: dict[str, list[type['Message']]] = {}
+_REGISTERED_IRC_MESSAGES_BY_NAME: dict[str, list[type[Message]]] = {}
 
 
 def _register_irc_message(cls):

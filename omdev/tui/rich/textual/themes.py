@@ -83,7 +83,7 @@ def _parse_text_style(spec: str) -> dict[str, ta.Any]:
     return result
 
 
-def build_theme(dtx_theme: DumpedTextualTheme) -> 'Theme':
+def build_theme(dtx_theme: DumpedTextualTheme) -> Theme:
     """
     Return a ``rich.theme.Theme`` whose ``markdown.*`` styles match what Textual's Markdown widget renders in its dark
     theme.
@@ -186,7 +186,7 @@ def build_theme(dtx_theme: DumpedTextualTheme) -> 'Theme':
 ##
 
 
-def build_pygments_style(dtx_theme: DumpedTextualTheme) -> type['PygmentsStyle']:
+def build_pygments_style(dtx_theme: DumpedTextualTheme) -> type[PygmentsStyle]:
     """
     Build a Pygments ``Style`` subclass from dumped theme data that matches Textual's code block highlighting.
 
@@ -216,7 +216,7 @@ def build_pygments_style(dtx_theme: DumpedTextualTheme) -> type['PygmentsStyle']
     )
 
 
-def build_pygments_theme(dtx_theme: DumpedTextualTheme) -> 'PygmentsSyntaxTheme':
+def build_pygments_theme(dtx_theme: DumpedTextualTheme) -> PygmentsSyntaxTheme:
     from rich.syntax import PygmentsSyntaxTheme  # noqa
 
     return PygmentsSyntaxTheme(build_pygments_style(dtx_theme))

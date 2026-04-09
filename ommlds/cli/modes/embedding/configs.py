@@ -15,6 +15,6 @@ DEFAULT_BACKEND = 'openai'
 
 @dc.dataclass(frozen=True, kw_only=True)
 class EmbeddingConfig(ModeConfig):
-    content: 'mc.Content'
+    content: mc.Content
 
     backend: str | None = None

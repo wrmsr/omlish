@@ -111,7 +111,7 @@ class SpecialTokens:
         self._by_int = by_int
 
     @classmethod
-    def from_dict(cls, dct: ta.Mapping[type[SpecialToken], int | None]) -> 'SpecialTokens':
+    def from_dict(cls, dct: ta.Mapping[type[SpecialToken], int | None]) -> SpecialTokens:
         lst: list[SpecialToken] = []
         for ty, i in dct.items():
             if i is None:

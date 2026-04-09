@@ -27,7 +27,7 @@ class FnPairEagerCodec(EagerCodec[I, O]):
             cls,
             encode: ta.Callable[[I], O],
             decode: ta.Callable[[O], I],
-    ) -> 'FnPairEagerCodec[I, O]':
+    ) -> FnPairEagerCodec[I, O]:
         return cls(fps.of(encode, decode))
 
 

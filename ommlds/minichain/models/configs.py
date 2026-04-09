@@ -30,7 +30,7 @@ class ModelRepo(ModelSpecifier):
         return '/'.join([self.namespace, self.repo])
 
     @classmethod
-    def parse(cls, s: str) -> 'ModelRepo':
+    def parse(cls, s: str) -> ModelRepo:
         # FIXME: lol
         ns, r = s.split('/')
         return ModelRepo(ns, r)

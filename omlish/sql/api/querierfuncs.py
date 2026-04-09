@@ -96,7 +96,7 @@ def sync_query(
         querier: Querier,
         obj: ta.Any,
         *args: ta.Any,
-) -> ta.ContextManager['Rows']:
+) -> ta.ContextManager[Rows]:
     q = as_query(
         obj,
         *args,
@@ -111,7 +111,7 @@ def async_query(
         querier: AsyncQuerier,
         obj: ta.Any,
         *args: ta.Any,
-) -> ta.AsyncContextManager['AsyncRows']:
+) -> ta.AsyncContextManager[AsyncRows]:
     q = as_query(
         obj,
         *args,
@@ -127,7 +127,7 @@ def query(
         querier: Querier,
         obj: ta.Any,
         *args: ta.Any,
-) -> ta.ContextManager['Rows']:
+) -> ta.ContextManager[Rows]:
     ...
 
 
@@ -136,7 +136,7 @@ def query(
         querier: AsyncQuerier,
         obj: ta.Any,
         *args: ta.Any,
-) -> ta.AsyncContextManager['AsyncRows']:
+) -> ta.AsyncContextManager[AsyncRows]:
     ...
 
 

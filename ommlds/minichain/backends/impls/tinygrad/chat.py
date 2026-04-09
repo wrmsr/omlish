@@ -42,7 +42,7 @@ def _load_model(
         *,
         size: str | None = None,
         temperature: float | None = None,
-) -> 'tgl3.Llama3Llm':
+) -> tgl3.Llama3Llm:
     if size is None:
         size = DEFAULT_SIZE
     if temperature is None:
@@ -61,7 +61,7 @@ def _load_model(
 
 
 def _prepare_toks(
-        llm: 'tgl3.Llama3Llm',
+        llm: tgl3.Llama3Llm,
         chat: Chat,
         options: ta.Sequence[ChatChoicesOptions],
 ) -> list[int]:
@@ -103,7 +103,7 @@ class BaseTinygradLlama3ChatService(lang.ExitStacked, lang.Abstract):
         self._temperature = temperature
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> 'tgl3.Llama3Llm':
+    def _load_model(self) -> tgl3.Llama3Llm:
         check.not_none(self._exit_stack)
 
         return _load_model(

@@ -32,7 +32,7 @@ class Service(Configurable[ServiceConfigT], lang.Abstract):
         pass
 
     @classmethod
-    def from_config(cls, config: Config) -> 'Service':
+    def from_config(cls, config: Config) -> Service:
         return check.isinstance(config.configurable_cls(config), cls)
 
     #

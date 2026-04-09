@@ -37,7 +37,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
     def __init__(
             self,
             src: ta.Union[
-                'tvc.TypedValues',
+                tvc.TypedValues,
                 ta.Iterable[tuple[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]]],
                 ta.Mapping[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]],
             ],
@@ -65,7 +65,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
         if bool(self._dct):
             raise UnconsumedTypedValuesError(list(self))
 
-    def __enter__(self) -> 'TypedValuesConsumer[TypedValueT]':
+    def __enter__(self) -> TypedValuesConsumer[TypedValueT]:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

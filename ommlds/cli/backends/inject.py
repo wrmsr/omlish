@@ -116,7 +116,7 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     #
 
     async def catalog_backend_instantiator_provider(injector: inj.AsyncInjector) -> _catalog.CatalogBackendProvider.Instantiator:  # noqa
-        async def inner(be: 'mc.BackendCatalog.Backend', cfgs: _types.BackendConfigs | None) -> ta.Any:
+        async def inner(be: mc.BackendCatalog.Backend, cfgs: _types.BackendConfigs | None) -> ta.Any:
             kwt = inj.build_kwargs_target(be.factory, non_strict=True)
             kw = await injector.provide_kwargs(kwt)
             return be.factory(*tv.collect(*(be.configs or []), *(cfgs or []), override=True), **kw)

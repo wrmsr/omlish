@@ -18,7 +18,7 @@ CanBackendSpec: ta.TypeAlias = ta.Union[
 class BackendSpec(lang.Sealed):
     @ta.final
     @classmethod
-    def of(cls, obj: CanBackendSpec) -> 'BackendSpec':
+    def of(cls, obj: CanBackendSpec) -> BackendSpec:
         check.is_(cls, BackendSpec, 'Must not access `BackendSpec.of()` through a subclass.')
 
         if isinstance(obj, BackendSpec):

@@ -28,10 +28,10 @@ class PendingWritesDriverMixin:
 
 
 _PENDING_WRITES_DRIVER_CLASSES_LOCK = threading.RLock()
-_PENDING_WRITES_DRIVER_CLASSES: dict[type['Driver'], type['Driver']] = {}
+_PENDING_WRITES_DRIVER_CLASSES: dict[type[Driver], type[Driver]] = {}
 
 
-def get_pending_writes_driver_class(cls: type['Driver']) -> type['Driver']:
+def get_pending_writes_driver_class(cls: type[Driver]) -> type[Driver]:
     if issubclass(cls, PendingWritesDriverMixin):
         return cls  # noqa
 

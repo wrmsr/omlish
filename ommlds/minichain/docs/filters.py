@@ -13,16 +13,16 @@ from .docs import FieldRef
 
 class Filter(lang.Abstract):
     @property
-    def children(self) -> ta.Iterable['Filter']:
+    def children(self) -> ta.Iterable[Filter]:
         return ()
 
-    def __and__(self, other) -> 'Filter':
+    def __and__(self, other) -> Filter:
         return and_(self, other)
 
-    def __or__(self, other) -> 'Filter':
+    def __or__(self, other) -> Filter:
         return or_(self, other)
 
-    def __neg__(self) -> 'Filter':
+    def __neg__(self) -> Filter:
         return not_(self)
 
 

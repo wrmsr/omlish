@@ -87,7 +87,7 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
             raise TypeError(m)
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> 'mlxu.LoadedModel':
+    def _load_model(self) -> mlxu.LoadedModel:
         # FIXME: walk state, find all mx.arrays, dealloc/set to empty
         check.not_none(self._exit_stack)
 
@@ -104,7 +104,7 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
     )
 
     @lang.cached_function(transient=True)
-    def _get_tokenizer(self) -> 'mlxu.tokenization.Tokenizer':
+    def _get_tokenizer(self) -> mlxu.tokenization.Tokenizer:
         tokenizer = self._load_model().tokenization.tokenizer
 
         if not (

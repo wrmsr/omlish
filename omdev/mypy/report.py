@@ -35,7 +35,7 @@ class JsonOutputError:
 
 
 def _report_build_result(
-        result: 'mypy.build.BuildResult',
+        result: mypy.build.BuildResult,
 ) -> None:
     errors: ta.Sequence[mypy.errors.ErrorInfo] = [
         e

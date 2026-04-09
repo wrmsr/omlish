@@ -16,8 +16,8 @@ class InteractiveBareChatInterface(ChatInterface):
     def __init__(
             self,
             *,
-            driver: 'mc.drivers.Driver',
-            user_input_sender: 'mc.facades.UserInputSender',
+            driver: mc.drivers.Driver,
+            user_input_sender: mc.facades.UserInputSender,
             string_input: AsyncStringInput | None = None,
     ) -> None:
         super().__init__()

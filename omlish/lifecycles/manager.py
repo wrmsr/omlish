@@ -28,8 +28,8 @@ LifecycleControllerT = ta.TypeVar('LifecycleControllerT', bound=AnyLifecycleCont
 class LifecycleManagerEntry(lang.Final, ta.Generic[LifecycleControllerT]):
     controller: LifecycleControllerT
 
-    dependencies: ta.MutableSet['LifecycleManagerEntry'] = dc.field(default_factory=set)
-    dependents: ta.MutableSet['LifecycleManagerEntry'] = dc.field(default_factory=set)
+    dependencies: ta.MutableSet[LifecycleManagerEntry] = dc.field(default_factory=set)
+    dependents: ta.MutableSet[LifecycleManagerEntry] = dc.field(default_factory=set)
 
 
 #

@@ -178,7 +178,7 @@ def traverse_node(root: Node) -> ta.Iterator[tuple[ta.Sequence[tuple[Node, str]]
 
 
 class NodeBuilder:
-    def build_parameter(self, n: 'mfn.extras.Parameter') -> Parameter:
+    def build_parameter(self, n: mfn.extras.Parameter) -> Parameter:
         if not isinstance(n, mfn.extras.Parameter):
             raise TypeError(n)
 
@@ -187,7 +187,7 @@ class NodeBuilder:
             self.build_content(n.value),
         )
 
-    def build_attribute(self, n: 'mfn.extras.Attribute') -> Attribute:
+    def build_attribute(self, n: mfn.extras.Attribute) -> Attribute:
         if not isinstance(n, mfn.extras.Attribute):
             raise TypeError(n)
 
@@ -196,7 +196,7 @@ class NodeBuilder:
             self.build_content(n.value),
         )
 
-    def build_content_node(self, n: 'mfn.Node') -> ContentNode:
+    def build_content_node(self, n: mfn.Node) -> ContentNode:
         if isinstance(n, mfn.Comment):
             return Comment(n.contents)
 
@@ -247,7 +247,7 @@ class NodeBuilder:
         else:
             raise TypeError(n)
 
-    def build_content(self, w: Wikicode | ta.Iterable['mfn.Node'] | None) -> Content:
+    def build_content(self, w: Wikicode | ta.Iterable[mfn.Node] | None) -> Content:
         if w is None:
             return ()
 

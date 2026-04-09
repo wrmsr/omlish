@@ -19,7 +19,7 @@ class NumericReply:
             name: str,
             num: int,
             *formats: str,
-    ) -> 'NumericReply':
+    ) -> NumericReply:
         return cls(
             name,
             num,

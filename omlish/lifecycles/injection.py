@@ -47,7 +47,7 @@ class _LifecycleRegistrar(lang.Final):
     @dc.dataclass(frozen=True)
     class State(lang.Final):
         key: inj.Key
-        deps: list['_LifecycleRegistrar.Dep'] = dc.field(default_factory=list)
+        deps: list[_LifecycleRegistrar.Dep] = dc.field(default_factory=list)
 
     async def _on_provision(
             self,

@@ -55,7 +55,7 @@ def _get_img_data(file: str | None) -> ta.Any:
         return sys.stdin.buffer
 
 
-def _get_img_png_bytes(img: 'Image.Image') -> bytes:
+def _get_img_png_bytes(img: Image.Image) -> bytes:
     out = io.BytesIO()
     img.save(out, format='PNG')
     return out.getvalue()

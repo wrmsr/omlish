@@ -33,8 +33,8 @@ with lang.auto_proxy_import(globals()):
 
 @contextlib.contextmanager
 def wired_limit_context(
-        model: 'mlx_nn.Module',
-        streams: ta.Iterable['mx.Stream'] | None = None,
+        model: mlx_nn.Module,
+        streams: ta.Iterable[mx.Stream] | None = None,
 ) -> ta.Generator[None]:
     """
     A context manager to temporarily change the wired limit.

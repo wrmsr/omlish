@@ -66,8 +66,8 @@ class CodeInput(tx.TextArea):
 
     def set_completion(
         self,
-        provider: 'CompletionProvider',
-        popup: 'CompletionPopup',
+        provider: CompletionProvider,
+        popup: CompletionPopup,
     ) -> None:
         self._completion_provider = provider
         self._completion_popup = popup

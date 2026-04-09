@@ -40,7 +40,7 @@ class ResolveBackendStringResult:
 @dc.dataclass()
 class AmbiguousBackendStringResolutionError(Exception):
     ra: ResolveBackendStringArgs
-    lst: list[tuple['BackendStringResolver', ResolveBackendStringResult]]
+    lst: list[tuple[BackendStringResolver, ResolveBackendStringResult]]
 
 
 class BackendStringResolver(lang.Abstract):

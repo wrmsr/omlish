@@ -49,9 +49,9 @@ def _generation_stream():
 class LogitProcessor(ta.Protocol):
     def __call__(
             self,
-            tokens: 'mx.array',
-            logits: 'mx.array',
-    ) -> 'mx.array':
+            tokens: mx.array,
+            logits: mx.array,
+    ) -> mx.array:
         ...
 
 
@@ -67,7 +67,7 @@ class GenerationParams:
     max_tokens: int = 256
 
     # A sampler for sampling a token from a vector of log probabilities.
-    sampler: ta.Callable[['mx.array'], 'mx.array'] | None = None
+    sampler: ta.Callable[[mx.array], mx.array] | None = None
 
     # A list of functions that take tokens and logits and return the processed logits.
     logits_processors: ta.Sequence[LogitProcessor] | None = None
@@ -101,12 +101,12 @@ class GenerationParams:
 
 class _GenerationStep(ta.NamedTuple):
     token: int
-    logprobs: 'mx.array'
+    logprobs: mx.array
 
 
 def _generate_step(
-        prompt: 'mx.array',
-        model: 'mlx_nn.Module',
+        prompt: mx.array,
+        model: mlx_nn.Module,
         params: GenerationParams = GenerationParams(),
 ) -> ta.Generator[_GenerationStep]:
     y = prompt
@@ -223,7 +223,7 @@ class GenerationOutput:
     token: int
 
     # A vector of log probabilities.
-    logprobs: 'mx.array'
+    logprobs: mx.array
 
     # The number of tokens in the prompt.
     prompt_tokens: int
@@ -236,7 +236,7 @@ class GenerationOutput:
 
 
 def stream_generate(
-        model: 'mlx_nn.Module',
+        model: mlx_nn.Module,
         tokenization: Tokenization,
         prompt: str | ta.Sequence[int] | mx.array,
         params: GenerationParams = GenerationParams(),

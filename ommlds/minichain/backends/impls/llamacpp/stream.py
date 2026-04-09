@@ -56,7 +56,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
         self._lock = threading.Lock()
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> 'lcc.Llama':
+    def _load_model(self) -> lcc.Llama:
         return self._enter_context(contextlib.closing(lcc.Llama(
             model_path=self._model_path.v,
             verbose=False,

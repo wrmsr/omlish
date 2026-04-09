@@ -346,7 +346,7 @@ class GptIncrementalMarkdownParser:
             unstable=unstable,
         )
 
-    def feed(self, chunk: str) -> list['md.token.Token']:
+    def feed(self, chunk: str) -> list[md.token.Token]:
         out = self.feed2(chunk)
         return [*out.stable, *out.unstable]
 

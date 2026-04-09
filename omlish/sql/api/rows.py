@@ -15,7 +15,7 @@ T = ta.TypeVar('T')
 
 @ta.final
 class ColumnAccessor(lang.Final, ta.Generic[T]):
-    def __init__(self, row: 'Row') -> None:
+    def __init__(self, row: Row) -> None:
         self.__row = row
 
     def __getattr__(self, name: str) -> T:

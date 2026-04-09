@@ -36,7 +36,7 @@ class CommandRunner(lang.Abstract):
             return self
 
     class ReturnCodeError(Exception):
-        def __init__(self, result: 'CommandRunner.Result') -> None:
+        def __init__(self, result: CommandRunner.Result) -> None:
             super().__init__(f'Bad return code: {result.rc}', result)
 
             self.result = result

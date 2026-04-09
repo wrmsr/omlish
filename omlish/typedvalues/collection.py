@@ -184,7 +184,7 @@ class TypedValues(
 
     #
 
-    def discard(self, *tys: type) -> 'TypedValues':
+    def discard(self, *tys: type) -> TypedValues:
         nl = list(self.without(*tys))
 
         if len(nl) == len(self._tup):
@@ -197,7 +197,7 @@ class TypedValues(
             *tvs,
             discard: ta.Iterable[type] | None = None,
             override: bool = False,
-    ) -> 'TypedValues':
+    ) -> TypedValues:
         if not tvs and not discard:
             return self
 

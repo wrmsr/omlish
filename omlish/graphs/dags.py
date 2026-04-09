@@ -124,7 +124,7 @@ class Dag(ta.Generic[T]):
             roots: ta.Iterable[T],
             *,
             ignored: ta.Iterable[T] | None = None,
-    ) -> 'Subdag[T]':
+    ) -> Subdag[T]:
         return Subdag(
             self,
             roots,

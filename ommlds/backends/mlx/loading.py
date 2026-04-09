@@ -79,7 +79,7 @@ def get_model_path(
 class LoadedModel:
     path: pathlib.Path
 
-    model: 'mlx_nn.Module'
+    model: mlx_nn.Module
     config: dict
 
     #

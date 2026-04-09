@@ -22,7 +22,7 @@ msh.register_global_module_import('._marshal', __package__)
 @dc.dataclass(frozen=True)
 class ToolDtype(lang.Abstract, lang.Sealed):
     @classmethod
-    def of(cls, obj: ta.Any) -> 'ToolDtype':
+    def of(cls, obj: ta.Any) -> ToolDtype:
         """Only supports the simplest cases - use reflection by default."""
 
         if isinstance(obj, ToolDtype):
@@ -47,7 +47,7 @@ class PrimitiveToolDtype(ToolDtype):
         check.non_empty_str(self.type)
 
     @classmethod
-    def of(cls, obj: ta.Any) -> 'PrimitiveToolDtype':
+    def of(cls, obj: ta.Any) -> PrimitiveToolDtype:
         if isinstance(obj, PrimitiveToolDtype):
             return obj
 

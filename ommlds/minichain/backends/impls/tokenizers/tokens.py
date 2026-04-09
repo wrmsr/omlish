@@ -13,14 +13,14 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def build_vocab(tos_tokenizer: 'tos.Tokenizer') -> tks.Vocab:
+def build_vocab(tos_tokenizer: tos.Tokenizer) -> tks.Vocab:
     return tks.Vocab([
         (ta.cast(tks.Token, i), tks.TokenStr(s))
         for s, i in tos_tokenizer.get_vocab().items()
     ])
 
 
-def build_specials(tos_tokenizer: 'tos.Tokenizer') -> tks.SpecialTokens:
+def build_specials(tos_tokenizer: tos.Tokenizer) -> tks.SpecialTokens:
     # FIXME
     return tks.SpecialTokens([])
 
@@ -31,7 +31,7 @@ def build_specials(tos_tokenizer: 'tos.Tokenizer') -> tks.SpecialTokens:
 class TokenizersTokenizer(tks.BaseTokenizer):
     def __init__(
             self,
-            tos_tokenizer: 'tos.Tokenizer',
+            tos_tokenizer: tos.Tokenizer,
     ) -> None:
         self._tos_tokenizer = check.isinstance(tos_tokenizer, tos.Tokenizer)
 
@@ -41,7 +41,7 @@ class TokenizersTokenizer(tks.BaseTokenizer):
         )
 
     @property
-    def tos_tokenizer(self) -> 'tos.Tokenizer':
+    def tos_tokenizer(self) -> tos.Tokenizer:
         return self._tos_tokenizer
 
     #

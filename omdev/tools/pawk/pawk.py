@@ -92,7 +92,7 @@ def compile_command(text: str) -> types.CodeType:
 
 def eval_in_context(
         codeobj: types.CodeType,
-        context: 'Context',
+        context: Context,
         var_name: str = RESULT_VAR_NAME,
 ) -> ta.Any:
     exec(codeobj, globals(), context)
@@ -121,7 +121,7 @@ class Action:
         self._compile(have_end_statement)
 
     @classmethod
-    def from_options(cls, options: ta.Any, arg: str) -> 'Action':
+    def from_options(cls, options: ta.Any, arg: str) -> Action:
         negate, pattern, cmd = Action._parse_command(arg)
         return cls(
             pattern=pattern,
@@ -139,7 +139,7 @@ class Action:
                 self.cmd = 'l'
         self._codeobj = compile_command(self.cmd)
 
-    def apply(self, context: 'Context', line: str) -> ta.Any:
+    def apply(self, context: Context, line: str) -> ta.Any:
         """
         Apply action to line.
 
@@ -199,7 +199,7 @@ class Context(dict):
             cls,
             options: ta.Any,
             modules: ta.Sequence[str],
-    ) -> 'Context':
+    ) -> Context:
         self = cls()
         self['t'] = ''
         self['m'] = ()
