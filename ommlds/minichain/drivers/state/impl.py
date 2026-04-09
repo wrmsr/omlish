@@ -67,7 +67,7 @@ class DriverStateManagerImpl(DriverStateManager):
 
     async def extend_chat(self, chat_additions: Chat) -> None:
         try:
-            async with self._orm.new_session() as sess:
+            async with self._orm.new_session() as sess:  # noqa
                 orm_driver = await self._get_orm_driver()
 
                 orm_chat = await orm_driver.chat()
@@ -82,5 +82,5 @@ class DriverStateManagerImpl(DriverStateManager):
 
                     orm_chat.num_messages += 1
 
-        except Exception as e:
+        except Exception as e:  # noqa
             raise

@@ -17,10 +17,13 @@ from .suggestions import SuggestionsManager
 from .termrender import BackgroundTerminalRenderer
 from .widgets.input import InputContainer
 from .widgets.input import InputTextArea
+from .widgets.messages import ContentStreamAiMessagePart
+from .widgets.messages import FinalStreamAiMessagePart
 from .widgets.messages import Message
 from .widgets.messages import MessageFinalized
 from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
+from .widgets.messages import StreamAiMessagePart
 from .widgets.messages import ToolConfirmationMessage
 from .widgets.messages import UiMessage
 from .widgets.messages import UserMessage
@@ -120,8 +123,8 @@ class ChatApp(
 
         self._pending_tool_confirmations: set[ToolConfirmationMessage] = set()
 
-        self._append_stream_ai_message_content_buffer: SchedulingAsyncBufferRelay[tuple[uuid.UUID, str]] = SchedulingAsyncBufferRelay(  # noqa
-            self._schedule_drain_append_stream_ai_message_content_buffer,
+        self._append_stream_ai_message_buffer: SchedulingAsyncBufferRelay[StreamAiMessagePart] = SchedulingAsyncBufferRelay(  # noqa
+            self._schedule_drain_append_stream_ai_message_buffer,
         )
 
         #
@@ -164,12 +167,12 @@ class ChatApp(
         self.refresh(layout=True)
         self.call_after_refresh(inner)
 
-    async def _schedule_drain_append_stream_ai_message_content_buffer(self) -> None:
-        self.call_next(self._drain_append_stream_ai_message_content_buffer)
+    async def _schedule_drain_append_stream_ai_message_buffer(self) -> None:
+        self.call_next(self._drain_append_stream_ai_message_buffer)
 
-    async def _drain_append_stream_ai_message_content_buffer(self) -> None:
-        parts = await self._append_stream_ai_message_content_buffer.swap()
-        await self._messages_container.append_stream_ai_message_content(*parts)
+    async def _drain_append_stream_ai_message_buffer(self) -> None:
+        parts = await self._append_stream_ai_message_buffer.swap()
+        await self._messages_container.append_stream_ai_message_content(parts)
 
     ##
     # Chat events
@@ -201,16 +204,22 @@ class ChatApp(
 
         elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
             if isinstance(ev.delta, mc.ContentAiDelta):
-                await self._append_stream_ai_message_content_buffer.push((
-                    check.not_none(ev.message_uuid),
-                    check.isinstance(ev.delta.c, str),
-                ))
+                await self._append_stream_ai_message_buffer.push(
+                    ContentStreamAiMessagePart(
+                        check.not_none(ev.message_uuid),
+                        check.isinstance(ev.delta.c, str),
+                    ),
+                )
 
             elif isinstance(ev.delta, mc.ToolUseAiDelta):
                 pass
 
         elif isinstance(ev, mc.drivers.AiStreamEndEvent):
-            self.call_later(self._messages_container.finalize_stream_ai_message, ev.message_uuid)
+            await self._append_stream_ai_message_buffer.push(
+                FinalStreamAiMessagePart(
+                    check.not_none(ev.message_uuid),
+                ),
+            )
 
     @logs.async_exception_logging(alog, BaseException)
     async def _chat_event_queue_task_main(self) -> None:

@@ -113,7 +113,7 @@ class StaticMessage(OnMountMessageFinalized, Message, lang.Abstract):
     pass
 
 
-#
+##
 
 
 class WelcomeMessage(StaticMessage):
@@ -136,7 +136,7 @@ class WelcomeMessage(StaticMessage):
             yield tx.Static(self._content, classes='welcome-message-content')
 
 
-#
+##
 
 
 class UserMessage(StaticMessage):
@@ -164,7 +164,7 @@ class UserMessage(StaticMessage):
                     yield tx.Static(self._content)
 
 
-#
+##
 
 
 class AiMessage(Message, lang.Abstract):
@@ -182,6 +182,9 @@ class AiMessage(Message, lang.Abstract):
     @abc.abstractmethod
     def _compose_content(self) -> ta.Generator:
         raise NotImplementedError
+
+
+##
 
 
 class StaticAiMessage(StaticMessage, AiMessage):
@@ -208,12 +211,30 @@ class StaticAiMessage(StaticMessage, AiMessage):
             yield tx.Static(self._content)
 
 
+##
+
+
 StreamAiMessageState: ta.TypeAlias = ta.Literal[  # noqa
     'new',
     'new_finalizing',
     'streaming',
     'finalized',
 ]
+
+
+@dc.dataclass(frozen=True)
+class StreamAiMessagePart(lang.Abstract):
+    message_uuid: uuid.UUID
+
+
+@dc.dataclass(frozen=True)
+class ContentStreamAiMessagePart(StreamAiMessagePart):
+    content: str
+
+
+@dc.dataclass(frozen=True)
+class FinalStreamAiMessagePart(StreamAiMessagePart):
+    pass
 
 
 class StreamAiMessage(AiMessage):
@@ -311,7 +332,7 @@ class StreamAiMessage(AiMessage):
             raise RuntimeError(f'unexpected state: {self._state}')
 
 
-#
+##
 
 
 class ToolConfirmationControls(tx.InitAddClass, tx.Static):
@@ -417,7 +438,7 @@ class ToolConfirmationMessage(Message):
         await self.respond(False)
 
 
-#
+##
 
 
 class UiMessage(StaticMessage):
@@ -493,32 +514,44 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
 
     #
 
-    async def append_stream_ai_message_content(self, *parts: tuple[uuid.UUID, str]) -> None:
+    async def append_stream_ai_message_content(self, parts: ta.Sequence[StreamAiMessagePart]) -> None:
         mount_messages = False
         refresh = False
         scroll_to_bottom = False
 
-        for message_uuid, content in parts:
-            if (msg := self._messages_by_uuid.get(message_uuid)) is None:
-                aim = StreamAiMessage(content, message_uuid=message_uuid)
+        for part in parts:
+            if isinstance(part, ContentStreamAiMessagePart):
+                message_uuid = part.message_uuid
+                content = part.content
 
-                self._messages_by_uuid[message_uuid] = aim
+                if (msg := self._messages_by_uuid.get(message_uuid)) is None:
+                    aim = StreamAiMessage(content, message_uuid=message_uuid)
 
-                await self.enqueue_mount_messages(aim)
+                    self._messages_by_uuid[message_uuid] = aim
 
-                mount_messages = True
-                refresh = True
+                    await self.enqueue_mount_messages(aim)
 
-            else:
-                aim = check.isinstance(msg, StreamAiMessage)
-
-                if not aim.is_mounted:
-                    await aim.append_stream_content(content)
+                    mount_messages = True
+                    refresh = True
 
                 else:
-                    scroll_to_bottom |= self._is_messages_at_bottom()
+                    aim = check.isinstance(msg, StreamAiMessage)
+
+                    if aim.is_mounted:
+                        scroll_to_bottom |= self._is_messages_at_bottom()
 
                     await aim.append_stream_content(content)
+
+            elif isinstance(part, FinalStreamAiMessagePart):
+                if (msg := self._messages_by_uuid.get(part.message_uuid)) is None:
+                    continue
+
+                aim = check.isinstance(msg, StreamAiMessage)
+
+                await aim.finalize_stream()
+
+            else:
+                raise TypeError(part)
 
         if mount_messages:
             self.call_later(self.mount_messages)
@@ -526,14 +559,6 @@ class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
             self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
         if refresh:
             self.refresh()
-
-    async def finalize_stream_ai_message(self, message_uuid: uuid.UUID) -> None:
-        if (msg := self._messages_by_uuid.get(message_uuid)) is None:
-            return
-
-        aim = check.isinstance(msg, StreamAiMessage)
-
-        await aim.finalize_stream()
 
     #
 
