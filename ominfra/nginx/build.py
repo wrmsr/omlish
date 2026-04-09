@@ -17,7 +17,7 @@ from omlish import lang
 ##
 
 
-NGINX_VERSION = '1.29.5'
+NGINX_VERSION = '1.29.8'
 NGINX_SRC_URL = f'https://nginx.org/download/nginx-{NGINX_VERSION}.tar.gz'
 
 NGINX_VTS_VERSION = '0.2.5'
