@@ -66,17 +66,21 @@ class DriverStateManagerImpl(DriverStateManager):
         return chat
 
     async def extend_chat(self, chat_additions: Chat) -> None:
-        async with self._orm.new_session():
-            orm_driver = await self._get_orm_driver()
+        try:
+            async with self._orm.new_session() as sess:
+                orm_driver = await self._get_orm_driver()
 
-            orm_chat = await orm_driver.chat()
+                orm_chat = await orm_driver.chat()
 
-            for m in chat_additions:
-                await orm.add_one(OrmMessage(
-                    id=orm.key(m.metadata[MessageUuid].v),
-                    chat=orm.ref(orm_chat),
-                    seq=orm_chat.num_messages + 1,
-                    message=m,
-                ))
+                for m in chat_additions:
+                    await orm.add_one(OrmMessage(
+                        id=orm.key(m.metadata[MessageUuid].v),
+                        chat=orm.ref(orm_chat),
+                        seq=orm_chat.num_messages + 1,
+                        message=m,
+                    ))
 
-                orm_chat.num_messages += 1
+                    orm_chat.num_messages += 1
+
+        except Exception as e:
+            raise

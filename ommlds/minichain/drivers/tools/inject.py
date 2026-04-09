@@ -12,6 +12,7 @@ from .execution import ToolUseExecutorImpl
 from .injection import bind_tool_context_provider_to_key
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
+from .metadata import MetadataAddingToolUseExecutor
 from .permissions import StandardToolPermissionDecider
 
 
@@ -36,6 +37,8 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     els.append(exec_stack.push_bind(to_ctor=ToolUseExecutorImpl, singleton=True))
 
     els.append(exec_stack.push_bind(to_ctor=ErrorHandlingToolUseExecutor, singleton=True))
+
+    els.append(exec_stack.push_bind(to_ctor=MetadataAddingToolUseExecutor, singleton=True))
 
     els.append(exec_stack.push_bind(to_ctor=EventEmittingToolUseExecutor, singleton=True))
 
