@@ -192,7 +192,7 @@ pluggy==1.6.0
 pprintpp==0.4.0
 primp==1.2.2
 priority==2.0.0
-prometheus_client==0.24.1
+prometheus_client==0.25.0
 prompt_toolkit==3.0.52
 propcache==0.4.1
 proto-plus==1.27.2
@@ -314,7 +314,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.24.1
 types-awscrt==0.31.3
-types-boto3==1.42.86
+types-boto3==1.42.87
 types-docutils==0.22.3.20260408
 types-greenlet==3.4.0.20260409
 types-paramiko==4.0.0.20260408
