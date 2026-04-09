@@ -314,7 +314,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.24.1
 types-awscrt==0.31.3
-types-boto3==1.42.85
+types-boto3==1.42.86
 types-docutils==0.22.3.20260408
 types-greenlet==3.3.0.20260408
 types-paramiko==4.0.0.20260408
