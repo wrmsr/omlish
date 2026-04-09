@@ -1,8 +1,11 @@
 import typing as ta
 import uuid
 
+from omlish import check
+
 from ...metadata import MessageUuid
 from ..types import AiDelta
+from ..types import PartialToolUseAiDelta
 from .types import AiDeltaTransform
 
 
@@ -10,26 +13,49 @@ from .types import AiDeltaTransform
 
 
 class TypeSequentialMessageUuidAddingAiDeltaTransform(AiDeltaTransform):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            uuid_factory: ta.Callable[[], uuid.UUID] = uuid.uuid4,
+    ) -> None:
         super().__init__()
 
-        self._last: tuple[type[AiDelta], MessageUuid] | None = None
+        self._uuid_factory = uuid_factory
+
+        self._last: AiDelta | None = None
 
     def transform(self, d: AiDelta) -> ta.Sequence[AiDelta]:
-        dty = type(d)
-        dmu = d.metadata.get(MessageUuid)
-
         last = self._last
-        if last == (dty, dmu):
+
+        if last is None:
+            if MessageUuid not in d.metadata:
+                d = d.with_metadata(MessageUuid(self._uuid_factory()))
+
+            self._last = d
             return [d]
 
-        if last is not None and last[0] == dty and dmu is None:
-            d = d.with_metadata(last[1])
+        last_mu = last.metadata[MessageUuid]
+
+        # FIXME: gross ugly logic dupe with joiner - make this itself joined messages, and callers know to will ignore
+        #        Partials
+        if (
+                isinstance(last, PartialToolUseAiDelta) and
+                isinstance(d, PartialToolUseAiDelta) and
+                d.id is not None and
+                last.id != d.id
+        ):
+            if (d_mu := d.metadata.get(MessageUuid)) is not None:
+                check.not_equal(d_mu, last_mu)
+            else:
+                d = d.with_metadata(MessageUuid(self._uuid_factory()))
+
+            self._last = d
             return [d]
 
-        if dmu is None:
-            dmu = MessageUuid(uuid.uuid4())
-            d = d.with_metadata(dmu)
+        if MessageUuid not in d.metadata:
+            if type(d) == type(last):  # noqa
+                d = d.with_metadata(last_mu)
+            else:
+                d = d.with_metadata(MessageUuid(self._uuid_factory()))
 
-        self._last = (dty, dmu)
+        self._last = d
         return [d]

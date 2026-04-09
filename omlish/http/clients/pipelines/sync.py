@@ -97,8 +97,10 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient['IoPipelineHttpC
         try:
             prepared = self._prepare_request(req)
 
-            # FIXME: timeout
-            sock = socket.create_connection((prepared.parsed_url.host, prepared.parsed_url.port))
+            sock = socket.create_connection(
+                (prepared.parsed_url.host, prepared.parsed_url.port),
+                **(dict(timeout=self._config.connect_timeout_s) if self._config.connect_timeout_s is not None else {}),  # type: ignore[arg-type]  # noqa
+            )
 
             try:
                 self._try_set_nodelay(sock)
