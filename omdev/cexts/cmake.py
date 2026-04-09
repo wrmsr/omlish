@@ -196,7 +196,7 @@ class CmakeProjectGen:
     class _CmakeListsGen:
         def __init__(
                 self,
-                p: 'CmakeProjectGen',
+                p: CmakeProjectGen,
                 out: ta.TextIO,
         ) -> None:
             super().__init__()
@@ -209,7 +209,7 @@ class CmakeProjectGen:
             return self.p.prj_name().upper()
 
         @lang.cached_property
-        def py(self) -> 'CmakeProjectGen.PyInfo':
+        def py(self) -> CmakeProjectGen.PyInfo:
             return self.p.py_info()
 
         def _add_ext(self, ext_src: str) -> None:

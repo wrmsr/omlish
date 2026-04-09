@@ -16,7 +16,7 @@ class Configurable(lang.Abstract, ta.Generic[ConfigurableConfigT]):
     class Config:
         """Does not use any dc metaclasses to preserve typechecking."""
 
-        configurable_cls: ta.ClassVar[type['Configurable']]
+        configurable_cls: ta.ClassVar[type[Configurable]]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)

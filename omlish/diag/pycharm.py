@@ -159,7 +159,7 @@ class PycharmRemoteDebugger:
         ])
 
     @classmethod
-    def parse(cls, s: str) -> 'PycharmRemoteDebugger':
+    def parse(cls, s: str) -> PycharmRemoteDebugger:
         if (m := re.fullmatch(r'(@(?P<version>[^:]+):)?((?P<host>[^:]+):)?(?P<port>\d+)', s)) is None:
             raise ValueError(s)
         gd = m.groupdict()

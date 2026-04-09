@@ -82,7 +82,7 @@ def shape_metadata(
 class ShapeInfo:
     def __init__(
             self,
-            cls: type['Shape'],
+            cls: type[Shape],
             metadata: ta.Mapping[ta.Any, ta.Any],
     ) -> None:
         super().__init__()
@@ -91,7 +91,7 @@ class ShapeInfo:
         self._metadata = metadata
 
     @property
-    def cls(self) -> type['Shape']:
+    def cls(self) -> type[Shape]:
         return self._cls
 
     @property

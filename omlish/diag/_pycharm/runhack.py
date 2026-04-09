@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: UP037
 """
 .venv/bin/python $(curl -LsSf https://raw.githubusercontent.com/wrmsr/omlish/master/omlish/diag/_pycharm/runhack.py -o $(mktemp) && echo "$_") install
 

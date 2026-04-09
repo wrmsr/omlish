@@ -87,7 +87,7 @@ class List(Collection, lang.Final):
             check.isinstance(self.items, tuple)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> 'List':
+    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> List:
         return cls(tuple(items), meta=meta)
 
 
@@ -104,7 +104,7 @@ class Vector(Collection, lang.Final):
             check.isinstance(self.items, tuple)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> 'Vector':
+    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> Vector:
         return cls(tuple(items), meta=meta)
 
 
@@ -121,7 +121,7 @@ class Set(Collection, lang.Final):
             check.isinstance(self.items, tuple)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> 'Set':
+    def new(cls, items: ta.Iterable[ta.Any], *, meta: ta.Any | None = None) -> Set:
         return cls(tuple(items), meta=meta)
 
 
@@ -141,7 +141,7 @@ class Map(Collection, lang.Final):
                 check.equal(len(t), 2)
 
     @classmethod
-    def new(cls, items: ta.Iterable[ta.Iterable[ta.Any]], *, meta: ta.Any | None = None) -> 'Map':
+    def new(cls, items: ta.Iterable[ta.Iterable[ta.Any]], *, meta: ta.Any | None = None) -> Map:
         return cls(tuple((k, v) for k, v in items), meta=meta)
 
 

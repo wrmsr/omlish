@@ -40,7 +40,7 @@ ServiceTypeName: ta.TypeAlias = ta.Literal[
 class ModelGen:
     def __init__(
             self,
-            service_model: 'botocore.model.ServiceModel',
+            service_model: botocore.model.ServiceModel,
             *,
             shape_names: ta.Iterable[str] = (),
             operation_names: ta.Iterable[str] = (),
@@ -52,7 +52,7 @@ class ModelGen:
         self._operation_names = list(check.not_isinstance(operation_names, str))
 
     @property
-    def service_model(self) -> 'botocore.model.ServiceModel':
+    def service_model(self) -> botocore.model.ServiceModel:
         return self._service_model
 
     @property
@@ -66,7 +66,7 @@ class ModelGen:
     #
 
     @classmethod
-    def create_data_loader(cls) -> 'botocore.loaders.Loader':
+    def create_data_loader(cls) -> botocore.loaders.Loader:
         session = botocore.session.get_session()
         return session.get_component('data_loader')
 
@@ -86,7 +86,7 @@ class ModelGen:
             *,
             type_name: ServiceTypeName = 'service-2',
             api_version: str | None = None,
-    ) -> 'botocore.model.ServiceModel':
+    ) -> botocore.model.ServiceModel:
         loader = cls.create_data_loader()
         json_model = loader.load_service_model(service_name, type_name, api_version=api_version)
         return botocore.model.ServiceModel(json_model, service_name=service_name)
@@ -94,7 +94,7 @@ class ModelGen:
     @classmethod
     def get_referenced_shape_names(
             cls,
-            service_model: 'botocore.model.ServiceModel',
+            service_model: botocore.model.ServiceModel,
             *,
             shape_names: ta.Iterable[str] = (),
             operation_names: ta.Iterable[str] = (),

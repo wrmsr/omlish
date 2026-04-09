@@ -23,7 +23,7 @@ T = ta.TypeVar('T')
 class _GlobalTimer:
     def __init__(
             self,
-            registry: '_GlobalTimerRegistry',
+            registry: _GlobalTimerRegistry,
             name: str,
             *,
             clock: ta.Callable[[], float] | None = None,

@@ -24,7 +24,7 @@ T = ta.TypeVar('T')
 @dc.dataclass(frozen=True)
 class NodeWrapped(lang.Final, ta.Generic[T]):
     value: T
-    node: 'yaml_nodes.Node'
+    node: yaml_nodes.Node
 
     def __post_init__(self) -> None:
         if isinstance(self.value, NodeWrapped):
@@ -151,52 +151,52 @@ class WrappedLoaders(lang.NotInstantiable):
     def _wrap(cls):  # noqa
         return type('NodeWrapping$' + cls.__name__, (NodeWrappingConstructorMixin, cls), {})
 
-    Base: type['yaml.BaseLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.BaseLoader))  # type: ignore
+    Base: type[yaml.BaseLoader] = _cached_class_property(lambda cls: cls._wrap(yaml.BaseLoader))  # type: ignore
 
     @classmethod
-    def base(cls, *args, **kwargs) -> 'yaml.BaseLoader':
+    def base(cls, *args, **kwargs) -> yaml.BaseLoader:
         return cls.Base(*args, **kwargs)
 
-    Full: type['yaml.FullLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.FullLoader))  # type: ignore
+    Full: type[yaml.FullLoader] = _cached_class_property(lambda cls: cls._wrap(yaml.FullLoader))  # type: ignore
 
     @classmethod
-    def full(cls, *args, **kwargs) -> 'yaml.FullLoader':
+    def full(cls, *args, **kwargs) -> yaml.FullLoader:
         return cls.Full(*args, **kwargs)
 
-    Safe: type['yaml.SafeLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.SafeLoader))  # type: ignore
+    Safe: type[yaml.SafeLoader] = _cached_class_property(lambda cls: cls._wrap(yaml.SafeLoader))  # type: ignore
 
     @classmethod
-    def safe(cls, *args, **kwargs) -> 'yaml.SafeLoader':
+    def safe(cls, *args, **kwargs) -> yaml.SafeLoader:
         return cls.Safe(*args, **kwargs)
 
-    Unsafe: type['yaml.UnsafeLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.UnsafeLoader))  # type: ignore
+    Unsafe: type[yaml.UnsafeLoader] = _cached_class_property(lambda cls: cls._wrap(yaml.UnsafeLoader))  # type: ignore
 
     @classmethod
-    def unsafe(cls, *args, **kwargs) -> 'yaml.UnsafeLoader':
+    def unsafe(cls, *args, **kwargs) -> yaml.UnsafeLoader:
         return cls.Unsafe(*args, **kwargs)
 
-    CBase: type['yaml.CBaseLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.CBaseLoader))  # type: ignore
+    CBase: type[yaml.CBaseLoader] = _cached_class_property(lambda cls: cls._wrap(yaml.CBaseLoader))  # type: ignore
 
     @classmethod
-    def cbase(cls, *args, **kwargs) -> 'yaml.CBaseLoader':
+    def cbase(cls, *args, **kwargs) -> yaml.CBaseLoader:
         return cls.CBase(*args, **kwargs)
 
-    CFull: type['yaml.CFullLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.CFullLoader))  # type: ignore
+    CFull: type[yaml.CFullLoader] = _cached_class_property(lambda cls: cls._wrap(yaml.CFullLoader))  # type: ignore
 
     @classmethod
-    def cfull(cls, *args, **kwargs) -> 'yaml.CFullLoader':
+    def cfull(cls, *args, **kwargs) -> yaml.CFullLoader:
         return cls.CFull(*args, **kwargs)
 
-    CSafe: type['yaml.CSafeLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.CSafeLoader))  # type: ignore
+    CSafe: type[yaml.CSafeLoader] = _cached_class_property(lambda cls: cls._wrap(yaml.CSafeLoader))  # type: ignore
 
     @classmethod
-    def csafe(cls, *args, **kwargs) -> 'yaml.CSafeLoader':
+    def csafe(cls, *args, **kwargs) -> yaml.CSafeLoader:
         return cls.CSafe(*args, **kwargs)
 
     CUnsafe: type['yaml.CUnsafeLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.CUnsafeLoader))  # type: ignore  # noqa
 
     @classmethod
-    def cunsafe(cls, *args, **kwargs) -> 'yaml.CUnsafeLoader':
+    def cunsafe(cls, *args, **kwargs) -> yaml.CUnsafeLoader:
         return cls.CUnsafe(*args, **kwargs)
 
 

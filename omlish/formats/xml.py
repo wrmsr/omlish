@@ -38,7 +38,7 @@ def yield_root_children(
         *,
         retain_on_root: bool = False,
         **kwargs: ta.Any,
-) -> ta.Iterator['ET.Element']:
+) -> ta.Iterator[ET.Element]:
     it = iter(ET.iterparse(source, ('start', 'end'), **kwargs))
 
     ev, root = next(it)
@@ -75,7 +75,7 @@ class SimpleElement:
         return any(isinstance(c, SimpleElement) for c in self.body or ())
 
     @cached.property
-    def children(self) -> ta.Sequence['SimpleElement']:
+    def children(self) -> ta.Sequence[SimpleElement]:
         return [c for c in self.body or () if isinstance(c, SimpleElement)]
 
     @cached.property
@@ -115,11 +115,11 @@ class SimpleElement:
 
 
 def build_simple_element(
-        element: 'ET.Element',
+        element: ET.Element,
         *,
         strip_tag_ns: bool = False,
 ) -> SimpleElement:
-    def rec(cur: 'ET.Element') -> SimpleElement:
+    def rec(cur: ET.Element) -> SimpleElement:
         atts = {}
         for name, value in cur.attrib.items():
             atts[name] = value  # noqa
@@ -148,5 +148,5 @@ def build_simple_element(
     return rec(element)
 
 
-def parse_tree(s: str) -> 'ET.ElementTree':
+def parse_tree(s: str) -> ET.ElementTree:
     return ET.ElementTree(ET.fromstring(s.strip()))  # noqa

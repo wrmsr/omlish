@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../clouds/aws/journald2aws/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 PYI034 UP006 UP007 UP036 UP043 UP045 UP046
+# ruff: noqa: N802 PYI034 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 import abc
 import argparse
 import base64
@@ -79,8 +79,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../../../omlish/os/pidfiles/pidfile.py', sha1='921946886bee1d808c99d2e30d84766b916bab08'),
             dict(path='../../../../omlish/subprocesses/utils.py', sha1='2210d90ab1bfc75642aa2f4caad662368900aa1c'),
-            dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
-            dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
+            dict(path='../auth.py', sha1='2a565a74c25ce4dfc8526b092cfe72e66d73c427'),
+            dict(path='../dataclasses.py', sha1='9d4c8d1aada04d5fe64899b85cbd1af0f5a1a972'),
             dict(path='../../../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../../../omlish/io/streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
@@ -106,7 +106,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cursor.py', sha1='00f1c62e16e4c85b20658eaf33c0bedf22c9e18f'),
             dict(path='../../../journald/messages.py', sha1='aed1f6428eb68aef67c9ebd9703f29097d849424'),
-            dict(path='../../../threadworkers.py', sha1='e3413436070b66faeb3e6974dc9a75cd8a949ad7'),
+            dict(path='../../../threadworkers.py', sha1='1c03d1e5609bd44115be883c802e203c40e93a37'),
             dict(path='poster.py', sha1='275770a4e60ea5777053c9044e37d71397c3ed20'),
             dict(path='../../../journald/tailer.py', sha1='1c37a6bbde32e8556d26b94b439f14869731ac01'),
             dict(path='driver.py', sha1='a9353a417fc4e57f29e7f04038c3bf4668f36dbd'),
