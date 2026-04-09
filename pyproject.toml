@@ -64,12 +64,10 @@ interp = '@14dt'
 
 [tool.omlish.pyproject.venvs.'15']
 inherits = ['_default']
-requires = []
 interp = '@15'
 
 [tool.omlish.pyproject.venvs.'15t']
 inherits = ['_default']
-requires = []
 interp = '@15t'
 
 
