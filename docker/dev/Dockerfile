@@ -342,7 +342,7 @@ done ;\
 ## uv
 
 RUN (\
-export UV_PYTHON_VERSIONS='3.13 3.14' ;\
+export UV_PYTHON_VERSIONS='3.13 3.14 3.14+freethreaded' ;\
 \
 set -ex ;\
 \
@@ -359,7 +359,7 @@ done ;\
 RUN \
   --mount=target=/omlish/.pyenv_cache,type=cache,sharing=locked,uid=2000,gid=2000 \
 ( \
-export PYENV_VERSIONS='3.8.20 3.13.13 3.14.4' ;\
+export PYENV_VERSIONS='3.8.20 3.13.13 3.14.4 3.14.4t 3.15.0a8 3.15.0a8t' ;\
 \
 set -ex ;\
 \

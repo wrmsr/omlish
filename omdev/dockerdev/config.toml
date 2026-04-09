@@ -28,12 +28,16 @@ rbenv_versions = [
 uv_python_versions = [
     '3.13',
     '3.14',
+    '3.14+freethreaded',
 ]
 
 pyenv_version_keys = [
     '8',
     '13',
     '14',
+    '14t',
+    '15',
+    '15t',
 ]
 
 workdir = '/work'
