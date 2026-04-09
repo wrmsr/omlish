@@ -27,7 +27,7 @@ class Precheck(cfgs.Configurable[PrecheckConfigT], lang.Abstract):
 
     @dc.dataclass(frozen=True)
     class Violation:
-        pc: 'Precheck'
+        pc: Precheck
         msg: str
 
     @abc.abstractmethod

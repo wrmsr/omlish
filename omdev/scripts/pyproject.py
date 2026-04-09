@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../pyproject/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045 UP046
+# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 """
 TODO:
  - check / tests, src dir sets
@@ -89,7 +89,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../magic/magic.py', sha1='16a7598eac927e7994d78b9f851dd6cd1fce34c9'),
             dict(path='../magic/prepare.py', sha1='a9b6bd7408d86a52fab7aae2c522032fb251cb8e'),
             dict(path='../magic/styles.py', sha1='60fc56d089669eaad72c5c134b91bc69d4bc107e'),
-            dict(path='../packaging/versions.py', sha1='71627ad600b3529b829b0e227b0952f2c63c7271'),
+            dict(path='../packaging/versions.py', sha1='d515a54dd7fa27a9fd4d8c8617e5a21a3c12ea1e'),
             dict(path='../packaging/wheelfile.py', sha1='2e1113819aa85ed00e1fe25c71a2b3dbc0a383f5'),
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
@@ -108,7 +108,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../cexts/magic.py', sha1='4e5ce6732454f75c9dd27352959708d8fa7b1666'),
             dict(path='../magic/find.py', sha1='436228a9cf1d8bab6b9234d09f72913b0960382f'),
-            dict(path='../packaging/specifiers.py', sha1='a56ab4e8c9b174adb523921f6280ac41e0fce749'),
+            dict(path='../packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
             dict(path='versions.py', sha1='eb6579b9ea2bcee5f71e1af1e430429112f7fc8d'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
@@ -119,7 +119,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='../interp/types.py', sha1='32aca8ff7200fa7f169c33766f8274019c270b49'),
+            dict(path='../interp/types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
             dict(path='../packaging/requires.py', sha1='5818353abd45135e0e638e28fa6247b24122231b'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
@@ -139,16 +139,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../git/revisions.py', sha1='a26b5afa568313e034b6b2d3a5d2dd0b065979d4'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='../interp/inspect.py', sha1='736287b4ec8d14a8c30afa0ba23996fdc0662caa'),
+            dict(path='../interp/inspect.py', sha1='d13c4cd18388ef68cff8edcd1af1a28da2234f4f'),
             dict(path='../interp/pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
             dict(path='../interp/uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
             dict(path='../packaging/revisions.py', sha1='9ba90e4a93b1bfcc93f6ca65dbaaf38f79929677'),
             dict(path='reqs.py', sha1='65ac743653c455a5015a1a0ce2317ee5372a0c7c'),
             dict(path='../interp/providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
-            dict(path='../interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
+            dict(path='../interp/pyenv/install.py', sha1='72fe61d3db273f9885530c464cc6b16d9dd5eee0'),
             dict(path='../interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
-            dict(path='pkg.py', sha1='58989527dd7c6f20372792bbb54232f925a93a6c'),
+            dict(path='pkg.py', sha1='59f3ae6da9a4a8a59914eb5e9fc6eb380c13398f'),
             dict(path='../interp/providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='../interp/pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
             dict(path='../interp/uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),

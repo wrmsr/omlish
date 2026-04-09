@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../supervisor/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: FURB188 N802 PYI034 UP006 UP007 UP012 UP036 UP043 UP045 UP046
+# ruff: noqa: FURB188 N802 PYI034 UP006 UP007 UP012 UP036 UP037 UP043 UP045 UP046
 #
 # Supervisor is Copyright (c) 2006-2015 Agendaless Consulting and Contributors.
 # (http://www.agendaless.com), All Rights Reserved
@@ -153,7 +153,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='3cb3d02f8b862329340ebb8655a72b13a657dc87'),
+            dict(path='configs.py', sha1='6396355bebd4e2a7c445e94a2815c5a45c18fb5b'),
             dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
@@ -171,7 +171,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
+            dict(path='types.py', sha1='6df5c3fe0ea068f00491eff16bb676aae0bd3de2'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='35114ed9cf2db0d910261b7c861617147f9ed5d3'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='8585190368d96ee8d6e31c91f55f2690628711c5'),  # noqa
             dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='b7e1d61e1a2cb722b6c69a61ec59d02ebd1a5615'),  # noqa
@@ -204,7 +204,7 @@ def __omlish_amalg__():  # noqa
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='836ddfc508c494a6fd15c2b597c50aecddcf5a04'),
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='a37597f417b8f2893a434335da42fcd58a38ebe2'),
-            dict(path='supervisor.py', sha1='a97a13ec71deaf6eacabb1527f373b21b89209af'),
+            dict(path='supervisor.py', sha1='d3ccd2d82d4dd1c39ca302fbf6d05ef714d1c212'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='983efc23b5ae5e28a528c3c4cefdf5e1259a6743'),  # noqa
             dict(path='http.py', sha1='35aac87aea283a4f6603ec1924381eb4b3cea625'),

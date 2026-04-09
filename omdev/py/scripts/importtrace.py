@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @omlish-script
-# ruff: noqa: PYI034 UP006 UP007 UP045
+# ruff: noqa: PYI034 UP006 UP007 UP037 UP045
 """
 TODO:
  - !! amalg !!

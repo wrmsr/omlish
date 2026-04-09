@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007 UP037 UP045
 """
 TODO:
  - ext scanning
@@ -24,7 +25,6 @@ https://pip.pypa.io/en/stable/cli/pip_install/#vcs-support
 vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 'git+https://github.com/wrmsr/omlish@master#subdirectory=.pip/omlish'
 """  # noqa
-# ruff: noqa: UP006 UP007 UP045
 import abc
 import dataclasses as dc
 import glob

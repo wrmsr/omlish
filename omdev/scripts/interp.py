@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../interp/cli.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 UP006 UP007 UP036 UP043 UP045
+# ruff: noqa: N802 UP006 UP007 UP036 UP037 UP043 UP045
 """
 TODO:
  - partial best-matches - '3.12'
@@ -53,7 +53,7 @@ if sys.version_info < (3, 8):
 def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../packaging/versions.py', sha1='71627ad600b3529b829b0e227b0952f2c63c7271'),
+            dict(path='../packaging/versions.py', sha1='d515a54dd7fa27a9fd4d8c8617e5a21a3c12ea1e'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='b3408fe9ba7756d6dc681e3c3a1ef622991380cd'),
@@ -64,14 +64,14 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
-            dict(path='../packaging/specifiers.py', sha1='a56ab4e8c9b174adb523921f6280ac41e0fce749'),
+            dict(path='../packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../omlish/lite/timeouts.py', sha1='2f19c808e582877f999d7ea7dde0acd6382266a2'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='types.py', sha1='32aca8ff7200fa7f169c33766f8274019c270b49'),
+            dict(path='types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
@@ -82,12 +82,12 @@ def __omlish_amalg__():  # noqa
             dict(path='resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='inspect.py', sha1='736287b4ec8d14a8c30afa0ba23996fdc0662caa'),
+            dict(path='inspect.py', sha1='d13c4cd18388ef68cff8edcd1af1a28da2234f4f'),
             dict(path='pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
             dict(path='uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
             dict(path='providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
-            dict(path='pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
+            dict(path='pyenv/install.py', sha1='72fe61d3db273f9885530c464cc6b16d9dd5eee0'),
             dict(path='uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
             dict(path='providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),

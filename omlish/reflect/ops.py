@@ -111,7 +111,7 @@ def to_annotation(ty: Type) -> ta.Any:
         return ty.obj if ty.obj is not None else ty.cls
 
     if isinstance(ty, Union):
-        return ta.Union[*tuple(to_annotation(e) for e in ty.args)]
+        return ta.Union[*tuple(to_annotation(e) for e in ty.args)]  # noqa
 
     if isinstance(ty, Protocol):
         return ta.Protocol[*ty.params]  # noqa

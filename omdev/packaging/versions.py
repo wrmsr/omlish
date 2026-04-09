@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
@@ -21,7 +22,6 @@
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-# ruff: noqa: UP006 UP007 UP045
 import itertools
 import re
 import typing as ta

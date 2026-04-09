@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ruff: noqa: UP045
+# ruff: noqa: UP037 UP045
 # @omlish-lite
 # @omlish-script
 import argparse

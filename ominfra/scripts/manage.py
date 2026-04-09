@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../manage/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 PYI034 TC003 UP006 UP007 UP036 UP043 UP045 UP046
+# ruff: noqa: N802 PYI034 TC003 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 """
 manage.py -s 'docker run -i python:3.13'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
@@ -69,12 +69,12 @@ if sys.version_info < (3, 8):
 def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../../omdev/packaging/versions.py', sha1='71627ad600b3529b829b0e227b0952f2c63c7271'),
+            dict(path='../../omdev/packaging/versions.py', sha1='d515a54dd7fa27a9fd4d8c8617e5a21a3c12ea1e'),
             dict(path='config.py', sha1='6ff640634488fa142d9aadee5aec95db462ce46f'),
             dict(path='deploy/config.py', sha1='b11f480014b42206531ea897e76dd0220eb59969'),
             dict(path='deploy/paths/types.py', sha1='4364179744afb2344f2b44d188e37f786c955970'),
             dict(path='deploy/types.py', sha1='41b2becf7a9d009e18235a8b49cfbe0419785190'),
-            dict(path='../pyremote.py', sha1='2131faabec13af3d29747d9430286394603445ca'),
+            dict(path='../pyremote.py', sha1='24f04ab94a0243f8912053de2a2d3c270327cce1'),
             dict(path='../../omlish/asyncs/asyncio/channels.py', sha1='36cec6ea48887baaf536ae6301ec6ebc70f9f19b'),
             dict(path='../../omlish/asyncs/asyncio/streams.py', sha1='78a498b78b51805d3b44ba7fe8c10c575389c6a9'),
             dict(path='../../omlish/configs/types.py', sha1='f7a5584cd6eccb77d18d729796072a162e9a8790'),
@@ -104,7 +104,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/os/paths.py', sha1='56c40b7c2aa84d1778d60ee4cda498f8c380cc8d'),
             dict(path='../../omlish/shlex.py', sha1='a69721913bcd4f4008600e390fb7822637c2a8ec'),
             dict(path='../../omdev/home/paths.py', sha1='4006c1d740600ba6e07142cf990c3efeb290062e'),
-            dict(path='../../omdev/packaging/specifiers.py', sha1='a56ab4e8c9b174adb523921f6280ac41e0fce749'),
+            dict(path='../../omdev/packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
             dict(path='deploy/paths/specs.py', sha1='023167da1ad9fcf09d9d44963177175591a97377'),
             dict(path='remote/config.py', sha1='48f9367e9db4b23166657ff34eb644c9869d48a8'),
             dict(path='remote/payload.py', sha1='acacf4c2901b7708224af5d4414ecb823947297a'),
@@ -122,10 +122,10 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/atomics.py', sha1='4e88b1a207d253811f334cb6dce46e27165513fc'),
             dict(path='../../omlish/text/indent.py', sha1='cc23647bdcd8d26c8afe9e36a0aefb32da58cbb8'),
-            dict(path='../../omdev/interp/types.py', sha1='32aca8ff7200fa7f169c33766f8274019c270b49'),
-            dict(path='commands/base.py', sha1='17310f7272b6ac7b6438e32bfd7b24004d284399'),
+            dict(path='../../omdev/interp/types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
+            dict(path='commands/base.py', sha1='d76c14d18d685af4a572f01a552ddef1bbfc9378'),
             dict(path='deploy/conf/specs.py', sha1='d191fa887c59198f5eff5c62414031204a76fa65'),
-            dict(path='deploy/tags.py', sha1='e6e7a1f4fcee9f5764acbe7f307b31e26f81bbc3'),
+            dict(path='deploy/tags.py', sha1='bde9d054381dd1887889f2098748dcc15c648637'),
             dict(path='marshal.py', sha1='175f59215a92afd42468f6258f1202b9ec3362cb'),
             dict(path='remote/channel.py', sha1='2b6498da48ff89901b88a6a1ef84c58b37ddb410'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
@@ -141,7 +141,7 @@ def __omlish_amalg__():  # noqa
             dict(path='commands/marshal.py', sha1='a21c3a75fe17bb80d32d10a3d5524d67a96ea210'),
             dict(path='commands/ping.py', sha1='af4c34e9b1811269c954cf502b336a6446639a2a'),
             dict(path='commands/types.py', sha1='10b88571981b9964287f30f27abf6d09400b51c6'),
-            dict(path='deploy/paths/paths.py', sha1='bf7794e998caa1611277ac5809eb7ec91a76d1e8'),
+            dict(path='deploy/paths/paths.py', sha1='788c3b0d77d7f7aea96de20ad23f1e9541d72463'),
             dict(path='deploy/specs.py', sha1='b3a411b32b47f81f5ad673d8b0338970a6eb6ff9'),
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
@@ -161,12 +161,12 @@ def __omlish_amalg__():  # noqa
             dict(path='deploy/tmp.py', sha1='d8b7aeaa26ab58e64aba371d46bc661462d47c5e'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='../../omdev/interp/inspect.py', sha1='736287b4ec8d14a8c30afa0ba23996fdc0662caa'),
+            dict(path='../../omdev/interp/inspect.py', sha1='d13c4cd18388ef68cff8edcd1af1a28da2234f4f'),
             dict(path='../../omdev/interp/pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
             dict(path='../../omdev/interp/uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
             dict(path='commands/subprocess.py', sha1='788bd859701fce066bd00c820919f826b43b8b57'),
             dict(path='deploy/conf/inject.py', sha1='d006b45d92f3b5f30a797b65fbed23f90c3db490'),
-            dict(path='deploy/git.py', sha1='5ee2e816e18fef493cb2ccc33f33ad673175ad7a'),
+            dict(path='deploy/git.py', sha1='1d77c57f2333f4c21a200d20b8601565a21e3a12'),
             dict(path='deploy/paths/inject.py', sha1='1c501d086fcbde9c2b9ead21fc3c7b175bbf4f76'),
             dict(path='deploy/systemd.py', sha1='773c4482e85a974443bb26237a86b1dfbcd9936c'),
             dict(path='remote/execution.py', sha1='005da809e58790a0e5255df8e57afd5cd6268d7d'),
@@ -175,7 +175,7 @@ def __omlish_amalg__():  # noqa
             dict(path='system/platforms.py', sha1='f3fc312318cff15f97dd9b10fa5f2408abc45a1b'),
             dict(path='../../omdev/interp/providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='../../omdev/interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
-            dict(path='../../omdev/interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
+            dict(path='../../omdev/interp/pyenv/install.py', sha1='72fe61d3db273f9885530c464cc6b16d9dd5eee0'),
             dict(path='../../omdev/interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
             dict(path='commands/inject.py', sha1='7a95b6487b01230dd2fe0d9f67382d8889039e7b'),
             dict(path='system/commands.py', sha1='17bbaa945b6ded0a88d31c52b410cbce8fc324a0'),
