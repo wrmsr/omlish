@@ -120,7 +120,7 @@ class JinjaTemplates(Templates):
             pass
 
         class _Loader(jinja2.BaseLoader):  # noqa
-            def __init__(self, owner: 'JinjaTemplates') -> None:
+            def __init__(self, owner: JinjaTemplates) -> None:
                 super().__init__()
 
                 self._owner = owner

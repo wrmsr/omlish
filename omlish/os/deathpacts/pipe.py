@@ -113,7 +113,7 @@ class ForkAwarePipeDeathpact(PipeDeathpact):
      - Despite no correct way to do threads+forks, still audit thread-safety. Is WeakSet threadsafe? Probably not..
     """
 
-    _PARENTS: ta.ClassVar[ta.MutableSet['ForkAwarePipeDeathpact']] = weakref.WeakSet()
+    _PARENTS: ta.ClassVar[ta.MutableSet[ForkAwarePipeDeathpact]] = weakref.WeakSet()
 
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)

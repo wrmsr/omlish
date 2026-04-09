@@ -154,7 +154,7 @@ class Var(ta.Generic[T]):
 
 class Binding(ta.Generic[T]):
     _frame: types.FrameType
-    _frame_bindings: ta.MutableMapping[int, 'Binding']
+    _frame_bindings: ta.MutableMapping[int, Binding]
     _level: int
 
     def __init__(self, var: Var[T], value: T, *, offset: int = 0) -> None:

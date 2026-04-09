@@ -16,10 +16,10 @@ from .ops import StringLiteral
 
 @ta.final
 class Match(ta.NamedTuple):
-    op: 'Op'
+    op: Op
     start: int
     end: int
-    children: tuple['Match', ...]
+    children: tuple[Match, ...]
 
     @property
     def length(self) -> int:
@@ -96,16 +96,16 @@ class Match(ta.NamedTuple):
 
     #
 
-    def replace_children(self, *children: 'Match') -> 'Match':
+    def replace_children(self, *children: Match) -> Match:
         if lang.seqs_identical(children, self.children):
             return self
 
         return self._replace(children=children)
 
-    def map_children(self, fn: ta.Callable[['Match'], 'Match']) -> 'Match':
+    def map_children(self, fn: ta.Callable[[Match], Match]) -> Match:
         return self.replace_children(*map(fn, self.children))
 
-    def flat_map_children(self, fn: ta.Callable[['Match'], ta.Iterable['Match']]) -> 'Match':
+    def flat_map_children(self, fn: ta.Callable[[Match], ta.Iterable[Match]]) -> Match:
         return self.replace_children(*itertools.chain.from_iterable(map(fn, self.children)))
 
 

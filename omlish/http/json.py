@@ -72,7 +72,7 @@ def json_loads(s: str | bytes, **kwargs: ta.Any) -> ta.Any:
 class JsonTag:
     key: str = ''
 
-    def __init__(self, tagger: 'JsonTagger') -> None:
+    def __init__(self, tagger: JsonTagger) -> None:
         super().__init__()
 
         self.tagger = tagger

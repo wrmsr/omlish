@@ -21,7 +21,7 @@ T = ta.TypeVar('T')
 
 @dc.dataclass(frozen=True, kw_only=True)
 class AppRunParams:
-    app: 'App'
+    app: App
 
     port: int | None = None
 
@@ -42,7 +42,7 @@ AfterRequestFunc: ta.TypeAlias = ta.Callable[[ta.Any], ta.Any]
 
 
 class App:
-    _api: ta.ClassVar['Api']
+    _api: ta.ClassVar[Api]
 
     def __init__(
             self,

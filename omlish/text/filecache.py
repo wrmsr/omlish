@@ -45,9 +45,9 @@ class TextFileCache:
     class Entry:
         def __init__(
                 self,
-                cache: 'TextFileCache',
+                cache: TextFileCache,
                 path: str,
-                stat: 'TextFileCache.FileStat',
+                stat: TextFileCache.FileStat,
                 *,
                 encoding: str | None = None,
         ) -> None:
@@ -66,7 +66,7 @@ class TextFileCache:
             return self._path
 
         @property
-        def stat(self) -> 'TextFileCache.FileStat':
+        def stat(self) -> TextFileCache.FileStat:
             return self._stat
 
         @cached.function

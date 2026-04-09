@@ -1,4 +1,4 @@
-# ruff: noqa: UP043 UP045
+# ruff: noqa: UP037 UP043 UP045
 # @omlish-lite
 import abc
 import contextlib

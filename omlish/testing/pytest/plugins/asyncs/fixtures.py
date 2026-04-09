@@ -68,7 +68,7 @@ class AsyncsTestContext:
 
         self.error_list: list[BaseException] = []
 
-    def crash(self, fixture: 'AsyncsFixture', exc: BaseException | None) -> None:
+    def crash(self, fixture: AsyncsFixture, exc: BaseException | None) -> None:
         if exc is None:
             self.fixtures_with_cancel.add(fixture)
         else:
@@ -119,7 +119,7 @@ class AsyncsFixture:
         # wait for before tearing down.
         self.user_done_events: set[anyio.Event] = set()
 
-    def register_and_collect_dependencies(self) -> set['AsyncsFixture']:
+    def register_and_collect_dependencies(self) -> set[AsyncsFixture]:
         # Returns the set of all AsyncsFixtures that this fixture depends on, directly or indirectly, and sets up all
         # their user_done_events.
         deps = set()
@@ -131,7 +131,7 @@ class AsyncsFixture:
         return deps
 
     @contextlib.asynccontextmanager
-    async def _fixture_manager(self, test_ctx: AsyncsTestContext) -> ta.AsyncIterator['anyio.abc.TaskGroup']:
+    async def _fixture_manager(self, test_ctx: AsyncsTestContext) -> ta.AsyncIterator[anyio.abc.TaskGroup]:
         __tracebackhide__ = True
 
         try:

@@ -263,7 +263,7 @@ class LrItem:
 
         return self.dot_pos >= len(self.production.rhs)
 
-    def advance(self) -> 'LrItem':
+    def advance(self) -> LrItem:
         """Return a new item with dot advanced by one position."""
 
         return LrItem(self.production, self.dot_pos + 1)

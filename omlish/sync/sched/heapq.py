@@ -1,3 +1,4 @@
+# ruff: noqa: UP037
 import dataclasses as dc
 import heapq
 import itertools

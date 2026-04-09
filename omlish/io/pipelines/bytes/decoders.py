@@ -1,4 +1,4 @@
-# ruff: noqa: FURB188 UP006 UP045
+# ruff: noqa: FURB188 UP006 UP037 UP045
 # @omlish-lite
 """
 TODO:

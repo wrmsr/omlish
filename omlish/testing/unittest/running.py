@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP045
+# ruff: noqa: UP006 UP007 UP037 UP045
 """
 https://docs.python.org/3/library/unittest.html#command-line-interface
 ~ https://github.com/python/cpython/tree/f66c75f11d3aeeb614600251fd5d3fe1a34b5ff1/Lib/unittest

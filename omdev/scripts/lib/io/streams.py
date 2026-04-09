@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../../../../omlish/io/streams/_amalg.py
 # @omlish-git-diff-omit
-# ruff: noqa: UP006 UP007 UP036 UP045
+# ruff: noqa: UP006 UP007 UP036 UP037 UP045
 import abc
 import io
 import sys
@@ -33,9 +33,9 @@ def __omlish_amalg__():  # noqa
             dict(path='utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
             dict(path='direct.py', sha1='f3a90045bd7c7bddc139eaa95d30db2ef24a78c6'),
             dict(path='scanning.py', sha1='9c8d60b56cd9fcd2eaef550b4f1459a93c48dbe9'),
-            dict(path='adapters.py', sha1='8692c9fdebae45867179ca55f02f53805c2b2b63'),
+            dict(path='adapters.py', sha1='8a7421c6712bcc64e8e2685f788a324957f7d878'),
             dict(path='linear.py', sha1='94c28f36a07625a9ee97dff9229dc868e094bf06'),
-            dict(path='segmented.py', sha1='ae33f03c97fdc8b2d0983f8697cee2f4994cab89'),
+            dict(path='segmented.py', sha1='e66235499a23229359a863fcbe62e925a91a2e05'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )

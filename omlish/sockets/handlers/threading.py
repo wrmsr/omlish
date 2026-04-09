@@ -1,5 +1,5 @@
+# ruff: noqa: PYI034 UP006 UP007 UP037 UP045
 # @omlish-lite
-# ruff: noqa: PYI034 UP006 UP007 UP045
 import threading
 import time
 import typing as ta

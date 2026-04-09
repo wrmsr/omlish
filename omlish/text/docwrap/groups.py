@@ -52,7 +52,7 @@ def group_indents(root: Part) -> Part:
 
     #
 
-    def relativize(g: '_IndentGroup') -> None:
+    def relativize(g: _IndentGroup) -> None:
         for c in g.cs:
             if isinstance(c, _IndentGroup):
                 check.state(c.n > g.n)
@@ -63,7 +63,7 @@ def group_indents(root: Part) -> Part:
 
     #
 
-    def convert(g: '_IndentGroup') -> Part:
+    def convert(g: _IndentGroup) -> Part:
         if g.n < 1:
             check.state(g is rg)
 

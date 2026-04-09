@@ -130,7 +130,7 @@ class Parser:
         self._buffer_size = lookahead
         self._index = 0
 
-    def parse(self, expression: str, options: Options | None = None) -> 'ParsedResult':
+    def parse(self, expression: str, options: Options | None = None) -> ParsedResult:
         cached = self._CACHE.get(expression)
         if cached is not None:
             return cached
@@ -143,7 +143,7 @@ class Parser:
 
         return parsed_result
 
-    def _do_parse(self, expression: str, options: Options | None = None) -> 'ParsedResult':
+    def _do_parse(self, expression: str, options: Options | None = None) -> ParsedResult:
         try:
             return self._parse(expression, options)
 
@@ -159,7 +159,7 @@ class Parser:
             e.expression = expression
             raise
 
-    def _parse(self, expression: str, options: Options | None = None) -> 'ParsedResult':
+    def _parse(self, expression: str, options: Options | None = None) -> ParsedResult:
         self._tokenizer = Lexer().tokenize(expression, options)
         self._tokens = list(self._tokenizer)
         self._index = 0

@@ -17,7 +17,7 @@ class TermState:
 
     #
 
-    def copy(self) -> 'TermState':
+    def copy(self) -> TermState:
         return TermState(*self.as_list())  # type: ignore[arg-type]
 
     def as_list(self) -> list[int | list[bytes]]:

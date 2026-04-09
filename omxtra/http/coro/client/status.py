@@ -1,5 +1,5 @@
+# ruff: noqa: UP006 UP007 UP037 UP043 UP045
 # @omlish-lite
-# ruff: noqa: UP006 UP007 UP043 UP045
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
 #

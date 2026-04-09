@@ -70,27 +70,27 @@ class Route(lang.Final):
     #
 
     @classmethod
-    def delete(cls, path: PatOrStr) -> 'Route':
+    def delete(cls, path: PatOrStr) -> Route:
         return cls('DELETE', path)
 
     @classmethod
-    def get(cls, path: PatOrStr) -> 'Route':
+    def get(cls, path: PatOrStr) -> Route:
         return cls('GET', path)
 
     @classmethod
-    def head(cls, path: PatOrStr) -> 'Route':
+    def head(cls, path: PatOrStr) -> Route:
         return cls('HEAD', path)
 
     @classmethod
-    def patch(cls, path: PatOrStr) -> 'Route':
+    def patch(cls, path: PatOrStr) -> Route:
         return cls('PATCH', path)
 
     @classmethod
-    def post(cls, path: PatOrStr) -> 'Route':
+    def post(cls, path: PatOrStr) -> Route:
         return cls('POST', path)
 
     @classmethod
-    def put(cls, path: PatOrStr) -> 'Route':
+    def put(cls, path: PatOrStr) -> Route:
         return cls('PUT', path)
 
 

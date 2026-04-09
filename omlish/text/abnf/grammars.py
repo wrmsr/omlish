@@ -43,7 +43,7 @@ class Rule(lang.Final):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._name!r}, channel={self._channel.name})'
 
-    def replace_op(self, op: Op) -> 'Rule':
+    def replace_op(self, op: Op) -> Rule:
         return Rule(
             self._name,
             op,

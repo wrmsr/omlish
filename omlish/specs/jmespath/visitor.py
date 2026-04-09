@@ -162,7 +162,7 @@ class Options:
 
 
 class _Expression:
-    def __init__(self, expression: Node, interpreter: 'TreeInterpreter') -> None:
+    def __init__(self, expression: Node, interpreter: TreeInterpreter) -> None:
         super().__init__()
 
         self.expression = expression

@@ -12,7 +12,7 @@ from ... import lang
 class Node(lang.Abstract):
     @property
     @abc.abstractmethod
-    def children(self) -> ta.Sequence['Node']:
+    def children(self) -> ta.Sequence[Node]:
         raise NotImplementedError
 
 

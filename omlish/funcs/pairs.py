@@ -32,12 +32,12 @@ class FnPair(lang.Abstract, ta.Generic[F, T]):
     def __call__(self, f: F) -> T:
         return self.forward(f)
 
-    def invert(self) -> 'FnPair[T, F]':
+    def invert(self) -> FnPair[T, F]:
         if isinstance(self, Inverted):
             return self._fp
         return Inverted(self)
 
-    def compose(self, nxt: 'FnPair[T, U]') -> 'FnPair[F, U]':
+    def compose(self, nxt: FnPair[T, U]) -> FnPair[F, U]:
         return Composite((self, nxt))
 
 

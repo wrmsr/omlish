@@ -19,7 +19,7 @@ T = ta.TypeVar('T')
 
 @dc.dataclass()
 class CvLookupError(LookupError):
-    cv: 'Cv'
+    cv: Cv
 
 
 @ta.final
@@ -54,6 +54,6 @@ def _cv(name: str) -> Cv:
 
 
 class Cvs(lang.Namespace, lang.Final):
-    APP_RUNNER: Cv['AppRunner'] = _cv('APP_RUNNER')
+    APP_RUNNER: Cv[AppRunner] = _cv('APP_RUNNER')
 
-    REQUEST: Cv['Request'] = _cv('REQUEST')
+    REQUEST: Cv[Request] = _cv('REQUEST')

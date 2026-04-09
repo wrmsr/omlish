@@ -69,7 +69,7 @@ class OpensslAescbcCrypto(Crypto):
     salt_length = 8
     prefix = b'Salted__'
 
-    def _make_cipher(self, key: bytes, salt: bytes) -> 'cry_ciphs.Cipher':
+    def _make_cipher(self, key: bytes, salt: bytes) -> cry_ciphs.Cipher:
         dk = hashlib.pbkdf2_hmac(
             'sha256',
             key,

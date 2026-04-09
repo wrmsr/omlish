@@ -355,9 +355,6 @@ ignore = [
     'UP046',     # non-pep695-generic-class
     'UP047',     # non-pep695-generic-function
 
-    # TODO: 3.14
-    'UP037',  # quoted-annotation
-
 ]
 
 [tool.ruff.lint.per-file-ignores]

@@ -1,5 +1,5 @@
+# ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
-# ruff: noqa: UP006 UP007 UP045
 import dataclasses as dc
 import socket as socket_
 import typing as ta

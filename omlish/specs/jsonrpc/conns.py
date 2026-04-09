@@ -34,8 +34,8 @@ class JsonrpcConnection:
             tg: anyio.abc.TaskGroup,
             stream: anyio.abc.ByteStream,
             *,
-            request_handler: ta.Callable[['JsonrpcConnection', Request], ta.Awaitable[None]] | None = None,
-            notification_handler: ta.Callable[['JsonrpcConnection', Request], ta.Awaitable[None]] | None = None,
+            request_handler: ta.Callable[[JsonrpcConnection, Request], ta.Awaitable[None]] | None = None,
+            notification_handler: ta.Callable[[JsonrpcConnection, Request], ta.Awaitable[None]] | None = None,
             default_timeout: float | None = 30.,
             id_creator: ta.Callable[[], Id] | None = None,
     ) -> None:

@@ -42,7 +42,7 @@ _SCOPES_BY_PYTEST_SCOPE: ta.Mapping[PytestScope, inj.SeededScope] = {
 ##
 
 
-_ACTIVE_HARNESSES: set['Harness'] = set()
+_ACTIVE_HARNESSES: set[Harness] = set()
 
 
 class Harness:

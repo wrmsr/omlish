@@ -58,11 +58,11 @@ else:
 def run(
         *cmd: str,
         input: _ta.Any = None,  # noqa
-        timeout: '_lang.TimeoutLike' = None,
+        timeout: _lang.TimeoutLike = None,
         check: bool = False,
         capture_output: bool | None = None,
         **kwargs: _ta.Any,
-) -> 'SubprocessRunOutput':
+) -> SubprocessRunOutput:
     return _sync.subprocesses.run(
         *cmd,
         input=input,

@@ -1,4 +1,4 @@
-# ruff: noqa: PYI034 UP007 UP045
+# ruff: noqa: PYI034 UP007 UP037 UP045
 # @omlish-lite
 """
 TODO:
