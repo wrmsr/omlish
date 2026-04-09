@@ -1,4 +1,4 @@
-# ruff: noqa: PT009 PT027
+# ruff: noqa: PT009 PT027 UP037
 import dataclasses as dc
 import typing as ta  # noqa
 import unittest

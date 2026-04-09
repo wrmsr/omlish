@@ -1,3 +1,4 @@
+# ruff: noqa: UP037
 # @omlish-lite
 """
 binding language:

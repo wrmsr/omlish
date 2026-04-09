@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../../../omlish/lite/marshal.py
 # @omlish-git-diff-omit
-# ruff: noqa: UP006 UP007 UP036 UP045
+# ruff: noqa: UP006 UP007 UP036 UP037 UP045
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -45,7 +45,7 @@ def __omlish_amalg__():  # noqa
             dict(path='objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
-            dict(path='marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
+            dict(path='marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
         ],
     )
 

@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP045 UP046
+# ruff: noqa: UP006 UP007 UP037 UP045 UP046
 # @omlish-lite
 import abc
 import typing as ta

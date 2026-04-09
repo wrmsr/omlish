@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP043 UP045
+# ruff: noqa: UP006 UP007 UP043 UP037 UP045
 # @omlish-amalg ../../omdev/scripts/lib/inject.py
 import abc
 import contextlib

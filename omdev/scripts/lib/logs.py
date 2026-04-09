@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../../../omlish/logs/_amalg.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 UP006 UP007 UP036 UP045 UP046
+# ruff: noqa: N802 UP006 UP007 UP036 UP037 UP045 UP046
 import abc
 import collections.abc
 import contextlib
@@ -35,14 +35,14 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
-            dict(path='levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
+            dict(path='levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
             dict(path='std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='infos.py', sha1='52db10d2031fc187df82d816966d73420c795743'),
+            dict(path='infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
+            dict(path='contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),

@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP043 UP045 UP046 UP047
+# ruff: noqa: UP006 UP007 UP037 UP043 UP045 UP046 UP047
 # @omlish-lite
 """
 A system for writing a python function once which can then be effectively used in both sync and async contexts -

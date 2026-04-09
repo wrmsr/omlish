@@ -1,4 +1,4 @@
-# ruff: noqa: UP007 UP045
+# ruff: noqa: UP007 UP037 UP045
 import abc
 import functools
 import operator

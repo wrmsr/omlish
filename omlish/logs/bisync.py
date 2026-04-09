@@ -18,7 +18,7 @@ from .metrics.base import LoggerMetric
 class BisyncLogger(Logger, lang.Abstract):
     @property
     @abc.abstractmethod
-    def a(self) -> 'BisyncAsyncLogger':
+    def a(self) -> BisyncAsyncLogger:
         raise NotImplementedError
 
 
@@ -33,12 +33,12 @@ class BisyncAsyncLogger(AsyncLogger, lang.Abstract):
 
 
 class _BisyncLoggerImpl(BisyncLogger, lang.Final):
-    def __init__(self, u: 'Logger') -> None:
+    def __init__(self, u: Logger) -> None:
         super().__init__()
 
         self._u = u
 
-    _a: 'BisyncAsyncLogger'
+    _a: BisyncAsyncLogger
 
     @property
     def a(self) -> BisyncAsyncLogger:
@@ -66,7 +66,7 @@ class _BisyncLoggerImpl(BisyncLogger, lang.Final):
 
 
 class _BisyncAsyncLoggerImpl(BisyncAsyncLogger, lang.Final):
-    def __init__(self, u: 'AsyncLogger') -> None:
+    def __init__(self, u: AsyncLogger) -> None:
         super().__init__()
 
         self._u = u
