@@ -38,8 +38,8 @@ WikiText: ta.TypeAlias = 'wtp.WikiText'
 
 @dc.dataclass(frozen=True)
 class WtpNode:
-    wiki: 'wtp.WikiText'
-    children: list[ta.Union['WtpNode', str]] = dc.field(default_factory=list)
+    wiki: wtp.WikiText
+    children: list[WtpNode | str] = dc.field(default_factory=list)
 
     @cached.property
     def span(self) -> tuple[int, int]:

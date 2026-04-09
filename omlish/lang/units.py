@@ -30,13 +30,13 @@ class Bytes:
     - disallows Bytes*Bytes, Bytes/Bytes, etc.
     """
 
-    def __new__(cls, v: ta.Union[int, 'Bytes']) -> 'Bytes':
+    def __new__(cls, v: int | Bytes) -> Bytes:
         if isinstance(v, cls):
             return v
         else:
             return super().__new__(cls)
 
-    def __init__(self, v: ta.Union['Bytes', int]) -> None:
+    def __init__(self, v: Bytes | int) -> None:
         if isinstance(v, Bytes):
             if v is not self:
                 raise TypeError(v)
@@ -226,13 +226,13 @@ class Seconds:
     - timedelta interop via to_timedelta / from_timedelta
     """
 
-    def __new__(cls, v: ta.Union[float, 'Seconds']) -> 'Seconds':
+    def __new__(cls, v: float | Seconds) -> Seconds:
         if isinstance(v, cls):
             return v
         else:
             return super().__new__(cls)
 
-    def __init__(self, v: ta.Union['Seconds', float]) -> None:
+    def __init__(self, v: Seconds | float) -> None:
         if isinstance(v, Seconds):
             if v is not self:
                 raise TypeError(v)

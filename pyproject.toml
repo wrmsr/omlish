@@ -358,7 +358,6 @@ ignore = [
     # TODO: 3.14
     'UP037',  # quoted-annotation
     'UP045',  # non-pep604-annotation-optional
-    'UP007',  # non-pep604-annotation-union
 
 ]
 

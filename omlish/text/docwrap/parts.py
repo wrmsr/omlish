@@ -35,7 +35,7 @@ class Blank(Part, lang.Final):
 @dc.extra_class_params(terse_repr=True)
 class Indent(Part, lang.Final):
     n: int = dc.xfield(validate=lambda n: n > 0)
-    p: ta.Union[Text, 'Block', 'List'] = dc.xfield(coerce=lambda p: check.isinstance(p, (Text, Block, List)))
+    p: Text | Block | List = dc.xfield(coerce=lambda p: check.isinstance(p, (Text, Block, List)))
 
 
 @dc.dataclass(frozen=True)

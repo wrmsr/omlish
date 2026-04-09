@@ -97,7 +97,7 @@ class Response(lang.Final):
     #
 
     result: ta.Any = dc.field(default=NotSpecified)
-    error: ta.Union['Error', type[NotSpecified]] = dc.field(default=NotSpecified)
+    error: Error | type[NotSpecified] = dc.field(default=NotSpecified)
     dc.validate(lambda self: is_not_specified(self.result) ^ is_not_specified(self.error))
 
     @property

@@ -56,7 +56,7 @@ class _RegexItem(lang.Abstract):
             return None
 
     @classmethod
-    def of(cls, obj: ta.Union['_RegexItem', Op, None]) -> ta.Optional['_RegexItem']:
+    def of(cls, obj: _RegexItem | Op | None) -> _RegexItem | None:
         if obj is None:
             return None
 

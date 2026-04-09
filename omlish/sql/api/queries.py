@@ -16,9 +16,9 @@ class QueryMode(enum.Enum):
     @classmethod
     def of(
             cls,
-            o: ta.Union[str, 'QueryMode', None],
-            default: ta.Optional['QueryMode'] = None,
-    ) -> 'QueryMode':
+            o: str | QueryMode | None,
+            default: QueryMode | None = None,
+    ) -> QueryMode:
         if o is None:
             return check.not_none(check.isinstance(default, cls))
         elif isinstance(o, str):

@@ -164,7 +164,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='c90ba13e9e5ee795b6af752a6f25f8bcfd7f88a0'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
-            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='2826bfe5d7edada0ba6669b6696053f834423d55'),
+            dict(path='../../omlish/io/pipelines/flow/types.py', sha1='2156c6eeb997b3ffa00fd742d07aad6aaf96b828'),
             dict(path='../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../omlish/io/streams/utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),

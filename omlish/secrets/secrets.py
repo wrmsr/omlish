@@ -45,7 +45,7 @@ class Secret(lang.NotPicklable, lang.Sensitive, lang.Final):
         setattr(self, self._VALUE_ATTR, lambda: value)
 
     @classmethod
-    def of(cls, src: ta.Union['Secret', str], *, key: str | None = None) -> 'Secret':
+    def of(cls, src: Secret | str, *, key: str | None = None) -> Secret:
         if isinstance(src, Secret):
             return src
         elif isinstance(src, str):

@@ -64,7 +64,7 @@ def capture(
         sync_fn: ta.Callable[ArgsT, ResultT],
         *args: ArgsT.args,
         **kwargs: ArgsT.kwargs,
-) -> ta.Union['Value[ResultT]', 'Error']:
+) -> Value[ResultT] | Error:
     ...
 
 
@@ -72,7 +72,7 @@ def capture(
         sync_fn: ta.Callable[ArgsT, ResultT],
         *args: ArgsT.args,
         **kwargs: ArgsT.kwargs,
-) -> ta.Union['Value[ResultT]', 'Error']:
+) -> Value[ResultT] | Error:
     """
     Run ``sync_fn(*args, **kwargs)`` and capture the result.
 
@@ -96,7 +96,7 @@ async def acapture(
         async_fn: ta.Callable[ArgsT, ta.Awaitable[ta.NoReturn]],
         *args: ArgsT.args,
         **kwargs: ArgsT.kwargs,
-) -> 'Error':
+) -> Error:
     ...
 
 
@@ -105,7 +105,7 @@ async def acapture(
         async_fn: ta.Callable[ArgsT, ta.Awaitable[ResultT]],
         *args: ArgsT.args,
         **kwargs: ArgsT.kwargs,
-) -> ta.Union['Value[ResultT]', 'Error']:
+) -> Value[ResultT] | Error:
     ...
 
 
@@ -113,7 +113,7 @@ async def acapture(
         async_fn: ta.Callable[ArgsT, ta.Awaitable[ResultT]],
         *args: ArgsT.args,
         **kwargs: ArgsT.kwargs,
-) -> ta.Union['Value[ResultT]', 'Error']:
+) -> Value[ResultT] | Error:
     """
     Run ``await async_fn(*args, **kwargs)`` and capture the result.
 

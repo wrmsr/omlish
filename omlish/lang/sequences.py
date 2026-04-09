@@ -114,7 +114,7 @@ class SeqView(ta.Sequence[T]):
     def __len__(self) -> int:
         return len(self._range)
 
-    def __getitem__(self, key: int | slice) -> ta.Union[T, 'SeqView[T]']:  # type: ignore[override]
+    def __getitem__(self, key: int | slice) -> T | SeqView[T]:  # type: ignore[override]
         if isinstance(key, slice):
             nr = self._range[key]
             return SeqView._from_range(self._data, nr)

@@ -71,7 +71,7 @@ class Rule(lang.Final):
 
 
 class RulesCollection(lang.Final, ta.Collection[Rule]):
-    def __init__(self, *rules: ta.Union[Rule, 'RulesCollection']) -> None:
+    def __init__(self, *rules: Rule | RulesCollection) -> None:
         super().__init__()
 
         rules_set: set[Rule] = set()
@@ -170,7 +170,7 @@ class Grammar(lang.Final):
     def rule(self, name: str) -> Rule | None:
         return self._rules.rule(name)
 
-    def replace_rules(self, *rules: Rule) -> 'Grammar':
+    def replace_rules(self, *rules: Rule) -> Grammar:
         rc = RulesCollection(*rules)
         if rc.rules_set == self._rules.rules_set:
             return self

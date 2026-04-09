@@ -61,14 +61,14 @@ class QualifiedName(ta.Sequence[str], lang.Final):
         return self.parts[idx]
 
     @classmethod
-    def of_dotted(cls, dotted: str) -> 'QualifiedName':
+    def of_dotted(cls, dotted: str) -> QualifiedName:
         return cls(dotted.split('.'))
 
     @classmethod
     def of(
             cls,
-            obj: ta.Union['QualifiedName', ta.Iterable[str]],
-    ) -> 'QualifiedName':
+            obj: QualifiedName | ta.Iterable[str],
+    ) -> QualifiedName:
         if isinstance(obj, QualifiedName):
             return obj
         elif isinstance(obj, str):
@@ -81,8 +81,8 @@ class QualifiedName(ta.Sequence[str], lang.Final):
     @classmethod
     def of_optional(
             cls,
-            obj: ta.Union['QualifiedName', ta.Iterable[str], None],
-    ) -> ta.Optional['QualifiedName']:
+            obj: QualifiedName | ta.Iterable[str] | None,
+    ) -> QualifiedName | None:
         if obj is None:
             return None
         else:

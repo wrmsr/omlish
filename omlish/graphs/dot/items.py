@@ -21,7 +21,7 @@ class Item(dc.Frozen, lang.Abstract, lang.Sealed):
 
 class Value(Item, lang.Abstract):
     @classmethod
-    def of(cls, obj: ta.Union['Value', str, ta.Sequence]) -> 'Value':
+    def of(cls, obj: Value | str | ta.Sequence) -> Value:
         if isinstance(obj, Value):
             return obj
         elif isinstance(obj, str):
@@ -36,7 +36,7 @@ class Raw(Value):
     raw: str
 
     @classmethod
-    def of(cls, obj: ta.Union['Raw', str]) -> 'Raw':  # type: ignore
+    def of(cls, obj: Raw | str) -> Raw:  # type: ignore
         if isinstance(obj, Raw):
             return obj
         elif isinstance(obj, str):
@@ -49,7 +49,7 @@ class Text(Value):
     text: str
 
     @classmethod
-    def of(cls, obj: ta.Union['Text', str]) -> 'Text':  # type: ignore
+    def of(cls, obj: Text | str) -> Text:  # type: ignore
         if isinstance(obj, Text):
             return obj
         elif isinstance(obj, str):
@@ -62,7 +62,7 @@ class Cell(Item):
     value: Value
 
     @classmethod
-    def of(cls, obj: ta.Union['Cell', ta.Any]) -> 'Cell':
+    def of(cls, obj: Cell | ta.Any) -> Cell:
         if isinstance(obj, Cell):
             return obj
         else:
@@ -73,7 +73,7 @@ class Row(Item):
     cells: ta.Sequence[Cell] = dc.xfield(coerce=col.seq)
 
     @classmethod
-    def of(cls, obj: ta.Union['Row', ta.Sequence[ta.Any]]) -> 'Row':
+    def of(cls, obj: Row | ta.Sequence[ta.Any]) -> Row:
         if isinstance(obj, Row):
             return obj
         elif isinstance(obj, str):
@@ -88,7 +88,7 @@ class Table(Value):
     rows: ta.Sequence[Row] = dc.xfield(coerce=col.seq)
 
     @classmethod
-    def of(cls, obj: ta.Union['Table', ta.Sequence[ta.Any]]) -> 'Table':  # type: ignore
+    def of(cls, obj: Table | ta.Sequence[ta.Any]) -> Table:  # type: ignore
         if isinstance(obj, Table):
             return obj
         elif isinstance(obj, str):
@@ -103,7 +103,7 @@ class Id(Item):
     id: str
 
     @classmethod
-    def of(cls, obj: ta.Union['Id', str]) -> 'Id':
+    def of(cls, obj: Id | str) -> Id:
         if isinstance(obj, Id):
             return obj
         elif isinstance(obj, str):
@@ -121,7 +121,7 @@ class Attrs(Item):
     )
 
     @classmethod
-    def of(cls, obj: ta.Union['Attrs', ta.Mapping[str, ta.Any]]) -> 'Attrs':
+    def of(cls, obj: Attrs | ta.Mapping[str, ta.Any]) -> Attrs:
         if isinstance(obj, Attrs):
             return obj
         elif isinstance(obj, ta.Mapping):
@@ -138,7 +138,7 @@ class RawStmt(Stmt):
     raw: str
 
     @classmethod
-    def of(cls, obj: ta.Union['RawStmt', str]) -> 'RawStmt':
+    def of(cls, obj: RawStmt | str) -> RawStmt:
         if isinstance(obj, RawStmt):
             return obj
         elif isinstance(obj, str):

@@ -1,5 +1,3 @@
-import typing as ta
-
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
@@ -18,7 +16,7 @@ from .parts import blockify
 @dc.extra_class_params(default_repr_fn=lang.truthy_repr)
 class _IndentGroup:
     n: int
-    cs: list[ta.Union[Blank, Text, '_IndentGroup']] = dc.field(default_factory=list)
+    cs: list[Blank | Text | _IndentGroup] = dc.field(default_factory=list)
 
 
 def group_indents(root: Part) -> Part:
