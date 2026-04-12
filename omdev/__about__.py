@@ -43,7 +43,7 @@ class Project(ProjectBase):
         ],
 
         'tui': [
-            'rich ~= 14.3',
+            'rich ~= 15.0',
             'textual ~= 8.2',  # [syntax]
             'textual-dev ~= 1.8',
             'textual-speedups ~= 0.2',

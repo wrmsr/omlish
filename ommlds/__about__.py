@@ -75,7 +75,7 @@ class Project(ProjectBase):
         ],
 
         'xml': [
-            'lxml >= 5.4',
+            'lxml >= 6.0',
         ],
     }
 
