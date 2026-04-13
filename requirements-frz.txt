@@ -19,6 +19,7 @@ astpretty==3.0.0
 asttokens==3.0.1
 async-lru==2.3.0
 asyncpg==0.31.0
+asyncpg-stubs==0.31.2
 asyncssh==2.22.0
 attrs==26.1.0
 babel==2.18.0

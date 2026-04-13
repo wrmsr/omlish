@@ -67,8 +67,10 @@ class LinearParamsPreparer(SequenceParamsPreparer):
 
 
 class NumericParamsPreparer(SequenceParamsPreparer):
-    def __init__(self) -> None:
+    def __init__(self, sigil: str = ':') -> None:
         super().__init__()
+
+        self._sigil = check.non_empty_str(sigil)
 
         self._args: list[ParamKey] = []
         self._str_by_key: dict[ParamKey, str] = {}
@@ -92,7 +94,7 @@ class NumericParamsPreparer(SequenceParamsPreparer):
             raise TypeError(f'Invalid key type: {type(k)}')
 
         self._args.append(k)
-        ret = self._str_by_key[k] = f':{pos + 1}'
+        ret = self._str_by_key[k] = f'{self._sigil}{pos + 1}'
         return ret
 
     def prepare(self) -> SequencePreparedParams:
@@ -163,7 +165,8 @@ class ParamStyle(enum.Enum):
     QMARK = 'qmark'  # Question mark style, e.g. ...WHERE name=?
     FORMAT = 'format'  # ANSI C printf format codes, e.g. ...WHERE name=%s
 
-    NUMERIC = 'numeric'  # Numeric, positional style, e.g. ...WHERE name=:1
+    NUMERIC = 'numeric'  # Numeric, positional style, colon-sigil: e.g. ...WHERE name=:1
+    DOLLAR_NUMERIC = 'dollar_numeric'  # Numeric, positional style, dollar-sign sigil: e.g. ...WHERE name=$1
 
     NAMED = 'named'  # Named style, e.g. ...WHERE name=:name
     PYFORMAT = 'pyformat'  # Python extended format codes, e.g. ...WHERE name=%(name)s
@@ -174,6 +177,7 @@ _PARAMS_PREPARER_FACTORIES_BY_STYLE: ta.Mapping[ParamStyle, ta.Callable[[], Para
     ParamStyle.FORMAT: functools.partial(LinearParamsPreparer, '%s'),
 
     ParamStyle.NUMERIC: NumericParamsPreparer,
+    ParamStyle.DOLLAR_NUMERIC: functools.partial(NumericParamsPreparer, '$'),
 
     ParamStyle.NAMED: functools.partial(NamedParamsPreparer, NamedParamsPreparer.render_named),
     ParamStyle.PYFORMAT: functools.partial(NamedParamsPreparer, NamedParamsPreparer.render_pyformat),
