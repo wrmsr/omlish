@@ -26,7 +26,7 @@ def bind_module(cfg: ModuleConfig) -> inj.Elements:
     if isinstance(cfg, BashConfig):
         els.extend(_bash.bind_bash(cfg))
 
-    if isinstance(cfg, CodeConfig):
+    elif isinstance(cfg, CodeConfig):
         els.extend(_code.bind_code(cfg))
 
     elif isinstance(cfg, FsConfig):
