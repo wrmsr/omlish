@@ -349,6 +349,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                 cfg,
                 modules=[
                     *(cfg.modules or []),
+                    mc.modules.BashConfig(),
                     mc.modules.CodeConfig(),
                     mc.modules.FsConfig(),
                     mc.modules.TodoConfig(),

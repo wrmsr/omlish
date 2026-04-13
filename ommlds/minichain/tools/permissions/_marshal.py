@@ -1,6 +1,7 @@
 from omlish import lang
 from omlish import marshal as msh
 
+from .bash import BashToolPermissionMatcher  # noqa
 from .fs import FsToolPermissionTarget  # noqa
 from .fs import GlobFsToolPermissionMatcher  # noqa
 from .types import ToolPermissionMatcher

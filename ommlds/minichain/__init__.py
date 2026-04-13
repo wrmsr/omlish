@@ -560,6 +560,11 @@ with _lang.auto_proxy_init(
         reflect_tool_catalog_entry,
     )
 
+    from .tools.permissions.bash import (  # noqa
+        BashToolPermissionTarget,
+        BashToolPermissionMatcher,
+    )
+
     from .tools.permissions.collection import (  # noqa
         ToolPermissionRules,
     )

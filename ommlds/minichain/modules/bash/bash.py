@@ -1,20 +1,21 @@
 """
 Obviously insanely unsafe at the moment, lol.
 """
+import asyncio
 import shutil
 
 from omlish import check
 from omlish import lang
-from omlish.subprocesses.sync import subprocesses
 
 from ...tools.execution.catalog import ToolCatalogEntry
 from ...tools.execution.reflect import reflect_tool_catalog_entry
+from .context import tool_bash_context
 
 
 ##
 
 
-def execute_bash_tool(
+async def execute_bash_tool(
         bash_code: str,
 ) -> str:
     """
@@ -27,15 +28,28 @@ def execute_bash_tool(
         The stdout of the executed bash code.
     """
 
-    res = subprocesses.run(
+    ctx = tool_bash_context()
+    await ctx.check_cmd_permitted(bash_code)
+
+    proc = await asyncio.create_subprocess_exec(
         check.not_none(shutil.which('bash')),
         '-c',
         bash_code,
-        capture_output=True,
-        timeout=10.,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
 
-    return check.not_none(res.stdout).decode('utf-8')
+    try:
+        stdout, stderr = await asyncio.wait_for(  # noqa
+            proc.communicate(),
+            timeout=10.0,
+        )
+    except TimeoutError:
+        proc.kill()
+        await proc.wait()
+        raise
+
+    return check.not_none(stdout).decode('utf-8')
 
 
 @lang.cached_function
