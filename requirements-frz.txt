@@ -30,8 +30,8 @@ bitsandbytes==0.49.2
 black==26.3.1
 bleach==6.3.0
 blobfile==3.2.0
-boto3==1.42.88
-botocore==1.42.88
+boto3==1.42.89
+botocore==1.42.89
 botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.3
@@ -60,7 +60,7 @@ diskcache==5.6.3
 docstring-to-markdown==0.17
 docutils==0.22.4
 docutils-stubs==0.0.22
-duckdb==1.5.1
+duckdb==1.5.2
 execnet==2.1.2
 executing==2.2.1
 fastjsonschema==2.21.2
@@ -156,7 +156,7 @@ msgpack==1.1.2
 multidict==6.7.1
 multiprocess==0.70.19
 mwparserfromhell==0.7.2
-mypy==1.20.0
+mypy==1.20.1
 mypy_extensions==1.1.0
 mysql-connector-python==9.6.0
 mysqlclient==2.2.8
@@ -293,7 +293,7 @@ torchvision==0.26.0
 tornado==6.5.5
 tqdm==4.67.3
 traitlets==5.14.3
-transformers==5.5.3
+transformers==5.5.4
 tree-sitter==0.25.2
 tree-sitter-bash==0.25.1
 tree-sitter-css==0.25.0
@@ -315,7 +315,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.24.1
 types-awscrt==0.31.3
-types-boto3==1.42.88
+types-boto3==1.42.89
 types-docutils==0.22.3.20260408
 types-greenlet==3.4.0.20260409
 types-paramiko==4.0.0.20260408
