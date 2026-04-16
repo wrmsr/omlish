@@ -126,7 +126,10 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .factories.lazyinit.api import (  # noqa
+        LazyInitFn,
         LazyInit,
+
+        # ModuleImport,
     )
 
     from .factories.lazyinit.factories import (  # noqa

@@ -3,7 +3,8 @@ TODO:
  - col.TypeMap?
   - at least get_any
  - unique?
- - this really feels like TypedValues again
+  - this really feels like TypedValues again
+ - parent?
 """
 import abc
 import dataclasses as dc
@@ -75,6 +76,17 @@ class Registry(RegistryView[RegistryItemT]):
         )
 
         self._sealed = False
+
+    #
+
+    def copy(
+            self,
+            *,
+            lock: ta.Optional[threading.RLock] = None,  # noqa
+    ) -> ta.Self:
+        ret: ta.Any = type(self)(lock=lock)
+        ret._state = self._state  # noqa
+        return ret
 
     #
 
