@@ -10,6 +10,7 @@ import dataclasses as dc
 import threading
 import typing as ta
 
+from ... import check
 from ... import lang
 
 
@@ -83,7 +84,12 @@ class Registry(RegistryView[RegistryItemT]):
         items: ta.Sequence[RegistryItemU] = ()
         item_lists_by_ty: ta.Mapping[type[RegistryItemU], ta.Sequence[RegistryItemU]] = dc.field(default_factory=dict)
 
+        #
+
         def add(self, *items: RegistryItemU) -> Registry._KeyItems[RegistryItemU]:
+            if not items:
+                return self
+
             item_lists_by_ty: dict[type[RegistryItemU], list[RegistryItemU]] = {}
 
             for i in items:
@@ -99,6 +105,24 @@ class Registry(RegistryView[RegistryItemT]):
                 {**self.item_lists_by_ty, **item_lists_by_ty},
             )
 
+        def remove(self, *tys: type[RegistryItemU]) -> Registry._KeyItems[RegistryItemU]:
+            if not tys:
+                return self
+
+            ty_set = set(tys)
+            if not any(ty in ty_set for ty in self.item_lists_by_ty):
+                return self
+
+            return Registry._KeyItems(
+                self.key,
+                tuple(i for i in self.items if type(i) not in ty_set),
+                {
+                    ty: l
+                    for ty, l in self.item_lists_by_ty.items()
+                    if ty not in ty_set
+                },
+            )
+
     @dc.dataclass(frozen=True, kw_only=True)
     class _State(ta.Generic[RegistryItemU]):
         dct: ta.Mapping[ta.Any, Registry._KeyItems[RegistryItemU]]
@@ -112,12 +136,17 @@ class Registry(RegistryView[RegistryItemT]):
                 key: ta.Any,
                 *items: RegistryItemT,
                 identity: bool = False,
+                replace: bool = False,
         ) -> Registry._State[RegistryItemU]:
             if not items:
                 return self
 
             sr_dct: ta.Any = self.dct if not identity else self.id_dct
-            if (sr := sr_dct.get(key)) is None:
+            sr: Registry._KeyItems
+            if (sr := sr_dct.get(key)) is not None:
+                if replace:
+                    sr = sr.remove(*map(type, items))
+            else:
                 sr = Registry._KeyItems(key)
             sr = sr.add(*items)
             new = {key: sr}
@@ -210,7 +239,10 @@ class Registry(RegistryView[RegistryItemT]):
             key: ta.Any,
             *items: RegistryItemT,
             identity: bool = False,
+            replace: bool = False,
     ) -> ta.Self:
+        check.arg(not (key is None and identity))
+
         if not items:
             return self
 
@@ -222,6 +254,7 @@ class Registry(RegistryView[RegistryItemT]):
                 key,
                 *items,
                 identity=identity,
+                replace=replace,
             )
 
         return self
@@ -234,6 +267,8 @@ class Registry(RegistryView[RegistryItemT]):
             *,
             identity: bool | None = None,
     ) -> ta.Sequence[RegistryItemT]:
+        check.arg(not (key is None and identity))
+
         return self._state.get(key, identity=identity)  # type: ignore [return-value]
 
     def get_of(
@@ -243,4 +278,6 @@ class Registry(RegistryView[RegistryItemT]):
             *,
             identity: bool | None = None,
     ) -> ta.Sequence[RegistryItemU]:
+        check.arg(not (key is None and identity))
+
         return self._state.get_of(key, item_ty, identity=identity)  # type: ignore [return-value]

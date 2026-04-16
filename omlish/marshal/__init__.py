@@ -125,6 +125,15 @@ with _lang.auto_proxy_init(globals()):
         UnmarshalerFactoryMethodClass,
     )
 
+    from .factories.lazyinit.api import (  # noqa
+        LazyInit,
+    )
+
+    from .factories.lazyinit.factories import (  # noqa
+        LazyInitRunningMarshalerFactory,
+        LazyInitRunningUnmarshalerFactory,
+    )
+
     from .factories.moduleimport.api import (  # noqa
         ModuleImport,
     )
