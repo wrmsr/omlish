@@ -40,7 +40,13 @@ class SimpleBackendCatalog(BackendCatalog):
             sc_dct[e.name] = e
         self._dct = dct
 
-    def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> BackendCatalog.Backend:
+    def get_backend(
+            self,
+            service_cls: ta.Any,
+            name: str,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> BackendCatalog.Backend:
         e = self._dct[service_cls][name]
         return BackendCatalog.Backend(e.factory_fn, None)
 
@@ -57,5 +63,10 @@ def simple_backend_catalog_entry(
     return SimpleBackendCatalogEntry(
         service_cls,
         name,
-        functools.partial(registry_of[service_cls].new, name, *args, **kwargs),
+        functools.partial(
+            registry_of[service_cls].new,  # noqa
+            name,
+            *args,
+            **kwargs,
+        ),
     )
