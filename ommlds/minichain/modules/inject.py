@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import inject as inj
 from omlish import lang
 
@@ -20,24 +22,22 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
+CONFIG_MODULES: ta.Mapping[type[ModuleConfig], ta.Callable[[ta.Any], inj.Elements]] = {
+    BashConfig: lambda cfg: _bash.bind_bash(cfg),
+    CodeConfig: lambda cfg: _code.bind_code(cfg),
+    FsConfig: lambda cfg: _fs.bind_fs(cfg),
+    SkillsConfig: lambda cfg: _skills.bind_skills(cfg),
+    TodoConfig: lambda cfg: _todo.bind_todo(cfg),
+}
+
+
 def bind_module(cfg: ModuleConfig) -> inj.Elements:
     els: list[inj.Elemental] = []
 
-    if isinstance(cfg, BashConfig):
-        els.extend(_bash.bind_bash(cfg))
-
-    elif isinstance(cfg, CodeConfig):
-        els.extend(_code.bind_code(cfg))
-
-    elif isinstance(cfg, FsConfig):
-        els.extend(_fs.bind_fs(cfg))
-
-    elif isinstance(cfg, SkillsConfig):
-        els.extend(_skills.bind_skills(cfg))
-
-    elif isinstance(cfg, TodoConfig):
-        els.extend(_todo.bind_todo(cfg))
-
+    for cls, bind_fn in CONFIG_MODULES.items():
+        if isinstance(cfg, cls):
+            els.extend(bind_fn(cfg))
+            break
     else:
         raise TypeError(cfg)
 
