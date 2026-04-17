@@ -105,7 +105,7 @@ class TopK(tv.ScalarTypedValue[int], tv.UniqueTypedValue):
     pass
 
 @dc.dataclass(frozen=True)
-class Tool:
+class Tool(tv.TypedValue):
     name: str
 
 opts = tv.TypedValues(

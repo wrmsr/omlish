@@ -36,7 +36,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'async': [
-            'anyio ~= 4.11',
+            'anyio ~= 4.13',
             'sniffio ~= 1.3',
 
             'greenlet ~= 3.4.0',

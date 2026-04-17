@@ -1,3 +1,8 @@
+"""
+TODO:
+ - configs?? unmarshaling depends on service_cls
+"""
+import abc
 import typing as ta
 
 from omlish import check
@@ -37,6 +42,12 @@ class BackendSpec(lang.Sealed):
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(unwrap_if_single_field=True)
+class NameBackendSpec(BackendSpec, lang.Final):
+    name: str
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_options(unwrap_if_single_field=True)
 class ModelBackendSpec(BackendSpec, lang.Final):
     model: ModelSpecifier
 
@@ -53,11 +64,11 @@ class FirstInWinsBackendSpec(BackendSpec, lang.Final):
     children: ta.Sequence[CanBackendSpec]
 
 
-##
+#
 
 
 @msh.register_global_lazy_init
-def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
+def _setup_backend_spec_marshal(cfgs: msh.ConfigRegistry) -> None:
     msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
         msh.polymorphism_from_subclasses(
             BackendSpec,
@@ -65,3 +76,18 @@ def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
             naming=msh.Naming.SNAKE,
         ),
     ))
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ResolvedBackendSpec(lang.Final):
+    service_cls: ta.Any
+    spec: BackendSpec
+
+
+class BackendSpecResolver(lang.Abstract):
+    @abc.abstractmethod
+    def resolve_backend_spec(self, service_cls: ta.Any, spec: BackendSpec) -> ResolvedBackendSpec:
+        raise NotImplementedError
