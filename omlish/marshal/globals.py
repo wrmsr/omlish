@@ -11,6 +11,7 @@ from .api.types import Marshaling
 from .api.types import UnmarshalerFactory
 from .api.values import Value
 from .factories.api import LazyInit
+from .factories.api import LazyInitFn
 from .factories.api import ModuleImport
 from .standard.api import StandardMarshalerFactories
 from .standard.api import StandardUnmarshalerFactories
@@ -111,6 +112,15 @@ def register_global_config(
     )
 
 
+def register_global_lazy_init(
+        fn: LazyInitFn,
+) -> None:
+    global_config_registry().register(
+        None,
+        LazyInit(fn),
+    )
+
+
 def register_global_module_import(
         name: str,
         package: str | None = None,
@@ -127,9 +137,17 @@ def register_global_module_import(
 def install_standard_factories(
         *factories: MarshalerFactory | UnmarshalerFactory,
 ) -> None:
-    with _GLOBAL_LOCK:
-        cfgs = global_config_registry()
+    install_standard_factories_to(
+        global_config_registry(),
+        *factories,
+    )
 
+
+def install_standard_factories_to(
+        cfgs: ConfigRegistry,
+        *factories: MarshalerFactory | UnmarshalerFactory,
+) -> None:
+    with cfgs._lock:  # noqa
         m_cfg = check.opt_single(cfgs.get_of(None, StandardMarshalerFactories))
         u_cfg = check.opt_single(cfgs.get_of(None, StandardUnmarshalerFactories))
 
