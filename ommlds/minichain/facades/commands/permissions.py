@@ -5,6 +5,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as argparse
 from omlish.formats import json
+from omlish.formats import json5
 
 from ...tools.permissions.managers import ToolPermissionsManager
 from ...tools.permissions.types import ToolPermissionMatcher
@@ -79,7 +80,7 @@ class PermissionsCommand(Command):
     #
 
     async def _run_add(self, ctx: Command.Context, args: argparse.Namespace) -> None:
-        dct: dict = {check.non_empty_str(args.kind): json.loads(args.body or '{}')}
+        dct: dict = {check.non_empty_str(args.kind): json5.loads(args.body or '{}')}
         matcher = msh.unmarshal(dct, ToolPermissionMatcher)
         rule = ToolPermissionRule(matcher, ToolPermissionState[args.state.upper()])
 
