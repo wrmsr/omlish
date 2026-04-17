@@ -11,8 +11,8 @@ from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
-from ..factories.lazyinit.factories import LazyInitRunningMarshalerFactory
-from ..factories.lazyinit.factories import LazyInitRunningUnmarshalerFactory
+from ..factories.lazyinit import LazyInitRunningMarshalerFactory
+from ..factories.lazyinit import LazyInitRunningUnmarshalerFactory
 from ..factories.multi import MultiMarshalerFactory
 from ..factories.multi import MultiUnmarshalerFactory
 from ..factories.recursive import RecursiveMarshalerFactory
@@ -44,6 +44,9 @@ class _StandardFactory(ta.Generic[FactoryT, FactoriesT]):
         self._last = tuple(last or ())
 
         self._state: tuple[FactoriesT, FactoryT] | None = None
+
+    def invalidate(self) -> None:
+        self._state = None
 
     _cfg_cls: ta.ClassVar[type[FactoriesT]]  # noqa
     _default_facs: ta.ClassVar[ta.Sequence[FactoryT]]  # noqa
@@ -89,7 +92,6 @@ class StandardMarshalerFactory(_StandardFactory[MarshalerFactory, StandardMarsha
 
         fac = RecursiveMarshalerFactory(fac)
         fac = TypeCacheMarshalerFactory(fac)
-        fac = LazyInitRunningMarshalerFactory(fac)
 
         return fac
 
@@ -110,9 +112,41 @@ class StandardUnmarshalerFactory(_StandardFactory[UnmarshalerFactory, StandardUn
 
         fac = RecursiveUnmarshalerFactory(fac)
         fac = TypeCacheUnmarshalerFactory(fac)
-        fac = LazyInitRunningUnmarshalerFactory(fac)
 
         return fac
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         return self._get_fac(check.isinstance(ctx.configs, Registry)).make_unmarshaler(ctx, rty)
+
+
+##
+
+
+def new_standard_marshaler_factory(
+        *,
+        first: ta.Iterable[MarshalerFactory] | None = None,
+        last: ta.Iterable[MarshalerFactory] | None = None,
+) -> MarshalerFactory:
+    sf = StandardMarshalerFactory(
+        first=first,
+        last=last,
+    )
+
+    lir = LazyInitRunningMarshalerFactory(sf, sf.invalidate)
+
+    return lir
+
+
+def new_standard_unmarshaler_factory(
+        *,
+        first: ta.Iterable[UnmarshalerFactory] | None = None,
+        last: ta.Iterable[UnmarshalerFactory] | None = None,
+) -> UnmarshalerFactory:
+    sf = StandardUnmarshalerFactory(
+        first=first,
+        last=last,
+    )
+
+    lir = LazyInitRunningUnmarshalerFactory(sf, sf.invalidate)
+
+    return lir

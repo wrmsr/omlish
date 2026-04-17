@@ -6,11 +6,11 @@ from ... import check
 from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
-from .configs import EMPTY_CONFIG_REGISTRY
 from .configs import Configs
 from .errors import UnhandledTypeError
 from .options import Options
 from .overrides import ReflectOverride
+from .registries import Registry
 
 
 if ta.TYPE_CHECKING:
@@ -43,13 +43,19 @@ class BaseContext(lang.Abstract, lang.Sealed):
         return rfl.Reflector(override=override).type(o)
 
 
+# Regrettable, but we want to forbid non-factory contexts from having different configs than their factory context.
+
+del BaseContext.configs  # noqa
+BaseContext.__abstractmethods__ -= {'configs'}
+
+
 ##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class MarshalFactoryContext(BaseContext, lang.Final):
     marshaler_factory: MarshalerFactory | None = None
-    configs: Configs = EMPTY_CONFIG_REGISTRY
+    configs: Configs = dc.field(default_factory=Registry)
 
     def make_marshaler(self, o: ta.Any) -> Marshaler:
         rty = self._reflect(o)
@@ -62,7 +68,7 @@ class MarshalFactoryContext(BaseContext, lang.Final):
 @dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalFactoryContext(BaseContext, lang.Final):
     unmarshaler_factory: UnmarshalerFactory | None = None
-    configs: Configs = EMPTY_CONFIG_REGISTRY
+    configs: Configs = dc.field(default_factory=Registry)
 
     def make_unmarshaler(self, o: ta.Any) -> Unmarshaler:
         rty = self._reflect(o)

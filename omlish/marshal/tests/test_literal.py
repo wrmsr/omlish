@@ -7,8 +7,8 @@ from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
 from ..api.contexts import UnmarshalFactoryContext
-from ..standard import new_standard_marshaler_factory
-from ..standard import new_standard_unmarshaler_factory
+from ..standard.factories import StandardMarshalerFactory
+from ..standard.factories import StandardUnmarshalerFactory
 
 
 Foo: ta.TypeAlias = ta.Literal['a', 'b', 'c']
@@ -17,12 +17,12 @@ Foo: ta.TypeAlias = ta.Literal['a', 'b', 'c']
 def test_literal():
     r = ConfigRegistry()
 
-    mf = new_standard_marshaler_factory()
+    mf = StandardMarshalerFactory()
     mfc = MarshalFactoryContext(configs=r, marshaler_factory=mf)
     mc = MarshalContext(marshal_factory_context=mfc)
     assert check.not_none(mf.make_marshaler(mfc, rfl.type_(Foo)))().marshal(mc, 'a') == 'a'
 
-    uf = new_standard_unmarshaler_factory()
+    uf = StandardUnmarshalerFactory()
     ufc = UnmarshalFactoryContext(configs=r, unmarshaler_factory=uf)
     uc = UnmarshalContext(unmarshal_factory_context=ufc)
     assert check.not_none(uf.make_unmarshaler(ufc, rfl.type_(Foo)))().unmarshal(uc, 'a') == 'a'

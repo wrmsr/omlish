@@ -10,7 +10,7 @@ from ...api.contexts import UnmarshalContext
 from ...api.contexts import UnmarshalFactoryContext
 from ...globals import marshal
 from ...globals import unmarshal
-from ...standard import new_standard_unmarshaler_factory
+from ...standard.factories import StandardUnmarshalerFactory
 from ...trivial.nop import NOP_MARSHALER_UNMARSHALER
 from ..api import FieldOptions
 from ..api import ObjectSpecials
@@ -78,7 +78,7 @@ def test_decorated_unknown_field():
         'frab': False,
     }
 
-    ufc = UnmarshalFactoryContext(unmarshaler_factory=new_standard_unmarshaler_factory())
+    ufc = UnmarshalFactoryContext(unmarshaler_factory=StandardUnmarshalerFactory())
     u = ufc.make_unmarshaler(ImageUploadResponse)
 
     uc = UnmarshalContext(unmarshal_factory_context=ufc)

@@ -125,25 +125,16 @@ with _lang.auto_proxy_init(globals()):
         UnmarshalerFactoryMethodClass,
     )
 
-    from .factories.lazyinit.api import (  # noqa
+    from .factories.api import (  # noqa
         LazyInitFn,
         LazyInit,
 
-        # ModuleImport,
-    )
-
-    from .factories.lazyinit.factories import (  # noqa
-        LazyInitRunningMarshalerFactory,
-        LazyInitRunningUnmarshalerFactory,
-    )
-
-    from .factories.moduleimport.api import (  # noqa
         ModuleImport,
     )
 
-    from .factories.moduleimport.factories import (  # noqa
-        ModuleImportingMarshalerFactory,
-        ModuleImportingUnmarshalerFactory,
+    from .factories.lazyinit import (  # noqa
+        LazyInitRunningMarshalerFactory,
+        LazyInitRunningUnmarshalerFactory,
     )
 
     from .factories.multi import (  # noqa
@@ -240,6 +231,23 @@ with _lang.auto_proxy_init(globals()):
         PRIMITIVE_TYPES,
     )
 
+    from .standard.api import (  # noqa
+        StandardMarshalerFactories,
+        StandardUnmarshalerFactories,
+    )
+
+    from .standard.default import (  # noqa
+        DEFAULT_STANDARD_FACTORIES,
+    )
+
+    from .standard.factories import (  # noqa
+        StandardMarshalerFactory,
+        StandardUnmarshalerFactory,
+
+        new_standard_marshaler_factory,
+        new_standard_unmarshaler_factory,
+    )
+
     from .trivial.forbidden import (  # noqa
         ForbiddenTypeMarshalerFactory,
         ForbiddenTypeMarshalerFactoryUnmarshalerFactory,
@@ -262,14 +270,6 @@ with _lang.auto_proxy_init(globals()):
 
         register_global_config,
         register_global_module_import,
-    )
-
-    from .standard import (  # noqa
-        StandardFactories,
-        DEFAULT_STANDARD_FACTORIES,
-
-        new_standard_marshaler_factory,
-        new_standard_unmarshaler_factory,
 
         install_standard_factories,
     )

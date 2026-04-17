@@ -10,8 +10,8 @@ from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
 from ..api.contexts import UnmarshalFactoryContext
-from ..standard import new_standard_marshaler_factory
-from ..standard import new_standard_unmarshaler_factory
+from ..standard.factories import StandardMarshalerFactory
+from ..standard.factories import StandardUnmarshalerFactory
 from .foox import Foox
 
 
@@ -37,7 +37,7 @@ def test_marshal():
     # reg = Registry()
     # reg.register(spec_of(int), SetType(marshaler=PrimitiveMarshaler()))
 
-    mf = new_standard_marshaler_factory()
+    mf = StandardMarshalerFactory()
 
     reg = ConfigRegistry()
 
@@ -54,7 +54,7 @@ def test_marshal():
         print(mobj)
     print()
 
-    uf = new_standard_unmarshaler_factory()
+    uf = StandardUnmarshalerFactory()
 
     ufc = UnmarshalFactoryContext(configs=reg, unmarshaler_factory=uf)
     uc = UnmarshalContext(unmarshal_factory_context=ufc)

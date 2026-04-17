@@ -1,6 +1,7 @@
 import threading
 import typing as ta
 
+from .. import check
 from .. import lang
 from .api.configs import Config
 from .api.configs import ConfigRegistry
@@ -9,13 +10,17 @@ from .api.types import MarshalerFactory
 from .api.types import Marshaling
 from .api.types import UnmarshalerFactory
 from .api.values import Value
-from .factories.moduleimport.api import ModuleImport
+from .factories.api import LazyInit
+from .factories.api import ModuleImport
+from .standard.api import StandardMarshalerFactories
+from .standard.api import StandardUnmarshalerFactories
+from .standard.default import DEFAULT_STANDARD_FACTORIES
 
 
 if ta.TYPE_CHECKING:
-    from . import standard
+    from .standard import factories as _sf
 else:
-    standard = lang.proxy_import('.standard', __package__)
+    _sf = lang.proxy_import('.standard.factories', __package__)
 
 
 T = ta.TypeVar('T')
@@ -34,12 +39,12 @@ def global_config_registry() -> ConfigRegistry:
 
 @lang.cached_function(lock=_GLOBAL_LOCK)
 def global_marshaler_factory() -> MarshalerFactory:
-    return standard.new_standard_marshaler_factory()
+    return _sf.new_standard_marshaler_factory()
 
 
 @lang.cached_function(lock=_GLOBAL_LOCK)
 def global_unmarshaler_factory() -> UnmarshalerFactory:
-    return standard.new_standard_unmarshaler_factory()
+    return _sf.new_standard_unmarshaler_factory()
 
 
 class _GlobalMarshaling(Marshaling, lang.Final):
@@ -112,5 +117,49 @@ def register_global_module_import(
 ) -> None:
     global_config_registry().register(
         None,
-        ModuleImport(name, package),
+        LazyInit(ModuleImport(name, package)),
     )
+
+
+##
+
+
+def install_standard_factories(
+        *factories: MarshalerFactory | UnmarshalerFactory,
+) -> None:
+    with _GLOBAL_LOCK:
+        cfgs = global_config_registry()
+
+        m_cfg = check.opt_single(cfgs.get_of(None, StandardMarshalerFactories))
+        u_cfg = check.opt_single(cfgs.get_of(None, StandardUnmarshalerFactories))
+
+        m_lst: list[MarshalerFactory] = list(
+            m_cfg.lst if m_cfg is not None else DEFAULT_STANDARD_FACTORIES.marshaler_factories,
+        )
+        u_lst: list[UnmarshalerFactory] = list(
+            u_cfg.lst if u_cfg is not None else DEFAULT_STANDARD_FACTORIES.unmarshaler_factories,
+        )
+
+        m_new = False
+        u_new = False
+
+        for f in factories:
+            k = False
+
+            if isinstance(f, MarshalerFactory):
+                m_lst[0:0] = [f]
+                m_new = True
+                k = True
+
+            if isinstance(f, UnmarshalerFactory):
+                u_lst[0:0] = [f]
+                u_new = True
+                k = True
+
+            if not k:
+                raise TypeError(f)
+
+        if m_new:
+            cfgs.register(None, StandardMarshalerFactories(m_lst), replace=True)
+        if u_new:
+            cfgs.register(None, StandardUnmarshalerFactories(u_lst), replace=True)

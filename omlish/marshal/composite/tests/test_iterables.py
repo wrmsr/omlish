@@ -3,12 +3,12 @@ import typing as ta
 from ...api.contexts import UnmarshalContext
 from ...api.contexts import UnmarshalFactoryContext
 from ...api.options import Options
-from ...standard import new_standard_unmarshaler_factory
+from ...standard.factories import StandardUnmarshalerFactory
 from ..api import DefaultIterableConstructors
 
 
 def test_ctor_option():
-    uf = new_standard_unmarshaler_factory()
+    uf = StandardUnmarshalerFactory()
     ufc = UnmarshalFactoryContext(unmarshaler_factory=uf)
 
     uc = UnmarshalContext(unmarshal_factory_context=ufc)

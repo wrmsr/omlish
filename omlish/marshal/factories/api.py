@@ -3,9 +3,9 @@ import importlib
 import sys
 import typing as ta
 
-from .... import lang
-from ...api.configs import Config
-from ...api.configs import ConfigRegistry
+from ... import lang
+from ..api.configs import Config
+from ..api.configs import ConfigRegistry
 
 
 LazyInitFn: ta.TypeAlias = ta.Callable[[ConfigRegistry], None]

@@ -1,8 +1,8 @@
-from ....api.configs import ConfigRegistry
-from ....api.contexts import MarshalFactoryContext
-from ....singular.primitives import PRIMITIVE_MARSHALER_FACTORY
+from ...api.configs import ConfigRegistry
+from ...api.contexts import MarshalFactoryContext
+from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ..api import LazyInit
-from ..factories import LazyInitRunningMarshalerFactory
+from ..lazyinit import LazyInitRunningMarshalerFactory
 
 
 def test_lazyinit():

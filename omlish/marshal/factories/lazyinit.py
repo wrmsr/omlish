@@ -1,19 +1,19 @@
 import dataclasses as dc
 import typing as ta
 
-from .... import check
-from .... import lang
-from .... import reflect as rfl
-from ...api.configs import Config
-from ...api.configs import ConfigRegistry
-from ...api.contexts import BaseContext
-from ...api.contexts import MarshalFactoryContext
-from ...api.contexts import UnmarshalFactoryContext
-from ...api.registries import Registry
-from ...api.types import Marshaler
-from ...api.types import MarshalerFactory
-from ...api.types import Unmarshaler
-from ...api.types import UnmarshalerFactory
+from ... import check
+from ... import lang
+from ... import reflect as rfl
+from ..api.configs import Config
+from ..api.configs import ConfigRegistry
+from ..api.contexts import BaseContext
+from ..api.contexts import MarshalFactoryContext
+from ..api.contexts import UnmarshalFactoryContext
+from ..api.registries import Registry
+from ..api.types import Marshaler
+from ..api.types import MarshalerFactory
+from ..api.types import Unmarshaler
+from ..api.types import UnmarshalerFactory
 from .api import LazyInit
 
 
