@@ -27,7 +27,7 @@ def test_default():
             ['README.rst'],
         ),
         specs.UrlSpec(
-            'https://apt.llvm.org/llvm.sh',
+            'https://google.com/robots.txt',
         ),
         specs.UrlSpec(
             os.path.join('file://' + os.path.join(os.path.dirname(__file__), 'ziptest.tar.gz')),

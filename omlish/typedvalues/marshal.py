@@ -1,3 +1,7 @@
+"""
+TODO:
+ - sealed only?
+"""
 import typing as ta
 
 from .. import check
