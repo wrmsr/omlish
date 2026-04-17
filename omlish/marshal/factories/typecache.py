@@ -1,4 +1,3 @@
-import threading
 import typing as ta
 
 from ... import check
@@ -24,9 +23,8 @@ class _TypeCacheFactory(ta.Generic[FactoryT]):
         self._fac = fac
 
         self._dct: dict[rfl.Type, ta.Any | None] = {}
-        self._lock = threading.RLock()
 
-    def _make(self, rty, dfl):
+    def _make(self, cfgs, rty, dfl):
         check.isinstance(rty, rfl.TYPES)
 
         try:
@@ -34,7 +32,7 @@ class _TypeCacheFactory(ta.Generic[FactoryT]):
         except KeyError:
             pass
 
-        with self._lock:
+        with cfgs._lock:  # noqa
             try:
                 return self._dct[rty]
             except KeyError:
@@ -58,9 +56,9 @@ class _TypeCacheFactory(ta.Generic[FactoryT]):
 
 class TypeCacheMarshalerFactory(_TypeCacheFactory[MarshalerFactory], MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        return self._make(rty, lambda: self._fac.make_marshaler(ctx, rty))
+        return self._make(ctx.configs, rty, lambda: self._fac.make_marshaler(ctx, rty))
 
 
 class TypeCacheUnmarshalerFactory(_TypeCacheFactory[UnmarshalerFactory], UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        return self._make(rty, lambda: self._fac.make_unmarshaler(ctx, rty))
+        return self._make(ctx.configs, rty, lambda: self._fac.make_unmarshaler(ctx, rty))
