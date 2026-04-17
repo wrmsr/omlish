@@ -84,7 +84,7 @@ class ObjectMarshaler(Marshaler):
 
         if (usf := self.unwrap_if_single_field) is not None and len(ret) == 1:
             skk, skv = next(iter(ret.items()))
-            if skk == usf.marshal_name and not isinstance(skv, collections.abc.Mapping):
+            if skk == usf.marshal_name and (len(self.fields) < 2 or not isinstance(skv, collections.abc.Mapping)):
                 ret = skv
 
         return ret

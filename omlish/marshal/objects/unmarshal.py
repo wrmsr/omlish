@@ -34,6 +34,7 @@ class ObjectUnmarshaler(Unmarshaler):
     ignore_unknown: bool = False
 
     unwrap_if_single_field: FieldInfo | None = None
+    is_single_field: bool | None = None
 
     @classmethod
     def make(
@@ -66,8 +67,14 @@ class ObjectUnmarshaler(Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma: collections.abc.Mapping
-        if isinstance(v, collections.abc.Mapping):
-            ma = v
+
+        is_map = isinstance(v, collections.abc.Mapping)
+
+        if (usf := self.unwrap_if_single_field) is not None and (not is_map or self.is_single_field):
+            ma = {usf.unmarshal_names[0]: v}
+
+        elif is_map:
+            ma = v  # type: ignore[assignment]  # noqa
 
         elif (usf := self.unwrap_if_single_field) is not None:
             ma = {usf.unmarshal_names[0]: v}

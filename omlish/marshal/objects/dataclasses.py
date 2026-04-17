@@ -307,6 +307,7 @@ class _DataclassUnmarshalerBuilder:
             embeds_by_unmarshal_name=self._embeds_by_unmarshal_name,
             ignore_unknown=bool(dc_md.ignore_unknown),
             unwrap_if_single_field=unwrap_if_single_field,
+            is_single_field=len(fis) < 2,
         )
 
     def _add_field(self, fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:

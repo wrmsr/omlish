@@ -2207,40 +2207,44 @@ def _process_dataclass__938f9d4f2e651144784a7af849b82eaded6cdf98():
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('factory', 'fields_by_unmarshal_name', 'specials', 'defaults', 'embeds', 'embeds_b"
-        "y_unmarshal_name', 'ignore_unknown', 'unwrap_if_single_field')), EqPlan(fields=('factory', 'fields_by_unmarsha"
-        "l_name', 'specials', 'defaults', 'embeds', 'embeds_by_unmarshal_name', 'ignore_unknown', 'unwrap_if_single_fie"
-        "ld')), FrozenPlan(fields=('factory', 'fields_by_unmarshal_name', 'specials', 'defaults', 'embeds', 'embeds_by_"
-        "unmarshal_name', 'ignore_unknown', 'unwrap_if_single_field'), allow_dynamic_dunder_attrs=False), HashPlan(acti"
-        "on='add', fields=('factory', 'fields_by_unmarshal_name', 'specials', 'defaults', 'embeds', 'embeds_by_unmarsha"
-        "l_name', 'ignore_unknown', 'unwrap_if_single_field'), cache=False), InitPlan(fields=(InitPlan.Field(name='fact"
-        "ory', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fi"
-        "elds_by_unmarshal_name', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None"
+        "y_unmarshal_name', 'ignore_unknown', 'unwrap_if_single_field', 'is_single_field')), EqPlan(fields=('factory', "
+        "'fields_by_unmarshal_name', 'specials', 'defaults', 'embeds', 'embeds_by_unmarshal_name', 'ignore_unknown', 'u"
+        "nwrap_if_single_field', 'is_single_field')), FrozenPlan(fields=('factory', 'fields_by_unmarshal_name', 'specia"
+        "ls', 'defaults', 'embeds', 'embeds_by_unmarshal_name', 'ignore_unknown', 'unwrap_if_single_field', 'is_single_"
+        "field'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('factory', 'fields_by_unmarshal_nam"
+        "e', 'specials', 'defaults', 'embeds', 'embeds_by_unmarshal_name', 'ignore_unknown', 'unwrap_if_single_field', "
+        "'is_single_field'), cache=False), InitPlan(fields=(InitPlan.Field(name='factory', annotation=OpRef(name='init."
+        "fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fields_by_unmarshal_name', annotatio"
+        "n=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='specials', annota"
+        "tion=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None"
         ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='specials', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields"
-        ".2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='defaults', annotation=OpRef(name='init.fields.3.annotation'"
-        "), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='embeds', annotation=OpRef"
-        "(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='embeds_by_unmarshal_name', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init."
-        "fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='ignore_unknown', annotation=OpRef(name='init.fields.6"
-        ".annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='unwrap_if_sin"
-        "gle_field', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None)), self_param='self', std_params=('factory', 'fields_by_unmarshal_name'), kw_only_params=('special"
-        "s', 'defaults', 'embeds', 'embeds_by_unmarshal_name', 'ignore_unknown', 'unwrap_if_single_field'), frozen=True"
-        ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='fac"
-        "tory', kw_only=False, fn=None), ReprPlan.Field(name='fields_by_unmarshal_name', kw_only=False, fn=None), ReprP"
-        "lan.Field(name='specials', kw_only=True, fn=None), ReprPlan.Field(name='defaults', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='embeds', kw_only=True, fn=None), ReprPlan.Field(name='embeds_by_unmarshal_name', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='ignore_unknown', kw_only=True, fn=None), ReprPlan.Field(name='unwrap_if_sing"
-        "le_field', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plan.Field(name='defaults', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields"
+        ".3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='embeds', annotation=OpRef(name='init.fields.4.annotation'),"
+        " default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='embeds_by_unmarshal_name', "
+        "annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='ignore_unknown', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name="
+        "'init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='unwrap_if_single_field', annotation=OpRef(name="
+        "'init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'is_single_field', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None)), self_param='self', std_params=('factory', 'fields_by_unmarshal_name'), kw_only_params=('"
+        "specials', 'defaults', 'embeds', 'embeds_by_unmarshal_name', 'ignore_unknown', 'unwrap_if_single_field', 'is_s"
+        "ingle_field'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields"
+        "=(ReprPlan.Field(name='factory', kw_only=False, fn=None), ReprPlan.Field(name='fields_by_unmarshal_name', kw_o"
+        "nly=False, fn=None), ReprPlan.Field(name='specials', kw_only=True, fn=None), ReprPlan.Field(name='defaults', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='embeds', kw_only=True, fn=None), ReprPlan.Field(name='embeds_by_un"
+        "marshal_name', kw_only=True, fn=None), ReprPlan.Field(name='ignore_unknown', kw_only=True, fn=None), ReprPlan."
+        "Field(name='unwrap_if_single_field', kw_only=True, fn=None), ReprPlan.Field(name='is_single_field', kw_only=Tr"
+        "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='9473525b6df652d7f40999e588deaae597e36123',
+    plan_repr_sha1='0e667fff73d5ed4dec2c0120263a2f14e79ca151',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -2256,12 +2260,14 @@ def _process_dataclass__938f9d4f2e651144784a7af849b82eaded6cdf98():
         '__dataclass__init__fields__6__default',
         '__dataclass__init__fields__7__annotation',
         '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
     ),
     cls_names=(
         ('omlish.marshal.globals', 'ObjectUnmarshaler'),
     ),
 )
-def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
+def _process_dataclass__0e667fff73d5ed4dec2c0120263a2f14e79ca151():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2279,6 +2285,8 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
+        __dataclass__init__fields__8__annotation,
+        __dataclass__init__fields__8__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2305,6 +2313,7 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
                 embeds_by_unmarshal_name=self.embeds_by_unmarshal_name,
                 ignore_unknown=self.ignore_unknown,
                 unwrap_if_single_field=self.unwrap_if_single_field,
+                is_single_field=self.is_single_field,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2325,7 +2334,8 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
                 self.embeds == other.embeds and
                 self.embeds_by_unmarshal_name == other.embeds_by_unmarshal_name and
                 self.ignore_unknown == other.ignore_unknown and
-                self.unwrap_if_single_field == other.unwrap_if_single_field
+                self.unwrap_if_single_field == other.unwrap_if_single_field and
+                self.is_single_field == other.is_single_field
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2342,6 +2352,7 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
             'embeds_by_unmarshal_name',
             'ignore_unknown',
             'unwrap_if_single_field',
+            'is_single_field',
         }
 
         def __setattr__(self, name, value):
@@ -2366,6 +2377,7 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
             'embeds_by_unmarshal_name',
             'ignore_unknown',
             'unwrap_if_single_field',
+            'is_single_field',
         }
 
         def __delattr__(self, name):
@@ -2391,6 +2403,7 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
                 self.embeds_by_unmarshal_name,
                 self.ignore_unknown,
                 self.unwrap_if_single_field,
+                self.is_single_field,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2407,6 +2420,7 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
             embeds_by_unmarshal_name: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
             ignore_unknown: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
             unwrap_if_single_field: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            is_single_field: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'factory', factory)
             __dataclass__object_setattr(self, 'fields_by_unmarshal_name', fields_by_unmarshal_name)
@@ -2416,6 +2430,7 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
             __dataclass__object_setattr(self, 'embeds_by_unmarshal_name', embeds_by_unmarshal_name)
             __dataclass__object_setattr(self, 'ignore_unknown', ignore_unknown)
             __dataclass__object_setattr(self, 'unwrap_if_single_field', unwrap_if_single_field)
+            __dataclass__object_setattr(self, 'is_single_field', is_single_field)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2433,6 +2448,7 @@ def _process_dataclass__9473525b6df652d7f40999e588deaae597e36123():
             parts.append(f"embeds_by_unmarshal_name={self.embeds_by_unmarshal_name!r}")
             parts.append(f"ignore_unknown={self.ignore_unknown!r}")
             parts.append(f"unwrap_if_single_field={self.unwrap_if_single_field!r}")
+            parts.append(f"is_single_field={self.is_single_field!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

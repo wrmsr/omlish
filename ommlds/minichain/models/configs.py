@@ -47,7 +47,7 @@ class ModelRepo(ModelSpecifier):
 
 
 @msh.register_global_lazy_init
-def _configure_marshal(cfgs: msh.ConfigRegistry) -> None:
+def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
     msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
         msh.Polymorphism(
             ModelSpecifier,
