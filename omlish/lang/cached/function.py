@@ -252,12 +252,10 @@ class _CachedFunction(Abstract, ta.Generic[T]):
                 except KeyError:
                     pass
 
-                value = call_value_fn()
+                self._values[k] = value = call_value_fn()
 
         else:
-            value = call_value_fn()
-
-        self._values[k] = value
+            self._values[k] = value = call_value_fn()
 
         if isinstance(value, _CachedException):
             raise value.ex
