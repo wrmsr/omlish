@@ -41,7 +41,7 @@ def resolve_import_name(name: str, package: str | None = None) -> str:
 
     if name.startswith('.'):
         if not package:
-            raise TypeError("the 'package' argument is required to perform a relative import for {name!r}")
+            raise TypeError(f"the 'package' argument is required to perform a relative import for {name!r}")
         for character in name:
             if character != '.':
                 break
