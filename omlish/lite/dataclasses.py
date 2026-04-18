@@ -42,7 +42,7 @@ def install_dataclass_cache_hash(
         cached_hash_attr: str = '__dataclass_hash__',
 ):
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
         if (
@@ -57,7 +57,7 @@ def install_dataclass_cache_hash(
             try:
                 return object.__getattribute__(self, cached_hash_attr)
             except AttributeError:
-                object.__setattr__(self, cached_hash_attr, h := real_hash(self))  # type: ignore[call-arg]
+                object.__setattr__(self, cached_hash_attr, h := real_hash(self))
             return h
 
         _install_dataclass_fn(cls, cached_hash, '__hash__')
@@ -116,7 +116,7 @@ def install_dataclass_filtered_repr(
         fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
 ):
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
         def filtered_repr(self) -> str:

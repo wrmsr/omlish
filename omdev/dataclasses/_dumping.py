@@ -38,7 +38,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../omlish/lite/check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
+            dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -310,8 +310,6 @@ class Checks:
             exception_type = message
 
         else:
-            message = default_message
-
             if callable(message):
                 message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
                 if isinstance(message, tuple):

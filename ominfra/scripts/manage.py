@@ -85,8 +85,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/attrops.py', sha1='ab1b299f7525e1bc21ed843347ae0f4ed9b0dbe6'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
-            dict(path='../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
+            dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
+            dict(path='../../omlish/lite/contextmanagers.py', sha1='7f319f3fbc1251b6eb37b98084dc2ed0e602051f'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/pycharm.py', sha1='6f84e57f02e2f1075918002f89e4201910d2a15e'),
@@ -3442,8 +3442,6 @@ class Checks:
             exception_type = message
 
         else:
-            message = default_message
-
             if callable(message):
                 message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
                 if isinstance(message, tuple):
@@ -3950,7 +3948,7 @@ class ExitStacked:
                     pass
                 else:
                     if fn is not getattr(ExitStacked, a):
-                        raise TypeError(f'ExitStacked subclass {cls} must not not override {a} via {b}')
+                        raise TypeError(f'ExitStacked subclass {cls} must not override {a} via {b}')
 
     _exit_stack: ta.Optional[contextlib.ExitStack] = None
 
@@ -4019,7 +4017,7 @@ class AsyncExitStacked:
                     pass
                 else:
                     if fn is not getattr(AsyncExitStacked, a):
-                        raise TypeError(f'AsyncExitStacked subclass {cls} must not not override {a} via {b}')
+                        raise TypeError(f'AsyncExitStacked subclass {cls} must not override {a} via {b}')
 
     _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
 

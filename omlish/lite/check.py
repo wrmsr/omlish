@@ -110,8 +110,6 @@ class Checks:
             exception_type = message
 
         else:
-            message = default_message
-
             if callable(message):
                 message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
                 if isinstance(message, tuple):

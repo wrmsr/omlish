@@ -27,7 +27,7 @@ class ExitStacked:
                     pass
                 else:
                     if fn is not getattr(ExitStacked, a):
-                        raise TypeError(f'ExitStacked subclass {cls} must not not override {a} via {b}')
+                        raise TypeError(f'ExitStacked subclass {cls} must not override {a} via {b}')
 
     _exit_stack: ta.Optional[contextlib.ExitStack] = None
 
@@ -96,7 +96,7 @@ class AsyncExitStacked:
                     pass
                 else:
                     if fn is not getattr(AsyncExitStacked, a):
-                        raise TypeError(f'AsyncExitStacked subclass {cls} must not not override {a} via {b}')
+                        raise TypeError(f'AsyncExitStacked subclass {cls} must not override {a} via {b}')
 
     _exit_stack: ta.Optional[contextlib.AsyncExitStack] = None
 

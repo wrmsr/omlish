@@ -35,8 +35,8 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../../lite/check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
-            dict(path='../../../lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
+            dict(path='../../../lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
+            dict(path='../../../lite/dataclasses.py', sha1='60cc1bc138a447a453325d1eed18b16ea9c974db'),
             dict(path='errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
             dict(path='tokens.py', sha1='05183c2980204609c9787a24c55e5ed806886962'),
             dict(path='ast.py', sha1='6d21da91079afcd58467a58153951a6b97a97c20'),
@@ -312,8 +312,6 @@ class Checks:
             exception_type = message
 
         else:
-            message = default_message
-
             if callable(message):
                 message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
                 if isinstance(message, tuple):
@@ -841,7 +839,7 @@ def install_dataclass_cache_hash(
         cached_hash_attr: str = '__dataclass_hash__',
 ):
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
         if (
@@ -856,7 +854,7 @@ def install_dataclass_cache_hash(
             try:
                 return object.__getattribute__(self, cached_hash_attr)
             except AttributeError:
-                object.__setattr__(self, cached_hash_attr, h := real_hash(self))  # type: ignore[call-arg]
+                object.__setattr__(self, cached_hash_attr, h := real_hash(self))
             return h
 
         _install_dataclass_fn(cls, cached_hash, '__hash__')
@@ -915,7 +913,7 @@ def install_dataclass_filtered_repr(
         fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
 ):
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
         def filtered_repr(self) -> str:

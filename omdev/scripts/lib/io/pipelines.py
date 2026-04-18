@@ -40,7 +40,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
-            dict(path='../../lite/check.py', sha1='c1249b29477b4bce088bc15d1a8521b9653e0593'),
+            dict(path='../../lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
@@ -715,8 +715,6 @@ class Checks:
             exception_type = message
 
         else:
-            message = default_message
-
             if callable(message):
                 message = ta.cast(ta.Callable, message)(*ak.args, **ak.kwargs)
                 if isinstance(message, tuple):
