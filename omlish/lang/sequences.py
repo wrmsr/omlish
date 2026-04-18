@@ -157,11 +157,19 @@ class SeqView(ta.Sequence[T]):
 
         step = self._range.step
         start = self._range.start
+        stop: int | None
         if len(self._range) == 0:
             stop = start
         else:
             last = start + (len(self._range) - 1) * step
-            stop = last + (1 if step > 0 else -1)
+            if step > 0:
+                stop = last + 1
+            elif last > 0:
+                stop = last - 1
+            else:
+                # last == 0 with negative step: slice(x, -1, -1) would mean 'up to second-to-last', so use None to
+                # include index 0.
+                stop = None
         slc = slice(start, stop, step)
 
         self._slice = slc

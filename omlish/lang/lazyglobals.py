@@ -80,7 +80,7 @@ class LazyGlobals:
         elif (fallbacks := [(fb_fn, fb_fn(attr)) for fb_fn in self._fallback_fns]):
             if len(fallbacks) > 1:
                 raise AmbiguousLazyGlobalsFallbackError(attr, [fb_fn for fb_fn, _ in fallbacks])
-            [val] = fallbacks
+            [(_, val)] = fallbacks
 
         else:
             raise AttributeError(attr)

@@ -113,3 +113,34 @@ def test_seq_view_str():
         assert v[-1] == r[-1]
     if len(v) >= 3:
         assert v[1:3].materialize() == r[1:3]  # type: ignore[union-attr]  # FIXME
+
+
+##
+
+
+@pytest.mark.parametrize('slc', [
+    slice(None, None, -1),  # full reverse
+    slice(2, None, -1),     # reverse from mid down through 0
+    slice(0, None, -1),     # single element at 0, reverse
+    slice(4, None, -2),     # strided reverse reaching 0
+    slice(None, None, -3),  # strided reverse through 0
+])
+def test_seq_view_slice_reverse_through_zero(slc):
+    data = list(range(5))
+    v = SeqView(data, slc)
+    assert v.materialize() == data[slc]
+    assert list(v) == data[slc]
+    assert data[v.slice] == data[slc]
+
+
+def test_seq_view_slice_roundtrip():
+    data = list(range(7))
+    for start in [None, 0, 1, 3, 6, -1, -4]:
+        for stop in [None, 0, 1, 3, 7, -1, -4]:
+            for step in [1, 2, 3, -1, -2, -3]:
+                slc = slice(start, stop, step)
+                v = SeqView(data, slc)
+                expected = data[slc]
+                assert v.materialize() == expected, f'materialize mismatch for {slc}'
+                assert data[v.slice] == expected, f'slice property mismatch for {slc}'
+                assert list(v) == expected, f'iter mismatch for {slc}'
