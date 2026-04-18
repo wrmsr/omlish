@@ -35,7 +35,7 @@ def __omlish_amalg__():  # noqa
             dict(path='check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='inject.py', sha1='69a10563cf05ced0f06dd910c6c5b5b08d21a75f'),
+            dict(path='inject.py', sha1='8cfee01601e9b8d7a4689cb5ba38de8c2bdb4706'),
         ],
     )
 
@@ -1806,8 +1806,8 @@ class _Injector(Injector):
 
             if self._p is not None:
                 pv = self._p.try_provide(key)
-                if pv is not None:
-                    return cr.handle_provision(key, Maybe.empty())
+                if pv.present:
+                    return cr.handle_provision(key, pv)
 
             return cr.handle_provision(key, Maybe.empty())
 

@@ -138,7 +138,7 @@ def dataclass_terse_repr(obj: ta.Any) -> str:
 
 def install_dataclass_terse_repr():
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
         def terse_repr(self) -> str:

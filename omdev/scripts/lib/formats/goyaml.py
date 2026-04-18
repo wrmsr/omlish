@@ -36,7 +36,7 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
-            dict(path='../../../lite/dataclasses.py', sha1='60cc1bc138a447a453325d1eed18b16ea9c974db'),
+            dict(path='../../../lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
             dict(path='tokens.py', sha1='05183c2980204609c9787a24c55e5ed806886962'),
             dict(path='ast.py', sha1='6d21da91079afcd58467a58153951a6b97a97c20'),
@@ -935,7 +935,7 @@ def dataclass_terse_repr(obj: ta.Any) -> str:
 
 def install_dataclass_terse_repr():
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
         def terse_repr(self) -> str:

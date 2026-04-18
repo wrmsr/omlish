@@ -730,8 +730,8 @@ class _Injector(Injector):
 
             if self._p is not None:
                 pv = self._p.try_provide(key)
-                if pv is not None:
-                    return cr.handle_provision(key, Maybe.empty())
+                if pv.present:
+                    return cr.handle_provision(key, pv)
 
             return cr.handle_provision(key, Maybe.empty())
 

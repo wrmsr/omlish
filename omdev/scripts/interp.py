@@ -73,7 +73,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
-            dict(path='../../omlish/lite/inject.py', sha1='69a10563cf05ced0f06dd910c6c5b5b08d21a75f'),
+            dict(path='../../omlish/lite/inject.py', sha1='8cfee01601e9b8d7a4689cb5ba38de8c2bdb4706'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/subprocesses/run.py', sha1='1d2a78b18bcc601c8b28269d792cc38bbf25a078'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
@@ -4161,8 +4161,8 @@ class _Injector(Injector):
 
             if self._p is not None:
                 pv = self._p.try_provide(key)
-                if pv is not None:
-                    return cr.handle_provision(key, Maybe.empty())
+                if pv.present:
+                    return cr.handle_provision(key, pv)
 
             return cr.handle_provision(key, Maybe.empty())
 

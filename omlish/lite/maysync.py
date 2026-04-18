@@ -146,7 +146,7 @@ class Maywaitable(AnyMaywaitable[MaysyncFn[T]], ta.Awaitable[T]):
             if self._d:
                 raise MaywaitableAlreadyConsumedError(self)
 
-            if _MaysyncThreadLocal.run_context is None:
+            if _MAYSYNC_THREAD_LOCAL.run_context is None:
                 aw = self._aw = self._x._a(*self._args, **self._kwargs)  # noqa
             else:
                 aw = self._aw = _MaysyncFuture(self)
@@ -183,7 +183,7 @@ class MaysyncGenerator(AnyMaywaitable[MaysyncGeneratorFn[O, I]], ta.AsyncGenerat
     #
 
     def _make_ag(self) -> ta.AsyncGenerator[O, I]:
-        if _MaysyncThreadLocal.run_context is None:
+        if _MAYSYNC_THREAD_LOCAL.run_context is None:
             return self._x._a(*self._args, **self._kwargs)  # noqa
 
         async def inner():
@@ -293,7 +293,13 @@ def make_maysync(s, a):
 
 @ta.final
 class _MaysyncThreadLocal(threading.local):
-    run_context: ta.Optional['_MaysyncRunContext'] = None
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.run_context: ta.Optional['_MaysyncRunContext'] = None
+
+
+_MAYSYNC_THREAD_LOCAL = _MaysyncThreadLocal()
 
 
 @ta.final
@@ -302,8 +308,8 @@ class _MaysyncRunContext:
         self._root = root
 
     def run(self, fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
-        prev = _MaysyncThreadLocal.run_context
-        _MaysyncThreadLocal.run_context = self
+        prev = _MAYSYNC_THREAD_LOCAL.run_context
+        _MAYSYNC_THREAD_LOCAL.run_context = self
 
         ph: ta.Any = sys.get_asyncgen_hooks()
         if ph.firstiter is not None or ph.finalizer is not None:
@@ -318,13 +324,13 @@ class _MaysyncRunContext:
             if ph is not None:
                 sys.set_asyncgen_hooks(*ph)
 
-            if _MaysyncThreadLocal.run_context is not self:
+            if _MAYSYNC_THREAD_LOCAL.run_context is not self:
                 raise RuntimeError
-            _MaysyncThreadLocal.run_context = prev
+            _MAYSYNC_THREAD_LOCAL.run_context = prev
 
 
 def is_running_maysync() -> bool:
-    return _MaysyncThreadLocal.run_context is not None
+    return _MAYSYNC_THREAD_LOCAL.run_context is not None
 
 
 ##

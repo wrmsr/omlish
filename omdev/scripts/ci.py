@@ -108,7 +108,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='7f319f3fbc1251b6eb37b98084dc2ed0e602051f'),
-            dict(path='../../omlish/lite/dataclasses.py', sha1='60cc1bc138a447a453325d1eed18b16ea9c974db'),
+            dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
@@ -165,7 +165,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../omlish/io/streams/utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
-            dict(path='../../omlish/lite/inject.py', sha1='69a10563cf05ced0f06dd910c6c5b5b08d21a75f'),
+            dict(path='../../omlish/lite/inject.py', sha1='8cfee01601e9b8d7a4689cb5ba38de8c2bdb4706'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/logs/utils.py', sha1='f19e8f456172673b7418f3413f4ccef00a4b251c'),
@@ -2329,7 +2329,7 @@ def dataclass_terse_repr(obj: ta.Any) -> str:
 
 def install_dataclass_terse_repr():
     def inner(cls):
-        if not isinstance(cls, type) and dc.is_dataclass(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
             raise TypeError(cls)
 
         def terse_repr(self) -> str:
@@ -14544,8 +14544,8 @@ class _Injector(Injector):
 
             if self._p is not None:
                 pv = self._p.try_provide(key)
-                if pv is not None:
-                    return cr.handle_provision(key, Maybe.empty())
+                if pv.present:
+                    return cr.handle_provision(key, pv)
 
             return cr.handle_provision(key, Maybe.empty())
 
