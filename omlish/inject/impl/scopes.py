@@ -151,15 +151,13 @@ class SeededScopeImpl(ScopeImpl):
         def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.AsyncContextManager[None]:
             @contextlib.asynccontextmanager
             async def inner():
+                if self._ssi._st is not None:  # noqa
+                    raise ScopeAlreadyOpenError(self._ss)
+                self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
                 try:
-                    if self._ssi._st is not None:  # noqa
-                        raise ScopeAlreadyOpenError(self._ss)
-                    self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
                     await self._ii._instantiate_eagers(self._ss)  # noqa
                     yield
                 finally:
-                    if self._ssi._st is None:  # noqa
-                        raise ScopeNotOpenError(self._ss)
                     self._ssi._st = None  # noqa
             return inner()
 
