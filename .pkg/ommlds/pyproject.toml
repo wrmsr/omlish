@@ -51,7 +51,7 @@ all = [
     'tavily-python ~= 0.7',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
-    'lxml >= 6.0',
+    'lxml >= 6.1',
 ]
 omdev = [
     'omdev == 0.0.7',
@@ -94,7 +94,7 @@ wiki = [
     'wikitextparser ~= 0.56',
 ]
 xml = [
-    'lxml >= 6.0',
+    'lxml >= 6.1',
 ]
 
 [project.entry-points]
