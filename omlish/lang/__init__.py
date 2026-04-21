@@ -273,6 +273,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         call_with,
         opt_call,
         opt_fn,
+        not_fn,
         recurse,
 
         raise_,

@@ -126,8 +126,8 @@ class ManifestBackendStringResolver(BackendStringResolver):
             elif mdl.name == m.model_names.default:
                 mn = m.model_names.resolved_default
 
-            elif mdl.name in m.model_names.alias_map:
-                mn = m.model_names.alias_map[mdl.name]
+            elif mdl.name in m.model_names.resolved:
+                mn = m.model_names.resolved[mdl.name]
 
             elif args.parsed.backend is None:
                 return None

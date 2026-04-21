@@ -21,7 +21,7 @@ class ModelNameCollection:
     aliases: ta.Mapping[str, str | None] | None = None
 
     @cached.property
-    def alias_map(self) -> ta.Mapping[str, str]:
+    def resolved(self) -> ta.Mapping[str, str]:
         if not (src := self.aliases):
             return {}
 
@@ -35,10 +35,10 @@ class ModelNameCollection:
 
     @cached.property
     def roots(self) -> frozenset[str]:
-        return frozenset(self.alias_map.values())
+        return frozenset(self.resolved.values())
 
     def resolve(self, name: str) -> str:
-        return self.alias_map.get(name, name)
+        return self.resolved.get(name, name)
 
     @cached.property
     def resolved_default(self) -> str | None:

@@ -49,6 +49,14 @@ def opt_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs: ta.
         return fn(*args, **kwargs)
 
 
+def not_fn(fn: ta.Callable[P, bool]) -> ta.Callable[P, bool]:
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        return not fn(*args, **kwargs)
+
+    return inner
+
+
 def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
     def rec(*args, **kwargs) -> T:  # noqa
         return fn(rec, *args, **kwargs)
