@@ -17,12 +17,11 @@ TODO:
 import typing as ta
 
 from omlish import dataclasses as dc
-from omlish import marshal as msh
 
 from ..resources import Resources
-from ..services.responses import ResponseMetadata
 from ..stream.services import StreamResponseSink
 from ..stream.services import new_stream_response
+from .metadata import RetryServiceResponseMetadata
 from .services import WrappedOptionT
 from .services import WrappedOutputT
 from .services import WrappedRequest
@@ -50,16 +49,6 @@ AnyRetryService: ta.TypeAlias = ta.Union[
 class RetryServiceMaxRetriesExceededError(Exception):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(__cause__={self.__cause__!r})'
-
-
-@dc.dataclass(frozen=True)
-@msh.update_fields_options(['retry_service'], no_marshal=True, no_unmarshal=True)
-class RetryServiceResponseMetadata(ResponseMetadata):
-    num_retries: int
-
-    _: dc.KW_ONLY
-
-    retry_service: AnyRetryService | None = None
 
 
 ##

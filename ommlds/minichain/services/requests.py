@@ -9,6 +9,7 @@ from .._typedvalues import _tv_field_metadata
 from ..metadata import CommonMetadata
 from ..metadata import Metadata
 from ..metadata import MetadataContainerDataclass
+from ..registries.globals import register_type
 from ..types import Option
 from ..types import OptionT_co
 from ._origclasses import confer_orig_class
@@ -23,8 +24,12 @@ OptionU = ta.TypeVar('OptionU', bound=Option)
 ##
 
 
+# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 class RequestMetadata(Metadata, lang.Abstract):
     pass
+
+
+register_type(RequestMetadata, module=__name__)
 
 
 RequestMetadatas: ta.TypeAlias = RequestMetadata | CommonMetadata

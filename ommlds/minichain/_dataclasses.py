@@ -28651,73 +28651,6 @@ def _process_dataclass__e4d635c950acb2270f4d7755e6070d0ab79058e5():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=()), EqPlan(fields=()), HashPlan(action='set_none', fields=None, cache=None), InitP"
-        "lan(fields=(), self_param='self', std_params=(), kw_only_params=(), frozen=False, slots=False, post_init_param"
-        "s=None, init_fns=(), validate_fns=())))"
-    ),
-    plan_repr_sha1='cfe950ccb271c08a9a7ea828a272e37b1f5c9323',
-    op_ref_idents=(),
-    cls_names=(
-        ('ommlds.minichain.wrappers.retry', 'RetryServiceMaxRetriesExceededError'),
-    ),
-)
-def _process_dataclass__cfe950ccb271c08a9a7ea828a272e37b1f5c9323():
-    def _process_dataclass(
-        *,
-        __dataclass__cls,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
-    ):
-        def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
-                raise TypeError(self)
-            return __dataclass__cls()  # noqa
-
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
-
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return True
-
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
-
-        setattr(__dataclass__cls, '__hash__', None)
-
-        def __init__(
-            self,
-        ) -> __dataclass__None:
-            pass
-
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
-
-    return _process_dataclass
-
-
-@_register(
-    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('num_retries', 'retry_service')), EqPlan(fields=('num_retries', 'retry_service')),"
         " FrozenPlan(fields=('num_retries', 'retry_service'), allow_dynamic_dunder_attrs=False), HashPlan(action='add',"
         " fields=('num_retries', 'retry_service'), cache=False), InitPlan(fields=(InitPlan.Field(name='num_retries', an"
@@ -28737,7 +28670,7 @@ def _process_dataclass__cfe950ccb271c08a9a7ea828a272e37b1f5c9323():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('ommlds.minichain.wrappers.retry', 'RetryServiceResponseMetadata'),
+        ('ommlds.minichain.wrappers.metadata', 'RetryServiceResponseMetadata'),
     ),
 )
 def _process_dataclass__d96b5401a8b47da320a23cac87237e654dc6e962():
@@ -28863,5 +28796,72 @@ def _process_dataclass__d96b5401a8b47da320a23cac87237e654dc6e962():
         if '__repr__' in __dataclass__cls.__dict__:
             raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
         setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=()), EqPlan(fields=()), HashPlan(action='set_none', fields=None, cache=None), InitP"
+        "lan(fields=(), self_param='self', std_params=(), kw_only_params=(), frozen=False, slots=False, post_init_param"
+        "s=None, init_fns=(), validate_fns=())))"
+    ),
+    plan_repr_sha1='cfe950ccb271c08a9a7ea828a272e37b1f5c9323',
+    op_ref_idents=(),
+    cls_names=(
+        ('ommlds.minichain.wrappers.retry', 'RetryServiceMaxRetriesExceededError'),
+    ),
+)
+def _process_dataclass__cfe950ccb271c08a9a7ea828a272e37b1f5c9323():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls()  # noqa
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return True
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        setattr(__dataclass__cls, '__hash__', None)
+
+        def __init__(
+            self,
+        ) -> __dataclass__None:
+            pass
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
 
     return _process_dataclass

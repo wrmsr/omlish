@@ -703,11 +703,14 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .wrappers.metadata import (  # noqa
+        RetryServiceResponseMetadata,
+    )
+
     from .wrappers.retry import (  # noqa
         AnyRetryService,
 
         RetryServiceMaxRetriesExceededError,
-        RetryServiceResponseMetadata,
 
         RetryService,
 

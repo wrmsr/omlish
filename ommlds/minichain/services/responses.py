@@ -9,6 +9,7 @@ from .._typedvalues import _tv_field_metadata
 from ..metadata import CommonMetadata
 from ..metadata import Metadata
 from ..metadata import MetadataContainerDataclass
+from ..registries.globals import register_type
 from ..types import Output
 from ..types import OutputT_contra
 from ._origclasses import confer_orig_class
@@ -21,8 +22,12 @@ V_co = ta.TypeVar('V_co', covariant=True)
 ##
 
 
+# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 class ResponseMetadata(Metadata, lang.Abstract):
     pass
+
+
+register_type(ResponseMetadata, module=__name__)
 
 
 ResponseMetadatas: ta.TypeAlias = ResponseMetadata | CommonMetadata

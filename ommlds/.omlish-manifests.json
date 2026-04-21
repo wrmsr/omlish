@@ -909,6 +909,30 @@
     }
   },
   {
+    "module": ".minichain.services.requests",
+    "attr": null,
+    "file": "ommlds/minichain/services/requests.py",
+    "line": 27,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "ommlds.minichain.services.requests",
+        "attr": "RequestMetadata"
+      }
+    }
+  },
+  {
+    "module": ".minichain.services.responses",
+    "attr": null,
+    "file": "ommlds/minichain/services/responses.py",
+    "line": 25,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "ommlds.minichain.services.responses",
+        "attr": "ResponseMetadata"
+      }
+    }
+  },
+  {
     "module": ".minichain.vectors.embeddings",
     "attr": null,
     "file": "ommlds/minichain/vectors/embeddings.py",
@@ -941,6 +965,21 @@
       "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.vectors.search",
         "attr": "VectorSearchService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.wrappers.metadata",
+    "attr": null,
+    "file": "ommlds/minichain/wrappers/metadata.py",
+    "line": 16,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.wrappers.metadata",
+        "attr": "RetryServiceResponseMetadata",
+        "name": "RetryServiceResponseMetadata",
+        "aliases": null,
+        "type": "ResponseMetadata"
       }
     }
   },

@@ -7,9 +7,9 @@ from ...stream.services import StreamResponseSink
 from ...stream.services import new_stream_response
 from ...types import Option
 from ...types import Output
+from ..metadata import RetryServiceResponseMetadata
 from ..retry import RetryService
 from ..retry import RetryServiceMaxRetriesExceededError
-from ..retry import RetryServiceResponseMetadata
 
 
 ##
