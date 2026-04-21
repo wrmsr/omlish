@@ -8,7 +8,7 @@ import typing as ta
 
 from omlish import check
 from omlish import collections as col
-from omlish import dataclasses as dc
+from omlish import lang
 
 from .manifests import RegistryManifest
 from .manifests import RegistryTypeManifest
@@ -34,119 +34,179 @@ class Registry:
         self._registry_type_manifests = list(registry_type_manifests)
         self._registry_manifests = list(registry_manifests)
 
-        self._registry_type_manifests_by_name = col.make_map(
-            ((m.attr, m) for m in self._registry_type_manifests),
-            strict=True,
-        )
-
-        self._modules: dict[str, Registry._Module] = {}
-        for rtm in self._registry_type_manifests:
-            m = self._get_module(rtm.module)
-            m.registry_type_manifests.append(rtm)
-            m.unresolved_type_manifests.append(rtm)
-
-        self._registry_manifests_by_name_by_type = {
+        rms_by_name_by_type = {
             t: RegistryManifest.build_name_dict(l)
             for t, l in col.multi_map((m.type, m) for m in self._registry_manifests).items()
         }
 
-        self._registry_type_cls_by_name: dict[str, type] = {}
-        self._registry_cls_by_name_by_type_name: dict[str, dict[str, type]] = {}
+        self._types_by_name: dict[str, Registry.Type] = {}
+        self._types_by_cls: dict[str, Registry.Type] = {}
 
-        self._registered_types: dict[ta.Any, Registry._RegisteredType] = {}
-        self._resolved_registry_type_names_by_registered_type: dict[ta.Any, str] = {}
+        for rtm in self._registry_type_manifests:
+            check.not_in(rtm.attr, self._types_by_name)
 
-    #
+            rt = self.Type(
+                _o=self,
 
-    @dc.dataclass()
-    class _Module:
-        name: str
+                _rtm=rtm,
+                _rms=rms_by_name_by_type.get(rtm.attr, {}),
 
-        registry_type_manifests: list[RegistryTypeManifest] = dc.field(default_factory=list)
+                _name=rtm.attr,
+                _module=rtm.module,
+            )
 
-        unresolved_type_manifests: list[RegistryTypeManifest] = dc.field(default_factory=list)
-
-    def _get_module(self, name: str) -> _Module:
-        try:
-            return self._modules[name]
-        except KeyError:
-            pass
-        m = self._modules[name] = Registry._Module(name)
-        return m
+            self._types_by_name[rtm.attr] = rt
 
     #
 
-    @dc.dataclass(frozen=True)
-    class _RegisteredType:
-        cls: ta.Any
+    class Type:
+        def __init__(
+                self,
+                *,
+                _o: Registry,
 
-        _: dc.KW_ONLY
+                _rtm: RegistryTypeManifest | None = None,
+                _rms: ta.Mapping[str, RegistryManifest] | None = None,
 
-        module: str | None = None
+                _name: str | None = None,
+                _module: str | None = None,
+
+                _cls: lang.Maybe[ta.Any] = lang.empty(),
+
+                _has_registered: bool = False,
+        ) -> None:
+            super().__init__()
+
+            self._o: ta.Final = _o
+
+            self._rtm: ta.Final = _rtm
+            self._rms: ta.Final = _rms
+
+            self._name: ta.Final = _name
+            self._module: ta.Final = _module
+
+            self.__cls: lang.Maybe[ta.Any] = _cls
+
+            self._has_registered = _has_registered
+
+        __repr__: ta.Any = lang.AttrOps(
+            'name',
+            'module',
+            repr_filter=lang.is_not_none,
+        ).repr
+
+        @property
+        def name(self) -> str | None:
+            return self._name
+
+        @property
+        def module(self) -> str | None:
+            return self._module
+
+        #
+
+        def _maybe_set_cls(self, cls: ta.Any) -> None:
+            if self.__cls.present:
+                return
+
+            if cls is not None:
+                check.not_in(cls, self._o._types_by_cls)  # noqa
+                self._o._types_by_cls[cls] = self  # noqa
+
+            self.__cls = lang.just(cls)
+
+        def cls(self) -> ta.Any:
+            if (cls := self.__cls).present:
+                return cls.must()
+
+            with self._o._lock:  # noqa
+                if (cls := self.__cls).present:
+                    return cls.must()
+
+                if (rtm := self._rtm) is not None:
+                    cls_ = rtm.resolve()
+                else:
+                    cls_ = None
+
+                self._maybe_set_cls(cls_)
+                return cls
+
+        #
+
+        def lookup(self, name: str) -> ta.Any:
+            if not (rms := self._rms):
+                raise KeyError(name)
+
+            rm = rms[name]
+            return rm.resolve()
+
+    #
 
     def register_type(
             self,
             cls: ta.Any,
             *,
+            name: str | None = None,
             module: str | None = None,
-    ) -> None:
+    ) -> Type:
         with self._lock:
-            if cls in self._registered_types:
-                raise RuntimeError(f'Type {cls} already registered')
+            if (rt := self._types_by_cls.get(cls)) is not None:
+                if name is not None:
+                    try:
+                        nrt = self._types_by_name[name]
+                    except KeyError:
+                        pass
+                    else:
+                        if rt is not nrt:
+                            raise RuntimeError(f'Type {name!r} already present')
 
-            self._registered_types[cls] = Registry._RegisteredType(
-                cls,
-                module=module,
+                if rt._has_registered:  # noqa
+                    raise RuntimeError(f'Type {cls} already registered')
+
+                rt._has_registered = True  # noqa
+                rt._maybe_set_cls(cls)  # noqa
+                return rt
+
+            if name is None:
+                mo = sys.modules[check.not_none(module)]
+                name = check.single(a for a, o in mo.__dict__.items() if o is cls)
+
+            if name is not None:
+                if (rt := self._types_by_name.get(name)) is not None:
+                    if rt._has_registered:  # noqa
+                        raise RuntimeError(f'Type {name!r} already registered')
+
+                    rt._has_registered = True  # noqa
+                    rt._maybe_set_cls(cls)  # noqa
+                    return rt
+
+            rt = self.Type(
+                _o=self,
+
+                _name=name,
+                _module=module,
+
+                _cls=lang.just(cls),
+
+                _has_registered=True,
             )
 
-            if module is not None:
-                mo = sys.modules[module]
-                m = self._get_module(module)
+            if name is not None:
+                self._types_by_name[name] = rt
+            self._types_by_cls[cls] = rt
 
-                nu: list[RegistryTypeManifest] = []
-                for rtm in m.unresolved_type_manifests:
-                    if hasattr(mo, rtm.attr) and (v := getattr(mo, rtm.attr)) is cls:
-                        check.not_in(v, self._resolved_registry_type_names_by_registered_type)
-                        self._resolved_registry_type_names_by_registered_type[v] = rtm.attr
-                    else:
-                        nu.append(rtm)
-                m.unresolved_type_manifests = nu
+        return rt
+
+    def get_registered_type(self, selector: ta.Any) -> Type:
+        if isinstance(selector, str):
+            return self._types_by_name[selector]
+        else:
+            return self._types_by_cls[selector]
 
     #
 
     def get_registry_type_cls(self, name: str) -> type:
-        with self._lock:
-            try:
-                return self._registry_type_cls_by_name[name]
-            except KeyError:
-                pass
-
-            m = self._registry_type_manifests_by_name[name]
-            cls = m.resolve()
-            self._registry_type_cls_by_name[name] = cls
-            return cls
+        return self.get_registered_type(name).cls()
 
     def get_registry_cls(self, selector: ta.Any, name: str) -> type:
-        with self._lock:
-            if isinstance(selector, str):
-                type_name = check.in_(selector, self._registry_type_manifests_by_name)
-            elif isinstance(selector, type):
-                type_name = selector.__name__
-            else:
-                type_name = self._resolved_registry_type_names_by_registered_type[selector]
-
-            try:
-                d = self._registry_cls_by_name_by_type_name[type_name]
-            except KeyError:
-                d = self._registry_cls_by_name_by_type_name[type_name] = {}
-
-            try:
-                return d[name]
-            except KeyError:
-                pass
-
-            m = self._registry_manifests_by_name_by_type[type_name][name]
-            cls = m.resolve()
-            d[name] = cls
-
-            return cls
+        return self.get_registered_type(selector).lookup(name)
