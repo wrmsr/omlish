@@ -118,6 +118,7 @@ with _auto_proxy_init(globals(), update_exports=True):
     from .classes.restrict import (  # noqa
         FinalTypeError,
         Final,
+        is_final,
 
         SealedError,
         Sealed,

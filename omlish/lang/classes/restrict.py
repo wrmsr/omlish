@@ -41,6 +41,10 @@ class Final(Abstract):
             pass
 
 
+def is_final(cls):
+    return isinstance(cls, type) and (bool(getattr(cls, '__final__', False) or issubclass(cls, Final)))
+
+
 ##
 
 

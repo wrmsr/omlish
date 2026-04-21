@@ -1,8 +1,11 @@
+import inspect
 import typing as ta
 
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
+from omlish import marshal as msh
+from omlish import reflect as rfl
 from omlish.manifests.globals import GlobalManifestLoader
 
 from ....chat.choices.services import ChatChoicesService
@@ -41,7 +44,19 @@ def resolve_backend_spec(service_cls: ta.Any, spec: BackendSpec) -> ResolvedBack
                 configs = spec.configs  # type: ignore[assignment]  # noqa
 
             else:
-                raise NotImplementedError
+                sig = inspect.signature(cls)
+                cfgs_arg = next(iter(sig.parameters.values()))
+                check.state(cfgs_arg.kind == inspect.Parameter.VAR_POSITIONAL)
+                check.is_not(cfgs_arg.annotation, inspect.Parameter.empty)
+                check.is_not(cfgs_arg.annotation, Config)
+                cfg_rty = rfl.type_(cfgs_arg.annotation)
+
+                configs = []
+                for c in spec.configs:
+                    if not isinstance(c, Config):
+                        c = msh.unmarshal(c, cfg_rty)
+
+                    configs.append(c)
 
         return ResolvedBackendSpec(
             service_cls,
@@ -82,4 +97,4 @@ def resolve_backend_spec(service_cls: ta.Any, spec: BackendSpec) -> ResolvedBack
 
 def test_strings():
     print(resolve_backend_spec(ChatChoicesService, NameBackendSpec('openai')))
-    print(resolve_backend_spec(ChatChoicesService, ModelBackendSpec('gpt')))
+    print(resolve_backend_spec(ChatChoicesService, ModelBackendSpec('gpt', [{'api_key': 'foo'}])))

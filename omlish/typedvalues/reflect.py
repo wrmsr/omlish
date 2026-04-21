@@ -33,6 +33,7 @@ def reflect_typed_values_impls(
             cur = check.issubclass(check.isinstance(cur, type), TypedValue)
 
             if find_abstract_subclasses and lang.is_abstract_class(cur):
+                check.issubclass(cur, lang.Sealed)
                 todo.extend(lang.deep_subclasses(cur, concrete_only=True))
 
             else:

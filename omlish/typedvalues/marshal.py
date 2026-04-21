@@ -1,7 +1,3 @@
-"""
-TODO:
- - sealed only?
-"""
 import typing as ta
 
 from .. import check
@@ -18,9 +14,19 @@ from .values import TypedValue
 ##
 
 
+def _is_valid_abstract_typed_value(rty: rfl.Type) -> bool:
+    return (
+        isinstance(rty, type) and
+        issubclass(rty, TypedValue) and
+        lang.is_abstract_class(rty) and
+        issubclass(rty, lang.Sealed)
+    )
+
+
 def _build_typed_value_poly(rty: rfl.Type) -> msh.Polymorphism:
     ty: type[TypedValue] = check.issubclass(check.isinstance(rty, type), TypedValue)  # noqa
     check.state(lang.is_abstract_class(ty))
+
     return msh.polymorphism_from_subclasses(
         ty,
         naming=msh.Naming.SNAKE,
@@ -48,11 +54,7 @@ class TypedValueMarshalerFactory(msh.MarshalerFactoryMethodClass):
 
     @msh.MarshalerFactoryMethodClass.make_marshaler.register
     def _make_abstract(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if not (
-            isinstance(rty, type) and
-            issubclass(rty, TypedValue) and
-            lang.is_abstract_class(rty)
-        ):
+        if not _is_valid_abstract_typed_value(rty):
             return None
 
         return lambda: msh.make_polymorphism_marshaler(
@@ -82,11 +84,7 @@ class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
 
     @msh.UnmarshalerFactoryMethodClass.make_unmarshaler.register
     def _make_abstract(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if not (
-            isinstance(rty, type) and
-            issubclass(rty, TypedValue) and
-            lang.is_abstract_class(rty)
-        ):
+        if not _is_valid_abstract_typed_value(rty):
             return None
 
         return lambda: msh.make_polymorphism_unmarshaler(
@@ -99,12 +97,20 @@ class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
 ##
 
 
-def _build_typed_values_impls(rty: rfl.Type) -> msh.Impls:
-    gty = check.isinstance(rty, rfl.Generic)
-    check.is_(gty.cls, TypedValues)
+def _is_typed_values_union(rty: rfl.Type) -> bool:
+    return (
+        isinstance(rty, rfl.Union) and
+        all(
+            (isinstance(a, type) and issubclass(a, TypedValue)) or
+            (isinstance(a, rfl.Generic) and issubclass(a.cls, TypedValue))
+            for a in rty.args
+        )
+    )
 
+
+def _build_typed_value_union_poly(rty: rfl.Type) -> msh.Impls:
     tv_cls_set = reflect_typed_values_impls(
-        check.single(gty.args),
+        rty,
         find_abstract_subclasses=True,
     )
 
@@ -118,16 +124,42 @@ def _build_typed_values_impls(rty: rfl.Type) -> msh.Impls:
     return msh.Impls(tv_impls)
 
 
-#
+class TypedValueUnionMarshalerFactory(msh.MarshalerFactoryMethodClass):
+    @msh.MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_union(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if not _is_typed_values_union(rty):
+            return None
+
+        return lambda: msh.make_polymorphism_marshaler(
+            _build_typed_value_union_poly(rty),
+            msh.WrapperTypeTagging(),
+            ctx,
+        )
+
+
+class TypedValueUnionUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
+    @msh.UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _make_union(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if not _is_typed_values_union(rty):
+            return None
+
+        return lambda: msh.make_polymorphism_unmarshaler(
+            _build_typed_value_union_poly(rty),
+            msh.WrapperTypeTagging(),
+            ctx,
+        )
+
+
+##
 
 
 def build_typed_values_marshaler(ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> msh.Marshaler:
-    tv_m = msh.make_polymorphism_marshaler(
-        msh.Impls(_build_typed_values_impls(rty)),
-        msh.WrapperTypeTagging(),
-        ctx,
+    gty = check.isinstance(rty, rfl.Generic)
+    check.is_(gty.cls, TypedValues)
+
+    return msh.IterableMarshaler(
+        ctx.make_marshaler(check.single(gty.args)),
     )
-    return msh.IterableMarshaler(tv_m)
 
 
 class TypedValuesMarshalerFactory(msh.MarshalerFactoryMethodClass):
@@ -144,16 +176,15 @@ class TypedValuesMarshalerFactory(msh.MarshalerFactoryMethodClass):
         return lambda: lang.raise_(NotImplementedError)
 
 
-#
-
-
 def build_typed_values_unmarshaler(ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> msh.Unmarshaler:
-    tv_u = msh.make_polymorphism_unmarshaler(
-        msh.Impls(_build_typed_values_impls(rty)),
-        msh.WrapperTypeTagging(),
-        ctx,
+    gty = check.isinstance(rty, rfl.Generic)
+    check.is_(gty.cls, TypedValues)
+
+    return msh.IterableUnmarshaler(
+        TypedValues,
+        ctx.make_unmarshaler(check.single(gty.args)),
+        ctor=lambda it: TypedValues(*it),
     )
-    return msh.IterableUnmarshaler(TypedValues, tv_u, ctor=lambda it: TypedValues(*it))  # noqa
 
 
 class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
@@ -178,6 +209,9 @@ def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         TypedValueMarshalerFactory(),
         TypedValueUnmarshalerFactory(),
+
+        TypedValueUnionMarshalerFactory(),
+        TypedValueUnionUnmarshalerFactory(),
 
         TypedValuesMarshalerFactory(),
         TypedValuesUnmarshalerFactory(),
