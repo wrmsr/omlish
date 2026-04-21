@@ -81,7 +81,7 @@ class LiteralUnionUnmarshaler(Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         if isinstance(v, self.v_ty):
-            return self.l.unmarshal(ctx, v)  # type: ignore[arg-type]
+            return self.l.unmarshal(ctx, v)
         else:
             return self.x.unmarshal(ctx, v)
 
