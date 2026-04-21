@@ -3,6 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ... import reflect as rfl
 from ..api.configs import Config
 from ..api.naming import Naming
 from ..api.naming import translate_name
@@ -132,27 +133,28 @@ class ImplBases(ta.Sequence[ImplBase], lang.Final):
 class Polymorphism:
     def __init__(
             self,
-            ty: type,
+            rty: rfl.Type,
             impls: Impls | ta.Iterable[Impl],
             *,
             bases: ImplBases | ta.Iterable[ImplBase] | None = None,
     ) -> None:
         super().__init__()
 
-        self._ty = ty
+        self._rty = rty
         self._impls = impls if isinstance(impls, Impls) else Impls(impls)
         self._bases = bases if isinstance(bases, ImplBases) else ImplBases(bases) if bases is not None else None
 
-        for i in self._impls:
-            check.issubclass(i.ty, ty)  # noqa
+        if isinstance(ty := rty, type):
+            for i in self._impls:
+                check.issubclass(i.ty, ty)  # noqa
 
-        if self._bases is not None:
-            for b in self._bases:
-                check.issubclass(b.ty, ty)
+            if self._bases is not None:
+                for b in self._bases:
+                    check.issubclass(b.ty, ty)
 
     @property
-    def ty(self) -> type:
-        return self._ty
+    def rty(self) -> rfl.Type:
+        return self._rty
 
     @property
     def impls(self) -> Impls:
@@ -201,7 +203,7 @@ def polymorphism_from_impls(
     for cur in impl_tys:
         name = cur.__name__
         if ssx is not None:
-            name = lang.strip_suffix(name, ssx)
+            name = lang.must_remove_suffix(name, ssx)
         if naming is not None:
             name = translate_name(name, naming)
         if name in dct:

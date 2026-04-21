@@ -13,7 +13,7 @@ def get_polymorphism_impls(
         rty: rfl.Type,
         p: Polymorphism,
 ) -> Impls | None:
-    if rty is p.ty:
+    if rty == p.rty:
         return p.impls
 
     if (

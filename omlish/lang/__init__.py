@@ -518,8 +518,8 @@ with _auto_proxy_init(globals(), update_exports=True):
         prefix_lines,
         indent_lines,
 
-        strip_prefix,
-        strip_suffix,
+        must_remove_prefix,
+        must_remove_suffix,
 
         replace_many,
 

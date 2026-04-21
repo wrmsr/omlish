@@ -25,13 +25,13 @@ def indent_lines(s: StrOrBytesT, num: int) -> StrOrBytesT:
 ##
 
 
-def strip_prefix(s: StrOrBytesT, pfx: StrOrBytesT) -> StrOrBytesT:
+def must_remove_prefix(s: StrOrBytesT, pfx: StrOrBytesT) -> StrOrBytesT:
     if not s.startswith(pfx):  # type: ignore
         raise ValueError(f'{s!r} does not start with {pfx!r}')
     return s[len(pfx):]  # type: ignore
 
 
-def strip_suffix(s: StrOrBytesT, sfx: StrOrBytesT) -> StrOrBytesT:
+def must_remove_suffix(s: StrOrBytesT, sfx: StrOrBytesT) -> StrOrBytesT:
     if not s.endswith(sfx):  # type: ignore
         raise ValueError(f'{s!r} does not end with {sfx!r}')
     return s[:-len(sfx)]  # type: ignore

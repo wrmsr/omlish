@@ -92,7 +92,7 @@ class _LsRenderRun:
 
         else:
             return (
-                f'{"  " * (lang.strip_prefix(item.path, root_pfx).count("/") + 1)}'
+                f'{"  " * (lang.must_remove_prefix(item.path, root_pfx).count("/") + 1)}'
                 f'- {item.name}'
                 f'{"/" if isinstance(item, DirLsItem) else ""}'
             )

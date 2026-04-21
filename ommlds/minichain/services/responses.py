@@ -24,7 +24,10 @@ V_co = ta.TypeVar('V_co', covariant=True)
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 class ResponseMetadata(Metadata, lang.Abstract):
-    pass
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.state(cls.__name__.endswith('ResponseMetadata'))
 
 
 register_type(ResponseMetadata, module=__name__)

@@ -32,10 +32,10 @@ def test_fnpipes():
 
     #
 
-    fn = fp.bind(lang.strip_suffix, ..., 'Action') | snake_case | fp.bind(str.replace, ..., '_', '-')
+    fn = fp.bind(lang.must_remove_suffix, ..., 'Action') | snake_case | fp.bind(str.replace, ..., '_', '-')
     assert fn('FooBarAction') == 'foo-bar'
 
-    fn = fp.bind(lang.strip_suffix, ..., 'Action') | snake_case | fp.bind(str.replace, ..., '_', '-')
+    fn = fp.bind(lang.must_remove_suffix, ..., 'Action') | snake_case | fp.bind(str.replace, ..., '_', '-')
     assert fn('FooBarAction') == 'foo-bar'
 
     #

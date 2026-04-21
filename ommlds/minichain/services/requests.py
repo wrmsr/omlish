@@ -26,7 +26,10 @@ OptionU = ta.TypeVar('OptionU', bound=Option)
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 class RequestMetadata(Metadata, lang.Abstract):
-    pass
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.state(cls.__name__.endswith('RequestMetadata'))
 
 
 register_type(RequestMetadata, module=__name__)

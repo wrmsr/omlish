@@ -13,6 +13,7 @@ from omlish import marshal as msh
 from omlish import reflect as rfl
 from omlish import typedvalues as tv
 
+from ..metadata import CommonMetadata
 from ..registries.globals import get_global_registry
 from .requests import Request
 from .requests import RequestMetadata
@@ -78,7 +79,7 @@ class _RequestResponseMarshaler(msh.Marshaler):
 
         return {
             'v': v_v,
-            **({lang.strip_prefix(self.rr_flds.tv.name, '_'): tv_v} if tv_v else {}),
+            **({lang.must_remove_prefix(self.rr_flds.tv.name, '_'): tv_v} if tv_v else {}),
             **({'metadata': md_v} if md_v else {}),
         }
 
@@ -133,7 +134,7 @@ class _RequestResponseUnmarshaler(msh.Unmarshaler):
 
         tvs: ta.Any
         if dct:
-            tv_vs = dct.pop(lang.strip_prefix(self.rr_flds.tv.name, '_'))
+            tv_vs = dct.pop(lang.must_remove_prefix(self.rr_flds.tv.name, '_'))
             tvs = self.tv_u.unmarshal(ctx, tv_vs)
         else:
             tvs = []
@@ -185,21 +186,46 @@ class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.Unmarshaler
     _md_cls: ta.ClassVar[type]
     _mdu_rty: ta.ClassVar[rfl.Type]
 
+    def _build_impls(self, rty: rfl.Type) -> list[msh.Impl]:
+        impls: list[msh.Impl] = []
+
+        rt = get_global_registry().get_registered_type(self._md_cls)
+        for rte in rt.entries.values():
+            impls.append(msh.Impl(
+                mdi_cls := rte.resolve(),
+                msh.translate_name(
+                    lang.must_remove_suffix(mdi_cls.__name__, self._md_cls.__name__),
+                    msh.Naming.SNAKE,
+                ),
+            ))
+
+        if rty == self._mdu_rty:
+            impls.extend(msh.polymorphism_from_subclasses(
+                CommonMetadata,
+                naming=msh.Naming.SNAKE,
+            ).impls)
+
+        return impls
+
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if rty not in (self._md_cls, self._mdu_rty):
             return None
 
-        rt = get_global_registry().get_registered_type(self._md_cls)
-
-        raise NotImplementedError
+        return lambda: msh.make_polymorphism_marshaler(
+            msh.Impls(self._build_impls(rty)),
+            msh.WrapperTypeTagging(),
+            ctx,
+        )
 
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         if rty not in (self._md_cls, self._mdu_rty):
             return None
 
-        rt = get_global_registry().get_registered_type(self._md_cls)
-
-        raise NotImplementedError
+        return lambda: msh.make_polymorphism_unmarshaler(
+            msh.Impls(self._build_impls(rty)),
+            msh.WrapperTypeTagging(),
+            ctx,
+        )
 
 
 class _RequestMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshalerFactory):

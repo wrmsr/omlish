@@ -72,7 +72,7 @@ class Registry:
             self._rm = _rm
 
         def __repr__(self) -> str:
-            return f'{self.__class__.__name__}({self.name})'
+            return f'{self.__class__.__name__}({self.name!r})'
 
         @property
         def name(self) -> str:
