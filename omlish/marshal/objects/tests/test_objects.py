@@ -228,3 +228,25 @@ def test_unwrap_if_single_field():
 
     assert (mv := marshal(uv := Junk('A', 2))) == {'a': 'A', 'b': 2}
     assert unmarshal(mv, Junk) == uv
+
+
+##
+
+
+class CannotMarshal:
+    pass
+
+
+@dc.dataclass(frozen=True)
+@update_fields_options(['cant'], no_marshal=True, no_unmarshal=True)
+class CanMarshal:
+    i: int
+    cant: CannotMarshal | None = None
+
+
+def test_no_marshal():
+    can = CanMarshal(420, CannotMarshal())
+    mv = marshal(can)
+    v = unmarshal(mv, CanMarshal)
+    assert isinstance(v, CanMarshal)
+    assert v.i == 420

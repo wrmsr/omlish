@@ -63,6 +63,7 @@ class NamedtupleMarshalerFactory(MarshalerFactory):
             fields = [
                 (fi, ctx.make_marshaler(fi.type))
                 for fi in fis
+                if not fi.options.no_marshal
             ]
 
             return ObjectMarshaler(
@@ -91,6 +92,9 @@ class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
             defaults: dict[str, ta.Any] = {}
 
             for fi in fis:
+                if fi.options.no_unmarshal:
+                    continue
+
                 tup = (fi, ctx.make_unmarshaler(fi.type))
 
                 for un in fi.unmarshal_names:

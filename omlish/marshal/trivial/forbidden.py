@@ -2,16 +2,31 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import reflect as rfl
+from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
+from ..api.contexts import UnmarshalContext
 from ..api.contexts import UnmarshalFactoryContext
+from ..api.errors import ForbiddenError
 from ..api.errors import ForbiddenTypeError
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
+from ..api.values import Value
 
 
 ##
+
+
+class ForbiddenMarshalerUnmarshaler(Marshaler, Unmarshaler):
+    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+        raise ForbiddenError
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
+        raise ForbiddenError
+
+
+#
 
 
 @dc.dataclass(frozen=True)

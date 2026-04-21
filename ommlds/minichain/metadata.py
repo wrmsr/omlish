@@ -105,7 +105,7 @@ class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
 ##
 
 
-class CommonMetadata(Metadata, lang.Abstract):
+class CommonMetadata(Metadata, lang.Sealed, lang.Abstract):
     pass
 
 

@@ -220,7 +220,8 @@ class _DataclassMarshalerBuilder:
         fields = [
             (fi, self._make_field_marshal_obj(fi))
             for fi in fis
-            if fi.name not in dc_md.specials.set
+            if not fi.options.no_marshal
+            and fi.name not in dc_md.specials.set
         ]
 
         unwrap_if_single_field: FieldInfo | None = None
@@ -311,6 +312,9 @@ class _DataclassUnmarshalerBuilder:
         )
 
     def _add_field(self, fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
+        if fi.options.no_unmarshal:
+            return []
+
         ret: list[str] = []
 
         if fi.options.embed:

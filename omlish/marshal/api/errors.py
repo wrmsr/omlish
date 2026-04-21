@@ -14,6 +14,10 @@ class UnhandledTypeError(MarshalError):
         return self.args[0]
 
 
+class ForbiddenError(MarshalError):
+    pass
+
+
 class ForbiddenTypeError(MarshalError):
     @property
     def rty(self) -> rfl.Type:

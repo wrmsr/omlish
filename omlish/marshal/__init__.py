@@ -35,6 +35,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .api.errors import (  # noqa
+        ForbiddenError,
         ForbiddenTypeError,
         MarshalError,
         UnhandledTypeError,
@@ -249,6 +250,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .trivial.forbidden import (  # noqa
+        ForbiddenMarshalerUnmarshaler,
+
         ForbiddenTypeMarshalerFactory,
         ForbiddenTypeMarshalerFactoryUnmarshalerFactory,
         ForbiddenTypeUnmarshalerFactory,

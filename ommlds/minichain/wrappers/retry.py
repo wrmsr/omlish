@@ -16,6 +16,7 @@ TODO:
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish import marshal as msh
 
 from ..resources import Resources
 from ..stream.services import StreamResponseSink
@@ -51,9 +52,13 @@ class RetryServiceMaxRetriesExceededError(Exception):
 
 
 @dc.dataclass(frozen=True)
+@msh.update_fields_options(['retry_services'], no_marshal=True, no_unmarshal=True)
 class RetryServiceOutput(Output):
-    retry_service: AnyRetryService
     num_retries: int
+
+    _: dc.KW_ONLY
+
+    retry_service: AnyRetryService | None = None
 
 
 ##
@@ -96,8 +101,8 @@ class RetryService(
                 raise RetryServiceMaxRetriesExceededError from e
 
             return resp.with_outputs(RetryServiceOutput(
-                retry_service=self,
                 num_retries=n,
+                retry_service=self,
             ))
 
         raise RuntimeError  # unreachable
@@ -147,8 +152,8 @@ class RetryStreamService(
                     outs = [
                         *in_resp.outputs,
                         RetryServiceOutput(
-                            retry_service=self,
                             num_retries=n,
+                            retry_service=self,
                         ),
                     ]
 
