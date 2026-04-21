@@ -13,8 +13,13 @@ from omlish import marshal as msh
 from omlish import reflect as rfl
 from omlish import typedvalues as tv
 
+from ..registries.globals import get_global_registry
 from .requests import Request
+from .requests import RequestMetadata
+from .requests import RequestMetadatas
 from .responses import Response
+from .responses import ResponseMetadata
+from .responses import ResponseMetadatas
 
 
 ##
@@ -176,9 +181,46 @@ class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
 ##
 
 
+class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.UnmarshalerFactory, lang.Abstract):
+    _md_cls: ta.ClassVar[type]
+    _mdu_rty: ta.ClassVar[rfl.Type]
+
+    def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if rty not in (self._md_cls, self._mdu_rty):
+            return None
+
+        rt = get_global_registry().get_registered_type(self._md_cls)
+
+        raise NotImplementedError
+
+    def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
+        if rty not in (self._md_cls, self._mdu_rty):
+            return None
+
+        rt = get_global_registry().get_registered_type(self._md_cls)
+
+        raise NotImplementedError
+
+
+class _RequestMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshalerFactory):
+    _md_cls = RequestMetadata
+    _mdu_rty = rfl.type_(RequestMetadatas)
+
+
+class _ResponseMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshalerFactory):
+    _md_cls = ResponseMetadata
+    _mdu_rty = rfl.type_(ResponseMetadatas)
+
+
+##
+
+
 @lang.static_init
 def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         _RequestResponseMarshalerFactory(),
         _RequestResponseUnmarshalerFactory(),
+
+        _RequestMetadataMarshalerUnmarshalerFactory(),
+        _ResponseMetadataMarshalerUnmarshalerFactory(),
     )

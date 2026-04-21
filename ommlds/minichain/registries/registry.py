@@ -7,7 +7,6 @@ import threading
 import typing as ta
 
 from omlish import check
-from omlish import collections as col
 from omlish import lang
 
 from .manifests import RegistryManifest
@@ -34,10 +33,13 @@ class Registry:
         self._registry_type_manifests = list(registry_type_manifests)
         self._registry_manifests = list(registry_manifests)
 
-        rms_by_name_by_type = {
-            t: RegistryManifest.build_name_dict(l)
-            for t, l in col.multi_map((m.type, m) for m in self._registry_manifests).items()
-        }
+        entries_by_name_by_type: dict[str, dict[str, Registry.Entry]] = {}
+        for rm in self._registry_manifests:
+            e = self.Entry(_rm=rm)
+            ed = entries_by_name_by_type.setdefault(rm.type, {})
+            for n in (rm.name, *(rm.aliases or ())):
+                check.not_in(n, ed)
+                ed[n] = e
 
         self._types_by_name: dict[str, Registry.Type] = {}
         self._types_by_cls: dict[str, Registry.Type] = {}
@@ -49,13 +51,42 @@ class Registry:
                 _o=self,
 
                 _rtm=rtm,
-                _rms=rms_by_name_by_type.get(rtm.attr, {}),
+                _entries=entries_by_name_by_type.get(rtm.attr, {}),
 
                 _name=rtm.attr,
                 _module=rtm.module,
             )
 
             self._types_by_name[rtm.attr] = rt
+
+    #
+
+    class Entry:
+        def __init__(
+                self,
+                *,
+                _rm: RegistryManifest,
+        ) -> None:
+            super().__init__()
+
+            self._rm = _rm
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}({self.name})'
+
+        @property
+        def name(self) -> str:
+            return self._rm.name
+
+        _resolved: ta.Any
+
+        def resolve(self) -> ta.Any:
+            try:
+                return self._resolved
+            except AttributeError:
+                pass
+            self._resolved = resolved = self._rm.resolve()
+            return resolved
 
     #
 
@@ -66,7 +97,7 @@ class Registry:
                 _o: Registry,
 
                 _rtm: RegistryTypeManifest | None = None,
-                _rms: ta.Mapping[str, RegistryManifest] | None = None,
+                _entries: ta.Mapping[str, Registry.Entry] | None = None,
 
                 _name: str | None = None,
                 _module: str | None = None,
@@ -80,7 +111,7 @@ class Registry:
             self._o: ta.Final = _o
 
             self._rtm: ta.Final = _rtm
-            self._rms: ta.Final = _rms
+            self._entries: ta.Final = _entries or {}
 
             self._name: ta.Final = _name
             self._module: ta.Final = _module
@@ -102,6 +133,10 @@ class Registry:
         @property
         def module(self) -> str | None:
             return self._module
+
+        @property
+        def entries(self) -> ta.Mapping[str, Registry.Entry]:
+            return self._entries
 
         #
 
@@ -134,11 +169,11 @@ class Registry:
         #
 
         def lookup(self, name: str) -> ta.Any:
-            if not (rms := self._rms):
+            if not (entries := self._entries):
                 raise KeyError(name)
 
-            rm = rms[name]
-            return rm.resolve()
+            e = entries[name]
+            return e.resolve()
 
     #
 
@@ -209,4 +244,4 @@ class Registry:
         return self.get_registered_type(name).cls()
 
     def get_registry_cls(self, selector: ta.Any, name: str) -> type:
-        return self.get_registered_type(selector).lookup(name)
+        return self.get_registered_type(selector).lookup(name).resolve()
