@@ -9,7 +9,7 @@ from ...types import Option
 from ...types import Output
 from ..retry import RetryService
 from ..retry import RetryServiceMaxRetriesExceededError
-from ..retry import RetryServiceOutput
+from ..retry import RetryServiceResponseMetadata
 
 
 ##
@@ -47,7 +47,7 @@ async def test_retry_success_first_try():
     assert r.v == 'success(42)'
 
     # Check that num_retries is 0 for successful first attempt
-    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    retry_output = next(o for o in r.metadata if isinstance(o, RetryServiceResponseMetadata))
     assert retry_output.num_retries == 0
 
 
@@ -57,7 +57,7 @@ async def test_retry_success_after_failures():
     r = await RetryService(FailNTimesService(2)).invoke(Request(42))
     assert r.v == 'success_after_2_retries(42)'
 
-    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    retry_output = next(o for o in r.metadata if isinstance(o, RetryServiceResponseMetadata))
     assert retry_output.num_retries == 2
 
 
@@ -74,7 +74,7 @@ async def test_retry_custom_max_retries():
     r = await RetryService(FailNTimesService(5), max_retries=5).invoke(Request(42))
     assert r.v == 'success_after_5_retries(42)'
 
-    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    retry_output = next(o for o in r.metadata if isinstance(o, RetryServiceResponseMetadata))
     assert retry_output.num_retries == 5
 
     # Should fail with max_retries=1 when service fails twice
@@ -137,7 +137,7 @@ async def test_retry_stream_success_first_try():
     assert lst == ['h!', 'i!']
 
     # Check that num_retries is 0 for successful first attempt
-    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    retry_output = next(o for o in r.metadata if isinstance(o, RetryServiceResponseMetadata))
     assert retry_output.num_retries == 0
 
 
@@ -153,7 +153,7 @@ async def test_retry_stream_success_after_failures():
             lst.append(e)
     assert lst == list('success_after_2_retries(hi)')
 
-    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    retry_output = next(o for o in r.metadata if isinstance(o, RetryServiceResponseMetadata))
     assert retry_output.num_retries == 2
 
 
@@ -178,7 +178,7 @@ async def test_retry_stream_custom_max_retries():
             lst.append(e)
     assert lst == list('success_after_5_retries(hi)')
 
-    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    retry_output = next(o for o in r.metadata if isinstance(o, RetryServiceResponseMetadata))
     assert retry_output.num_retries == 5
 
     # Should fail with max_retries=1 when service fails twice

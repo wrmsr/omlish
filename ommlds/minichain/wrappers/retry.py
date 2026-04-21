@@ -1,5 +1,6 @@
 """
 TODO:
+ - RetryServiceRequestMetadata
  - tenacity shit
   - exception filter - retryable vs not
    - explicit RetryableError wrapper?
@@ -19,9 +20,9 @@ from omlish import dataclasses as dc
 from omlish import marshal as msh
 
 from ..resources import Resources
+from ..services.responses import ResponseMetadata
 from ..stream.services import StreamResponseSink
 from ..stream.services import new_stream_response
-from ..types import Output
 from .services import WrappedOptionT
 from .services import WrappedOutputT
 from .services import WrappedRequest
@@ -52,8 +53,8 @@ class RetryServiceMaxRetriesExceededError(Exception):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_options(['retry_services'], no_marshal=True, no_unmarshal=True)
-class RetryServiceOutput(Output):
+@msh.update_fields_options(['retry_service'], no_marshal=True, no_unmarshal=True)
+class RetryServiceResponseMetadata(ResponseMetadata):
     num_retries: int
 
     _: dc.KW_ONLY
@@ -100,7 +101,7 @@ class RetryService(
 
                 raise RetryServiceMaxRetriesExceededError from e
 
-            return resp.with_outputs(RetryServiceOutput(
+            return resp.with_metadata(RetryServiceResponseMetadata(
                 num_retries=n,
                 retry_service=self,
             ))
@@ -149,21 +150,20 @@ class RetryStreamService(
 
                         return in_vs.outputs
 
-                    outs = [
-                        *in_resp.outputs,
-                        RetryServiceOutput(
-                            num_retries=n,
-                            retry_service=self,
-                        ),
-                    ]
-
                     # FIXME: ??
                     # if (ur := tv.as_collection(request.options).get(UseResources)) is not None:
 
                     return await new_stream_response(
                         rs,
                         inner,
-                        outs,
+                        in_resp.outputs,
+                        metadata=[
+                            *in_resp.metadata,
+                            RetryServiceResponseMetadata(
+                                num_retries=n,
+                                retry_service=self,
+                            ),
+                        ],
                     )
 
             except Exception as e:  # noqa

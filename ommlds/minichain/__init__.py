@@ -707,7 +707,7 @@ with _lang.auto_proxy_init(
         AnyRetryService,
 
         RetryServiceMaxRetriesExceededError,
-        RetryServiceOutput,
+        RetryServiceResponseMetadata,
 
         RetryService,
 

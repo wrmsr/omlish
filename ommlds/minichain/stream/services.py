@@ -15,6 +15,7 @@ from ..resources import ResourceManaged
 from ..resources import Resources
 from ..resources import ResourcesOption
 from ..services import Response
+from ..services.responses import ResponseMetadatas
 from ..types import Option
 from ..types import Output
 
@@ -216,13 +217,18 @@ async def new_stream_response(
         rs: Resources,
         fn: ta.Callable[[StreamResponseSink[V]], ta.Awaitable[ta.Sequence[OutputT] | None]],
         outputs: ta.Sequence[StreamOutputT] | None = None,
+        *,
+        metadata: ta.Sequence[ResponseMetadatas] | None = None,
 ) -> StreamResponse[V, OutputT, StreamOutputT]:
     ssr = _StreamServiceResponse(fn)
 
     v = rs.new_managed(await rs.enter_async_context(ssr))
 
     try:
-        return StreamResponse(v, outputs or [])
+        sr = StreamResponse(v, outputs or [])
+        if metadata:
+            sr = sr.with_metadata(*metadata)
+        return sr
 
     except BaseException:  # noqa
         # The StreamResponse ctor can raise - for example in `_tv_field_coercer` - in which case we need to clean up the
