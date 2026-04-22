@@ -1,4 +1,5 @@
 # ruff: noqa: PT009
+# @omlish-lite
 import unittest
 
 from ..specifiers import Specifier

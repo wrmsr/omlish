@@ -1,6 +1,7 @@
 """
 TODO:
  - use lang.metadata?
+ - clean up names ffs it's not _md anymore
 """
 import typing as ta
 
@@ -33,8 +34,19 @@ from .unmarshal import ObjectUnmarshaler
 ##
 
 
-def get_dataclass_options(ty: type) -> ObjectOptions:
-    return DEFAULT_OBJECT_OPTIONS.merge(*(dc.reflect(ty).spec.metadata_by_type.get(ObjectOptions, [])))
+def get_dataclass_options(
+        ty: type,
+        cfgs: Configs | None = None,
+) -> ObjectOptions:
+    opts = DEFAULT_OBJECT_OPTIONS
+
+    if (md_opts := dc.reflect(ty).spec.metadata_by_type.get(ObjectOptions, [])):
+        opts = opts.merge(*md_opts)
+
+    if cfgs is not None and (cfg_opts := cfgs.get(ty).get(ObjectOptions)):
+        opts = opts.merge(*cfg_opts)
+
+    return opts
 
 
 class _FieldInfoBuilder:
@@ -44,11 +56,14 @@ class _FieldInfoBuilder:
             configs: Configs | None = None,
             *,
             dc_rfl: dc.ClassReflection | None = None,
+            obj_opts: ObjectOptions | None = None,
     ) -> None:
         self.ty = ty
         self.configs = configs
 
-        self.obj_md = get_dataclass_options(ty)
+        if obj_opts is None:
+            obj_opts = get_dataclass_options(ty, configs)
+        self.obj_md = obj_opts
 
         fn = self.obj_md.field_naming
         if fn is None and configs is not None:
@@ -69,6 +84,7 @@ class _FieldInfoBuilder:
         2. Class-level field_defaults (from ObjectMetadata)
         3. Field-level FieldMetadata (from field.metadata)
         4. Lite marshal compatibility overrides (OBJ_MARSHALER_FIELD_KEY, etc.)
+        5. ObjectOptions.fields
         """
 
         ##
@@ -107,7 +123,14 @@ class _FieldInfoBuilder:
         if lite_override_kw:
             merged_md = merged_md.merge(FieldOptions(**lite_override_kw))
 
-        ## Done
+        ##
+        # ObjectOptions
+
+        if (oo_md := (self.obj_md.fields or {}).get(field.name)) is not None:
+            merged_md = merged_md.merge(oo_md)
+
+        ##
+        # Done
 
         return merged_md
 
@@ -215,9 +238,9 @@ class _DataclassMarshalerBuilder:
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
-        dc_md = get_dataclass_options(ty)
+        dc_md = get_dataclass_options(ty, self.ctx.configs)
         dc_rfl = dc.reflect(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl)
+        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl, obj_opts=dc_md)
         fis = fib.build_field_infos()
 
         fields = [
@@ -288,9 +311,9 @@ class _DataclassUnmarshalerBuilder:
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
-        dc_md = get_dataclass_options(ty)
+        dc_md = get_dataclass_options(ty, self.ctx.configs)
         dc_rfl = dc.reflect(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl)
+        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl, obj_opts=dc_md)
         fis = fib.build_field_infos()
 
         for fi in fis:
@@ -323,7 +346,7 @@ class _DataclassUnmarshalerBuilder:
         if fi.options.embed:
             e_ty = check.isinstance(fi.type, type)
             check.state(dc.is_dataclass(e_ty))
-            e_dc_md = get_dataclass_options(e_ty)
+            e_dc_md = get_dataclass_options(e_ty, self.ctx.configs)
             if e_dc_md.specials.set:
                 raise Exception(f'Embedded fields cannot have specials: {e_ty}')
 

@@ -97,6 +97,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
+            dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -120,7 +121,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../interp/types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
-            dict(path='../packaging/requires.py', sha1='5818353abd45135e0e638e28fa6247b24122231b'),
+            dict(path='../packaging/requires.py', sha1='0c34cc4044c4da386622bcd83b9c770e894266dd'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/lite/inject.py', sha1='8cfee01601e9b8d7a4689cb5ba38de8c2bdb4706'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
@@ -3028,6 +3029,267 @@ class Checks:
 
 
 check = Checks()
+
+
+########################################
+# ../../../omlish/lite/dataclasses.py
+
+
+##
+
+
+def dataclass_shallow_astuple(o: ta.Any) -> ta.Tuple[ta.Any, ...]:
+    return tuple(getattr(o, f.name) for f in dc.fields(o))
+
+
+def dataclass_shallow_asdict(o: ta.Any) -> ta.Dict[str, ta.Any]:
+    return {f.name: getattr(o, f.name) for f in dc.fields(o)}
+
+
+##
+
+
+def is_immediate_dataclass(cls: type) -> bool:
+    if not isinstance(cls, type):
+        raise TypeError(cls)
+    return dc._FIELDS in cls.__dict__  # type: ignore[attr-defined]  # noqa
+
+
+##
+
+
+def _install_dataclass_fn(cls: type, fn: ta.Any, fn_name: ta.Optional[str] = None) -> None:
+    if fn_name is None:
+        fn_name = fn.__name__
+    setattr(cls, fn_name, fn)
+    fn.__qualname__ = f'{cls.__qualname__}.{fn_name}'
+
+
+##
+
+
+def install_dataclass_cache_hash(
+        *,
+        cached_hash_attr: str = '__dataclass_hash__',
+):
+    def inner(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
+            raise TypeError(cls)
+
+        if (
+                cls.__hash__ is object.__hash__ or
+                '__hash__' not in cls.__dict__
+        ):
+            raise TypeError(cls)
+
+        real_hash = cls.__hash__
+
+        def cached_hash(self) -> int:
+            try:
+                return object.__getattribute__(self, cached_hash_attr)
+            except AttributeError:
+                object.__setattr__(self, cached_hash_attr, h := real_hash(self))
+            return h
+
+        _install_dataclass_fn(cls, cached_hash, '__hash__')
+
+        return cls
+
+    return inner
+
+
+##
+
+
+def dataclass_maybe_post_init(sup: ta.Any) -> bool:
+    if not isinstance(sup, super):
+        raise TypeError(sup)
+    try:
+        fn = sup.__post_init__  # type: ignore
+    except AttributeError:
+        return False
+    fn()
+    return True
+
+
+##
+
+
+def dataclass_filtered_repr(
+        obj: ta.Any,
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+) -> str:
+    if fn == 'omit_none':
+        fn = lambda o, f, v: v is not None  # noqa
+    elif fn == 'omit_falsey':
+        fn = lambda o, f, v: bool(v)
+
+    return (
+        f'{obj.__class__.__qualname__}(' +
+        ', '.join([
+            f'{f.name}={v!r}'
+            for f in dc.fields(obj)
+            if fn(obj, f, v := getattr(obj, f.name))
+        ]) +
+        ')'
+    )
+
+
+def dataclass_repr_omit_none(obj: ta.Any) -> str:
+    return dataclass_filtered_repr(obj, 'omit_none')
+
+
+def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
+    return dataclass_filtered_repr(obj, 'omit_falsey')
+
+
+def install_dataclass_filtered_repr(
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+):
+    def inner(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
+            raise TypeError(cls)
+
+        def filtered_repr(self) -> str:
+            return dataclass_filtered_repr(self, fn)
+
+        _install_dataclass_fn(cls, filtered_repr, '__repr__')
+
+        return cls
+
+    return inner
+
+
+#
+
+
+def dataclass_terse_repr(obj: ta.Any) -> str:
+    return f'{obj.__class__.__qualname__}({", ".join(repr(getattr(obj, f.name)) for f in dc.fields(obj))})'
+
+
+def install_dataclass_terse_repr():
+    def inner(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
+            raise TypeError(cls)
+
+        def terse_repr(self) -> str:
+            return dataclass_terse_repr(self)
+
+        _install_dataclass_fn(cls, terse_repr, '__repr__')
+
+        return cls
+
+    return inner
+
+
+##
+
+
+def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> ta.Callable:
+    if not bind_attrs:
+        def __get__(self, instance, owner=None):  # noqa
+            return self
+
+    elif bind_owner:
+        def __get__(self, instance, owner=None):  # noqa
+            # Guaranteed to return a new instance even with no attrs
+            return dc.replace(self, **{
+                a: v.__get__(instance, owner) if (v := getattr(self, a)) is not None else None
+                for a in bind_attrs
+            })
+
+    else:
+        def __get__(self, instance, owner=None):  # noqa
+            if instance is None:
+                return self
+
+            # Guaranteed to return a new instance even with no attrs
+            return dc.replace(self, **{
+                a: v.__get__(instance, owner) if (v := getattr(self, a)) is not None else None
+                for a in bind_attrs
+            })
+
+    return __get__
+
+
+##
+
+
+def install_dataclass_kw_only_init():
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        real_init = cls.__init__  # type: ignore[misc]
+
+        flds = dc.fields(cls)  # noqa
+
+        if any(f.name == 'self' for f in flds):
+            self_name = '__dataclass_self__'
+        else:
+            self_name = 'self'
+
+        src = '\n'.join([
+            'def __init__(',
+            f'    {self_name},',
+            '    *,',
+            *[
+                ''.join([
+                    f'    {f.name}: __dataclass_type_{f.name}__',
+                    f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else '',
+                    ',',
+                ])
+                for f in flds
+            ],
+            ') -> __dataclass_None__:',
+            '    __dataclass_real_init__(',
+            f'        {self_name},',
+            *[
+                f'        {f.name}={f.name},'
+                for f in flds
+            ],
+            '    )',
+        ])
+
+        ns: dict = {
+            '__dataclass_None__': None,
+            '__dataclass_real_init__': real_init,
+            **{
+                f'__dataclass_type_{f.name}__': f.type
+                for f in flds
+            },
+            **{
+                f'__dataclass_default_{f.name}__': f.default
+                for f in flds
+                if f.default is not dc.MISSING
+            },
+        }
+
+        exec(src, ns)
+
+        kw_only_init = ns['__init__']
+
+        functools.update_wrapper(kw_only_init, real_init)
+
+        _install_dataclass_fn(cls, kw_only_init, '__init__')
+
+        return cls
+
+    return inner
+
+
+##
+
+
+@dc.dataclass()
+class DataclassFieldRequiredError(Exception):
+    name: str
+
+
+def dataclass_field_required(name: str) -> ta.Callable[[], ta.Any]:
+    def inner() -> ta.NoReturn:
+        raise DataclassFieldRequiredError(name)
+    return inner
 
 
 ########################################
@@ -6941,7 +7203,9 @@ class RequiresMarkerItem(ta.NamedTuple):
     r: ta.Union[RequiresVariable, RequiresValue]
 
 
-class ParsedRequirement(ta.NamedTuple):
+@install_dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class ParsedRequirement:
     name: str
     url: str
     extras: ta.List[str]

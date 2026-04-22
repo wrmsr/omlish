@@ -9,6 +9,7 @@ from ... import cached
 from ... import check
 from ... import lang
 from ...lite.dataclasses import install_dataclass_filtered_repr
+from ..api.configs import Config
 from ..api.naming import Naming
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
@@ -25,7 +26,7 @@ T = ta.TypeVar('T')
 @ta.final
 @install_dataclass_filtered_repr('omit_falsey')
 @dc.dataclass(frozen=True, kw_only=True)
-class FieldOptions(lang.Final):
+class FieldOptions(Config, lang.Final):
     """
     Unified field options - all configuration for a single field's marshaling/unmarshaling.
 
@@ -100,6 +101,12 @@ class FieldOptions(lang.Final):
             return self
         return FieldOptions(**kw)
 
+    ##
+    # Type safety
+
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
+
 
 @lang.cached_function
 def _field_options_fields() -> ta.Sequence[dc.Field]:
@@ -128,7 +135,7 @@ class ObjectSpecials(lang.Final):
 @ta.final
 @install_dataclass_filtered_repr('omit_falsey')
 @dc.dataclass(frozen=True, kw_only=True)
-class ObjectOptions(lang.Final):
+class ObjectOptions(Config, lang.Final):
     """Object-level marshaling options."""
 
     ##
@@ -157,9 +164,11 @@ class ObjectOptions(lang.Final):
         )
 
     ##
-    # Field defaults
+    # Fields
 
     field_defaults: FieldOptions = DEFAULT_FIELD_OPTIONS
+
+    fields: ta.Mapping[str, FieldOptions] | None = None
 
     ##
     # Merging
@@ -177,11 +186,28 @@ class ObjectOptions(lang.Final):
                 if fld.type is FieldOptions:
                     fv = kw.get(fld.name, DEFAULT_FIELD_OPTIONS).merge(fv)
 
+                elif fld.name == 'fields':
+                    fd = kw.get('fields') or {}
+                    for fn, fo in fv.items():
+                        try:
+                            xfo = fd[fn]
+                        except KeyError:
+                            fd[fn] = fo
+                        else:
+                            fd[fn] = xfo.merge(fo)
+                    fv = fd
+
                 kw[fld.name] = fv
 
         if not kw:
             return self
         return ObjectOptions(**kw)
+
+    ##
+    # Type safety
+
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError
 
 
 @lang.cached_function

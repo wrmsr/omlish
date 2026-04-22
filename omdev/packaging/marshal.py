@@ -9,13 +9,13 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
+from .requires import ParsedRequirement
 from .requires import RequiresMarkerItem
 from .requires import RequiresMarkerList
 from .requires import RequiresNode
 from .requires import RequiresOp
 from .requires import RequiresValue
 from .requires import RequiresVariable
-from .requires import ParsedRequirement
 
 
 ##
@@ -79,4 +79,16 @@ def _install_standard_marshaling() -> None:
         RequiresMarkerList,
         msh.ReflectOverride(MarshalRequiresMarkerList),
         identity=True,
+    )
+
+    msh.global_config_registry().register(
+        ParsedRequirement,
+        msh.ObjectOptions(
+            fields=dict(
+                marker=msh.FieldOptions(
+                    marshal_as=RequiresMarkerList | None,
+                    unmarshal_as=RequiresMarkerList | None,
+                ),
+            ),
+        ),
     )

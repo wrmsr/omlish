@@ -61,7 +61,7 @@ class JsonContent:
 
 
 def test_marshal_json():
-    jv = {'abc': [{'def': 420}, 'ghi']}
+    jv: JsonValue = {'abc': [{'def': 420}, 'ghi']}
     m = msh.marshal(jv, JsonValue)
     assert m == jv
     jv2 = msh.unmarshal(m, JsonValue)
