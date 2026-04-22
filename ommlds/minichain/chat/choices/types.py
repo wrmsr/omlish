@@ -17,7 +17,7 @@ from ..types import ChatOutputs
 ##
 
 
-class ChatChoicesOption(Option, lang.Abstract, lang.PackageSealed):
+class ChatChoicesOption(Option, lang.Abstract, lang.Sealed):
     pass
 
 
@@ -27,7 +27,7 @@ ChatChoicesOptions: ta.TypeAlias = ChatChoicesOption | ChatOptions
 ##
 
 
-class ChatChoicesOutput(Output, lang.Abstract, lang.PackageSealed):
+class ChatChoicesOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 

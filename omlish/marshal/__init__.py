@@ -64,6 +64,9 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .api.registries import (  # noqa
+        RegistryItem,
+        UniqueRegistryItem,
+
         RegistrySealedError,
         Registry,
     )

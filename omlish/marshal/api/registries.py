@@ -22,6 +22,10 @@ class RegistryItem(lang.Abstract):
     pass
 
 
+class UniqueRegistryItem(RegistryItem, lang.Abstract):
+    pass
+
+
 RegistryItemT = ta.TypeVar('RegistryItemT', bound=RegistryItem)
 RegistryItemU = ta.TypeVar('RegistryItemU', bound=RegistryItem)
 
@@ -105,10 +109,15 @@ class Registry(RegistryView[RegistryItemT]):
             item_lists_by_ty: dict[type[RegistryItemU], list[RegistryItemU]] = {}
 
             for i in items:
+                it = type(i)
+                if (iut := issubclass(it, UniqueRegistryItem)):
+                    check.not_in(it, self.item_lists_by_ty)
                 try:
-                    l = item_lists_by_ty[type(i)]
+                    l = item_lists_by_ty[it]
                 except KeyError:
-                    l = item_lists_by_ty[type(i)] = list(self.item_lists_by_ty.get(type(i), ()))
+                    l = item_lists_by_ty[it] = list(self.item_lists_by_ty.get(it, ()))
+                else:
+                    check.state(not iut)
                 l.append(i)
 
             return Registry._KeyItems(

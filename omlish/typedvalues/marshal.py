@@ -108,20 +108,31 @@ def _is_typed_values_union(rty: rfl.Type) -> bool:
     )
 
 
-def _build_typed_value_union_poly(rty: rfl.Type) -> msh.Impls:
+def _build_typed_value_union_poly(ctx: msh.BaseContext, rty: rfl.Type) -> msh.Impls:
+    def gus(sty: type) -> list[type]:
+        if isinstance(ctx, msh.MarshalFactoryContext):
+            m = ctx.make_marshaler(sty)  # noqa
+            # p = check.isinstance(m, msh.PolymorphismMarshaler).
+        elif isinstance(ctx, msh.UnmarshalFactoryContext):
+            u = ctx.make_unmarshaler(sty)  # noqa
+        else:
+            raise TypeError(ctx)
+
+        raise NotImplementedError
+
     tv_cls_set = reflect_typed_values_impls(
         rty,
         find_abstract_subclasses=True,
+        get_unsealed_subclasses=gus,
     )
 
-    tv_impls: list[msh.Impl] = [
+    return msh.Impls([
         msh.Impl(
             tv_cls,
             msh.translate_name(tv_cls.__name__, msh.Naming.SNAKE),
         )
         for tv_cls in tv_cls_set
-    ]
-    return msh.Impls(tv_impls)
+    ])
 
 
 class TypedValueUnionMarshalerFactory(msh.MarshalerFactoryMethodClass):
@@ -131,7 +142,7 @@ class TypedValueUnionMarshalerFactory(msh.MarshalerFactoryMethodClass):
             return None
 
         return lambda: msh.make_polymorphism_marshaler(
-            _build_typed_value_union_poly(rty),
+            _build_typed_value_union_poly(ctx, rty),
             msh.WrapperTypeTagging(),
             ctx,
         )
@@ -144,7 +155,7 @@ class TypedValueUnionUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
             return None
 
         return lambda: msh.make_polymorphism_unmarshaler(
-            _build_typed_value_union_poly(rty),
+            _build_typed_value_union_poly(ctx, rty),
             msh.WrapperTypeTagging(),
             ctx,
         )

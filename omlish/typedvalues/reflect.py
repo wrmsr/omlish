@@ -12,6 +12,7 @@ from .values import TypedValue
 def reflect_typed_values_impls(
         *rtys: rfl.Type,
         find_abstract_subclasses: bool = False,
+        get_unsealed_subclasses: ta.Callable[[type], ta.Sequence[type]] | None = None,
 ) -> set[type[TypedValue]]:
     tv_cls_set: set[type[TypedValue]] = set()
 
@@ -33,8 +34,14 @@ def reflect_typed_values_impls(
             cur = check.issubclass(check.isinstance(cur, type), TypedValue)
 
             if find_abstract_subclasses and lang.is_abstract_class(cur):
-                check.issubclass(cur, lang.Sealed)
-                todo.extend(lang.deep_subclasses(cur, concrete_only=True))
+                if issubclass(cur, lang.Sealed):
+                    todo.extend(lang.deep_subclasses(cur, concrete_only=True))
+
+                elif get_unsealed_subclasses is not None:  # type: ignore[unreachable]
+                    todo.extend(get_unsealed_subclasses(cur))
+
+                else:
+                    raise TypeError(f'{cur} is not a sealed - cannot safely know all subtypes')
 
             else:
                 tv_cls_set.add(cur)
