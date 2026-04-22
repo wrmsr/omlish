@@ -1,7 +1,6 @@
 """
 TODO:
  - use lang.metadata?
- - clean up names ffs it's not _md anymore
 """
 import typing as ta
 
@@ -63,9 +62,9 @@ class _FieldInfoBuilder:
 
         if obj_opts is None:
             obj_opts = get_dataclass_options(ty, configs)
-        self.obj_md = obj_opts
+        self.obj_opts = obj_opts
 
-        fn = self.obj_md.field_naming
+        fn = self.obj_opts.field_naming
         if fn is None and configs is not None:
             if (cn := configs.get(ty).get(Naming)) is None:
                 cn = configs.get().get(Naming)
@@ -90,14 +89,14 @@ class _FieldInfoBuilder:
         ##
         # Start with baseline (empty) and merge class-level defaults
 
-        merged_md = DEFAULT_FIELD_OPTIONS.merge(self.obj_md.field_defaults)
+        merged_opts = DEFAULT_FIELD_OPTIONS.merge(self.obj_opts.field_defaults)
 
         ##
         # Merge field-level FieldMetadata if present
 
-        field_md = field.metadata.get(FieldOptions)
-        if field_md is not None:
-            merged_md = merged_md.merge(field_md)
+        field_opts = field.metadata.get(FieldOptions)
+        if field_opts is not None:
+            merged_opts = merged_opts.merge(field_opts)
 
         ##
         # Lite marshal compatibility - build override metadata
@@ -121,26 +120,26 @@ class _FieldInfoBuilder:
 
         # Merge lite overrides if any
         if lite_override_kw:
-            merged_md = merged_md.merge(FieldOptions(**lite_override_kw))
+            merged_opts = merged_opts.merge(FieldOptions(**lite_override_kw))
 
         ##
         # ObjectOptions
 
-        if (oo_md := (self.obj_md.fields or {}).get(field.name)) is not None:
-            merged_md = merged_md.merge(oo_md)
+        if (oo_opts := (self.obj_opts.fields or {}).get(field.name)) is not None:
+            merged_opts = merged_opts.merge(oo_opts)
 
         ##
         # Done
 
-        return merged_md
+        return merged_opts
 
     def build_field_info(self, field: dc.Field) -> FieldInfo:
-        merged_md = self.build_field_options(field)
+        merged_opts = self.build_field_options(field)
 
         ##
         # Determine field type (with generic replacement if needed)
 
-        if self.dc_rfl.spec.generic_init or merged_md.generic_replace:
+        if self.dc_rfl.spec.generic_init or merged_opts.generic_replace:
             f_ty = rfl.to_annotation(self.dc_rfl.fields_inspection.generic_replaced_field_type(field.name))
         else:
             f_ty = self.dc_rfl.type_hints[field.name]
@@ -148,17 +147,17 @@ class _FieldInfoBuilder:
         ##
         # Compute marshal/unmarshal names based on merged metadata
 
-        has_explicit_name = merged_md.name is not None
+        has_explicit_name = merged_opts.name is not None
 
         marshal_name: str | None
         unmarshal_names: ta.Sequence[str]
 
         if has_explicit_name:
             # Explicitly set name takes precedence
-            # Type narrow: we know merged_md.name is not None here
-            explicit_name = check.not_none(merged_md.name)
+            # Type narrow: we know merged_opts.name is not None here
+            explicit_name = check.not_none(merged_opts.name)
             marshal_name = explicit_name
-            unmarshal_names = col.unique([explicit_name, *(merged_md.alts or ())])
+            unmarshal_names = col.unique([explicit_name, *(merged_opts.alts or ())])
         else:
             # Use naming convention if available, otherwise field name
             field_naming = field.metadata.get(Naming, self.class_naming)
@@ -173,7 +172,7 @@ class _FieldInfoBuilder:
         ##
         # Handle embed suffix (only if name wasn't explicitly set)
 
-        if merged_md.embed and not has_explicit_name:
+        if merged_opts.embed and not has_explicit_name:
             # At this point marshal_name is guaranteed to be str (not None)
             marshal_name = check.not_none(marshal_name) + '_'
             unmarshal_names = [n + '_' for n in unmarshal_names]
@@ -181,9 +180,9 @@ class _FieldInfoBuilder:
         ##
         # Handle no_marshal/no_unmarshal
 
-        if merged_md.no_marshal:
+        if merged_opts.no_marshal:
             marshal_name = None
-        if merged_md.no_unmarshal:
+        if merged_opts.no_unmarshal:
             unmarshal_names = []
 
         ##
@@ -194,7 +193,7 @@ class _FieldInfoBuilder:
             type=f_ty,
             marshal_name=marshal_name,
             unmarshal_names=unmarshal_names,
-            options=merged_md,
+            options=merged_opts,
         )
 
     def build_field_infos(self) -> FieldInfos:
@@ -238,25 +237,25 @@ class _DataclassMarshalerBuilder:
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
-        dc_md = get_dataclass_options(ty, self.ctx.configs)
+        obj_opts = get_dataclass_options(ty, self.ctx.configs)
         dc_rfl = dc.reflect(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl, obj_opts=dc_md)
+        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl, obj_opts=obj_opts)
         fis = fib.build_field_infos()
 
         fields = [
             (fi, self._make_field_marshal_obj(fi))
             for fi in fis
             if not fi.options.no_marshal
-            and fi.name not in dc_md.specials.set
+            and fi.name not in obj_opts.specials.set
         ]
 
         unwrap_if_single_field: FieldInfo | None = None
-        if dc_md.unwrap_if_single_field in ('marshal', True):
+        if obj_opts.unwrap_if_single_field in ('marshal', True):
             unwrap_if_single_field = fields[0][0]
 
         return ObjectMarshaler(
             fields,
-            specials=dc_md.specials,
+            specials=obj_opts.specials,
             unwrap_if_single_field=unwrap_if_single_field,
         )
 
@@ -311,28 +310,28 @@ class _DataclassUnmarshalerBuilder:
         check.state(dc.is_dataclass(ty))
         check.state(not lang.is_abstract_class(ty))
 
-        dc_md = get_dataclass_options(ty, self.ctx.configs)
+        obj_opts = get_dataclass_options(ty, self.ctx.configs)
         dc_rfl = dc.reflect(ty)
-        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl, obj_opts=dc_md)
+        fib = _FieldInfoBuilder(ty, self.ctx.configs, dc_rfl=dc_rfl, obj_opts=obj_opts)
         fis = fib.build_field_infos()
 
         for fi in fis:
-            if fi.name in dc_md.specials.set:
+            if fi.name in obj_opts.specials.set:
                 continue
             self._add_field(fi)
 
         unwrap_if_single_field: FieldInfo | None = None
-        if dc_md.unwrap_if_single_field in ('unmarshal', True):
+        if obj_opts.unwrap_if_single_field in ('unmarshal', True):
             unwrap_if_single_field = next(iter(self._fields_dct.values()))[0]
 
         return ObjectUnmarshaler(
             ty,
             self._fields_dct,
-            specials=dc_md.specials,
+            specials=obj_opts.specials,
             defaults=self._defaults,
             embeds=self._embeds,
             embeds_by_unmarshal_name=self._embeds_by_unmarshal_name,
-            ignore_unknown=bool(dc_md.ignore_unknown),
+            ignore_unknown=bool(obj_opts.ignore_unknown),
             unwrap_if_single_field=unwrap_if_single_field,
             is_single_field=len(fis) < 2,
         )
@@ -346,8 +345,8 @@ class _DataclassUnmarshalerBuilder:
         if fi.options.embed:
             e_ty = check.isinstance(fi.type, type)
             check.state(dc.is_dataclass(e_ty))
-            e_dc_md = get_dataclass_options(e_ty, self.ctx.configs)
-            if e_dc_md.specials.set:
+            e_obj_opts = get_dataclass_options(e_ty, self.ctx.configs)
+            if e_obj_opts.specials.set:
                 raise Exception(f'Embedded fields cannot have specials: {e_ty}')
 
             self._embeds[fi.name] = e_ty
