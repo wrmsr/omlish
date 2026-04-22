@@ -1,7 +1,6 @@
 import threading
 import typing as ta
 
-from .. import check
 from .. import lang
 from .api.configs import Config
 from .api.configs import ConfigRegistry
@@ -149,8 +148,8 @@ def install_standard_factories_to(
         *factories: MarshalerFactory | UnmarshalerFactory,
 ) -> None:
     with cfgs._lock:  # noqa
-        m_cfg = check.opt_single(cfgs.get_of(None, StandardMarshalerFactories))
-        u_cfg = check.opt_single(cfgs.get_of(None, StandardUnmarshalerFactories))
+        m_cfg = cfgs.get().get(StandardMarshalerFactories)
+        u_cfg = cfgs.get().get(StandardUnmarshalerFactories)
 
         m_lst: list[MarshalerFactory] = list(
             m_cfg.lst if m_cfg is not None else _sd.DEFAULT_STANDARD_FACTORIES.marshaler_factories,

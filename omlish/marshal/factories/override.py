@@ -1,6 +1,5 @@
 import typing as ta
 
-from ... import check
 from ... import lang
 from ... import reflect as rfl
 from ..api.contexts import MarshalFactoryContext
@@ -27,10 +26,8 @@ class _OverrideFactory(lang.Abstract, ta.Generic[FactoryT]):
 
 class OverrideMarshalerFactory(_OverrideFactory[MarshalerFactory], MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not (ovr_lst := ctx.configs.get_of(rty, Override)):
+        if (ovr := ctx.configs.get(rty).get(Override)) is None:
             return self._fac.make_marshaler(ctx, rty)
-
-        ovr = check.single(ovr_lst)
 
         if (ovo := ovr.marshaler) is not None:
             return lambda: ovo
@@ -47,10 +44,8 @@ class OverrideMarshalerFactory(_OverrideFactory[MarshalerFactory], MarshalerFact
 
 class OverrideUnmarshalerFactory(_OverrideFactory[UnmarshalerFactory], UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not (ovr_lst := ctx.configs.get_of(rty, Override)):
+        if (ovr := ctx.configs.get(rty).get(Override)) is None:
             return self._fac.make_unmarshaler(ctx, rty)
-
-        ovr = check.single(ovr_lst)
 
         if (ovo := ovr.unmarshaler) is not None:
             return lambda: ovo

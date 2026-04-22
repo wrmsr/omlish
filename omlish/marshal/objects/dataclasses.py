@@ -52,10 +52,10 @@ class _FieldInfoBuilder:
 
         fn = self.obj_md.field_naming
         if fn is None and configs is not None:
-            if not (cnl := configs.get_of(ty, Naming)):
-                cnl = configs.get_of(None, Naming)
-            if cnl:
-                fn = check.isinstance(check.unique(cnl), Naming)
+            if (cn := configs.get(ty).get(Naming)) is None:
+                cn = configs.get().get(Naming)
+            if cn is not None:
+                fn = cn
         self.class_naming = fn
 
         if dc_rfl is None:

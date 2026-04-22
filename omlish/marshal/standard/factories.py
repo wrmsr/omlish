@@ -54,13 +54,13 @@ class _StandardFactory(ta.Generic[FactoryT, FactoriesT]):
 
     def _get_fac(self, cfgs: ConfigRegistry) -> FactoryT:
         st: ta.Any = self._state
-        cfg: ta.Any = check.opt_single(cfgs.get_of(None, self._cfg_cls))
+        cfg: ta.Any = cfgs.get().get(self._cfg_cls)
         if st is not None and cfg is not None and st[0] is cfg:
             return st[1]
 
         with cfgs._lock:  # noqa
             st = self._state
-            cfg = check.opt_single(cfgs.get_of(None, self._cfg_cls))
+            cfg = cfgs.get().get(self._cfg_cls)
             if st is not None and cfg is not None and st[0] is cfg:
                 return st[1]
 

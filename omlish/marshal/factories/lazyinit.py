@@ -4,6 +4,7 @@ import typing as ta
 from ... import check
 from ... import lang
 from ... import reflect as rfl
+from ... import typedvalues as tv
 from ..api.configs import Config
 from ..api.configs import ConfigRegistry
 from ..api.contexts import BaseContext
@@ -23,7 +24,7 @@ FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
 
 
 @dc.dataclass(frozen=True, eq=False)
-class _AlreadyRunLazyInits(Config, lang.Final):
+class _AlreadyRunLazyInits(Config, tv.UniqueTypedValue, lang.Final):
     lis: frozenset[LazyInit]
 
 
@@ -41,7 +42,7 @@ class _LazyInitRunningFactory(ta.Generic[FactoryT]):
         self._last_lis: ta.Any = None
 
     def _do_run(self, cfgs: ConfigRegistry, lis: ta.Sequence[LazyInit]) -> None:
-        ars = check.opt_single(cfgs.get_of(None, _AlreadyRunLazyInits))
+        ars = cfgs.get().get(_AlreadyRunLazyInits)
 
         lst: list[LazyInit] = []
         for li in lis:
@@ -53,8 +54,8 @@ class _LazyInitRunningFactory(ta.Generic[FactoryT]):
         if not lst:
             return
 
-        if ars:
-            lst.extend(ars.lis)  # type: ignore[unreachable]
+        if ars is not None and ars.lis:
+            lst.extend(ars.lis)
         ars = _AlreadyRunLazyInits(frozenset(lst))
         cfgs.register(None, ars, replace=True)
 
@@ -62,10 +63,10 @@ class _LazyInitRunningFactory(ta.Generic[FactoryT]):
             self._callback()
 
     def _run_if_necessary(self, ctx: BaseContext) -> None:
-        if (lis := ctx.configs.get_of(None, LazyInit)) and lis is not self._last_lis:
+        if (lis := ctx.configs.get().get(LazyInit)) and lis is not self._last_lis:
             cfgs: ConfigRegistry = check.isinstance(ctx.configs, ConfigRegistry)
             with cfgs._lock:  # noqa
-                if (lis := cfgs.get_of(None, LazyInit)) and lis is not self._last_lis:
+                if (lis := cfgs.get().get(LazyInit)) and lis is not self._last_lis:
                     self._do_run(cfgs, lis)
                     self._last_lis = lis
 

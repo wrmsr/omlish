@@ -189,3 +189,17 @@ def test_update():
     assert list(TypedValues(Tool('foo'), TEXT_RESPONSE_FORMAT).update(JSON_RESPONSE_FORMAT, mode='override')) == [Tool('foo'), JSON_RESPONSE_FORMAT]  # noqa
     assert list(TypedValues(Tool('foo'), TEXT_RESPONSE_FORMAT).update(JSON_RESPONSE_FORMAT, mode='default')) == [Tool('foo'), TEXT_RESPONSE_FORMAT]  # noqa
     assert list(TypedValues[ChatOption](Tool('foo')).update(JSON_RESPONSE_FORMAT, mode='default')) == [JSON_RESPONSE_FORMAT, Tool('foo')]  # noqa
+
+
+def test_identity_stable():
+    col = TypedValues(Tool('foo'), Tool('bar'), TopK(3))
+
+    l1 = col.get(Tool)
+    assert list(l1) == [Tool('foo'), Tool('bar')]
+    l2 = col.get(Tool)
+    assert l1 is l2
+
+    l3 = col.get_any(GenerativeOption)
+    assert list(l3) == [TopK(3)]
+    l4 = col.get_any(GenerativeOption)
+    assert l3 is l4

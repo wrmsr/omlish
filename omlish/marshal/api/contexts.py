@@ -36,8 +36,8 @@ class BaseContext(lang.Abstract, lang.Sealed):
 
     def _reflect(self, o: ta.Any) -> rfl.Type:
         def override(o):
-            if (ovr := self.configs.get_of(o, ReflectOverride)):
-                return ovr[-1].rty
+            if (ovr := self.configs.get(o).get(ReflectOverride)) is not None:
+                return ovr.rty
             return None
 
         return rfl.Reflector(override=override).type(o)

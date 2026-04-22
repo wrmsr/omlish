@@ -1,9 +1,11 @@
 """
 FIXME: lol do we cache everything it ever sees by identity?
+ - yes, but, only keyed by rty - we don't really 'do' temp / weakref classes
+  - maybe: still merge and cache, but only via identity IFF there's actually any identity keys in there for the thing
+
 TODO:
  - update interface first to return tv's
  - squash to one big dict, use lang.Identity() wrappers
- - still merge and cache, but only via identity IFF there's actually any identity keys in there for the thing
 """
 import abc
 import dataclasses as dc
@@ -32,21 +34,14 @@ class Configs(lang.Abstract):
     @abc.abstractmethod
     def get(
             self,
-            key: ta.Any,
+            key: ta.Any = None,
             *,
             identity: bool | None = None,
-    ) -> ta.Sequence[Config]:
+    ) -> tv.TypedValues[Config]:
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def get_of(
-            self,
-            key: ta.Any,
-            item_ty: type[ConfigT],
-            *,
-            identity: bool | None = None,
-    ) -> ta.Sequence[ConfigT]:
-        raise NotImplementedError
+
+_EMPTY_CONFIG_VALUES = tv.TypedValues[Config]()
 
 
 ##
@@ -175,21 +170,25 @@ class ConfigRegistry(Configs):
 
         #
 
-        _get_cache: dict[ta.Any, ta.Sequence[Config]] = dc.field(default_factory=dict)
+        _get_cache: dict[ta.Any, tv.TypedValues[Config]] = dc.field(default_factory=dict)
 
         def get(
                 self,
-                key: ta.Any,
+                key: ta.Any = None,
                 *,
                 identity: bool | None = None,
-        ) -> ta.Sequence[Config]:
+        ) -> tv.TypedValues[Config]:
+            if key is None:
+                check.state(identity is not True)
+                identity = False
+
             if identity is None:
                 try:
                     return self._get_cache[key]
                 except KeyError:
                     pass
 
-                ret = self._get_cache[key] = (
+                ret = self._get_cache[key] = tv.TypedValues(  # noqa
                     *self.get(key, identity=True),
                     *self.get(key, identity=False),
                 )
@@ -197,37 +196,10 @@ class ConfigRegistry(Configs):
 
             dct: ta.Any = self.dct if not identity else self.id_dct
             try:
-                return dct[key].items
+                lst = dct[key].items
             except KeyError:
-                return ()
-
-        _get_of_cache: dict[ta.Any, dict[type, ta.Sequence[Config]]] = dc.field(default_factory=dict)
-
-        def get_of(
-                self,
-                key: ta.Any,
-                item_ty: type[Config],
-                *,
-                identity: bool | None = None,
-        ) -> ta.Sequence[Config]:
-            if identity is None:
-                try:
-                    return self._get_of_cache[key][item_ty]
-                except KeyError:
-                    pass
-
-                ret = self._get_of_cache.setdefault(key, {})[item_ty] = (
-                    *self.get_of(key, item_ty, identity=True),
-                    *self.get_of(key, item_ty, identity=False),
-                )
-                return ret
-
-            dct: ta.Any = self.dct if not identity else self.id_dct
-            try:
-                sr = dct[key]
-            except KeyError:
-                return ()
-            return sr.item_lists_by_ty.get(item_ty, ())
+                return _EMPTY_CONFIG_VALUES
+            return tv.TypedValues(*lst)
 
     def is_sealed(self) -> bool:
         if self._sealed:
@@ -279,21 +251,8 @@ class ConfigRegistry(Configs):
 
     def get(
             self,
-            key: ta.Any,
+            key: ta.Any = None,
             *,
             identity: bool | None = None,
-    ) -> ta.Sequence[Config]:
-        check.arg(not (key is None and identity))
-
+    ) -> tv.TypedValues[Config]:
         return self._state.get(key, identity=identity)
-
-    def get_of(
-            self,
-            key: ta.Any,
-            item_ty: type[ConfigT],
-            *,
-            identity: bool | None = None,
-    ) -> ta.Sequence[ConfigT]:
-        check.arg(not (key is None and identity))
-
-        return self._state.get_of(key, item_ty, identity=identity)  # type: ignore[return-value]

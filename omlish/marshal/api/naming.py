@@ -8,13 +8,14 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ... import typedvalues as tv
 from .configs import Config
 
 
 ##
 
 
-class Naming(Config, enum.Enum):
+class Naming(Config, tv.UniqueTypedValue, enum.Enum):
     CAMEL = 'camel'
     LOW_CAMEL = 'low_camel'
     SNAKE = 'snake'
