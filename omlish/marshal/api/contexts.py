@@ -9,7 +9,7 @@ from ... import reflect as rfl
 from .configs import Configs
 from .errors import UnhandledTypeError
 from .options import Options
-from .overrides import ReflectOverride
+from .reflect import ReflectOverride
 from .registries import Registry
 
 

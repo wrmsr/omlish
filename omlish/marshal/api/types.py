@@ -1,6 +1,8 @@
 import abc
+import dataclasses as dc
 import typing as ta
 
+from ... import check
 from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
@@ -57,29 +59,29 @@ class UnmarshalerFactory(lang.Abstract):
 
 class Marshaling(lang.Abstract):
     @abc.abstractmethod
-    def config_registry(self) -> ConfigRegistry:
+    def get_config_registry(self) -> ConfigRegistry:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def marshaler_factory(self) -> MarshalerFactory:
+    def get_marshaler_factory(self) -> MarshalerFactory:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def unmarshaler_factory(self) -> UnmarshalerFactory:
+    def get_unmarshaler_factory(self) -> UnmarshalerFactory:
         raise NotImplementedError
 
     ##
 
     def new_marshal_factory_context(self) -> MarshalFactoryContext:
         return MarshalFactoryContext(
-            configs=self.config_registry(),
-            marshaler_factory=self.marshaler_factory(),
+            configs=self.get_config_registry(),
+            marshaler_factory=self.get_marshaler_factory(),
         )
 
     def new_unmarshal_factory_context(self) -> UnmarshalFactoryContext:
         return UnmarshalFactoryContext(
-            configs=self.config_registry(),
-            unmarshaler_factory=self.unmarshaler_factory(),
+            configs=self.get_config_registry(),
+            unmarshaler_factory=self.get_unmarshaler_factory(),
         )
 
     ##
@@ -128,3 +130,22 @@ class Marshaling(lang.Abstract):
     @ta.final
     def unmarshal(self, v, ty, *options):
         return self.new_unmarshal_context(options).unmarshal(v, ty)
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class SimpleMarshaling(Marshaling):
+    config_registry: ConfigRegistry = dc.field(default_factory=ConfigRegistry)
+    marshaler_factory: MarshalerFactory | None = None
+    unmarshaler_factory: UnmarshalerFactory | None = None
+
+    def get_config_registry(self) -> ConfigRegistry:
+        return self.config_registry
+
+    def get_marshaler_factory(self) -> MarshalerFactory:
+        return check.not_none(self.marshaler_factory)
+
+    def get_unmarshaler_factory(self) -> UnmarshalerFactory:
+        return check.not_none(self.unmarshaler_factory)

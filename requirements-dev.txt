@@ -2,7 +2,7 @@
 
 build>=1.4.0
 twine>=6.2.0
-wheel>=0.46.2
+wheel>=0.47.0
 
 uv>=0.11.7
 
@@ -123,7 +123,7 @@ hf-xet==1.4.3  # @omlish-venv !15t
 
 datasets==4.8.4  # @omlish-venv !15 !15t  # !! includes arrow and pandas and shit
 
-transformers==5.5.4  # @omlish-venv !15 !15t
+transformers==5.6.0  # @omlish-venv !15 !15t
 sentence-transformers==5.4.1  # @omlish-venv !15 !15t
 
 sentencepiece==0.2.1
@@ -141,8 +141,8 @@ botocore-stubs>=1.42.41
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.31.1; sys_platform == "darwin"  # @omlish-venv !14t !4dt !15 !15t
-mlx-lm==0.31.2; sys_platform == "darwin"  # @omlish-venv !14t !14dt !15 !15t
+mlx==0.31.2; sys_platform == "darwin"  # @omlish-venv !14t !4dt !15 !15t
+mlx-lm==0.31.3; sys_platform == "darwin"  # @omlish-venv !14t !14dt !15 !15t
 
 apsw==3.53.0.0
 

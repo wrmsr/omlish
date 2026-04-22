@@ -49,13 +49,13 @@ def global_unmarshaler_factory() -> UnmarshalerFactory:
 
 
 class _GlobalMarshaling(Marshaling, lang.Final):
-    def config_registry(self) -> ConfigRegistry:
+    def get_config_registry(self) -> ConfigRegistry:
         return global_config_registry()
 
-    def marshaler_factory(self) -> MarshalerFactory:
+    def get_marshaler_factory(self) -> MarshalerFactory:
         return global_marshaler_factory()
 
-    def unmarshaler_factory(self) -> UnmarshalerFactory:
+    def get_unmarshaler_factory(self) -> UnmarshalerFactory:
         return global_unmarshaler_factory()
 
 

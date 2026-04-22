@@ -58,8 +58,7 @@ with _lang.auto_proxy_init(globals()):
         Option,
     )
 
-    from .api.overrides import (  # noqa
-        Override,
+    from .api.reflect import (  # noqa
         ReflectOverride,
     )
 
@@ -82,6 +81,8 @@ with _lang.auto_proxy_init(globals()):
         UnmarshalerFactory,
 
         Marshaling,
+
+        SimpleMarshaling,
     )
 
     from .api.values import (  # noqa
@@ -134,6 +135,8 @@ with _lang.auto_proxy_init(globals()):
         LazyInit,
 
         ModuleImport,
+
+        Override,
     )
 
     from .factories.lazyinit import (  # noqa
@@ -144,6 +147,11 @@ with _lang.auto_proxy_init(globals()):
     from .factories.multi import (  # noqa
         MultiMarshalerFactory,
         MultiUnmarshalerFactory,
+    )
+
+    from .factories.override import (  # noqa
+        OverrideMarshalerFactory,
+        OverrideUnmarshalerFactory,
     )
 
     from .factories.typemap import (  # noqa
