@@ -20,7 +20,7 @@ StandardContentT = ta.TypeVar('StandardContentT', bound='StandardContent')
 ##
 
 
-class ContentMetadata(Metadata, lang.Abstract):
+class ContentMetadata(Metadata, lang.Abstract, lang.Sealed):
     pass
 
 

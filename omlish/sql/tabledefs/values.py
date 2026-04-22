@@ -9,7 +9,7 @@ from ... import lang
 
 
 @dc.dataclass(frozen=True)
-class SpecialValue(lang.Sealed, lang.Abstract):
+class SpecialValue(lang.Abstract, lang.Sealed):
     pass
 
 

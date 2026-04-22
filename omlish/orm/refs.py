@@ -24,7 +24,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class Ref(lang.Sealed, lang.Abstract, ta.Generic[T, K]):
+class Ref(lang.Abstract, lang.Sealed, ta.Generic[T, K]):
     @property
     @abc.abstractmethod
     def cls(self) -> type[T]:

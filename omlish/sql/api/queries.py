@@ -32,7 +32,7 @@ class QueryMode(enum.Enum):
 ##
 
 
-class Queryable(lang.Sealed, lang.Abstract):
+class Queryable(lang.Abstract, lang.Sealed):
     pass
 
 

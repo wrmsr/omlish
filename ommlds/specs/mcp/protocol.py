@@ -51,7 +51,7 @@ def _set_class_marshal_options(cls):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Message(lang.Sealed, lang.Abstract):
+class Message(lang.Abstract, lang.Sealed):
     @property
     @abc.abstractmethod
     def json_rpc_method_name(self) -> str:
@@ -91,7 +91,7 @@ class Notification(Message, lang.Abstract):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class WithMeta(lang.Sealed, lang.Abstract):
+class WithMeta(lang.Abstract, lang.Sealed):
     meta_: ta.Mapping[str, ta.Any] | None = dc.field(default=None) | msh.with_field_options(name='_meta')
 
 

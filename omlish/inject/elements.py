@@ -89,7 +89,7 @@ def iter_elements(*args: Elemental) -> ta.Iterator[Element]:
 ##
 
 
-class CollectedElements(lang.PackageSealed, lang.Abstract):
+class CollectedElements(lang.Abstract, lang.PackageSealed):
     pass
 
 

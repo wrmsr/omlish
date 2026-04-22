@@ -23,7 +23,7 @@ D = ta.TypeVar('D')
 @dc.dataclass(frozen=True)
 class ToolFn(lang.Final):
     @dc.dataclass(frozen=True)
-    class Impl(lang.Sealed, lang.Abstract):
+    class Impl(lang.Abstract, lang.Sealed):
         pass
 
     @dc.dataclass(frozen=True, kw_only=True)
@@ -44,7 +44,7 @@ class ToolFn(lang.Final):
     #
 
     @dc.dataclass(frozen=True)
-    class Input(lang.Sealed, lang.Abstract):
+    class Input(lang.Abstract, lang.Sealed):
         pass
 
     @dc.dataclass(frozen=True)
@@ -68,7 +68,7 @@ class ToolFn(lang.Final):
     #
 
     @dc.dataclass(frozen=True)
-    class Output(lang.Sealed, lang.Abstract):
+    class Output(lang.Abstract, lang.Sealed):
         pass
 
     @dc.dataclass(frozen=True)

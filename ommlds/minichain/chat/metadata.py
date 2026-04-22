@@ -11,7 +11,7 @@ from ..metadata import Metadata
 ##
 
 
-class MessageMetadata(Metadata, lang.Abstract):
+class MessageMetadata(Metadata, lang.Abstract, lang.PackageSealed):
     pass
 
 

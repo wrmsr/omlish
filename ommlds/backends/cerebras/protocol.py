@@ -34,7 +34,7 @@ class ChatCompletionRequest(lang.Final):
     # messages
 
     @dc.dataclass(frozen=True, kw_only=True)
-    class Message(lang.Sealed, lang.Abstract):
+    class Message(lang.Abstract, lang.Sealed):
         pass
 
     @dc.dataclass(frozen=True, kw_only=True)
@@ -114,7 +114,7 @@ class ChatCompletionRequest(lang.Final):
     # response format
 
     @dc.dataclass(frozen=True, kw_only=True)
-    class ResponseFormat(lang.Sealed, lang.Abstract):
+    class ResponseFormat(lang.Abstract, lang.Sealed):
         pass
 
     @dc.dataclass(frozen=True, kw_only=True)

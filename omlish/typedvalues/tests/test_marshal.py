@@ -9,7 +9,7 @@ from ..values import ScalarTypedValue
 from ..values import TypedValue
 
 
-class Opt(TypedValue, lang.Sealed, lang.Abstract):
+class Opt(TypedValue, lang.Abstract, lang.Sealed):
     pass
 
 

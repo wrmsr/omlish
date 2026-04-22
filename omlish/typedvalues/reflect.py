@@ -41,7 +41,7 @@ def reflect_typed_values_impls(
                     todo.extend(get_unsealed_subclasses(cur))
 
                 else:
-                    raise TypeError(f'{cur} is not a sealed - cannot safely know all subtypes')
+                    raise TypeError(f'{cur} is not sealed - cannot safely know all subtypes')
 
             else:
                 tv_cls_set.add(cur)

@@ -119,9 +119,9 @@ def _build_typed_value_union_poly(ctx: msh.BaseContext, rty: rfl.Type) -> msh.Im
         else:
             raise TypeError(ctx)
 
-        impls = check.not_none(impls)  # noqa
+        impls = check.not_none(impls)
 
-        raise NotImplementedError
+        return [i.ty for i in impls]
 
     tv_cls_set = reflect_typed_values_impls(
         rty,

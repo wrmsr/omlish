@@ -9,7 +9,7 @@ from ..configs import Config
 ##
 
 
-class ModelSpecifier(Config, tv.UniqueTypedValue, lang.Sealed, lang.Abstract):
+class ModelSpecifier(Config, tv.UniqueTypedValue, lang.Abstract, lang.Sealed):
     pass
 
 

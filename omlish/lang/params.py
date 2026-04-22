@@ -28,7 +28,7 @@ CanParamSpec: ta.TypeAlias = ta.Union[
 
 
 @dc.dataclass(frozen=True, unsafe_hash=True)
-class Param(Sealed, Abstract):
+class Param(Abstract, Sealed):
     name: str
 
     annotation: Maybe = Maybe.empty()

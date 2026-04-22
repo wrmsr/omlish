@@ -6,7 +6,7 @@ from .fields import FieldOption
 ##
 
 
-class Timestamp(FieldOption, tv.UniqueTypedValue, lang.Sealed, lang.Abstract):
+class Timestamp(FieldOption, tv.UniqueTypedValue, lang.Abstract, lang.Sealed):
     pass
 
 

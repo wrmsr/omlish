@@ -29,7 +29,7 @@ def _set_class_marshal_options(cls):
 @_set_class_marshal_options
 class ChatCompletionRequest(lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
-    class Message(lang.Sealed, lang.Abstract):
+    class Message(lang.Abstract, lang.Sealed):
         pass
 
     @dc.dataclass(frozen=True, kw_only=True)

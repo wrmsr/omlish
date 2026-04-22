@@ -25,7 +25,7 @@ class _BoundBackref(lang.Final, ta.Generic[T]):
         return _sessions.active_session()._get_bound_backref_objs(self)
 
 
-class Backref(lang.Sealed, lang.Abstract, ta.Generic[T]):
+class Backref(lang.Abstract, lang.Sealed, ta.Generic[T]):
     @ta.overload
     def __get__(self, instance: None, owner: ta.Any = None) -> Backref[T]:
         ...

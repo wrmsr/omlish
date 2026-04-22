@@ -15,7 +15,7 @@ P = ta.ParamSpec('P')
 
 
 @functools.total_ordering
-class Key(lang.Sealed, lang.Abstract, ta.Generic[K]):
+class Key(lang.Abstract, lang.Sealed, ta.Generic[K]):
     @property
     @abc.abstractmethod
     def k(self) -> K:
