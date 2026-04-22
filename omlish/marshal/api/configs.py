@@ -1,3 +1,10 @@
+"""
+FIXME: lol do we cache everything it ever sees by identity?
+TODO:
+ - update interface first to return tv's
+ - squash to one big dict, use lang.Identity() wrappers
+ - still merge and cache, but only via identity IFF there's actually any identity keys in there for the thing
+"""
 import abc
 import dataclasses as dc
 import threading

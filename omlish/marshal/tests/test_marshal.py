@@ -10,6 +10,7 @@ from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
 from ..api.contexts import UnmarshalFactoryContext
+from ..api.types import SimpleMarshaling
 from ..standard.factories import StandardMarshalerFactory
 from ..standard.factories import StandardUnmarshalerFactory
 from .foox import Foox
@@ -64,3 +65,49 @@ def test_marshal():
     print()
 
     print(ufc.make_unmarshaler(ta.Any).unmarshal(uc, 420))
+
+
+def test_marshal_loop():
+    msh = SimpleMarshaling(
+        marshaler_factory=StandardMarshalerFactory(),
+        unmarshaler_factory=StandardUnmarshalerFactory(),
+    )
+
+    for i in range(1_000):  # noqa
+        obj = Foo([420, 421], 'barf', Foo([1, 2], 'xxx', e=E.Y))
+
+        for _ in range(2):
+            mobj = msh.marshal(obj)
+
+        for _ in range(2):
+            uobj = msh.unmarshal(mobj, type(obj))  # noqa
+
+    print()
+
+
+def test_marshal_loop_temp_class():
+    msh = SimpleMarshaling(
+        marshaler_factory=StandardMarshalerFactory(),
+        unmarshaler_factory=StandardUnmarshalerFactory(),
+    )
+
+    for i in range(1_000):  # noqa
+        @dc.dataclass(frozen=True)
+        class Foo(Foox):  # noqa
+            s: str
+            e: E | None = None
+            frac: fractions.Fraction = fractions.Fraction(1, 9)
+            dec: decimal.Decimal = decimal.Decimal('3.140000000000000124344978758017532527446746826171875')
+            dt: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+            d: datetime.date = dc.field(default_factory=lambda: datetime.datetime.now().date())  # noqa
+            t: datetime.time = dc.field(default_factory=lambda: datetime.datetime.now().time())  # noqa
+
+        obj = Foo([420, 421], 'barf')
+
+        for _ in range(2):
+            mobj = msh.marshal(obj)
+
+        for _ in range(2):
+            uobj = msh.unmarshal(mobj, type(obj))  # noqa
+
+    print()

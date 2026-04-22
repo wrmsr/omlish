@@ -53,8 +53,8 @@ class _LazyInitRunningFactory(ta.Generic[FactoryT]):
         if not lst:
             return
 
-        if ars:  # type: ignore[unreachable]
-            lst.extend(ars.lis)
+        if ars:
+            lst.extend(ars.lis)  # type: ignore[unreachable]
         ars = _AlreadyRunLazyInits(frozenset(lst))
         cfgs.register(None, ars, replace=True)
 
