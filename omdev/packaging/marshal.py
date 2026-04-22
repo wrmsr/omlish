@@ -15,6 +15,7 @@ from .requires import RequiresNode
 from .requires import RequiresOp
 from .requires import RequiresValue
 from .requires import RequiresVariable
+from .requires import ParsedRequirement
 
 
 ##

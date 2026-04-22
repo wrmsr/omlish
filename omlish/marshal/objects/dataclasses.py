@@ -62,17 +62,13 @@ class _FieldInfoBuilder:
             dc_rfl = dc.reflect(ty)
         self.dc_rfl = dc_rfl
 
-        self.type_hints = ta.get_type_hints(ty)
-
-    def build_field_info(self, field: dc.Field) -> FieldInfo:
+    def build_field_options(self, field: dc.Field) -> FieldOptions:
         """
         Merges configuration from multiple sources in this order (later = higher precedence):
         1. Empty baseline
         2. Class-level field_defaults (from ObjectMetadata)
         3. Field-level FieldMetadata (from field.metadata)
         4. Lite marshal compatibility overrides (OBJ_MARSHALER_FIELD_KEY, etc.)
-
-        Then computes marshal/unmarshal names based on the merged configuration.
         """
 
         ##
@@ -111,13 +107,20 @@ class _FieldInfoBuilder:
         if lite_override_kw:
             merged_md = merged_md.merge(FieldOptions(**lite_override_kw))
 
+        ## Done
+
+        return merged_md
+
+    def build_field_info(self, field: dc.Field) -> FieldInfo:
+        merged_md = self.build_field_options(field)
+
         ##
         # Determine field type (with generic replacement if needed)
 
         if self.dc_rfl.spec.generic_init or merged_md.generic_replace:
             f_ty = rfl.to_annotation(self.dc_rfl.fields_inspection.generic_replaced_field_type(field.name))
         else:
-            f_ty = self.type_hints[field.name]
+            f_ty = self.dc_rfl.type_hints[field.name]
 
         ##
         # Compute marshal/unmarshal names based on merged metadata

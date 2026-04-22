@@ -29,6 +29,7 @@ import re
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.lite.dataclasses import install_dataclass_cache_hash
 
 from .specifiers import Specifier
 
@@ -241,7 +242,9 @@ class RequiresMarkerItem(ta.NamedTuple):
     r: ta.Union[RequiresVariable, RequiresValue]
 
 
-class ParsedRequirement(ta.NamedTuple):
+@install_dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class ParsedRequirement:
     name: str
     url: str
     extras: ta.List[str]

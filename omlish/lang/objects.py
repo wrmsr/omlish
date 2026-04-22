@@ -253,7 +253,7 @@ class Identity(ta.Generic[T]):
         return self._obj
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._obj!r})'
+        return f'{self.__class__.__name__}@{id(self._obj):x}<{self._obj!r}>'
 
     def __hash__(self) -> int:
         return id(self._obj)

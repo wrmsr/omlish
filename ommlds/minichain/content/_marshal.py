@@ -38,7 +38,6 @@ from .text import TextContent
 ##
 
 
-# TODO: This hack should be obsolete with 3.14 / PEP 649, but reflect needs to grow recursive type support.
 class MarshalContent(lang.NotInstantiable, lang.Final):
     pass
 
@@ -258,19 +257,6 @@ class _ImageContentUnmarshaler(msh.Unmarshaler):
 ##
 
 
-class _JsonContentMarshaler(msh.Marshaler):
-    def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
-        return ta.cast(msh.Value, check.isinstance(o, JsonContent).v)
-
-
-class _JsonContentUnmarshaler(msh.Unmarshaler):
-    def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
-        return JsonContent(v)
-
-
-##
-
-
 @lang.static_init
 def _install_standard_marshaling() -> None:
     base_content_poly = msh.Polymorphism(
@@ -361,12 +347,10 @@ def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         msh.TypeMapMarshalerFactory({
             ImageContent: _ImageContentMarshaler(),
-            JsonContent: _JsonContentMarshaler(),
             PlaceholderContent: _PlaceholderContentMarshaler(),
         }),
         msh.TypeMapUnmarshalerFactory({
             ImageContent: _ImageContentUnmarshaler(),
-            JsonContent: _JsonContentUnmarshaler(),
             PlaceholderContent: _PlaceholderContentUnmarshaler(),
         }),
     )

@@ -10,6 +10,7 @@ from .._marshal import MarshalRawContent
 from .._marshal import MarshalSingleRawContent
 from ..containers import ConcatContent
 from ..content import Content
+from ..json import JsonContent
 from ..metadata import ContentUuid
 from ..raw import RawContent
 from ..raw import SingleRawContent
@@ -31,6 +32,8 @@ def test_marshal():
 
     u = uuid.uuid4()
     assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u), no_original=True), Content) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
+
+    assert msh.marshal(JsonContent({'abc': 420}), Content) == {'json': {'v': {'abc': 420}}}
 
 
 @dc.dataclass(frozen=True)

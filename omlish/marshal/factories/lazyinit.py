@@ -10,6 +10,7 @@ from ..api.configs import ConfigRegistry
 from ..api.contexts import BaseContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
+from ..api.contexts import _PreReflectFactory
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
@@ -28,7 +29,7 @@ class _AlreadyRunLazyInits(Config, tv.UniqueTypedValue, lang.Final):
     lis: frozenset[LazyInit]
 
 
-class _LazyInitRunningFactory(ta.Generic[FactoryT]):
+class _LazyInitRunningFactory(_PreReflectFactory, ta.Generic[FactoryT]):
     def __init__(
             self,
             fac: FactoryT,
@@ -62,22 +63,24 @@ class _LazyInitRunningFactory(ta.Generic[FactoryT]):
         if self._callback is not None:
             self._callback()
 
-    def _run_if_necessary(self, ctx: BaseContext) -> None:
-        if (lis := ctx.configs.get().get(LazyInit)) and lis is not self._last_lis:
-            cfgs: ConfigRegistry = check.isinstance(ctx.configs, ConfigRegistry)
+    def _run_if_necessary(self, cfgs: ConfigRegistry) -> None:
+        if (lis := cfgs.get().get(LazyInit)) and lis is not self._last_lis:
             with cfgs._lock:  # noqa
                 if (lis := cfgs.get().get(LazyInit)) and lis is not self._last_lis:
                     self._do_run(cfgs, lis)
                     self._last_lis = lis
 
+    def _pre_reflect(self, ctx: BaseContext) -> None:
+        self._run_if_necessary(check.isinstance(ctx.configs, ConfigRegistry))
+
 
 class LazyInitRunningMarshalerFactory(_LazyInitRunningFactory[MarshalerFactory], MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        self._run_if_necessary(ctx)
+        self._run_if_necessary(check.isinstance(ctx.configs, ConfigRegistry))
         return self._fac.make_marshaler(ctx, rty)
 
 
 class LazyInitRunningUnmarshalerFactory(_LazyInitRunningFactory[UnmarshalerFactory], UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        self._run_if_necessary(ctx)
+        self._run_if_necessary(check.isinstance(ctx.configs, ConfigRegistry))
         return self._fac.make_unmarshaler(ctx, rty)
