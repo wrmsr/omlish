@@ -9,7 +9,6 @@ from ..api.configs import ConfigRegistry
 from ..api.contexts import BaseContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
-from ..api.registries import Registry
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
@@ -54,7 +53,7 @@ class _LazyInitRunningFactory(ta.Generic[FactoryT]):
         if not lst:
             return
 
-        if ars:
+        if ars:  # type: ignore[unreachable]
             lst.extend(ars.lis)
         ars = _AlreadyRunLazyInits(frozenset(lst))
         cfgs.register(None, ars, replace=True)
@@ -64,7 +63,7 @@ class _LazyInitRunningFactory(ta.Generic[FactoryT]):
 
     def _run_if_necessary(self, ctx: BaseContext) -> None:
         if (lis := ctx.configs.get_of(None, LazyInit)) and lis is not self._last_lis:
-            cfgs: ConfigRegistry = check.isinstance(ctx.configs, Registry)
+            cfgs: ConfigRegistry = check.isinstance(ctx.configs, ConfigRegistry)
             with cfgs._lock:  # noqa
                 if (lis := cfgs.get_of(None, LazyInit)) and lis is not self._last_lis:
                     self._do_run(cfgs, lis)

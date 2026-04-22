@@ -21,6 +21,7 @@ with _lang.auto_proxy_init(globals()):
         Config,
         Configs,
 
+        ConfigRegistrySealedError,
         ConfigRegistry,
     )
 
@@ -60,14 +61,6 @@ with _lang.auto_proxy_init(globals()):
 
     from .api.reflect import (  # noqa
         ReflectOverride,
-    )
-
-    from .api.registries import (  # noqa
-        RegistryItem,
-        UniqueRegistryItem,
-
-        RegistrySealedError,
-        Registry,
     )
 
     from .api.types import (  # noqa

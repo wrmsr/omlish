@@ -6,7 +6,6 @@ from ... import reflect as rfl
 from ..api.configs import ConfigRegistry
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
-from ..api.registries import Registry
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
@@ -99,7 +98,7 @@ class StandardMarshalerFactory(_StandardFactory[MarshalerFactory, StandardMarsha
         return fac
 
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        return self._get_fac(check.isinstance(ctx.configs, Registry)).make_marshaler(ctx, rty)
+        return self._get_fac(check.isinstance(ctx.configs, ConfigRegistry)).make_marshaler(ctx, rty)
 
 
 class StandardUnmarshalerFactory(_StandardFactory[UnmarshalerFactory, StandardUnmarshalerFactories], UnmarshalerFactory):  # noqa
@@ -120,7 +119,7 @@ class StandardUnmarshalerFactory(_StandardFactory[UnmarshalerFactory, StandardUn
         return fac
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        return self._get_fac(check.isinstance(ctx.configs, Registry)).make_unmarshaler(ctx, rty)
+        return self._get_fac(check.isinstance(ctx.configs, ConfigRegistry)).make_unmarshaler(ctx, rty)
 
 
 ##

@@ -5,9 +5,9 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ... import typedvalues as tv
 from ..api.configs import Config
 from ..api.configs import ConfigRegistry
-from ..api.registries import UniqueRegistryItem
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
@@ -46,7 +46,7 @@ class ModuleImport(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class Override(Config, UniqueRegistryItem, lang.Final):
+class Override(Config, tv.UniqueTypedValue, lang.Final):
     marshaler: Marshaler | None = None
     marshaler_factory: MarshalerFactory | None = None
 
