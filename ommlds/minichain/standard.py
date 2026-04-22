@@ -5,6 +5,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.secrets import all as sec
 
@@ -34,6 +35,7 @@ class ApiUrl(tv.UniqueScalarTypedValue[str], Config):
 
 
 @dc.dataclass(frozen=True)
+@msh.update_object_options(unwrap_if_single_field=True)
 class SecretConfig(Config, lang.Abstract):
     v: sec.SecretRefOrStr = dc.field() | sec.secret_field
 
