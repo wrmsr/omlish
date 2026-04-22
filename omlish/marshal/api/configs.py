@@ -6,6 +6,7 @@ FIXME: lol do we cache everything it ever sees by identity?
 TODO:
  - update interface first to return tv's
  - squash to one big dict, use lang.Identity() wrappers
+ - give .register tv.update kwargs, just call that
 """
 import abc
 import dataclasses as dc
@@ -27,6 +28,14 @@ class Config(tv.TypedValue, lang.Abstract):
     pass
 
 
+#
+
+
+ConfigValues: ta.TypeAlias = tv.TypedValues[Config]
+
+_EMPTY_CONFIG_VALUES = ConfigValues()
+
+
 ##
 
 
@@ -37,11 +46,8 @@ class Configs(lang.Abstract):
             key: ta.Any = None,
             *,
             identity: bool | None = None,
-    ) -> tv.TypedValues[Config]:
+    ) -> ConfigValues:
         raise NotImplementedError
-
-
-_EMPTY_CONFIG_VALUES = tv.TypedValues[Config]()
 
 
 ##
@@ -63,11 +69,7 @@ class ConfigRegistry(Configs):
             lock = threading.RLock()
         self._lock = lock
 
-        self._state: ConfigRegistry._State = self._State(
-            dct={},
-            id_dct={},
-            version=0,
-        )
+        self._state: ConfigRegistry._State = self._State()
 
         self._sealed = False
 
@@ -84,61 +86,10 @@ class ConfigRegistry(Configs):
 
     #
 
-    @dc.dataclass(frozen=True)
-    class _KeyItems:
-        key: ta.Any
-        items: ta.Sequence[Config] = ()
-        item_lists_by_ty: ta.Mapping[type[Config], ta.Sequence[Config]] = dc.field(default_factory=dict)
-
-        #
-
-        def add(self, *items: Config) -> ConfigRegistry._KeyItems:
-            if not items:
-                return self
-
-            item_lists_by_ty: dict[type[Config], list[Config]] = {}
-
-            for i in items:
-                it = type(i)
-                if (iut := issubclass(it, tv.UniqueTypedValue)):
-                    check.not_in(it, self.item_lists_by_ty)
-                try:
-                    l = item_lists_by_ty[it]
-                except KeyError:
-                    l = item_lists_by_ty[it] = list(self.item_lists_by_ty.get(it, ()))
-                else:
-                    check.state(not iut)
-                l.append(i)
-
-            return ConfigRegistry._KeyItems(
-                self.key,
-                (*self.items, *items),
-                {**self.item_lists_by_ty, **item_lists_by_ty},
-            )
-
-        def remove(self, *tys: type[Config]) -> ConfigRegistry._KeyItems:
-            if not tys:
-                return self
-
-            ty_set = set(tys)
-            if not any(ty in ty_set for ty in self.item_lists_by_ty):
-                return self
-
-            return ConfigRegistry._KeyItems(
-                self.key,
-                tuple(i for i in self.items if type(i) not in ty_set),
-                {
-                    ty: l
-                    for ty, l in self.item_lists_by_ty.items()
-                    if ty not in ty_set
-                },
-            )
-
     @dc.dataclass(frozen=True, kw_only=True)
     class _State:
-        dct: ta.Mapping[ta.Any, ConfigRegistry._KeyItems]
-        id_dct: ta.Mapping[ta.Any, ConfigRegistry._KeyItems]
-        version: int
+        dct: ta.Mapping[ta.Any, ConfigValues] = dc.field(default_factory=dict)
+        version: int = 0
 
         #
 
@@ -152,54 +103,59 @@ class ConfigRegistry(Configs):
             if not items:
                 return self
 
-            sr_dct: ta.Any = self.dct if not identity else self.id_dct
-            sr: ConfigRegistry._KeyItems
-            if (sr := sr_dct.get(key)) is not None:
-                if replace:
-                    sr = sr.remove(*map(type, items))
+            if identity:
+                key = lang.Identity(key)
+
+            try:
+                xv = self.dct[key]
+            except KeyError:
+                xv = _EMPTY_CONFIG_VALUES
             else:
-                sr = ConfigRegistry._KeyItems(key)
-            sr = sr.add(*items)
-            new = {key: sr}
+                if replace:
+                    xv = xv.discard(*map(type, items))
+
+            nr = xv.update(*items)
 
             return ConfigRegistry._State(
-                dct={**self.dct, **new} if not identity else self.dct,
-                id_dct={**self.id_dct, **new} if identity else self.id_dct,
+                dct={**self.dct, key: nr},
                 version=self.version + 1,
             )
 
         #
 
-        _get_cache: dict[ta.Any, tv.TypedValues[Config]] = dc.field(default_factory=dict)
+        _get_merged_cache: dict[ta.Any, ConfigValues] = dc.field(default_factory=dict)
 
         def get(
                 self,
                 key: ta.Any = None,
                 *,
                 identity: bool | None = None,
-        ) -> tv.TypedValues[Config]:
+        ) -> ConfigValues:
             if key is None:
                 check.state(identity is not True)
                 identity = False
 
             if identity is None:
                 try:
-                    return self._get_cache[key]
+                    return self._get_merged_cache[key]
                 except KeyError:
                     pass
 
-                ret = self._get_cache[key] = tv.TypedValues(  # noqa
-                    *self.get(key, identity=True),
-                    *self.get(key, identity=False),
-                )
-                return ret
+                if (idc := self.get(key, identity=True)):
+                    ret = self._get_merged_cache[key] = ConfigValues(
+                        *self.get(key, identity=False),
+                        *idc,
+                        override=True,
+                    )
+                    return ret
 
-            dct: ta.Any = self.dct if not identity else self.id_dct
+            if identity:
+                key = lang.Identity(key)
+
             try:
-                lst = dct[key].items
+                return self.dct[key]
             except KeyError:
                 return _EMPTY_CONFIG_VALUES
-            return tv.TypedValues(*lst)
 
     def is_sealed(self) -> bool:
         if self._sealed:
@@ -254,5 +210,5 @@ class ConfigRegistry(Configs):
             key: ta.Any = None,
             *,
             identity: bool | None = None,
-    ) -> tv.TypedValues[Config]:
+    ) -> ConfigValues:
         return self._state.get(key, identity=identity)

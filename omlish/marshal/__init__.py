@@ -19,6 +19,8 @@ with _lang.auto_proxy_init(globals()):
 
     from .api.configs import (  # noqa
         Config,
+        ConfigValues,
+
         Configs,
 
         ConfigRegistrySealedError,
