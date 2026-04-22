@@ -75,7 +75,7 @@ markupsafe==3.0.3
 redis==7.4.0
 
 asgiref==3.11.1
-uvicorn==0.44.0
+uvicorn==0.45.0
 
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.92
-types-boto3>=1.42.92
+boto3>=1.42.93
+types-boto3>=1.42.93
 botocore-stubs>=1.42.41
 
 antlr4-python3-runtime==4.13.2
