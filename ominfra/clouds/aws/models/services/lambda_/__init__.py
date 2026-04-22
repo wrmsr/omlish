@@ -194,6 +194,7 @@ class Runtime(_enum.Enum):
     PYTHON3_14 = 'python3.14'
     JAVA25 = 'java25'
     DOTNET10 = 'dotnet10'
+    RUBY4_0 = 'ruby4.0'
 
 
 RuntimeVersionArn = _ta.NewType('RuntimeVersionArn', str)

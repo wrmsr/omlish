@@ -3852,6 +3852,12 @@ class OperatorResponse(
         shape_name='String',
     ))
 
+    hidden_by_default: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='HiddenByDefault',
+        serialization_name='hiddenByDefault',
+        shape_name='Boolean',
+    ))
+
 
 OwnerStringList: _ta.TypeAlias = _ta.Sequence[str]
 
@@ -6383,6 +6389,11 @@ class DescribeInstancesRequest(
         shape_name='InstanceIdStringList',
     ))
 
+    include_managed_resources: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='IncludeManagedResources',
+        shape_name='Boolean',
+    ))
+
     dry_run: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DryRun',
         serialization_name='dryRun',
@@ -6496,6 +6507,11 @@ class DescribeNetworkInterfacesRequest(
     max_results: DescribeNetworkInterfacesMaxResults | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MaxResults',
         shape_name='DescribeNetworkInterfacesMaxResults',
+    ))
+
+    include_managed_resources: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='IncludeManagedResources',
+        shape_name='Boolean',
     ))
 
     dry_run: bool | None = _dc.field(default=None, metadata=_base.field_metadata(

@@ -5091,31 +5091,36 @@ def _process_dataclass__ad278adb314f3f74b95f1b0515ed1bb994d5624e():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('instance_ids', 'dry_run', 'filters', 'next_token', 'max_results')), EqPlan(fields"
-        "=('instance_ids', 'dry_run', 'filters', 'next_token', 'max_results')), FrozenPlan(fields=('__shape__', 'instan"
-        "ce_ids', 'dry_run', 'filters', 'next_token', 'max_results'), allow_dynamic_dunder_attrs=False), HashPlan(actio"
-        "n='add', fields=('instance_ids', 'dry_run', 'filters', 'next_token', 'max_results'), cache=False), InitPlan(fi"
-        "elds=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='instance_ids', annotation=OpRef(name='init.fields.1.annotation'), default=OpRe"
-        "f(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
-        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fi"
-        "elds.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='filters"
-        "', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='next_token', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='"
-        "init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='max_results', annotation=OpRef(name='init.fields"
-        ".5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
-        "), kw_only_params=('instance_ids', 'dry_run', 'filters', 'next_token', 'max_results'), frozen=True, slots=Fals"
-        "e, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='instance_ids', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='dry_run', kw_only=True, fn=None), ReprPlan.Field(name='filters', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='next_token', kw_only=True, fn=None), ReprPlan.Field(name='max_res"
-        "ults', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('instance_ids', 'include_managed_resources', 'dry_run', 'filters', 'next_token', '"
+        "max_results')), EqPlan(fields=('instance_ids', 'include_managed_resources', 'dry_run', 'filters', 'next_token'"
+        ", 'max_results')), FrozenPlan(fields=('__shape__', 'instance_ids', 'include_managed_resources', 'dry_run', 'fi"
+        "lters', 'next_token', 'max_results'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('insta"
+        "nce_ids', 'include_managed_resources', 'dry_run', 'filters', 'next_token', 'max_results'), cache=False), InitP"
+        "lan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, "
+        "default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='instance_ids', annotation=OpRef(name='init.fields.1.annotation'), defaul"
+        "t=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='include_managed_resources', annota"
+        "tion=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='dry_run', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields."
+        "3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='filters', annotation=OpRef(name='init.fields.4.annotation'),"
+        " default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_token', annotation=OpR"
+        "ef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='max_results', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.de"
+        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('instance_ids', 'include_managed_r"
+        "esources', 'dry_run', 'filters', 'next_token', 'max_results'), frozen=True, slots=False, post_init_params=None"
+        ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='instance_ids', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='include_managed_resources', kw_only=True, fn=None), ReprPlan.Field(name='dry_run', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='filters', kw_only=True, fn=None), ReprPlan.Field(name='next_token', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='max_results', kw_only=True, fn=None)), id=False, terse=False, defaul"
+        "t_fn=None)))"
     ),
-    plan_repr_sha1='19c58eb9baa56cb23a597ed75f00bf082871babf',
+    plan_repr_sha1='7ece1564c33e78923db4b6ae2f12076646602611',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -5127,12 +5132,14 @@ def _process_dataclass__ad278adb314f3f74b95f1b0515ed1bb994d5624e():
         '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'DescribeInstancesRequest'),
     ),
 )
-def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
+def _process_dataclass__7ece1564c33e78923db4b6ae2f12076646602611():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5146,6 +5153,8 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5165,6 +5174,7 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 instance_ids=self.instance_ids,
+                include_managed_resources=self.include_managed_resources,
                 dry_run=self.dry_run,
                 filters=self.filters,
                 next_token=self.next_token,
@@ -5183,6 +5193,7 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
                 return NotImplemented
             return (
                 self.instance_ids == other.instance_ids and
+                self.include_managed_resources == other.include_managed_resources and
                 self.dry_run == other.dry_run and
                 self.filters == other.filters and
                 self.next_token == other.next_token and
@@ -5197,6 +5208,7 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
         __dataclass___setattr_frozen_fields = {
             '__shape__',
             'instance_ids',
+            'include_managed_resources',
             'dry_run',
             'filters',
             'next_token',
@@ -5219,6 +5231,7 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
         __dataclass___delattr_frozen_fields = {
             '__shape__',
             'instance_ids',
+            'include_managed_resources',
             'dry_run',
             'filters',
             'next_token',
@@ -5241,6 +5254,7 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
         def __hash__(self):
             return hash((
                 self.instance_ids,
+                self.include_managed_resources,
                 self.dry_run,
                 self.filters,
                 self.next_token,
@@ -5254,12 +5268,14 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
             self,
             *,
             instance_ids: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            dry_run: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            filters: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            next_token: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            max_results: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            include_managed_resources: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            dry_run: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            filters: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            next_token: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            max_results: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'instance_ids', instance_ids)
+            __dataclass__object_setattr(self, 'include_managed_resources', include_managed_resources)
             __dataclass__object_setattr(self, 'dry_run', dry_run)
             __dataclass__object_setattr(self, 'filters', filters)
             __dataclass__object_setattr(self, 'next_token', next_token)
@@ -5274,6 +5290,7 @@ def _process_dataclass__19c58eb9baa56cb23a597ed75f00bf082871babf():
         def __repr__(self):
             parts = []
             parts.append(f"instance_ids={self.instance_ids!r}")
+            parts.append(f"include_managed_resources={self.include_managed_resources!r}")
             parts.append(f"dry_run={self.dry_run!r}")
             parts.append(f"filters={self.filters!r}")
             parts.append(f"next_token={self.next_token!r}")
@@ -6157,32 +6174,36 @@ def _process_dataclass__4b49492b20c45bb1a0965b2b0e07bf000df295d7():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('next_token', 'max_results', 'dry_run', 'network_interface_ids', 'filters')), EqPl"
-        "an(fields=('next_token', 'max_results', 'dry_run', 'network_interface_ids', 'filters')), FrozenPlan(fields=('_"
-        "_shape__', 'next_token', 'max_results', 'dry_run', 'network_interface_ids', 'filters'), allow_dynamic_dunder_a"
-        "ttrs=False), HashPlan(action='add', fields=('next_token', 'max_results', 'dry_run', 'network_interface_ids', '"
-        "filters'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields."
-        "0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR,"
-        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_token', annotation=OpRef(name='init.f"
-        "ields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='max_re"
-        "sults', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name"
-        "='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='network_interface_ids', annotation=OpRef(name="
-        "'init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'filters', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), def"
-        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
-        "_type=None)), self_param='self', std_params=(), kw_only_params=('next_token', 'max_results', 'dry_run', 'netwo"
-        "rk_interface_ids', 'filters'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()),"
-        " ReprPlan(fields=(ReprPlan.Field(name='next_token', kw_only=True, fn=None), ReprPlan.Field(name='max_results',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='dry_run', kw_only=True, fn=None), ReprPlan.Field(name='network_i"
-        "nterface_ids', kw_only=True, fn=None), ReprPlan.Field(name='filters', kw_only=True, fn=None)), id=False, terse"
-        "=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('next_token', 'max_results', 'include_managed_resources', 'dry_run', 'network_inte"
+        "rface_ids', 'filters')), EqPlan(fields=('next_token', 'max_results', 'include_managed_resources', 'dry_run', '"
+        "network_interface_ids', 'filters')), FrozenPlan(fields=('__shape__', 'next_token', 'max_results', 'include_man"
+        "aged_resources', 'dry_run', 'network_interface_ids', 'filters'), allow_dynamic_dunder_attrs=False), HashPlan(a"
+        "ction='add', fields=('next_token', 'max_results', 'include_managed_resources', 'dry_run', 'network_interface_i"
+        "ds', 'filters'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.f"
+        "ields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLAS"
+        "S_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_token', annotation=OpRef(name='"
+        "init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "max_results', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None), InitPlan.Field(name='include_managed_resources', annotation=OpRef(name='init.fields.3.annotati"
+        "on'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='dry_run', annotation=O"
+        "pRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='network_interface_ids', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init"
+        ".fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='filters', annotation=OpRef(name='init.fields.6.annot"
+        "ation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_on"
+        "ly_params=('next_token', 'max_results', 'include_managed_resources', 'dry_run', 'network_interface_ids', 'filt"
+        "ers'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPl"
+        "an.Field(name='next_token', kw_only=True, fn=None), ReprPlan.Field(name='max_results', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='include_managed_resources', kw_only=True, fn=None), ReprPlan.Field(name='dry_run', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='network_interface_ids', kw_only=True, fn=None), ReprPlan.Field(name='f"
+        "ilters', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b91d9c5662c7bfe568a38413ef5d6e2c620d11b9',
+    plan_repr_sha1='9016048eb034fa7544269cccacb875aa297d8d04',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -6194,12 +6215,14 @@ def _process_dataclass__4b49492b20c45bb1a0965b2b0e07bf000df295d7():
         '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'DescribeNetworkInterfacesRequest'),
     ),
 )
-def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
+def _process_dataclass__9016048eb034fa7544269cccacb875aa297d8d04():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -6213,6 +6236,8 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -6233,6 +6258,7 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
             return __dataclass__cls(  # noqa
                 next_token=self.next_token,
                 max_results=self.max_results,
+                include_managed_resources=self.include_managed_resources,
                 dry_run=self.dry_run,
                 network_interface_ids=self.network_interface_ids,
                 filters=self.filters,
@@ -6251,6 +6277,7 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
             return (
                 self.next_token == other.next_token and
                 self.max_results == other.max_results and
+                self.include_managed_resources == other.include_managed_resources and
                 self.dry_run == other.dry_run and
                 self.network_interface_ids == other.network_interface_ids and
                 self.filters == other.filters
@@ -6265,6 +6292,7 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
             '__shape__',
             'next_token',
             'max_results',
+            'include_managed_resources',
             'dry_run',
             'network_interface_ids',
             'filters',
@@ -6287,6 +6315,7 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
             '__shape__',
             'next_token',
             'max_results',
+            'include_managed_resources',
             'dry_run',
             'network_interface_ids',
             'filters',
@@ -6309,6 +6338,7 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
             return hash((
                 self.next_token,
                 self.max_results,
+                self.include_managed_resources,
                 self.dry_run,
                 self.network_interface_ids,
                 self.filters,
@@ -6322,12 +6352,14 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
             *,
             next_token: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             max_results: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            dry_run: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            network_interface_ids: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            filters: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            include_managed_resources: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            dry_run: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            network_interface_ids: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            filters: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'next_token', next_token)
             __dataclass__object_setattr(self, 'max_results', max_results)
+            __dataclass__object_setattr(self, 'include_managed_resources', include_managed_resources)
             __dataclass__object_setattr(self, 'dry_run', dry_run)
             __dataclass__object_setattr(self, 'network_interface_ids', network_interface_ids)
             __dataclass__object_setattr(self, 'filters', filters)
@@ -6342,6 +6374,7 @@ def _process_dataclass__b91d9c5662c7bfe568a38413ef5d6e2c620d11b9():
             parts = []
             parts.append(f"next_token={self.next_token!r}")
             parts.append(f"max_results={self.max_results!r}")
+            parts.append(f"include_managed_resources={self.include_managed_resources!r}")
             parts.append(f"dry_run={self.dry_run!r}")
             parts.append(f"network_interface_ids={self.network_interface_ids!r}")
             parts.append(f"filters={self.filters!r}")
@@ -24134,32 +24167,38 @@ def _process_dataclass__27b3607ff46bc04e13f6289e0a67ee2b47296301():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('managed', 'principal')), EqPlan(fields=('managed', 'principal')), FrozenPlan(fiel"
-        "ds=('__shape__', 'managed', 'principal'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('m"
-        "anaged', 'principal'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='"
-        "init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='managed', annotation=OpRef(nam"
-        "e='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='principal', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None)), self_param='self', std_params=(), kw_only_params=('managed', 'principal'), frozen=True, slot"
-        "s=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='managed',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='principal', kw_only=True, fn=None)), id=False, terse=False, defa"
-        "ult_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('managed', 'principal', 'hidden_by_default')), EqPlan(fields=('managed', 'principa"
+        "l', 'hidden_by_default')), FrozenPlan(fields=('__shape__', 'managed', 'principal', 'hidden_by_default'), allow"
+        "_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('managed', 'principal', 'hidden_by_default'), cac"
+        "he=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation')"
+        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='managed', annotation=OpRef(name='init.fields.1.annotatio"
+        "n'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='principal', annotation="
+        "OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='hidden_by_default', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fi"
+        "elds.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('managed', 'principal', '"
+        "hidden_by_default'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan("
+        "fields=(ReprPlan.Field(name='managed', kw_only=True, fn=None), ReprPlan.Field(name='principal', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='hidden_by_default', kw_only=True, fn=None)), id=False, terse=False, default_fn="
+        "None)))"
     ),
-    plan_repr_sha1='3db983948f839eb4e1e64db71fc93230245732f1',
+    plan_repr_sha1='f7d72f0eac572cf8222e673a34f756995cca2de1',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'OperatorResponse'),
     ),
 )
-def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
+def _process_dataclass__f7d72f0eac572cf8222e673a34f756995cca2de1():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -24167,6 +24206,8 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -24187,6 +24228,7 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
             return __dataclass__cls(  # noqa
                 managed=self.managed,
                 principal=self.principal,
+                hidden_by_default=self.hidden_by_default,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -24201,7 +24243,8 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
                 return NotImplemented
             return (
                 self.managed == other.managed and
-                self.principal == other.principal
+                self.principal == other.principal and
+                self.hidden_by_default == other.hidden_by_default
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -24213,6 +24256,7 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
             '__shape__',
             'managed',
             'principal',
+            'hidden_by_default',
         }
 
         def __setattr__(self, name, value):
@@ -24232,6 +24276,7 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
             '__shape__',
             'managed',
             'principal',
+            'hidden_by_default',
         }
 
         def __delattr__(self, name):
@@ -24251,6 +24296,7 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
             return hash((
                 self.managed,
                 self.principal,
+                self.hidden_by_default,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -24261,9 +24307,11 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
             *,
             managed: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             principal: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            hidden_by_default: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'managed', managed)
             __dataclass__object_setattr(self, 'principal', principal)
+            __dataclass__object_setattr(self, 'hidden_by_default', hidden_by_default)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -24275,6 +24323,7 @@ def _process_dataclass__3db983948f839eb4e1e64db71fc93230245732f1():
             parts = []
             parts.append(f"managed={self.managed!r}")
             parts.append(f"principal={self.principal!r}")
+            parts.append(f"hidden_by_default={self.hidden_by_default!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
