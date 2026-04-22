@@ -21,14 +21,14 @@ class StandardContent(MetadataContainerDataclass[ContentMetadatas], ContentBase,
     def with_metadata(
             self,
             *add: ContentMetadatas,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
             no_original: bool = False,
     ) -> ta.Self:
         return self._with_metadata(
             *add,
             discard=discard,
-            override=override,
+            mode=mode,
             _replace=type(self).replace if not no_original else None,
         )
 

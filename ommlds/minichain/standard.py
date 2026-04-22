@@ -92,21 +92,3 @@ class SecretConfig(Config, lang.Abstract):
 @dc.extra_class_params(terse_repr=True)
 class ApiKey(SecretConfig, tv.UniqueTypedValue):
     pass
-
-
-##
-
-
-class DefaultOptions(Config, tv.ScalarTypedValue[ta.Sequence[OptionT]]):
-    @dc.init
-    def _check_arg(self) -> None:
-        for e in check.isinstance(self.v, ta.Sequence):
-            check.isinstance(e, Option)
-
-    @classmethod
-    def pop(cls, consumer: tv.TypedValuesConsumer) -> tv.TypedValues[OptionT]:
-        return tv.TypedValues(*[
-            o
-            for dro in consumer.pop(cls, [])
-            for o in dro.v
-        ])

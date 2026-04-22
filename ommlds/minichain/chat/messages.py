@@ -36,14 +36,14 @@ class Message(MetadataContainerDataclass[MessageMetadatas], lang.Abstract, lang.
     def with_metadata(
             self,
             *add: MessageMetadatas,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
             no_original: bool = False,
     ) -> ta.Self:
         return self._with_metadata(
             *add,
             discard=discard,
-            override=override,
+            mode=mode,
             _replace=type(self).replace if not no_original else None,
         )
 
@@ -75,7 +75,7 @@ def with_message_original(m: MessageT, *, original: Message | ta.Sequence[Messag
     return m._with_metadata(  # noqa
         MessageOriginal(original),
         discard=[MessageOriginal],
-        override=True,
+        mode='override',
     )
 
 

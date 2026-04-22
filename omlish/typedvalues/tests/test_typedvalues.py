@@ -31,18 +31,8 @@ class ChatOption(TypedValue, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class ToolSpec(lang.Final):
-    name: str
-    params: ta.Sequence[ta.Any]
-
-    _: dc.KW_ONLY
-
-    desc: str
-
-
-@dc.dataclass(frozen=True)
 class Tool(ChatOption, lang.Final):
-    spec: ToolSpec
+    name: str
 
 
 #
@@ -72,29 +62,26 @@ JSON_RESPONSE_FORMAT = JsonResponseFormat()
 
 
 def test_typed_values():
-    foo_tool = ToolSpec('foo', [], desc='foo')
-    bar_tool = ToolSpec('bar', [], desc='bar')
-
     assert list(TypedValues[GenerativeOption | ChatOption](
         TopK(5),
         TEXT_RESPONSE_FORMAT,
-        Tool(foo_tool),
+        Tool('foo'),
     )) == [
         TopK(5),
         TEXT_RESPONSE_FORMAT,
-        Tool(foo_tool),
+        Tool('foo'),
     ]
 
     assert list(TypedValues[GenerativeOption | ChatOption](
         TopK(5),
-        Tool(bar_tool),
+        Tool('bar'),
         TEXT_RESPONSE_FORMAT,
-        Tool(foo_tool),
+        Tool('foo'),
     )) == [
         TopK(5),
-        Tool(bar_tool),
+        Tool('bar'),
         TEXT_RESPONSE_FORMAT,
-        Tool(foo_tool),
+        Tool('foo'),
     ]
 
     with pytest.raises(DuplicateUniqueTypedValueError) as e:
@@ -111,20 +98,20 @@ def test_typed_values():
     assert list(opts := TypedValues[GenerativeOption | ChatOption](
         TopK(5),
         TEXT_RESPONSE_FORMAT,
-        Tool(foo_tool),
+        Tool('foo'),
         JSON_RESPONSE_FORMAT,
         TopK(10),
-        Tool(bar_tool),
+        Tool('bar'),
         override=True,
     )) == [
-        Tool(foo_tool),
+        Tool('foo'),
         JSON_RESPONSE_FORMAT,
         TopK(10),
-        Tool(bar_tool),
+        Tool('bar'),
     ]
 
     assert opts[TopK] == TopK(10)
-    assert list(opts[Tool]) == [Tool(foo_tool), Tool(bar_tool)]
+    assert list(opts[Tool]) == [Tool('foo'), Tool('bar')]
     assert opts[ResponseFormat] == JSON_RESPONSE_FORMAT
     assert opts[JsonResponseFormat] == JSON_RESPONSE_FORMAT
     assert opts.get_any(JsonResponseFormat) == (JSON_RESPONSE_FORMAT,)
@@ -134,7 +121,7 @@ def test_typed_values():
     assert ResponseFormat in opts.keys()  # noqa
     assert JsonResponseFormat not in opts.keys()  # noqa
 
-    assert list(TypedValues(*opts.without(ResponseFormat))) == [Tool(foo_tool), TopK(10), Tool(bar_tool)]
+    assert list(TypedValues(*opts.without(ResponseFormat))) == [Tool('foo'), TopK(10), Tool('bar')]
     assert list(TypedValues(*opts.without(Tool))) == [JSON_RESPONSE_FORMAT, TopK(10)]
     assert list(TypedValues(*opts.update(discard=[Tool]))) == [JSON_RESPONSE_FORMAT, TopK(10)]
 
@@ -192,3 +179,13 @@ def test_a_ton():
     tvc = TypedValues(*tv_lst, override=True)
     assert len(tvc) == 1001
     assert tvc[UniqueFoo] == tv_cls_lst[1497](1497)
+
+
+def test_update():
+    assert list(TypedValues(Tool('foo')).update(Tool('bar'))) == [Tool('foo'), Tool('bar')]
+    assert list(TypedValues(Tool('foo')).update(Tool('bar'), mode='prepend')) == [Tool('bar'), Tool('foo')]
+    with pytest.raises(DuplicateUniqueTypedValueError):
+        TypedValues(Tool('foo'), TEXT_RESPONSE_FORMAT).update(JSON_RESPONSE_FORMAT)  # noqa
+    assert list(TypedValues(Tool('foo'), TEXT_RESPONSE_FORMAT).update(JSON_RESPONSE_FORMAT, mode='override')) == [Tool('foo'), JSON_RESPONSE_FORMAT]  # noqa
+    assert list(TypedValues(Tool('foo'), TEXT_RESPONSE_FORMAT).update(JSON_RESPONSE_FORMAT, mode='default')) == [Tool('foo'), TEXT_RESPONSE_FORMAT]  # noqa
+    assert list(TypedValues[ChatOption](Tool('foo')).update(JSON_RESPONSE_FORMAT, mode='default')) == [JSON_RESPONSE_FORMAT, Tool('foo')]  # noqa

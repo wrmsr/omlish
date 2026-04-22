@@ -27,7 +27,6 @@ from ....models.configs import ModelPath
 from ....models.configs import ModelRepo
 from ....models.configs import ModelSpecifier
 from ....resources import UseResources
-from ....standard import DefaultOptions
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 
@@ -71,7 +70,6 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
 
         with tv.consume(*configs) as cc:
             self._model = cc.pop(self.DEFAULT_MODEL)
-            self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',
@@ -146,7 +144,6 @@ class MlxChatChoicesService(BaseMlxChatChoicesService):
         prompt = self._build_prompt(request.v)
 
         with tv.consume(
-                *self._default_options,
                 *request.options,
                 override=True,
         ) as oc:
@@ -176,7 +173,6 @@ class MlxChatChoicesStreamService(BaseMlxChatChoicesService):
 
         with tv.consume(*configs) as cc:
             self._model = cc.pop(MlxChatChoicesService.DEFAULT_MODEL)
-            self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
     READ_CHUNK_SIZE = 64 * 1024
 
@@ -191,7 +187,6 @@ class MlxChatChoicesStreamService(BaseMlxChatChoicesService):
         prompt = self._build_prompt(request.v)
 
         with tv.consume(
-                *self._default_options,
                 *request.options,
                 override=True,
         ) as oc:

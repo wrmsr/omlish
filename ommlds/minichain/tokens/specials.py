@@ -33,8 +33,8 @@ class SpecialTokenNamespace(metaclass=SpecialTokenNamespaceMeta):
 
 class StandardSpecialToken(
     SpecialToken,
-    lang.Sealed,
     lang.Abstract,
+    lang.Sealed,
 ):
     # Opting not to enforce for now.
     # def __new__(cls, *args, **kwargs):

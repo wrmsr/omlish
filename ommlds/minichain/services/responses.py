@@ -92,13 +92,13 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     def with_outputs(
             self,
             *add: OutputT_contra,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
         new = (old := self.outputs).update(
             *add,
             discard=discard,
-            override=override,
+            mode=mode,
         )
 
         if new is old:
@@ -119,10 +119,14 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     def with_metadata(
             self,
             *add: ResponseMetadatas,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
-        return confer_orig_class(self, super().with_metadata(*add, discard=discard, override=override))
+        return confer_orig_class(self, super().with_metadata(
+            *add,
+            discard=discard,
+            mode=mode,
+        ))
 
     #
 

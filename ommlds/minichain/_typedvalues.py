@@ -67,7 +67,7 @@ def _tv_field_metadata(
     else:
         raise TypeError(tvc_rty)
 
-    tvs_rty = rfl.type_(tv.TypedValues[tvc])
+    tvs_rty = rfl.type_(tv.TypedValues[tvc])  # noqa
 
     return {
         **dc.extra_field_params(

@@ -38,8 +38,8 @@ class MetadataContainer(
     def with_metadata(
             self,
             *add: MetadataT,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
         raise NotImplementedError
 
@@ -72,14 +72,14 @@ class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
     def _with_metadata(
             self,
             *add: MetadataT,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
             _replace: ta.Callable[..., ta.Any] | None = None,
     ) -> ta.Self:
         new = (old := self.metadata).update(
             *add,
             discard=discard,
-            override=override,
+            mode=mode,
         )
 
         if new is old:
@@ -92,13 +92,13 @@ class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
     def with_metadata(
             self,
             *add: MetadataT,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
         return self._with_metadata(
             *add,
             discard=discard,
-            override=override,
+            mode=mode,
         )
 
 

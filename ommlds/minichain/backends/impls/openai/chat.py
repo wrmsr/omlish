@@ -25,7 +25,6 @@ from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
 from ....models.configs import ModelName
 from ....standard import ApiKey
-from ....standard import DefaultOptions
 from .format import OpenaiChatRequestHandler
 from .format import build_mc_choices_response
 from .names import CHAT_MODEL_NAMES
@@ -44,7 +43,7 @@ class OpenaiChatChoicesService:
 
     def __init__(
             self,
-            *configs: ApiKey | ModelName | DefaultOptions,
+            *configs: ApiKey | ModelName,
             http_client: http.AsyncHttpClient | None = None,
     ) -> None:
         super().__init__()
@@ -54,7 +53,6 @@ class OpenaiChatChoicesService:
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
-            self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         # check.isinstance(request, ChatRequest)
@@ -62,7 +60,6 @@ class OpenaiChatChoicesService:
         rh = OpenaiChatRequestHandler(
             request.v,
             *tv.TypedValues(
-                *self._default_options,
                 *request.options,
                 override=True,
             ),

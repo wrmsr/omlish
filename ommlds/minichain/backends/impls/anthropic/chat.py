@@ -90,7 +90,7 @@ class AnthropicChatChoicesService:
 
         tools: list[pt.ToolSpec] = []
         with tv.TypedValues(
-            *self.DEFAULT_OPTIONS,
+                *self.DEFAULT_OPTIONS,
                 *request.options,
                 override=True,
         ).consume() as oc:

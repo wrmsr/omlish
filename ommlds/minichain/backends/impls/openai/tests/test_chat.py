@@ -19,11 +19,11 @@ from .....chat.tools.types import Tool
 from .....content.text import TextContent
 from .....llms.types import MaxCompletionTokens
 from .....standard import ApiKey
-from .....standard import DefaultOptions
 from .....tools.types import ToolDtype
 from .....tools.types import ToolParam
 from .....tools.types import ToolSpec
 from .....tools.types import ToolUseResult
+from .....wrappers.updateoptions import UpdateOptionsService
 from ..chat import OpenaiChatChoicesService
 
 
@@ -176,14 +176,15 @@ def test_openai_chat_promote(harness):
 
 
 @pytest.mark.online
-def test_default_options(harness):
-    llm: ChatChoicesService = ta.cast(ChatChoicesService, OpenaiChatChoicesService(
-        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
-        DefaultOptions([
-            MaxCompletionTokens(100),
-        ]),
-        http_client=http.SyncAsyncHttpClient(http.client()),
-    ))
+def test_add_options(harness):
+    llm: ta.Any = UpdateOptionsService(
+        OpenaiChatChoicesService(
+            ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),  # noqa
+            http_client=http.SyncAsyncHttpClient(http.client()),
+        ),
+        MaxCompletionTokens(100),
+        mode='default',
+    )
 
     assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v
     assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')], [MaxCompletionTokens(101)]))).v

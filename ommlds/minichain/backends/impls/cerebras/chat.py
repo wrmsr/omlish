@@ -14,7 +14,6 @@ from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....standard import ApiKey
-from ....standard import DefaultOptions
 from .names import MODEL_NAMES
 from .protocol import build_cer_request_messages
 from .protocol import build_cer_request_tool
@@ -34,7 +33,7 @@ class CerebrasChatChoicesService:
 
     def __init__(
             self,
-            *configs: ApiKey | ModelName | DefaultOptions,
+            *configs: ApiKey | ModelName,
             http_client: http.AsyncHttpClient | None = None,
     ) -> None:
         super().__init__()
@@ -44,7 +43,6 @@ class CerebrasChatChoicesService:
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='CEREBRAS_API_KEY')
-            self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         tools: list[pt.ChatCompletionRequest.Tool] = []

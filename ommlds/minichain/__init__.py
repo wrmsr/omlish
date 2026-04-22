@@ -820,8 +820,6 @@ with _lang.auto_proxy_init(
         ApiUrl,
 
         ApiKey,
-
-        DefaultOptions,
     )
 
     from .types import (  # noqa

@@ -94,13 +94,13 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     def with_options(
             self,
             *add: OptionU,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> Request[V_co, OptionT_co | OptionU]:
         new = (old := self.options).update(
-            *add,
+            *add,  # type: ignore[arg-type]
             discard=discard,
-            override=override,
+            mode=mode,
         )
 
         if new is old:
@@ -121,10 +121,14 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     def with_metadata(
             self,
             *add: RequestMetadatas,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
-        return confer_orig_class(self, super().with_metadata(*add, discard=discard, override=override))
+        return confer_orig_class(self, super().with_metadata(
+            *add,
+            discard=discard,
+            mode=mode,
+        ))
 
     #
 

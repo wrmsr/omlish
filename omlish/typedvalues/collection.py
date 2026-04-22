@@ -194,18 +194,30 @@ class TypedValues(
 
     def update(
             self,
-            *tvs,
-            discard: ta.Iterable[type] | None = None,
-            override: bool = False,
+            *tvs: TypedValueT,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> TypedValues:
         if not tvs and not discard:
             return self
 
-        n = TypedValues(
-            *(self.discard(*discard) if discard else self._tup),
-            *tvs,
-            override=override,
-        )
+        if discard == 'all':
+            old: ta.Iterable[TypedValueT] = ()
+        else:
+            old = (self.discard(*discard) if discard else self._tup)
+
+        if mode == 'prepend' or mode == 'default':
+            n = TypedValues(
+                *tvs,
+                *old,
+                override=mode == 'default',
+            )
+        else:
+            n = TypedValues(
+                *old,
+                *tvs,
+                override=mode == 'override',
+            )
 
         if lang.seqs_identical(self._tup, n._tup):
             return self

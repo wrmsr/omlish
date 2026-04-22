@@ -46,5 +46,5 @@ def with_content_original(c: StandardContentT, *, original: Content) -> Standard
     return c._with_metadata(  # noqa
         ContentOriginal(original),
         discard=[ContentOriginal],
-        override=True,
+        mode='override',
     )
