@@ -130,7 +130,7 @@ def test_openai_tools(harness):
         chat,
         [
             # Temperature(.1),
-            MaxCompletionTokens(64),
+            MaxCompletionTokens(1024),
             Tool(tool_spec),
         ],
     )))
