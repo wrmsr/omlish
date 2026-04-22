@@ -48,6 +48,24 @@ def is_final(cls):
 ##
 
 
+def _check_sealed_mro(cls: type) -> None:
+    mro_ranks = {b: i for i, b in enumerate(cls.__mro__)}  # noqa
+
+    a_rank = mro_ranks.get(Abstract)
+    s_rank = mro_ranks.get(Sealed)
+    ps_rank = mro_ranks.get(PackageSealed)
+
+    if a_rank is not None:
+        if s_rank is not None and s_rank < a_rank:
+            raise TypeError(f'Class {cls} must not have Sealed before Abstract in MRO')
+
+        if ps_rank is not None and ps_rank < a_rank:
+            raise TypeError(f'Class {cls} must not have PackageSealed before Abstract in MRO')
+
+    if s_rank is not None and ps_rank is not None and s_rank < ps_rank:
+        raise TypeError(f'Class {cls} must not have Sealed before PackageSealed in MRO')
+
+
 class SealedError(TypeError):
     def __init__(self, _type) -> None:
         super().__init__()
@@ -67,6 +85,8 @@ class Sealed:
                 if Sealed in base.__bases__:
                     if cls.__module__ != base.__module__:
                         raise SealedError(base)
+
+        _check_sealed_mro(cls)
 
         super().__init_subclass__(**kwargs)
 
@@ -96,6 +116,8 @@ class PackageSealed:
             bsp = base.__dict__['__sealed_package__']
             if cls.__module__.split('.')[:len(bsp)] != bsp:
                 raise SealedError(base)
+
+        _check_sealed_mro(cls)
 
         super().__init_subclass__(**kwargs)
 

@@ -9,6 +9,7 @@ from ..restrict import AnySensitive
 from ..restrict import Final
 from ..restrict import FinalTypeError
 from ..restrict import NoBool
+from ..restrict import PackageSealed
 from ..restrict import Sealed
 from ..restrict import SealedError
 from ..restrict import Sensitive
@@ -152,3 +153,29 @@ def test_sensitive_register():
     assert issubclass(Foo, AnySensitive)
     assert not isinstance(Foo(), Sensitive)
     assert isinstance(Foo(), AnySensitive)
+
+
+def test_mro():
+    class Ok1(Abstract, Sealed):  # noqa
+        pass
+
+    class Ok2(Abstract, PackageSealed):  # noqa
+        pass
+
+    class Ok3(PackageSealed, Sealed):  # noqa
+        pass
+
+    class Ok4(Abstract, PackageSealed, Sealed):  # noqa
+        pass
+
+    with pytest.raises(TypeError):  # noqa
+        class NotOk1(Sealed, Abstract):  # noqa
+            pass
+
+    with pytest.raises(TypeError):  # noqa
+        class NotOk2(PackageSealed, Abstract):  # noqa
+            pass
+
+    with pytest.raises(TypeError):  # noqa
+        class NotOk3(Sealed, PackageSealed):  # noqa
+            pass

@@ -23,7 +23,7 @@ def _make_not_instantiable():
 
     return {
         '__new__': __new__,
-        '__initT__': __init__,
+        '__init__': __init__,
     }
 
 
