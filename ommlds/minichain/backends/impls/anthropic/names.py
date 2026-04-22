@@ -6,17 +6,14 @@ curl -s https://api.anthropic.com/v1/models -H "x-api-key: $ANTHROPIC_API_KEY" -
 
 ====
 
-claude-3-haiku-20240307
 claude-haiku-4-5-20251001
-claude-opus-4-1-20250805
-claude-opus-4-20250514
-claude-opus-4-5-20251101
 claude-opus-4-6
-claude-sonnet-4-20250514
-claude-sonnet-4-5-20250929
+claude-opus-4-7
 claude-sonnet-4-6
 
 """  # noqa
+from omlish import lang
+
 from ....models.names import ModelNameCollection
 from ...strings.manifests import BackendStringsManifest
 
@@ -27,16 +24,18 @@ from ...strings.manifests import BackendStringsManifest
 MODEL_NAMES = ModelNameCollection(
     default='claude',
     aliases={
-        'claude-opus-4-6': None,
-        'claude-opus': 'claude-opus-4-6',
-
-        'claude-sonnet-4-5-20250929': None,
-        'claude-sonnet-4-5': 'claude-sonnet-4-5-20250929',
-        'claude-sonnet': 'claude-sonnet-4-5',
-
-        'claude-haiku-4-5-20251001': None,
-        'claude-haiku-4-5': 'claude-haiku-4-5-20251001',
-        'claude-haiku': 'claude-haiku-4-5',
+        **dict(lang.flatten(
+            [
+                (mn := f'claude-{tier}-{ver}', None),
+                (f'claude-{tier}', mn),
+                (tier, mn),
+            ]
+            for tier, ver in [
+                ('opus', '4-7'),
+                ('sonnet', '4-6'),
+                ('haiku', '4-5'),
+            ]
+        )),
 
         'claude': 'claude-haiku',
     },
