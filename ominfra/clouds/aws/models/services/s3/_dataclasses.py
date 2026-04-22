@@ -933,178 +933,177 @@ def _process_dataclass__fe6ee985e5454d23ff07c1fb86524a86d9239cf5():
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('body', 'delete_marker', 'accept_ranges', 'expiration', 'restore', 'last_modified'"
-        ", 'content_length', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'chec"
-        "ksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksu"
-        "m_x_x_h_a_s_h128', 'checksum_type', 'missing_meta', 'version_id', 'cache_control', 'content_disposition', 'con"
-        "tent_encoding', 'content_language', 'content_range', 'content_type', 'expires', 'website_redirect_location', '"
-        "server_side_encryption', 'metadata', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'buck"
-        "et_key_enabled', 'storage_class', 'request_charged', 'replication_status', 'parts_count', 'tag_count', 'object"
-        "_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_status')), EqPlan(fields=('body', 'delet"
-        "e_marker', 'accept_ranges', 'expiration', 'restore', 'last_modified', 'content_length', 'etag', 'checksum_crc3"
-        "2', 'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checks"
-        "um_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'missi"
-        "ng_meta', 'version_id', 'cache_control', 'content_disposition', 'content_encoding', 'content_language', 'conte"
-        "nt_range', 'content_type', 'expires', 'website_redirect_location', 'server_side_encryption', 'metadata', 'sse_"
-        "customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enabled', 'storage_class', 'request"
-        "_charged', 'replication_status', 'parts_count', 'tag_count', 'object_lock_mode', 'object_lock_retain_until_dat"
-        "e', 'object_lock_legal_hold_status')), FrozenPlan(fields=('__shape__', 'body', 'delete_marker', 'accept_ranges"
-        "', 'expiration', 'restore', 'last_modified', 'content_length', 'etag', 'checksum_crc32', 'checksum_crc32c', 'c"
-        "hecksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_"
-        "a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'missing_meta', 'version_id', '"
-        "cache_control', 'content_disposition', 'content_encoding', 'content_language', 'content_range', 'content_type'"
-        ", 'expires', 'website_redirect_location', 'server_side_encryption', 'metadata', 'sse_customer_algorithm', 'sse"
-        "_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enabled', 'storage_class', 'request_charged', 'replication_s"
-        "tatus', 'parts_count', 'tag_count', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_ho"
-        "ld_status'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('body', 'delete_marker', 'accep"
-        "t_ranges', 'expiration', 'restore', 'last_modified', 'content_length', 'etag', 'checksum_crc32', 'checksum_crc"
-        "32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksu"
-        "m_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'missing_meta', 'versio"
-        "n_id', 'cache_control', 'content_disposition', 'content_encoding', 'content_language', 'content_range', 'conte"
-        "nt_type', 'expires', 'website_redirect_location', 'server_side_encryption', 'metadata', 'sse_customer_algorith"
-        "m', 'sse_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enabled', 'storage_class', 'request_charged', 'repli"
-        "cation_status', 'parts_count', 'tag_count', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_"
-        "legal_hold_status'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='in"
-        "it.fields.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType"
-        ".CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='body', annotation=OpRef(name='i"
-        "nit.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'delete_marker', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='accept_ranges', annotation=OpRef(name='init.fields.03.annotation'), "
-        "default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='expiration', annotation=OpR"
-        "ef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, init"
+        ", 'content_length', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'check"
+        "sum_sha256', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128',"
+        " 'checksum_type', 'missing_meta', 'version_id', 'cache_control', 'content_disposition', 'content_encoding', 'c"
+        "ontent_language', 'content_range', 'content_type', 'expires', 'website_redirect_location', 'server_side_encryp"
+        "tion', 'metadata', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enabled', '"
+        "storage_class', 'request_charged', 'replication_status', 'parts_count', 'tag_count', 'object_lock_mode', 'obje"
+        "ct_lock_retain_until_date', 'object_lock_legal_hold_status')), EqPlan(fields=('body', 'delete_marker', 'accept"
+        "_ranges', 'expiration', 'restore', 'last_modified', 'content_length', 'etag', 'checksum_crc32', 'checksum_crc3"
+        "2c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha512', 'checksum_md5', 'checksum_xx"
+        "hash64', 'checksum_xxhash3', 'checksum_xxhash128', 'checksum_type', 'missing_meta', 'version_id', 'cache_contr"
+        "ol', 'content_disposition', 'content_encoding', 'content_language', 'content_range', 'content_type', 'expires'"
+        ", 'website_redirect_location', 'server_side_encryption', 'metadata', 'sse_customer_algorithm', 'sse_customer_k"
+        "ey_md5', 'sse_kms_key_id', 'bucket_key_enabled', 'storage_class', 'request_charged', 'replication_status', 'pa"
+        "rts_count', 'tag_count', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_status')"
+        "), FrozenPlan(fields=('__shape__', 'body', 'delete_marker', 'accept_ranges', 'expiration', 'restore', 'last_mo"
+        "dified', 'content_length', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1',"
+        " 'checksum_sha256', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxha"
+        "sh128', 'checksum_type', 'missing_meta', 'version_id', 'cache_control', 'content_disposition', 'content_encodi"
+        "ng', 'content_language', 'content_range', 'content_type', 'expires', 'website_redirect_location', 'server_side"
+        "_encryption', 'metadata', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enab"
+        "led', 'storage_class', 'request_charged', 'replication_status', 'parts_count', 'tag_count', 'object_lock_mode'"
+        ", 'object_lock_retain_until_date', 'object_lock_legal_hold_status'), allow_dynamic_dunder_attrs=False), HashPl"
+        "an(action='add', fields=('body', 'delete_marker', 'accept_ranges', 'expiration', 'restore', 'last_modified', '"
+        "content_length', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum"
+        "_sha256', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'c"
+        "hecksum_type', 'missing_meta', 'version_id', 'cache_control', 'content_disposition', 'content_encoding', 'cont"
+        "ent_language', 'content_range', 'content_type', 'expires', 'website_redirect_location', 'server_side_encryptio"
+        "n', 'metadata', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enabled', 'sto"
+        "rage_class', 'request_charged', 'replication_status', 'parts_count', 'tag_count', 'object_lock_mode', 'object_"
+        "lock_retain_until_date', 'object_lock_legal_hold_status'), cache=False), InitPlan(fields=(InitPlan.Field(name="
+        "'__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init=True"
+        ", override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='body', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='delete_marker', annotation=OpRef(name='init.fields.02.annotation'), def"
+        "ault=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='accept_ranges', annotation=OpR"
+        "ef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init"
         "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='restore', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='last_modified', annotation=OpRef(name='init.fields.06.annotation"
-        "'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_length', annota"
-        "tion=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='etag', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields."
-        "08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='checksum_crc32', annotation=OpRef(name='init.fields.09.anno"
-        "tation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_crc32c',"
-        " annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='checksum_crc64_nvme', annotation=OpRef(name='init.fields.11.annotation'), default=Op"
-        "Ref(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_sha1', annotation=OpRef(name"
-        "='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='checksum_sha256', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='checksum_s_h_a512', annotation=OpRef(name='init.fields.14.annot"
-        "ation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_md5', ann"
-        "otation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='checksum_x_x_h_a_s_h64', annotation=OpRef(name='init.fields.16.annotation'), default=OpR"
-        "ef(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_x_x_h_a_s_h3', annotation=OpR"
-        "ef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='checksum_x_x_h_a_s_h128', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='i"
-        "nit.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='checksum_type', annotation=OpRef(name='init.fiel"
-        "ds.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='missing"
-        "_meta', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='version_id', annotation=OpRef(name='init.fields.21.annotation'), default=OpRe"
-        "f(name='init.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_control', annotation=OpRef(name='"
-        "init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='content_disposition', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23"
+        "ield(name='expiration', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04"
         ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='content_encoding', annotation=OpRef(name='init.fields.24.anno"
-        "tation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_language'"
-        ", annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_fa"
-        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
-        "one), InitPlan.Field(name='content_range', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(n"
-        "ame='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
-        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_type', annotation=OpRef(name='init"
-        ".fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ex"
-        "pires', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='website_redirect_location', annotation=OpRef(name='init.fields.29.annotation'"
-        "), default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='server_side_encryption',"
-        " annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='metadata', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='i"
-        "nit.fields.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer_algorithm', annotation=OpRef(name='"
-        "init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=True, ov"
+        "ate=None, check_type=None), InitPlan.Field(name='restore', annotation=OpRef(name='init.fields.05.annotation'),"
+        " default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='last_modified', annotation"
+        "=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, "
+        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
+        "an.Field(name='content_length', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.f"
+        "ields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='etag', annotation=OpRef(name='init.fields.08.annotati"
+        "on'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_crc32', anno"
+        "tation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='checksum_crc32c', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name="
+        "'init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_crc64nvme', annotation=OpRef(name='in"
+        "it.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "checksum_sha1', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='checksum_sha256', annotation=OpRef(name='init.fields.13.annotation'),"
+        " default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_sha512', annotati"
+        "on=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='checksum_md5', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.f"
+        "ields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='checksum_xxhash64', annotation=OpRef(name='init.field"
+        "s.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum"
+        "_xxhash3', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='checksum_xxhash128', annotation=OpRef(name='init.fields.18.annotation'), d"
+        "efault=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_type', annotation=O"
+        "pRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='missing_meta', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.field"
+        "s.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='version_id', annotation=OpRef(name='init.fields.21.annota"
+        "tion'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_control', ann"
+        "otation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='content_disposition', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef("
+        "name='init.fields.23.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_encoding', annotation=OpRef(name="
+        "'init.fields.24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='content_language', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='content_range', annotation=OpRef(name='init.fields.26.annotatio"
+        "n'), default=OpRef(name='init.fields.26.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_type', annotat"
+        "ion=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='expires', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.field"
+        "s.28.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='website_redirect_location', annotation=OpRef(name='init.f"
+        "ields.29.annotation'), default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='serv"
+        "er_side_encryption', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.de"
+        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None), InitPlan.Field(name='metadata', annotation=OpRef(name='init.fields.31.annotation'), d"
+        "efault=OpRef(name='init.fields.31.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer_algorithm', ann"
+        "otation=OpRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='sse_customer_key_md5', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef"
+        "(name='init.fields.33.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_kms_key_id', annotation=OpRef(name='"
+        "init.fields.34.annotation'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True, ov"
         "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='sse_customer_key_md5', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef(name='init.fields.3"
-        "3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='sse_kms_key_id', annotation=OpRef(name='init.fields.34.annot"
-        "ation'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='bucket_key_enabled"
-        "', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='storage_class', annotation=OpRef(name='init.fields.36.annotation'), default=OpRef("
-        "name='init.fields.36.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='request_charged', annotation=OpRef(name='"
-        "init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='replication_status', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(name='init.fields.38."
+        "='bucket_key_enabled', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35."
         "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='parts_count', annotation=OpRef(name='init.fields.39.annotation"
-        "'), default=OpRef(name='init.fields.39.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tag_count', annotation="
-        "OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields.40.default'), default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='object_lock_mode', annotation=OpRef(name='init.fields.41.annotation'), default=OpRef(name='init."
-        "fields.41.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='object_lock_retain_until_date', annotation=OpRef(nam"
-        "e='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='object_lock_legal_hold_status', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef(name='i"
-        "nit.fields.43.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('body', 'delete_ma"
-        "rker', 'accept_ranges', 'expiration', 'restore', 'last_modified', 'content_length', 'etag', 'checksum_crc32', "
-        "'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_m"
-        "d5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'missing_m"
-        "eta', 'version_id', 'cache_control', 'content_disposition', 'content_encoding', 'content_language', 'content_r"
-        "ange', 'content_type', 'expires', 'website_redirect_location', 'server_side_encryption', 'metadata', 'sse_cust"
-        "omer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enabled', 'storage_class', 'request_cha"
-        "rged', 'replication_status', 'parts_count', 'tag_count', 'object_lock_mode', 'object_lock_retain_until_date', "
-        "'object_lock_legal_hold_status'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=("
-        ")), ReprPlan(fields=(ReprPlan.Field(name='body', kw_only=True, fn=None), ReprPlan.Field(name='delete_marker', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='accept_ranges', kw_only=True, fn=None), ReprPlan.Field(name='expi"
-        "ration', kw_only=True, fn=None), ReprPlan.Field(name='restore', kw_only=True, fn=None), ReprPlan.Field(name='l"
-        "ast_modified', kw_only=True, fn=None), ReprPlan.Field(name='content_length', kw_only=True, fn=None), ReprPlan."
-        "Field(name='etag', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc32', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='checksum_crc32c', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc64_nvme', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='checksum_sha1', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha2"
-        "56', kw_only=True, fn=None), ReprPlan.Field(name='checksum_s_h_a512', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='checksum_md5', kw_only=True, fn=None), ReprPlan.Field(name='checksum_x_x_h_a_s_h64', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='checksum_x_x_h_a_s_h3', kw_only=True, fn=None), ReprPlan.Field(name='checksum_x_x_h_a"
-        "_s_h128', kw_only=True, fn=None), ReprPlan.Field(name='checksum_type', kw_only=True, fn=None), ReprPlan.Field("
-        "name='missing_meta', kw_only=True, fn=None), ReprPlan.Field(name='version_id', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='cache_control', kw_only=True, fn=None), ReprPlan.Field(name='content_disposition', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='content_encoding', kw_only=True, fn=None), ReprPlan.Field(name='content_langua"
-        "ge', kw_only=True, fn=None), ReprPlan.Field(name='content_range', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'content_type', kw_only=True, fn=None), ReprPlan.Field(name='expires', kw_only=True, fn=None), ReprPlan.Field("
-        "name='website_redirect_location', kw_only=True, fn=None), ReprPlan.Field(name='server_side_encryption', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='metadata', kw_only=True, fn=None), ReprPlan.Field(name='sse_customer_al"
-        "gorithm', kw_only=True, fn=None), ReprPlan.Field(name='sse_customer_key_md5', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='sse_kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='bucket_key_enabled', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='storage_class', kw_only=True, fn=None), ReprPlan.Field(name='request_charged', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='replication_status', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'parts_count', kw_only=True, fn=None), ReprPlan.Field(name='tag_count', kw_only=True, fn=None), ReprPlan.Field"
-        "(name='object_lock_mode', kw_only=True, fn=None), ReprPlan.Field(name='object_lock_retain_until_date', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='object_lock_legal_hold_status', kw_only=True, fn=None)), id=False, terse"
-        "=False, default_fn=None)))"
+        "te=None, check_type=None), InitPlan.Field(name='storage_class', annotation=OpRef(name='init.fields.36.annotati"
+        "on'), default=OpRef(name='init.fields.36.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='request_charged', ann"
+        "otation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='replication_status', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(n"
+        "ame='init.fields.38.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='parts_count', annotation=OpRef(name='init."
+        "fields.39.annotation'), default=OpRef(name='init.fields.39.default'), default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tag"
+        "_count', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields.40.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='object_lock_mode', annotation=OpRef(name='init.fields.41.annotation'), defau"
+        "lt=OpRef(name='init.fields.41.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='object_lock_retain_until_date', "
+        "annotation=OpRef(name='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='object_lock_legal_hold_status', annotation=OpRef(name='init.fields.43.annotation'), d"
+        "efault=OpRef(name='init.fields.43.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params"
+        "=('body', 'delete_marker', 'accept_ranges', 'expiration', 'restore', 'last_modified', 'content_length', 'etag'"
+        ", 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha"
+        "512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'checksum_type', 'missing"
+        "_meta', 'version_id', 'cache_control', 'content_disposition', 'content_encoding', 'content_language', 'content"
+        "_range', 'content_type', 'expires', 'website_redirect_location', 'server_side_encryption', 'metadata', 'sse_cu"
+        "stomer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'bucket_key_enabled', 'storage_class', 'request_c"
+        "harged', 'replication_status', 'parts_count', 'tag_count', 'object_lock_mode', 'object_lock_retain_until_date'"
+        ", 'object_lock_legal_hold_status'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns"
+        "=()), ReprPlan(fields=(ReprPlan.Field(name='body', kw_only=True, fn=None), ReprPlan.Field(name='delete_marker'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='accept_ranges', kw_only=True, fn=None), ReprPlan.Field(name='ex"
+        "piration', kw_only=True, fn=None), ReprPlan.Field(name='restore', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'last_modified', kw_only=True, fn=None), ReprPlan.Field(name='content_length', kw_only=True, fn=None), ReprPla"
+        "n.Field(name='etag', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc32', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='checksum_crc32c', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc64nvme', kw_only="
+        "True, fn=None), ReprPlan.Field(name='checksum_sha1', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha"
+        "256', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha512', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='checksum_md5', kw_only=True, fn=None), ReprPlan.Field(name='checksum_xxhash64', kw_only=True, fn=None), Re"
+        "prPlan.Field(name='checksum_xxhash3', kw_only=True, fn=None), ReprPlan.Field(name='checksum_xxhash128', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='checksum_type', kw_only=True, fn=None), ReprPlan.Field(name='missing_me"
+        "ta', kw_only=True, fn=None), ReprPlan.Field(name='version_id', kw_only=True, fn=None), ReprPlan.Field(name='ca"
+        "che_control', kw_only=True, fn=None), ReprPlan.Field(name='content_disposition', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='content_encoding', kw_only=True, fn=None), ReprPlan.Field(name='content_language', kw_only=Tru"
+        "e, fn=None), ReprPlan.Field(name='content_range', kw_only=True, fn=None), ReprPlan.Field(name='content_type', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='expires', kw_only=True, fn=None), ReprPlan.Field(name='website_re"
+        "direct_location', kw_only=True, fn=None), ReprPlan.Field(name='server_side_encryption', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='metadata', kw_only=True, fn=None), ReprPlan.Field(name='sse_customer_algorithm', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='sse_customer_key_md5', kw_only=True, fn=None), ReprPlan.Field(name='sse"
+        "_kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='bucket_key_enabled', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='storage_class', kw_only=True, fn=None), ReprPlan.Field(name='request_charged', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='replication_status', kw_only=True, fn=None), ReprPlan.Field(name='parts_count', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='tag_count', kw_only=True, fn=None), ReprPlan.Field(name='object_lo"
+        "ck_mode', kw_only=True, fn=None), ReprPlan.Field(name='object_lock_retain_until_date', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='object_lock_legal_hold_status', kw_only=True, fn=None)), id=False, terse=False, default_"
+        "fn=None)))"
     ),
-    plan_repr_sha1='8b510196bd2097830ffd9d3d4ac456304b503fda',
+    plan_repr_sha1='f2d61c623503edbdc3b3083fe9dc65eae2e4ccba',
     op_ref_idents=(
         '__dataclass__init__fields__01__annotation',
         '__dataclass__init__fields__01__default',
@@ -1197,7 +1196,7 @@ def _process_dataclass__fe6ee985e5454d23ff07c1fb86524a86d9239cf5():
         ('ominfra.clouds.aws.models.services.s3', 'GetObjectOutput'),
     ),
 )
-def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
+def _process_dataclass__f2d61c623503edbdc3b3083fe9dc65eae2e4ccba():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1315,14 +1314,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
                 etag=self.etag,
                 checksum_crc32=self.checksum_crc32,
                 checksum_crc32c=self.checksum_crc32c,
-                checksum_crc64_nvme=self.checksum_crc64_nvme,
+                checksum_crc64nvme=self.checksum_crc64nvme,
                 checksum_sha1=self.checksum_sha1,
                 checksum_sha256=self.checksum_sha256,
-                checksum_s_h_a512=self.checksum_s_h_a512,
+                checksum_sha512=self.checksum_sha512,
                 checksum_md5=self.checksum_md5,
-                checksum_x_x_h_a_s_h64=self.checksum_x_x_h_a_s_h64,
-                checksum_x_x_h_a_s_h3=self.checksum_x_x_h_a_s_h3,
-                checksum_x_x_h_a_s_h128=self.checksum_x_x_h_a_s_h128,
+                checksum_xxhash64=self.checksum_xxhash64,
+                checksum_xxhash3=self.checksum_xxhash3,
+                checksum_xxhash128=self.checksum_xxhash128,
                 checksum_type=self.checksum_type,
                 missing_meta=self.missing_meta,
                 version_id=self.version_id,
@@ -1371,14 +1370,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
                 self.etag == other.etag and
                 self.checksum_crc32 == other.checksum_crc32 and
                 self.checksum_crc32c == other.checksum_crc32c and
-                self.checksum_crc64_nvme == other.checksum_crc64_nvme and
+                self.checksum_crc64nvme == other.checksum_crc64nvme and
                 self.checksum_sha1 == other.checksum_sha1 and
                 self.checksum_sha256 == other.checksum_sha256 and
-                self.checksum_s_h_a512 == other.checksum_s_h_a512 and
+                self.checksum_sha512 == other.checksum_sha512 and
                 self.checksum_md5 == other.checksum_md5 and
-                self.checksum_x_x_h_a_s_h64 == other.checksum_x_x_h_a_s_h64 and
-                self.checksum_x_x_h_a_s_h3 == other.checksum_x_x_h_a_s_h3 and
-                self.checksum_x_x_h_a_s_h128 == other.checksum_x_x_h_a_s_h128 and
+                self.checksum_xxhash64 == other.checksum_xxhash64 and
+                self.checksum_xxhash3 == other.checksum_xxhash3 and
+                self.checksum_xxhash128 == other.checksum_xxhash128 and
                 self.checksum_type == other.checksum_type and
                 self.missing_meta == other.missing_meta and
                 self.version_id == other.version_id and
@@ -1423,14 +1422,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
             'etag',
             'checksum_crc32',
             'checksum_crc32c',
-            'checksum_crc64_nvme',
+            'checksum_crc64nvme',
             'checksum_sha1',
             'checksum_sha256',
-            'checksum_s_h_a512',
+            'checksum_sha512',
             'checksum_md5',
-            'checksum_x_x_h_a_s_h64',
-            'checksum_x_x_h_a_s_h3',
-            'checksum_x_x_h_a_s_h128',
+            'checksum_xxhash64',
+            'checksum_xxhash3',
+            'checksum_xxhash128',
             'checksum_type',
             'missing_meta',
             'version_id',
@@ -1483,14 +1482,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
             'etag',
             'checksum_crc32',
             'checksum_crc32c',
-            'checksum_crc64_nvme',
+            'checksum_crc64nvme',
             'checksum_sha1',
             'checksum_sha256',
-            'checksum_s_h_a512',
+            'checksum_sha512',
             'checksum_md5',
-            'checksum_x_x_h_a_s_h64',
-            'checksum_x_x_h_a_s_h3',
-            'checksum_x_x_h_a_s_h128',
+            'checksum_xxhash64',
+            'checksum_xxhash3',
+            'checksum_xxhash128',
             'checksum_type',
             'missing_meta',
             'version_id',
@@ -1543,14 +1542,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
                 self.etag,
                 self.checksum_crc32,
                 self.checksum_crc32c,
-                self.checksum_crc64_nvme,
+                self.checksum_crc64nvme,
                 self.checksum_sha1,
                 self.checksum_sha256,
-                self.checksum_s_h_a512,
+                self.checksum_sha512,
                 self.checksum_md5,
-                self.checksum_x_x_h_a_s_h64,
-                self.checksum_x_x_h_a_s_h3,
-                self.checksum_x_x_h_a_s_h128,
+                self.checksum_xxhash64,
+                self.checksum_xxhash3,
+                self.checksum_xxhash128,
                 self.checksum_type,
                 self.missing_meta,
                 self.version_id,
@@ -1594,14 +1593,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
             etag: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
             checksum_crc32: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
             checksum_crc32c: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
-            checksum_crc64_nvme: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
+            checksum_crc64nvme: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             checksum_sha1: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
             checksum_sha256: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
-            checksum_s_h_a512: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
+            checksum_sha512: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
             checksum_md5: __dataclass__init__fields__15__annotation = __dataclass__init__fields__15__default,
-            checksum_x_x_h_a_s_h64: __dataclass__init__fields__16__annotation = __dataclass__init__fields__16__default,
-            checksum_x_x_h_a_s_h3: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
-            checksum_x_x_h_a_s_h128: __dataclass__init__fields__18__annotation = __dataclass__init__fields__18__default,
+            checksum_xxhash64: __dataclass__init__fields__16__annotation = __dataclass__init__fields__16__default,
+            checksum_xxhash3: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
+            checksum_xxhash128: __dataclass__init__fields__18__annotation = __dataclass__init__fields__18__default,
             checksum_type: __dataclass__init__fields__19__annotation = __dataclass__init__fields__19__default,
             missing_meta: __dataclass__init__fields__20__annotation = __dataclass__init__fields__20__default,
             version_id: __dataclass__init__fields__21__annotation = __dataclass__init__fields__21__default,
@@ -1638,14 +1637,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
             __dataclass__object_setattr(self, 'etag', etag)
             __dataclass__object_setattr(self, 'checksum_crc32', checksum_crc32)
             __dataclass__object_setattr(self, 'checksum_crc32c', checksum_crc32c)
-            __dataclass__object_setattr(self, 'checksum_crc64_nvme', checksum_crc64_nvme)
+            __dataclass__object_setattr(self, 'checksum_crc64nvme', checksum_crc64nvme)
             __dataclass__object_setattr(self, 'checksum_sha1', checksum_sha1)
             __dataclass__object_setattr(self, 'checksum_sha256', checksum_sha256)
-            __dataclass__object_setattr(self, 'checksum_s_h_a512', checksum_s_h_a512)
+            __dataclass__object_setattr(self, 'checksum_sha512', checksum_sha512)
             __dataclass__object_setattr(self, 'checksum_md5', checksum_md5)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h64', checksum_x_x_h_a_s_h64)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h3', checksum_x_x_h_a_s_h3)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h128', checksum_x_x_h_a_s_h128)
+            __dataclass__object_setattr(self, 'checksum_xxhash64', checksum_xxhash64)
+            __dataclass__object_setattr(self, 'checksum_xxhash3', checksum_xxhash3)
+            __dataclass__object_setattr(self, 'checksum_xxhash128', checksum_xxhash128)
             __dataclass__object_setattr(self, 'checksum_type', checksum_type)
             __dataclass__object_setattr(self, 'missing_meta', missing_meta)
             __dataclass__object_setattr(self, 'version_id', version_id)
@@ -1690,14 +1689,14 @@ def _process_dataclass__8b510196bd2097830ffd9d3d4ac456304b503fda():
             parts.append(f"etag={self.etag!r}")
             parts.append(f"checksum_crc32={self.checksum_crc32!r}")
             parts.append(f"checksum_crc32c={self.checksum_crc32c!r}")
-            parts.append(f"checksum_crc64_nvme={self.checksum_crc64_nvme!r}")
+            parts.append(f"checksum_crc64nvme={self.checksum_crc64nvme!r}")
             parts.append(f"checksum_sha1={self.checksum_sha1!r}")
             parts.append(f"checksum_sha256={self.checksum_sha256!r}")
-            parts.append(f"checksum_s_h_a512={self.checksum_s_h_a512!r}")
+            parts.append(f"checksum_sha512={self.checksum_sha512!r}")
             parts.append(f"checksum_md5={self.checksum_md5!r}")
-            parts.append(f"checksum_x_x_h_a_s_h64={self.checksum_x_x_h_a_s_h64!r}")
-            parts.append(f"checksum_x_x_h_a_s_h3={self.checksum_x_x_h_a_s_h3!r}")
-            parts.append(f"checksum_x_x_h_a_s_h128={self.checksum_x_x_h_a_s_h128!r}")
+            parts.append(f"checksum_xxhash64={self.checksum_xxhash64!r}")
+            parts.append(f"checksum_xxhash3={self.checksum_xxhash3!r}")
+            parts.append(f"checksum_xxhash128={self.checksum_xxhash128!r}")
             parts.append(f"checksum_type={self.checksum_type!r}")
             parts.append(f"missing_meta={self.missing_meta!r}")
             parts.append(f"version_id={self.version_id!r}")
@@ -3774,99 +3773,98 @@ def _process_dataclass__406cda8dbd315809e1f63f385601152edbb21e83():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('expiration', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64_nvme', "
-        "'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x"
-        "_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'server_side_encryption', 'version_id', 'sse_custome"
-        "r_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 's"
-        "ize', 'request_charged')), EqPlan(fields=('expiration', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum"
-        "_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64"
-        "', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'server_side_encryption', 'version_id'"
-        ", 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_ke"
-        "y_enabled', 'size', 'request_charged')), FrozenPlan(fields=('__shape__', 'expiration', 'etag', 'checksum_crc32"
-        "', 'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksu"
-        "m_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'server"
-        "_side_encryption', 'version_id', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_"
-        "encryption_context', 'bucket_key_enabled', 'size', 'request_charged'), allow_dynamic_dunder_attrs=False), Hash"
-        "Plan(action='add', fields=('expiration', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64_nvme', '"
-        "checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_"
-        "x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum_type', 'server_side_encryption', 'version_id', 'sse_customer"
-        "_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'si"
-        "ze', 'request_charged'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name"
-        "='init.fields.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Field"
-        "Type.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='expiration', annotation=OpR"
-        "ef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='etag', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.defau"
-        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
-        "ne, check_type=None), InitPlan.Field(name='checksum_crc32', annotation=OpRef(name='init.fields.03.annotation')"
-        ", default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_crc32c', annotat"
-        "ion=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='checksum_crc64_nvme', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name"
-        "='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_sha1', annotation=OpRef(name='init.f"
-        "ields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='chec"
-        "ksum_sha256', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='checksum_s_h_a512', annotation=OpRef(name='init.fields.08.annotation'),"
-        " default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_md5', annotation="
-        "OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='checksum_x_x_h_a_s_h64', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name="
-        "'init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_x_x_h_a_s_h3', annotation=OpRef(name="
-        "'init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='checksum_x_x_h_a_s_h128', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fiel"
-        "ds.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='checksum_type', annotation=OpRef(name='init.fields.13.an"
-        "notation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='server_side_enc"
-        "ryption', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None), InitPlan.Field(name='version_id', annotation=OpRef(name='init.fields.15.annotation'), default=Op"
-        "Ref(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer_algorithm', annotation=O"
-        "pRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, in"
+        "Plans(tup=(CopyPlan(fields=('expiration', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', '"
+        "checksum_sha1', 'checksum_sha256', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3',"
+        " 'checksum_xxhash128', 'checksum_type', 'server_side_encryption', 'version_id', 'sse_customer_algorithm', 'sse"
+        "_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'size', 'request_cha"
+        "rged')), EqPlan(fields=('expiration', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'chec"
+        "ksum_sha1', 'checksum_sha256', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'ch"
+        "ecksum_xxhash128', 'checksum_type', 'server_side_encryption', 'version_id', 'sse_customer_algorithm', 'sse_cus"
+        "tomer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'size', 'request_charged"
+        "')), FrozenPlan(fields=('__shape__', 'expiration', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc6"
+        "4nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_"
+        "xxhash3', 'checksum_xxhash128', 'checksum_type', 'server_side_encryption', 'version_id', 'sse_customer_algorit"
+        "hm', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'size', 're"
+        "quest_charged'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('expiration', 'etag', 'chec"
+        "ksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha512', '"
+        "checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'checksum_type', 'server_side_en"
+        "cryption', 'version_id', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encrypti"
+        "on_context', 'bucket_key_enabled', 'size', 'request_charged'), cache=False), InitPlan(fields=(InitPlan.Field(n"
+        "ame='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None, default_factory=None, init="
+        "True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='expiration', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='etag', annotation=OpRef(name='init.fields.02.annotation'), de"
+        "fault=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_crc32', annotation=O"
+        "pRef(name='init.fields.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, in"
         "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='sse_customer_key_md5', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='in"
-        "it.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='sse_kms_key_id', annotation=OpRef(name='init.fiel"
-        "ds.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_kms"
-        "_encryption_context', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='bucket_key_enabled', annotation=OpRef(name='init.fields.20.anno"
-        "tation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='size', annotation"
-        "=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, "
-        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
-        "an.Field(name='request_charged', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init."
-        "fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('expiration', 'etag', "
-        "'checksum_crc32', 'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_"
-        "a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'checksum"
-        "_type', 'server_side_encryption', 'version_id', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_key"
-        "_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'size', 'request_charged'), frozen=True, slots=False"
-        ", post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='expiration', kw_"
-        "only=True, fn=None), ReprPlan.Field(name='etag', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc32',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc32c', kw_only=True, fn=None), ReprPlan.Field(name='c"
-        "hecksum_crc64_nvme', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha1', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='checksum_sha256', kw_only=True, fn=None), ReprPlan.Field(name='checksum_s_h_a512', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='checksum_md5', kw_only=True, fn=None), ReprPlan.Field(name='checksum_x_x_h_"
-        "a_s_h64', kw_only=True, fn=None), ReprPlan.Field(name='checksum_x_x_h_a_s_h3', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='checksum_x_x_h_a_s_h128', kw_only=True, fn=None), ReprPlan.Field(name='checksum_type', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='server_side_encryption', kw_only=True, fn=None), ReprPlan.Field(name='vers"
-        "ion_id', kw_only=True, fn=None), ReprPlan.Field(name='sse_customer_algorithm', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='sse_customer_key_md5', kw_only=True, fn=None), ReprPlan.Field(name='sse_kms_key_id', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='sse_kms_encryption_context', kw_only=True, fn=None), ReprPlan.Field(name='bu"
-        "cket_key_enabled', kw_only=True, fn=None), ReprPlan.Field(name='size', kw_only=True, fn=None), ReprPlan.Field("
-        "name='request_charged', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        ".Field(name='checksum_crc32c', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fi"
+        "elds.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='checksum_crc64nvme', annotation=OpRef(name='init.field"
+        "s.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum"
+        "_sha1', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='checksum_sha256', annotation=OpRef(name='init.fields.07.annotation'), default"
+        "=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_sha512', annotation=OpRef"
+        "(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='checksum_md5', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='checksum_xxhash64', annotation=OpRef(name='init.fields.10.ann"
+        "otation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_xxhash3"
+        "', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='checksum_xxhash128', annotation=OpRef(name='init.fields.12.annotation'), default=O"
+        "pRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_type', annotation=OpRef(nam"
+        "e='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='server_side_encryption', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fie"
+        "lds.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='version_id', annotation=OpRef(name='init.fields.15.anno"
+        "tation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer_algo"
+        "rithm', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='sse_customer_key_md5', annotation=OpRef(name='init.fields.17.annotation'), de"
+        "fault=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_kms_key_id', annotation=O"
+        "pRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='sse_kms_encryption_context', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(na"
+        "me='init.fields.19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='bucket_key_enabled', annotation=OpRef(name="
+        "'init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='size', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='request_charged', annotation=OpRef(name='init.fields.22.annotation'), defau"
+        "lt=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('e"
+        "xpiration', 'etag', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha2"
+        "56', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'checks"
+        "um_type', 'server_side_encryption', 'version_id', 'sse_customer_algorithm', 'sse_customer_key_md5', 'sse_kms_k"
+        "ey_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'size', 'request_charged'), frozen=True, slots=Fal"
+        "se, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='expiration', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='etag', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc32"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc32c', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'checksum_crc64nvme', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha1', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='checksum_sha256', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha512', kw_only=Tru"
+        "e, fn=None), ReprPlan.Field(name='checksum_md5', kw_only=True, fn=None), ReprPlan.Field(name='checksum_xxhash6"
+        "4', kw_only=True, fn=None), ReprPlan.Field(name='checksum_xxhash3', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='checksum_xxhash128', kw_only=True, fn=None), ReprPlan.Field(name='checksum_type', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='server_side_encryption', kw_only=True, fn=None), ReprPlan.Field(name='version_id', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='sse_customer_algorithm', kw_only=True, fn=None), ReprPlan.Field(name='ss"
+        "e_customer_key_md5', kw_only=True, fn=None), ReprPlan.Field(name='sse_kms_key_id', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='sse_kms_encryption_context', kw_only=True, fn=None), ReprPlan.Field(name='bucket_key_enabled"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='size', kw_only=True, fn=None), ReprPlan.Field(name='request_ch"
+        "arged', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='c7ef2c06d2a80184135d9f7842511ef36cab6754',
+    plan_repr_sha1='4ebb688d0c3b7d7548c25489691ad4f455f83dd5',
     op_ref_idents=(
         '__dataclass__init__fields__01__annotation',
         '__dataclass__init__fields__01__default',
@@ -3917,7 +3915,7 @@ def _process_dataclass__406cda8dbd315809e1f63f385601152edbb21e83():
         ('ominfra.clouds.aws.models.services.s3', 'PutObjectOutput'),
     ),
 )
-def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
+def _process_dataclass__4ebb688d0c3b7d7548c25489691ad4f455f83dd5():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3987,14 +3985,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
                 etag=self.etag,
                 checksum_crc32=self.checksum_crc32,
                 checksum_crc32c=self.checksum_crc32c,
-                checksum_crc64_nvme=self.checksum_crc64_nvme,
+                checksum_crc64nvme=self.checksum_crc64nvme,
                 checksum_sha1=self.checksum_sha1,
                 checksum_sha256=self.checksum_sha256,
-                checksum_s_h_a512=self.checksum_s_h_a512,
+                checksum_sha512=self.checksum_sha512,
                 checksum_md5=self.checksum_md5,
-                checksum_x_x_h_a_s_h64=self.checksum_x_x_h_a_s_h64,
-                checksum_x_x_h_a_s_h3=self.checksum_x_x_h_a_s_h3,
-                checksum_x_x_h_a_s_h128=self.checksum_x_x_h_a_s_h128,
+                checksum_xxhash64=self.checksum_xxhash64,
+                checksum_xxhash3=self.checksum_xxhash3,
+                checksum_xxhash128=self.checksum_xxhash128,
                 checksum_type=self.checksum_type,
                 server_side_encryption=self.server_side_encryption,
                 version_id=self.version_id,
@@ -4022,14 +4020,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
                 self.etag == other.etag and
                 self.checksum_crc32 == other.checksum_crc32 and
                 self.checksum_crc32c == other.checksum_crc32c and
-                self.checksum_crc64_nvme == other.checksum_crc64_nvme and
+                self.checksum_crc64nvme == other.checksum_crc64nvme and
                 self.checksum_sha1 == other.checksum_sha1 and
                 self.checksum_sha256 == other.checksum_sha256 and
-                self.checksum_s_h_a512 == other.checksum_s_h_a512 and
+                self.checksum_sha512 == other.checksum_sha512 and
                 self.checksum_md5 == other.checksum_md5 and
-                self.checksum_x_x_h_a_s_h64 == other.checksum_x_x_h_a_s_h64 and
-                self.checksum_x_x_h_a_s_h3 == other.checksum_x_x_h_a_s_h3 and
-                self.checksum_x_x_h_a_s_h128 == other.checksum_x_x_h_a_s_h128 and
+                self.checksum_xxhash64 == other.checksum_xxhash64 and
+                self.checksum_xxhash3 == other.checksum_xxhash3 and
+                self.checksum_xxhash128 == other.checksum_xxhash128 and
                 self.checksum_type == other.checksum_type and
                 self.server_side_encryption == other.server_side_encryption and
                 self.version_id == other.version_id and
@@ -4053,14 +4051,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
             'etag',
             'checksum_crc32',
             'checksum_crc32c',
-            'checksum_crc64_nvme',
+            'checksum_crc64nvme',
             'checksum_sha1',
             'checksum_sha256',
-            'checksum_s_h_a512',
+            'checksum_sha512',
             'checksum_md5',
-            'checksum_x_x_h_a_s_h64',
-            'checksum_x_x_h_a_s_h3',
-            'checksum_x_x_h_a_s_h128',
+            'checksum_xxhash64',
+            'checksum_xxhash3',
+            'checksum_xxhash128',
             'checksum_type',
             'server_side_encryption',
             'version_id',
@@ -4092,14 +4090,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
             'etag',
             'checksum_crc32',
             'checksum_crc32c',
-            'checksum_crc64_nvme',
+            'checksum_crc64nvme',
             'checksum_sha1',
             'checksum_sha256',
-            'checksum_s_h_a512',
+            'checksum_sha512',
             'checksum_md5',
-            'checksum_x_x_h_a_s_h64',
-            'checksum_x_x_h_a_s_h3',
-            'checksum_x_x_h_a_s_h128',
+            'checksum_xxhash64',
+            'checksum_xxhash3',
+            'checksum_xxhash128',
             'checksum_type',
             'server_side_encryption',
             'version_id',
@@ -4131,14 +4129,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
                 self.etag,
                 self.checksum_crc32,
                 self.checksum_crc32c,
-                self.checksum_crc64_nvme,
+                self.checksum_crc64nvme,
                 self.checksum_sha1,
                 self.checksum_sha256,
-                self.checksum_s_h_a512,
+                self.checksum_sha512,
                 self.checksum_md5,
-                self.checksum_x_x_h_a_s_h64,
-                self.checksum_x_x_h_a_s_h3,
-                self.checksum_x_x_h_a_s_h128,
+                self.checksum_xxhash64,
+                self.checksum_xxhash3,
+                self.checksum_xxhash128,
                 self.checksum_type,
                 self.server_side_encryption,
                 self.version_id,
@@ -4161,14 +4159,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
             etag: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
             checksum_crc32: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
             checksum_crc32c: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
-            checksum_crc64_nvme: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            checksum_crc64nvme: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
             checksum_sha1: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
             checksum_sha256: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
-            checksum_s_h_a512: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            checksum_sha512: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
             checksum_md5: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
-            checksum_x_x_h_a_s_h64: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
-            checksum_x_x_h_a_s_h3: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
-            checksum_x_x_h_a_s_h128: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
+            checksum_xxhash64: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
+            checksum_xxhash3: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
+            checksum_xxhash128: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
             checksum_type: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
             server_side_encryption: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
             version_id: __dataclass__init__fields__15__annotation = __dataclass__init__fields__15__default,
@@ -4184,14 +4182,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
             __dataclass__object_setattr(self, 'etag', etag)
             __dataclass__object_setattr(self, 'checksum_crc32', checksum_crc32)
             __dataclass__object_setattr(self, 'checksum_crc32c', checksum_crc32c)
-            __dataclass__object_setattr(self, 'checksum_crc64_nvme', checksum_crc64_nvme)
+            __dataclass__object_setattr(self, 'checksum_crc64nvme', checksum_crc64nvme)
             __dataclass__object_setattr(self, 'checksum_sha1', checksum_sha1)
             __dataclass__object_setattr(self, 'checksum_sha256', checksum_sha256)
-            __dataclass__object_setattr(self, 'checksum_s_h_a512', checksum_s_h_a512)
+            __dataclass__object_setattr(self, 'checksum_sha512', checksum_sha512)
             __dataclass__object_setattr(self, 'checksum_md5', checksum_md5)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h64', checksum_x_x_h_a_s_h64)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h3', checksum_x_x_h_a_s_h3)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h128', checksum_x_x_h_a_s_h128)
+            __dataclass__object_setattr(self, 'checksum_xxhash64', checksum_xxhash64)
+            __dataclass__object_setattr(self, 'checksum_xxhash3', checksum_xxhash3)
+            __dataclass__object_setattr(self, 'checksum_xxhash128', checksum_xxhash128)
             __dataclass__object_setattr(self, 'checksum_type', checksum_type)
             __dataclass__object_setattr(self, 'server_side_encryption', server_side_encryption)
             __dataclass__object_setattr(self, 'version_id', version_id)
@@ -4215,14 +4213,14 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
             parts.append(f"etag={self.etag!r}")
             parts.append(f"checksum_crc32={self.checksum_crc32!r}")
             parts.append(f"checksum_crc32c={self.checksum_crc32c!r}")
-            parts.append(f"checksum_crc64_nvme={self.checksum_crc64_nvme!r}")
+            parts.append(f"checksum_crc64nvme={self.checksum_crc64nvme!r}")
             parts.append(f"checksum_sha1={self.checksum_sha1!r}")
             parts.append(f"checksum_sha256={self.checksum_sha256!r}")
-            parts.append(f"checksum_s_h_a512={self.checksum_s_h_a512!r}")
+            parts.append(f"checksum_sha512={self.checksum_sha512!r}")
             parts.append(f"checksum_md5={self.checksum_md5!r}")
-            parts.append(f"checksum_x_x_h_a_s_h64={self.checksum_x_x_h_a_s_h64!r}")
-            parts.append(f"checksum_x_x_h_a_s_h3={self.checksum_x_x_h_a_s_h3!r}")
-            parts.append(f"checksum_x_x_h_a_s_h128={self.checksum_x_x_h_a_s_h128!r}")
+            parts.append(f"checksum_xxhash64={self.checksum_xxhash64!r}")
+            parts.append(f"checksum_xxhash3={self.checksum_xxhash3!r}")
+            parts.append(f"checksum_xxhash128={self.checksum_xxhash128!r}")
             parts.append(f"checksum_type={self.checksum_type!r}")
             parts.append(f"server_side_encryption={self.server_side_encryption!r}")
             parts.append(f"version_id={self.version_id!r}")
@@ -4251,189 +4249,187 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('acl', 'body', 'bucket', 'cache_control', 'content_disposition', 'content_encoding"
         "', 'content_language', 'content_length', 'content_md5', 'content_type', 'checksum_algorithm', 'checksum_crc32'"
-        ", 'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum"
-        "_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'expires', 'if_match', 'i"
-        "f_none_match', 'grant_full_control', 'grant_read', 'grant_read_acp', 'grant_write_acp', 'key', 'write_offset_b"
-        "ytes', 'metadata', 'server_side_encryption', 'storage_class', 'website_redirect_location', 'sse_customer_algor"
-        "ithm', 'sse_customer_key', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key"
-        "_enabled', 'request_payer', 'tagging', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal"
-        "_hold_status', 'expected_bucket_owner')), EqPlan(fields=('acl', 'body', 'bucket', 'cache_control', 'content_di"
-        "sposition', 'content_encoding', 'content_language', 'content_length', 'content_md5', 'content_type', 'checksum"
-        "_algorithm', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', '"
-        "checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h12"
-        "8', 'expires', 'if_match', 'if_none_match', 'grant_full_control', 'grant_read', 'grant_read_acp', 'grant_write"
-        "_acp', 'key', 'write_offset_bytes', 'metadata', 'server_side_encryption', 'storage_class', 'website_redirect_l"
-        "ocation', 'sse_customer_algorithm', 'sse_customer_key', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_enc"
-        "ryption_context', 'bucket_key_enabled', 'request_payer', 'tagging', 'object_lock_mode', 'object_lock_retain_un"
-        "til_date', 'object_lock_legal_hold_status', 'expected_bucket_owner')), FrozenPlan(fields=('__shape__', 'acl', "
-        "'body', 'bucket', 'cache_control', 'content_disposition', 'content_encoding', 'content_language', 'content_len"
-        "gth', 'content_md5', 'content_type', 'checksum_algorithm', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc6"
-        "4_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64', 'c"
-        "hecksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'expires', 'if_match', 'if_none_match', 'grant_full_control'"
-        ", 'grant_read', 'grant_read_acp', 'grant_write_acp', 'key', 'write_offset_bytes', 'metadata', 'server_side_enc"
-        "ryption', 'storage_class', 'website_redirect_location', 'sse_customer_algorithm', 'sse_customer_key', 'sse_cus"
-        "tomer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'request_payer', 'taggin"
-        "g', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_status', 'expected_bucket_own"
-        "er'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('acl', 'body', 'bucket', 'cache_contro"
-        "l', 'content_disposition', 'content_encoding', 'content_language', 'content_length', 'content_md5', 'content_t"
-        "ype', 'checksum_algorithm', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'chec"
-        "ksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'checksum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksu"
-        "m_x_x_h_a_s_h128', 'expires', 'if_match', 'if_none_match', 'grant_full_control', 'grant_read', 'grant_read_acp"
-        "', 'grant_write_acp', 'key', 'write_offset_bytes', 'metadata', 'server_side_encryption', 'storage_class', 'web"
-        "site_redirect_location', 'sse_customer_algorithm', 'sse_customer_key', 'sse_customer_key_md5', 'sse_kms_key_id"
-        "', 'sse_kms_encryption_context', 'bucket_key_enabled', 'request_payer', 'tagging', 'object_lock_mode', 'object"
-        "_lock_retain_until_date', 'object_lock_legal_hold_status', 'expected_bucket_owner'), cache=False), InitPlan(fi"
-        "elds=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None, defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='acl', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name="
-        "'init.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='body', annotation=OpRef(name='init.fields.02.a"
-        "nnotation'), default=OpRef(name='init.fields.02.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='bucket', annot"
-        "ation=OpRef(name='init.fields.03.annotation'), default=None, default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_contro"
-        "l', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='content_disposition', annotation=OpRef(name='init.fields.05.annotation'), default"
-        "=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_encoding', annotation=OpRe"
-        "f(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
-        "eld(name='content_language', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fiel"
-        "ds.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='content_length', annotation=OpRef(name='init.fields.08.a"
-        "nnotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_md5', "
-        "annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='content_type', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name"
-        "='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_algorithm', annotation=OpRef(name='i"
-        "nit.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'checksum_crc32', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.defau"
-        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
-        "ne, check_type=None), InitPlan.Field(name='checksum_crc32c', annotation=OpRef(name='init.fields.13.annotation'"
-        "), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_crc64_nvme', an"
-        "notation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='checksum_sha1', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name="
-        "'init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_sha256', annotation=OpRef(name='init."
-        "fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='che"
-        "cksum_s_h_a512', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='checksum_md5', annotation=OpRef(name='init.fields.18.annotation'), d"
-        "efault=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_x_x_h_a_s_h64', ann"
-        "otation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='checksum_x_x_h_a_s_h3', annotation=OpRef(name='init.fields.20.annotation'), default=OpRe"
-        "f(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_x_x_h_a_s_h128', annotation=Op"
-        "Ref(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='expires', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='if_match', annotation=OpRef(name='init.fields.23.annotation'), "
-        "default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='if_none_match', annotation="
-        "OpRef(name='init.fields.24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, i"
+        ", 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha512', 'checksum_md"
+        "5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'expires', 'if_match', 'if_none_match', 'gr"
+        "ant_full_control', 'grant_read', 'grant_read_acp', 'grant_write_acp', 'key', 'write_offset_bytes', 'metadata',"
+        " 'server_side_encryption', 'storage_class', 'website_redirect_location', 'sse_customer_algorithm', 'sse_custom"
+        "er_key', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'reques"
+        "t_payer', 'tagging', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_status', 'ex"
+        "pected_bucket_owner')), EqPlan(fields=('acl', 'body', 'bucket', 'cache_control', 'content_disposition', 'conte"
+        "nt_encoding', 'content_language', 'content_length', 'content_md5', 'content_type', 'checksum_algorithm', 'chec"
+        "ksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha512', '"
+        "checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'expires', 'if_match', 'if_none_"
+        "match', 'grant_full_control', 'grant_read', 'grant_read_acp', 'grant_write_acp', 'key', 'write_offset_bytes', "
+        "'metadata', 'server_side_encryption', 'storage_class', 'website_redirect_location', 'sse_customer_algorithm', "
+        "'sse_customer_key', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enable"
+        "d', 'request_payer', 'tagging', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_s"
+        "tatus', 'expected_bucket_owner')), FrozenPlan(fields=('__shape__', 'acl', 'body', 'bucket', 'cache_control', '"
+        "content_disposition', 'content_encoding', 'content_language', 'content_length', 'content_md5', 'content_type',"
+        " 'checksum_algorithm', 'checksum_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_s"
+        "ha256', 'checksum_sha512', 'checksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'exp"
+        "ires', 'if_match', 'if_none_match', 'grant_full_control', 'grant_read', 'grant_read_acp', 'grant_write_acp', '"
+        "key', 'write_offset_bytes', 'metadata', 'server_side_encryption', 'storage_class', 'website_redirect_location'"
+        ", 'sse_customer_algorithm', 'sse_customer_key', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_"
+        "context', 'bucket_key_enabled', 'request_payer', 'tagging', 'object_lock_mode', 'object_lock_retain_until_date"
+        "', 'object_lock_legal_hold_status', 'expected_bucket_owner'), allow_dynamic_dunder_attrs=False), HashPlan(acti"
+        "on='add', fields=('acl', 'body', 'bucket', 'cache_control', 'content_disposition', 'content_encoding', 'conten"
+        "t_language', 'content_length', 'content_md5', 'content_type', 'checksum_algorithm', 'checksum_crc32', 'checksu"
+        "m_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha512', 'checksum_md5', 'check"
+        "sum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'expires', 'if_match', 'if_none_match', 'grant_full_c"
+        "ontrol', 'grant_read', 'grant_read_acp', 'grant_write_acp', 'key', 'write_offset_bytes', 'metadata', 'server_s"
+        "ide_encryption', 'storage_class', 'website_redirect_location', 'sse_customer_algorithm', 'sse_customer_key', '"
+        "sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'request_payer', "
+        "'tagging', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_status', 'expected_buc"
+        "ket_owner'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.field"
+        "s.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_V"
+        "AR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='acl', annotation=OpRef(name='init.field"
+        "s.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='body', a"
+        "nnotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='bucket', annotation=OpRef(name='init.fields.03.annotation'), default=None, default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='cache_control', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(na"
+        "me='init.fields.04.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_disposition', annotation=OpRef(name"
+        "='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='content_encoding', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06."
+        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
+        "te=None, check_type=None), InitPlan.Field(name='content_language', annotation=OpRef(name='init.fields.07.annot"
+        "ation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content_length', a"
+        "nnotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='content_md5', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='"
+        "init.fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='content_type', annotation=OpRef(name='init.fiel"
+        "ds.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksu"
+        "m_algorithm', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='checksum_crc32', annotation=OpRef(name='init.fields.12.annotation'), de"
+        "fault=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_crc32c', annotation="
+        "OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, i"
         "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='grant_full_control', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='ini"
-        "t.fields.25.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='grant_read', annotation=OpRef(name='init.fields.26"
-        ".annotation'), default=OpRef(name='init.fields.26.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='grant_read_a"
-        "cp', annotation=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='grant_write_acp', annotation=OpRef(name='init.fields.28.annotation'), default=Op"
-        "Ref(name='init.fields.28.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='key', annotation=OpRef(name='init.fie"
-        "lds.29.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='write_offset_bytes', annotation=OpRef("
-        "name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=Tr"
-        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
-        "d(name='metadata', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='server_side_encryption', annotation=OpRef(name='init.fields.32.ann"
-        "otation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_class', "
-        "annotation=OpRef(name='init.fields.33.annotation'), default=OpRef(name='init.fields.33.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='website_redirect_location', annotation=OpRef(name='init.fields.34.annotation'), defau"
-        "lt=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override=False, field_type=FieldType"
-        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer_algorithm', annotat"
-        "ion=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='sse_customer_key', annotation=OpRef(name='init.fields.36.annotation'), default=OpRef(name='i"
-        "nit.fields.36.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer_key_md5', annotation=OpRef(name='in"
-        "it.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
-        "sse_kms_key_id', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(name='init.fields.38.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='sse_kms_encryption_context', annotation=OpRef(name='init.fields.39.a"
-        "nnotation'), default=OpRef(name='init.fields.39.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='bucket_key_ena"
-        "bled', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields.40.default'), defau"
+        "n.Field(name='checksum_crc64nvme', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='ini"
+        "t.fields.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='checksum_sha1', annotation=OpRef(name='init.fields"
+        ".15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_"
+        "sha256', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='checksum_sha512', annotation=OpRef(name='init.fields.17.annotation'), defaul"
+        "t=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldType."
+        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_md5', annotation=OpRef(n"
+        "ame='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='checksum_xxhash64', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields"
+        ".19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='checksum_xxhash3', annotation=OpRef(name='init.fields.20.a"
+        "nnotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='checksum_xxhas"
+        "h128', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), defau"
         "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='request_payer', annotation=OpRef(name='init.fields.41.annotation'), default=Op"
-        "Ref(name='init.fields.41.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tagging', annotation=OpRef(name='init"
-        ".fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ob"
-        "ject_lock_mode', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef(name='init.fields.43.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='object_lock_retain_until_date', annotation=OpRef(name='init.fields.4"
-        "4.annotation'), default=OpRef(name='init.fields.44.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='object_lock"
-        "_legal_hold_status', annotation=OpRef(name='init.fields.45.annotation'), default=OpRef(name='init.fields.45.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='expected_bucket_owner', annotation=OpRef(name='init.fields.46.an"
-        "notation'), default=OpRef(name='init.fields.46.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), k"
-        "w_only_params=('acl', 'body', 'bucket', 'cache_control', 'content_disposition', 'content_encoding', 'content_l"
-        "anguage', 'content_length', 'content_md5', 'content_type', 'checksum_algorithm', 'checksum_crc32', 'checksum_c"
-        "rc32c', 'checksum_crc64_nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_s_h_a512', 'checksum_md5', 'check"
-        "sum_x_x_h_a_s_h64', 'checksum_x_x_h_a_s_h3', 'checksum_x_x_h_a_s_h128', 'expires', 'if_match', 'if_none_match'"
-        ", 'grant_full_control', 'grant_read', 'grant_read_acp', 'grant_write_acp', 'key', 'write_offset_bytes', 'metad"
-        "ata', 'server_side_encryption', 'storage_class', 'website_redirect_location', 'sse_customer_algorithm', 'sse_c"
-        "ustomer_key', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', 'r"
-        "equest_payer', 'tagging', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_status'"
-        ", 'expected_bucket_owner'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), Re"
-        "prPlan(fields=(ReprPlan.Field(name='acl', kw_only=True, fn=None), ReprPlan.Field(name='body', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='bucket', kw_only=True, fn=None), ReprPlan.Field(name='cache_control', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='content_disposition', kw_only=True, fn=None), ReprPlan.Field(name='content_e"
-        "ncoding', kw_only=True, fn=None), ReprPlan.Field(name='content_language', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='content_length', kw_only=True, fn=None), ReprPlan.Field(name='content_md5', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='content_type', kw_only=True, fn=None), ReprPlan.Field(name='checksum_algorithm', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='checksum_crc32', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc"
-        "32c', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc64_nvme', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='checksum_sha1', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha256', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='checksum_s_h_a512', kw_only=True, fn=None), ReprPlan.Field(name='checksum_md5', kw_only="
-        "True, fn=None), ReprPlan.Field(name='checksum_x_x_h_a_s_h64', kw_only=True, fn=None), ReprPlan.Field(name='che"
-        "cksum_x_x_h_a_s_h3', kw_only=True, fn=None), ReprPlan.Field(name='checksum_x_x_h_a_s_h128', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='expires', kw_only=True, fn=None), ReprPlan.Field(name='if_match', kw_only=True, fn="
-        "None), ReprPlan.Field(name='if_none_match', kw_only=True, fn=None), ReprPlan.Field(name='grant_full_control', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='grant_read', kw_only=True, fn=None), ReprPlan.Field(name='grant_r"
-        "ead_acp', kw_only=True, fn=None), ReprPlan.Field(name='grant_write_acp', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='key', kw_only=True, fn=None), ReprPlan.Field(name='write_offset_bytes', kw_only=True, fn=None), ReprPl"
-        "an.Field(name='metadata', kw_only=True, fn=None), ReprPlan.Field(name='server_side_encryption', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='storage_class', kw_only=True, fn=None), ReprPlan.Field(name='website_redirect_l"
-        "ocation', kw_only=True, fn=None), ReprPlan.Field(name='sse_customer_algorithm', kw_only=True, fn=None), ReprPl"
-        "an.Field(name='sse_customer_key', kw_only=True, fn=None), ReprPlan.Field(name='sse_customer_key_md5', kw_only="
-        "True, fn=None), ReprPlan.Field(name='sse_kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='sse_kms_enc"
-        "ryption_context', kw_only=True, fn=None), ReprPlan.Field(name='bucket_key_enabled', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='request_payer', kw_only=True, fn=None), ReprPlan.Field(name='tagging', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='object_lock_mode', kw_only=True, fn=None), ReprPlan.Field(name='object_lock_retain_un"
-        "til_date', kw_only=True, fn=None), ReprPlan.Field(name='object_lock_legal_hold_status', kw_only=True, fn=None)"
-        ", ReprPlan.Field(name='expected_bucket_owner', kw_only=True, fn=None)), id=False, terse=False, default_fn=None"
-        ")))"
+        "ype=None), InitPlan.Field(name='expires', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(na"
+        "me='init.fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='if_match', annotation=OpRef(name='init.fiel"
+        "ds.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='if_none"
+        "_match', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(name='init.fields.24.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='grant_full_control', annotation=OpRef(name='init.fields.25.annotation'), def"
+        "ault=OpRef(name='init.fields.25.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='grant_read', annotation=OpRef("
+        "name='init.fields.26.annotation'), default=OpRef(name='init.fields.26.default'), default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='grant_read_acp', annotation=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.2"
+        "7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='grant_write_acp', annotation=OpRef(name='init.fields.28.anno"
+        "tation'), default=OpRef(name='init.fields.28.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='key', annotation="
+        "OpRef(name='init.fields.29.annotation'), default=None, default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='write_offset_bytes"
+        "', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='metadata', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name="
+        "'init.fields.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='server_side_encryption', annotation=OpRef(name"
+        "='init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='storage_class', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef(name='init.fields.33.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='website_redirect_location', annotation=OpRef(name='init.fields.34"
+        ".annotation'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer"
+        "_algorithm', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='sse_customer_key', annotation=OpRef(name='init.fields.36.annotation'), d"
+        "efault=OpRef(name='init.fields.36.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='sse_customer_key_md5', annot"
+        "ation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='sse_kms_key_id', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(name='i"
+        "nit.fields.38.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='sse_kms_encryption_context', annotation=OpRef(na"
+        "me='init.fields.39.annotation'), default=OpRef(name='init.fields.39.default'), default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='bucket_key_enabled', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields"
+        ".40.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='request_payer', annotation=OpRef(name='init.fields.41.anno"
+        "tation'), default=OpRef(name='init.fields.41.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tagging', annotat"
+        "ion=OpRef(name='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='object_lock_mode', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef(name='i"
+        "nit.fields.43.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='object_lock_retain_until_date', annotation=OpRef"
+        "(name='init.fields.44.annotation'), default=OpRef(name='init.fields.44.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='object_lock_legal_hold_status', annotation=OpRef(name='init.fields.45.annotation'), default=OpRef(nam"
+        "e='init.fields.45.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='expected_bucket_owner', annotation=OpRef(nam"
+        "e='init.fields.46.annotation'), default=OpRef(name='init.fields.46.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='sel"
+        "f', std_params=(), kw_only_params=('acl', 'body', 'bucket', 'cache_control', 'content_disposition', 'content_e"
+        "ncoding', 'content_language', 'content_length', 'content_md5', 'content_type', 'checksum_algorithm', 'checksum"
+        "_crc32', 'checksum_crc32c', 'checksum_crc64nvme', 'checksum_sha1', 'checksum_sha256', 'checksum_sha512', 'chec"
+        "ksum_md5', 'checksum_xxhash64', 'checksum_xxhash3', 'checksum_xxhash128', 'expires', 'if_match', 'if_none_matc"
+        "h', 'grant_full_control', 'grant_read', 'grant_read_acp', 'grant_write_acp', 'key', 'write_offset_bytes', 'met"
+        "adata', 'server_side_encryption', 'storage_class', 'website_redirect_location', 'sse_customer_algorithm', 'sse"
+        "_customer_key', 'sse_customer_key_md5', 'sse_kms_key_id', 'sse_kms_encryption_context', 'bucket_key_enabled', "
+        "'request_payer', 'tagging', 'object_lock_mode', 'object_lock_retain_until_date', 'object_lock_legal_hold_statu"
+        "s', 'expected_bucket_owner'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), "
+        "ReprPlan(fields=(ReprPlan.Field(name='acl', kw_only=True, fn=None), ReprPlan.Field(name='body', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='bucket', kw_only=True, fn=None), ReprPlan.Field(name='cache_control', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='content_disposition', kw_only=True, fn=None), ReprPlan.Field(name='content"
+        "_encoding', kw_only=True, fn=None), ReprPlan.Field(name='content_language', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='content_length', kw_only=True, fn=None), ReprPlan.Field(name='content_md5', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='content_type', kw_only=True, fn=None), ReprPlan.Field(name='checksum_algorithm', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='checksum_crc32', kw_only=True, fn=None), ReprPlan.Field(name='checksum_c"
+        "rc32c', kw_only=True, fn=None), ReprPlan.Field(name='checksum_crc64nvme', kw_only=True, fn=None), ReprPlan.Fie"
+        "ld(name='checksum_sha1', kw_only=True, fn=None), ReprPlan.Field(name='checksum_sha256', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='checksum_sha512', kw_only=True, fn=None), ReprPlan.Field(name='checksum_md5', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='checksum_xxhash64', kw_only=True, fn=None), ReprPlan.Field(name='checksum_"
+        "xxhash3', kw_only=True, fn=None), ReprPlan.Field(name='checksum_xxhash128', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='expires', kw_only=True, fn=None), ReprPlan.Field(name='if_match', kw_only=True, fn=None), ReprPlan."
+        "Field(name='if_none_match', kw_only=True, fn=None), ReprPlan.Field(name='grant_full_control', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='grant_read', kw_only=True, fn=None), ReprPlan.Field(name='grant_read_acp', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='grant_write_acp', kw_only=True, fn=None), ReprPlan.Field(name='key', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='write_offset_bytes', kw_only=True, fn=None), ReprPlan.Field(name='m"
+        "etadata', kw_only=True, fn=None), ReprPlan.Field(name='server_side_encryption', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='storage_class', kw_only=True, fn=None), ReprPlan.Field(name='website_redirect_location', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='sse_customer_algorithm', kw_only=True, fn=None), ReprPlan.Field(name='s"
+        "se_customer_key', kw_only=True, fn=None), ReprPlan.Field(name='sse_customer_key_md5', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='sse_kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='sse_kms_encryption_context'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='bucket_key_enabled', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='request_payer', kw_only=True, fn=None), ReprPlan.Field(name='tagging', kw_only=True, fn=None), ReprPlan.Fie"
+        "ld(name='object_lock_mode', kw_only=True, fn=None), ReprPlan.Field(name='object_lock_retain_until_date', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='object_lock_legal_hold_status', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='expected_bucket_owner', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='3649a5e865d043896573cbf95a520109784d28a5',
+    plan_repr_sha1='6e8d51e9fff8bd18f4a4d51bc21a3a64c5b3842f',
     op_ref_idents=(
         '__dataclass__init__fields__01__annotation',
         '__dataclass__init__fields__01__default',
@@ -4530,7 +4526,7 @@ def _process_dataclass__c7ef2c06d2a80184135d9f7842511ef36cab6754():
         ('ominfra.clouds.aws.models.services.s3', 'PutObjectRequest'),
     ),
 )
-def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
+def _process_dataclass__6e8d51e9fff8bd18f4a4d51bc21a3a64c5b3842f():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4655,14 +4651,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
                 checksum_algorithm=self.checksum_algorithm,
                 checksum_crc32=self.checksum_crc32,
                 checksum_crc32c=self.checksum_crc32c,
-                checksum_crc64_nvme=self.checksum_crc64_nvme,
+                checksum_crc64nvme=self.checksum_crc64nvme,
                 checksum_sha1=self.checksum_sha1,
                 checksum_sha256=self.checksum_sha256,
-                checksum_s_h_a512=self.checksum_s_h_a512,
+                checksum_sha512=self.checksum_sha512,
                 checksum_md5=self.checksum_md5,
-                checksum_x_x_h_a_s_h64=self.checksum_x_x_h_a_s_h64,
-                checksum_x_x_h_a_s_h3=self.checksum_x_x_h_a_s_h3,
-                checksum_x_x_h_a_s_h128=self.checksum_x_x_h_a_s_h128,
+                checksum_xxhash64=self.checksum_xxhash64,
+                checksum_xxhash3=self.checksum_xxhash3,
+                checksum_xxhash128=self.checksum_xxhash128,
                 expires=self.expires,
                 if_match=self.if_match,
                 if_none_match=self.if_none_match,
@@ -4714,14 +4710,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
                 self.checksum_algorithm == other.checksum_algorithm and
                 self.checksum_crc32 == other.checksum_crc32 and
                 self.checksum_crc32c == other.checksum_crc32c and
-                self.checksum_crc64_nvme == other.checksum_crc64_nvme and
+                self.checksum_crc64nvme == other.checksum_crc64nvme and
                 self.checksum_sha1 == other.checksum_sha1 and
                 self.checksum_sha256 == other.checksum_sha256 and
-                self.checksum_s_h_a512 == other.checksum_s_h_a512 and
+                self.checksum_sha512 == other.checksum_sha512 and
                 self.checksum_md5 == other.checksum_md5 and
-                self.checksum_x_x_h_a_s_h64 == other.checksum_x_x_h_a_s_h64 and
-                self.checksum_x_x_h_a_s_h3 == other.checksum_x_x_h_a_s_h3 and
-                self.checksum_x_x_h_a_s_h128 == other.checksum_x_x_h_a_s_h128 and
+                self.checksum_xxhash64 == other.checksum_xxhash64 and
+                self.checksum_xxhash3 == other.checksum_xxhash3 and
+                self.checksum_xxhash128 == other.checksum_xxhash128 and
                 self.expires == other.expires and
                 self.if_match == other.if_match and
                 self.if_none_match == other.if_none_match and
@@ -4769,14 +4765,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
             'checksum_algorithm',
             'checksum_crc32',
             'checksum_crc32c',
-            'checksum_crc64_nvme',
+            'checksum_crc64nvme',
             'checksum_sha1',
             'checksum_sha256',
-            'checksum_s_h_a512',
+            'checksum_sha512',
             'checksum_md5',
-            'checksum_x_x_h_a_s_h64',
-            'checksum_x_x_h_a_s_h3',
-            'checksum_x_x_h_a_s_h128',
+            'checksum_xxhash64',
+            'checksum_xxhash3',
+            'checksum_xxhash128',
             'expires',
             'if_match',
             'if_none_match',
@@ -4832,14 +4828,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
             'checksum_algorithm',
             'checksum_crc32',
             'checksum_crc32c',
-            'checksum_crc64_nvme',
+            'checksum_crc64nvme',
             'checksum_sha1',
             'checksum_sha256',
-            'checksum_s_h_a512',
+            'checksum_sha512',
             'checksum_md5',
-            'checksum_x_x_h_a_s_h64',
-            'checksum_x_x_h_a_s_h3',
-            'checksum_x_x_h_a_s_h128',
+            'checksum_xxhash64',
+            'checksum_xxhash3',
+            'checksum_xxhash128',
             'expires',
             'if_match',
             'if_none_match',
@@ -4895,14 +4891,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
                 self.checksum_algorithm,
                 self.checksum_crc32,
                 self.checksum_crc32c,
-                self.checksum_crc64_nvme,
+                self.checksum_crc64nvme,
                 self.checksum_sha1,
                 self.checksum_sha256,
-                self.checksum_s_h_a512,
+                self.checksum_sha512,
                 self.checksum_md5,
-                self.checksum_x_x_h_a_s_h64,
-                self.checksum_x_x_h_a_s_h3,
-                self.checksum_x_x_h_a_s_h128,
+                self.checksum_xxhash64,
+                self.checksum_xxhash3,
+                self.checksum_xxhash128,
                 self.expires,
                 self.if_match,
                 self.if_none_match,
@@ -4949,14 +4945,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
             checksum_algorithm: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             checksum_crc32: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
             checksum_crc32c: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
-            checksum_crc64_nvme: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
+            checksum_crc64nvme: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
             checksum_sha1: __dataclass__init__fields__15__annotation = __dataclass__init__fields__15__default,
             checksum_sha256: __dataclass__init__fields__16__annotation = __dataclass__init__fields__16__default,
-            checksum_s_h_a512: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
+            checksum_sha512: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
             checksum_md5: __dataclass__init__fields__18__annotation = __dataclass__init__fields__18__default,
-            checksum_x_x_h_a_s_h64: __dataclass__init__fields__19__annotation = __dataclass__init__fields__19__default,
-            checksum_x_x_h_a_s_h3: __dataclass__init__fields__20__annotation = __dataclass__init__fields__20__default,
-            checksum_x_x_h_a_s_h128: __dataclass__init__fields__21__annotation = __dataclass__init__fields__21__default,
+            checksum_xxhash64: __dataclass__init__fields__19__annotation = __dataclass__init__fields__19__default,
+            checksum_xxhash3: __dataclass__init__fields__20__annotation = __dataclass__init__fields__20__default,
+            checksum_xxhash128: __dataclass__init__fields__21__annotation = __dataclass__init__fields__21__default,
             expires: __dataclass__init__fields__22__annotation = __dataclass__init__fields__22__default,
             if_match: __dataclass__init__fields__23__annotation = __dataclass__init__fields__23__default,
             if_none_match: __dataclass__init__fields__24__annotation = __dataclass__init__fields__24__default,
@@ -4996,14 +4992,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
             __dataclass__object_setattr(self, 'checksum_algorithm', checksum_algorithm)
             __dataclass__object_setattr(self, 'checksum_crc32', checksum_crc32)
             __dataclass__object_setattr(self, 'checksum_crc32c', checksum_crc32c)
-            __dataclass__object_setattr(self, 'checksum_crc64_nvme', checksum_crc64_nvme)
+            __dataclass__object_setattr(self, 'checksum_crc64nvme', checksum_crc64nvme)
             __dataclass__object_setattr(self, 'checksum_sha1', checksum_sha1)
             __dataclass__object_setattr(self, 'checksum_sha256', checksum_sha256)
-            __dataclass__object_setattr(self, 'checksum_s_h_a512', checksum_s_h_a512)
+            __dataclass__object_setattr(self, 'checksum_sha512', checksum_sha512)
             __dataclass__object_setattr(self, 'checksum_md5', checksum_md5)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h64', checksum_x_x_h_a_s_h64)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h3', checksum_x_x_h_a_s_h3)
-            __dataclass__object_setattr(self, 'checksum_x_x_h_a_s_h128', checksum_x_x_h_a_s_h128)
+            __dataclass__object_setattr(self, 'checksum_xxhash64', checksum_xxhash64)
+            __dataclass__object_setattr(self, 'checksum_xxhash3', checksum_xxhash3)
+            __dataclass__object_setattr(self, 'checksum_xxhash128', checksum_xxhash128)
             __dataclass__object_setattr(self, 'expires', expires)
             __dataclass__object_setattr(self, 'if_match', if_match)
             __dataclass__object_setattr(self, 'if_none_match', if_none_match)
@@ -5051,14 +5047,14 @@ def _process_dataclass__3649a5e865d043896573cbf95a520109784d28a5():
             parts.append(f"checksum_algorithm={self.checksum_algorithm!r}")
             parts.append(f"checksum_crc32={self.checksum_crc32!r}")
             parts.append(f"checksum_crc32c={self.checksum_crc32c!r}")
-            parts.append(f"checksum_crc64_nvme={self.checksum_crc64_nvme!r}")
+            parts.append(f"checksum_crc64nvme={self.checksum_crc64nvme!r}")
             parts.append(f"checksum_sha1={self.checksum_sha1!r}")
             parts.append(f"checksum_sha256={self.checksum_sha256!r}")
-            parts.append(f"checksum_s_h_a512={self.checksum_s_h_a512!r}")
+            parts.append(f"checksum_sha512={self.checksum_sha512!r}")
             parts.append(f"checksum_md5={self.checksum_md5!r}")
-            parts.append(f"checksum_x_x_h_a_s_h64={self.checksum_x_x_h_a_s_h64!r}")
-            parts.append(f"checksum_x_x_h_a_s_h3={self.checksum_x_x_h_a_s_h3!r}")
-            parts.append(f"checksum_x_x_h_a_s_h128={self.checksum_x_x_h_a_s_h128!r}")
+            parts.append(f"checksum_xxhash64={self.checksum_xxhash64!r}")
+            parts.append(f"checksum_xxhash3={self.checksum_xxhash3!r}")
+            parts.append(f"checksum_xxhash128={self.checksum_xxhash128!r}")
             parts.append(f"expires={self.expires!r}")
             parts.append(f"if_match={self.if_match!r}")
             parts.append(f"if_none_match={self.if_none_match!r}")

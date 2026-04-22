@@ -3001,7 +3001,7 @@ class FpgaDeviceMemoryInfo(
     _base.Shape,
     shape_name='FpgaDeviceMemoryInfo',
 ):
-    size_in_mi_b: FpgaDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    size_in_mib: FpgaDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SizeInMiB',
         serialization_name='sizeInMiB',
         shape_name='FpgaDeviceMemorySize',
@@ -3013,7 +3013,7 @@ class GpuDeviceMemoryInfo(
     _base.Shape,
     shape_name='GpuDeviceMemoryInfo',
 ):
-    size_in_mi_b: GpuDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    size_in_mib: GpuDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SizeInMiB',
         serialization_name='sizeInMiB',
         shape_name='GpuDeviceMemorySize',
@@ -3111,7 +3111,7 @@ class InferenceDeviceMemoryInfo(
     _base.Shape,
     shape_name='InferenceDeviceMemoryInfo',
 ):
-    size_in_mi_b: InferenceDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    size_in_mib: InferenceDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SizeInMiB',
         serialization_name='sizeInMiB',
         shape_name='InferenceDeviceMemorySize',
@@ -3625,7 +3625,7 @@ class MediaDeviceMemoryInfo(
     _base.Shape,
     shape_name='MediaDeviceMemoryInfo',
 ):
-    size_in_mi_b: MediaDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    size_in_mib: MediaDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SizeInMiB',
         serialization_name='sizeInMiB',
         shape_name='MediaDeviceMemorySize',
@@ -3637,7 +3637,7 @@ class MemoryInfo(
     _base.Shape,
     shape_name='MemoryInfo',
 ):
-    size_in_mi_b: MemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    size_in_mib: MemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SizeInMiB',
         serialization_name='sizeInMiB',
         shape_name='MemorySize',
@@ -3814,7 +3814,7 @@ class NeuronDeviceMemoryInfo(
     _base.Shape,
     shape_name='NeuronDeviceMemoryInfo',
 ):
-    size_in_mi_b: NeuronDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
+    size_in_mib: NeuronDeviceMemorySize | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='SizeInMiB',
         serialization_name='sizeInMiB',
         shape_name='NeuronDeviceMemorySize',
@@ -5233,7 +5233,7 @@ class VCpuInfo(
     _base.Shape,
     shape_name='VCpuInfo',
 ):
-    default_v_cpus: VCpuCount | None = _dc.field(default=None, metadata=_base.field_metadata(
+    default_vcpu_s: VCpuCount | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DefaultVCpus',
         serialization_name='defaultVCpus',
         shape_name='VCpuCount',
@@ -6698,7 +6698,7 @@ class FpgaInfo(
         shape_name='FpgaDeviceInfoList',
     ))
 
-    total_fpga_memory_in_mi_b: TotalFpgaMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
+    total_fpga_memory_in_mib: TotalFpgaMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TotalFpgaMemoryInMiB',
         serialization_name='totalFpgaMemoryInMiB',
         shape_name='totalFpgaMemory',
@@ -6717,7 +6717,7 @@ class GpuInfo(
         shape_name='GpuDeviceInfoList',
     ))
 
-    total_gpu_memory_in_mi_b: TotalGpuMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
+    total_gpu_memory_in_mib: TotalGpuMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TotalGpuMemoryInMiB',
         serialization_name='totalGpuMemoryInMiB',
         shape_name='totalGpuMemory',
@@ -6967,7 +6967,7 @@ class InferenceAcceleratorInfo(
         shape_name='InferenceDeviceInfoList',
     ))
 
-    total_inference_memory_in_mi_b: TotalInferenceMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
+    total_inference_memory_in_mib: TotalInferenceMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TotalInferenceMemoryInMiB',
         serialization_name='totalInferenceMemoryInMiB',
         shape_name='totalInferenceMemory',
@@ -7131,7 +7131,7 @@ class MediaAcceleratorInfo(
         shape_name='MediaDeviceInfoList',
     ))
 
-    total_media_memory_in_mi_b: TotalMediaMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
+    total_media_memory_in_mib: TotalMediaMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TotalMediaMemoryInMiB',
         serialization_name='totalMediaMemoryInMiB',
         shape_name='TotalMediaMemory',
@@ -7355,7 +7355,7 @@ class NeuronInfo(
         shape_name='NeuronDeviceInfoList',
     ))
 
-    total_neuron_device_memory_in_mi_b: TotalNeuronMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
+    total_neuron_device_memory_in_mib: TotalNeuronMemory | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TotalNeuronDeviceMemoryInMiB',
         serialization_name='totalNeuronDeviceMemoryInMiB',
         shape_name='TotalNeuronMemory',
@@ -7784,7 +7784,7 @@ class InstanceTypeInfo(
         shape_name='ProcessorInfo',
     ))
 
-    v_cpu_info: VCpuInfo | None = _dc.field(default=None, metadata=_base.field_metadata(
+    vcpu_info: VCpuInfo | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='VCpuInfo',
         serialization_name='vCpuInfo',
         shape_name='VCpuInfo',

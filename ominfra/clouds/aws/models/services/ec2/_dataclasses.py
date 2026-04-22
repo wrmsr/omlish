@@ -10782,18 +10782,17 @@ def _process_dataclass__918337ad51941fcd8bd3f26ae88abd374c057231():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('size_in_mi_b',)), EqPlan(fields=('size_in_mi_b',)), FrozenPlan(fields=('__shape__"
-        "', 'size_in_mi_b'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('size_in_mi_b',), cache="
-        "False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), d"
-        "efault=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='size_in_mi_b', annotation=OpRef(name='init.fields.1.annotat"
-        "ion'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only"
-        "_params=('size_in_mi_b',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), Rep"
-        "rPlan(fields=(ReprPlan.Field(name='size_in_mi_b', kw_only=True, fn=None),), id=False, terse=False, default_fn="
-        "None)))"
+        "Plans(tup=(CopyPlan(fields=('size_in_mib',)), EqPlan(fields=('size_in_mib',)), FrozenPlan(fields=('__shape__',"
+        " 'size_in_mib'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('size_in_mib',), cache=Fals"
+        "e), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), defau"
+        "lt=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='size_in_mib', annotation=OpRef(name='init.fields.1.annotation')"
+        ", default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_para"
+        "ms=('size_in_mib',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan("
+        "fields=(ReprPlan.Field(name='size_in_mib', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361',
+    plan_repr_sha1='c8d76b2411c8f112926c4d0c991a56440190780a',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -10807,7 +10806,7 @@ def _process_dataclass__918337ad51941fcd8bd3f26ae88abd374c057231():
         ('ominfra.clouds.aws.models.services.ec2', 'NeuronDeviceMemoryInfo'),
     ),
 )
-def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
+def _process_dataclass__c8d76b2411c8f112926c4d0c991a56440190780a():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -10831,7 +10830,7 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                size_in_mi_b=self.size_in_mi_b,
+                size_in_mib=self.size_in_mib,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -10845,7 +10844,7 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.size_in_mi_b == other.size_in_mi_b
+                self.size_in_mib == other.size_in_mib
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -10855,7 +10854,7 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
 
         __dataclass___setattr_frozen_fields = {
             '__shape__',
-            'size_in_mi_b',
+            'size_in_mib',
         }
 
         def __setattr__(self, name, value):
@@ -10873,7 +10872,7 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
 
         __dataclass___delattr_frozen_fields = {
             '__shape__',
-            'size_in_mi_b',
+            'size_in_mib',
         }
 
         def __delattr__(self, name):
@@ -10891,7 +10890,7 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
 
         def __hash__(self):
             return hash((
-                self.size_in_mi_b,
+                self.size_in_mib,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -10900,9 +10899,9 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
         def __init__(
             self,
             *,
-            size_in_mi_b: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            size_in_mib: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'size_in_mi_b', size_in_mi_b)
+            __dataclass__object_setattr(self, 'size_in_mib', size_in_mib)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -10912,7 +10911,7 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"size_in_mi_b={self.size_in_mi_b!r}")
+            parts.append(f"size_in_mib={self.size_in_mib!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -10929,22 +10928,21 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('fpgas', 'total_fpga_memory_in_mi_b')), EqPlan(fields=('fpgas', 'total_fpga_memory"
-        "_in_mi_b')), FrozenPlan(fields=('__shape__', 'fpgas', 'total_fpga_memory_in_mi_b'), allow_dynamic_dunder_attrs"
-        "=False), HashPlan(action='add', fields=('fpgas', 'total_fpga_memory_in_mi_b'), cache=False), InitPlan(fields=("
-        "InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='fpgas', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init."
-        "fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='total_fpga_memory_in_mi_b', annotation=OpRef(name='in"
-        "it.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std"
-        "_params=(), kw_only_params=('fpgas', 'total_fpga_memory_in_mi_b'), frozen=True, slots=False, post_init_params="
-        "None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='fpgas', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='total_fpga_memory_in_mi_b', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)"
-        "))"
+        "Plans(tup=(CopyPlan(fields=('fpgas', 'total_fpga_memory_in_mib')), EqPlan(fields=('fpgas', 'total_fpga_memory_"
+        "in_mib')), FrozenPlan(fields=('__shape__', 'fpgas', 'total_fpga_memory_in_mib'), allow_dynamic_dunder_attrs=Fa"
+        "lse), HashPlan(action='add', fields=('fpgas', 'total_fpga_memory_in_mib'), cache=False), InitPlan(fields=(Init"
+        "Plan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory="
+        "None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='fpgas', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fiel"
+        "ds.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='total_fpga_memory_in_mib', annotation=OpRef(name='init.fi"
+        "elds.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_para"
+        "ms=(), kw_only_params=('fpgas', 'total_fpga_memory_in_mib'), frozen=True, slots=False, post_init_params=None, "
+        "init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='fpgas', kw_only=True, fn=None), ReprPlan."
+        "Field(name='total_fpga_memory_in_mib', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae',
+    plan_repr_sha1='7ae4df783a7e67f462cc9f3cedb5dfec3dc36719',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -10955,7 +10953,7 @@ def _process_dataclass__9a0c4e3e2d7a9d7db1c242fbe40ecb8b8b1d2361():
         ('ominfra.clouds.aws.models.services.ec2', 'FpgaInfo'),
     ),
 )
-def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
+def _process_dataclass__7ae4df783a7e67f462cc9f3cedb5dfec3dc36719():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -10982,7 +10980,7 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 fpgas=self.fpgas,
-                total_fpga_memory_in_mi_b=self.total_fpga_memory_in_mi_b,
+                total_fpga_memory_in_mib=self.total_fpga_memory_in_mib,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -10997,7 +10995,7 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
                 return NotImplemented
             return (
                 self.fpgas == other.fpgas and
-                self.total_fpga_memory_in_mi_b == other.total_fpga_memory_in_mi_b
+                self.total_fpga_memory_in_mib == other.total_fpga_memory_in_mib
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -11008,7 +11006,7 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
         __dataclass___setattr_frozen_fields = {
             '__shape__',
             'fpgas',
-            'total_fpga_memory_in_mi_b',
+            'total_fpga_memory_in_mib',
         }
 
         def __setattr__(self, name, value):
@@ -11027,7 +11025,7 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
         __dataclass___delattr_frozen_fields = {
             '__shape__',
             'fpgas',
-            'total_fpga_memory_in_mi_b',
+            'total_fpga_memory_in_mib',
         }
 
         def __delattr__(self, name):
@@ -11046,7 +11044,7 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
         def __hash__(self):
             return hash((
                 self.fpgas,
-                self.total_fpga_memory_in_mi_b,
+                self.total_fpga_memory_in_mib,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -11056,10 +11054,10 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
             self,
             *,
             fpgas: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            total_fpga_memory_in_mi_b: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            total_fpga_memory_in_mib: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'fpgas', fpgas)
-            __dataclass__object_setattr(self, 'total_fpga_memory_in_mi_b', total_fpga_memory_in_mi_b)
+            __dataclass__object_setattr(self, 'total_fpga_memory_in_mib', total_fpga_memory_in_mib)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -11070,7 +11068,7 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
         def __repr__(self):
             parts = []
             parts.append(f"fpgas={self.fpgas!r}")
-            parts.append(f"total_fpga_memory_in_mi_b={self.total_fpga_memory_in_mi_b!r}")
+            parts.append(f"total_fpga_memory_in_mib={self.total_fpga_memory_in_mib!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -11322,21 +11320,21 @@ def _process_dataclass__f143014e17ae0e4513cf77ae4560ae327bc567e8():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('gpus', 'total_gpu_memory_in_mi_b')), EqPlan(fields=('gpus', 'total_gpu_memory_in_"
-        "mi_b')), FrozenPlan(fields=('__shape__', 'gpus', 'total_gpu_memory_in_mi_b'), allow_dynamic_dunder_attrs=False"
-        "), HashPlan(action='add', fields=('gpus', 'total_gpu_memory_in_mi_b'), cache=False), InitPlan(fields=(InitPlan"
-        ".Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None"
-        ", init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='gpus', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='total_gpu_memory_in_mi_b', annotation=OpRef(name='init.fields."
-        "2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=()"
-        ", kw_only_params=('gpus', 'total_gpu_memory_in_mi_b'), frozen=True, slots=False, post_init_params=None, init_f"
-        "ns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='gpus', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='total_gpu_memory_in_mi_b', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('gpus', 'total_gpu_memory_in_mib')), EqPlan(fields=('gpus', 'total_gpu_memory_in_m"
+        "ib')), FrozenPlan(fields=('__shape__', 'gpus', 'total_gpu_memory_in_mib'), allow_dynamic_dunder_attrs=False), "
+        "HashPlan(action='add', fields=('gpus', 'total_gpu_memory_in_mib'), cache=False), InitPlan(fields=(InitPlan.Fie"
+        "ld(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='gpus', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='total_gpu_memory_in_mib', annotation=OpRef(name='init.fields.2.ann"
+        "otation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_"
+        "only_params=('gpus', 'total_gpu_memory_in_mib'), frozen=True, slots=False, post_init_params=None, init_fns=(),"
+        " validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='gpus', kw_only=True, fn=None), ReprPlan.Field(name='t"
+        "otal_gpu_memory_in_mib', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='716db2b453a7379781d728ae63db1a6fd30a0069',
+    plan_repr_sha1='9ce33943794b12eec5aa78170408c48ce4c4c5db',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -11347,7 +11345,7 @@ def _process_dataclass__f143014e17ae0e4513cf77ae4560ae327bc567e8():
         ('ominfra.clouds.aws.models.services.ec2', 'GpuInfo'),
     ),
 )
-def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
+def _process_dataclass__9ce33943794b12eec5aa78170408c48ce4c4c5db():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -11374,7 +11372,7 @@ def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 gpus=self.gpus,
-                total_gpu_memory_in_mi_b=self.total_gpu_memory_in_mi_b,
+                total_gpu_memory_in_mib=self.total_gpu_memory_in_mib,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -11389,7 +11387,7 @@ def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
                 return NotImplemented
             return (
                 self.gpus == other.gpus and
-                self.total_gpu_memory_in_mi_b == other.total_gpu_memory_in_mi_b
+                self.total_gpu_memory_in_mib == other.total_gpu_memory_in_mib
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -11400,7 +11398,7 @@ def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
         __dataclass___setattr_frozen_fields = {
             '__shape__',
             'gpus',
-            'total_gpu_memory_in_mi_b',
+            'total_gpu_memory_in_mib',
         }
 
         def __setattr__(self, name, value):
@@ -11419,7 +11417,7 @@ def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
         __dataclass___delattr_frozen_fields = {
             '__shape__',
             'gpus',
-            'total_gpu_memory_in_mi_b',
+            'total_gpu_memory_in_mib',
         }
 
         def __delattr__(self, name):
@@ -11438,7 +11436,7 @@ def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
         def __hash__(self):
             return hash((
                 self.gpus,
-                self.total_gpu_memory_in_mi_b,
+                self.total_gpu_memory_in_mib,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -11448,10 +11446,10 @@ def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
             self,
             *,
             gpus: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            total_gpu_memory_in_mi_b: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            total_gpu_memory_in_mib: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'gpus', gpus)
-            __dataclass__object_setattr(self, 'total_gpu_memory_in_mi_b', total_gpu_memory_in_mi_b)
+            __dataclass__object_setattr(self, 'total_gpu_memory_in_mib', total_gpu_memory_in_mib)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -11462,7 +11460,7 @@ def _process_dataclass__716db2b453a7379781d728ae63db1a6fd30a0069():
         def __repr__(self):
             parts = []
             parts.append(f"gpus={self.gpus!r}")
-            parts.append(f"total_gpu_memory_in_mi_b={self.total_gpu_memory_in_mi_b!r}")
+            parts.append(f"total_gpu_memory_in_mib={self.total_gpu_memory_in_mib!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -12797,22 +12795,22 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('accelerators', 'total_inference_memory_in_mi_b')), EqPlan(fields=('accelerators',"
-        " 'total_inference_memory_in_mi_b')), FrozenPlan(fields=('__shape__', 'accelerators', 'total_inference_memory_i"
-        "n_mi_b'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('accelerators', 'total_inference_m"
-        "emory_in_mi_b'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.f"
-        "ields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLAS"
-        "S_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='accelerators', annotation=OpRef(name"
-        "='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='total_inference_memory_in_mi_b', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init"
-        ".fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('accelerators', 'total"
-        "_inference_memory_in_mi_b'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), R"
-        "eprPlan(fields=(ReprPlan.Field(name='accelerators', kw_only=True, fn=None), ReprPlan.Field(name='total_inferen"
-        "ce_memory_in_mi_b', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('accelerators', 'total_inference_memory_in_mib')), EqPlan(fields=('accelerators', "
+        "'total_inference_memory_in_mib')), FrozenPlan(fields=('__shape__', 'accelerators', 'total_inference_memory_in_"
+        "mib'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('accelerators', 'total_inference_memo"
+        "ry_in_mib'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.field"
+        "s.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VA"
+        "R, coerce=None, validate=None, check_type=None), InitPlan.Field(name='accelerators', annotation=OpRef(name='in"
+        "it.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='to"
+        "tal_inference_memory_in_mib', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fiel"
+        "ds.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('accelerators', 'total_infe"
+        "rence_memory_in_mib'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPla"
+        "n(fields=(ReprPlan.Field(name='accelerators', kw_only=True, fn=None), ReprPlan.Field(name='total_inference_mem"
+        "ory_in_mib', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b6cdadd468d96d55e67c5c44dca06681ea9dd5f3',
+    plan_repr_sha1='7db22bbd42f40af9f9eb890818b6970669ca3bcd',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -12823,7 +12821,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
         ('ominfra.clouds.aws.models.services.ec2', 'InferenceAcceleratorInfo'),
     ),
 )
-def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
+def _process_dataclass__7db22bbd42f40af9f9eb890818b6970669ca3bcd():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -12850,7 +12848,7 @@ def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 accelerators=self.accelerators,
-                total_inference_memory_in_mi_b=self.total_inference_memory_in_mi_b,
+                total_inference_memory_in_mib=self.total_inference_memory_in_mib,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -12865,7 +12863,7 @@ def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
                 return NotImplemented
             return (
                 self.accelerators == other.accelerators and
-                self.total_inference_memory_in_mi_b == other.total_inference_memory_in_mi_b
+                self.total_inference_memory_in_mib == other.total_inference_memory_in_mib
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -12876,7 +12874,7 @@ def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
         __dataclass___setattr_frozen_fields = {
             '__shape__',
             'accelerators',
-            'total_inference_memory_in_mi_b',
+            'total_inference_memory_in_mib',
         }
 
         def __setattr__(self, name, value):
@@ -12895,7 +12893,7 @@ def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
         __dataclass___delattr_frozen_fields = {
             '__shape__',
             'accelerators',
-            'total_inference_memory_in_mi_b',
+            'total_inference_memory_in_mib',
         }
 
         def __delattr__(self, name):
@@ -12914,7 +12912,7 @@ def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
         def __hash__(self):
             return hash((
                 self.accelerators,
-                self.total_inference_memory_in_mi_b,
+                self.total_inference_memory_in_mib,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -12924,10 +12922,10 @@ def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
             self,
             *,
             accelerators: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            total_inference_memory_in_mi_b: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            total_inference_memory_in_mib: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'accelerators', accelerators)
-            __dataclass__object_setattr(self, 'total_inference_memory_in_mi_b', total_inference_memory_in_mi_b)
+            __dataclass__object_setattr(self, 'total_inference_memory_in_mib', total_inference_memory_in_mib)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -12938,7 +12936,7 @@ def _process_dataclass__b6cdadd468d96d55e67c5c44dca06681ea9dd5f3():
         def __repr__(self):
             parts = []
             parts.append(f"accelerators={self.accelerators!r}")
-            parts.append(f"total_inference_memory_in_mi_b={self.total_inference_memory_in_mi_b!r}")
+            parts.append(f"total_inference_memory_in_mib={self.total_inference_memory_in_mib!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -18985,136 +18983,136 @@ def _process_dataclass__327236ea672fda2b2703a334052e0713bf4d89b0():
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('instance_type', 'current_generation', 'free_tier_eligible', 'supported_usage_clas"
         "ses', 'supported_root_device_types', 'supported_virtualization_types', 'bare_metal', 'hypervisor', 'processor_"
-        "info', 'v_cpu_info', 'memory_info', 'instance_storage_supported', 'instance_storage_info', 'ebs_info', 'networ"
-        "k_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_accelerator_info', 'hibernation_supported"
-        "', 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_recovery_supported', 'supported_boot_"
-        "modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_inf"
-        "o', 'phc_support', 'reboot_migration_support')), EqPlan(fields=('instance_type', 'current_generation', 'free_t"
-        "ier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtualization_types', 'ba"
-        "re_metal', 'hypervisor', 'processor_info', 'v_cpu_info', 'memory_info', 'instance_storage_supported', 'instanc"
-        "e_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_accel"
-        "erator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_r"
-        "ecovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', '"
-        "media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support')), FrozenPlan(fields=('__sha"
-        "pe__', 'instance_type', 'current_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root"
-        "_device_types', 'supported_virtualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'v_cpu_info', "
-        "'memory_info', 'instance_storage_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', "
-        "'fpga_info', 'placement_group_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_perform"
-        "ance_supported', 'dedicated_hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclav"
-        "es_support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'r"
-        "eboot_migration_support'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('instance_type', "
-        "'current_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'support"
-        "ed_virtualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'v_cpu_info', 'memory_info', 'instance"
-        "_storage_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_"
-        "group_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedica"
-        "ted_hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_"
-        "support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'"
-        "), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annot"
-        "ation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init.field"
-        "s.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='current_"
-        "generation', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='free_tier_eligible', annotation=OpRef(name='init.fields.03.annotation'),"
-        " default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_usage_classes', "
-        "annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='supported_root_device_types', annotation=OpRef(name='init.fields.05.annotation'), def"
-        "ault=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_virtualization_types"
-        "', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='bare_metal', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(nam"
-        "e='init.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fie"
-        "lds.08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='proces"
-        "sor_info', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='v_cpu_info', annotation=OpRef(name='init.fields.10.annotation'), default=O"
-        "pRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='memory_info', annotation=OpRef(name="
-        "'init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='instance_storage_supported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.f"
-        "ields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='instance_storage_info', annotation=OpRef(name='init.f"
-        "ields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_"
-        "info', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='network_info', annotation=OpRef(name='init.fields.15.annotation'), default=OpR"
-        "ef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='gpu_info', annotation=OpRef(name='init"
-        ".fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fp"
-        "ga_info', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None), InitPlan.Field(name='placement_group_info', annotation=OpRef(name='init.fields.18.annotation'), "
-        "default=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='inference_accelerator_info'"
-        ", annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_fa"
-        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
-        "one), InitPlan.Field(name='hibernation_supported', annotation=OpRef(name='init.fields.20.annotation'), default"
-        "=OpRef(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='burstable_performance_supported', "
-        "annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='dedicated_hosts_supported', annotation=OpRef(name='init.fields.22.annotation'), defau"
-        "lt=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType"
-        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='auto_recovery_supported', annota"
-        "tion=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='supported_boot_modes', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(na"
-        "me='init.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='nitro_enclaves_support', annotation=OpRef(n"
-        "ame='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='nitro_tpm_support', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields"
-        ".26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='nitro_tpm_info', annotation=OpRef(name='init.fields.27.ann"
-        "otation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='media_accelerato"
-        "r_info', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), def"
+        "info', 'vcpu_info', 'memory_info', 'instance_storage_supported', 'instance_storage_info', 'ebs_info', 'network"
+        "_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_accelerator_info', 'hibernation_supported'"
+        ", 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_recovery_supported', 'supported_boot_m"
+        "odes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info"
+        "', 'phc_support', 'reboot_migration_support')), EqPlan(fields=('instance_type', 'current_generation', 'free_ti"
+        "er_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtualization_types', 'bar"
+        "e_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_storage_supported', 'instance_"
+        "storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_acceler"
+        "ator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_rec"
+        "overy_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', 'me"
+        "dia_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support')), FrozenPlan(fields=('__shape"
+        "__', 'instance_type', 'current_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_d"
+        "evice_types', 'supported_virtualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'me"
+        "mory_info', 'instance_storage_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fp"
+        "ga_info', 'placement_group_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performanc"
+        "e_supported', 'dedicated_hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_"
+        "support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'rebo"
+        "ot_migration_support'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('instance_type', 'cu"
+        "rrent_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_"
+        "virtualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_sto"
+        "rage_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_grou"
+        "p_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_"
+        "hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_supp"
+        "ort', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'), c"
+        "ache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotatio"
+        "n'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init.fields.01"
+        ".annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='current_gene"
+        "ration', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), def"
         "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
-        "_type=None), InitPlan.Field(name='neuron_info', annotation=OpRef(name='init.fields.29.annotation'), default=Op"
-        "Ref(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='phc_support', annotation=OpRef(name='"
-        "init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, ov"
+        "_type=None), InitPlan.Field(name='free_tier_eligible', annotation=OpRef(name='init.fields.03.annotation'), def"
+        "ault=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_usage_classes', anno"
+        "tation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='supported_root_device_types', annotation=OpRef(name='init.fields.05.annotation'), default"
+        "=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_virtualization_types', a"
+        "nnotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='bare_metal', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='i"
+        "nit.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fields."
+        "08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='processor_"
+        "info', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='vcpu_info', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef("
+        "name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='memory_info', annotation=OpRef(name='init"
+        ".fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='in"
+        "stance_storage_supported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields"
+        ".12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='instance_storage_info', annotation=OpRef(name='init.fields"
+        ".13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_info'"
+        ", annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one), InitPlan.Field(name='network_info', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(na"
+        "me='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='gpu_info', annotation=OpRef(name='init.fiel"
+        "ds.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fpga_in"
+        "fo', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='placement_group_info', annotation=OpRef(name='init.fields.18.annotation'), defau"
+        "lt=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='inference_accelerator_info', ann"
+        "otation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='hibernation_supported', annotation=OpRef(name='init.fields.20.annotation'), default=OpRe"
+        "f(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='burstable_performance_supported', annot"
+        "ation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='dedicated_hosts_supported', annotation=OpRef(name='init.fields.22.annotation'), default=Op"
+        "Ref(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
+        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='auto_recovery_supported', annotation="
+        "OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='supported_boot_modes', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(name='i"
+        "nit.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='nitro_enclaves_support', annotation=OpRef(name='"
+        "init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=True, ov"
         "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='reboot_migration_support', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fiel"
-        "ds.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('instance_type', 'current_"
-        "generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtua"
-        "lization_types', 'bare_metal', 'hypervisor', 'processor_info', 'v_cpu_info', 'memory_info', 'instance_storage_"
-        "supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_inf"
-        "o', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts"
-        "_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support',"
-        " 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'), frozen"
-        "=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name"
-        "='instance_type', kw_only=True, fn=None), ReprPlan.Field(name='current_generation', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name='supported_usage_classes',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='supported_root_device_types', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='supported_virtualization_types', kw_only=True, fn=None), ReprPlan.Field(name='bare_metal', kw_only="
-        "True, fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='processor_info'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='v_cpu_info', kw_only=True, fn=None), ReprPlan.Field(name='memor"
-        "y_info', kw_only=True, fn=None), ReprPlan.Field(name='instance_storage_supported', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='instance_storage_info', kw_only=True, fn=None), ReprPlan.Field(name='ebs_info', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='network_info', kw_only=True, fn=None), ReprPlan.Field(name='gpu_info', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='fpga_info', kw_only=True, fn=None), ReprPlan.Field(name='placement_grou"
-        "p_info', kw_only=True, fn=None), ReprPlan.Field(name='inference_accelerator_info', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='hibernation_supported', kw_only=True, fn=None), ReprPlan.Field(name='burstable_performance_s"
-        "upported', kw_only=True, fn=None), ReprPlan.Field(name='dedicated_hosts_supported', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='auto_recovery_supported', kw_only=True, fn=None), ReprPlan.Field(name='supported_boot_modes"
-        "', kw_only=True, fn=None), ReprPlan.Field(name='nitro_enclaves_support', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='nitro_tpm_support', kw_only=True, fn=None), ReprPlan.Field(name='nitro_tpm_info', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='media_accelerator_info', kw_only=True, fn=None), ReprPlan.Field(name='neuron_info', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='phc_support', kw_only=True, fn=None), ReprPlan.Field(name='reboot_"
-        "migration_support', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "='nitro_tpm_support', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields.26.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='nitro_tpm_info', annotation=OpRef(name='init.fields.27.annotati"
+        "on'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='media_accelerator_inf"
+        "o', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='neuron_info', annotation=OpRef(name='init.fields.29.annotation'), default=OpRef(n"
+        "ame='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='phc_support', annotation=OpRef(name='init."
+        "fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='reb"
+        "oot_migration_support', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('instance_type', 'current_gener"
+        "ation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtualizat"
+        "ion_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_storage_suppor"
+        "ted', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'i"
+        "nference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_suppo"
+        "rted', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitr"
+        "o_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'), frozen=True,"
+        " slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='inst"
+        "ance_type', kw_only=True, fn=None), ReprPlan.Field(name='current_generation', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name='supported_usage_classes', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='supported_root_device_types', kw_only=True, fn=None), ReprPlan.Field(n"
+        "ame='supported_virtualization_types', kw_only=True, fn=None), ReprPlan.Field(name='bare_metal', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='processor_info', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='vcpu_info', kw_only=True, fn=None), ReprPlan.Field(name='memory_info'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='instance_storage_supported', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='instance_storage_info', kw_only=True, fn=None), ReprPlan.Field(name='ebs_info', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='network_info', kw_only=True, fn=None), ReprPlan.Field(name='gpu_info', kw_only=True,"
+        " fn=None), ReprPlan.Field(name='fpga_info', kw_only=True, fn=None), ReprPlan.Field(name='placement_group_info'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='inference_accelerator_info', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='hibernation_supported', kw_only=True, fn=None), ReprPlan.Field(name='burstable_performance_supporte"
+        "d', kw_only=True, fn=None), ReprPlan.Field(name='dedicated_hosts_supported', kw_only=True, fn=None), ReprPlan."
+        "Field(name='auto_recovery_supported', kw_only=True, fn=None), ReprPlan.Field(name='supported_boot_modes', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='nitro_enclaves_support', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'nitro_tpm_support', kw_only=True, fn=None), ReprPlan.Field(name='nitro_tpm_info', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='media_accelerator_info', kw_only=True, fn=None), ReprPlan.Field(name='neuron_info', kw_only="
+        "True, fn=None), ReprPlan.Field(name='phc_support', kw_only=True, fn=None), ReprPlan.Field(name='reboot_migrati"
+        "on_support', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='37124530a544bf60458fe3565a9e16eb383d9afa',
+    plan_repr_sha1='8116c7f65aa4861e765e4a02a83ff00ac3f2c212',
     op_ref_idents=(
         '__dataclass__init__fields__01__annotation',
         '__dataclass__init__fields__01__default',
@@ -19183,7 +19181,7 @@ def _process_dataclass__327236ea672fda2b2703a334052e0713bf4d89b0():
         ('ominfra.clouds.aws.models.services.ec2', 'InstanceTypeInfo'),
     ),
 )
-def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
+def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -19276,7 +19274,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
                 bare_metal=self.bare_metal,
                 hypervisor=self.hypervisor,
                 processor_info=self.processor_info,
-                v_cpu_info=self.v_cpu_info,
+                vcpu_info=self.vcpu_info,
                 memory_info=self.memory_info,
                 instance_storage_supported=self.instance_storage_supported,
                 instance_storage_info=self.instance_storage_info,
@@ -19320,7 +19318,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
                 self.bare_metal == other.bare_metal and
                 self.hypervisor == other.hypervisor and
                 self.processor_info == other.processor_info and
-                self.v_cpu_info == other.v_cpu_info and
+                self.vcpu_info == other.vcpu_info and
                 self.memory_info == other.memory_info and
                 self.instance_storage_supported == other.instance_storage_supported and
                 self.instance_storage_info == other.instance_storage_info and
@@ -19360,7 +19358,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
             'bare_metal',
             'hypervisor',
             'processor_info',
-            'v_cpu_info',
+            'vcpu_info',
             'memory_info',
             'instance_storage_supported',
             'instance_storage_info',
@@ -19408,7 +19406,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
             'bare_metal',
             'hypervisor',
             'processor_info',
-            'v_cpu_info',
+            'vcpu_info',
             'memory_info',
             'instance_storage_supported',
             'instance_storage_info',
@@ -19456,7 +19454,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
                 self.bare_metal,
                 self.hypervisor,
                 self.processor_info,
-                self.v_cpu_info,
+                self.vcpu_info,
                 self.memory_info,
                 self.instance_storage_supported,
                 self.instance_storage_info,
@@ -19495,7 +19493,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
             bare_metal: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
             hypervisor: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
             processor_info: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
-            v_cpu_info: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
+            vcpu_info: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             memory_info: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             instance_storage_supported: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
             instance_storage_info: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
@@ -19527,7 +19525,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
             __dataclass__object_setattr(self, 'bare_metal', bare_metal)
             __dataclass__object_setattr(self, 'hypervisor', hypervisor)
             __dataclass__object_setattr(self, 'processor_info', processor_info)
-            __dataclass__object_setattr(self, 'v_cpu_info', v_cpu_info)
+            __dataclass__object_setattr(self, 'vcpu_info', vcpu_info)
             __dataclass__object_setattr(self, 'memory_info', memory_info)
             __dataclass__object_setattr(self, 'instance_storage_supported', instance_storage_supported)
             __dataclass__object_setattr(self, 'instance_storage_info', instance_storage_info)
@@ -19567,7 +19565,7 @@ def _process_dataclass__37124530a544bf60458fe3565a9e16eb383d9afa():
             parts.append(f"bare_metal={self.bare_metal!r}")
             parts.append(f"hypervisor={self.hypervisor!r}")
             parts.append(f"processor_info={self.processor_info!r}")
-            parts.append(f"v_cpu_info={self.v_cpu_info!r}")
+            parts.append(f"vcpu_info={self.vcpu_info!r}")
             parts.append(f"memory_info={self.memory_info!r}")
             parts.append(f"instance_storage_supported={self.instance_storage_supported!r}")
             parts.append(f"instance_storage_info={self.instance_storage_info!r}")
@@ -21048,22 +21046,22 @@ def _process_dataclass__60dc2293079a28718fcee879d22638a00a001c46():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('accelerators', 'total_media_memory_in_mi_b')), EqPlan(fields=('accelerators', 'to"
-        "tal_media_memory_in_mi_b')), FrozenPlan(fields=('__shape__', 'accelerators', 'total_media_memory_in_mi_b'), al"
-        "low_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('accelerators', 'total_media_memory_in_mi_b'),"
-        " cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotati"
-        "on'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='accelerators', annotation=OpRef(name='init.fields.1."
-        "annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='total_media_me"
-        "mory_in_mi_b', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None)), self_param='self', std_params=(), kw_only_params=('accelerators', 'total_media_memory_in_mi_"
-        "b'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan"
-        ".Field(name='accelerators', kw_only=True, fn=None), ReprPlan.Field(name='total_media_memory_in_mi_b', kw_only="
-        "True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('accelerators', 'total_media_memory_in_mib')), EqPlan(fields=('accelerators', 'tot"
+        "al_media_memory_in_mib')), FrozenPlan(fields=('__shape__', 'accelerators', 'total_media_memory_in_mib'), allow"
+        "_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('accelerators', 'total_media_memory_in_mib'), cac"
+        "he=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation')"
+        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='accelerators', annotation=OpRef(name='init.fields.1.anno"
+        "tation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='total_media_memory"
+        "_in_mib', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None)), self_param='self', std_params=(), kw_only_params=('accelerators', 'total_media_memory_in_mib'), f"
+        "rozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field"
+        "(name='accelerators', kw_only=True, fn=None), ReprPlan.Field(name='total_media_memory_in_mib', kw_only=True, f"
+        "n=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='1816aa36f8e31af294f8bb11e610a1475b85c07d',
+    plan_repr_sha1='f96dbe1c967bcbca5ce626c3a21d64fe7b6becc6',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -21074,7 +21072,7 @@ def _process_dataclass__60dc2293079a28718fcee879d22638a00a001c46():
         ('ominfra.clouds.aws.models.services.ec2', 'MediaAcceleratorInfo'),
     ),
 )
-def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
+def _process_dataclass__f96dbe1c967bcbca5ce626c3a21d64fe7b6becc6():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -21101,7 +21099,7 @@ def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 accelerators=self.accelerators,
-                total_media_memory_in_mi_b=self.total_media_memory_in_mi_b,
+                total_media_memory_in_mib=self.total_media_memory_in_mib,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -21116,7 +21114,7 @@ def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
                 return NotImplemented
             return (
                 self.accelerators == other.accelerators and
-                self.total_media_memory_in_mi_b == other.total_media_memory_in_mi_b
+                self.total_media_memory_in_mib == other.total_media_memory_in_mib
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -21127,7 +21125,7 @@ def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
         __dataclass___setattr_frozen_fields = {
             '__shape__',
             'accelerators',
-            'total_media_memory_in_mi_b',
+            'total_media_memory_in_mib',
         }
 
         def __setattr__(self, name, value):
@@ -21146,7 +21144,7 @@ def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
         __dataclass___delattr_frozen_fields = {
             '__shape__',
             'accelerators',
-            'total_media_memory_in_mi_b',
+            'total_media_memory_in_mib',
         }
 
         def __delattr__(self, name):
@@ -21165,7 +21163,7 @@ def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
         def __hash__(self):
             return hash((
                 self.accelerators,
-                self.total_media_memory_in_mi_b,
+                self.total_media_memory_in_mib,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -21175,10 +21173,10 @@ def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
             self,
             *,
             accelerators: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            total_media_memory_in_mi_b: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            total_media_memory_in_mib: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'accelerators', accelerators)
-            __dataclass__object_setattr(self, 'total_media_memory_in_mi_b', total_media_memory_in_mi_b)
+            __dataclass__object_setattr(self, 'total_media_memory_in_mib', total_media_memory_in_mib)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -21189,7 +21187,7 @@ def _process_dataclass__1816aa36f8e31af294f8bb11e610a1475b85c07d():
         def __repr__(self):
             parts = []
             parts.append(f"accelerators={self.accelerators!r}")
-            parts.append(f"total_media_memory_in_mi_b={self.total_media_memory_in_mi_b!r}")
+            parts.append(f"total_media_memory_in_mib={self.total_media_memory_in_mib!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -23725,23 +23723,23 @@ def _process_dataclass__4e1bc1b87764803cdd93079441753724a6ce4e6e():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('neuron_devices', 'total_neuron_device_memory_in_mi_b')), EqPlan(fields=('neuron_d"
-        "evices', 'total_neuron_device_memory_in_mi_b')), FrozenPlan(fields=('__shape__', 'neuron_devices', 'total_neur"
-        "on_device_memory_in_mi_b'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('neuron_devices'"
-        ", 'total_neuron_device_memory_in_mi_b'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annot"
-        "ation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='neuron_devic"
-        "es', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='total_neuron_device_memory_in_mi_b', annotation=OpRef(name='init.fields.2.annotati"
-        "on'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type"
-        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_"
-        "params=('neuron_devices', 'total_neuron_device_memory_in_mi_b'), frozen=True, slots=False, post_init_params=No"
-        "ne, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='neuron_devices', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='total_neuron_device_memory_in_mi_b', kw_only=True, fn=None)), id=False, terse=False, "
-        "default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('neuron_devices', 'total_neuron_device_memory_in_mib')), EqPlan(fields=('neuron_de"
+        "vices', 'total_neuron_device_memory_in_mib')), FrozenPlan(fields=('__shape__', 'neuron_devices', 'total_neuron"
+        "_device_memory_in_mib'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('neuron_devices', '"
+        "total_neuron_device_memory_in_mib'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotatio"
+        "n=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field"
+        "_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='neuron_devices',"
+        " annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='total_neuron_device_memory_in_mib', annotation=OpRef(name='init.fields.2.annotation'),"
+        " default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_param"
+        "s=('neuron_devices', 'total_neuron_device_memory_in_mib'), frozen=True, slots=False, post_init_params=None, in"
+        "it_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='neuron_devices', kw_only=True, fn=None), Re"
+        "prPlan.Field(name='total_neuron_device_memory_in_mib', kw_only=True, fn=None)), id=False, terse=False, default"
+        "_fn=None)))"
     ),
-    plan_repr_sha1='cb350e551ebaec6d052e77a79144de2121b49254',
+    plan_repr_sha1='219b09812c56a32a34171c8b46c466dd7e6607e4',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -23752,7 +23750,7 @@ def _process_dataclass__4e1bc1b87764803cdd93079441753724a6ce4e6e():
         ('ominfra.clouds.aws.models.services.ec2', 'NeuronInfo'),
     ),
 )
-def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
+def _process_dataclass__219b09812c56a32a34171c8b46c466dd7e6607e4():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -23779,7 +23777,7 @@ def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 neuron_devices=self.neuron_devices,
-                total_neuron_device_memory_in_mi_b=self.total_neuron_device_memory_in_mi_b,
+                total_neuron_device_memory_in_mib=self.total_neuron_device_memory_in_mib,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -23794,7 +23792,7 @@ def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
                 return NotImplemented
             return (
                 self.neuron_devices == other.neuron_devices and
-                self.total_neuron_device_memory_in_mi_b == other.total_neuron_device_memory_in_mi_b
+                self.total_neuron_device_memory_in_mib == other.total_neuron_device_memory_in_mib
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -23805,7 +23803,7 @@ def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
         __dataclass___setattr_frozen_fields = {
             '__shape__',
             'neuron_devices',
-            'total_neuron_device_memory_in_mi_b',
+            'total_neuron_device_memory_in_mib',
         }
 
         def __setattr__(self, name, value):
@@ -23824,7 +23822,7 @@ def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
         __dataclass___delattr_frozen_fields = {
             '__shape__',
             'neuron_devices',
-            'total_neuron_device_memory_in_mi_b',
+            'total_neuron_device_memory_in_mib',
         }
 
         def __delattr__(self, name):
@@ -23843,7 +23841,7 @@ def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
         def __hash__(self):
             return hash((
                 self.neuron_devices,
-                self.total_neuron_device_memory_in_mi_b,
+                self.total_neuron_device_memory_in_mib,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -23853,10 +23851,10 @@ def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
             self,
             *,
             neuron_devices: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            total_neuron_device_memory_in_mi_b: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            total_neuron_device_memory_in_mib: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'neuron_devices', neuron_devices)
-            __dataclass__object_setattr(self, 'total_neuron_device_memory_in_mi_b', total_neuron_device_memory_in_mi_b)
+            __dataclass__object_setattr(self, 'total_neuron_device_memory_in_mib', total_neuron_device_memory_in_mib)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -23867,7 +23865,7 @@ def _process_dataclass__cb350e551ebaec6d052e77a79144de2121b49254():
         def __repr__(self):
             parts = []
             parts.append(f"neuron_devices={self.neuron_devices!r}")
-            parts.append(f"total_neuron_device_memory_in_mi_b={self.total_neuron_device_memory_in_mi_b!r}")
+            parts.append(f"total_neuron_device_memory_in_mib={self.total_neuron_device_memory_in_mib!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -30999,14 +30997,14 @@ def _process_dataclass__1345d9c80c309896fbf85a8241c28bcc211432e6():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('default_v_cpus', 'default_cores', 'default_threads_per_core', 'valid_cores', 'val"
-        "id_threads_per_core')), EqPlan(fields=('default_v_cpus', 'default_cores', 'default_threads_per_core', 'valid_c"
-        "ores', 'valid_threads_per_core')), FrozenPlan(fields=('__shape__', 'default_v_cpus', 'default_cores', 'default"
+        "Plans(tup=(CopyPlan(fields=('default_vcpu_s', 'default_cores', 'default_threads_per_core', 'valid_cores', 'val"
+        "id_threads_per_core')), EqPlan(fields=('default_vcpu_s', 'default_cores', 'default_threads_per_core', 'valid_c"
+        "ores', 'valid_threads_per_core')), FrozenPlan(fields=('__shape__', 'default_vcpu_s', 'default_cores', 'default"
         "_threads_per_core', 'valid_cores', 'valid_threads_per_core'), allow_dynamic_dunder_attrs=False), HashPlan(acti"
-        "on='add', fields=('default_v_cpus', 'default_cores', 'default_threads_per_core', 'valid_cores', 'valid_threads"
+        "on='add', fields=('default_vcpu_s', 'default_cores', 'default_threads_per_core', 'valid_cores', 'valid_threads"
         "_per_core'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.field"
         "s.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VA"
-        "R, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default_v_cpus', annotation=OpRef(name='"
+        "R, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default_vcpu_s', annotation=OpRef(name='"
         "init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, over"
         "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
         "default_cores', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default')"
@@ -31018,15 +31016,15 @@ def _process_dataclass__1345d9c80c309896fbf85a8241c28bcc211432e6():
         " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
         "lan.Field(name='valid_threads_per_core', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name"
         "='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('default_v_cpus'"
+        "rce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('default_vcpu_s'"
         ", 'default_cores', 'default_threads_per_core', 'valid_cores', 'valid_threads_per_core'), frozen=True, slots=Fa"
-        "lse, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='default_v_cpu"
+        "lse, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='default_vcpu_"
         "s', kw_only=True, fn=None), ReprPlan.Field(name='default_cores', kw_only=True, fn=None), ReprPlan.Field(name='"
         "default_threads_per_core', kw_only=True, fn=None), ReprPlan.Field(name='valid_cores', kw_only=True, fn=None), "
         "ReprPlan.Field(name='valid_threads_per_core', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)"
         "))"
     ),
-    plan_repr_sha1='3b2bc736efeacacf1a96fc040e201359b4679dd7',
+    plan_repr_sha1='69a12f52c76312a1152f8e348afa3e836cb7c98a',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -31043,7 +31041,7 @@ def _process_dataclass__1345d9c80c309896fbf85a8241c28bcc211432e6():
         ('ominfra.clouds.aws.models.services.ec2', 'VCpuInfo'),
     ),
 )
-def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
+def _process_dataclass__69a12f52c76312a1152f8e348afa3e836cb7c98a():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -31075,7 +31073,7 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                default_v_cpus=self.default_v_cpus,
+                default_vcpu_s=self.default_vcpu_s,
                 default_cores=self.default_cores,
                 default_threads_per_core=self.default_threads_per_core,
                 valid_cores=self.valid_cores,
@@ -31093,7 +31091,7 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.default_v_cpus == other.default_v_cpus and
+                self.default_vcpu_s == other.default_vcpu_s and
                 self.default_cores == other.default_cores and
                 self.default_threads_per_core == other.default_threads_per_core and
                 self.valid_cores == other.valid_cores and
@@ -31107,7 +31105,7 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
 
         __dataclass___setattr_frozen_fields = {
             '__shape__',
-            'default_v_cpus',
+            'default_vcpu_s',
             'default_cores',
             'default_threads_per_core',
             'valid_cores',
@@ -31129,7 +31127,7 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
 
         __dataclass___delattr_frozen_fields = {
             '__shape__',
-            'default_v_cpus',
+            'default_vcpu_s',
             'default_cores',
             'default_threads_per_core',
             'valid_cores',
@@ -31151,7 +31149,7 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
 
         def __hash__(self):
             return hash((
-                self.default_v_cpus,
+                self.default_vcpu_s,
                 self.default_cores,
                 self.default_threads_per_core,
                 self.valid_cores,
@@ -31164,13 +31162,13 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
         def __init__(
             self,
             *,
-            default_v_cpus: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            default_vcpu_s: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             default_cores: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             default_threads_per_core: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             valid_cores: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             valid_threads_per_core: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'default_v_cpus', default_v_cpus)
+            __dataclass__object_setattr(self, 'default_vcpu_s', default_vcpu_s)
             __dataclass__object_setattr(self, 'default_cores', default_cores)
             __dataclass__object_setattr(self, 'default_threads_per_core', default_threads_per_core)
             __dataclass__object_setattr(self, 'valid_cores', valid_cores)
@@ -31184,7 +31182,7 @@ def _process_dataclass__3b2bc736efeacacf1a96fc040e201359b4679dd7():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"default_v_cpus={self.default_v_cpus!r}")
+            parts.append(f"default_vcpu_s={self.default_vcpu_s!r}")
             parts.append(f"default_cores={self.default_cores!r}")
             parts.append(f"default_threads_per_core={self.default_threads_per_core!r}")
             parts.append(f"valid_cores={self.valid_cores!r}")

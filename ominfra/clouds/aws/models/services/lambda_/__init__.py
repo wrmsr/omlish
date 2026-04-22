@@ -430,7 +430,7 @@ class LambdaManagedInstancesCapacityProviderConfig(
         shape_name='PerExecutionEnvironmentMaxConcurrency',
     ))
 
-    execution_environment_memory_gi_b_per_v_cpu: ExecutionEnvironmentMemoryGiBPerVCpu | None = _dc.field(default=None, metadata=_base.field_metadata(
+    execution_environment_memory_gib_per_vcpu: ExecutionEnvironmentMemoryGiBPerVCpu | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ExecutionEnvironmentMemoryGiBPerVCpu',
         shape_name='ExecutionEnvironmentMemoryGiBPerVCpu',
     ))

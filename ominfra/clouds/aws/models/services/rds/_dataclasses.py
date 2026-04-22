@@ -25,36 +25,36 @@ def _register(**kwargs):
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('volume_name', 'allocated_storage', 'io_p_s', 'max_allocated_storage', 'storage_th"
-        "roughput', 'storage_type')), EqPlan(fields=('volume_name', 'allocated_storage', 'io_p_s', 'max_allocated_stora"
-        "ge', 'storage_throughput', 'storage_type')), FrozenPlan(fields=('__shape__', 'volume_name', 'allocated_storage"
-        "', 'io_p_s', 'max_allocated_storage', 'storage_throughput', 'storage_type'), allow_dynamic_dunder_attrs=False)"
-        ", HashPlan(action='add', fields=('volume_name', 'allocated_storage', 'io_p_s', 'max_allocated_storage', 'stora"
-        "ge_throughput', 'storage_type'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=Op"
-        "Ref(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_name', annota"
-        "tion=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='allocated_stor"
-        "age', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='io_p_s', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='i"
-        "nit.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='max_allocated_storage', annotation=OpRef(name='in"
-        "it.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='st"
-        "orage_throughput', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='storage_type', annotation=OpRef(name='init.fields.6.annotation'), de"
-        "fault=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=("
-        "'volume_name', 'allocated_storage', 'io_p_s', 'max_allocated_storage', 'storage_throughput', 'storage_type'), "
-        "frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Fiel"
-        "d(name='volume_name', kw_only=True, fn=None), ReprPlan.Field(name='allocated_storage', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='io_p_s', kw_only=True, fn=None), ReprPlan.Field(name='max_allocated_storage', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='storage_throughput', kw_only=True, fn=None), ReprPlan.Field(name='storage_t"
-        "ype', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('volume_name', 'allocated_storage', 'iops', 'max_allocated_storage', 'storage_thro"
+        "ughput', 'storage_type')), EqPlan(fields=('volume_name', 'allocated_storage', 'iops', 'max_allocated_storage',"
+        " 'storage_throughput', 'storage_type')), FrozenPlan(fields=('__shape__', 'volume_name', 'allocated_storage', '"
+        "iops', 'max_allocated_storage', 'storage_throughput', 'storage_type'), allow_dynamic_dunder_attrs=False), Hash"
+        "Plan(action='add', fields=('volume_name', 'allocated_storage', 'iops', 'max_allocated_storage', 'storage_throu"
+        "ghput', 'storage_type'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name"
+        "='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_name', annotation=OpR"
+        "ef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='allocated_storage', an"
+        "notation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='iops', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields"
+        ".3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='max_allocated_storage', annotation=OpRef(name='init.fields."
+        "4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_thro"
+        "ughput', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='storage_type', annotation=OpRef(name='init.fields.6.annotation'), default=OpRe"
+        "f(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('volume_na"
+        "me', 'allocated_storage', 'iops', 'max_allocated_storage', 'storage_throughput', 'storage_type'), frozen=True,"
+        " slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='volu"
+        "me_name', kw_only=True, fn=None), ReprPlan.Field(name='allocated_storage', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='iops', kw_only=True, fn=None), ReprPlan.Field(name='max_allocated_storage', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='storage_throughput', kw_only=True, fn=None), ReprPlan.Field(name='storage_type', kw_only="
+        "True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b3d2bb68eb416c40051d4dcb36992bd90e305604',
+    plan_repr_sha1='e9a0fad203018e78be9115967938c2244c585354',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
@@ -72,7 +72,7 @@ def _register(**kwargs):
         ('ominfra.clouds.aws.models.services.rds', 'AdditionalStorageVolume'),
     ),
 )
-def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
+def _process_dataclass__e9a0fad203018e78be9115967938c2244c585354():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -107,7 +107,7 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
             return __dataclass__cls(  # noqa
                 volume_name=self.volume_name,
                 allocated_storage=self.allocated_storage,
-                io_p_s=self.io_p_s,
+                iops=self.iops,
                 max_allocated_storage=self.max_allocated_storage,
                 storage_throughput=self.storage_throughput,
                 storage_type=self.storage_type,
@@ -126,7 +126,7 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
             return (
                 self.volume_name == other.volume_name and
                 self.allocated_storage == other.allocated_storage and
-                self.io_p_s == other.io_p_s and
+                self.iops == other.iops and
                 self.max_allocated_storage == other.max_allocated_storage and
                 self.storage_throughput == other.storage_throughput and
                 self.storage_type == other.storage_type
@@ -141,7 +141,7 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
             '__shape__',
             'volume_name',
             'allocated_storage',
-            'io_p_s',
+            'iops',
             'max_allocated_storage',
             'storage_throughput',
             'storage_type',
@@ -164,7 +164,7 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
             '__shape__',
             'volume_name',
             'allocated_storage',
-            'io_p_s',
+            'iops',
             'max_allocated_storage',
             'storage_throughput',
             'storage_type',
@@ -187,7 +187,7 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
             return hash((
                 self.volume_name,
                 self.allocated_storage,
-                self.io_p_s,
+                self.iops,
                 self.max_allocated_storage,
                 self.storage_throughput,
                 self.storage_type,
@@ -201,14 +201,14 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
             *,
             volume_name: __dataclass__init__fields__1__annotation,
             allocated_storage: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            io_p_s: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            iops: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             max_allocated_storage: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             storage_throughput: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
             storage_type: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'volume_name', volume_name)
             __dataclass__object_setattr(self, 'allocated_storage', allocated_storage)
-            __dataclass__object_setattr(self, 'io_p_s', io_p_s)
+            __dataclass__object_setattr(self, 'iops', iops)
             __dataclass__object_setattr(self, 'max_allocated_storage', max_allocated_storage)
             __dataclass__object_setattr(self, 'storage_throughput', storage_throughput)
             __dataclass__object_setattr(self, 'storage_type', storage_type)
@@ -223,7 +223,7 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
             parts = []
             parts.append(f"volume_name={self.volume_name!r}")
             parts.append(f"allocated_storage={self.allocated_storage!r}")
-            parts.append(f"io_p_s={self.io_p_s!r}")
+            parts.append(f"iops={self.iops!r}")
             parts.append(f"max_allocated_storage={self.max_allocated_storage!r}")
             parts.append(f"storage_throughput={self.storage_throughput!r}")
             parts.append(f"storage_type={self.storage_type!r}")
@@ -243,41 +243,40 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('volume_name', 'storage_volume_status', 'allocated_storage', 'io_p_s', 'max_alloca"
-        "ted_storage', 'storage_throughput', 'storage_type')), EqPlan(fields=('volume_name', 'storage_volume_status', '"
-        "allocated_storage', 'io_p_s', 'max_allocated_storage', 'storage_throughput', 'storage_type')), FrozenPlan(fiel"
-        "ds=('__shape__', 'volume_name', 'storage_volume_status', 'allocated_storage', 'io_p_s', 'max_allocated_storage"
-        "', 'storage_throughput', 'storage_type'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('v"
-        "olume_name', 'storage_volume_status', 'allocated_storage', 'io_p_s', 'max_allocated_storage', 'storage_through"
-        "put', 'storage_type'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='"
-        "init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_name', annotation=OpRef"
-        "(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='storage_volume_status', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fie"
-        "lds.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='allocated_storage', annotation=OpRef(name='init.fields.3"
-        ".annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='io_p_s', anno"
-        "tation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='max_allocated_storage', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(na"
-        "me='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_throughput', annotation=OpRef(name='"
-        "init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
-        "storage_type', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None)), self_param='self', std_params=(), kw_only_params=('volume_name', 'storage_volume_status', 'a"
-        "llocated_storage', 'io_p_s', 'max_allocated_storage', 'storage_throughput', 'storage_type'), frozen=True, slot"
-        "s=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='volume_na"
-        "me', kw_only=True, fn=None), ReprPlan.Field(name='storage_volume_status', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='io_p_s', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='max_allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='storage_throughput', kw"
-        "_only=True, fn=None), ReprPlan.Field(name='storage_type', kw_only=True, fn=None)), id=False, terse=False, defa"
-        "ult_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('volume_name', 'storage_volume_status', 'allocated_storage', 'iops', 'max_allocate"
+        "d_storage', 'storage_throughput', 'storage_type')), EqPlan(fields=('volume_name', 'storage_volume_status', 'al"
+        "located_storage', 'iops', 'max_allocated_storage', 'storage_throughput', 'storage_type')), FrozenPlan(fields=("
+        "'__shape__', 'volume_name', 'storage_volume_status', 'allocated_storage', 'iops', 'max_allocated_storage', 'st"
+        "orage_throughput', 'storage_type'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('volume_"
+        "name', 'storage_volume_status', 'allocated_storage', 'iops', 'max_allocated_storage', 'storage_throughput', 's"
+        "torage_type'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fie"
+        "lds.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_"
+        "VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_name', annotation=OpRef(name='i"
+        "nit.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='s"
+        "torage_volume_status', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.de"
+        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None), InitPlan.Field(name='allocated_storage', annotation=OpRef(name='init.fields.3.annotat"
+        "ion'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='iops', annotation=OpR"
+        "ef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='max_allocated_storage', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.f"
+        "ields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='storage_throughput', annotation=OpRef(name='init.field"
+        "s.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_ty"
+        "pe', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None)), self_param='self', std_params=(), kw_only_params=('volume_name', 'storage_volume_status', 'allocated_s"
+        "torage', 'iops', 'max_allocated_storage', 'storage_throughput', 'storage_type'), frozen=True, slots=False, pos"
+        "t_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='volume_name', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='storage_volume_status', kw_only=True, fn=None), ReprPlan.Field(name='all"
+        "ocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='iops', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='max_allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='storage_throughput', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='storage_type', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='fc87793e7821f2416bbe6cd808c7ead2d5e84c58',
+    plan_repr_sha1='f0b337a134ec7e377284c2e65a5a22cd1fb30497',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -298,7 +297,7 @@ def _process_dataclass__b3d2bb68eb416c40051d4dcb36992bd90e305604():
         ('ominfra.clouds.aws.models.services.rds', 'AdditionalStorageVolumeOutput'),
     ),
 )
-def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
+def _process_dataclass__f0b337a134ec7e377284c2e65a5a22cd1fb30497():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -337,7 +336,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
                 volume_name=self.volume_name,
                 storage_volume_status=self.storage_volume_status,
                 allocated_storage=self.allocated_storage,
-                io_p_s=self.io_p_s,
+                iops=self.iops,
                 max_allocated_storage=self.max_allocated_storage,
                 storage_throughput=self.storage_throughput,
                 storage_type=self.storage_type,
@@ -357,7 +356,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
                 self.volume_name == other.volume_name and
                 self.storage_volume_status == other.storage_volume_status and
                 self.allocated_storage == other.allocated_storage and
-                self.io_p_s == other.io_p_s and
+                self.iops == other.iops and
                 self.max_allocated_storage == other.max_allocated_storage and
                 self.storage_throughput == other.storage_throughput and
                 self.storage_type == other.storage_type
@@ -373,7 +372,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
             'volume_name',
             'storage_volume_status',
             'allocated_storage',
-            'io_p_s',
+            'iops',
             'max_allocated_storage',
             'storage_throughput',
             'storage_type',
@@ -397,7 +396,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
             'volume_name',
             'storage_volume_status',
             'allocated_storage',
-            'io_p_s',
+            'iops',
             'max_allocated_storage',
             'storage_throughput',
             'storage_type',
@@ -421,7 +420,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
                 self.volume_name,
                 self.storage_volume_status,
                 self.allocated_storage,
-                self.io_p_s,
+                self.iops,
                 self.max_allocated_storage,
                 self.storage_throughput,
                 self.storage_type,
@@ -436,7 +435,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
             volume_name: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             storage_volume_status: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             allocated_storage: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            io_p_s: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            iops: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             max_allocated_storage: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
             storage_throughput: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
             storage_type: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
@@ -444,7 +443,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
             __dataclass__object_setattr(self, 'volume_name', volume_name)
             __dataclass__object_setattr(self, 'storage_volume_status', storage_volume_status)
             __dataclass__object_setattr(self, 'allocated_storage', allocated_storage)
-            __dataclass__object_setattr(self, 'io_p_s', io_p_s)
+            __dataclass__object_setattr(self, 'iops', iops)
             __dataclass__object_setattr(self, 'max_allocated_storage', max_allocated_storage)
             __dataclass__object_setattr(self, 'storage_throughput', storage_throughput)
             __dataclass__object_setattr(self, 'storage_type', storage_type)
@@ -460,7 +459,7 @@ def _process_dataclass__fc87793e7821f2416bbe6cd808c7ead2d5e84c58():
             parts.append(f"volume_name={self.volume_name!r}")
             parts.append(f"storage_volume_status={self.storage_volume_status!r}")
             parts.append(f"allocated_storage={self.allocated_storage!r}")
-            parts.append(f"io_p_s={self.io_p_s!r}")
+            parts.append(f"iops={self.iops!r}")
             parts.append(f"max_allocated_storage={self.max_allocated_storage!r}")
             parts.append(f"storage_throughput={self.storage_throughput!r}")
             parts.append(f"storage_type={self.storage_type!r}")

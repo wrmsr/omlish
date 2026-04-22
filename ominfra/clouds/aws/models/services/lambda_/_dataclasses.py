@@ -2315,28 +2315,28 @@ def _process_dataclass__4727185bc15d0b892fa2952d4b56ab294b06b6b7():
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('capacity_provider_arn', 'per_execution_environment_max_concurrency', 'execution_e"
-        "nvironment_memory_gi_b_per_v_cpu')), EqPlan(fields=('capacity_provider_arn', 'per_execution_environment_max_co"
-        "ncurrency', 'execution_environment_memory_gi_b_per_v_cpu')), FrozenPlan(fields=('__shape__', 'capacity_provide"
-        "r_arn', 'per_execution_environment_max_concurrency', 'execution_environment_memory_gi_b_per_v_cpu'), allow_dyn"
-        "amic_dunder_attrs=False), HashPlan(action='add', fields=('capacity_provider_arn', 'per_execution_environment_m"
-        "ax_concurrency', 'execution_environment_memory_gi_b_per_v_cpu'), cache=False), InitPlan(fields=(InitPlan.Field"
-        "(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init"
-        "=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='capacity_provider_arn', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='per_execution_environment_max_concurrency', annotation=OpRef(name='init.fields.2.a"
-        "nnotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='execution_envir"
-        "onment_memory_gi_b_per_v_cpu', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fie"
-        "lds.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('capacity_provider_arn', '"
-        "per_execution_environment_max_concurrency', 'execution_environment_memory_gi_b_per_v_cpu'), frozen=True, slots"
-        "=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='capacity_p"
-        "rovider_arn', kw_only=True, fn=None), ReprPlan.Field(name='per_execution_environment_max_concurrency', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='execution_environment_memory_gi_b_per_v_cpu', kw_only=True, fn=None)), i"
-        "d=False, terse=False, default_fn=None)))"
+        "nvironment_memory_gib_per_vcpu')), EqPlan(fields=('capacity_provider_arn', 'per_execution_environment_max_conc"
+        "urrency', 'execution_environment_memory_gib_per_vcpu')), FrozenPlan(fields=('__shape__', 'capacity_provider_ar"
+        "n', 'per_execution_environment_max_concurrency', 'execution_environment_memory_gib_per_vcpu'), allow_dynamic_d"
+        "under_attrs=False), HashPlan(action='add', fields=('capacity_provider_arn', 'per_execution_environment_max_con"
+        "currency', 'execution_environment_memory_gib_per_vcpu'), cache=False), InitPlan(fields=(InitPlan.Field(name='_"
+        "_shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='capacity_provider_arn', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='per_execution_environment_max_concurrency', annotation=OpRef(name='init.fields.2.annotatio"
+        "n'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='execution_environment_m"
+        "emory_gib_per_vcpu', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None)), self_param='self', std_params=(), kw_only_params=('capacity_provider_arn', 'per_execut"
+        "ion_environment_max_concurrency', 'execution_environment_memory_gib_per_vcpu'), frozen=True, slots=False, post"
+        "_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='capacity_provider_arn'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='per_execution_environment_max_concurrency', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='execution_environment_memory_gib_per_vcpu', kw_only=True, fn=None)), id=False, terse"
+        "=False, default_fn=None)))"
     ),
-    plan_repr_sha1='02fae62a0f61feae0ec5fbd59f6801f513d2c3e6',
+    plan_repr_sha1='08a84a56c4ace2c2aec3f509afa8f03692366b56',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
@@ -2348,7 +2348,7 @@ def _process_dataclass__4727185bc15d0b892fa2952d4b56ab294b06b6b7():
         ('ominfra.clouds.aws.models.services.lambda_', 'LambdaManagedInstancesCapacityProviderConfig'),
     ),
 )
-def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
+def _process_dataclass__08a84a56c4ace2c2aec3f509afa8f03692366b56():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2377,7 +2377,7 @@ def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
             return __dataclass__cls(  # noqa
                 capacity_provider_arn=self.capacity_provider_arn,
                 per_execution_environment_max_concurrency=self.per_execution_environment_max_concurrency,
-                execution_environment_memory_gi_b_per_v_cpu=self.execution_environment_memory_gi_b_per_v_cpu,
+                execution_environment_memory_gib_per_vcpu=self.execution_environment_memory_gib_per_vcpu,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2393,7 +2393,7 @@ def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
             return (
                 self.capacity_provider_arn == other.capacity_provider_arn and
                 self.per_execution_environment_max_concurrency == other.per_execution_environment_max_concurrency and
-                self.execution_environment_memory_gi_b_per_v_cpu == other.execution_environment_memory_gi_b_per_v_cpu
+                self.execution_environment_memory_gib_per_vcpu == other.execution_environment_memory_gib_per_vcpu
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2405,7 +2405,7 @@ def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
             '__shape__',
             'capacity_provider_arn',
             'per_execution_environment_max_concurrency',
-            'execution_environment_memory_gi_b_per_v_cpu',
+            'execution_environment_memory_gib_per_vcpu',
         }
 
         def __setattr__(self, name, value):
@@ -2425,7 +2425,7 @@ def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
             '__shape__',
             'capacity_provider_arn',
             'per_execution_environment_max_concurrency',
-            'execution_environment_memory_gi_b_per_v_cpu',
+            'execution_environment_memory_gib_per_vcpu',
         }
 
         def __delattr__(self, name):
@@ -2445,7 +2445,7 @@ def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
             return hash((
                 self.capacity_provider_arn,
                 self.per_execution_environment_max_concurrency,
-                self.execution_environment_memory_gi_b_per_v_cpu,
+                self.execution_environment_memory_gib_per_vcpu,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2456,11 +2456,11 @@ def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
             *,
             capacity_provider_arn: __dataclass__init__fields__1__annotation,
             per_execution_environment_max_concurrency: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            execution_environment_memory_gi_b_per_v_cpu: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            execution_environment_memory_gib_per_vcpu: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'capacity_provider_arn', capacity_provider_arn)
             __dataclass__object_setattr(self, 'per_execution_environment_max_concurrency', per_execution_environment_max_concurrency)
-            __dataclass__object_setattr(self, 'execution_environment_memory_gi_b_per_v_cpu', execution_environment_memory_gi_b_per_v_cpu)
+            __dataclass__object_setattr(self, 'execution_environment_memory_gib_per_vcpu', execution_environment_memory_gib_per_vcpu)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2472,7 +2472,7 @@ def _process_dataclass__02fae62a0f61feae0ec5fbd59f6801f513d2c3e6():
             parts = []
             parts.append(f"capacity_provider_arn={self.capacity_provider_arn!r}")
             parts.append(f"per_execution_environment_max_concurrency={self.per_execution_environment_max_concurrency!r}")
-            parts.append(f"execution_environment_memory_gi_b_per_v_cpu={self.execution_environment_memory_gi_b_per_v_cpu!r}")
+            parts.append(f"execution_environment_memory_gib_per_vcpu={self.execution_environment_memory_gib_per_vcpu!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

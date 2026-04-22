@@ -321,7 +321,7 @@ class AdditionalStorageVolume(
         shape_name='IntegerOptional',
     ))
 
-    io_p_s: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+    iops: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='IOPS',
         shape_name='IntegerOptional',
     ))
@@ -362,7 +362,7 @@ class AdditionalStorageVolumeOutput(
         shape_name='Integer',
     ))
 
-    io_p_s: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+    iops: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='IOPS',
         shape_name='IntegerOptional',
     ))

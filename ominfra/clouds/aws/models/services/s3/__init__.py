@@ -715,7 +715,7 @@ class PutObjectOutput(
         shape_name='ChecksumCRC32C',
     ))
 
-    checksum_crc64_nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_crc64nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumCRC64NVME',
         serialization_name='x-amz-checksum-crc64nvme',
         shape_name='ChecksumCRC64NVME',
@@ -733,7 +733,7 @@ class PutObjectOutput(
         shape_name='ChecksumSHA256',
     ))
 
-    checksum_s_h_a512: ChecksumSHA512 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_sha512: ChecksumSHA512 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumSHA512',
         serialization_name='x-amz-checksum-sha512',
         shape_name='ChecksumSHA512',
@@ -745,19 +745,19 @@ class PutObjectOutput(
         shape_name='ChecksumMD5',
     ))
 
-    checksum_x_x_h_a_s_h64: ChecksumXXHASH64 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash64: ChecksumXXHASH64 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH64',
         serialization_name='x-amz-checksum-xxhash64',
         shape_name='ChecksumXXHASH64',
     ))
 
-    checksum_x_x_h_a_s_h3: ChecksumXXHASH3 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash3: ChecksumXXHASH3 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH3',
         serialization_name='x-amz-checksum-xxhash3',
         shape_name='ChecksumXXHASH3',
     ))
 
-    checksum_x_x_h_a_s_h128: ChecksumXXHASH128 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash128: ChecksumXXHASH128 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH128',
         serialization_name='x-amz-checksum-xxhash128',
         shape_name='ChecksumXXHASH128',
@@ -909,7 +909,7 @@ class GetObjectOutput(
         shape_name='ChecksumCRC32C',
     ))
 
-    checksum_crc64_nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_crc64nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumCRC64NVME',
         serialization_name='x-amz-checksum-crc64nvme',
         shape_name='ChecksumCRC64NVME',
@@ -927,7 +927,7 @@ class GetObjectOutput(
         shape_name='ChecksumSHA256',
     ))
 
-    checksum_s_h_a512: ChecksumSHA512 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_sha512: ChecksumSHA512 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumSHA512',
         serialization_name='x-amz-checksum-sha512',
         shape_name='ChecksumSHA512',
@@ -939,19 +939,19 @@ class GetObjectOutput(
         shape_name='ChecksumMD5',
     ))
 
-    checksum_x_x_h_a_s_h64: ChecksumXXHASH64 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash64: ChecksumXXHASH64 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH64',
         serialization_name='x-amz-checksum-xxhash64',
         shape_name='ChecksumXXHASH64',
     ))
 
-    checksum_x_x_h_a_s_h3: ChecksumXXHASH3 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash3: ChecksumXXHASH3 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH3',
         serialization_name='x-amz-checksum-xxhash3',
         shape_name='ChecksumXXHASH3',
     ))
 
-    checksum_x_x_h_a_s_h128: ChecksumXXHASH128 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash128: ChecksumXXHASH128 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH128',
         serialization_name='x-amz-checksum-xxhash128',
         shape_name='ChecksumXXHASH128',
@@ -1316,7 +1316,7 @@ class PutObjectRequest(
         shape_name='ChecksumCRC32C',
     ))
 
-    checksum_crc64_nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_crc64nvme: ChecksumCRC64NVME | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumCRC64NVME',
         serialization_name='x-amz-checksum-crc64nvme',
         shape_name='ChecksumCRC64NVME',
@@ -1334,7 +1334,7 @@ class PutObjectRequest(
         shape_name='ChecksumSHA256',
     ))
 
-    checksum_s_h_a512: ChecksumSHA512 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_sha512: ChecksumSHA512 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumSHA512',
         serialization_name='x-amz-checksum-sha512',
         shape_name='ChecksumSHA512',
@@ -1346,19 +1346,19 @@ class PutObjectRequest(
         shape_name='ChecksumMD5',
     ))
 
-    checksum_x_x_h_a_s_h64: ChecksumXXHASH64 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash64: ChecksumXXHASH64 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH64',
         serialization_name='x-amz-checksum-xxhash64',
         shape_name='ChecksumXXHASH64',
     ))
 
-    checksum_x_x_h_a_s_h3: ChecksumXXHASH3 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash3: ChecksumXXHASH3 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH3',
         serialization_name='x-amz-checksum-xxhash3',
         shape_name='ChecksumXXHASH3',
     ))
 
-    checksum_x_x_h_a_s_h128: ChecksumXXHASH128 | None = _dc.field(default=None, metadata=_base.field_metadata(
+    checksum_xxhash128: ChecksumXXHASH128 | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ChecksumXXHASH128',
         serialization_name='x-amz-checksum-xxhash128',
         shape_name='ChecksumXXHASH128',
