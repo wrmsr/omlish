@@ -564,7 +564,7 @@ def _yaml_is_need_quoted(value: str) -> bool:
     if value == '-':
         return True
 
-    if value[0] in ('*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`'):
+    if value[0] in ('*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`', ':'):
         return True
 
     if value[-1] in (':', ' '):

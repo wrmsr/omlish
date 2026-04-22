@@ -38,11 +38,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../../lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
-            dict(path='tokens.py', sha1='05183c2980204609c9787a24c55e5ed806886962'),
+            dict(path='tokens.py', sha1='e9744c171d982ea8b4a6ace5f937926d51d5ec30'),
             dict(path='ast.py', sha1='6d21da91079afcd58467a58153951a6b97a97c20'),
             dict(path='scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
             dict(path='parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
-            dict(path='decoding.py', sha1='7b0282593ca9fec2d70964ddd3ec6214e29bd864'),
+            dict(path='decoding.py', sha1='5047d6c283348c2cd4265c955bb94651e971addd'),
             dict(path='_amalg.py', sha1='85989224f581528c4a189dca142cb3ec086ecd3c'),
         ],
     )
@@ -1654,7 +1654,7 @@ def _yaml_is_need_quoted(value: str) -> bool:
     if value == '-':
         return True
 
-    if value[0] in ('*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`'):
+    if value[0] in ('*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`', ':'):
         return True
 
     if value[-1] in (':', ' '):
@@ -9363,6 +9363,9 @@ class YamlDecoder:
                 self.anchor_node_map[anchor_name] = n.value
                 return self.get_map_node(check.not_none(n.value), is_merge)
 
+            elif isinstance(n, TagYamlNode):
+                return self.get_map_node(check.not_none(n.value), is_merge)
+
             elif isinstance(n, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(n.value).get_token()).value
                 node2 = self.anchor_node_map[alias_name]
@@ -9396,19 +9399,17 @@ class YamlDecoder:
                 return None
 
             if isinstance(anchor := node, AnchorYamlNode):
-                if isinstance(array_node := anchor.value, ArrayYamlNode):
-                    return array_node
-
-                return UnexpectedNodeTypeYamlError(check.not_none(anchor.value).type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa
+                return self.get_array_node(check.not_none(anchor.value))
 
             if isinstance(alias := node, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(alias.value).get_token()).value
                 node2 = self.anchor_node_map[alias_name]
                 if node2 is None:
                     return yaml_error(f'cannot find anchor by alias name {alias_name}')
-                if isinstance(array_node := node2, ArrayYamlNode):
-                    return array_node
-                return UnexpectedNodeTypeYamlError(node2.type(), YamlNodeType.SEQUENCE, check.not_none(node2.get_token()))  # noqa
+                return self.get_array_node(node2)
+
+            if isinstance(tag := node, TagYamlNode):
+                return self.get_array_node(check.not_none(tag.value))
 
             if not isinstance(array_node := node, ArrayYamlNode):
                 return UnexpectedNodeTypeYamlError(node.type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa

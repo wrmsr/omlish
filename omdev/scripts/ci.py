@@ -154,7 +154,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/tars.py', sha1='3ed00e97a494bd92c6a6149d22d51469bc0af384'),
             dict(path='../../omlish/asyncs/asyncio/sockets.py', sha1='8d24dae988a30bb73f167a9ab62d4fc9eef4ad06'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
-            dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='05183c2980204609c9787a24c55e5ed806886962'),
+            dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='e9744c171d982ea8b4a6ace5f937926d51d5ec30'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='3de6f87e2a56375cc8a539321b1205e2d1d3900e'),
             dict(path='../../omlish/http/simple/handlers.py', sha1='9e49c2ba5518616ce15bed6bac80ab4c88ed3b83'),
@@ -208,7 +208,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/http.py', sha1='41a6e39c6d66807b6189e2d78d8cf2ff10e45bc3'),
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='7b0282593ca9fec2d70964ddd3ec6214e29bd864'),
+            dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='5047d6c283348c2cd4265c955bb94651e971addd'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='e6a35442108553f39bf5d5d61b55fcdaa3f347b5'),
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -12238,7 +12238,7 @@ def _yaml_is_need_quoted(value: str) -> bool:
     if value == '-':
         return True
 
-    if value[0] in ('*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`'):
+    if value[0] in ('*', '&', '[', '{', '}', ']', ',', '!', '|', '>', '%', '\'', '"', '@', ' ', '`', ':'):
         return True
 
     if value[-1] in (':', ' '):
@@ -28457,6 +28457,9 @@ class YamlDecoder:
                 self.anchor_node_map[anchor_name] = n.value
                 return self.get_map_node(check.not_none(n.value), is_merge)
 
+            elif isinstance(n, TagYamlNode):
+                return self.get_map_node(check.not_none(n.value), is_merge)
+
             elif isinstance(n, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(n.value).get_token()).value
                 node2 = self.anchor_node_map[alias_name]
@@ -28490,19 +28493,17 @@ class YamlDecoder:
                 return None
 
             if isinstance(anchor := node, AnchorYamlNode):
-                if isinstance(array_node := anchor.value, ArrayYamlNode):
-                    return array_node
-
-                return UnexpectedNodeTypeYamlError(check.not_none(anchor.value).type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa
+                return self.get_array_node(check.not_none(anchor.value))
 
             if isinstance(alias := node, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(alias.value).get_token()).value
                 node2 = self.anchor_node_map[alias_name]
                 if node2 is None:
                     return yaml_error(f'cannot find anchor by alias name {alias_name}')
-                if isinstance(array_node := node2, ArrayYamlNode):
-                    return array_node
-                return UnexpectedNodeTypeYamlError(node2.type(), YamlNodeType.SEQUENCE, check.not_none(node2.get_token()))  # noqa
+                return self.get_array_node(node2)
+
+            if isinstance(tag := node, TagYamlNode):
+                return self.get_array_node(check.not_none(tag.value))
 
             if not isinstance(array_node := node, ArrayYamlNode):
                 return UnexpectedNodeTypeYamlError(node.type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa

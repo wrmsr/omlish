@@ -721,6 +721,9 @@ class YamlDecoder:
                 self.anchor_node_map[anchor_name] = n.value
                 return self.get_map_node(check.not_none(n.value), is_merge)
 
+            elif isinstance(n, TagYamlNode):
+                return self.get_map_node(check.not_none(n.value), is_merge)
+
             elif isinstance(n, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(n.value).get_token()).value
                 node2 = self.anchor_node_map[alias_name]
@@ -754,19 +757,17 @@ class YamlDecoder:
                 return None
 
             if isinstance(anchor := node, AnchorYamlNode):
-                if isinstance(array_node := anchor.value, ArrayYamlNode):
-                    return array_node
-
-                return UnexpectedNodeTypeYamlError(check.not_none(anchor.value).type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa
+                return self.get_array_node(check.not_none(anchor.value))
 
             if isinstance(alias := node, AliasYamlNode):
                 alias_name = check.not_none(check.not_none(alias.value).get_token()).value
                 node2 = self.anchor_node_map[alias_name]
                 if node2 is None:
                     return yaml_error(f'cannot find anchor by alias name {alias_name}')
-                if isinstance(array_node := node2, ArrayYamlNode):
-                    return array_node
-                return UnexpectedNodeTypeYamlError(node2.type(), YamlNodeType.SEQUENCE, check.not_none(node2.get_token()))  # noqa
+                return self.get_array_node(node2)
+
+            if isinstance(tag := node, TagYamlNode):
+                return self.get_array_node(check.not_none(tag.value))
 
             if not isinstance(array_node := node, ArrayYamlNode):
                 return UnexpectedNodeTypeYamlError(node.type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa

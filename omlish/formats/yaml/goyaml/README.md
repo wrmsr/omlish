@@ -1,6 +1,6 @@
 A **manual**, near-direct, 'lite'-compatible translation of go-yaml (see LICENSE file):
 
-  https://github.com/goccy/go-yaml/tree/8dd51ebb7f36f616b85f7b0e54539afa4341f22a
+  https://github.com/goccy/go-yaml/commit/edee2f91616c6d73112a13e7c0dbde72ce938877
 
 The primary reasons for.. doing this.. are as follows:
 
