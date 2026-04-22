@@ -18,7 +18,7 @@ class FinalTypeError(TypeError):
         return f'{type(self).__name__}({self._type})'
 
 
-class Final(Abstract):
+class Final:
     __slots__ = ()
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
