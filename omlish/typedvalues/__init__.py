@@ -41,21 +41,14 @@ with _lang.auto_proxy_init(globals()):
         reflect_typed_values_impls,
     )
 
-    from .values import (  # noqa
-        TypedValue,
-
-        UniqueTypedValue,
-
+    from .scalars import (  # noqa
         ScalarTypedValue,
 
         UniqueScalarTypedValue,
     )
 
+    from .values import (  # noqa
+        TypedValue,
 
-##
-
-
-from .. import marshal as _msh
-
-
-_msh.register_global_module_import('.marshal', __package__)
+        UniqueTypedValue,
+    )

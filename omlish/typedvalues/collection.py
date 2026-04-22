@@ -3,10 +3,10 @@
 TODO:
  - cext _init_typed_values_collection
 """
+import dataclasses as dc
 import typing as ta
 
 from .. import check
-from .. import dataclasses as dc
 from .. import lang
 from .accessor import TypedValuesAccessor
 from .consumer import TypedValuesConsumer

@@ -2,8 +2,8 @@ import pytest
 
 from ... import lang
 from ..of_ import of
-from ..values import ScalarTypedValue
-from ..values import UniqueScalarTypedValue
+from ..scalars import ScalarTypedValue
+from ..scalars import UniqueScalarTypedValue
 
 
 class Foo(ScalarTypedValue[str]):

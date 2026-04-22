@@ -1,8 +1,8 @@
 from ... import lang
 from ..collection import TypedValues
 from ..consumer import TypedValuesConsumer
-from ..values import ScalarTypedValue
-from ..values import UniqueScalarTypedValue
+from ..scalars import ScalarTypedValue
+from ..scalars import UniqueScalarTypedValue
 
 
 class Foo(ScalarTypedValue[str]):

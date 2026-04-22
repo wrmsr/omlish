@@ -1,6 +1,5 @@
 import typing as ta
 
-from .. import dataclasses as dc
 from .. import lang
 
 
@@ -18,9 +17,6 @@ class TypedValue(lang.Abstract):
 ##
 
 
-_UNIQUE_BASES: set[type[TypedValue]] = set()
-
-
 class UniqueTypedValue(TypedValue, lang.Abstract):
     """
     Inheritance of this abstract class forms the root / key of a family of mutually exclusive TypedValues.
@@ -33,6 +29,9 @@ class UniqueTypedValue(TypedValue, lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
+        if cls.__module__.rpartition('.')[0] == __package__:
+            return
+
         if any(ur in cls.__bases__ for ur in _UNIQUE_BASES):
             try:
                 cls._unique_typed_value_cls  # noqa
@@ -42,28 +41,6 @@ class UniqueTypedValue(TypedValue, lang.Abstract):
                 raise TypeError(f'Class already has _unique_typed_value_cls: {cls}')
 
 
-##
-
-
-class ScalarTypedValue(TypedValue, dc.Box[T], abstract=True):
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        if UniqueTypedValue in (mro := cls.__mro__) and mro.index(ScalarTypedValue) > mro.index(UniqueTypedValue):
-            raise TypeError(f'Class {cls} must not have UniqueTypedValue before ScalarTypedValue in mro')
-
-
-##
-
-
-class UniqueScalarTypedValue(ScalarTypedValue[T], UniqueTypedValue, abstract=True):
-    pass
-
-
-##
-
-
-_UNIQUE_BASES.update([
+_UNIQUE_BASES: set[type[TypedValue]] = {
     UniqueTypedValue,
-    UniqueScalarTypedValue,
-])
+}

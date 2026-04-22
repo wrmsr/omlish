@@ -4,15 +4,16 @@ import typing as ta
 
 from .. import check
 from .. import lang
-from .values import ScalarTypedValue
 from .values import TypedValue
 from .values import UniqueTypedValue
 
 
 if ta.TYPE_CHECKING:
     from . import collection as tvc
+    from . import scalars as tva
 else:
     tvc = lang.proxy_import('.collection', __package__)
+    tva = lang.proxy_import('.scalars', __package__)
 
 
 TypedValueT = ta.TypeVar('TypedValueT', bound=TypedValue)
@@ -167,7 +168,7 @@ class TypedValuesConsumer(ta.Generic[TypedValueT]):
     def pop_scalar_kwargs(self, **kwargs: type[TypedValueT]) -> dict[str, TypedValueT]:
         dct: dict[str, TypedValueT] = {}
         for k, vc in kwargs.items():
-            check.issubclass(vc, ScalarTypedValue)
+            check.issubclass(vc, tva.ScalarTypedValue)
             try:
                 v = self.pop(vc)
             except KeyError:

@@ -273,6 +273,11 @@ with _lang.auto_proxy_init(globals()):
         NopMarshalerUnmarshaler,
     )
 
+    from .typedvalues.collections import (  # noqa
+        build_typed_values_marshaler,
+        build_typed_values_unmarshaler,
+    )
+
     from .globals import (  # noqa
         global_config_registry,
         global_marshaler_factory,

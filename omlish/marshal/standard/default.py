@@ -39,6 +39,12 @@ from ..singular.uuids import UUID_MARSHALER_FACTORY
 from ..singular.uuids import UUID_UNMARSHALER_FACTORY
 from ..trivial.any import ANY_MARSHALER_FACTORY
 from ..trivial.any import ANY_UNMARSHALER_FACTORY
+from ..typedvalues.collections import TypedValuesMarshalerFactory
+from ..typedvalues.collections import TypedValuesUnmarshalerFactory
+from ..typedvalues.unions import TypedValueUnionMarshalerFactory
+from ..typedvalues.unions import TypedValueUnionUnmarshalerFactory
+from ..typedvalues.values import TypedValueMarshalerFactory
+from ..typedvalues.values import TypedValueUnmarshalerFactory
 
 
 ##
@@ -66,22 +72,25 @@ class DefaultStandardFactories(ta.NamedTuple):
 
 
 DEFAULT_STANDARD_FACTORIES: ta.Final = DefaultStandardFactories.of_pairs([
-    (OPAQUE_REPR_MARSHALER_FACTORY,    OPAQUE_REPR_UNMARSHALER_FACTORY),
-    (PRIMITIVE_MARSHALER_FACTORY,      PRIMITIVE_UNMARSHALER_FACTORY),
-    (NewtypeMarshalerFactory(),        NewtypeUnmarshalerFactory()),
-    (OptionalMarshalerFactory(),       OptionalUnmarshalerFactory()),
-    (LiteralUnionMarshalerFactory(),   LiteralUnionUnmarshalerFactory()),
-    (PrimitiveUnionMarshalerFactory(), PrimitiveUnionUnmarshalerFactory()),
-    (DataclassMarshalerFactory(),      DataclassUnmarshalerFactory()),
-    (NamedtupleMarshalerFactory(),     NamedtupleUnmarshalerFactory()),
-    (EnumMarshalerFactory(),           EnumUnmarshalerFactory()),
-    (LiteralMarshalerFactory(),        LiteralUnmarshalerFactory()),
-    (NUMBERS_MARSHALER_FACTORY,        NUMBERS_UNMARSHALER_FACTORY),
-    (UUID_MARSHALER_FACTORY,           UUID_UNMARSHALER_FACTORY),
-    (DATETIME_MARSHALER_FACTORY,       DATETIME_UNMARSHALER_FACTORY),
-    (MaybeMarshalerFactory(),          MaybeUnmarshalerFactory()),
-    (MappingMarshalerFactory(),        MappingUnmarshalerFactory()),
-    (SequenceNotStrMarshalerFactory(), SequenceNotStrUnmarshalerFactory()),
-    (IterableMarshalerFactory(),       IterableUnmarshalerFactory()),
-    (ANY_MARSHALER_FACTORY,            ANY_UNMARSHALER_FACTORY),
+    (OPAQUE_REPR_MARSHALER_FACTORY,     OPAQUE_REPR_UNMARSHALER_FACTORY),
+    (PRIMITIVE_MARSHALER_FACTORY,       PRIMITIVE_UNMARSHALER_FACTORY),
+    (NewtypeMarshalerFactory(),         NewtypeUnmarshalerFactory()),
+    (OptionalMarshalerFactory(),        OptionalUnmarshalerFactory()),
+    (LiteralUnionMarshalerFactory(),    LiteralUnionUnmarshalerFactory()),
+    (TypedValueMarshalerFactory(),      TypedValueUnmarshalerFactory()),
+    (TypedValueUnionMarshalerFactory(), TypedValueUnionUnmarshalerFactory()),
+    (TypedValuesMarshalerFactory(),     TypedValuesUnmarshalerFactory()),
+    (PrimitiveUnionMarshalerFactory(),  PrimitiveUnionUnmarshalerFactory()),
+    (DataclassMarshalerFactory(),       DataclassUnmarshalerFactory()),
+    (NamedtupleMarshalerFactory(),      NamedtupleUnmarshalerFactory()),
+    (EnumMarshalerFactory(),            EnumUnmarshalerFactory()),
+    (LiteralMarshalerFactory(),         LiteralUnmarshalerFactory()),
+    (NUMBERS_MARSHALER_FACTORY,         NUMBERS_UNMARSHALER_FACTORY),
+    (UUID_MARSHALER_FACTORY,            UUID_UNMARSHALER_FACTORY),
+    (DATETIME_MARSHALER_FACTORY,        DATETIME_UNMARSHALER_FACTORY),
+    (MaybeMarshalerFactory(),           MaybeUnmarshalerFactory()),
+    (MappingMarshalerFactory(),         MappingUnmarshalerFactory()),
+    (SequenceNotStrMarshalerFactory(),  SequenceNotStrUnmarshalerFactory()),
+    (IterableMarshalerFactory(),        IterableUnmarshalerFactory()),
+    (ANY_MARSHALER_FACTORY,             ANY_UNMARSHALER_FACTORY),
 ])

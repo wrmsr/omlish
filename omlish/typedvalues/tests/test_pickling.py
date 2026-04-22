@@ -1,7 +1,7 @@
 import pickle
 
 from ..collection import TypedValues
-from ..values import ScalarTypedValue
+from ..scalars import ScalarTypedValue
 
 
 class Foo(ScalarTypedValue[int]):

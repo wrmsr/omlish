@@ -7,7 +7,7 @@ from ... import dataclasses as dc
 from ... import lang
 from ..collection import DuplicateUniqueTypedValueError
 from ..collection import TypedValues
-from ..values import ScalarTypedValue
+from ..scalars import ScalarTypedValue
 from ..values import TypedValue
 from ..values import UniqueTypedValue
 
