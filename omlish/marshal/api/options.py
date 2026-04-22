@@ -6,20 +6,21 @@ TODO:
 """
 import typing as ta
 
-from ... import collections as col
+from ... import lang
+from ... import typedvalues as tv
 
 
 ##
 
 
-class Option:
+class Option(tv.TypedValue, lang.Abstract):
     pass
 
 
-Options: ta.TypeAlias = col.TypeMap[Option]
+Options: ta.TypeAlias = tv.TypedValues[Option]
 
 
 ##
 
 
-_EMPTY_OPTIONS: Options = col.TypeMap()
+_EMPTY_OPTIONS: Options = Options()

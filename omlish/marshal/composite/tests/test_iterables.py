@@ -15,8 +15,8 @@ def test_ctor_option():
     u = ufc.make_unmarshaler(ta.Sequence[int]).unmarshal(uc, [1, 2, 3])
     assert u == (1, 2, 3)
 
-    uc = UnmarshalContext(unmarshal_factory_context=ufc, options=Options([
+    uc = UnmarshalContext(unmarshal_factory_context=ufc, options=Options(
         DefaultIterableConstructors(sequence=list),
-    ]))
+    ))
     u = ufc.make_unmarshaler(ta.Sequence[int]).unmarshal(uc, [1, 2, 3])
     assert u == [1, 2, 3]

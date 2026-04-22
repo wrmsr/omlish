@@ -3,11 +3,11 @@ import dataclasses as dc
 import typing as ta
 
 from ... import check
-from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
 from .configs import Configs
 from .errors import UnhandledTypeError
+from .options import _EMPTY_OPTIONS
 from .options import Options
 from .reflect import ReflectOverride
 from .registries import Registry
@@ -84,7 +84,7 @@ class UnmarshalFactoryContext(BaseContext, lang.Final):
 @dc.dataclass(frozen=True, kw_only=True)
 class MarshalContext(BaseContext, lang.Final):
     marshal_factory_context: MarshalFactoryContext
-    options: Options = col.TypeMap()
+    options: Options = _EMPTY_OPTIONS
 
     @property
     def configs(self) -> Configs:
@@ -97,7 +97,7 @@ class MarshalContext(BaseContext, lang.Final):
 @dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalContext(BaseContext, lang.Final):
     unmarshal_factory_context: UnmarshalFactoryContext
-    options: Options = col.TypeMap()
+    options: Options = _EMPTY_OPTIONS
 
     @property
     def configs(self) -> Configs:
