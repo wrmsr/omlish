@@ -10,7 +10,7 @@ from ..metadata import MessageUuid
 ##
 
 
-class AiDeltaMetadata(Metadata, lang.Abstract):
+class AiDeltaMetadata(Metadata, lang.Abstract, lang.Sealed):
     pass
 
 

@@ -244,4 +244,4 @@ class Registry:
         return self.get_registered_type(name).cls()
 
     def get_registry_cls(self, selector: ta.Any, name: str) -> type:
-        return self.get_registered_type(selector).lookup(name).resolve()
+        return self.get_registered_type(selector).lookup(name)
