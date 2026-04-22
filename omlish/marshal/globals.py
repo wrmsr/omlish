@@ -17,10 +17,10 @@ from .standard.api import StandardUnmarshalerFactories
 
 
 if ta.TYPE_CHECKING:
-    from .standard import default as _sd
+    from .standard import defaults as _sd
     from .standard import factories as _sf
 else:
-    _sd = lang.proxy_import('.standard.default', __package__)
+    _sd = lang.proxy_import('.standard.defaults', __package__)
     _sf = lang.proxy_import('.standard.factories', __package__)
 
 

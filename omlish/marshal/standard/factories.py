@@ -22,7 +22,7 @@ from ..factories.typecache import TypeCacheMarshalerFactory
 from ..factories.typecache import TypeCacheUnmarshalerFactory
 from .api import StandardMarshalerFactories
 from .api import StandardUnmarshalerFactories
-from .default import DEFAULT_STANDARD_FACTORIES
+from .defaults import DEFAULT_STANDARD_FACTORIES
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)

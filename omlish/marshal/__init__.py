@@ -243,7 +243,7 @@ with _lang.auto_proxy_init(globals()):
         StandardUnmarshalerFactories,
     )
 
-    from .standard.default import (  # noqa
+    from .standard.defaults import (  # noqa
         DEFAULT_STANDARD_FACTORIES,
     )
 
