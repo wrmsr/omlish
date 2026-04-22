@@ -117,7 +117,7 @@
     "module": ".minichain.backends.impls.cerebras.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/cerebras/names.py",
-    "line": 37,
+    "line": 35,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -129,8 +129,7 @@
           "default": "gpt-oss-120b",
           "aliases": {
             "llama3.1-8b": null,
-            "llama-3.3-70b": null,
-            "llama3": "llama-3.3-70b",
+            "llama3": "llama3.1-8b",
             "gpt-oss-120b": null,
             "gpt-oss": "gpt-oss-120b",
             "qwen-3-32b": null,

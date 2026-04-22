@@ -12,9 +12,7 @@ MODEL_NAMES = ModelNameCollection(
     default='gpt-oss-120b',
     aliases={
         'llama3.1-8b': None,
-
-        'llama-3.3-70b': None,
-        'llama3': 'llama-3.3-70b',
+        'llama3': 'llama3.1-8b',
 
         'gpt-oss-120b': None,
         'gpt-oss': 'gpt-oss-120b',
