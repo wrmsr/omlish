@@ -7,10 +7,10 @@ import abc
 import dataclasses as dc
 import sys
 import typing as ta
+import warnings
 
 from .... import check
 from .... import lang
-from ....logs import all as logs
 from ..processing.base import ProcessingContext
 from ..processing.base import ProcessingOption
 from ..processing.base import Processor
@@ -28,9 +28,6 @@ from .ops import OpRefMap
 from .plans import Plans
 from .registry import all_generator_types
 from .registry import generator_type_for_plan_type
-
-
-log = logs.get_module_logger(globals())
 
 
 ##
@@ -66,6 +63,10 @@ class Codegen(ProcessingOption):
 
 
 ##
+
+
+class CodegenMissingWarning(Warning):
+    pass
 
 
 @register_processor_type(phase=ProcessorPhase.GENERATION)
@@ -226,7 +227,10 @@ class GeneratorProcessor(Processor):
             __import__(cg_mod_spec)
         except ImportError:
             if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
-                log.warning(lambda: f'Codegen module missing for {cls.__module__}.{cls.__qualname__} at {cg_mod_spec}')
+                warnings.warn(
+                    f'Codegen module missing for {cls.__module__}.{cls.__qualname__} at {cg_mod_spec}',
+                    CodegenMissingWarning,
+                )
             return False
 
         cg_mod = sys.modules[cg_mod_spec]
@@ -243,7 +247,10 @@ class GeneratorProcessor(Processor):
             cg_reg_item = cg_fn_reg[prep_plan_repr]
         except KeyError:
             if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
-                log.warning(lambda: f'Codegen missing for {cls.__module__}.{cls.__qualname__} in {cg_mod_spec}')
+                warnings.warn(
+                    f'Codegen missing for {cls.__module__}.{cls.__qualname__} in {cg_mod_spec}',
+                    CodegenMissingWarning,
+                )
             return False
 
         cg_kw, cg_fn = cg_reg_item

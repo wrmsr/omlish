@@ -15,12 +15,13 @@ from .factories.api import LazyInitFn
 from .factories.api import ModuleImport
 from .standard.api import StandardMarshalerFactories
 from .standard.api import StandardUnmarshalerFactories
-from .standard.default import DEFAULT_STANDARD_FACTORIES
 
 
 if ta.TYPE_CHECKING:
+    from .standard import default as _sd
     from .standard import factories as _sf
 else:
+    _sd = lang.proxy_import('.standard.default', __package__)
     _sf = lang.proxy_import('.standard.factories', __package__)
 
 
@@ -152,10 +153,10 @@ def install_standard_factories_to(
         u_cfg = check.opt_single(cfgs.get_of(None, StandardUnmarshalerFactories))
 
         m_lst: list[MarshalerFactory] = list(
-            m_cfg.lst if m_cfg is not None else DEFAULT_STANDARD_FACTORIES.marshaler_factories,
+            m_cfg.lst if m_cfg is not None else _sd.DEFAULT_STANDARD_FACTORIES.marshaler_factories,
         )
         u_lst: list[UnmarshalerFactory] = list(
-            u_cfg.lst if u_cfg is not None else DEFAULT_STANDARD_FACTORIES.unmarshaler_factories,
+            u_cfg.lst if u_cfg is not None else _sd.DEFAULT_STANDARD_FACTORIES.unmarshaler_factories,
         )
 
         m_new = False
