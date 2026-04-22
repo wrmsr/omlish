@@ -23,16 +23,26 @@ from .impls import get_polymorphism_impls
 
 class PolymorphismMarshaler(Marshaler, lang.Abstract):
     @abc.abstractmethod
-    def get_impls(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
+    def get_marshaler_map(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
         raise NotImplementedError
+
+    def get_impls(self) -> Impls | None:
+        return None
 
 
 @dc.dataclass(frozen=True)
 class WrapperPolymorphismMarshaler(PolymorphismMarshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
 
-    def get_impls(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
+    _: dc.KW_ONLY
+
+    impls: Impls | None = None
+
+    def get_marshaler_map(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
         return self.m
+
+    def get_impls(self) -> Impls | None:
+        return self.impls
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
         tag, m = self.m[type(o)]
@@ -44,8 +54,15 @@ class FieldPolymorphismMarshaler(PolymorphismMarshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
     tf: str
 
-    def get_impls(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
+    _: dc.KW_ONLY
+
+    impls: Impls | None = None
+
+    def get_marshaler_map(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
         return self.m
+
+    def get_impls(self) -> Impls | None:
+        return self.impls
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
         tag, m = self.m[type(o)]
@@ -65,9 +82,9 @@ def make_polymorphism_marshaler(
     }
 
     if isinstance(tt, WrapperTypeTagging):
-        return WrapperPolymorphismMarshaler(m)
+        return WrapperPolymorphismMarshaler(m, impls=impls)
     elif isinstance(tt, FieldTypeTagging):
-        return FieldPolymorphismMarshaler(m, tt.field)
+        return FieldPolymorphismMarshaler(m, tt.field, impls=impls)
     else:
         raise TypeError(tt)
 

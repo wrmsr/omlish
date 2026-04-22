@@ -24,16 +24,26 @@ from .impls import get_polymorphism_impls
 
 class PolymorphismUnmarshaler(Unmarshaler, lang.Abstract):
     @abc.abstractmethod
-    def get_impls(self) -> ta.Mapping[str, Unmarshaler]:
+    def get_unmarshaler_map(self) -> ta.Mapping[str, Unmarshaler]:
         raise NotImplementedError
+
+    def get_impls(self) -> Impls | None:
+        return None
 
 
 @dc.dataclass(frozen=True)
 class WrapperPolymorphismUnmarshaler(PolymorphismUnmarshaler):
     m: ta.Mapping[str, Unmarshaler]
 
-    def get_impls(self) -> ta.Mapping[str, Unmarshaler]:
+    _: dc.KW_ONLY
+
+    impls: Impls | None = None
+
+    def get_unmarshaler_map(self) -> ta.Mapping[str, Unmarshaler]:
         return self.m
+
+    def get_impls(self) -> Impls | None:
+        return self.impls
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = check.isinstance(v, collections.abc.Mapping)
@@ -47,8 +57,15 @@ class FieldPolymorphismUnmarshaler(PolymorphismUnmarshaler):
     m: ta.Mapping[str, Unmarshaler]
     tf: str
 
-    def get_impls(self) -> ta.Mapping[str, Unmarshaler]:
+    _: dc.KW_ONLY
+
+    impls: Impls | None = None
+
+    def get_unmarshaler_map(self) -> ta.Mapping[str, Unmarshaler]:
         return self.m
+
+    def get_impls(self) -> Impls | None:
+        return self.impls
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = dict(check.isinstance(v, collections.abc.Mapping))
@@ -72,9 +89,9 @@ def make_polymorphism_unmarshaler(
     }
 
     if isinstance(tt, WrapperTypeTagging):
-        return WrapperPolymorphismUnmarshaler(m)
+        return WrapperPolymorphismUnmarshaler(m, impls=impls)
     elif isinstance(tt, FieldTypeTagging):
-        return FieldPolymorphismUnmarshaler(m, tt.field)
+        return FieldPolymorphismUnmarshaler(m, tt.field, impls=impls)
     else:
         raise TypeError(tt)
 

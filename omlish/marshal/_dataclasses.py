@@ -3431,32 +3431,39 @@ def _process_dataclass__4bfadfa5296b12af16efea03373079c9e7c1a7e9():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('m', 'tf')), EqPlan(fields=('m', 'tf')), FrozenPlan(fields=('m', 'tf'), allow_dyna"
-        "mic_dunder_attrs=False), HashPlan(action='add', fields=('m', 'tf'), cache=False), InitPlan(fields=(InitPlan.Fi"
-        "eld(name='m', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='tf', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self'"
-        ", std_params=('m', 'tf'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
-        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='m', kw_only=False, fn=None), ReprPlan.Field(name='tf', kw"
-        "_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('m', 'tf', 'impls')), EqPlan(fields=('m', 'tf', 'impls')), FrozenPlan(fields=('m',"
+        " 'tf', 'impls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('m', 'tf', 'impls'), cache="
+        "False), InitPlan(fields=(InitPlan.Field(name='m', annotation=OpRef(name='init.fields.0.annotation'), default=N"
+        "one, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='tf', annotation=OpRef(name='init.fields.1.annotation'), default=None"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='impls', annotation=OpRef(name='init.fields.2.annotation'), default=OpRe"
+        "f(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('m', 'tf'), kw_only_params=('"
+        "impls',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Rep"
+        "rPlan.Field(name='m', kw_only=False, fn=None), ReprPlan.Field(name='tf', kw_only=False, fn=None), ReprPlan.Fie"
+        "ld(name='impls', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='c42820f4ac475651221b92d47c0db7e1b5c0c775',
+    plan_repr_sha1='80e4754e128191455453bb4b6982aa8ba98818b7',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
     ),
     cls_names=(
         ('omlish.marshal.polymorphism.marshal', 'FieldPolymorphismMarshaler'),
         ('omlish.marshal.polymorphism.standard', 'FieldPolymorphismUnmarshaler'),
     ),
 )
-def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
+def _process_dataclass__80e4754e128191455453bb4b6982aa8ba98818b7():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3477,6 +3484,7 @@ def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
             return __dataclass__cls(  # noqa
                 m=self.m,
                 tf=self.tf,
+                impls=self.impls,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -3491,7 +3499,8 @@ def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
                 return NotImplemented
             return (
                 self.m == other.m and
-                self.tf == other.tf
+                self.tf == other.tf and
+                self.impls == other.impls
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -3502,6 +3511,7 @@ def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
         __dataclass___setattr_frozen_fields = {
             'm',
             'tf',
+            'impls',
         }
 
         def __setattr__(self, name, value):
@@ -3520,6 +3530,7 @@ def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
         __dataclass___delattr_frozen_fields = {
             'm',
             'tf',
+            'impls',
         }
 
         def __delattr__(self, name):
@@ -3539,6 +3550,7 @@ def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
             return hash((
                 self.m,
                 self.tf,
+                self.impls,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -3548,9 +3560,12 @@ def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
             self,
             m: __dataclass__init__fields__0__annotation,
             tf: __dataclass__init__fields__1__annotation,
+            *,
+            impls: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'm', m)
             __dataclass__object_setattr(self, 'tf', tf)
+            __dataclass__object_setattr(self, 'impls', impls)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -3562,6 +3577,7 @@ def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
             parts = []
             parts.append(f"m={self.m!r}")
             parts.append(f"tf={self.tf!r}")
+            parts.append(f"impls={self.impls!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3727,27 +3743,35 @@ def _process_dataclass__80053702e92eaf973a535f396715f88b40d1bb5e():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('m',)), EqPlan(fields=('m',)), FrozenPlan(fields=('m',), allow_dynamic_dunder_attr"
-        "s=False), HashPlan(action='add', fields=('m',), cache=False), InitPlan(fields=(InitPlan.Field(name='m', annota"
-        "tion=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_params=('m"
-        "',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPl"
-        "an(fields=(ReprPlan.Field(name='m', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('m', 'impls')), EqPlan(fields=('m', 'impls')), FrozenPlan(fields=('m', 'impls'), a"
+        "llow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('m', 'impls'), cache=False), InitPlan(fields="
+        "(InitPlan.Field(name='m', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='impls', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None)), self_param='self', std_params=('m',), kw_only_params=('impls',), frozen=True, slo"
+        "ts=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='m', kw_o"
+        "nly=False, fn=None), ReprPlan.Field(name='impls', kw_only=True, fn=None)), id=False, terse=False, default_fn=N"
+        "one)))"
     ),
-    plan_repr_sha1='00a32d02ca8d7c055f05a95a2073d8d5198c6d97',
+    plan_repr_sha1='029e3b873ec8e37ed64107b36d9c83f6511951e8',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
     cls_names=(
         ('omlish.marshal.polymorphism.marshal', 'WrapperPolymorphismMarshaler'),
         ('omlish.marshal.polymorphism.standard', 'WrapperPolymorphismUnmarshaler'),
     ),
 )
-def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
+def _process_dataclass__029e3b873ec8e37ed64107b36d9c83f6511951e8():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3767,6 +3791,7 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 m=self.m,
+                impls=self.impls,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -3780,7 +3805,8 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.m == other.m
+                self.m == other.m and
+                self.impls == other.impls
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -3790,6 +3816,7 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
 
         __dataclass___setattr_frozen_fields = {
             'm',
+            'impls',
         }
 
         def __setattr__(self, name, value):
@@ -3807,6 +3834,7 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
 
         __dataclass___delattr_frozen_fields = {
             'm',
+            'impls',
         }
 
         def __delattr__(self, name):
@@ -3825,6 +3853,7 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
         def __hash__(self):
             return hash((
                 self.m,
+                self.impls,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -3833,8 +3862,11 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
         def __init__(
             self,
             m: __dataclass__init__fields__0__annotation,
+            *,
+            impls: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'm', m)
+            __dataclass__object_setattr(self, 'impls', impls)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -3845,6 +3877,7 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
         def __repr__(self):
             parts = []
             parts.append(f"m={self.m!r}")
+            parts.append(f"impls={self.impls!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

@@ -112,11 +112,14 @@ def _build_typed_value_union_poly(ctx: msh.BaseContext, rty: rfl.Type) -> msh.Im
     def gus(sty: type) -> list[type]:
         if isinstance(ctx, msh.MarshalFactoryContext):
             m = ctx.make_marshaler(sty)  # noqa
-            # p = check.isinstance(m, msh.PolymorphismMarshaler).
+            impls = check.isinstance(m, msh.PolymorphismMarshaler).get_impls()
         elif isinstance(ctx, msh.UnmarshalFactoryContext):
             u = ctx.make_unmarshaler(sty)  # noqa
+            impls = check.isinstance(u, msh.PolymorphismUnmarshaler).get_impls()
         else:
             raise TypeError(ctx)
+
+        impls = check.not_none(impls)  # noqa
 
         raise NotImplementedError
 
