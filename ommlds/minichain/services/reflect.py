@@ -38,7 +38,7 @@ class ReflectedStreamService(ReflectedService):
     stream_response_output: rfl.Type
 
 
-#
+##
 
 
 def reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedService:
@@ -101,3 +101,10 @@ def reflect_service_cls(service_cls: ta.Any) -> ReflectedService:
 
     _REFLECT_SERVICE_CLS_CACHE[service_cls] = ret = reflect_service_cls_(service_cls)
     return ret
+
+
+##
+
+
+def is_stream_service_cls(service_cls: ta.Any) -> bool:
+    return isinstance(reflect_service_cls(service_cls), ReflectedStreamService)

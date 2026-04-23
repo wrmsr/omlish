@@ -14,6 +14,7 @@ from ...configs import Config
 from ...models.configs import ModelName
 from ...registries.globals import get_global_registry
 from ...registries.registry import Registry
+from ...services import is_stream_service_cls
 from ..strings.manifests import BackendStringsManifest
 from .types import BackendSpec
 from .types import BackendSpecResolver
@@ -125,12 +126,11 @@ class ModelBackendSpecTypeResolver(BackendSpecTypeResolver[ModelBackendSpec]):
 
 class RetryBackendSpecTypeResolver(BackendSpecTypeResolver[RetryBackendSpec]):
     def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: RetryBackendSpec) -> ResolvedBackendSpec:
-        # FIXME: stream??
         return ResolvedBackendSpec(
             ctx.service_cls,
             spec,
 
-            retry.RetryService,
+            retry.RetryStreamService if is_stream_service_cls(ctx.service_cls) else retry.RetryService,
             children=ctx.rec(BackendSpec.of(spec.child)),
         )
 
@@ -140,17 +140,20 @@ class RetryBackendSpecTypeResolver(BackendSpecTypeResolver[RetryBackendSpec]):
 
 class FirstInWinsBackendSpecTypeResolver(BackendSpecTypeResolver[FirstInWinsBackendSpec]):
     def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: FirstInWinsBackendSpec) -> ResolvedBackendSpec:  # noqa
-        # FIXME: stream??
-        return ResolvedBackendSpec(
-            ctx.service_cls,
-            spec,
+        if is_stream_service_cls(ctx.service_cls):
+            raise NotImplementedError
 
-            firstinwins.AsyncioFirstInWinsService,
-            children=[
-                ctx.rec(BackendSpec.of(child))
-                for child in spec.children
-            ],
-        )
+        else:
+            return ResolvedBackendSpec(
+                ctx.service_cls,
+                spec,
+
+                firstinwins.AsyncioFirstInWinsService,
+                children=[
+                    ctx.rec(BackendSpec.of(child))
+                    for child in spec.children
+                ],
+            )
 
 
 ##

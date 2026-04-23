@@ -13,6 +13,8 @@ from .reflect import (  # noqa
 
     reflect_service_like,
     reflect_service_cls,
+
+    is_stream_service_cls,
 )
 
 from .requests import (  # noqa

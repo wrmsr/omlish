@@ -498,6 +498,8 @@ with _lang.auto_proxy_init(
         reflect_service_like,
         reflect_service_cls,
 
+        is_stream_service_cls,
+
         #
 
         RequestMetadata,
