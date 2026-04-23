@@ -93,7 +93,7 @@ class ResolvedBackendSpec:
 
     ctor: ta.Any
     configs: ta.Sequence[Config] | None = None
-    children: ta.Sequence[ResolvedBackendSpec] | None = None
+    children: ResolvedBackendSpec | ta.Sequence[ResolvedBackendSpec] | None = None
 
 
 class BackendSpecResolver(lang.Abstract):
