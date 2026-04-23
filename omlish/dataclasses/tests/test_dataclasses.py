@@ -224,7 +224,7 @@ def test_generics():
     class Box(ta.Generic[T]):
         v: T
 
-    rty0 = rfl.type_(Box[int])  # noqa
+    rty0 = rfl.typeof(Box[int])  # noqa
 
     assert Box[int](5).v == 5
 
@@ -232,7 +232,7 @@ def test_generics():
     class IntBox(Box[int]):
         pass
 
-    rty1 = rfl.type_(IntBox)  # noqa
+    rty1 = rfl.typeof(IntBox)  # noqa
 
     assert IntBox(5).v == 5
 

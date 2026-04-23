@@ -74,7 +74,7 @@ class SetBinder(ElementGenerator, ta.Generic[T]):
 
     @lang.cached_property
     def _multi_key(self) -> Key:
-        oty = rfl.type_(rfl.get_orig_class(self))
+        oty = rfl.typeof(rfl.get_orig_class(self))
         ety = check.single(check.isinstance(oty, rfl.Generic).args)
         return Key(ta.AbstractSet[ety], tag=self._tag)  # type: ignore
 
@@ -108,7 +108,7 @@ class MapBinder(ElementGenerator, ta.Generic[K, V]):
 
     @lang.cached_property
     def _multi_key(self) -> Key:
-        oty = rfl.type_(rfl.get_orig_class(self))
+        oty = rfl.typeof(rfl.get_orig_class(self))
         kty, vty = check.isinstance(oty, rfl.Generic).args
         return Key(ta.Mapping[kty, vty], tag=self._tag)  # type: ignore
 

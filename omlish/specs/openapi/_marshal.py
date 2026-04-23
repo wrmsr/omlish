@@ -99,7 +99,7 @@ class _SchemaMarshalerFactory(msh.MarshalerFactory):
             return None
         return lambda: _SchemaMarshaler(
             {
-                f: (msh.translate_name(f, msh.Naming.LOW_CAMEL), ctx.make_marshaler(rfl.type_(a)))
+                f: (msh.translate_name(f, msh.Naming.LOW_CAMEL), ctx.make_marshaler(rfl.typeof(a)))
                 for f, a in dc.reflect(Schema).field_annotations.items()
                 if f != 'keywords'
             },
@@ -135,7 +135,7 @@ class _SchemaUnmarshalerFactory(msh.UnmarshalerFactory):
             return None
         return lambda: _SchemaUnmarshaler(
             {
-                msh.translate_name(f, msh.Naming.LOW_CAMEL): (f, ctx.make_unmarshaler(rfl.type_(a)))
+                msh.translate_name(f, msh.Naming.LOW_CAMEL): (f, ctx.make_unmarshaler(rfl.typeof(a)))
                 for f, a in dc.reflect(Schema).field_annotations.items()
                 if f != 'keywords'
             },

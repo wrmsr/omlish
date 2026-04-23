@@ -66,7 +66,7 @@ class _RequestResponseMarshaler(msh.Marshaler):
         tv_v = check.isinstance(tv_m.marshal(ctx, o._typed_values), ta.Sequence)  # noqa
 
         if self.v_m is None:
-            orty: rfl.Generic = check.isinstance(rfl.type_(rfl.get_orig_class(o)), rfl.Generic)
+            orty: rfl.Generic = check.isinstance(rfl.typeof(rfl.get_orig_class(o)), rfl.Generic)
             check.state(orty.cls in (Request, Response))
             v_rty, tv_rty = orty.args
             v_v = ctx.marshal_factory_context.make_marshaler(v_rty).marshal(ctx, o.v)  # FIXME
@@ -90,7 +90,7 @@ class _RequestResponseMarshalerFactory(msh.MarshalerFactory):
             return None
 
         if isinstance(rty, type):
-            rty = rfl.type_(rfl.get_orig_class(rty))
+            rty = rfl.typeof(rfl.get_orig_class(rty))
 
         def inner() -> msh.Marshaler:
             if isinstance(rty, rfl.Generic):
@@ -230,12 +230,12 @@ class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.Unmarshaler
 
 class _RequestMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshalerFactory):
     _md_cls = RequestMetadata
-    _mdu_rty = rfl.type_(RequestMetadatas)
+    _mdu_rty = rfl.typeof(RequestMetadatas)
 
 
 class _ResponseMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshalerFactory):
     _md_cls = ResponseMetadata
-    _mdu_rty = rfl.type_(ResponseMetadatas)
+    _mdu_rty = rfl.typeof(ResponseMetadatas)
 
 
 ##

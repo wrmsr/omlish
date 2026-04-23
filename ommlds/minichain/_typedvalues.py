@@ -54,7 +54,7 @@ def _tv_field_metadata(
         *,
         marshal_name: str | None = None,
 ) -> ta.Mapping:
-    tvc_rty = rfl.type_(tvc)
+    tvc_rty = rfl.typeof(tvc)
 
     ct: ta.Any
     if isinstance(tvc_rty, type):
@@ -67,7 +67,7 @@ def _tv_field_metadata(
     else:
         raise TypeError(tvc_rty)
 
-    tvs_rty = rfl.type_(tv.TypedValues[tvc])  # noqa
+    tvs_rty = rfl.typeof(tv.TypedValues[tvc])  # noqa
 
     return {
         **dc.extra_field_params(

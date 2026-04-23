@@ -100,12 +100,12 @@ def build_kwargs_target(
         ann = p.annotation
         if (
                 not raw_optional and
-                isinstance(rf := rfl.type_(ann), rfl.Union) and
+                isinstance(rf := rfl.typeof(ann), rfl.Union) and
                 rf.is_optional
         ):
             ann = rf.without_none()
 
-        rty = rfl.type_(ann)
+        rty = rfl.typeof(ann)
 
         tag = None
         if isinstance(rty, rfl.Annotated):

@@ -84,5 +84,5 @@ with _lang.auto_proxy_init(
         Reflector,
         DEFAULT_REFLECTOR,
         is_type,
-        type_,
+        typeof,
     )

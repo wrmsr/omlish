@@ -63,7 +63,7 @@ def field(
 
     #
 
-    rty = rfl.type_(ty)
+    rty = rfl.typeof(ty)
 
     #
 

@@ -16,7 +16,7 @@ T = ta.TypeVar('T')
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
 class Key(lang.Final, ta.Generic[T]):
-    ty: rfl.Type = dc.xfield(coerce=rfl.type_)
+    ty: rfl.Type = dc.xfield(coerce=rfl.typeof)
 
     tag: ta.Any = dc.xfield(
         default=None,
@@ -31,4 +31,4 @@ def as_key(o: ta.Any) -> Key:
         raise TypeError(o)
     if isinstance(o, Key):
         return o
-    return Key(rfl.type_(o))
+    return Key(rfl.typeof(o))

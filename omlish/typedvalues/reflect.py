@@ -28,7 +28,7 @@ def reflect_typed_values_impls(
             todo.extend(cur.args)
 
         elif isinstance(cur, ta.TypeVar):
-            todo.append(rfl.type_(rfl.get_type_var_bound(cur)))
+            todo.append(rfl.typeof(rfl.get_type_var_bound(cur)))
 
         elif isinstance(cur, type):
             cur = check.issubclass(check.isinstance(cur, type), TypedValue)

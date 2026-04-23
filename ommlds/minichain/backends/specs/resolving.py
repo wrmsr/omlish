@@ -89,7 +89,7 @@ class NameBackendSpecTypeResolver(BackendSpecTypeResolver[NameBackendSpec]):
         check.state(cfgs_arg.kind == inspect.Parameter.VAR_POSITIONAL)
         check.is_not(cfgs_arg.annotation, inspect.Parameter.empty)
         check.is_not(cfgs_arg.annotation, Config)
-        return rfl.type_(cfgs_arg.annotation)
+        return rfl.typeof(cfgs_arg.annotation)
 
 
 #

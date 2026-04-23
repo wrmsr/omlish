@@ -60,9 +60,9 @@ def _install_standard_marshaling() -> None:
         msh.ForbiddenTypeUnmarshalerFactory({Secret}),
 
         msh.TypeMapMarshalerFactory({
-            rfl.type_(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
+            rfl.typeof(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
         }),
         msh.TypeMapUnmarshalerFactory({
-            rfl.type_(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
+            rfl.typeof(SecretRefOrStr): StrOrSecretRefMarshalerUnmarshaler(),
         }),
     )

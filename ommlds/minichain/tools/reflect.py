@@ -116,7 +116,7 @@ class ToolReflector:
     def reflect_type(self, rty: rfl.Type) -> ToolDtype:
         if isinstance(rty, type) and dc.is_dataclass(rty):
             return ObjectToolDtype({
-                f.name: self.reflect_type(rfl.type_(f.type))
+                f.name: self.reflect_type(rfl.typeof(f.type))
                 for f in dc.fields(rty)
             })
 
@@ -149,7 +149,7 @@ class ToolReflector:
         if isinstance(rty, rfl.Literal):
             return EnumToolDtype(
                 self.reflect_union_type(*col.unique(
-                    rfl.type_(type(a))
+                    rfl.typeof(type(a))
                     for a in rty.args
                 )),
                 rty.args,
@@ -216,7 +216,7 @@ class ToolReflector:
             return ta.get_type_hints(fn)
 
         if 'returns_type' not in ts_kw and 'return' in th():
-            ts_kw.update(returns_type=self.reflect_type(rfl.type_(th()['return'])))
+            ts_kw.update(returns_type=self.reflect_type(rfl.typeof(th()['return'])))
 
         #
 
@@ -248,7 +248,7 @@ class ToolReflector:
                 p_type: ToolDtype | None
                 if (p_type := ovr_p.get('type')) is None:
                     if sig_p is not None and sig_p.name in th():
-                        p_type = self.reflect_type(rfl.type_(th()[sig_p.name]))
+                        p_type = self.reflect_type(rfl.typeof(th()[sig_p.name]))
 
                 p_required: bool | None
                 if (p_required := ovr_p.get('required')) is None:

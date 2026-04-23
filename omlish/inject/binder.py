@@ -116,7 +116,7 @@ def bind(
         key = Key(obj)
     elif _is_fn(obj) and not has_to:
         sig = _inspect.signature(obj)
-        ty = rfl.type_(sig.return_annotation)
+        ty = rfl.typeof(sig.return_annotation)
         if inspect.iscoroutinefunction(obj):
             to_async_fn = obj
         else:

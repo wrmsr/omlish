@@ -27,13 +27,13 @@ _0, _1, _2, _3 = rfl.types._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
 
 def assert_generic_full_eq(l: ta.Any, r: rfl.GenericLike) -> None:
-    assert check.isinstance(rfl.type_(l), rfl.GenericLike).full_eq(r)
+    assert check.isinstance(rfl.typeof(l), rfl.GenericLike).full_eq(r)
 
 
 def test_simple_reflect_type():
-    assert rfl.type_(int) is int
-    assert rfl.type_(ta.Union[int, float]) == rfl.Union(frozenset([int, float]))  # noqa
-    assert rfl.type_(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))  # noqa
+    assert rfl.typeof(int) is int
+    assert rfl.typeof(ta.Union[int, float]) == rfl.Union(frozenset([int, float]))  # noqa
+    assert rfl.typeof(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))  # noqa
 
     assert_generic_full_eq(ta.Sequence[int], rfl.Generic(collections.abc.Sequence, (int,), (_0,), ta.Sequence[int]))
     assert_generic_full_eq(ta.Mapping[int, str], rfl.Generic(collections.abc.Mapping, (int, str), (_0, _1), ta.Mapping[int, str]))  # noqa
@@ -44,15 +44,15 @@ def test_simple_reflect_type():
     assert_generic_full_eq(set[int], rfl.Generic(set, (int,), (_0,), set[int]))
     assert_generic_full_eq(dict[int, str], rfl.Generic(dict, (int, str), (_0, _1), dict[int, str]))
 
-    assert rfl.type_(list) is list
+    assert rfl.typeof(list) is list
     assert_generic_full_eq(ta.List, rfl.Generic(list, (_0,), (_0,), ta.List))  # noqa
     assert_generic_full_eq(list[int], rfl.Generic(list, (int,), (_0,), list[int]))
     assert_generic_full_eq(ta.List[int], rfl.Generic(list, (int,), (_0,), ta.List[int]))  # noqa
 
 
 def test_new_unions():
-    assert rfl.type_(int | None) == rfl.Union(frozenset([int, type(None)]))
-    assert rfl.type_(int | float) == rfl.Union(frozenset([int, float]))
+    assert rfl.typeof(int | None) == rfl.Union(frozenset([int, type(None)]))
+    assert rfl.typeof(int | float) == rfl.Union(frozenset([int, float]))
 
 
 def test_partial_generics():
@@ -65,7 +65,7 @@ def test_partial_generics():
     ]:
         print(ty)
 
-        bt = rfl.type_(ty)
+        bt = rfl.typeof(ty)
         print(bt)
 
         class B(ty[T]):  # type: ignore
@@ -74,7 +74,7 @@ def test_partial_generics():
         class C(B[str]):
             pass
 
-        ct = rfl.type_(C)
+        ct = rfl.typeof(C)
         print(ct)
 
         cm = rfl.generic_mro(C)
@@ -85,7 +85,7 @@ def test_partial_generics():
 
 def test_newtype():
     Username = ta.NewType('Username', str)  # noqa
-    rty = rfl.type_(Username)
+    rty = rfl.typeof(Username)
     assert isinstance(rty, rfl.NewType)
     assert rty.ty is str
 
@@ -96,20 +96,20 @@ def test_callable():
     assert_generic_full_eq(ta.Callable[[int, float], str], rfl.Generic(collections.abc.Callable, (int, float, str), (_0, _1, _2), ta.Callable[[int, float], str]))  # type: ignore  # noqa
 
     with pytest.raises(TypeError):
-        rfl.type_(ta.Callable[..., int])
+        rfl.typeof(ta.Callable[..., int])
     with pytest.raises(TypeError):
-        rfl.type_(ta.Callable[[int, ...], str])
+        rfl.typeof(ta.Callable[[int, ...], str])
     with pytest.raises(TypeError):
-        rfl.type_(ta.Callable[P, str])
+        rfl.typeof(ta.Callable[P, str])
 
 
 def test_generic_type():
     assert_generic_full_eq(type[int], rfl.Generic(type, (int,), (_0,), type[int]))
-    assert rfl.type_(type) is type
+    assert rfl.typeof(type) is type
 
 
 def test_annotated():
-    rfl.type_(ta.Annotated[int, 'foo'])
+    rfl.typeof(ta.Annotated[int, 'foo'])
 
 
 def test_normalize_generic():
@@ -126,40 +126,40 @@ def test_normalize_generic():
         def __getitem__(self, item):
             return self.l[item]
 
-    assert rfl.type_(Foo) is Foo
+    assert rfl.typeof(Foo) is Foo
 
 
 def test_tuples():
-    assert_generic_full_eq(rfl.type_(ta.Tuple[int, str]), rfl.Generic(tuple, (int, str), (_0, _1), ta.Tuple[int, str]))
-    assert_generic_full_eq(rfl.type_(tuple[int, str]), rfl.Generic(tuple, (int, str), (_0, _1), tuple[int, str]))
-    assert rfl.type_(tuple) is tuple
+    assert_generic_full_eq(rfl.typeof(ta.Tuple[int, str]), rfl.Generic(tuple, (int, str), (_0, _1), ta.Tuple[int, str]))
+    assert_generic_full_eq(rfl.typeof(tuple[int, str]), rfl.Generic(tuple, (int, str), (_0, _1), tuple[int, str]))
+    assert rfl.typeof(tuple) is tuple
 
     with pytest.raises(TypeError):
-        rfl.type_(ta.Tuple)  # FIXME
+        rfl.typeof(ta.Tuple)  # FIXME
     with pytest.raises(TypeError):
-        rfl.type_(tuple[int, ...])  # FIXME
+        rfl.typeof(tuple[int, ...])  # FIXME
 
 
 def test_literal():
-    assert set(check.isinstance(rfl.type_(ta.Literal['a', 'b', 'c']), rfl.Literal).args) == {'a', 'b', 'c'}
+    assert set(check.isinstance(rfl.typeof(ta.Literal['a', 'b', 'c']), rfl.Literal).args) == {'a', 'b', 'c'}
 
 
 def test_protocol():
-    assert_generic_full_eq(rfl.type_(ta.Protocol[K, V]), rfl.Protocol(ta.Protocol, (K, V), (K, V), ta.Protocol[K, V]))
+    assert_generic_full_eq(rfl.typeof(ta.Protocol[K, V]), rfl.Protocol(ta.Protocol, (K, V), (K, V), ta.Protocol[K, V]))
 
     #
 
     class P(ta.Protocol[K_co, V_co]):
         pass
 
-    assert_generic_full_eq(rfl.type_(P), rfl.Protocol(P, (K_co, V_co), (K_co, V_co), P))
+    assert_generic_full_eq(rfl.typeof(P), rfl.Protocol(P, (K_co, V_co), (K_co, V_co), P))
 
     #
 
-    assert_generic_full_eq(rfl.type_(P[int, str]), rfl.Protocol(P, (int, str), (K_co, V_co), P[int, str]))
-    assert_generic_full_eq(rfl.type_(P[int, T]), rfl.Protocol(P, (int, T), (K_co, V_co), P[int, T]))  # type: ignore
+    assert_generic_full_eq(rfl.typeof(P[int, str]), rfl.Protocol(P, (int, str), (K_co, V_co), P[int, str]))
+    assert_generic_full_eq(rfl.typeof(P[int, T]), rfl.Protocol(P, (int, T), (K_co, V_co), P[int, T]))  # type: ignore
 
-    assert_generic_full_eq(rfl.type_(P[int, ta.Sequence[str]]), rfl.Protocol(P, (int, rfl.type_(ta.Sequence[str])), (K_co, V_co), P[int, ta.Sequence[str]]))  # noqa
+    assert_generic_full_eq(rfl.typeof(P[int, ta.Sequence[str]]), rfl.Protocol(P, (int, rfl.typeof(ta.Sequence[str])), (K_co, V_co), P[int, ta.Sequence[str]]))  # noqa
 
     #
 
@@ -177,22 +177,22 @@ def test_protocol():
 
 
 def test_defaults():
-    assert_generic_full_eq(rfl.type_(ta.Generator[int]), rfl.Generic(collections.abc.Generator, (int, type(None), type(None)), (_0, _1, _2), ta.Generator[int]))  # noqa
+    assert_generic_full_eq(rfl.typeof(ta.Generator[int]), rfl.Generic(collections.abc.Generator, (int, type(None), type(None)), (_0, _1, _2), ta.Generator[int]))  # noqa
 
 
 def test_trivial():
-    assert rfl.type_(float) is float
+    assert rfl.typeof(float) is float
 
     class DumbFloat(float):
         pass
 
-    assert rfl.type_(DumbFloat) is DumbFloat
+    assert rfl.typeof(DumbFloat) is DumbFloat
 
     class StupidFloat(float, ta.Generic[T]):
         pass
 
-    assert_generic_full_eq(rfl.type_(StupidFloat), rfl.Generic(StupidFloat, (T,), (T,), StupidFloat))
-    assert_generic_full_eq(rfl.type_(StupidFloat[int]), rfl.Generic(StupidFloat, (int,), (T,), StupidFloat[int]))
+    assert_generic_full_eq(rfl.typeof(StupidFloat), rfl.Generic(StupidFloat, (T,), (T,), StupidFloat))
+    assert_generic_full_eq(rfl.typeof(StupidFloat[int]), rfl.Generic(StupidFloat, (int,), (T,), StupidFloat[int]))
 
 
 RecurA: ta.TypeAlias = ta.Union[
@@ -214,16 +214,16 @@ def test_forward_ref():
         assert a.cls is collections.abc.Sequence
         return check.single(a.args)
 
-    rty_a = rfl.type_(RecurA)
+    rty_a = rfl.typeof(RecurA)
     ref_a = get_ref(rty_a)
     assert isinstance(ref_a, rfl.ForwardRef)
-    rty_a2 = rfl.type_(RecurA)
+    rty_a2 = rfl.typeof(RecurA)
     assert rty_a == rty_a2
 
-    rty_b = rfl.type_(RecurB)
+    rty_b = rfl.typeof(RecurB)
     ref_b = get_ref(rty_b)
     assert isinstance(ref_b, rfl.ForwardRef)
-    rty_b2 = rfl.type_(RecurB)
+    rty_b2 = rfl.typeof(RecurB)
     assert rty_b == rty_b2
 
     assert rty_a != rty_b
@@ -236,11 +236,11 @@ type RecurC = str | ta.Sequence[RecurC]
 
 def test_new_aliases():
     print(MyInt)
-    print(rfl.type_(MyInt))
+    print(rfl.typeof(MyInt))
     print(RecurC)
     with pytest.raises(rfl.RecursiveTypeError):
-        print(rfl.type_(RecurC))
-    print(rfl.Reflector(allow_recursion=True).type(RecurC))
+        print(rfl.typeof(RecurC))
+    print(rfl.Reflector(allow_recursion=True).typeof(RecurC))
 
 
 if __name__ == '__main__':

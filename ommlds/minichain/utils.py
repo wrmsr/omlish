@@ -24,4 +24,4 @@ def join_human_readable_str_list(
 
 
 def str_literal_values(lit: ta.Any) -> ta.Sequence[str]:
-    return tuple(check.isinstance(rfl.type_(lit), rfl.Literal).args)
+    return tuple(check.isinstance(rfl.typeof(lit), rfl.Literal).args)

@@ -148,7 +148,7 @@ class Registry:
             if self.__cls.present:
                 return
 
-            rty = rfl.type_(cls)
+            rty = rfl.typeof(cls)
 
             named_cls = cls
             named_rty = rty
@@ -156,7 +156,7 @@ class Registry:
                 name_obj = RegistryTypeName(name)
                 named_cls = ta.Annotated[cls, name_obj]
                 named_rty = rfl.add_rfl_annotations(rty, name_obj)
-                check.equal(named_rty, rfl.type_(named_cls))
+                check.equal(named_rty, rfl.typeof(named_cls))
 
             check.not_in(cls, self._o._types_by_cls)
             check.not_in(named_cls, self._o._types_by_cls)

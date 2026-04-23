@@ -113,8 +113,8 @@ def reflect_actor_node(fn: ta.Callable) -> ActorNode:
         return ActorNode(
             obj=StatelessActor(fn),
 
-            ins=build_signal_type_set(rfl.type_(in_ann)),
-            outs=build_signal_type_set(rfl.type_(out_ann)),
+            ins=build_signal_type_set(rfl.typeof(in_ann)),
+            outs=build_signal_type_set(rfl.typeof(out_ann)),
         )
 
     elif len(sig.parameters) == 2:
@@ -126,7 +126,7 @@ def reflect_actor_node(fn: ta.Callable) -> ActorNode:
         in_ann = ins_param.annotation
 
         out_ann = check.not_none(sig.return_annotation)
-        out_rty = rfl.type_(out_ann)
+        out_rty = rfl.typeof(out_ann)
         out_g_rty = check.isinstance(out_rty, rfl.Generic)
 
         if out_g_rty.cls is tuple:
@@ -147,8 +147,8 @@ def reflect_actor_node(fn: ta.Callable) -> ActorNode:
                 st_ty,
             ),
 
-            ins=build_signal_type_set(rfl.type_(in_ann)),
-            outs=build_signal_type_set(rfl.type_(out_rty)),
+            ins=build_signal_type_set(rfl.typeof(in_ann)),
+            outs=build_signal_type_set(rfl.typeof(out_rty)),
         )
 
     else:

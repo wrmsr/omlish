@@ -39,7 +39,7 @@ def reflect_tool_catalog_entry(
     if marshal_input:
         in_rtys: dict[str, rfl.Type] = {}
         for p in sig.parameters.values():
-            p_rty = rfl.type_(p.annotation)
+            p_rty = rfl.typeof(p.annotation)
             if not no_marshal_check:
                 msh.global_marshaling().new_unmarshal_factory_context().make_unmarshaler(p_rty)
             in_rtys[p.name] = p_rty
@@ -51,7 +51,7 @@ def reflect_tool_catalog_entry(
 
     tf_output: ToolFn.Output
     if marshal_output:
-        out_rty = rfl.type_(sig.return_annotation)
+        out_rty = rfl.typeof(sig.return_annotation)
         if not no_marshal_check:
             msh.global_marshaling().new_marshal_factory_context().make_marshaler(out_rty)
         tf_output = ToolFn.MarshalOutput(out_rty)

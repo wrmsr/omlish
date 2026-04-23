@@ -21,7 +21,7 @@ def make_object_codec(
         loads: ta.Callable,
         *,
         input: rfl.Type,  # noqa
-        output: rfl.Type = rfl.type_(ta.Any),
+        output: rfl.Type = rfl.typeof(ta.Any),
         aliases: ta.Sequence[str] | None = None,
 ) -> ObjectCodecT:
     return cls(

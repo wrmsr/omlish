@@ -81,7 +81,7 @@ def reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedServ
 
 
 def reflect_service_cls_(service_cls: ta.Any) -> ReflectedService:
-    rty = rfl.type_(service_cls)
+    rty = rfl.typeof(service_cls)
     rty = rfl.strip_rfl_annotations(rty)
     rty = check.isinstance(rty, rfl.Protocol)
 

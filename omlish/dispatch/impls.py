@@ -36,7 +36,7 @@ def get_impl_func_cls_set(func: ta.Callable, *, arg_offset: int = 0) -> frozense
     p = list(ps.values())[arg_offset]
     cls = th_dct[p.name]
 
-    rty = rfl.type_(cls)
+    rty = rfl.typeof(cls)
     if isinstance(rty, rfl.Union):
         ret = frozenset(erase(arg) for arg in rty.args)
     else:

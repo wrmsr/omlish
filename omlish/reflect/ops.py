@@ -19,7 +19,7 @@ from .types import Protocol
 from .types import Type
 from .types import Union
 from .types import get_type_var_bound
-from .types import type_
+from .types import typeof
 
 
 ##
@@ -96,7 +96,7 @@ def types_equivalent(l: Type, r: Type) -> bool:
 
 
 def get_underlying(nt: NewType) -> Type:
-    return type_(nt.obj.__supertype__)  # noqa
+    return typeof(nt.obj.__supertype__)  # noqa
 
 
 def get_concrete_type(
@@ -116,7 +116,7 @@ def get_concrete_type(
 
         if isinstance(cur, ta.TypeVar):
             if use_type_var_bound is not None and (tvb := get_type_var_bound(cur)) is not None:
-                return rec(type_(tvb))
+                return rec(typeof(tvb))
 
             return None
 

@@ -51,7 +51,7 @@ class PrimitiveToolDtype(ToolDtype):
         if isinstance(obj, PrimitiveToolDtype):
             return obj
 
-        rty = rfl.type_(obj)
+        rty = rfl.typeof(obj)
 
         if isinstance(rty, (type, rfl.Any)):
             return PRIMITIVE_TOOL_DTYPE_MAP.get(rty, OBJECT_PRIMITIVE_TOOL_DTYPE)
@@ -71,7 +71,7 @@ PRIMITIVE_TOOL_DTYPE_MAP: ta.Mapping[rfl.Type, PrimitiveToolDtype] = {
     bool: PrimitiveToolDtype('boolean'),
     types.NoneType: NULL_PRIMITIVE_TOOL_DTYPE,
 
-    rfl.type_(ta.Any): PrimitiveToolDtype('any'),
+    rfl.typeof(ta.Any): PrimitiveToolDtype('any'),
 }
 
 

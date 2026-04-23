@@ -75,7 +75,7 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     @cached.property
     def _item_rty(self) -> rfl.Type:
-        rty = check.isinstance(rfl.type_(rfl.get_orig_class(self)), rfl.Generic)
+        rty = check.isinstance(rfl.typeof(rfl.get_orig_class(self)), rfl.Generic)
         check.is_(rty.cls, self.__class__)
         return check.single(rty.args)
 

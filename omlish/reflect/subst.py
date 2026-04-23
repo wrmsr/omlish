@@ -14,7 +14,7 @@ from .types import NewType
 from .types import Type
 from .types import Union
 from .types import get_params
-from .types import type_
+from .types import typeof
 
 
 if ta.TYPE_CHECKING:
@@ -107,10 +107,10 @@ class GenericSubstitution:
             ret: list[Type] = []
             obs = types.get_original_bases(cty)
             for b in obs:
-                bty = type_(b)
+                bty = typeof(b)
                 if isinstance(bty, Generic) and isinstance(b, type):
                     # FIXME: throws away relative types, but can't use original vars as they're class-contextual
-                    bty = type_(b[*((ta.Any,) * len(bty.params))])  # type: ignore
+                    bty = typeof(b[*((ta.Any,) * len(bty.params))])  # type: ignore
                 rty = replace_type_vars(bty, rpl, update_aliases=self._update_aliases)
                 ret.append(rty)
             return tuple(ret)
@@ -119,7 +119,7 @@ class GenericSubstitution:
 
     def generic_mro(self, obj: ta.Any) -> list[Type]:
         mro = c3.mro(
-            type_(obj),
+            typeof(obj),
             get_bases=lambda t: self.get_generic_bases(t),
             is_subclass=lambda l, r: issubclass(get_concrete_type(l), get_concrete_type(r)),  # type: ignore
         )

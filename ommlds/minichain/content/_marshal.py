@@ -49,7 +49,7 @@ MarshalContentUnion: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
-_MARSHAL_CONTENT_UNION_RTY = rfl.type_(MarshalContentUnion)
+_MARSHAL_CONTENT_UNION_RTY = rfl.typeof(MarshalContentUnion)
 
 
 @dc.dataclass(frozen=True)
@@ -103,7 +103,7 @@ class MarshalSingleRawContent(lang.NotInstantiable, lang.Final):
     pass
 
 
-_SINGLE_RAW_CONTENT_UNION_RTY = rfl.type_(SingleRawContent)
+_SINGLE_RAW_CONTENT_UNION_RTY = rfl.typeof(SingleRawContent)
 
 
 @dc.dataclass(frozen=True)
@@ -159,7 +159,7 @@ MarshalRawContentUnion: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
-_MARSHAL_RAW_CONTENT_UNION_RTY = rfl.type_(MarshalRawContentUnion)
+_MARSHAL_RAW_CONTENT_UNION_RTY = rfl.typeof(MarshalRawContentUnion)
 
 
 @dc.dataclass(frozen=True)

@@ -40,7 +40,7 @@ class BaseContext(lang.Abstract, lang.Sealed):
                 return ovr.rty
             return None
 
-        return rfl.Reflector(override=override).type(o)
+        return rfl.Reflector(override=override).typeof(o)
 
 
 # Regrettable, but we want to forbid non-factory contexts from having different configs than their factory context.

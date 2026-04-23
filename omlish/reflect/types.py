@@ -582,21 +582,21 @@ class Reflector:
 
     def is_type(self, obj: ta.Any) -> bool:
         try:
-            self._type(obj, check_only=True)
+            self._typeof(obj, check_only=True)
         except ReflectTypeError:
             return False
         else:
             return True
 
-    def type(self, obj: ta.Any) -> Type:
-        if (ty := self._type(obj, check_only=False)) is None:
+    def typeof(self, obj: ta.Any) -> Type:
+        if (ty := self._typeof(obj, check_only=False)) is None:
             raise RuntimeError(obj)
         return ty
 
     #
 
     @ta.overload
-    def _type(
+    def _typeof(
             self,
             obj: ta.Any,
             *,
@@ -605,7 +605,7 @@ class Reflector:
         ...
 
     @ta.overload
-    def _type(
+    def _typeof(
             self,
             obj: ta.Any,
             *,
@@ -613,7 +613,7 @@ class Reflector:
     ) -> Type:
         ...
 
-    def _type(
+    def _typeof(
             self,
             obj,
             *,
@@ -870,4 +870,4 @@ class Reflector:
 DEFAULT_REFLECTOR = Reflector()
 
 is_type = DEFAULT_REFLECTOR.is_type
-type_ = DEFAULT_REFLECTOR.type
+typeof = DEFAULT_REFLECTOR.typeof

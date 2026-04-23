@@ -77,7 +77,7 @@ class _TypedValues(
         except KeyError:
             pass
 
-        rty = rfl.type_(orig_class)
+        rty = rfl.typeof(orig_class)
         tvt = _get_typed_values_type_arg(rty)
 
         tv_types_set = frozenset(tv.reflect_typed_values_impls(tvt))

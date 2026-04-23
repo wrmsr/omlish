@@ -75,8 +75,8 @@ class Codec:
         coerce=lang.opt_fn(lambda s: [check_codec_name(a) for a in s]),
     )
 
-    input: rfl.Type = dc.xfield(coerce=rfl.type_)
-    output: rfl.Type = dc.xfield(coerce=rfl.type_)
+    input: rfl.Type = dc.xfield(coerce=rfl.typeof)
+    output: rfl.Type = dc.xfield(coerce=rfl.typeof)
 
     options: type | None = None
 

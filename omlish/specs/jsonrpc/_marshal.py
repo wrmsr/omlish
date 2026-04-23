@@ -11,7 +11,7 @@ from .types import NotSpecified
 ##
 
 
-_NOT_SPECIFIED_RTY = rfl.type_(type[NotSpecified])
+_NOT_SPECIFIED_RTY = rfl.typeof(type[NotSpecified])
 
 
 @dc.dataclass(frozen=True)
@@ -35,7 +35,7 @@ class NotSpecifiedUnionMarshalerFactory(msh.MarshalerFactory):
 
         def inner() -> msh.Marshaler:
             args = set(check.isinstance(rty, rfl.Union).args) - {_NOT_SPECIFIED_RTY}
-            nty = rfl.type_(ta.Union[*args])
+            nty = rfl.typeof(ta.Union[*args])
             m = ctx.make_marshaler(nty)
             return NotSpecifiedUnionMarshaler(m)
 
@@ -53,7 +53,7 @@ class NotSpecifiedUnionUnmarshalerFactory(msh.UnmarshalerFactory):
 
         def inner() -> msh.Unmarshaler:
             args = set(check.isinstance(rty, rfl.Union).args) - {_NOT_SPECIFIED_RTY}
-            nty = rfl.type_(ta.Union[*args])
+            nty = rfl.typeof(ta.Union[*args])
             return ctx.make_unmarshaler(nty)
 
         return inner

@@ -23,7 +23,7 @@ class TokensMarshalerFactory(msh.MarshalerFactory):
 
         dc_rfl = dc.reflect(Tokens)
         dc_f = check.single(dc_rfl.fields.values())
-        v_rty = rfl.type_(dc_f.type)
+        v_rty = rfl.typeof(dc_f.type)
         v_m = ctx.make_marshaler(v_rty)
         f_n = dc_f.name
 
@@ -40,7 +40,7 @@ class TokensUnmarshalerFactory(msh.UnmarshalerFactory):
 
         dc_rfl = dc.reflect(Tokens)
         dc_f = check.single(dc_rfl.fields.values())
-        v_rty = rfl.type_(dc_f.type)
+        v_rty = rfl.typeof(dc_f.type)
         v_u = ctx.make_unmarshaler(v_rty)
 
         def inner() -> msh.Unmarshaler:

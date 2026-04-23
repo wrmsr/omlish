@@ -19,7 +19,7 @@ def reflect_service(obj: ta.Any) -> mc.ReflectedService:
     resp_rty: rfl.Generic
 
     if rfl.is_type(obj):
-        rty = rfl.type_(obj)
+        rty = rfl.typeof(obj)
 
         rty_proto = check.isinstance(rty, rfl.Protocol)
         check.is_(rty_proto.cls, mc.Service)
@@ -30,8 +30,8 @@ def reflect_service(obj: ta.Any) -> mc.ReflectedService:
         invoke_sig = inspect.signature(obj.invoke)
 
         # FIXME: generic_mro
-        req_rty = check.isinstance(rfl.type_(invoke_sig.parameters['request'].annotation), rfl.Generic)
-        resp_rty = check.isinstance(rfl.type_(invoke_sig.return_annotation), rfl.Generic)
+        req_rty = check.isinstance(rfl.typeof(invoke_sig.parameters['request'].annotation), rfl.Generic)
+        resp_rty = check.isinstance(rfl.typeof(invoke_sig.return_annotation), rfl.Generic)
 
     return mc.reflect_service_like(req_rty, resp_rty)
 
