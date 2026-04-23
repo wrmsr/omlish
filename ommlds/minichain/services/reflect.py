@@ -11,6 +11,7 @@ import weakref
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish import reflect as rfl
 
 from ..resources import ResourceManaged
@@ -18,6 +19,14 @@ from .requests import Request
 from .responses import Response
 from .services import Service
 from .stream import StreamResponseIterator
+
+
+##
+
+
+@ta.final
+class ServiceTypeName(dc.Box[str], lang.Final):
+    pass
 
 
 ##
@@ -81,7 +90,9 @@ def reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedServ
 
 
 def reflect_service_cls_(service_cls: ta.Any) -> ReflectedService:
-    rty = check.isinstance(rfl.type_(service_cls), rfl.Protocol)
+    rty = rfl.type_(service_cls)
+    rty = rfl.strip_rfl_annotations(rty)
+    rty = check.isinstance(rty, rfl.Protocol)
 
     check.is_(rty.cls, Service)
 

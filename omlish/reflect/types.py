@@ -383,6 +383,12 @@ class Annotated(TypeInfo):
 
     obj: ta.Any = dc.field(compare=False, repr=False)
 
+    def __post_init__(self) -> None:
+        if not self.md:
+            raise TypeError(f'Annotated {self.md=} must not be empty')
+        if isinstance(self.ty, Annotated):
+            raise TypeError(self.ty)
+
 
 #
 

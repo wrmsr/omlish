@@ -41,20 +41,45 @@ def strip_objs(ty: Type) -> Type:
     raise TypeError(ty)
 
 
-def strip_annotations(ty: Type) -> Type:
+#
+
+
+def strip_rfl_annotations(ty: Type) -> Type:
     if isinstance(ty, (type, ta.TypeVar, NewType, Any)):
         return ty
 
     if isinstance(ty, Union):
-        return dc.replace(ty, args=frozenset(map(strip_annotations, ty.args)))
+        return dc.replace(ty, args=frozenset(map(strip_rfl_annotations, ty.args)))
 
     if isinstance(ty, GenericLike):
-        return dc.replace(ty, args=tuple(map(strip_annotations, ty.args)))
+        return dc.replace(ty, args=tuple(map(strip_rfl_annotations, ty.args)))
 
     if isinstance(ty, Annotated):
-        return strip_annotations(ty.ty)
+        return strip_rfl_annotations(ty.ty)
 
     raise TypeError(ty)
+
+
+def strip_rfl_annotations_shallow(ty: Type, filter: ta.Callable[[ta.Any], bool] | None = None) -> Type:  # noqa
+    if not isinstance(ty, Annotated):
+        return ty
+
+    if filter is None:
+        return ty
+
+    new_md = [md for md in ty.md if filter(md)]
+
+    if not new_md:
+        return ty
+
+    return dc.replace(ty, md=new_md)
+
+
+def add_rfl_annotations(ty: Type, *md: ta.Any) -> Annotated:
+    if isinstance(ty, Annotated):
+        return dc.replace(ty, md=(*ty.md, *md))
+
+    return Annotated(ty, md, None)
 
 
 ##

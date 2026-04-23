@@ -18,7 +18,10 @@ with _lang.auto_proxy_init(
 
     from .ops import (  # noqa
         strip_objs,
-        strip_annotations,
+
+        strip_rfl_annotations,
+        strip_rfl_annotations_shallow,
+        add_rfl_annotations,
 
         types_equivalent,
 

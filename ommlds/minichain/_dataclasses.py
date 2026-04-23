@@ -822,6 +822,7 @@ def _process_dataclass__65a4fe67fac0748cfb55c6f5820bf0837c939b9d():
         ('ommlds.minichain.completion', 'ParentRequestUuid'),
         ('ommlds.minichain.completion', 'RequestUuid'),
         ('ommlds.minichain.completion', 'ResponseUuid'),
+        ('ommlds.minichain.completion', 'ServiceTypeName'),
         ('ommlds.minichain.completion', 'Temperature'),
         ('ommlds.minichain.completion', 'TokenUsageOutput'),
         ('ommlds.minichain.completion', 'TopK'),

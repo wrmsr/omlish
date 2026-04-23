@@ -114,7 +114,7 @@ def build_kwargs_target(
                     tag = e.tag
                     break
 
-        k: Key = Key(rfl.strip_annotations(rty), tag=tag)
+        k: Key = Key(rfl.strip_rfl_annotations(rty), tag=tag)
         if tags is not None and (pt := tags.get(p.name)) is not None:
             k = dc.replace(k, tag=pt)
 
