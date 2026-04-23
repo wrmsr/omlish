@@ -236,7 +236,10 @@ type RecurC = str | ta.Sequence[RecurC]
 
 def test_new_aliases():
     print(MyInt)
+    print(rfl.type_(MyInt))
     print(RecurC)
+    with pytest.raises(rfl.RecursiveTypeError):
+        print(rfl.type_(RecurC))
 
 
 if __name__ == '__main__':

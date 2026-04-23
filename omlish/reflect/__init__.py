@@ -76,6 +76,7 @@ with _lang.auto_proxy_init(
         ANY,
 
         ReflectTypeError,
+        RecursiveTypeError,
 
         Reflector,
         DEFAULT_REFLECTOR,

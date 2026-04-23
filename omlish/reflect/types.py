@@ -443,6 +443,10 @@ class ReflectTypeError(TypeError):
     pass
 
 
+class RecursiveTypeError(TypeError):
+    pass
+
+
 _TRIVIAL_TYPES: set[ta.Any] = {
     bool,
     int,
@@ -467,10 +471,12 @@ class Reflector:
             self,
             *,
             override: ta.Callable[[ta.Any], ta.Any] | None = None,
+            preserve_type_aliases: bool = False,
     ) -> None:
         super().__init__()
 
         self._override = override
+        self._preserve_type_aliases = preserve_type_aliases
 
     #
 
@@ -489,203 +495,251 @@ class Reflector:
 
     #
 
-    def _type(self, obj: ta.Any, *, check_only: bool) -> Type | None:
-        ##
-        # Overrides beat everything
+    @ta.overload
+    def _type(
+            self,
+            obj: ta.Any,
+            *,
+            check_only: ta.Literal[True],
+    ) -> None:
+        ...
 
-        if self._override is not None:
-            if (ovr := self._override(obj)) is not None:
-                return ovr
+    @ta.overload
+    def _type(
+            self,
+            obj: ta.Any,
+            *,
+            check_only: ta.Literal[False] = False,
+    ) -> Type:
+        ...
 
-        ##
-        # Any
+    def _type(
+            self,
+            obj,
+            *,
+            check_only=False,
+    ):
+        if not check_only:
+            seen_aliases = set()
 
-        if obj is ta.Any:
-            return ANY
+        def rec(cur: ta.Any) -> ta.Any:
+            ##
+            # Overrides beat everything
 
-        ##
-        # Trivial
+            if self._override is not None:
+                if (ovr := self._override(cur)) is not None:
+                    return ovr
 
-        try:
-            if obj in _TRIVIAL_TYPES:
-                return obj
-        except TypeError:
-            pass
+            ##
+            # Any
 
-        ##
-        # Already a Type?
+            if cur is ta.Any:
+                return ANY
 
-        if isinstance(obj, (ta.TypeVar, TypeInfo)):  # noqa
-            return obj
+            ##
+            # Trivial
 
-        ##
-        # It's a type
+            try:
+                if cur in _TRIVIAL_TYPES:
+                    return cur
+            except TypeError:
+                pass
 
-        oty = type(obj)
+            ##
+            # Already a Type?
 
-        ##
-        # Union
+            if isinstance(cur, (ta.TypeVar, TypeInfo)):  # noqa
+                return cur
 
-        if oty is _UnionGenericAlias or oty is types.UnionType:
-            if check_only:
-                return None
+            ##
+            # It's a type
 
-            return Union(frozenset(self.type(a) for a in ta.get_args(obj)))
+            oty = type(cur)
 
-        ##
-        # NewType
+            ##
+            # Union
 
-        if isinstance(obj, ta.NewType):  # noqa
-            if check_only:
-                return None
-
-            return NewType(obj, get_newtype_supertype(obj))
-
-        ##
-        # Simple Generic
-
-        if (
-                is_simple_generic_alias_type(oty) or
-                oty is _CallableGenericAlias
-        ):
-            if check_only:
-                return None
-
-            origin = ta.get_origin(obj)
-
-            args = ta.get_args(obj)
-
-            if origin is ta.Protocol:
-                params = get_params(obj)
-
-            elif oty is _CallableGenericAlias:
-                p, r = args
-                if p is Ellipsis or isinstance(p, ta.ParamSpec):
-                    raise ReflectTypeError(f'Callable argument not yet supported for {obj=}')
-                args = (*p, r)
-                params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
-
-            elif origin is tuple:
-                params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
-
-            elif origin is ta.Generic:
-                params = args
-
-            else:
-                params = get_params(origin)
-
-            if len(args) != len(params):
-                raise ReflectTypeError(f'Mismatched {args=} and {params=} for {obj=}')
-
-            if not isinstance(origin, type):
-                raise ReflectTypeError(f'Generic origin {origin!r} is not a type')
-
-            if origin is ta.Protocol:
-                if args != params:  # type: ignore[unreachable]
-                    raise ReflectTypeError(f'Protocol argument not yet supported for {args=}, {params=}')
-                return Protocol(
-                    ta.Protocol,
-                    args,
-                    params,
-                    obj,
-                )
-
-            r_args = tuple(self.type(a) for a in args)
-
-            if _is_immediate_protocol(origin):
-                return Protocol(
-                    origin,
-                    r_args,
-                    params,
-                    obj,
-                )
-
-            return Generic(
-                origin,
-                r_args,
-                params,
-                obj,
-            )
-
-        ##
-        # Full Generic
-
-        if isinstance(obj, type):
-            if check_only:
-                return None
-
-            if _is_immediate_protocol(obj):
-                params = get_params(obj)
-                return Protocol(
-                    obj,
-                    params,
-                    params,
-                    obj,
-                )
-
-            if issubclass(obj, ta.Generic):
-                params = get_params(obj)
-                if params:
-                    return Generic(
-                        obj,
-                        params,
-                        params,
-                        obj,
-                    )
-
-            return obj
-
-        ##
-        # Special Generic
-
-        if isinstance(obj, _SpecialGenericAlias):
-            if (ks := _KNOWN_SPECIALS.get_by_alias(obj)) is not None:
+            if oty is _UnionGenericAlias or oty is types.UnionType:
                 if check_only:
                     return None
 
-                if (np := ks.nparams) < 0:
-                    raise ReflectTypeError(obj)
+                return Union(frozenset(rec(a) for a in ta.get_args(cur)))
 
-                params = _KNOWN_SPECIAL_TYPE_VARS[:np]
+            ##
+            # NewType
+
+            if isinstance(cur, ta.NewType):  # noqa
+                if check_only:
+                    return None
+
+                return NewType(cur, get_newtype_supertype(cur))
+
+            ##
+            # Simple Generic
+
+            if (
+                    is_simple_generic_alias_type(oty) or
+                    oty is _CallableGenericAlias
+            ):
+                if check_only:
+                    return None
+
+                origin = ta.get_origin(cur)
+
+                args = ta.get_args(cur)
+
+                if origin is ta.Protocol:
+                    params = get_params(cur)
+
+                elif oty is _CallableGenericAlias:
+                    p, r = args
+                    if p is Ellipsis or isinstance(p, ta.ParamSpec):
+                        raise ReflectTypeError(f'Callable argument not yet supported for {cur=}')
+                    args = (*p, r)
+                    params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
+
+                elif origin is tuple:
+                    params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
+
+                elif origin is ta.Generic:
+                    params = args
+
+                else:
+                    params = get_params(origin)
+
+                if len(args) != len(params):
+                    raise ReflectTypeError(f'Mismatched {args=} and {params=} for {cur=}')
+
+                if not isinstance(origin, type):
+                    raise ReflectTypeError(f'Generic origin {origin!r} is not a type')
+
+                if origin is ta.Protocol:
+                    if args != params:  # type: ignore[unreachable]
+                        raise ReflectTypeError(f'Protocol argument not yet supported for {args=}, {params=}')
+                    return Protocol(
+                        ta.Protocol,
+                        args,
+                        params,
+                        cur,
+                    )
+
+                r_args = tuple(rec(a) for a in args)
+
+                if _is_immediate_protocol(origin):
+                    return Protocol(
+                        origin,
+                        r_args,
+                        params,
+                        cur,
+                    )
+
                 return Generic(
-                    ks.origin,
+                    origin,
+                    r_args,
                     params,
-                    params,
-                    obj,
+                    cur,
                 )
 
-        ##
-        # Annotated
+            ##
+            # Full Generic
 
-        if isinstance(obj, _AnnotatedAlias):
-            if check_only:
-                return None
+            if isinstance(cur, type):
+                if check_only:
+                    return None
 
-            o = ta.get_args(obj)[0]
-            return Annotated(self.type(o), md=tuple(obj.__metadata__), obj=obj)
+                if _is_immediate_protocol(cur):
+                    params = get_params(cur)
+                    return Protocol(
+                        cur,
+                        params,
+                        params,
+                        cur,
+                    )
 
-        ##
-        # Literal
+                if issubclass(cur, ta.Generic):
+                    params = get_params(cur)
+                    if params:
+                        return Generic(
+                            cur,
+                            params,
+                            params,
+                            cur,
+                        )
 
-        if isinstance(obj, _LiteralGenericAlias):
-            if check_only:
-                return None
+                return cur
 
-            return Literal(ta.get_args(obj), obj=obj)
+            ##
+            # Special Generic
 
-        ##
-        # ForwardRef
+            if isinstance(cur, _SpecialGenericAlias):
+                if (ks := _KNOWN_SPECIALS.get_by_alias(cur)) is not None:
+                    if check_only:
+                        return None
 
-        if isinstance(obj, ta.ForwardRef):
-            if check_only:
-                return None
+                    if (np := ks.nparams) < 0:
+                        raise ReflectTypeError(cur)
 
-            return ForwardRef(obj)
+                    params = _KNOWN_SPECIAL_TYPE_VARS[:np]
+                    return Generic(
+                        ks.origin,
+                        params,
+                        params,
+                        cur,
+                    )
 
-        ##
-        # Failure
+            ##
+            # Annotated
 
-        raise ReflectTypeError(obj)
+            if isinstance(cur, _AnnotatedAlias):
+                if check_only:
+                    return None
+
+                o = ta.get_args(cur)[0]
+                return Annotated(rec(o), md=tuple(cur.__metadata__), obj=cur)
+
+            ##
+            # Literal
+
+            if isinstance(cur, _LiteralGenericAlias):
+                if check_only:
+                    return None
+
+                return Literal(ta.get_args(cur), obj=cur)
+
+            ##
+            # ForwardRef
+
+            if isinstance(cur, ta.ForwardRef):
+                if check_only:
+                    return None
+
+                return ForwardRef(cur)
+
+            ##
+            # TypeAlias
+
+            if isinstance(cur, ta.TypeAliasType):
+                if check_only:
+                    return None
+
+                if self._preserve_type_aliases:
+                    raise NotImplementedError
+
+                if cur in seen_aliases:
+                    raise RecursiveTypeError(f'Recursion for {cur} unsupported')
+
+                seen_aliases.add(cur)
+                try:
+                    return rec(cur.__value__)
+                finally:
+                    seen_aliases.remove(cur)
+
+            ##
+            # Failure
+
+            raise ReflectTypeError(cur)
+
+        return rec(obj)
 
 
 DEFAULT_REFLECTOR = Reflector()
