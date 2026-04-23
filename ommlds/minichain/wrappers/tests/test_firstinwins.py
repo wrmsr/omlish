@@ -34,18 +34,18 @@ class FastFailService:
 
 @pytest.mark.asyncs('asyncio')
 async def test_asyncio_first_in_wins():
-    r = await AsyncioFirstInWinsService(
+    r = await AsyncioFirstInWinsService([
         FastSuccessService(),
         SlowSuccessService(),
         FastFailService(),
-    ).invoke(Request(42))
+    ]).invoke(Request(42))
     assert r.v == 'fast_success(42)'
 
     with pytest.raises(FirstInWinsServiceExceptionGroup) as eg:
-        await AsyncioFirstInWinsService(
+        await AsyncioFirstInWinsService([
             FastFailService(),
             FastFailService(),
             FastFailService(),
-        ).invoke(Request(42))
+        ]).invoke(Request(42))
     assert len(eg.value.exceptions) == 3
     assert all(isinstance(e, FastFailServiceError) for e in eg.value.exceptions)

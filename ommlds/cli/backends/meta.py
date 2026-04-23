@@ -31,7 +31,7 @@ class FirstInWinsBackendProvider(BackendProvider[ServiceT]):
                     await aes.enter_async_context(bp.provide_backend())
                     for bp in self._backend_providers
                 ]
-                yield AsyncioFirstInWinsService(*svcs)
+                yield AsyncioFirstInWinsService(svcs)
 
         return inner()
 

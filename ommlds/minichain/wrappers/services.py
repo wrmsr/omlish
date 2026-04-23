@@ -68,11 +68,11 @@ class MultiWrapperService(
 ):
     def __init__(
             self,
-            *services: WrappedService,
+            services: ta.Sequence[WrappedService],
     ) -> None:
         super().__init__()
 
-        self._services = check.not_empty(services)
+        self._services = tuple(check.not_empty(services))
 
 
 ##
