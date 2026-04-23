@@ -150,8 +150,9 @@ class Registry:
         #
 
         __cls: lang.Maybe[ta.Any] = lang.empty()
-        __rty: lang.Maybe[rfl.Type] = lang.empty()
-        __named_rty: lang.Maybe[rfl.Type] = lang.empty()
+        __named_cls: ta.Any
+        __rty: rfl.Type
+        __named_rty: rfl.Type
 
         def _name_rty(self, rty: rfl.Type) -> rfl.Type:
             if self._name is None:
@@ -167,19 +168,29 @@ class Registry:
                 return
 
             rty = rfl.type_(cls)
-            named_rty = self._name_rty(rty)
+
+            named_cls = cls
+            named_rty = rty
+            if (name := self._name) is not None:
+                name_obj = RegistryTypeName(name)
+                named_cls = ta.Annotated[cls, name_obj]
+                named_rty = rfl.add_rfl_annotations(rty, name_obj)
+                check.equal(named_rty, rfl.type_(named_cls))
 
             check.not_in(cls, self._o._types_by_cls)
+            check.not_in(named_cls, self._o._types_by_cls)
             check.not_in(rty, self._o._types_by_rty)
             check.not_in(named_rty, self._o._types_by_rty)
 
             self._o._types_by_cls[cls] = self
+            self._o._types_by_cls[named_cls] = self
             self._o._types_by_rty[rty] = self
             self._o._types_by_rty[named_rty] = self
 
             self.__cls = lang.just(cls)
-            self.__rty = lang.just(rty)
-            self.__named_rty = lang.just(named_rty)
+            self.__named_cls = named_cls
+            self.__rty = rty
+            self.__named_rty = named_rty
 
         def cls(self) -> ta.Any:
             if (cls := self.__cls).present:
@@ -194,13 +205,17 @@ class Registry:
                 self._maybe_set_cls(cls)
                 return cls
 
+        def named_cls(self) -> ta.Any:
+            self.cls()
+            return self.__named_cls
+
         def rty(self) -> rfl.Type:
             self.cls()
-            return self.__rty.must()
+            return self.__rty
 
         def named_rty(self) -> rfl.Type:
             self.cls()
-            return self.__named_rty.must()
+            return self.__named_rty
 
         #
 
