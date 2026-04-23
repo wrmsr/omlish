@@ -30,7 +30,7 @@ def strip_objs(ty: Type) -> Type:
         return ty
 
     if isinstance(ty, Union):
-        return dc.replace(ty, args=frozenset(map(strip_objs, ty.args)))
+        return Union(frozenset(map(strip_objs, ty.args)))
 
     if isinstance(ty, GenericLike):
         return dc.replace(ty, args=tuple(map(strip_objs, ty.args)), obj=None)
@@ -49,7 +49,7 @@ def strip_rfl_annotations(ty: Type) -> Type:
         return ty
 
     if isinstance(ty, Union):
-        return dc.replace(ty, args=frozenset(map(strip_rfl_annotations, ty.args)))
+        return Union(frozenset(map(strip_rfl_annotations, ty.args)))
 
     if isinstance(ty, GenericLike):
         return dc.replace(ty, args=tuple(map(strip_rfl_annotations, ty.args)))

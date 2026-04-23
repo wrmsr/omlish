@@ -63,6 +63,7 @@ with _lang.auto_proxy_init(
         GenericLike,
         Generic,
         Protocol,
+        TypeAlias,
 
         NewType,
 
@@ -71,6 +72,8 @@ with _lang.auto_proxy_init(
         Literal,
 
         ForwardRef,
+
+        Recursive,
 
         Any,
         ANY,

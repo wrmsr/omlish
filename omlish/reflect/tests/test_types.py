@@ -240,6 +240,7 @@ def test_new_aliases():
     print(RecurC)
     with pytest.raises(rfl.RecursiveTypeError):
         print(rfl.type_(RecurC))
+    # print(rfl.Reflector(allow_recursion=True).type(RecurC))
 
 
 if __name__ == '__main__':

@@ -9,9 +9,12 @@ give it some guiding North Star to make all of its decisions for it, and to add 
 meet, join, solve, ...), but it's quite a bit of work and not a priority at the moment.
 
 TODO:
- - !!! refactor like a GuardFn - no check_only, return a closure to continue computation !!!
- - !! cache this shit !!
+ - refactor like a GuardFn? - no check_only, return a closure to continue computation - worse? slower?
+ - cache this shit
   - especially generic_mro shit
+ - ultimately fold generic replacement into another Reflector dimension
+ - replace reflector `isinstance`'s with `is` for internal `typing` types where possible
+  - dispatch table fast path?
 """
 import dataclasses as dc
 import threading
@@ -49,6 +52,7 @@ if not isinstance(_Protocol, type) or not issubclass(_Protocol, _Generic):
 ##
 
 
+@ta.final
 @install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class _Special:
@@ -67,12 +71,14 @@ class _Special:
         )
 
 
+@ta.final
 @install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class _LazySpecial:
     name: str
 
 
+@ta.final
 class _KnownSpecials:
     def __init__(
             self,
@@ -239,6 +245,9 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     if is_simple_generic_alias_type(oty):
         return obj.__dict__.get('__parameters__', ())  # noqa
 
+    if isinstance(obj, ta.TypeAliasType):
+        return obj.__parameters__
+
     if oty is _CallableGenericAlias:
         raise NotImplementedError('get_params not yet implemented for typing.Callable')
 
@@ -307,10 +316,40 @@ TYPES: tuple[type, ...] = (
 ##
 
 
-@install_dataclass_cache_hash()
-@dc.dataclass(frozen=True)
+class _LateUnionArgs(list):
+    pass
+
+
+@ta.final
 class Union(TypeInfo):
-    args: frozenset[Type]
+    def __init__(self, args: frozenset[Type] | _LateUnionArgs) -> None:
+        if isinstance(args, _LateUnionArgs):
+            self._late_args = args
+        else:
+            self._args = args
+
+    @property
+    def args(self) -> frozenset[Type]:
+        return self._args
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.args!r})'
+
+    _hash: int
+
+    def __hash__(self) -> int:
+        try:
+            return self._hash
+        except AttributeError:
+            h = self._hash = hash(self.args)
+            return h
+
+    def __eq__(self, other):
+        if other is self:
+            return True
+        if not isinstance(other, Union):
+            return NotImplemented
+        return self.args == other.args
 
     @property
     def is_optional(self) -> bool:
@@ -331,7 +370,6 @@ class Union(TypeInfo):
 GenericLikeCls = ta.TypeVar('GenericLikeCls')
 
 
-@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class GenericLike(TypeInfo, Abstract, ta.Generic[GenericLikeCls]):
     cls: GenericLikeCls
@@ -360,11 +398,15 @@ class GenericLike(TypeInfo, Abstract, ta.Generic[GenericLikeCls]):
         )
 
 
+@ta.final
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Generic(GenericLike[type]):
     pass
 
 
+@ta.final
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Protocol(GenericLike[ta.Any]):
     # cls will still be a type - it will be the topmost _is_protocol=True class.
@@ -372,9 +414,17 @@ class Protocol(GenericLike[ta.Any]):
     pass
 
 
+@ta.final
+@install_dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class TypeAlias(GenericLike[ta.Any]):
+    pass
+
+
 #
 
 
+@ta.final
 @install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class NewType(TypeInfo):
@@ -385,6 +435,7 @@ class NewType(TypeInfo):
 #
 
 
+@ta.final
 @install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Annotated(TypeInfo):
@@ -403,6 +454,7 @@ class Annotated(TypeInfo):
 #
 
 
+@ta.final
 @install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Literal(TypeInfo):
@@ -414,6 +466,7 @@ class Literal(TypeInfo):
 #
 
 
+@ta.final
 @install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class ForwardRef(TypeInfo):
@@ -424,6 +477,31 @@ class ForwardRef(TypeInfo):
     def __post_init__(self) -> None:
         if not isinstance(self.ref, ta.ForwardRef):
             raise TypeError(self.ref)
+
+
+#
+
+
+@ta.final
+class Recursive(TypeInfo):
+    _ty: Type
+
+    @property
+    def ty(self) -> Type:
+        return self._ty
+
+    def __repr__(self) -> str:
+        try:
+            ty = self._ty
+        except AttributeError:
+            return f'{type(self).__name__}@{id(self):x}!UNBOUND'
+        return f'{type(self).__name__}({ty!r})'
+
+    def __hash__(self) -> int:
+        raise NotImplementedError
+
+    def __eq__(self, other: object) -> bool:
+        raise NotImplementedError
 
 
 #
@@ -472,11 +550,13 @@ class Reflector:
             *,
             override: ta.Callable[[ta.Any], ta.Any] | None = None,
             preserve_type_aliases: bool = False,
+            allow_recursion: bool = False,
     ) -> None:
         super().__init__()
 
         self._override = override
         self._preserve_type_aliases = preserve_type_aliases
+        self._allow_recursion = allow_recursion
 
     #
 
@@ -520,7 +600,8 @@ class Reflector:
             check_only=False,
     ):
         if not check_only:
-            seen_aliases = set()
+            aliases: dict = {}
+            cur_aliases: set = set()
 
         def rec(cur: ta.Any) -> ta.Any:
             ##
@@ -722,17 +803,38 @@ class Reflector:
                 if check_only:
                     return None
 
-                if self._preserve_type_aliases:
+                if get_params(cur):
                     raise NotImplementedError
 
-                if cur in seen_aliases:
-                    raise RecursiveTypeError(f'Recursion for {cur} unsupported')
+                if cur in cur_aliases:
+                    if not self._allow_recursion:
+                        raise RecursiveTypeError(cur)
 
-                seen_aliases.add(cur)
-                try:
-                    return rec(cur.__value__)
-                finally:
-                    seen_aliases.remove(cur)
+                    if (rc := aliases[cur]) is None:
+                        rc = aliases[cur] = Recursive()
+
+                    return rc
+
+                # We don't have to bother with finally, any exception aborts everything anyway
+                aliases[cur] = None
+
+                cur_aliases.add(cur)
+                tav = rec(cur.__value__)
+                cur_aliases.remove(cur)
+
+                if self._preserve_type_aliases:
+                    tav = TypeAlias(
+                        tav,
+                        (),
+                        (),
+                        cur,
+                    )
+
+                if (rc := aliases[cur]) is not None:
+                    rc._obj = tav  # noqa
+                aliases[cur] = tav
+
+                return tav
 
             ##
             # Failure
