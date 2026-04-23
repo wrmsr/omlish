@@ -17,6 +17,7 @@ TODO:
   - dispatch table fast path?
 """
 import dataclasses as dc
+import reprlib
 import threading
 import types
 import typing as ta
@@ -330,10 +331,20 @@ class Union(TypeInfo):
 
     @property
     def args(self) -> frozenset[Type]:
-        return self._args
+        try:
+            return self._args
+        except AttributeError:
+            pass
+        args = self._args = frozenset(self._late_args)
+        return args
 
+    @reprlib.recursive_repr()
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self.args!r})'
+        try:
+            args = self._args
+        except AttributeError:
+            return f'{self.__class__.__name__}({self._late_args!r})'
+        return f'{self.__class__.__name__}({args!r})'
 
     _hash: int
 
@@ -385,8 +396,8 @@ class GenericLike(TypeInfo, Abstract, ta.Generic[GenericLikeCls]):
     def __post_init__(self) -> None:
         if not isinstance(self.cls, type):
             raise ReflectTypeError(f'GenericLike {self.cls=} must be a type')
-        if len(self.args) != len(self.params):
-            raise ReflectTypeError(f'GenericLike {self.args=} must be same length as {self.params=}')
+        if not (isinstance(self.args, tuple) and isinstance(self.params, tuple) and len(self.args) == len(self.params)):
+            raise ReflectTypeError(f'GenericLike {self.args=} and {self.params=} must be equal length tuples')
 
     def full_eq(self, other: GenericLike) -> bool:
         return (
@@ -410,7 +421,7 @@ class Generic(GenericLike[type]):
 @dc.dataclass(frozen=True)
 class Protocol(GenericLike[ta.Any]):
     # cls will still be a type - it will be the topmost _is_protocol=True class.
-    # it may however be ta.Protocol, which *is* a type, but not according to mypy.
+    # it may however be ta.Protocol, which *is* a `type` at runtime, but not according to mypy.
     pass
 
 
@@ -462,6 +473,10 @@ class Literal(TypeInfo):
 
     obj: ta.Any = dc.field(compare=False, repr=False)
 
+    def __post_init__(self) -> None:
+        if not (isinstance(self.args, tuple) and self.args):
+            raise TypeError(f'Literal {self.args=} must non-empty tuple')
+
 
 #
 
@@ -490,6 +505,7 @@ class Recursive(TypeInfo):
     def ty(self) -> Type:
         return self._ty
 
+    @reprlib.recursive_repr()
     def __repr__(self) -> str:
         try:
             ty = self._ty
@@ -498,10 +514,14 @@ class Recursive(TypeInfo):
         return f'{type(self).__name__}({ty!r})'
 
     def __hash__(self) -> int:
-        raise NotImplementedError
+        return hash(self._ty)
 
     def __eq__(self, other: object) -> bool:
-        raise NotImplementedError
+        if self is other:
+            return True
+        if not isinstance(other, Recursive):
+            return self._ty == other
+        return self._ty == other._ty
 
 
 #
@@ -644,7 +664,10 @@ class Reflector:
                 if check_only:
                     return None
 
-                return Union(frozenset(rec(a) for a in ta.get_args(cur)))
+                return Union(
+                    (_LateUnionArgs if self._allow_recursion and aliases else frozenset)
+                    ([rec(a) for a in ta.get_args(cur)]),
+                )
 
             ##
             # NewType
@@ -831,7 +854,7 @@ class Reflector:
                     )
 
                 if (rc := aliases[cur]) is not None:
-                    rc._obj = tav  # noqa
+                    rc._ty = tav  # noqa
                 aliases[cur] = tav
 
                 return tav
