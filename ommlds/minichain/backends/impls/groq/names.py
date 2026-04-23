@@ -36,6 +36,7 @@ from ...strings.manifests import BackendStringsManifest
 
 MODEL_NAMES = ModelNameCollection(
     default='gpt-oss-120b',
+
     aliases={
         'gpt-oss-120b': 'openai/gpt-oss-120b',
         'openai/gpt-oss-120b': None,

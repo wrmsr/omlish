@@ -23,6 +23,7 @@ from ...strings.manifests import BackendStringsManifest
 
 MODEL_NAMES = ModelNameCollection(
     default='claude',
+
     aliases={
         **dict(lang.flatten(
             [

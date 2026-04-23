@@ -53,6 +53,7 @@ _GPT_MODEL_NAMES = [
 
 CHAT_MODEL_NAMES = ModelNameCollection(
     default='gpt',
+
     aliases={
         **{
             n: None
