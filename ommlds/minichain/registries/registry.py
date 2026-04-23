@@ -1,5 +1,7 @@
+# ruff: noqa: SLF001
 """
 TODO:
+ - rename to TypeRegistry
  - queue register_types + late load manifests ? less urgent than late loading marshal lol
 """
 import sys
@@ -52,7 +54,8 @@ class Registry:
                 ed[n] = e
 
         self._types_by_name: dict[str, Registry.Type] = {}
-        self._types_by_cls: dict[str, Registry.Type] = {}
+        self._types_by_cls: dict[ta.Any, Registry.Type] = {}
+        self._types_by_rty: dict[rfl.Type, Registry.Type] = {}
 
         for rtm in self._registry_type_manifests:
             check.not_in(rtm.attr, self._types_by_name)
@@ -112,8 +115,6 @@ class Registry:
                 _name: str | None = None,
                 _module: str | None = None,
 
-                _cls: lang.Maybe[ta.Any] = lang.empty(),
-
                 _has_registered: bool = False,
         ) -> None:
             super().__init__()
@@ -125,11 +126,6 @@ class Registry:
 
             self._name: ta.Final = _name
             self._module: ta.Final = _module
-
-            self.__cls: lang.Maybe[ta.Any] = _cls
-
-            self.__rty: lang.Maybe[rfl.Type] = _cls.map(rfl.type_)
-            self.__named_rty: lang.Maybe[rfl.Type] = self.__rty.map(self._name_rty)
 
             self._has_registered = _has_registered
 
@@ -153,6 +149,10 @@ class Registry:
 
         #
 
+        __cls: lang.Maybe[ta.Any] = lang.empty()
+        __rty: lang.Maybe[rfl.Type] = lang.empty()
+        __named_rty: lang.Maybe[rfl.Type] = lang.empty()
+
         def _name_rty(self, rty: rfl.Type) -> rfl.Type:
             if self._name is None:
                 return rty
@@ -160,32 +160,38 @@ class Registry:
             return rfl.add_rfl_annotations(rty, RegistryTypeName(self._name))
 
         def _maybe_set_cls(self, cls: ta.Any) -> None:
+            check.not_none(cls)
+            check.not_isinstance(cls, rfl.TypeInfo)
+
             if self.__cls.present:
                 return
 
-            if cls is not None:
-                check.not_in(cls, self._o._types_by_cls)  # noqa
-                self._o._types_by_cls[cls] = self  # noqa
+            rty = rfl.type_(cls)
+            named_rty = self._name_rty(rty)
+
+            check.not_in(cls, self._o._types_by_cls)
+            check.not_in(rty, self._o._types_by_rty)
+            check.not_in(named_rty, self._o._types_by_rty)
+
+            self._o._types_by_cls[cls] = self
+            self._o._types_by_rty[rty] = self
+            self._o._types_by_rty[named_rty] = self
 
             self.__cls = lang.just(cls)
-
-            self.__rty = lang.just(rty := rfl.type_(cls))
-            self.__named_rty = lang.just(self._name_rty(rty))
+            self.__rty = lang.just(rty)
+            self.__named_rty = lang.just(named_rty)
 
         def cls(self) -> ta.Any:
             if (cls := self.__cls).present:
                 return cls.must()
 
-            with self._o._lock:  # noqa
+            with self._o._lock:
                 if (cls := self.__cls).present:
                     return cls.must()
 
-                if (rtm := self._rtm) is not None:
-                    cls_ = rtm.resolve()
-                else:
-                    cls_ = None
+                cls = check.not_none(self._rtm).resolve()
 
-                self._maybe_set_cls(cls_)
+                self._maybe_set_cls(cls)
                 return cls
 
         def rty(self) -> rfl.Type:
@@ -214,6 +220,9 @@ class Registry:
             name: str | None = None,
             module: str | None = None,
     ) -> Type:
+        check.not_none(cls)
+        check.not_isinstance(cls, rfl.TypeInfo)
+
         with self._lock:
             if (rt := self._types_by_cls.get(cls)) is not None:
                 if name is not None:
@@ -225,11 +234,11 @@ class Registry:
                         if rt is not nrt:
                             raise RuntimeError(f'Type {name!r} already present')
 
-                if rt._has_registered:  # noqa
+                if rt._has_registered:
                     raise RuntimeError(f'Type {cls} already registered')
 
-                rt._has_registered = True  # noqa
-                rt._maybe_set_cls(cls)  # noqa
+                rt._has_registered = True
+                rt._maybe_set_cls(cls)
                 return rt
 
             if name is None:
@@ -238,11 +247,11 @@ class Registry:
 
             if name is not None:
                 if (rt := self._types_by_name.get(name)) is not None:
-                    if rt._has_registered:  # noqa
+                    if rt._has_registered:
                         raise RuntimeError(f'Type {name!r} already registered')
 
-                    rt._has_registered = True  # noqa
-                    rt._maybe_set_cls(cls)  # noqa
+                    rt._has_registered = True
+                    rt._maybe_set_cls(cls)
                     return rt
 
             rt = self.Type(
@@ -251,14 +260,13 @@ class Registry:
                 _name=name,
                 _module=module,
 
-                _cls=lang.just(cls),
-
                 _has_registered=True,
             )
 
             if name is not None:
                 self._types_by_name[name] = rt
-            self._types_by_cls[cls] = rt
+
+            rt._maybe_set_cls(cls)
 
         return rt
 

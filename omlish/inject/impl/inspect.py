@@ -109,7 +109,8 @@ def build_kwargs_target(
 
         tag = None
         if isinstance(rty, rfl.Annotated):
-            tag = check.opt_single(e for e in rty.md if isinstance(e, Tag))
+            if (tag_obj := check.opt_single(e for e in rty.md if isinstance(e, Tag))) is not None:
+                tag = tag_obj.tag
 
         k: Key = Key(rfl.strip_rfl_annotations(rty), tag=tag)
         if tags is not None and (pt := tags.get(p.name)) is not None:
