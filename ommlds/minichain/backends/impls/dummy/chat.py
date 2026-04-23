@@ -60,7 +60,7 @@ class DummyChatChoicesStreamService:
 ##
 
 
-# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     [
 #         'ChatChoicesService',
 #         'ChatChoicesStreamService',

@@ -59,7 +59,7 @@
     "file": "ommlds/minichain/backends/impls/anthropic/names.py",
     "line": 46,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -119,7 +119,7 @@
     "file": "ommlds/minichain/backends/impls/cerebras/names.py",
     "line": 36,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -211,7 +211,7 @@
     "file": "ommlds/minichain/backends/impls/dummy/chat.py",
     "line": 63,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -242,7 +242,7 @@
     "file": "ommlds/minichain/backends/impls/google/names.py",
     "line": 65,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -308,7 +308,7 @@
     "file": "ommlds/minichain/backends/impls/groq/names.py",
     "line": 50,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -364,7 +364,7 @@
     "file": "ommlds/minichain/backends/impls/llamacpp/chat.py",
     "line": 36,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService"
         ],
@@ -409,7 +409,7 @@
     "file": "ommlds/minichain/backends/impls/llamacpp/stream.py",
     "line": 35,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesStreamService"
         ],
@@ -454,7 +454,7 @@
     "file": "ommlds/minichain/backends/impls/mlx/chat.py",
     "line": 41,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -500,7 +500,7 @@
     "file": "ommlds/minichain/backends/impls/ollama/chat.py",
     "line": 65,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -591,7 +591,7 @@
     "file": "ommlds/minichain/backends/impls/openai/names.py",
     "line": 76,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -643,7 +643,7 @@
     "file": "ommlds/minichain/backends/impls/openai/names.py",
     "line": 90,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "CompletionService"
         ],
@@ -658,7 +658,7 @@
     "file": "ommlds/minichain/backends/impls/openai/names.py",
     "line": 102,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "EmbeddingService"
         ],
@@ -733,7 +733,7 @@
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
     "line": 169,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"
@@ -766,7 +766,7 @@
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
     "line": 52,
     "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
           "ChatChoicesService",
           "ChatChoicesStreamService"

@@ -62,7 +62,7 @@ from .protocol import build_ol_request_tool
 ##
 
 
-# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     [
 #         'ChatChoicesService',
 #         'ChatChoicesStreamService',

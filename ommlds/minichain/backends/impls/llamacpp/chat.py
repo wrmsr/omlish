@@ -33,7 +33,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+# @omlish-manifest $.minichain.specs.manifests.BackendStringsManifest(
 #     ['ChatChoicesService'],
 #     'llamacpp',
 # )

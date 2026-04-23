@@ -11,12 +11,12 @@ from omlish import reflect as rfl
 from omlish.formats import json5
 from omlish.manifests.globals import GlobalManifestLoader
 
-from ..backends.strings.manifests import BackendStringsManifest
 from ..configs import Config
 from ..models.configs import ModelName
 from ..registries.globals import get_global_registry
 from ..registries.registry import Registry
 from ..services import is_stream_service_cls
+from .manifests import BackendStringsManifest
 from .types import BackendSpec
 from .types import BackendSpecResolver
 from .types import ConfigBackendSpec

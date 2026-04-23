@@ -39,10 +39,6 @@ with _lang.auto_proxy_init(
         BackendStringBackendCatalog,
     )
 
-    from .backends.strings.manifests import (  # noqa
-        BackendStringsManifest,
-    )
-
     from .backends.strings.parsing import (  # noqa
         ParsedBackendString,
 

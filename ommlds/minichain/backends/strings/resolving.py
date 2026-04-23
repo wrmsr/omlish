@@ -14,7 +14,7 @@ from ...models.configs import ModelName
 from ...models.configs import ModelPath
 from ...models.configs import ModelRepo
 from ...registries.globals import get_global_registry
-from .manifests import BackendStringsManifest
+from ...specs.manifests import BackendStringsManifest
 from .parsing import ParsedBackendString
 
 

@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import check
 
-from ...models.names import ModelNameCollection
+from ..models.names import ModelNameCollection
 
 
 ##

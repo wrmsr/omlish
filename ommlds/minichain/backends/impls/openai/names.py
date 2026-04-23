@@ -30,7 +30,7 @@ gpt-5.4-pro-2026-03-05
 
 """  # noqa
 from ....models.names import ModelNameCollection
-from ...strings.manifests import BackendStringsManifest
+from ....specs.manifests import BackendStringsManifest
 
 
 ##

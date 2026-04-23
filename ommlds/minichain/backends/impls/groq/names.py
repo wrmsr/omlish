@@ -28,7 +28,7 @@ whisper-large-v3-turbo
 
 """  # noqa
 from ....models.names import ModelNameCollection
-from ...strings.manifests import BackendStringsManifest
+from ....specs.manifests import BackendStringsManifest
 
 
 ##
