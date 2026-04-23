@@ -1,12 +1,7 @@
 """
-FIXME: lol do we cache everything it ever sees by identity?
+FIXME?: lol do we cache everything it ever sees by identity?
  - yes, but, only keyed by rty - we don't really 'do' temp / weakref classes
   - maybe: still merge and cache, but only via identity IFF there's actually any identity keys in there for the thing
-
-TODO:
- - update interface first to return tv's
- - squash to one big dict, use lang.Identity() wrappers
- - give .register tv.update kwargs, just call that
 """
 import abc
 import dataclasses as dc

@@ -5,7 +5,6 @@ TODO:
 import dataclasses as dc
 import typing as ta
 
-from ... import cached
 from ... import check
 from ... import lang
 from ...lite.dataclasses import install_dataclass_filtered_repr
@@ -127,9 +126,17 @@ class ObjectSpecials(lang.Final):
     unknown: str | None = None
     source: str | None = None
 
-    @cached.property
+    @property
     def set(self) -> frozenset[str]:
-        return frozenset(v for v in dc.asdict(self).values() if v is not None)
+        try:
+            return self._set  # type: ignore[attr-defined]
+        except AttributeError:
+            pass
+
+        ret = frozenset(v for v in dc.asdict(self).values() if v is not None)
+
+        object.__setattr__(self, '_set', ret)
+        return ret
 
 
 @ta.final
@@ -156,12 +163,20 @@ class ObjectOptions(Config, lang.Final):
     unknown_field: str | None = None
     source_field: str | None = None
 
-    @cached.property
+    @property
     def specials(self) -> ObjectSpecials:
-        return ObjectSpecials(
+        try:
+            return self._specials  # type: ignore[attr-defined]
+        except AttributeError:
+            pass
+
+        ret = ObjectSpecials(
             unknown=self.unknown_field,
             source=self.source_field,
         )
+
+        object.__setattr__(self, '_specials', ret)
+        return ret
 
     ##
     # Fields

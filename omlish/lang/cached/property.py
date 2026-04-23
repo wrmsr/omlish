@@ -80,11 +80,9 @@ class _CachedProperty(property, Abstract):
 class _DictCachedProperty(_CachedProperty):
     def _instance_get(self, instance: ta.Any) -> tuple[ta.Any, bool]:
         try:
-            value = instance.__dict__[self._name]
+            return instance.__dict__[self._name], True
         except KeyError:
             return None, False
-        else:
-            return value, True
 
     def _instance_set(self, instance: ta.Any, value: ta.Any) -> None:
         instance.__dict__[self._name] = value
@@ -96,11 +94,9 @@ class _DictCachedProperty(_CachedProperty):
 class _TransientCachedProperty(_CachedProperty):
     def _instance_get(self, instance: ta.Any) -> tuple[ta.Any, bool]:
         try:
-            value = transient_getattr(instance, self._name)
+            return transient_getattr(instance, self._name), True
         except AttributeError:
             return None, False
-        else:
-            return value, True
 
     def _instance_set(self, instance: ta.Any, value: ta.Any) -> None:
         transient_setattr(instance, self._name, value)

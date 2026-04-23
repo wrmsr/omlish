@@ -239,11 +239,10 @@ def anon_object(**attrs: ta.Any) -> ta.Any:
 ##
 
 
+@ta.final
 class Identity(ta.Generic[T]):
     def __init__(self, obj: T) -> None:
-        super().__init__()
-
-        self._obj = obj
+        self._obj, self._id = obj, id(obj)
 
     def __bool__(self):
         raise TypeError
@@ -253,10 +252,10 @@ class Identity(ta.Generic[T]):
         return self._obj
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self._obj):x}<{self._obj!r}>'
+        return f'{self.__class__.__name__}@{self._id:x}<{self._obj!r}>'
 
     def __hash__(self) -> int:
-        return id(self._obj)
+        return self._id
 
     def __eq__(self, other):
         if type(other) is not type(self):
