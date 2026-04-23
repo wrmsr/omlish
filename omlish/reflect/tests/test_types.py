@@ -229,5 +229,15 @@ def test_forward_ref():
     assert rty_a != rty_b
 
 
+type MyInt = int
+
+type RecurC = str | ta.Sequence[RecurC]
+
+
+def test_new_aliases():
+    print(MyInt)
+    print(RecurC)
+
+
 if __name__ == '__main__':
     run_all_tests(globals())

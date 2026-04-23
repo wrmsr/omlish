@@ -68,20 +68,6 @@ class FirstInWinsBackendSpec(BackendSpec, lang.Final):
     children: ta.Sequence[CanBackendSpec]
 
 
-#
-
-
-@msh.register_global_lazy_init
-def _setup_backend_spec_marshal(cfgs: msh.ConfigRegistry) -> None:
-    msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(
-            BackendSpec,
-            strip_suffix=True,
-            naming=msh.Naming.SNAKE,
-        ),
-    ))
-
-
 ##
 
 
@@ -100,3 +86,17 @@ class BackendSpecResolver(lang.Abstract):
     @abc.abstractmethod
     def resolve(self, service_cls: ta.Any, spec: BackendSpec) -> ResolvedBackendSpec:
         raise NotImplementedError
+
+
+##
+
+
+@msh.register_global_lazy_init
+def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
+        msh.polymorphism_from_subclasses(
+            BackendSpec,
+            strip_suffix=True,
+            naming=msh.Naming.SNAKE,
+        ),
+    ))

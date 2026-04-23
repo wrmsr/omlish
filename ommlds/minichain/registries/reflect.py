@@ -23,11 +23,11 @@ class RegistryTypeName(dc.Box[str], lang.Final):
 def get_annotated_registry_type_name(obj: ta.Any) -> str | None:
     if isinstance(obj, rfl.Annotated):
         if (rtn := check.opt_single(a for a in obj.md if isinstance(a, RegistryTypeName))) is not None:
-            return rtn.v
+            return repr(rtn.v)
 
     elif rfl.is_annotated_type(obj):
         if (rtn := check.opt_single(a for a in rfl.get_annotated_type_metadata(obj) if isinstance(a, RegistryTypeName))) is not None:  # noqa
-            return rtn.v
+            return repr(rtn.v)
 
     return None
 
