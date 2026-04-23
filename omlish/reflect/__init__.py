@@ -47,6 +47,8 @@ with _lang.auto_proxy_init(
         is_simple_generic_alias_type,
         get_params,
         is_union_type,
+        is_annotated_type,
+        get_annotated_type_metadata,
         get_orig_bases,
         get_orig_class,
         get_newtype_supertype,

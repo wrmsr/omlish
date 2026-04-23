@@ -257,6 +257,16 @@ def is_union_type(cls: ta.Any) -> bool:
         return ta.get_origin(cls) == ta.Union
 
 
+def is_annotated_type(obj: ta.Any) -> bool:
+    return isinstance(obj, _AnnotatedAlias)
+
+
+def get_annotated_type_metadata(obj: ta.Any) -> ta.Sequence[ta.Any]:
+    if not is_annotated_type(obj):
+        raise TypeError(obj)
+    return obj.__metadata__
+
+
 def get_orig_bases(obj: ta.Any) -> ta.Any:
     return obj.__orig_bases__  # noqa
 

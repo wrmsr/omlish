@@ -29,6 +29,18 @@ class RegistryTypeName(dc.Box[str], lang.Final):
     pass
 
 
+def registry_type_repr(obj: ta.Any) -> str:
+    if isinstance(obj, rfl.Annotated):
+        if (rtn := check.opt_single(a for a in obj.md if isinstance(a, RegistryTypeName))) is not None:
+            return rtn.v
+
+    elif rfl.is_annotated_type(obj):
+        if (rtn := check.opt_single(a for a in rfl.get_annotated_type_metadata(obj) if isinstance(a, RegistryTypeName))) is not None:  # noqa
+            return rtn.v
+
+    return repr(obj)
+
+
 ##
 
 
@@ -153,12 +165,6 @@ class Registry:
         __named_cls: ta.Any
         __rty: rfl.Type
         __named_rty: rfl.Type
-
-        def _name_rty(self, rty: rfl.Type) -> rfl.Type:
-            if self._name is None:
-                return rty
-
-            return rfl.add_rfl_annotations(rty, RegistryTypeName(self._name))
 
         def _maybe_set_cls(self, cls: ta.Any) -> None:
             check.not_none(cls)
@@ -288,6 +294,8 @@ class Registry:
     def get_type(self, selector: ta.Any) -> Type:
         if isinstance(selector, str):
             return self._types_by_name[selector]
+        elif isinstance(selector, rfl.TypeInfo):
+            return self._types_by_rty[selector]
         else:
             return self._types_by_cls[selector]
 
