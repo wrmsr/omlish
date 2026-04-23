@@ -482,10 +482,16 @@ with _lang.auto_proxy_init(
         registry_of,
     )
 
-    from .registries.registry import (  # noqa
+    from .registries.reflect import (  # noqa
         RegistryTypeName,
+
+        get_annotated_registry_type_name,
         registry_type_repr,
 
+        strip_registry_annotations,
+    )
+
+    from .registries.registry import (  # noqa
         Registry,
     )
 

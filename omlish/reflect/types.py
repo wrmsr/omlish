@@ -389,13 +389,13 @@ class NewType(TypeInfo):
 @dc.dataclass(frozen=True)
 class Annotated(TypeInfo):
     ty: Type
-    md: ta.Sequence[ta.Any]
+    md: tuple[ta.Any, ...]
 
     obj: ta.Any = dc.field(compare=False, repr=False)
 
     def __post_init__(self) -> None:
-        if not self.md:
-            raise TypeError(f'Annotated {self.md=} must not be empty')
+        if not (isinstance(self.md, tuple) and self.md):
+            raise TypeError(f'Annotated {self.md=} must non-empty tuple')
         if isinstance(self.ty, Annotated):
             raise TypeError(self.ty)
 
@@ -662,7 +662,7 @@ class Reflector:
                 return None
 
             o = ta.get_args(obj)[0]
-            return Annotated(self.type(o), md=obj.__metadata__, obj=obj)
+            return Annotated(self.type(o), md=tuple(obj.__metadata__), obj=obj)
 
         ##
         # Literal

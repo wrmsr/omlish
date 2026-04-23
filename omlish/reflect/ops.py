@@ -60,19 +60,19 @@ def strip_rfl_annotations(ty: Type) -> Type:
     raise TypeError(ty)
 
 
-def strip_rfl_annotations_shallow(ty: Type, filter: ta.Callable[[ta.Any], bool] | None = None) -> Type:  # noqa
+def strip_rfl_annotations_shallow(ty: Type, if_: ta.Callable[[ta.Any], bool] | None = None) -> Type:
     if not isinstance(ty, Annotated):
         return ty
 
-    if filter is None:
-        return ty
+    if if_ is None:
+        return ty.ty
 
-    new_md = [md for md in ty.md if filter(md)]
+    new_md = [md for md in ty.md if not if_(md)]
 
     if not new_md:
-        return ty
+        return ty.ty
 
-    return dc.replace(ty, md=new_md)
+    return dc.replace(ty, md=tuple(new_md))
 
 
 def add_rfl_annotations(ty: Type, *md: ta.Any) -> Annotated:

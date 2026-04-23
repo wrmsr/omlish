@@ -1,7 +1,6 @@
 # ruff: noqa: SLF001
 """
 TODO:
- - rename to TypeRegistry
  - queue register_types + late load manifests ? less urgent than late loading marshal lol
 """
 import sys
@@ -9,32 +8,12 @@ import threading
 import typing as ta
 
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import lang
 from omlish import reflect as rfl
 
 from .manifests import RegistryManifest
 from .manifests import RegistryTypeManifest
-
-
-##
-
-
-@ta.final
-class RegistryTypeName(dc.Box[str], lang.Final):
-    pass
-
-
-def registry_type_repr(obj: ta.Any) -> str:
-    if isinstance(obj, rfl.Annotated):
-        if (rtn := check.opt_single(a for a in obj.md if isinstance(a, RegistryTypeName))) is not None:
-            return rtn.v
-
-    elif rfl.is_annotated_type(obj):
-        if (rtn := check.opt_single(a for a in rfl.get_annotated_type_metadata(obj) if isinstance(a, RegistryTypeName))) is not None:  # noqa
-            return rtn.v
-
-    return repr(obj)
+from .reflect import RegistryTypeName
 
 
 ##
