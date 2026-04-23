@@ -8,6 +8,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
+from omlish.formats import json5
 from omlish.manifests.globals import GlobalManifestLoader
 
 from ...configs import Config
@@ -23,6 +24,7 @@ from .types import ModelBackendSpec
 from .types import NameBackendSpec
 from .types import ResolvedBackendSpec
 from .types import RetryBackendSpec
+from .types import StringBackendSpec
 
 
 with lang.auto_proxy_import(globals()):
@@ -49,6 +51,24 @@ class BackendSpecTypeResolver(lang.Abstract, ta.Generic[BackendSpecT]):
     @abc.abstractmethod
     def resolve(self, ctx: ResolveContext, spec: BackendSpecT) -> ResolvedBackendSpec:
         raise NotImplementedError
+
+
+#
+
+
+class StringBackendSpecTypeResolver(BackendSpecTypeResolver[StringBackendSpec]):
+    def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: StringBackendSpec) -> ResolvedBackendSpec:
+        s = check.non_empty_str(spec.s.strip())
+
+        if s.startswith('{'):
+            rs_spec = msh.unmarshal(json5.loads(s), BackendSpec)
+        elif s in ctx.registry_type.entries:
+            rs_spec = NameBackendSpec(s)
+        else:
+            # TODO: parsing lol
+            rs_spec = ModelBackendSpec(s)
+
+        return ctx.rec(rs_spec)
 
 
 #
@@ -196,6 +216,7 @@ class TypeMapBackendSpecResolver(BackendSpecResolver):
 
 
 DEFAULT_BACKEND_SPEC_TYPE_RESOLVERS: ta.Mapping[type[BackendSpec], BackendSpecTypeResolver] = {
+    StringBackendSpec: StringBackendSpecTypeResolver(),
     NameBackendSpec: NameBackendSpecTypeResolver(),
     ModelBackendSpec: ModelBackendSpecTypeResolver(),
     RetryBackendSpec: RetryBackendSpecTypeResolver(),

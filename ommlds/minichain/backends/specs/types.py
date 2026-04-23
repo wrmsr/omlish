@@ -1,7 +1,6 @@
 """
 TODO:
- - configs?? unmarshaling depends on service_cls
-  - nah it's just UpdateOptionsService now
+ - ConfigBackendSpec, drop the configs kwargs
 """
 import abc
 import operator
@@ -11,7 +10,6 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish.formats import json5
 
 from ...configs import Config
 
@@ -36,10 +34,16 @@ class BackendSpec(lang.Sealed):
             return obj
 
         elif isinstance(obj, str):
-            return msh.unmarshal(json5.loads(obj), BackendSpec)
+            return StringBackendSpec(obj)
 
         else:
             raise TypeError(obj)
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_options(unwrap_if_single_field=True, field_defaults=msh.FieldOptions(omit_if=operator.not_))
+class StringBackendSpec(BackendSpec, lang.Final):
+    s: str
 
 
 @dc.dataclass(frozen=True)
