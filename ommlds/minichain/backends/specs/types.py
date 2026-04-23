@@ -89,6 +89,12 @@ class ResolvedBackendSpec:
     configs: tuple[Config, ...] | None = None
     children: ResolvedBackendSpec | tuple[ResolvedBackendSpec, ...] | None = None
 
+    def __post_init__(self) -> None:
+        check.isinstance(self.spec, BackendSpec)
+
+        check.isinstance(self.configs, (tuple, None))
+        check.isinstance(self.children, (ResolvedBackendSpec, tuple, None))
+
 
 class BackendSpecResolver(lang.Abstract):
     @abc.abstractmethod

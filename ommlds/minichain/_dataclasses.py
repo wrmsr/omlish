@@ -12401,13 +12401,13 @@ def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
         "hildren', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), defa"
         "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
         "type=None)), self_param='self', std_params=('service_cls', 'spec', 'ctor', 'configs', 'children'), kw_only_par"
-        "ams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprP"
-        "lan.Field(name='service_cls', kw_only=False, fn=None), ReprPlan.Field(name='spec', kw_only=False, fn=None), Re"
-        "prPlan.Field(name='ctor', kw_only=False, fn=None), ReprPlan.Field(name='configs', kw_only=False, fn=None), Rep"
-        "rPlan.Field(name='children', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.defa"
-        "ult_fn'))))"
+        "ams=(), frozen=True, slots=False, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPla"
+        "n.Field(name='service_cls', kw_only=False, fn=None), ReprPlan.Field(name='spec', kw_only=False, fn=None), Repr"
+        "Plan.Field(name='ctor', kw_only=False, fn=None), ReprPlan.Field(name='configs', kw_only=False, fn=None), ReprP"
+        "lan.Field(name='children', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.defaul"
+        "t_fn'))))"
     ),
-    plan_repr_sha1='36adeac7a77e727beead17131cdc33ec0bd4ae19',
+    plan_repr_sha1='24dd5b1b86ad2e7ec88870da3090310b065d38e5',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -12422,7 +12422,7 @@ def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
         ('ommlds.minichain.backends.specs.resolving', 'ResolvedBackendSpec'),
     ),
 )
-def _process_dataclass__36adeac7a77e727beead17131cdc33ec0bd4ae19():
+def _process_dataclass__24dd5b1b86ad2e7ec88870da3090310b065d38e5():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -12549,6 +12549,7 @@ def _process_dataclass__36adeac7a77e727beead17131cdc33ec0bd4ae19():
             __dataclass__object_setattr(self, 'ctor', ctor)
             __dataclass__object_setattr(self, 'configs', configs)
             __dataclass__object_setattr(self, 'children', children)
+            self.__post_init__()
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:

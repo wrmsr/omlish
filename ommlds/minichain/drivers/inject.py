@@ -2,6 +2,8 @@ import uuid
 
 from omlish import inject as inj
 
+from ..registries.globals import get_global_registry
+from ..registries.registry import Registry
 from .ai.inject import bind_ai
 from .configs import DriverConfig
 from .events.inject import bind_events
@@ -57,6 +59,10 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.append(inj.bind(DriverId(uuid.uuid4())))
+
+    #
+
+    els.append(inj.bind(Registry, to_const=get_global_registry()))
 
     #
 
