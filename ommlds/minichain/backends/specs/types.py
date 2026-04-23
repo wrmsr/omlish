@@ -1,7 +1,3 @@
-"""
-TODO:
- - ConfigBackendSpec, drop the configs kwargs
-"""
 import abc
 import operator
 import typing as ta
@@ -50,14 +46,22 @@ class StringBackendSpec(BackendSpec, lang.Final):
 @msh.update_object_options(unwrap_if_single_field=True, field_defaults=msh.FieldOptions(omit_if=operator.not_))
 class NameBackendSpec(BackendSpec, lang.Final):
     name: str
-    configs: ta.Sequence[ta.Any] | None = None
 
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(unwrap_if_single_field=True, field_defaults=msh.FieldOptions(omit_if=operator.not_))
 class ModelBackendSpec(BackendSpec, lang.Final):
     name: str
-    configs: ta.Sequence[ta.Any] | None = None
+
+
+@dc.dataclass(frozen=True)
+@msh.update_object_options(unwrap_if_single_field=True)
+class ConfigBackendSpec(BackendSpec, lang.Final):
+    child: CanBackendSpec
+    configs: ta.Sequence[ta.Any]
+
+    def __post_init__(self) -> None:
+        check.not_empty(self.configs)
 
 
 @dc.dataclass(frozen=True)
@@ -82,8 +86,8 @@ class ResolvedBackendSpec:
     spec: BackendSpec
 
     ctor: ta.Any
-    configs: ta.Sequence[Config] | None = None
-    children: ResolvedBackendSpec | ta.Sequence[ResolvedBackendSpec] | None = None
+    configs: tuple[Config, ...] | None = None
+    children: ResolvedBackendSpec | tuple[ResolvedBackendSpec, ...] | None = None
 
 
 class BackendSpecResolver(lang.Abstract):

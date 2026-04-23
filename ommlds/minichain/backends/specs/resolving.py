@@ -19,6 +19,7 @@ from ...services import is_stream_service_cls
 from ..strings.manifests import BackendStringsManifest
 from .types import BackendSpec
 from .types import BackendSpecResolver
+from .types import ConfigBackendSpec
 from .types import FirstInWinsBackendSpec
 from .types import ModelBackendSpec
 from .types import NameBackendSpec
@@ -78,38 +79,12 @@ class NameBackendSpecTypeResolver(BackendSpecTypeResolver[NameBackendSpec]):
     def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: NameBackendSpec) -> ResolvedBackendSpec:
         cls = ctx.registry_type.lookup(spec.name)
 
-        configs: list[Config] | None = None
-
-        if spec.configs:
-            if all(isinstance(c, Config) for c in spec.configs):
-                configs = spec.configs  # type: ignore[assignment]  # noqa
-
-            else:
-                cfg_rty = self._inspect_cls_config_arg(cls)  # noqa
-
-                configs = []
-                for c in spec.configs:
-                    if not isinstance(c, Config):
-                        c = msh.unmarshal(c, cfg_rty)
-
-                    configs.append(c)
-
         return ResolvedBackendSpec(
             ctx.service_cls,
             spec,
 
             cls,
-            configs,
         )
-
-    @lang.cached_function
-    def _inspect_cls_config_arg(self, cls: ta.Any) -> rfl.Type:
-        sig = inspect.signature(cls)  # noqa
-        cfgs_arg = next(iter(sig.parameters.values()))
-        check.state(cfgs_arg.kind == inspect.Parameter.VAR_POSITIONAL)
-        check.is_not(cfgs_arg.annotation, inspect.Parameter.empty)
-        check.is_not(cfgs_arg.annotation, Config)
-        return rfl.typeof(cfgs_arg.annotation)
 
 
 #
@@ -121,12 +96,11 @@ class ModelBackendSpecTypeResolver(BackendSpecTypeResolver[ModelBackendSpec]):
         bsm = check.single(mam[spec.name])
 
         return ctx.rec(
-            NameBackendSpec(
-                bsm.backend_name,
-                (
-                    *(spec.configs or ()),
-                    ModelName(spec.name),
+            ConfigBackendSpec(
+                NameBackendSpec(
+                    bsm.backend_name,
                 ),
+                (ModelName(spec.name),),
             ),
         )
 
@@ -139,6 +113,47 @@ class ModelBackendSpecTypeResolver(BackendSpecTypeResolver[ModelBackendSpec]):
             if (mnc := bsm.model_names) is not None
             for an in mnc.resolved
         )
+
+
+#
+
+
+class ConfigBackendSpecTypeResolver(BackendSpecTypeResolver[ConfigBackendSpec]):
+    def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: ConfigBackendSpec) -> ResolvedBackendSpec:
+        rbs = ctx.rec(BackendSpec.of(spec.child))
+
+        configs: ta.Sequence[Config]
+
+        if all(isinstance(c, Config) for c in spec.configs):
+            configs = spec.configs
+
+        else:
+            # TODO: if can't inspect, use ctx.reflect_type?
+            cfg_rty = self._inspect_cls_config_arg(rbs.ctor)  # noqa
+
+            configs = []
+            for c in spec.configs:
+                if not isinstance(c, Config):
+                    c = msh.unmarshal(c, cfg_rty)
+
+                configs.append(c)
+
+        return dc.replace(
+            rbs,
+            configs=(
+                *(rbs.configs or ()),
+                *configs,
+            ),
+        )
+
+    @lang.cached_function
+    def _inspect_cls_config_arg(self, cls: ta.Any) -> rfl.Type:
+        sig = inspect.signature(cls)  # noqa
+        cfgs_arg = next(iter(sig.parameters.values()))
+        check.state(cfgs_arg.kind == inspect.Parameter.VAR_POSITIONAL)
+        check.is_not(cfgs_arg.annotation, inspect.Parameter.empty)
+        check.is_not(cfgs_arg.annotation, Config)
+        return rfl.typeof(cfgs_arg.annotation)
 
 
 #
@@ -169,10 +184,10 @@ class FirstInWinsBackendSpecTypeResolver(BackendSpecTypeResolver[FirstInWinsBack
                 spec,
 
                 firstinwins.AsyncioFirstInWinsService,
-                children=[
+                children=tuple(
                     ctx.rec(BackendSpec.of(child))
                     for child in spec.children
-                ],
+                ),
             )
 
 
@@ -219,6 +234,7 @@ DEFAULT_BACKEND_SPEC_TYPE_RESOLVERS: ta.Mapping[type[BackendSpec], BackendSpecTy
     StringBackendSpec: StringBackendSpecTypeResolver(),
     NameBackendSpec: NameBackendSpecTypeResolver(),
     ModelBackendSpec: ModelBackendSpecTypeResolver(),
+    ConfigBackendSpec: ConfigBackendSpecTypeResolver(),
     RetryBackendSpec: RetryBackendSpecTypeResolver(),
     FirstInWinsBackendSpec: FirstInWinsBackendSpecTypeResolver(),
 }
