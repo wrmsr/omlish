@@ -1,4 +1,4 @@
-from ....chat.choices.services import ChatChoicesService
+from ...chat.choices.services import ChatChoicesService
 from ..instantiate import instantiate_backend_spec
 from ..resolving import DEFAULT_BACKEND_SPEC_RESOLVER
 from ..types import BackendSpec
@@ -8,7 +8,7 @@ from ..types import NameBackendSpec
 from ..types import RetryBackendSpec
 
 
-def test_strings():
+def test_resolving():
     bsr = DEFAULT_BACKEND_SPEC_RESOLVER
 
     for _ in range(2):
