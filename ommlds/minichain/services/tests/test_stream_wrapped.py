@@ -9,13 +9,13 @@ import pytest
 from omlish import lang
 
 from ...resources import UseResources
-from ...services import Request
-from ...services import Service
 from ...types import Output
-from ..services import StreamResponse
-from ..services import StreamResponseSink
-from ..services import new_stream_response
-from .test_services import FooStreamService
+from ..requests import Request
+from ..services import Service
+from ..stream import StreamResponse
+from ..stream import StreamResponseSink
+from ..stream import new_stream_response
+from .test_stream import FooStreamService
 
 
 StreamRequestT = ta.TypeVar('StreamRequestT', bound=Request)

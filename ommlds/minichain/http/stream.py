@@ -14,9 +14,9 @@ from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from ..resources import UseResources
-from ..stream.services import StreamResponse
-from ..stream.services import StreamResponseSink
-from ..stream.services import new_stream_response
+from ..services import StreamResponse
+from ..services import StreamResponseSink
+from ..services import new_stream_response
 from ..types import Option
 from ..types import Output
 

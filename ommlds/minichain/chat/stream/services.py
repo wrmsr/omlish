@@ -6,7 +6,7 @@ from omlish import lang
 from ...registries.globals import register_type
 from ...services import Request
 from ...services import Service
-from ...stream.services import StreamResponse
+from ...services import StreamResponse
 from ..messages import Chat
 from ..types import ChatOutputs
 from .types import AiDeltas

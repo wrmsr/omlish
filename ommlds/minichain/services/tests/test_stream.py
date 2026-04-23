@@ -6,12 +6,12 @@ import pytest
 from omlish import lang
 
 from ...resources import UseResources
-from ...services import Request
 from ...types import Output
-from ..services import StreamOptions
-from ..services import StreamResponse
-from ..services import StreamResponseSink
-from ..services import new_stream_response
+from ..requests import Request
+from ..stream import StreamOptions
+from ..stream import StreamResponse
+from ..stream import StreamResponseSink
+from ..stream import new_stream_response
 
 
 class FooStreamService:

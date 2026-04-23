@@ -4,8 +4,8 @@ import typing as ta
 from omlish import check
 
 from ...resources import UseResources
-from ...stream.services import StreamResponseSink
-from ...stream.services import new_stream_response
+from ...services import StreamResponseSink
+from ...services import new_stream_response
 from ..choices.services import ChatChoicesOutputs
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import ChatChoicesResponse

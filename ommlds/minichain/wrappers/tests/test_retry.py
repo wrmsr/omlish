@@ -1,10 +1,10 @@
 import pytest
 
 from ...resources import UseResources
+from ...services import StreamResponseSink
+from ...services import new_stream_response
 from ...services.requests import Request
 from ...services.responses import Response
-from ...stream.services import StreamResponseSink
-from ...stream.services import new_stream_response
 from ...types import Option
 from ...types import Output
 from ..metadata import RetryServiceResponseMetadata
@@ -110,7 +110,7 @@ class FailNTimesStreamService:
             raise FailNTimesStreamServiceError(f'fail_attempt_{self._attempt}({request.v})')
 
         from ...resources import UseResources
-        from ...stream.services import new_stream_response
+        from ...services import new_stream_response
 
         async with UseResources.or_new(request.options) as rs:
             async def inner(sink: StreamResponseSink[str]) -> list[Output] | None:

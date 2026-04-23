@@ -16,8 +16,8 @@ from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.stream.types import ContentAiDelta
 from ....resources import UseResources
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
+from ....services import StreamResponseSink
+from ....services import new_stream_response
 
 
 ##

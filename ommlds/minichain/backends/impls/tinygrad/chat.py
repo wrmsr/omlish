@@ -23,8 +23,8 @@ from ....chat.stream.types import ContentAiDelta
 from ....chat.types import ChatOption
 from ....llms.types import LlmOption
 from ....resources import UseResources
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
+from ....services import StreamResponseSink
+from ....services import new_stream_response
 
 
 with lang.auto_proxy_import(globals()):

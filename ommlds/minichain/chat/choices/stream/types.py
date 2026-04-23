@@ -3,7 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ....stream.services import StreamOptions
+from ....services import StreamOptions
 from ....types import Option
 from ....types import Output
 from ...stream.types import AiDeltas

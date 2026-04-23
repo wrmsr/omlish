@@ -17,7 +17,7 @@ from ommlds.minichain import StreamResponseIterator
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ReflectedServiceCls:
+class ReflectedService:
     request_v: rfl.Type
     request_option: rfl.Type
 
@@ -26,28 +26,28 @@ class ReflectedServiceCls:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ReflectedStreamServiceCls(ReflectedServiceCls):
+class ReflectedStreamService(ReflectedService):
     stream_response_v: rfl.Type
     stream_response_output: rfl.Type
 
 
-def reflect_service_cls(service_cls: ta.Any) -> ReflectedServiceCls:
-    rty = check.isinstance(rfl.type_(service_cls), rfl.Protocol)
-    check.is_(rty.cls, mc.Service)
-    req_rty, resp_rty = rty.args
+def _reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedService:
     req_rty = check.isinstance(req_rty, rfl.Generic)
     resp_rty = check.isinstance(resp_rty, rfl.Generic)
+
     check.is_(req_rty.cls, mc.Request)
     check.is_(resp_rty.cls, mc.Response)
+
     req_v_rty, req_opt_rty = req_rty.args
     resp_v_rty, resp_out_rty = resp_rty.args
 
     if isinstance(resp_v_rty, rfl.Generic) and resp_v_rty.cls is mc.ResourceManaged:
         [resp_v_rmg] = resp_v_rty.args
+
         if isinstance(resp_v_rmg, rfl.Generic) and resp_v_rmg.cls is mc.StreamResponseIterator:
             stream_resp_v_rty, stream_resp_out_rty = resp_v_rmg.args
 
-            return ReflectedStreamServiceCls(
+            return ReflectedStreamService(
                 request_v=req_v_rty,
                 request_option=req_opt_rty,
 
@@ -58,7 +58,7 @@ def reflect_service_cls(service_cls: ta.Any) -> ReflectedServiceCls:
                 stream_response_output=stream_resp_out_rty,
             )
 
-    return ReflectedServiceCls(
+    return ReflectedService(
         request_v=req_v_rty,
         request_option=req_opt_rty,
 
@@ -67,16 +67,17 @@ def reflect_service_cls(service_cls: ta.Any) -> ReflectedServiceCls:
     )
 
 
+def reflect_service_cls(service_cls: ta.Any) -> ReflectedService:
+    rty = check.isinstance(rfl.type_(service_cls), rfl.Protocol)
+
+    check.is_(rty.cls, mc.Service)
+
+    req_rty, resp_rty = rty.args
+
+    return _reflect_service_like(req_rty, resp_rty)
+
+
 ##
-
-
-@dc.dataclass(frozen=True)
-class ReflectedService:
-    request_v: rfl.Type
-    request_option: rfl.Type
-
-    response_v: rfl.Type
-    response_output: rfl.Type
 
 
 def reflect_service(obj: ta.Any) -> ReflectedService:
@@ -98,19 +99,7 @@ def reflect_service(obj: ta.Any) -> ReflectedService:
         req_rty = check.isinstance(rfl.type_(invoke_sig.parameters['request'].annotation), rfl.Generic)
         resp_rty = check.isinstance(rfl.type_(invoke_sig.return_annotation), rfl.Generic)
 
-    check.is_(req_rty.cls, mc.Request)
-    check.is_(resp_rty.cls, mc.Response)
-
-    req_v_rty, req_opt_rty = req_rty.args
-    resp_v_rty, resp_out_rty = resp_rty.args
-
-    return ReflectedService(
-        req_v_rty,
-        req_opt_rty,
-
-        resp_v_rty,
-        resp_out_rty,
-    )
+    return _reflect_service_like(req_rty, resp_rty)
 
 
 ##

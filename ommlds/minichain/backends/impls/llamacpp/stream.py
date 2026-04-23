@@ -16,8 +16,8 @@ from ....chat.stream.types import ContentAiDelta
 from ....configs import Config
 from ....models.configs import ModelPath
 from ....resources import UseResources
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
+from ....services import StreamResponseSink
+from ....services import new_stream_response
 from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP
 from .format import get_msg_content

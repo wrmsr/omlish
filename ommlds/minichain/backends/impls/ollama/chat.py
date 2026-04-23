@@ -50,9 +50,9 @@ from ....chat.choices.stream.types import AiChoicesDeltas
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....resources import UseResources
+from ....services import StreamResponseSink
+from ....services import new_stream_response
 from ....standard import ApiUrl
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
 from .protocol import build_mc_ai_choice_deltas
 from .protocol import build_mc_choices_response
 from .protocol import build_ol_request_messages

@@ -8,7 +8,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..services.services import Service
+from ..services import Service
 from ..types import Output
 from .services import MultiWrapperService
 from .services import WrappedOptionT

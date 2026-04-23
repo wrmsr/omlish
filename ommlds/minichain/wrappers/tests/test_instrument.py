@@ -5,9 +5,9 @@ import pytest
 from omlish import check
 from omlish import lang
 
+from ...services import Service
 from ...services.requests import Request
 from ...services.responses import Response
-from ...services.services import Service
 from ...types import Option
 from ...types import Output
 from ..instrument import InstrumentedService

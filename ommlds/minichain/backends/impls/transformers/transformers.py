@@ -35,8 +35,8 @@ from ....completion import static_check_is_completion_service
 from ....configs import Config
 from ....models.configs import ModelPath
 from ....resources import UseResources
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
+from ....services import StreamResponseSink
+from ....services import new_stream_response
 from ...impls.huggingface.configs import HuggingfaceHubToken
 
 

@@ -19,8 +19,8 @@ import typing as ta
 from omlish import dataclasses as dc
 
 from ..resources import Resources
-from ..stream.services import StreamResponseSink
-from ..stream.services import new_stream_response
+from ..services import StreamResponseSink
+from ..services import new_stream_response
 from .metadata import RetryServiceResponseMetadata
 from .services import WrappedOptionT
 from .services import WrappedOutputT

@@ -2,10 +2,10 @@ import typing as ta
 
 from omlish import lang
 
+from ..services import Service
+from ..services import StreamOptions
+from ..services import StreamResponse
 from ..services.requests import Request
-from ..services.services import Service
-from ..stream.services import StreamOptions
-from ..stream.services import StreamResponse
 from ..types import Output
 from .services import WrappedOptionT
 from .services import WrappedOutputT

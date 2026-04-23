@@ -21,8 +21,8 @@ from ....configs import Config
 from ....http.stream import BytesHttpStreamResponseBuilder
 from ....http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ....resources import ResourcesOption
+from ....services import StreamOption
 from ....standard import ApiKey
-from ....stream.services import StreamOption
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 from .format import build_mc_ai_deltas

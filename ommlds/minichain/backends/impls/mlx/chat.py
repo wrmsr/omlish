@@ -27,8 +27,8 @@ from ....models.configs import ModelPath
 from ....models.configs import ModelRepo
 from ....models.configs import ModelSpecifier
 from ....resources import UseResources
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
+from ....services import StreamResponseSink
+from ....services import new_stream_response
 
 
 with lang.auto_proxy_import(globals()):

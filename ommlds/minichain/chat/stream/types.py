@@ -6,7 +6,7 @@ from omlish import marshal as msh
 
 from ...content.content import Content
 from ...metadata import MetadataContainerDataclass
-from ...stream.services import StreamOptions
+from ...services import StreamOptions
 from ...types import Option
 from ...types import Output
 from ..types import ChatOptions

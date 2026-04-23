@@ -23,6 +23,20 @@ from .services import (  # noqa
     Service,
 )
 
+from .stream import (  # noqa
+    StreamOption,
+    StreamOptions,
+
+    StreamResponseSink,
+    StreamResponseIterator,
+
+    StreamServiceCancelledError,
+    StreamServiceNotAwaitedError,
+
+    StreamResponse,
+    new_stream_response,
+)
+
 
 ##
 

@@ -497,11 +497,7 @@ with _lang.auto_proxy_init(
         Response,
 
         Service,
-    )
 
-    ##
-
-    from .stream.services import (  # noqa
         StreamOption,
         StreamOptions,
 

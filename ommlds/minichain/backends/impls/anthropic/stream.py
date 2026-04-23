@@ -23,9 +23,9 @@ from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....configs import Config
 from ....resources import UseResources
+from ....services import StreamResponseSink
+from ....services import new_stream_response
 from ....standard import ApiKey
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
 from .chat import AnthropicChatChoicesService
 from .names import MODEL_NAMES
 from .protocol import build_protocol_chat_messages
