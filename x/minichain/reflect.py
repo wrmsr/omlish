@@ -10,6 +10,61 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import reflect as rfl
 from ommlds import minichain as mc
+from ommlds.minichain import StreamResponseIterator
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ReflectedServiceCls:
+    request_v: rfl.Type
+    request_option: rfl.Type
+
+    response_v: rfl.Type
+    response_output: rfl.Type
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ReflectedStreamServiceCls(ReflectedServiceCls):
+    stream_response_v: rfl.Type
+    stream_response_output: rfl.Type
+
+
+def reflect_service_cls(service_cls: ta.Any) -> ReflectedServiceCls:
+    rty = check.isinstance(rfl.type_(service_cls), rfl.Protocol)
+    check.is_(rty.cls, mc.Service)
+    req_rty, resp_rty = rty.args
+    req_rty = check.isinstance(req_rty, rfl.Generic)
+    resp_rty = check.isinstance(resp_rty, rfl.Generic)
+    check.is_(req_rty.cls, mc.Request)
+    check.is_(resp_rty.cls, mc.Response)
+    req_v_rty, req_opt_rty = req_rty.args
+    resp_v_rty, resp_out_rty = resp_rty.args
+
+    if isinstance(resp_v_rty, rfl.Generic) and resp_v_rty.cls is mc.ResourceManaged:
+        [resp_v_rmg] = resp_v_rty.args
+        if isinstance(resp_v_rmg, rfl.Generic) and resp_v_rmg.cls is mc.StreamResponseIterator:
+            stream_resp_v_rty, stream_resp_out_rty = resp_v_rmg.args
+
+            return ReflectedStreamServiceCls(
+                request_v=req_v_rty,
+                request_option=req_opt_rty,
+
+                response_v=resp_v_rty,
+                response_output=resp_out_rty,
+
+                stream_response_v=stream_resp_v_rty,
+                stream_response_output=stream_resp_out_rty,
+            )
+
+    return ReflectedServiceCls(
+        request_v=req_v_rty,
+        request_option=req_opt_rty,
+
+        response_v=resp_v_rty,
+        response_output=resp_out_rty,
+    )
 
 
 ##
@@ -119,6 +174,9 @@ def as_chat_service(svc):
 
 
 def _main() -> None:
+    print(reflect_service_cls(mc.ChatChoicesService))
+    print(reflect_service_cls(mc.ChatChoicesStreamService))
+
     install_env_secrets('openai_api_key')
 
     ccss = mc.registry_of[mc.ChatChoicesStreamService].new('openai')

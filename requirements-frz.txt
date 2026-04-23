@@ -181,7 +181,7 @@ pandas==3.0.2
 pandocfilters==1.5.1
 paramiko==4.0.0
 parso==0.8.6
-pathspec==1.0.4
+pathspec==1.1.0
 pcpp==1.30
 pexpect==4.9.0
 pg8000==1.31.5
@@ -223,7 +223,7 @@ PyNaCl==1.6.2
 pyOpenSSL==26.0.0
 pyparsing==3.3.2
 pyproject_hooks==1.2.0
-pyright==1.1.408
+pyright==1.1.409
 pytesseract==0.3.13
 pytest==9.0.3
 pytest-benchmark==5.2.3
@@ -293,7 +293,7 @@ torchvision==0.26.0
 tornado==6.5.5
 tqdm==4.67.3
 traitlets==5.14.3
-transformers==5.6.0
+transformers==5.6.1
 tree-sitter==0.25.2
 tree-sitter-bash==0.25.1
 tree-sitter-css==0.25.0
@@ -337,7 +337,7 @@ urllib3==2.6.3
 urwid==4.0.0
 urwid_readline==0.15.1
 uv==0.11.7
-uvicorn==0.45.0
+uvicorn==0.46.0
 watchdog==6.0.0
 wcwidth==0.6.0
 webcolors==25.10.0
