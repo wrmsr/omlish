@@ -17,10 +17,6 @@ from .manifests import RegistryManifest
 from .manifests import RegistryTypeManifest
 
 
-T = ta.TypeVar('T')
-U = ta.TypeVar('U')
-
-
 ##
 
 
@@ -298,11 +294,3 @@ class Registry:
             return self._types_by_rty[selector]
         else:
             return self._types_by_cls[selector]
-
-    #
-
-    def get_type_cls(self, name: str) -> type:
-        return self.get_type(name).cls()
-
-    def get_cls(self, selector: ta.Any, name: str) -> type:
-        return self.get_type(selector).lookup(name)

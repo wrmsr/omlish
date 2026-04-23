@@ -476,7 +476,7 @@ with _lang.auto_proxy_init(
     ##
 
     from .registries.globals import (  # noqa
-        get_cls,
+        get_registry_cls,
         register_type,
         registry_new,
         registry_of,
@@ -484,6 +484,7 @@ with _lang.auto_proxy_init(
 
     from .registries.registry import (  # noqa
         RegistryTypeName,
+        registry_type_repr,
 
         Registry,
     )
