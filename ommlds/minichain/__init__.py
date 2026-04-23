@@ -491,6 +491,7 @@ with _lang.auto_proxy_init(
         ReflectedService,
         ReflectedStreamService,
 
+        reflect_service_like,
         reflect_service_cls,
 
         RequestMetadata,

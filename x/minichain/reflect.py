@@ -7,21 +7,14 @@ import typing as ta
 
 from omdev.home.secrets import install_env_secrets
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import reflect as rfl
 from ommlds import minichain as mc
-from ommlds.minichain import StreamResponseIterator
 
 
 ##
 
 
-
-
-##
-
-
-def reflect_service(obj: ta.Any) -> ReflectedService:
+def reflect_service(obj: ta.Any) -> mc.ReflectedService:
     req_rty: rfl.Generic
     resp_rty: rfl.Generic
 
@@ -40,7 +33,7 @@ def reflect_service(obj: ta.Any) -> ReflectedService:
         req_rty = check.isinstance(rfl.type_(invoke_sig.parameters['request'].annotation), rfl.Generic)
         resp_rty = check.isinstance(rfl.type_(invoke_sig.return_annotation), rfl.Generic)
 
-    return _reflect_service_like(req_rty, resp_rty)
+    return mc.reflect_service_like(req_rty, resp_rty)
 
 
 ##
@@ -104,8 +97,8 @@ def as_chat_service(svc):
 
 
 def _main() -> None:
-    print(reflect_service_cls(mc.ChatChoicesService))
-    print(reflect_service_cls(mc.ChatChoicesStreamService))
+    print(mc.reflect_service_cls(mc.ChatChoicesService))
+    print(mc.reflect_service_cls(mc.ChatChoicesStreamService))
 
     install_env_secrets('openai_api_key')
 

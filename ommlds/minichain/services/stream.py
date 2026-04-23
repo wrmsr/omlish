@@ -14,7 +14,7 @@ from omlish import typedvalues as tv
 from ..resources import ResourceManaged
 from ..resources import Resources
 from ..resources import ResourcesOption
-from ..services import Response
+from ..services.responses import Response
 from ..services.responses import ResponseMetadatas
 from ..types import Option
 from ..types import Output

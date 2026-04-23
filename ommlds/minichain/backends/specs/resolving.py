@@ -43,7 +43,7 @@ class BackendSpecTypeResolver(lang.Abstract, ta.Generic[BackendSpecT]):
         rec: ta.Callable[[BackendSpec], ResolvedBackendSpec]
 
         registry: Registry
-        rt: Registry.Type
+        registry_type: Registry.Type
 
     @abc.abstractmethod
     def resolve(self, ctx: ResolveContext, spec: BackendSpecT) -> ResolvedBackendSpec:
@@ -55,7 +55,7 @@ class BackendSpecTypeResolver(lang.Abstract, ta.Generic[BackendSpecT]):
 
 class NameBackendSpecTypeResolver(BackendSpecTypeResolver[NameBackendSpec]):
     def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: NameBackendSpec) -> ResolvedBackendSpec:
-        cls = ctx.rt.lookup(spec.name)
+        cls = ctx.registry_type.lookup(spec.name)
 
         configs: list[Config] | None = None
 
@@ -96,7 +96,7 @@ class NameBackendSpecTypeResolver(BackendSpecTypeResolver[NameBackendSpec]):
 
 class ModelBackendSpecTypeResolver(BackendSpecTypeResolver[ModelBackendSpec]):
     def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: ModelBackendSpec) -> ResolvedBackendSpec:
-        mam = self._model_alias_map(ctx.rt)
+        mam = self._model_alias_map(ctx.registry_type)
         bsm = check.single(mam[spec.name])
 
         return ctx.rec(
@@ -183,7 +183,7 @@ class TypeMapBackendSpecResolver(BackendSpecResolver):
             rec=rec,
 
             registry=self._registry,
-            rt=self._registry.get_registered_type(service_cls),
+            registry_type=self._registry.get_registered_type(service_cls),
         )
 
         return rec(spec)

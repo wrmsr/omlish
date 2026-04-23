@@ -11,6 +11,7 @@ from .reflect import (  # noqa
     ReflectedService,
     ReflectedStreamService,
 
+    reflect_service_like,
     reflect_service_cls,
 )
 

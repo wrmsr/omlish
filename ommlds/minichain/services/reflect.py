@@ -37,7 +37,10 @@ class ReflectedStreamService(ReflectedService):
     stream_response_output: rfl.Type
 
 
-def _reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedService:
+#
+
+
+def reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedService:
     req_rty = check.isinstance(req_rty, rfl.Generic)
     resp_rty = check.isinstance(resp_rty, rfl.Generic)
 
@@ -80,4 +83,4 @@ def reflect_service_cls(service_cls: ta.Any) -> ReflectedService:
 
     req_rty, resp_rty = rty.args
 
-    return _reflect_service_like(req_rty, resp_rty)
+    return reflect_service_like(req_rty, resp_rty)
