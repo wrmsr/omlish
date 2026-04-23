@@ -25,7 +25,7 @@ def test_override():
     msh = SimpleMarshaling(
         marshaler_factory=OverrideMarshalerFactory(PRIMITIVE_MARSHALER_FACTORY),
     )
-    msh.get_config_registry().register(int, Override(marshaler=IncIntMarshaler()))
+    msh.get_config_registry().update(int, Override(marshaler=IncIntMarshaler()))
     assert msh.marshal('1') == '1'
     assert msh.marshal(1) == 2
     assert msh.marshal(False) is False

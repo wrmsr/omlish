@@ -310,7 +310,7 @@ def _install_standard_marshaling() -> None:
         _ContentUnmarshalerFactory(),
     )
 
-    msh.register_global_config(
+    msh.update_global_config(
         Content,
         msh.ReflectOverride(MarshalContent),
         identity=True,
@@ -323,7 +323,7 @@ def _install_standard_marshaling() -> None:
         _SingleRawContentUnmarshalerFactory(),
     )
 
-    msh.register_global_config(
+    msh.update_global_config(
         SingleRawContent,
         msh.ReflectOverride(MarshalSingleRawContent),
         identity=True,
@@ -336,7 +336,7 @@ def _install_standard_marshaling() -> None:
         _RawContentUnmarshalerFactory(),
     )
 
-    msh.register_global_config(
+    msh.update_global_config(
         RawContent,
         msh.ReflectOverride(MarshalRawContent),
         identity=True,

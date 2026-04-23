@@ -100,22 +100,26 @@ def unmarshal(v, ty, *options):
 ##
 
 
-def register_global_config(
+def update_global_config(
         key: ta.Any,
         *items: Config,
         identity: bool = False,
+        discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+        mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
 ) -> None:
-    global_config_registry().register(
+    global_config_registry().update(
         key,
         *items,
         identity=identity,
+        discard=discard,
+        mode=mode,
     )
 
 
 def register_global_lazy_init(
         fn: LazyInitFn,
 ) -> None:
-    global_config_registry().register(
+    global_config_registry().update(
         None,
         LazyInit(fn),
     )
@@ -125,7 +129,7 @@ def register_global_module_import(
         name: str,
         package: str | None = None,
 ) -> None:
-    global_config_registry().register(
+    global_config_registry().update(
         None,
         LazyInit(ModuleImport(name, package)),
     )
@@ -178,6 +182,6 @@ def install_standard_factories_to(
                 raise TypeError(f)
 
         if m_new:
-            cfgs.register(None, StandardMarshalerFactories(m_lst), replace=True)
+            cfgs.update(None, StandardMarshalerFactories(m_lst), mode='override')
         if u_new:
-            cfgs.register(None, StandardUnmarshalerFactories(u_lst), replace=True)
+            cfgs.update(None, StandardUnmarshalerFactories(u_lst), mode='override')

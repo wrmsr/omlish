@@ -53,7 +53,7 @@ class _JsonValueUnmarshalerFactory(msh.UnmarshalerFactory):
 
 @lang.static_init
 def _install_standard_marshaling() -> None:
-    msh.register_global_config(
+    msh.update_global_config(
         JsonValue,
         msh.ReflectOverride(MarshalJsonValue),
         identity=True,

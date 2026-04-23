@@ -282,7 +282,7 @@ with _lang.auto_proxy_init(globals()):
         marshal,
         unmarshal,
 
-        register_global_config,
+        update_global_config,
         register_global_lazy_init,
         register_global_module_import,
 

@@ -93,12 +93,13 @@ class ConfigRegistry(Configs):
 
         #
 
-        def register(
+        def update(
                 self,
                 key: ta.Any,
                 *items: Config,
                 identity: bool = False,
-                replace: bool = False,
+                discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+                mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
         ) -> ConfigRegistry._State:
             if not items:
                 return self
@@ -110,11 +111,12 @@ class ConfigRegistry(Configs):
                 xv = self.dct[key]
             except KeyError:
                 xv = _EMPTY_CONFIG_VALUES
-            else:
-                if replace:
-                    xv = xv.discard(*map(type, items))
 
-            nr = xv.update(*items)
+            nr = xv.update(
+                *items,
+                discard=discard,
+                mode=mode,
+            )
 
             return ConfigRegistry._State(
                 dct={**self.dct, key: nr},
@@ -178,12 +180,13 @@ class ConfigRegistry(Configs):
 
     #
 
-    def register(
+    def update(
             self,
             key: ta.Any,
             *items: Config,
             identity: bool = False,
-            replace: bool = False,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
         check.arg(not (key is None and identity))
 
@@ -194,11 +197,12 @@ class ConfigRegistry(Configs):
             if self._sealed:
                 raise ConfigRegistrySealedError(self)
 
-            self._state = self._state.register(
+            self._state = self._state.update(
                 key,
                 *items,
                 identity=identity,
-                replace=replace,
+                discard=discard,
+                mode=mode,
             )
 
         return self

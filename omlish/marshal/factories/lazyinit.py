@@ -58,7 +58,7 @@ class _LazyInitRunningFactory(_PreReflectFactory, ta.Generic[FactoryT]):
         if ars is not None and ars.lis:
             lst.extend(ars.lis)
         ars = _AlreadyRunLazyInits(frozenset(lst))
-        cfgs.register(None, ars, replace=True)
+        cfgs.update(None, ars, mode='override')
 
         if self._callback is not None:
             self._callback()

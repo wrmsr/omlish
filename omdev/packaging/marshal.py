@@ -75,13 +75,13 @@ def _install_standard_marshaling() -> None:
         RequiresMarkerListMarshalerFactory(),
     )
 
-    msh.register_global_config(
+    msh.update_global_config(
         RequiresMarkerList,
         msh.ReflectOverride(MarshalRequiresMarkerList),
         identity=True,
     )
 
-    msh.global_config_registry().register(
+    msh.update_global_config(
         ParsedRequirement,
         msh.ObjectOptions(
             fields=dict(

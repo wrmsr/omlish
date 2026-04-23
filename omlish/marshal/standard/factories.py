@@ -66,7 +66,7 @@ class _StandardFactory(ta.Generic[FactoryT, FactoriesT]):
 
             if cfg is None:
                 cfg = self._cfg_cls(self._default_facs)  # type: ignore[arg-type]
-                cfgs.register(None, cfg)
+                cfgs.update(None, cfg)
 
             fac = self._make_fac(cfgs, cfg)
 

@@ -11,7 +11,7 @@ def test_lazyinit():
     def foo(cfgs2):
         pass
 
-    cfgs.register(None, LazyInit(foo))
+    cfgs.update(None, LazyInit(foo))
 
     for _ in range(2):
         mf = LazyInitRunningMarshalerFactory(PRIMITIVE_MARSHALER_FACTORY)
