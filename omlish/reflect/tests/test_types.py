@@ -195,5 +195,39 @@ def test_trivial():
     assert_generic_full_eq(rfl.type_(StupidFloat[int]), rfl.Generic(StupidFloat, (int,), (T,), StupidFloat[int]))
 
 
+RecurA: ta.TypeAlias = ta.Union[
+    str,
+    ta.Sequence['RecurA'],
+]
+
+
+RecurB: ta.TypeAlias = ta.Union[
+    str,
+    ta.Sequence['RecurB'],
+]
+
+
+def test_forward_ref():
+    def get_ref(rty):
+        [a] = [a for a in check.isinstance(rty, rfl.Union).args if a is not str]
+        a = check.isinstance(a, rfl.Generic)
+        assert a.cls is collections.abc.Sequence
+        return check.single(a.args)
+
+    rty_a = rfl.type_(RecurA)
+    ref_a = get_ref(rty_a)
+    assert isinstance(ref_a, rfl.ForwardRef)
+    rty_a2 = rfl.type_(RecurA)
+    assert rty_a == rty_a2
+
+    rty_b = rfl.type_(RecurB)
+    ref_b = get_ref(rty_b)
+    assert isinstance(ref_b, rfl.ForwardRef)
+    rty_b2 = rfl.type_(RecurB)
+    assert rty_b == rty_b2
+
+    assert rty_a != rty_b
+
+
 if __name__ == '__main__':
     run_all_tests(globals())

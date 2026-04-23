@@ -11,7 +11,6 @@ import weakref
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import lang
 from omlish import reflect as rfl
 
 from ..resources import ResourceManaged
@@ -19,14 +18,6 @@ from .requests import Request
 from .responses import Response
 from .services import Service
 from .stream import StreamResponseIterator
-
-
-##
-
-
-@ta.final
-class ServiceTypeName(dc.Box[str], lang.Final):
-    pass
 
 
 ##

@@ -68,6 +68,8 @@ with _lang.auto_proxy_init(
 
         Literal,
 
+        ForwardRef,
+
         Any,
         ANY,
 

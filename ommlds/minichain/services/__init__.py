@@ -8,8 +8,6 @@ from .facades import (  # noqa
 )
 
 from .reflect import (  # noqa
-    ServiceTypeName,
-
     ReflectedService,
     ReflectedStreamService,
 

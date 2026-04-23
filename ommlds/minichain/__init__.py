@@ -482,6 +482,12 @@ with _lang.auto_proxy_init(
         registry_of,
     )
 
+    from .registries.registry import (  # noqa
+        RegistryTypeName,
+
+        Registry,
+    )
+
     ##
 
     from .services import (  # noqa
@@ -491,8 +497,6 @@ with _lang.auto_proxy_init(
         facade,
 
         #
-
-        ServiceTypeName,
 
         ReflectedService,
         ReflectedStreamService,

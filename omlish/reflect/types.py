@@ -404,6 +404,21 @@ class Literal(TypeInfo):
 #
 
 
+@install_dataclass_cache_hash()
+@dc.dataclass(frozen=True)
+class ForwardRef(TypeInfo):
+    # Note that this isn't `obj` like the others - this is fundamentally required for its handling and cannot be
+    # stripped.
+    ref: ta.ForwardRef
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.ref, ta.ForwardRef):
+            raise TypeError(self.ref)
+
+
+#
+
+
 class Any(TypeInfo):
     pass
 
@@ -647,6 +662,15 @@ class Reflector:
                 return None
 
             return Literal(ta.get_args(obj), obj=obj)
+
+        ##
+        # ForwardRef
+
+        if isinstance(obj, ta.ForwardRef):
+            if check_only:
+                return None
+
+            return ForwardRef(obj)
 
         ##
         # Failure

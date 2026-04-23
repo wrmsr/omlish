@@ -7,7 +7,9 @@ import threading
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
+from omlish import reflect as rfl
 
 from .manifests import RegistryManifest
 from .manifests import RegistryTypeManifest
@@ -15,6 +17,14 @@ from .manifests import RegistryTypeManifest
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
+
+
+##
+
+
+@ta.final
+class RegistryTypeName(dc.Box[str], lang.Final):
+    pass
 
 
 ##
@@ -118,6 +128,9 @@ class Registry:
 
             self.__cls: lang.Maybe[ta.Any] = _cls
 
+            self.__rty: lang.Maybe[rfl.Type] = _cls.map(rfl.type_)
+            self.__named_rty: lang.Maybe[rfl.Type] = self.__rty.map(self._name_rty)
+
             self._has_registered = _has_registered
 
         __repr__: ta.Any = lang.AttrOps(
@@ -140,6 +153,12 @@ class Registry:
 
         #
 
+        def _name_rty(self, rty: rfl.Type) -> rfl.Type:
+            if self._name is None:
+                return rty
+
+            return rfl.add_rfl_annotations(rty, RegistryTypeName(self._name))
+
         def _maybe_set_cls(self, cls: ta.Any) -> None:
             if self.__cls.present:
                 return
@@ -149,6 +168,9 @@ class Registry:
                 self._o._types_by_cls[cls] = self  # noqa
 
             self.__cls = lang.just(cls)
+
+            self.__rty = lang.just(rty := rfl.type_(cls))
+            self.__named_rty = lang.just(self._name_rty(rty))
 
         def cls(self) -> ta.Any:
             if (cls := self.__cls).present:
@@ -165,6 +187,14 @@ class Registry:
 
                 self._maybe_set_cls(cls_)
                 return cls
+
+        def rty(self) -> rfl.Type:
+            self.cls()
+            return self.__rty.must()
+
+        def named_rty(self) -> rfl.Type:
+            self.cls()
+            return self.__named_rty.must()
 
         #
 
