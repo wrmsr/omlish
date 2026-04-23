@@ -17,9 +17,16 @@ from ...registries.registry import Registry
 from ..strings.manifests import BackendStringsManifest
 from .types import BackendSpec
 from .types import BackendSpecResolver
+from .types import FirstInWinsBackendSpec
 from .types import ModelBackendSpec
 from .types import NameBackendSpec
 from .types import ResolvedBackendSpec
+from .types import RetryBackendSpec
+
+
+with lang.auto_proxy_import(globals()):
+    from ...wrappers import firstinwins
+    from ...wrappers import retry
 
 
 BackendSpecT = ta.TypeVar('BackendSpecT', bound=BackendSpec)
@@ -113,6 +120,39 @@ class ModelBackendSpecTypeResolver(BackendSpecTypeResolver[ModelBackendSpec]):
         )
 
 
+#
+
+
+class RetryBackendSpecTypeResolver(BackendSpecTypeResolver[RetryBackendSpec]):
+    def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: RetryBackendSpec) -> ResolvedBackendSpec:
+        # FIXME: stream??
+        return ResolvedBackendSpec(
+            ctx.service_cls,
+            spec,
+
+            retry.RetryService,
+            children=ctx.rec(BackendSpec.of(spec.child)),
+        )
+
+
+#
+
+
+class FirstInWinsBackendSpecTypeResolver(BackendSpecTypeResolver[FirstInWinsBackendSpec]):
+    def resolve(self, ctx: BackendSpecTypeResolver.ResolveContext, spec: FirstInWinsBackendSpec) -> ResolvedBackendSpec:  # noqa
+        # FIXME: stream??
+        return ResolvedBackendSpec(
+            ctx.service_cls,
+            spec,
+
+            firstinwins.AsyncioFirstInWinsService,
+            children=[
+                ctx.rec(BackendSpec.of(child))
+                for child in spec.children
+            ],
+        )
+
+
 ##
 
 
@@ -155,6 +195,8 @@ class TypeMapBackendSpecResolver(BackendSpecResolver):
 DEFAULT_BACKEND_SPEC_TYPE_RESOLVERS: ta.Mapping[type[BackendSpec], BackendSpecTypeResolver] = {
     NameBackendSpec: NameBackendSpecTypeResolver(),
     ModelBackendSpec: ModelBackendSpecTypeResolver(),
+    RetryBackendSpec: RetryBackendSpecTypeResolver(),
+    FirstInWinsBackendSpec: FirstInWinsBackendSpecTypeResolver(),
 }
 
 

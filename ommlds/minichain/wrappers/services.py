@@ -40,6 +40,7 @@ WrappedService: ta.TypeAlias = Service[
 
 
 class WrapperService(
+    lang.AsyncExitStacked,
     lang.Abstract,
     ta.Generic[
         WrappedRequestV,
@@ -56,8 +57,15 @@ class WrapperService(
 
         self._service = service
 
+    async def _async_enter_contexts(self) -> None:
+        await super()._async_enter_contexts()
+
+        if isinstance(svc := self._service, ta.AsyncContextManager):
+            await self._enter_async_context(svc)
+
 
 class MultiWrapperService(
+    lang.AsyncExitStacked,
     lang.Abstract,
     ta.Generic[
         WrappedRequestV,
@@ -73,6 +81,13 @@ class MultiWrapperService(
         super().__init__()
 
         self._services = tuple(check.not_empty(services))
+
+    async def _async_enter_contexts(self) -> None:
+        await super()._async_enter_contexts()
+
+        for svc in self._services:
+            if isinstance(svc, ta.AsyncContextManager):
+                await self._enter_async_context(svc)
 
 
 ##

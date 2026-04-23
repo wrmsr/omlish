@@ -76,6 +76,7 @@ class ExitStacked:
     def _exit_contexts(self) -> None:
         pass
 
+    @ta.final
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
         if (es := self._exit_stack) is None:
             raise RuntimeError
@@ -135,11 +136,13 @@ class AsyncExitStacked:
     async def _async_exit_contexts(self) -> None:
         pass
 
+    @ta.final
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
         if (es := self._exit_stack) is None:
             raise RuntimeError
         return es.enter_context(cm)
 
+    @ta.final
     async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
         if (es := self._exit_stack) is None:
             raise RuntimeError

@@ -86,7 +86,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/attrops.py', sha1='ab1b299f7525e1bc21ed843347ae0f4ed9b0dbe6'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
-            dict(path='../../omlish/lite/contextmanagers.py', sha1='7f319f3fbc1251b6eb37b98084dc2ed0e602051f'),
+            dict(path='../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/pycharm.py', sha1='6f84e57f02e2f1075918002f89e4201910d2a15e'),
@@ -3997,6 +3997,7 @@ class ExitStacked:
     def _exit_contexts(self) -> None:
         pass
 
+    @ta.final
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
         if (es := self._exit_stack) is None:
             raise RuntimeError
@@ -4056,11 +4057,13 @@ class AsyncExitStacked:
     async def _async_exit_contexts(self) -> None:
         pass
 
+    @ta.final
     def _enter_context(self, cm: ta.ContextManager[T]) -> T:
         if (es := self._exit_stack) is None:
             raise RuntimeError
         return es.enter_context(cm)
 
+    @ta.final
     async def _enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
         if (es := self._exit_stack) is None:
             raise RuntimeError
