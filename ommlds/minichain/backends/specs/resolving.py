@@ -183,7 +183,7 @@ class TypeMapBackendSpecResolver(BackendSpecResolver):
             rec=rec,
 
             registry=self._registry,
-            registry_type=self._registry.get_registered_type(service_cls),
+            registry_type=self._registry.get_type(service_cls),
         )
 
         return rec(spec)

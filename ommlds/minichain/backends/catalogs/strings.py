@@ -5,7 +5,7 @@ from omlish import check
 from ...models.configs import ModelPath
 from ...models.configs import ModelRepo
 from ...models.repos.resolving import ModelRepoResolver
-from ...registries.globals import get_registry_cls
+from ...registries.globals import get_cls
 from ..strings.parsing import parse_backend_string
 from ..strings.resolving import BackendStringResolver
 from ..strings.resolving import ResolveBackendStringArgs
@@ -53,7 +53,7 @@ class BackendStringBackendCatalog(BackendCatalog):
             mrp = check.not_none(mrr.resolve(mr))
             al = [ModelPath(mrp.path), *al[1:]]
 
-        cls = get_registry_cls(
+        cls = get_cls(
             service_cls,
             rs.name,
         )

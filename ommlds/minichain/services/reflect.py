@@ -7,6 +7,7 @@ TODO:
  - eventually, COM-style QueryInterface w/ overloads?
 """
 import typing as ta
+import weakref
 
 from omlish import check
 from omlish import dataclasses as dc
@@ -76,7 +77,10 @@ def reflect_service_like(req_rty: rfl.Type, resp_rty: rfl.Type) -> ReflectedServ
     )
 
 
-def reflect_service_cls(service_cls: ta.Any) -> ReflectedService:
+#
+
+
+def reflect_service_cls_(service_cls: ta.Any) -> ReflectedService:
     rty = check.isinstance(rfl.type_(service_cls), rfl.Protocol)
 
     check.is_(rty.cls, Service)
@@ -84,3 +88,16 @@ def reflect_service_cls(service_cls: ta.Any) -> ReflectedService:
     req_rty, resp_rty = rty.args
 
     return reflect_service_like(req_rty, resp_rty)
+
+
+_REFLECT_SERVICE_CLS_CACHE: ta.MutableMapping[ta.Any, ReflectedService] = weakref.WeakKeyDictionary()
+
+
+def reflect_service_cls(service_cls: ta.Any) -> ReflectedService:
+    try:
+        return _REFLECT_SERVICE_CLS_CACHE[service_cls]
+    except KeyError:
+        pass
+
+    _REFLECT_SERVICE_CLS_CACHE[service_cls] = ret = reflect_service_cls_(service_cls)
+    return ret

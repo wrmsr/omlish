@@ -93,7 +93,7 @@ class ManifestBackendStringResolver(BackendStringResolver):
 
         self._manifest = manifest
         self._service_cls_set = {
-            get_global_registry().get_registry_type_cls(scn)
+            get_global_registry().get_type_cls(scn)
             for scn in manifest.service_cls_names
         }
 

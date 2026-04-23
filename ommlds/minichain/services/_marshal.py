@@ -189,7 +189,7 @@ class _MetadataMarshalerUnmarshalerFactory(msh.MarshalerFactory, msh.Unmarshaler
     def _build_impls(self, rty: rfl.Type) -> list[msh.Impl]:
         impls: list[msh.Impl] = []
 
-        rt = get_global_registry().get_registered_type(self._md_cls)
+        rt = get_global_registry().get_type(self._md_cls)
         for rte in rt.entries.values():
             impls.append(msh.Impl(
                 mdi_cls := rte.resolve(),

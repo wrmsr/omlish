@@ -232,7 +232,7 @@ class Registry:
 
         return rt
 
-    def get_registered_type(self, selector: ta.Any) -> Type:
+    def get_type(self, selector: ta.Any) -> Type:
         if isinstance(selector, str):
             return self._types_by_name[selector]
         else:
@@ -240,8 +240,8 @@ class Registry:
 
     #
 
-    def get_registry_type_cls(self, name: str) -> type:
-        return self.get_registered_type(name).cls()
+    def get_type_cls(self, name: str) -> type:
+        return self.get_type(name).cls()
 
-    def get_registry_cls(self, selector: ta.Any, name: str) -> type:
-        return self.get_registered_type(selector).lookup(name)
+    def get_cls(self, selector: ta.Any, name: str) -> type:
+        return self.get_type(selector).lookup(name)
