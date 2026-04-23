@@ -20,20 +20,20 @@ from omlish import dataclasses as dc
 
 from ..resources import Resources
 from ..services import StreamResponseSink
+from ..services import WrappedOptionT
+from ..services import WrappedOutputT
+from ..services import WrappedRequest
+from ..services import WrappedRequestV
+from ..services import WrappedResponse
+from ..services import WrappedResponseV
+from ..services import WrappedService
+from ..services import WrappedStreamOutputT
+from ..services import WrappedStreamResponse
+from ..services import WrappedStreamService
+from ..services import WrapperService
+from ..services import WrapperStreamService
 from ..services import new_stream_response
 from .metadata import RetryServiceResponseMetadata
-from .services import WrappedOptionT
-from .services import WrappedOutputT
-from .services import WrappedRequest
-from .services import WrappedRequestV
-from .services import WrappedResponse
-from .services import WrappedResponseV
-from .services import WrappedService
-from .services import WrapperService
-from .stream import WrappedStreamOutputT
-from .stream import WrappedStreamResponse
-from .stream import WrappedStreamService
-from .stream import WrapperStreamService
 
 
 AnyRetryService: ta.TypeAlias = ta.Union[
@@ -66,11 +66,11 @@ class RetryService(
 
     def __init__(
             self,
-            service: WrappedService,
+            child: WrappedService,
             *,
             max_retries: int | None = None,
     ) -> None:
-        super().__init__(service)
+        super().__init__(child)
 
         if max_retries is None:
             max_retries = self.DEFAULT_MAX_RETRIES
@@ -81,7 +81,7 @@ class RetryService(
 
         while True:
             try:
-                resp = await self._service.invoke(request)
+                resp = await self._child.invoke(request)
 
             except Exception as e:  # noqa
                 if n < self._max_retries:
@@ -114,11 +114,11 @@ class RetryStreamService(
 
     def __init__(
             self,
-            service: WrappedStreamService,
+            child: WrappedStreamService,
             *,
             max_retries: int | None = None,
     ) -> None:
-        super().__init__(service)
+        super().__init__(child)
 
         if max_retries is None:
             max_retries = self.DEFAULT_MAX_RETRIES
@@ -130,7 +130,7 @@ class RetryStreamService(
         while True:
             try:
                 async with Resources.new() as rs:
-                    in_resp = await self._service.invoke(request)
+                    in_resp = await self._child.invoke(request)
                     in_vs = await rs.enter_async_context(in_resp.v)
 
                     async def inner(sink: StreamResponseSink[WrappedResponseV]) -> ta.Sequence[WrappedOutputT] | None:

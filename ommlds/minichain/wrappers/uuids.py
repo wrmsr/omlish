@@ -5,14 +5,14 @@ from omlish import check
 
 from ..metadata import RequestUuid
 from ..metadata import ResponseUuid
-from .services import WrappedOptionT
-from .services import WrappedOutputT
-from .services import WrappedRequest
-from .services import WrappedRequestV
-from .services import WrappedResponse
-from .services import WrappedResponseV
-from .services import WrappedService
-from .services import WrapperService
+from ..services import WrappedOptionT
+from ..services import WrappedOutputT
+from ..services import WrappedRequest
+from ..services import WrappedRequestV
+from ..services import WrappedResponse
+from ..services import WrappedResponseV
+from ..services import WrappedService
+from ..services import WrapperService
 
 
 ##
@@ -28,11 +28,11 @@ class RequestResponseUuidAddingService(
 ):
     def __init__(
             self,
-            service: WrappedService,
+            child: WrappedService,
             *,
             uuid_factory: ta.Callable[[], uuid.UUID] | None = None,
     ) -> None:
-        super().__init__(service)
+        super().__init__(child)
 
         if uuid_factory is None:
             uuid_factory = uuid.uuid4
@@ -45,7 +45,7 @@ class RequestResponseUuidAddingService(
             req_um = RequestUuid(self._uuid_factory())
             request = request.with_metadata(req_um)
 
-        response = await self._service.invoke(request)
+        response = await self._child.invoke(request)
 
         try:
             req_um2 = response.metadata[RequestUuid]

@@ -8,20 +8,20 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ..services import WrappedOptionT
+from ..services import WrappedOutputT
+from ..services import WrappedRequest
+from ..services import WrappedRequestV
+from ..services import WrappedResponse
+from ..services import WrappedResponseV
+from ..services import WrappedService
+from ..services import WrappedStreamOutputT
+from ..services import WrappedStreamResponse
+from ..services import WrappedStreamService
+from ..services import WrapperService
+from ..services import WrapperStreamService
 from ..services.requests import Request
 from ..services.responses import Response
-from .services import WrappedOptionT
-from .services import WrappedOutputT
-from .services import WrappedRequest
-from .services import WrappedRequestV
-from .services import WrappedResponse
-from .services import WrappedResponseV
-from .services import WrappedService
-from .services import WrapperService
-from .stream import WrappedStreamOutputT
-from .stream import WrappedStreamResponse
-from .stream import WrappedStreamService
-from .stream import WrapperStreamService
 
 
 ##
@@ -86,7 +86,7 @@ class InstrumentedService(
         await self._sink(InstrumentedServiceEvent(req=request))
 
         try:
-            resp = await self._service.invoke(request)
+            resp = await self._child.invoke(request)
 
         except Exception as e:  # noqa
             await self._sink(InstrumentedServiceEvent(req=request, exc=e))
@@ -125,7 +125,7 @@ class InstrumentedStreamService(
         await self._sink(InstrumentedServiceEvent(req=request))
 
         try:
-            resp = await self._service.invoke(request)
+            resp = await self._child.invoke(request)
 
         except Exception as e:  # noqa
             await self._sink(InstrumentedServiceEvent(req=request, exc=e))

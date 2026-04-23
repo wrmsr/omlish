@@ -1,13 +1,13 @@
 import typing as ta
 
-from .services import WrappedOptionT
-from .services import WrappedOutputT
-from .services import WrappedRequest
-from .services import WrappedRequestV
-from .services import WrappedResponse
-from .services import WrappedResponseV
-from .services import WrappedService
-from .services import WrapperService
+from ..services import WrappedOptionT
+from ..services import WrappedOutputT
+from ..services import WrappedRequest
+from ..services import WrappedRequestV
+from ..services import WrappedResponse
+from ..services import WrappedResponseV
+from ..services import WrappedService
+from ..services import WrapperService
 
 
 ##
@@ -23,12 +23,12 @@ class UpdateOptionsService(
 ):
     def __init__(
             self,
-            service: WrappedService,
+            child: WrappedService,
             *options: WrappedOptionT,
             discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
             mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> None:
-        super().__init__(service)
+        super().__init__(child)
 
         self._options = options
         self._discard = discard
@@ -41,4 +41,4 @@ class UpdateOptionsService(
             mode=self._mode,
         )
 
-        return await self._service.invoke(out_request)
+        return await self._child.invoke(out_request)

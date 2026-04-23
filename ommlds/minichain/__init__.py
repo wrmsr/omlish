@@ -485,8 +485,12 @@ with _lang.auto_proxy_init(
     ##
 
     from .services import (  # noqa
+        #
+
         ServiceFacade,
         facade,
+
+        #
 
         ReflectedService,
         ReflectedStreamService,
@@ -494,15 +498,23 @@ with _lang.auto_proxy_init(
         reflect_service_like,
         reflect_service_cls,
 
+        #
+
         RequestMetadata,
         RequestMetadatas,
         Request,
+
+        #
 
         ResponseMetadata,
         ResponseMetadatas,
         Response,
 
+        #
+
         Service,
+
+        #
 
         StreamOption,
         StreamOptions,
@@ -515,6 +527,31 @@ with _lang.auto_proxy_init(
 
         StreamResponse,
         new_stream_response,
+
+        #
+
+        WrappedRequestV,
+        WrappedOptionT,
+        WrappedResponseV,
+        WrappedOutputT,
+        WrappedStreamOutputT,
+
+        WrappedRequest,
+        WrappedResponse,
+        WrappedService,
+
+        WrappedStreamOptions,
+        WrappedStreamRequest,
+        WrappedStreamResponse,
+        WrappedStreamService,
+
+        WrapperService,
+        MultiWrapperService,
+
+        WrapperStreamService,
+        MultiWrapperStreamService,
+
+        wrap_service,
     )
 
     ##
@@ -717,31 +754,6 @@ with _lang.auto_proxy_init(
         RetryService,
 
         RetryStreamService,
-    )
-
-    from .wrappers.services import (  # noqa
-        WrappedRequestV,
-        WrappedOptionT,
-        WrappedResponseV,
-        WrappedOutputT,
-        WrappedRequest,
-        WrappedResponse,
-        WrappedService,
-
-        WrapperService,
-        MultiWrapperService,
-
-        wrap_service,
-    )
-
-    from .wrappers.stream import (  # noqa
-        WrappedStreamOutputT,
-        WrappedStreamOptions,
-        WrappedStreamRequest,
-        WrappedStreamResponse,
-        WrappedStreamService,
-
-        WrapperStreamService,
     )
 
     from .wrappers.uuids import (  # noqa

@@ -8,17 +8,17 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ..services import MultiWrapperService
 from ..services import Service
+from ..services import WrappedOptionT
+from ..services import WrappedOutputT
+from ..services import WrappedRequest
+from ..services import WrappedRequestV
+from ..services import WrappedResponse
+from ..services import WrappedResponseV
+from ..services import WrappedStreamOutputT
+from ..services import WrapperStreamService
 from ..types import Output
-from .services import MultiWrapperService
-from .services import WrappedOptionT
-from .services import WrappedOutputT
-from .services import WrappedRequest
-from .services import WrappedRequestV
-from .services import WrappedResponse
-from .services import WrappedResponseV
-from .stream import WrappedStreamOutputT
-from .stream import WrapperStreamService
 
 
 with lang.auto_proxy_import(globals()):
@@ -95,7 +95,7 @@ class AsyncioFirstInWinsService(
     async def invoke(self, request: WrappedRequest) -> WrappedResponse:
         tasks: list = []
         services_by_task: dict = {}
-        for svc in self._services:
+        for svc in self._children:
             task: asyncio.Task = asyncio.create_task(svc.invoke(request))  # type: ignore[arg-type]
             tasks.append(task)
             services_by_task[task] = svc

@@ -6,13 +6,13 @@ from omlish import check
 from omlish import lang
 
 from ...services import Service
+from ...services import wrap_service
 from ...services.requests import Request
 from ...services.responses import Response
 from ...types import Option
 from ...types import Output
 from ..instrument import InstrumentedService
 from ..instrument import ListInstrumentedServiceEventSink
-from ..services import wrap_service
 
 
 FooRequest: ta.TypeAlias = Request[str, Option]
