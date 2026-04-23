@@ -488,6 +488,11 @@ with _lang.auto_proxy_init(
         ServiceFacade,
         facade,
 
+        ReflectedService,
+        ReflectedStreamService,
+
+        reflect_service_cls,
+
         RequestMetadata,
         RequestMetadatas,
         Request,

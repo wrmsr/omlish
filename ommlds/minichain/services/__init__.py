@@ -1,8 +1,17 @@
 # ruff: noqa: I001
+
+
 from .facades import (  # noqa
     ServiceFacade,
 
     facade,
+)
+
+from .reflect import (  # noqa
+    ReflectedService,
+    ReflectedStreamService,
+
+    reflect_service_cls,
 )
 
 from .requests import (  # noqa
