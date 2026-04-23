@@ -20,6 +20,7 @@ from .requests import (  # noqa
     RequestMetadatas,
 
     Request,
+    RequestT_contra,
 )
 
 from .responses import (  # noqa
@@ -27,6 +28,7 @@ from .responses import (  # noqa
     ResponseMetadatas,
 
     Response,
+    ResponseT_co,
 )
 
 from .services import (  # noqa
@@ -45,6 +47,31 @@ from .stream import (  # noqa
 
     StreamResponse,
     new_stream_response,
+)
+
+from .wrappers import (  # noqa
+    WrappedRequestV,
+    WrappedOptionT,
+    WrappedResponseV,
+    WrappedOutputT,
+    WrappedStreamOutputT,
+
+    WrappedRequest,
+    WrappedResponse,
+    WrappedService,
+
+    WrappedStreamOptions,
+    WrappedStreamRequest,
+    WrappedStreamResponse,
+    WrappedStreamService,
+
+    WrapperService,
+    MultiWrapperService,
+
+    WrapperStreamService,
+    MultiWrapperStreamService,
+
+    wrap_service,
 )
 
 
