@@ -1,6 +1,7 @@
 """
 TODO:
  - configs?? unmarshaling depends on service_cls
+  - nah it's just UpdateOptionsService now
 """
 import abc
 import operator
@@ -11,6 +12,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json5
+
+from ...configs import Config
 
 
 ##
@@ -83,12 +86,17 @@ def _setup_backend_spec_marshal(cfgs: msh.ConfigRegistry) -> None:
 
 
 @dc.dataclass(frozen=True)
-class ResolvedBackendSpec(lang.Final):
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
+class ResolvedBackendSpec:
     service_cls: ta.Any
     spec: BackendSpec
+
+    ctor: ta.Any
+    configs: ta.Sequence[Config] | None = None
+    children: ta.Sequence[ResolvedBackendSpec] | None = None
 
 
 class BackendSpecResolver(lang.Abstract):
     @abc.abstractmethod
-    def resolve_backend_spec(self, service_cls: ta.Any, spec: BackendSpec) -> ResolvedBackendSpec:
+    def resolve(self, service_cls: ta.Any, spec: BackendSpec) -> ResolvedBackendSpec:
         raise NotImplementedError
