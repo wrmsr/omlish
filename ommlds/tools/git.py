@@ -68,23 +68,24 @@ class StandardGitAiBackend(GitAiBackend['StandardGitAiBackend.Config']):
             self,
             config: Config = Config(),
             *,
-            backend_catalog: mc.BackendCatalog | None = None,
+            backend_spec_resolver: mc.BackendSpecResolver | None = None,
     ) -> None:
         super().__init__(config)
 
-        if backend_catalog is None:
-            backend_catalog = mc.BackendStringBackendCatalog()
-        self._backend_catalog = backend_catalog
+        if backend_spec_resolver is None:
+            backend_spec_resolver = mc.DEFAULT_BACKEND_SPEC_RESOLVER
+        self._backend_spec_resolver = backend_spec_resolver
 
     def run_prompt(self, prompt: str) -> str:
         install_env_secrets()  # FIXME
 
-        be = self._backend_catalog.get_backend(
-            mc.ChatChoicesService,  # type: ignore[type-abstract]
-            self._config.backend or self.DEFAULT_BACKEND_NAME,
+        rbs = self._backend_spec_resolver.resolve(
+            mc.ChatChoicesService,
+            mc.BackendSpec.of(self._config.backend or self.DEFAULT_BACKEND_NAME),
         )
 
-        llm = be.factory(
+        llm = mc.instantiate_backend_spec(
+            rbs,
             http_client=http.SyncAsyncHttpClient(http.client()),  # FIXME
         )
 

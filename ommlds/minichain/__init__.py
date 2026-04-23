@@ -22,45 +22,6 @@ with _lang.auto_proxy_init(
 ):
     ##
 
-    from .backends.catalogs.base import (  # noqa
-        BackendCatalog,
-    )
-
-    from .backends.catalogs.simple import (  # noqa
-        SimpleBackendCatalogEntry,
-        SimpleBackendCatalogEntries,
-
-        SimpleBackendCatalog,
-
-        simple_backend_catalog_entry,
-    )
-
-    from .backends.catalogs.strings import (  # noqa
-        BackendStringBackendCatalog,
-    )
-
-    from .backends.strings.parsing import (  # noqa
-        ParsedBackendString,
-
-        parse_backend_string,
-    )
-
-    from .backends.strings.resolving import (  # noqa
-        ResolveBackendStringArgs,
-        ResolveBackendStringResult,
-        AmbiguousBackendStringResolutionError,
-        BackendStringResolver,
-
-        CompositeBackendStringResolver,
-        FirstCompositeBackendStringResolver,
-        UniqueCompositeBackendStringResolver,
-        ManifestBackendStringResolver,
-
-        build_manifest_backend_string_resolver,
-    )
-
-    ##
-
     from .chat.choices.stream.adapters import (  # noqa
         ChatChoicesStreamServiceChatChoicesService,
     )
@@ -563,6 +524,41 @@ with _lang.auto_proxy_init(
         MultiWrapperStreamService,
 
         wrap_service,
+    )
+
+    ##
+
+    from .specs.instantiate import (  # noqa
+        instantiate_backend_spec,
+    )
+
+    from .specs.resolving import (  # noqa
+        BackendSpecTypeResolver,
+        StringBackendSpecTypeResolver,
+        NameBackendSpecTypeResolver,
+        ModelBackendSpecTypeResolver,
+        ConfigBackendSpecTypeResolver,
+        RetryBackendSpecTypeResolver,
+        FirstInWinsBackendSpecTypeResolver,
+        TypeMapBackendSpecResolver,
+
+        DEFAULT_BACKEND_SPEC_TYPE_RESOLVERS,
+        DEFAULT_BACKEND_SPEC_RESOLVER,
+    )
+
+    from .specs.types import (  # noqa
+        CanBackendSpec,
+        BackendSpec,
+
+        StringBackendSpec,
+        NameBackendSpec,
+        ModelBackendSpec,
+        ConfigBackendSpec,
+        RetryBackendSpec,
+        FirstInWinsBackendSpec,
+
+        ResolvedBackendSpec,
+        BackendSpecResolver,
     )
 
     ##

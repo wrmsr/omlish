@@ -5,6 +5,8 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ... import minichain as mc
+from ._catalogs.base import BackendCatalog
+from ._catalogs.strings import BackendStringBackendCatalog
 from .configs import BackendConfig
 from .injection import backend_configs
 
@@ -25,8 +27,8 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     #
 
     lst.extend([
-        inj.bind(mc.BackendStringBackendCatalog, singleton=True),
-        inj.bind(mc.BackendCatalog, to_key=mc.BackendStringBackendCatalog),
+        inj.bind(BackendStringBackendCatalog, singleton=True),
+        inj.bind(BackendCatalog, to_key=BackendStringBackendCatalog),
     ])
 
     lst.extend([
@@ -116,7 +118,7 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     #
 
     async def catalog_backend_instantiator_provider(injector: inj.AsyncInjector) -> _catalog.CatalogBackendProvider.Instantiator:  # noqa
-        async def inner(be: mc.BackendCatalog.Backend, cfgs: _types.BackendConfigs | None) -> ta.Any:
+        async def inner(be: BackendCatalog.Backend, cfgs: _types.BackendConfigs | None) -> ta.Any:
             kwt = inj.build_kwargs_target(be.factory, non_strict=True)
             kw = await injector.provide_kwargs(kwt)
             return be.factory(*tv.collect(*(be.configs or []), *(cfgs or []), override=True), **kw)

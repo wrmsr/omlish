@@ -2,14 +2,14 @@ import typing as ta
 
 from omlish import check
 
-from ...models.configs import ModelPath
-from ...models.configs import ModelRepo
-from ...models.repos.resolving import ModelRepoResolver
-from ...registries.globals import get_registry_cls
-from ..strings.parsing import parse_backend_string
-from ..strings.resolving import BackendStringResolver
-from ..strings.resolving import ResolveBackendStringArgs
-from ..strings.resolving import build_manifest_backend_string_resolver
+from ....minichain.models.configs import ModelPath
+from ....minichain.models.configs import ModelRepo
+from ....minichain.models.repos.resolving import ModelRepoResolver
+from ....minichain.registries.globals import get_registry_cls
+from .._strings.parsing import parse_backend_string
+from .._strings.resolving import BackendStringResolver
+from .._strings.resolving import ResolveBackendStringArgs
+from .._strings.resolving import build_manifest_backend_string_resolver
 from .base import BackendCatalog
 
 

@@ -4,6 +4,7 @@ import typing as ta
 from omlish import lang
 
 from ... import minichain as mc
+from ._catalogs.base import BackendCatalog
 from .types import BackendConfigs
 from .types import BackendName
 from .types import BackendProvider
@@ -18,14 +19,14 @@ from .types import ServiceT
 
 
 class CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
-    class Instantiator(lang.Func2['mc.BackendCatalog.Backend', BackendConfigs | None, ta.Awaitable[ta.Any]]):
+    class Instantiator(lang.Func2[BackendCatalog.Backend, BackendConfigs | None, ta.Awaitable[ta.Any]]):
         pass
 
     def __init__(
             self,
             *,
             name: BackendName | None = None,
-            catalog: mc.BackendCatalog,
+            catalog: BackendCatalog,
             configs: BackendConfigs | None = None,
             instantiator: Instantiator | None = None,
     ) -> None:

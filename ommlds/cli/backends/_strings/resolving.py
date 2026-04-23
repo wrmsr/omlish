@@ -10,11 +10,11 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.manifests.globals import GlobalManifestLoader
 
-from ...models.configs import ModelName
-from ...models.configs import ModelPath
-from ...models.configs import ModelRepo
-from ...registries.globals import get_global_registry
-from ...specs.manifests import BackendStringsManifest
+from ....minichain.models.configs import ModelName
+from ....minichain.models.configs import ModelPath
+from ....minichain.models.configs import ModelRepo
+from ....minichain.registries.globals import get_global_registry
+from ....minichain.specs.manifests import BackendStringsManifest
 from .parsing import ParsedBackendString
 
 

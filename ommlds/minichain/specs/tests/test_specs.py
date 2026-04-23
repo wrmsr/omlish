@@ -10,12 +10,24 @@ def test_marshal():
     for bs in [
         ModelBackendSpec('hi'),
         RetryBackendSpec(ModelBackendSpec('hi')),
-        FirstInWinsBackendSpec([
+        FirstInWinsBackendSpec((
             ModelBackendSpec('hi'),
             RetryBackendSpec(ModelBackendSpec('bye')),
-        ]),
+        )),
+        FirstInWinsBackendSpec((
+            'hi',
+            ModelBackendSpec('hi'),
+            RetryBackendSpec(ModelBackendSpec('bye')),
+        )),
     ]:
         mbs = msh.marshal(bs, BackendSpec)
         print(mbs)
         bs2 = msh.unmarshal(mbs, BackendSpec)
         print(bs2)
+
+        assert bs == bs2
+
+
+# def test_marshal_string():
+#     mbs = msh.marshal('hi', CanBackendSpec)
+#     print(mbs)

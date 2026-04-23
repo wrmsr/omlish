@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import lang
 
-from ...configs import Config
+from ....minichain.configs import Config
 
 
 T = ta.TypeVar('T')

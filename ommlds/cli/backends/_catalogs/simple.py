@@ -4,7 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 
-from ...registries.globals import registry_of
+from ....minichain.registries.globals import registry_of
 from .base import BackendCatalog
 
 

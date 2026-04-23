@@ -6,7 +6,7 @@ from .types import ResolvedBackendSpec
 ##
 
 
-def instantiate_backend_spec(rbs: ResolvedBackendSpec) -> ta.Any:
+def instantiate_backend_spec(rbs: ResolvedBackendSpec, **kwargs: ta.Any) -> ta.Any:
     def rec(cur: ResolvedBackendSpec) -> ta.Any:
         args: list[ta.Any] = []
 
@@ -19,6 +19,6 @@ def instantiate_backend_spec(rbs: ResolvedBackendSpec) -> ta.Any:
 
         args.extend(cur.configs or ())
 
-        return cur.ctor(*args)
+        return cur.ctor(*args, **(kwargs if ch is None else {}))
 
     return rec(rbs)
