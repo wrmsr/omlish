@@ -5,7 +5,6 @@ from omlish import lang
 
 from ... import minichain as mc
 from .types import BackendConfigs
-from .types import BackendInstantiator
 from .types import BackendName
 from .types import BackendProvider
 from .types import ChatChoicesServiceBackendProvider
@@ -18,47 +17,19 @@ from .types import ServiceT
 ##
 
 
-class BackendInstantiatorImpl(BackendInstantiator):
+class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
     def __init__(
             self,
             *,
             backend_spec_resolver: mc.BackendSpecResolver | None = None,
+            name: BackendName | None = None,
+            configs: BackendConfigs | None = None,
     ) -> None:
         super().__init__()
 
         if backend_spec_resolver is None:
             backend_spec_resolver = mc.DEFAULT_BACKEND_SPEC_RESOLVER
         self._backend_spec_resolver = backend_spec_resolver
-
-    async def new_backend(
-            self,
-            service_cls: ta.Any,
-            spec: mc.CanBackendSpec,
-            *args: ta.Any,
-            **kwargs: ta.Any,
-    ) -> ta.Any:
-        rbs = self._backend_spec_resolver.resolve(
-            service_cls,
-            mc.BackendSpec.of(spec),
-        )
-
-        return mc.instantiate_backend_spec(rbs, *args, **kwargs)
-
-
-##
-
-
-class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
-    def __init__(
-            self,
-            *,
-            instantiator: BackendInstantiator,
-            name: BackendName | None = None,
-            configs: BackendConfigs | None = None,
-    ) -> None:
-        super().__init__()
-
-        self._instantiator = instantiator
         self._name = name
         self._configs = configs
 
@@ -70,13 +41,17 @@ class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
         else:
             raise RuntimeError('No backend name specified')
 
+        rbs = self._backend_spec_resolver.resolve(
+            cls,
+            mc.BackendSpec.of(name),
+        )
+
         service: ServiceT
         async with lang.async_or_sync_maybe_managing(
-                await self._instantiator.new_backend(
-                    cls,
-                    name,
-                    *(self._configs or []),
-                ),
+            mc.instantiate_backend_spec(
+                rbs,
+                *(self._configs or []),
+            ),
         ) as service:
             yield service
 

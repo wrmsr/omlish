@@ -105,13 +105,6 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
 
     #
 
-    lst.extend([
-        inj.bind(_impl.BackendInstantiatorImpl, singleton=True),
-        inj.bind(_types.BackendInstantiator, to_key=_impl.BackendInstantiatorImpl),
-    ])
-
-    #
-
     lst.append(backend_configs().bind_items_provider(singleton=True))
 
     #

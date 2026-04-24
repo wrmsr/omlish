@@ -7,6 +7,10 @@ from .callables import (  # noqa
     service_callable,
 )
 
+from .providers import (  # noqa
+    ServiceProvider,
+)
+
 from .reflect import (  # noqa
     ReflectedService,
     ReflectedStreamService,

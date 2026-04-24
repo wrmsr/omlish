@@ -462,6 +462,10 @@ with _lang.auto_proxy_init(
 
         #
 
+        ServiceProvider,
+
+        #
+
         ReflectedService,
         ReflectedStreamService,
 
