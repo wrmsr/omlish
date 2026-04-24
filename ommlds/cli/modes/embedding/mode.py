@@ -1,7 +1,6 @@
 from omlish.formats import json
 
 from .... import minichain as mc
-from ...backends.types import BackendProvider
 from ..base import Mode
 from .configs import EmbeddingConfig
 
@@ -14,7 +13,7 @@ class EmbeddingMode(Mode):
             self,
             config: EmbeddingConfig,
             *,
-            service_provider: BackendProvider[mc.EmbeddingService],
+            service_provider: mc.ServiceProvider[mc.EmbeddingService],
     ) -> None:
         super().__init__()
 
@@ -23,7 +22,7 @@ class EmbeddingMode(Mode):
 
     async def run(self) -> None:
         mdl: mc.EmbeddingService
-        async with self._service_provider.provide_backend() as mdl:
+        async with self._service_provider.provide_service() as mdl:
             response = await mdl.invoke(mc.EmbeddingRequest(self._config.content))
 
         print(json.dumps_compact(list(map(float, response.v))))

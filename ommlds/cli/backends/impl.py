@@ -1,21 +1,17 @@
 import contextlib
 import typing as ta
 
-from omlish import check
 from omlish import lang
-from omlish import reflect as rfl
 
 from ... import minichain as mc
 from .types import BackendConfigs
 from .types import BackendName
-from .types import BackendProvider
-from .types import ServiceT
 
 
 ##
 
 
-class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
+class ServiceOfProviderImpl(mc.ServiceOfProvider):
     def __init__(
             self,
             *,
@@ -32,7 +28,7 @@ class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
         self._configs = configs
 
     @contextlib.asynccontextmanager
-    async def _provide_backend(self, cls: type[ServiceT]) -> ta.AsyncIterator[ServiceT]:
+    async def provide_service_of(self, service_cls: ta.Any) -> ta.AsyncIterator[mc.Service]:
         name: str
         if self._name is not None:
             name = self._name
@@ -40,11 +36,10 @@ class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
             raise RuntimeError('No backend name specified')
 
         rbs = self._backend_spec_resolver.resolve(
-            cls,
+            service_cls,
             mc.BackendSpec.of(name),
         )
 
-        service: ServiceT
         async with lang.async_or_sync_maybe_managing(
             mc.instantiate_backend_spec(
                 rbs,
@@ -52,13 +47,3 @@ class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
             ),
         ) as service:
             yield service
-
-
-##
-
-
-class GenericBackendProviderImpl(BackendProviderImpl[ServiceT]):
-    def provide_backend(self) -> ta.AsyncContextManager[ServiceT]:
-        rty = rfl.typeof(rfl.get_orig_class(self))
-        [service_cls] = check.isinstance(rty, rfl.Generic).args
-        return self._provide_backend(service_cls)  # type: ignore[arg-type]

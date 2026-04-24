@@ -117,6 +117,11 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     else:
         lst.append(inj.bind(_types.BackendName, to_fn=inj.target(dbn=_types.DefaultBackendName)(lambda dbn: dbn)))
 
+    lst.extend([
+        inj.bind(_impl.ServiceOfProviderImpl, singleton=True),
+        inj.bind(mc.ServiceOfProvider, to_key=_impl.ServiceOfProviderImpl),
+    ])
+
     service_cls: ta.Any
     for service_cls in [
         mc.ChatChoicesService,
@@ -124,8 +129,8 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
         mc.CompletionService,
         mc.EmbeddingService,
     ]:
-        bp_iface: ta.Any = _types.BackendProvider[service_cls]  # noqa
-        bp_impl: ta.Any = _impl.GenericBackendProviderImpl[service_cls]  # noqa
+        bp_iface: ta.Any = mc.ServiceProvider[service_cls]  # noqa
+        bp_impl: ta.Any = mc.GenericServiceProvider[service_cls]  # noqa
         lst.extend([
             inj.bind(bp_impl, to_fn=bp_impl, singleton=True),
             inj.bind(bp_iface, to_key=bp_impl),

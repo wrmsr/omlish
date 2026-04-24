@@ -1,7 +1,6 @@
 from omlish import check
 
 from .... import minichain as mc
-from ...backends.types import BackendProvider
 from ..base import Mode
 from .configs import CompletionConfig
 
@@ -14,7 +13,7 @@ class CompletionMode(Mode):
             self,
             config: CompletionConfig,
             *,
-            service_provider: BackendProvider[mc.CompletionService],
+            service_provider: mc.ServiceProvider[mc.CompletionService],
     ) -> None:
         super().__init__()
 
@@ -25,7 +24,7 @@ class CompletionMode(Mode):
         prompt = check.isinstance(self._config.content, str)
 
         mdl: mc.CompletionService
-        async with self._service_provider.provide_backend() as mdl:
+        async with self._service_provider.provide_service() as mdl:
             response = await mdl.invoke(mc.CompletionRequest(prompt))
 
         print(response.v.strip())
