@@ -11,8 +11,6 @@ from .configs import DriverConfig
 from .printing import AiMessagesEventPrinter
 from .printing import AiStreamEventPrinter
 from .printing import ToolUseEventsPrinter
-from .services import ChatChoicesServiceBackendProviderProxy
-from .services import ChatChoicesStreamServiceBackendProviderProxy
 
 
 with lang.auto_proxy_import(globals()):
@@ -40,14 +38,24 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     if cfg.ai.stream:
         els.extend([
-            inj.bind(ChatChoicesStreamServiceBackendProviderProxy, singleton=True),
-            inj.bind(mc.ChatChoicesStreamService, to_key=ChatChoicesStreamServiceBackendProviderProxy),
+            inj.bind(
+                mc.ChatChoicesStreamService,
+                to_fn=inj.target(
+                    service_provider=mc.ServiceProvider[mc.ChatChoicesStreamService],
+                )(mc.ServiceProviderProxyStreamService),
+                singleton=True,
+            ),
         ])
 
     else:
         els.extend([
-            inj.bind(ChatChoicesServiceBackendProviderProxy, singleton=True),
-            inj.bind(mc.ChatChoicesService, to_key=ChatChoicesServiceBackendProviderProxy),
+            inj.bind(
+                mc.ChatChoicesService,
+                to_fn=inj.target(
+                    service_provider=mc.ServiceProvider[mc.ChatChoicesService],
+                )(mc.ServiceProviderProxyService),
+                singleton=True,
+            ),
         ])
 
     #
