@@ -43,7 +43,7 @@ all = [
     'cbor2 ~= 5.9',
     'cloudpickle ~= 3.1',
     'httpx[http2] ~= 0.28',
-    'cryptography ~= 46.0',
+    'cryptography ~= 47.0',
     'sqlalchemy[asyncio] ~= 2.0',
     'pg8000 ~= 1.31',
     'pymysql ~= 1.1',
@@ -92,7 +92,7 @@ http = [
     'httpx[http2] ~= 0.28',
 ]
 secrets = [
-    'cryptography ~= 46.0',
+    'cryptography ~= 47.0',
 ]
 sqlalchemy = [
     'sqlalchemy[asyncio] ~= 2.0',

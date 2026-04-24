@@ -48,6 +48,12 @@ _GPT_MODEL_NAMES = [
         for pfx in ['5', '5.4']
         for sfx in ['', '-mini', '-nano', '-pro']
     ],
+
+    *[
+        f'gpt-{pfx}{sfx}'
+        for pfx in ['5.5']
+        for sfx in ['', '-pro']
+    ],
 ]
 
 

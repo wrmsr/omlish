@@ -589,7 +589,7 @@
     "module": ".minichain.backends.openai.names",
     "attr": "_CHAT_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/openai/names.py",
-    "line": 76,
+    "line": 82,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -614,6 +614,8 @@
             "gpt-5.4-mini": null,
             "gpt-5.4-nano": null,
             "gpt-5.4-pro": null,
+            "gpt-5.5": null,
+            "gpt-5.5-pro": null,
             "gpt4": "gpt-4",
             "gpt4-mini": "gpt-4-mini",
             "gpt4-nano": "gpt-4-nano",
@@ -628,6 +630,8 @@
             "gpt5.4-mini": "gpt-5.4-mini",
             "gpt5.4-nano": "gpt-5.4-nano",
             "gpt5.4-pro": "gpt-5.4-pro",
+            "gpt5.5": "gpt-5.5",
+            "gpt5.5-pro": "gpt-5.5-pro",
             "gpt": "gpt-5",
             "gpt-mini": "gpt-5-mini",
             "gpt-nano": "gpt-5-nano",
@@ -641,7 +645,7 @@
     "module": ".minichain.backends.openai.names",
     "attr": "_COMPLETION_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/openai/names.py",
-    "line": 90,
+    "line": 96,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -656,7 +660,7 @@
     "module": ".minichain.backends.openai.names",
     "attr": "_EMBEDDING_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/openai/names.py",
-    "line": 102,
+    "line": 108,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [

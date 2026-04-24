@@ -30,8 +30,8 @@ bitsandbytes==0.49.2
 black==26.3.1
 bleach==6.3.0
 blobfile==3.2.0
-boto3==1.42.95
-botocore==1.42.95
+boto3==1.42.96
+botocore==1.42.96
 botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.4
@@ -45,7 +45,7 @@ cloudpickle==3.1.2
 comm==0.2.3
 contourpy==1.3.3
 cramjam==2.11.0
-cryptography==46.0.7
+cryptography==47.0.0
 cycler==0.12.1
 Cython==3.2.4
 datasets==4.8.4
@@ -176,7 +176,7 @@ onnxruntime==1.25.0
 opencv-python==4.13.0.92
 orjson==3.11.8
 outcome==1.3.0.post0
-packaging==26.1
+packaging==26.2
 pandas==3.0.2
 pandocfilters==1.5.1
 paramiko==4.0.0
@@ -220,7 +220,7 @@ pyinstrument==5.1.2
 PyJWT==2.12.1
 PyMySQL==1.1.2
 PyNaCl==1.6.2
-pyOpenSSL==26.0.0
+pyOpenSSL==26.1.0
 pyparsing==3.3.2
 pyproject_hooks==1.2.0
 pyright==1.1.409
@@ -252,7 +252,7 @@ rfc3987-syntax==1.1.0
 rich==15.0.0
 ripgrep==15.0.0
 rpds-py==0.30.0
-ruff==0.15.11
+ruff==0.15.12
 s3transfer==0.16.1
 safetensors==0.7.0
 scikit-image==0.26.0
@@ -315,7 +315,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.24.2
 types-awscrt==0.31.3
-types-boto3==1.42.95
+types-boto3==1.42.96
 types-docutils==0.22.3.20260408
 types-greenlet==3.4.0.20260409
 types-paramiko==4.0.0.20260408
