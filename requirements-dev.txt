@@ -40,7 +40,7 @@ gprof2dot==2025.4.14
 guppy3==3.1.6  # @omlish-venv !14t !14dt !15 !15t
 objgraph==3.6.2
 
-ipython==9.12.0
+ipython==9.13.0
 
 pudb==2025.1.5
 
@@ -116,7 +116,7 @@ snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !15t
 
 trino==0.337.0  # @omlish-venv !14t !14dt !15t  # orjson
 
-huggingface-hub==1.11.0  # @omlish-venv !15t
+huggingface-hub==1.12.0  # @omlish-venv !15t
 hf-xet==1.4.3  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
