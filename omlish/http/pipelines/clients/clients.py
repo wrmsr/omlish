@@ -78,7 +78,7 @@ class IoPipelineHttpClientHandler(IoPipelineHandler):
 
         if isinstance(msg, IoPipelineFlowMessages.FlushInput):
             if self._request is not None:
-                IoPipelineFlow.maybe_ready_for_input(ctx)
+                ctx.defer(IoPipelineFlow.maybe_ready_for_input)
 
         if isinstance(msg, (IoPipelineMessages.FinalInput, IoPipelineHttpClientMessages.Close)):
             ctx.feed_out(IoPipelineHttpClientMessages.Output(msg, request=self._request))
