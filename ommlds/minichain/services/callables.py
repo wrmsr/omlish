@@ -25,7 +25,7 @@ OutputT = ta.TypeVar('OutputT', bound=Output)
     allow_dynamic_dunder_attrs=True,
     terse_repr=True,
 )
-class ServiceFacade(
+class ServiceCallable(
     ta.Generic[
         RequestV,
         OptionT,
@@ -64,7 +64,7 @@ class ServiceFacade(
         return self.invoke(request)
 
 
-def facade(
+def service_callable(
     service: Service[
         Request[
             RequestV,
@@ -75,10 +75,10 @@ def facade(
             OutputT,
         ],
     ],
-) -> ServiceFacade[
+) -> ServiceCallable[
     RequestV,
     OptionT,
     ResponseV,
     OutputT,
 ]:
-    return ServiceFacade(service)
+    return ServiceCallable(service)

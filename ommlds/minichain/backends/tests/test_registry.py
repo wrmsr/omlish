@@ -9,7 +9,7 @@ from ...chat.choices.services import ChatChoicesService
 from ...chat.messages import UserMessage
 from ...registries.globals import registry_new
 from ...registries.globals import registry_of
-from ...services import ServiceFacade
+from ...services import ServiceCallable
 from ...standard import ApiKey
 
 
@@ -28,7 +28,7 @@ def test_new_backend_openai(harness):
 
 @pytest.mark.online
 def test_new_backend_openai2(harness):
-    llm = ServiceFacade(registry_of[ChatChoicesService].new(
+    llm = ServiceCallable(registry_of[ChatChoicesService].new(
         'openai',
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
         http_client=http.SyncAsyncHttpClient(http.client()),

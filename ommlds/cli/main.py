@@ -52,8 +52,8 @@ async def _run_mode_cfg(
 
 
 MAIN_PROFILE_ARGS: ta.Sequence[ap.Arg] = [
-    ap.arg('-p', '--profile', default='chat'),
     ap.arg('-h', '--help', action='store_true'),
+    ap.arg('profile', choices=list(PROFILE_TYPES)),
     ap.arg('args', nargs=ap.REMAINDER),
 ]
 

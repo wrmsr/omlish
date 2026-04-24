@@ -101,9 +101,13 @@ class JsonStreamParser(GenMachine[Token, Event]):
             *,
             allow_trailing_commas: bool = False,
 
+            allow_ident_values: bool = False,
+
             allow_extended_idents: bool = False,
     ) -> None:
         self._allow_trailing_commas = allow_trailing_commas
+
+        self._allow_ident_values = allow_ident_values
 
         self._allow_extended_idents = allow_extended_idents
 
@@ -167,8 +171,12 @@ class JsonStreamParser(GenMachine[Token, Event]):
             try:
                 cv = CONST_IDENT_VALUES[tok.value]
             except KeyError:
-                raise JsonStreamParseError('Expected value', tok.pos) from None
-            y, r = self._emit_event(cv)
+                if not self._allow_ident_values:
+                    raise JsonStreamParseError('Expected value', tok.pos) from None
+                else:
+                    y, r = self._emit_event(tok.value)
+            else:
+                y, r = self._emit_event(cv)
             yield y
             return r
 

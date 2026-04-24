@@ -457,8 +457,8 @@ with _lang.auto_proxy_init(
     from .services import (  # noqa
         #
 
-        ServiceFacade,
-        facade,
+        ServiceCallable,
+        service_callable,
 
         #
 

@@ -1,10 +1,10 @@
 # ruff: noqa: I001
 
 
-from .facades import (  # noqa
-    ServiceFacade,
+from .callables import (  # noqa
+    ServiceCallable,
 
-    facade,
+    service_callable,
 )
 
 from .reflect import (  # noqa

@@ -1,6 +1,6 @@
 from omlish import lang
 
-from ..facades import ServiceFacade
+from ..callables import ServiceCallable
 from ..requests import Request
 from .chat import ApiKey
 from .chat import Chat
@@ -23,13 +23,13 @@ def test_facade():
     local_chat_service_impl = LocalChatServiceImpl()
     # ta.reveal_type(local_chat_service_impl)
 
-    local_chat_service = ServiceFacade(local_chat_service_impl)
+    local_chat_service = ServiceCallable(local_chat_service_impl)
     # ta.reveal_type(local_chat_service)
 
     print(lang.sync_await(local_chat_service([Message('user', 'hi')], MaxTokens(11))))
     # print(local_chat_service([Message('user', 'hi')], ApiKey('secret')))  # ❌
 
-    local_chat_service2 = ServiceFacade[
+    local_chat_service2 = ServiceCallable[
         Chat,
         LocalChatOptions,
         Message,
@@ -42,7 +42,7 @@ def test_facade():
 
 
 def test_facade_types():
-    local_chat_service = ServiceFacade(LocalChatServiceImpl())
+    local_chat_service = ServiceCallable(LocalChatServiceImpl())
     # ta.reveal_type(local_chat_service)
 
     chat_request: ChatRequest = Request([Message('user', 'hi')], [MaxTokens(10)])

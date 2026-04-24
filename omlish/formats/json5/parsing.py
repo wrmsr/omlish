@@ -14,8 +14,9 @@ def parse(
         buf: str,
         *,
         debug: bool = False,
+        **kwargs: ta.Any,
 ) -> ta.Any:
-    m = make_machinery()
+    m = make_machinery(**kwargs)
 
     if debug:
         vc: type[JsonStreamValueParser] = DebugJsonStreamValueParser
@@ -36,8 +37,9 @@ def parse_many(
         buf: str,
         *,
         debug: bool = False,
+        **kwargs: ta.Any,
 ) -> ta.Iterator[ta.Any]:
-    m = make_machinery()
+    m = make_machinery(**kwargs)
 
     if debug:
         vc: type[JsonStreamValueParser] = DebugJsonStreamValueParser

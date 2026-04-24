@@ -1,3 +1,8 @@
+"""
+TODO:
+ - carry 'impl type' or something through Resolved?
+ - (slightly) better terse strings
+"""
 import abc
 import inspect
 import typing as ta
@@ -62,7 +67,11 @@ class StringBackendSpecTypeResolver(BackendSpecTypeResolver[StringBackendSpec]):
         s = check.non_empty_str(spec.s.strip())
 
         if s.startswith('{'):
-            rs_spec = msh.unmarshal(json5.loads(s), BackendSpec)
+            mv = json5.loads(
+                s,
+                allow_ident_values=True,
+            )
+            rs_spec = msh.unmarshal(mv, BackendSpec)
         elif s in ctx.registry_type.entries:
             rs_spec = NameBackendSpec(s)
         else:

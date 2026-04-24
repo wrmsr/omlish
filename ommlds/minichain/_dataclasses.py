@@ -15291,7 +15291,7 @@ def _process_dataclass__f1aa475ec14c79b9f69394cd5f1359cf816a04ce():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.completion', 'ServiceFacade'),
+        ('ommlds.minichain.completion', 'ServiceCallable'),
     ),
 )
 def _process_dataclass__9582883e8b789fb5864ce555ef9d6348525b7c92():

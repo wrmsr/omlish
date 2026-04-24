@@ -34,6 +34,9 @@ from .literals import parse_string_literal
 def make_machinery(
         *,
         include_raw: bool = False,
+
+        allow_ident_values: bool = False,
+
         yield_object_lists: bool = False,
 ) -> JsonStreamValueParser.Machinery:
     return JsonStreamValueParser.Machinery(
@@ -55,6 +58,8 @@ def make_machinery(
 
         JsonStreamParser(
             allow_trailing_commas=True,
+
+            allow_ident_values=allow_ident_values,
 
             allow_extended_idents=True,
         ),

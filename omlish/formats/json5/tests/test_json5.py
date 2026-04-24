@@ -118,3 +118,13 @@ def test_comments():
 
 def test_whitespace():
     assert parsing.parse('{\t\v\f \u00A0\uFEFF\n\r\u2028\u2029\u2003}') == {}
+
+
+def test_ident_values():
+    with pytest.raises(Json5Error):
+        parsing.parse('foo')
+    assert parsing.parse('foo', allow_ident_values=True) == 'foo'
+
+    with pytest.raises(Json5Error):
+        parsing.parse('{foo:bar}')
+    assert parsing.parse('{foo:bar}', allow_ident_values=True) == {'foo': 'bar'}
