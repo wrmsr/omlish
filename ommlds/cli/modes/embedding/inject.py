@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from .... import minichain as mc
 from ...backends.configs import BackendConfig
 from ...backends.types import DefaultBackendName
 from ..base import Mode
@@ -29,9 +30,14 @@ def bind_embedding(cfg: EmbeddingConfig) -> inj.Elements:
     #
 
     els.extend([
-        _backends.bind_backends(BackendConfig(
-            backend=cfg.backend,
-        )),
+        _backends.bind_backends(
+            [
+                mc.EmbeddingService,
+            ],
+            BackendConfig(
+                backend=cfg.backend,
+            ),
+        ),
 
         inj.bind(DefaultBackendName, to_const=DEFAULT_BACKEND),
     ])

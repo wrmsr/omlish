@@ -31,7 +31,13 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
         _state.bind_state(cfg.state),
 
-        _backends.bind_backends(cfg.backend),
+        _backends.bind_backends(
+            [
+                mc.ChatChoicesStreamService,
+                mc.ChatChoicesService,
+            ],
+            cfg.backend,
+        ),
     ])
 
     #

@@ -97,14 +97,17 @@ from .injection import backend_configs
 
 
 with lang.auto_proxy_import(globals()):
-    from . import impl as _impl
     from . import types as _types
 
 
 ##
 
 
-def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
+def bind_backends(
+        service_cls_lst: ta.Sequence[ta.Any],
+        /,
+        cfg: BackendConfig = BackendConfig(),
+) -> inj.Elements:
     lst: list[inj.Elemental] = []
 
     #
@@ -118,25 +121,18 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     else:
         lst.append(inj.bind(_types.BackendName, to_fn=inj.target(dbn=_types.DefaultBackendName)(lambda dbn: dbn)))
 
-    lst.extend([
-        inj.bind(_impl.ServiceOfProviderImpl, singleton=True),
-        inj.bind(mc.ServiceOfProvider, to_key=_impl.ServiceOfProviderImpl),
-    ])
-
     service_cls: ta.Any
-    for service_cls in [
-        mc.ChatChoicesService,
-        mc.ChatChoicesStreamService,
-        mc.CompletionService,
-        mc.EmbeddingService,
-    ]:
+    for service_cls in service_cls_lst:
         lst.extend([
             inj.bind(
                 mc.ServiceProvider[service_cls],  # noqa
-                to_fn=functools.partial(
-                    _impl.ServiceProviderImpl,
+                to_fn=inj.target(
+                    spec=_types.BackendName,
+                    configs=_types.BackendConfigs,
+                )(functools.partial(
+                    mc.BackendSpecServiceProvider,
                     service_cls,
-                ),
+                )),
                 singleton=True,
             ),
         ])

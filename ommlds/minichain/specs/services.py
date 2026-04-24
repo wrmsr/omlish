@@ -1,6 +1,7 @@
 import contextlib
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from ..configs import Config
@@ -32,8 +33,8 @@ class BackendSpecServiceProvider(ServiceProvider[ServiceT]):
     ) -> None:
         super().__init__()
 
-        self._service_cls = service_cls
-        self._spec = spec
+        self._service_cls = check.not_none(service_cls)
+        self._spec = check.not_none(spec)
 
         if resolver is None:
             resolver = DEFAULT_BACKEND_SPEC_RESOLVER
