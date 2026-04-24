@@ -6,7 +6,7 @@ from omlish import inject as inj
 from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
-from ...backends.impls.openai.stream import OpenaiChatChoicesStreamService
+from ...backends.openai.stream import OpenaiChatChoicesStreamService
 from ...chat.choices.stream.services import ChatChoicesStreamService
 from ...standard import ApiKey
 from ..ai.configs import AiConfig

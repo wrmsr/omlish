@@ -573,15 +573,15 @@ def _process_dataclass__5ff91637e71f103a7df9eb0cda9a79d689462daa():
         '__dataclass__init__fields__0__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'BlankContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'CompositeContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'DynamicContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'RecursiveContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'StandardContent'),
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'AiDelta'),
-        ('ommlds.minichain.backends.impls.mistral', 'AnyAiMessage'),
-        ('ommlds.minichain.backends.impls.mistral', 'AnyUserMessage'),
-        ('ommlds.minichain.backends.impls.mistral', 'Message'),
+        ('ommlds.minichain.backends.anthropic.chat', 'BlankContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'CompositeContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'DynamicContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'RecursiveContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'StandardContent'),
+        ('ommlds.minichain.backends.anthropic.stream', 'AiDelta'),
+        ('ommlds.minichain.backends.mistral', 'AnyAiMessage'),
+        ('ommlds.minichain.backends.mistral', 'AnyUserMessage'),
+        ('ommlds.minichain.backends.mistral', 'Message'),
     ),
 )
 def _process_dataclass__9e1d955ccb433717c9538685d2a5ad412ce027f5():
@@ -729,8 +729,8 @@ def _process_dataclass__9e1d955ccb433717c9538685d2a5ad412ce027f5():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'BlockCodeContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'InlineCodeContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'BlockCodeContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'InlineCodeContent'),
     ),
 )
 def _process_dataclass__31f198f397eadf81e409755023fd5b4ffa5427ea():
@@ -892,9 +892,9 @@ def _process_dataclass__31f198f397eadf81e409755023fd5b4ffa5427ea():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'BlocksContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ConcatContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'FlowContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'BlocksContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ConcatContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'FlowContent'),
     ),
 )
 def _process_dataclass__3e0141c487d99ba233d2ae8c228048f053cafda2():
@@ -1046,11 +1046,11 @@ def _process_dataclass__3e0141c487d99ba233d2ae8c228048f053cafda2():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'BoldContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'BoldItalicContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ItalicContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'MarkdownContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'TextContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'BoldContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'BoldItalicContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ItalicContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'MarkdownContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'TextContent'),
     ),
 )
 def _process_dataclass__ddb3139fadddf306ac09e012d316caf66a5ba6de():
@@ -1207,7 +1207,7 @@ def _process_dataclass__ddb3139fadddf306ac09e012d316caf66a5ba6de():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'CodeContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'CodeContent'),
     ),
 )
 def _process_dataclass__1084ab06a48ea8a3ee231cb5371a8312352e8665():
@@ -1363,7 +1363,7 @@ def _process_dataclass__1084ab06a48ea8a3ee231cb5371a8312352e8665():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'CompositeContentTransform'),
+        ('ommlds.minichain.backends.anthropic.chat', 'CompositeContentTransform'),
     ),
 )
 def _process_dataclass__68d062858a9894949b2c170a3763346ddc35bf1d():
@@ -1503,8 +1503,8 @@ def _process_dataclass__68d062858a9894949b2c170a3763346ddc35bf1d():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ContainerContent'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'SequenceContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ContainerContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'SequenceContent'),
     ),
 )
 def _process_dataclass__a2e975e22d97a4d134241bb5fd72c882b2f11f5b():
@@ -1649,8 +1649,8 @@ def _process_dataclass__a2e975e22d97a4d134241bb5fd72c882b2f11f5b():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ContentOriginal'),
-        ('ommlds.minichain.backends.impls.mistral', 'MessageOriginal'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ContentOriginal'),
+        ('ommlds.minichain.backends.mistral', 'MessageOriginal'),
     ),
 )
 def _process_dataclass__236614658d6f97131f18c84f79eabfe1f3abcc04():
@@ -1783,13 +1783,13 @@ def _process_dataclass__236614658d6f97131f18c84f79eabfe1f3abcc04():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ContentUuid'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ModelName'),
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ModelPath'),
-        ('ommlds.minichain.backends.impls.mistral', 'MessageUuid'),
-        ('ommlds.minichain.backends.impls.mistral', 'TurnUuid'),
-        ('ommlds.minichain.backends.impls.sentencepiece.tokens', 'TokenStr'),
-        ('ommlds.minichain.backends.impls.transformers.transformers', 'TransformersPipelineKwargs'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ContentUuid'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ModelName'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ModelPath'),
+        ('ommlds.minichain.backends.mistral', 'MessageUuid'),
+        ('ommlds.minichain.backends.mistral', 'TurnUuid'),
+        ('ommlds.minichain.backends.sentencepiece.tokens', 'TokenStr'),
+        ('ommlds.minichain.backends.transformers.transformers', 'TransformersPipelineKwargs'),
         ('ommlds.minichain.chat._marshal', 'TransformedMessageOrigin'),
         ('ommlds.minichain.chat.templating', 'MessageTemplate'),
         ('ommlds.minichain.completion', 'CreatedAt'),
@@ -1947,7 +1947,7 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'EmphasisContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'EmphasisContent'),
     ),
 )
 def _process_dataclass__e28bbe95a5e6fa9335be8f6fa393bd08862be998():
@@ -2093,7 +2093,7 @@ def _process_dataclass__e28bbe95a5e6fa9335be8f6fa393bd08862be998():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'FnContentTransform'),
+        ('ommlds.minichain.backends.anthropic.chat', 'FnContentTransform'),
         ('ommlds.minichain.chat._marshal', 'FnGeneralTransform'),
         ('ommlds.minichain.chat._marshal', 'FnSequenceTransform'),
         ('ommlds.minichain.chat.content', 'StringFnContentTransform'),
@@ -2236,7 +2236,7 @@ def _process_dataclass__9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ImageContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ImageContent'),
     ),
 )
 def _process_dataclass__203bfffec4d5e8561262ac75e1ac4bdc765045b2():
@@ -2393,7 +2393,7 @@ def _process_dataclass__203bfffec4d5e8561262ac75e1ac4bdc765045b2():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ItemListContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ItemListContent'),
     ),
 )
 def _process_dataclass__92981ef19f0ed4d429fe88ffe7c0f22996b15862():
@@ -2555,7 +2555,7 @@ def _process_dataclass__92981ef19f0ed4d429fe88ffe7c0f22996b15862():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'JsonContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'JsonContent'),
     ),
 )
 def _process_dataclass__0cb672ff62c7eae81ce16ae517b9048e09aa5f32():
@@ -2712,7 +2712,7 @@ def _process_dataclass__0cb672ff62c7eae81ce16ae517b9048e09aa5f32():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'LinkContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'LinkContent'),
     ),
 )
 def _process_dataclass__19fce39816e3bcd051a9ec021966904726c17a18():
@@ -2876,7 +2876,7 @@ def _process_dataclass__19fce39816e3bcd051a9ec021966904726c17a18():
         '__dataclass__repr__default_fn',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ModelNameCollection'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ModelNameCollection'),
     ),
 )
 def _process_dataclass__c8c236ef2e6c5a0fc4cdfc450a520f0cc16ee67e():
@@ -3041,7 +3041,7 @@ def _process_dataclass__c8c236ef2e6c5a0fc4cdfc450a520f0cc16ee67e():
         '__dataclass__repr__fns__3__fn',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ModelRepo'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ModelRepo'),
     ),
 )
 def _process_dataclass__763b0424aa73f5ec852de236e39950f9c105259c():
@@ -3215,7 +3215,7 @@ def _process_dataclass__763b0424aa73f5ec852de236e39950f9c105259c():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'NamespaceContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'NamespaceContent'),
     ),
 )
 def _process_dataclass__14f245898fca28ecbd7d8f269115ed8cd09ceef1():
@@ -3367,7 +3367,7 @@ def _process_dataclass__14f245898fca28ecbd7d8f269115ed8cd09ceef1():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'PlaceholderContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'PlaceholderContent'),
     ),
 )
 def _process_dataclass__d07643412d93a7153e2d0ffe62c9a3676cda058e():
@@ -3512,7 +3512,7 @@ def _process_dataclass__d07643412d93a7153e2d0ffe62c9a3676cda058e():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'PlaceholderContentKeyError'),
+        ('ommlds.minichain.backends.anthropic.chat', 'PlaceholderContentKeyError'),
     ),
 )
 def _process_dataclass__7e1881cd893ea68089f1fe26ad810799dd14a0d5():
@@ -3612,7 +3612,7 @@ def _process_dataclass__7e1881cd893ea68089f1fe26ad810799dd14a0d5():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'QuoteContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'QuoteContent'),
     ),
 )
 def _process_dataclass__66b904f7e1abd9fc45da07aa62bd6c964d104d2e():
@@ -3768,7 +3768,7 @@ def _process_dataclass__66b904f7e1abd9fc45da07aa62bd6c964d104d2e():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'ResourceContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'ResourceContent'),
     ),
 )
 def _process_dataclass__96d8a115fd863c61344f44124f5175d63ed37469():
@@ -3933,7 +3933,7 @@ def _process_dataclass__96d8a115fd863c61344f44124f5175d63ed37469():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'SectionContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'SectionContent'),
     ),
 )
 def _process_dataclass__210cbafe9608360fc8ef542b57b17b0c0256004d():
@@ -4089,7 +4089,7 @@ def _process_dataclass__210cbafe9608360fc8ef542b57b17b0c0256004d():
         '__dataclass__init__fields__0__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'StandardContentRenderer.Config'),
+        ('ommlds.minichain.backends.anthropic.chat', 'StandardContentRenderer.Config'),
     ),
 )
 def _process_dataclass__ba5c53ca98aa25887075f15f0b0441e3b95fd9d7():
@@ -4233,7 +4233,7 @@ def _process_dataclass__ba5c53ca98aa25887075f15f0b0441e3b95fd9d7():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'StandardContentRenderer.Context'),
+        ('ommlds.minichain.backends.anthropic.chat', 'StandardContentRenderer.Context'),
     ),
 )
 def _process_dataclass__bbf9e2f6dd04afb70a0428ceb2dc38db5f47b541():
@@ -4389,7 +4389,7 @@ def _process_dataclass__bbf9e2f6dd04afb70a0428ceb2dc38db5f47b541():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'TagContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'TagContent'),
     ),
 )
 def _process_dataclass__c8549fd6067e8fdb702ddac1fecf583a594779ef():
@@ -4550,7 +4550,7 @@ def _process_dataclass__c8549fd6067e8fdb702ddac1fecf583a594779ef():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'TemplateContent'),
+        ('ommlds.minichain.backends.anthropic.chat', 'TemplateContent'),
     ),
 )
 def _process_dataclass__9c092eca370702ae8406a7273aeb5d03ce342cb9():
@@ -4696,7 +4696,7 @@ def _process_dataclass__9c092eca370702ae8406a7273aeb5d03ce342cb9():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'Tool'),
+        ('ommlds.minichain.backends.anthropic.chat', 'Tool'),
     ),
 )
 def _process_dataclass__7e3901d21ea09aa23ed5fbe10c0b3872163af79f():
@@ -4833,7 +4833,7 @@ def _process_dataclass__7e3901d21ea09aa23ed5fbe10c0b3872163af79f():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.chat', 'TypeFilteredContentTransform'),
+        ('ommlds.minichain.backends.anthropic.chat', 'TypeFilteredContentTransform'),
     ),
 )
 def _process_dataclass__e239f2f8e55d91bd47ca467afe5b1ec92f8dfc34():
@@ -4976,7 +4976,7 @@ def _process_dataclass__e239f2f8e55d91bd47ca467afe5b1ec92f8dfc34():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'AiChoiceDeltas'),
+        ('ommlds.minichain.backends.anthropic.stream', 'AiChoiceDeltas'),
     ),
 )
 def _process_dataclass__1003b02dad553d007500114656708fbdf6d2db2e():
@@ -5110,7 +5110,7 @@ def _process_dataclass__1003b02dad553d007500114656708fbdf6d2db2e():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'AiChoicesDeltas'),
+        ('ommlds.minichain.backends.anthropic.stream', 'AiChoicesDeltas'),
     ),
 )
 def _process_dataclass__4f63c0632d5deeaaca3a2cac8b16c190d46387cd():
@@ -5256,7 +5256,7 @@ def _process_dataclass__4f63c0632d5deeaaca3a2cac8b16c190d46387cd():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'AnyToolUseAiDelta'),
+        ('ommlds.minichain.backends.anthropic.stream', 'AnyToolUseAiDelta'),
     ),
 )
 def _process_dataclass__b6c34a783666972a7006d8f0b1419093054d280a():
@@ -5419,9 +5419,9 @@ def _process_dataclass__b6c34a783666972a7006d8f0b1419093054d280a():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'ContentAiDelta'),
-        ('ommlds.minichain.backends.impls.mistral', 'DeveloperMessage'),
-        ('ommlds.minichain.backends.impls.mistral', 'SystemMessage'),
+        ('ommlds.minichain.backends.anthropic.stream', 'ContentAiDelta'),
+        ('ommlds.minichain.backends.mistral', 'DeveloperMessage'),
+        ('ommlds.minichain.backends.mistral', 'SystemMessage'),
     ),
 )
 def _process_dataclass__5cf06a8666aafbd9f13b7cc116ca35266a2043de():
@@ -5584,7 +5584,7 @@ def _process_dataclass__5cf06a8666aafbd9f13b7cc116ca35266a2043de():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'PartialToolUseAiDelta'),
+        ('ommlds.minichain.backends.anthropic.stream', 'PartialToolUseAiDelta'),
     ),
 )
 def _process_dataclass__a1ff049eb4d6af2a8504fcbe3bddbc919b934670():
@@ -5768,7 +5768,7 @@ def _process_dataclass__a1ff049eb4d6af2a8504fcbe3bddbc919b934670():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.anthropic.stream', 'ToolUseAiDelta'),
+        ('ommlds.minichain.backends.anthropic.stream', 'ToolUseAiDelta'),
     ),
 )
 def _process_dataclass__fbf0f0bb81f40b541937070a9db860c6ce9ebd3e():
@@ -5946,7 +5946,7 @@ def _process_dataclass__fbf0f0bb81f40b541937070a9db860c6ce9ebd3e():
         '__dataclass__repr__default_fn',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.cerebras.stream', 'HttpStreamResponseError'),
+        ('ommlds.minichain.backends.cerebras.stream', 'HttpStreamResponseError'),
     ),
 )
 def _process_dataclass__535cd2aec43091a1f5d8815bce63d1da3e34fe10():
@@ -6069,7 +6069,7 @@ def _process_dataclass__535cd2aec43091a1f5d8815bce63d1da3e34fe10():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.google.search', 'CseSearchInfo'),
+        ('ommlds.minichain.backends.google.search', 'CseSearchInfo'),
     ),
 )
 def _process_dataclass__9011cfb69ca0947e15e02520950d8710d0d53d0a():
@@ -6239,7 +6239,7 @@ def _process_dataclass__9011cfb69ca0947e15e02520950d8710d0d53d0a():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.google.search', 'CseSearchResponse'),
+        ('ommlds.minichain.backends.google.search', 'CseSearchResponse'),
     ),
 )
 def _process_dataclass__6a5c9824784a2112a23d98269f609312c1509aad():
@@ -6469,7 +6469,7 @@ def _process_dataclass__6a5c9824784a2112a23d98269f609312c1509aad():
         '__dataclass__init__fields__12__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.google.search', 'CseSearchResult'),
+        ('ommlds.minichain.backends.google.search', 'CseSearchResult'),
     ),
 )
 def _process_dataclass__4fe5bb897a686ca1487bb8d85e655d4100c4a8f2():
@@ -6724,7 +6724,7 @@ def _process_dataclass__4fe5bb897a686ca1487bb8d85e655d4100c4a8f2():
         '__dataclass__repr__fns__0__fn',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.huggingface.configs', 'HuggingfaceHubToken'),
+        ('ommlds.minichain.backends.huggingface.configs', 'HuggingfaceHubToken'),
         ('ommlds.minichain.standard', 'ApiKey'),
     ),
 )
@@ -6861,7 +6861,7 @@ def _process_dataclass__663f7924a951e0a39befa6d9c0c541bbf2575506():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'AiChoice'),
+        ('ommlds.minichain.backends.mistral', 'AiChoice'),
         ('ommlds.minichain.drivers.impl', 'GenerateAiChatArgs'),
     ),
 )
@@ -7004,7 +7004,7 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
         '__dataclass__repr__fns__1__fn',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'AiMessage'),
+        ('ommlds.minichain.backends.mistral', 'AiMessage'),
     ),
 )
 def _process_dataclass__72c59dbd029af1f55a739e4e5f92cc62c0cecb75():
@@ -7157,7 +7157,7 @@ def _process_dataclass__72c59dbd029af1f55a739e4e5f92cc62c0cecb75():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'EnumToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'EnumToolDtype'),
     ),
 )
 def _process_dataclass__922e75739507bda9dce73a0d3dc05534b1cc9ae5():
@@ -7303,7 +7303,7 @@ def _process_dataclass__922e75739507bda9dce73a0d3dc05534b1cc9ae5():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'MappingToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'MappingToolDtype'),
     ),
 )
 def _process_dataclass__2ded8afb50edd07329da6b7055981919a83dec56():
@@ -7446,7 +7446,7 @@ def _process_dataclass__2ded8afb50edd07329da6b7055981919a83dec56():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'NullableToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'NullableToolDtype'),
     ),
 )
 def _process_dataclass__1d0b04d8ebb0bdb077bc9721fb19aafcadf99422():
@@ -7580,7 +7580,7 @@ def _process_dataclass__1d0b04d8ebb0bdb077bc9721fb19aafcadf99422():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ObjectToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'ObjectToolDtype'),
     ),
 )
 def _process_dataclass__178374af8c25e44a33c44ece98db0c96fe041247():
@@ -7714,7 +7714,7 @@ def _process_dataclass__178374af8c25e44a33c44ece98db0c96fe041247():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'PrimitiveToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'PrimitiveToolDtype'),
     ),
 )
 def _process_dataclass__b7657835eed1f3e17dbdae82eb197181dd5862db():
@@ -7849,7 +7849,7 @@ def _process_dataclass__b7657835eed1f3e17dbdae82eb197181dd5862db():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'SequenceToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'SequenceToolDtype'),
     ),
 )
 def _process_dataclass__95d65e05398b42908ba7d67d961be3c1dae7f5b4():
@@ -7978,7 +7978,7 @@ def _process_dataclass__95d65e05398b42908ba7d67d961be3c1dae7f5b4():
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
     op_ref_idents=(),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'ToolDtype'),
         ('ommlds.minichain.chat._marshal', 'TextResponseFormat'),
         ('ommlds.minichain.chat.tools.execution', 'ToolFn.Impl'),
         ('ommlds.minichain.chat.tools.execution', 'ToolFn.Input'),
@@ -8126,7 +8126,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ToolParam'),
+        ('ommlds.minichain.backends.mistral', 'ToolParam'),
     ),
 )
 def _process_dataclass__69f075887b34fec02953259b40566b486cb54f44():
@@ -8321,7 +8321,7 @@ def _process_dataclass__69f075887b34fec02953259b40566b486cb54f44():
         '__dataclass__init__fields__5__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ToolSpec'),
+        ('ommlds.minichain.backends.mistral', 'ToolSpec'),
         ('ommlds.minichain.modules.bash.bash', '_ToolSpecAttach'),
         ('ommlds.minichain.modules.bash.bash', '_ToolSpecOverride'),
     ),
@@ -8523,7 +8523,7 @@ def _process_dataclass__cdcccf0dc59860c0b19fed181a5bb59b8472bf93():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ToolUse'),
+        ('ommlds.minichain.backends.mistral', 'ToolUse'),
     ),
 )
 def _process_dataclass__4ed08c576fd7794679f9215d6bdcdce02d3f7c85():
@@ -8693,7 +8693,7 @@ def _process_dataclass__4ed08c576fd7794679f9215d6bdcdce02d3f7c85():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ToolUseMessage'),
+        ('ommlds.minichain.backends.mistral', 'ToolUseMessage'),
     ),
 )
 def _process_dataclass__57a136cad7298612bd491ff2d62b9ce882a7bcb7():
@@ -8847,7 +8847,7 @@ def _process_dataclass__57a136cad7298612bd491ff2d62b9ce882a7bcb7():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ToolUseResult'),
+        ('ommlds.minichain.backends.mistral', 'ToolUseResult'),
     ),
 )
 def _process_dataclass__63faf3c00ff50c28af3c47a1c0100980c46a8e31():
@@ -9007,7 +9007,7 @@ def _process_dataclass__63faf3c00ff50c28af3c47a1c0100980c46a8e31():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'ToolUseResultMessage'),
+        ('ommlds.minichain.backends.mistral', 'ToolUseResultMessage'),
     ),
 )
 def _process_dataclass__2485750c5fdb59d4b773884ec150101aee4ccdce():
@@ -9153,7 +9153,7 @@ def _process_dataclass__2485750c5fdb59d4b773884ec150101aee4ccdce():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'TupleToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'TupleToolDtype'),
     ),
 )
 def _process_dataclass__a72c7b37c724624d1543d1cc8dffce6fcbbad416():
@@ -9287,7 +9287,7 @@ def _process_dataclass__a72c7b37c724624d1543d1cc8dffce6fcbbad416():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'UnionToolDtype'),
+        ('ommlds.minichain.backends.mistral', 'UnionToolDtype'),
     ),
 )
 def _process_dataclass__ad919be3aed733ce0d02ac2f6d4c55bbced3d288():
@@ -9434,7 +9434,7 @@ def _process_dataclass__ad919be3aed733ce0d02ac2f6d4c55bbced3d288():
         '__dataclass__repr__fns__2__fn',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'UserMessage'),
+        ('ommlds.minichain.backends.mistral', 'UserMessage'),
     ),
 )
 def _process_dataclass__78434834a42584e4ebc7f4ae0b50787fc65e4c8e():
@@ -9591,7 +9591,7 @@ def _process_dataclass__78434834a42584e4ebc7f4ae0b50787fc65e4c8e():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sentencepiece.tokens', 'AmbiguousSpecialTokenError'),
+        ('ommlds.minichain.backends.sentencepiece.tokens', 'AmbiguousSpecialTokenError'),
     ),
 )
 def _process_dataclass__992dded9f23b67474fa059fd50b4093578e27b85():
@@ -9688,7 +9688,7 @@ def _process_dataclass__992dded9f23b67474fa059fd50b4093578e27b85():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sentencepiece.tokens', 'MismatchedSpecialTokenError'),
+        ('ommlds.minichain.backends.sentencepiece.tokens', 'MismatchedSpecialTokenError'),
     ),
 )
 def _process_dataclass__dd85158a53c93a82289b98788d08c557aa37e325():
@@ -9791,7 +9791,7 @@ def _process_dataclass__dd85158a53c93a82289b98788d08c557aa37e325():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sqlite', 'VectorHit'),
+        ('ommlds.minichain.backends.sqlite', 'VectorHit'),
     ),
 )
 def _process_dataclass__781af6b7d63e022308ad09d0c6af2f862222da8f():
@@ -9933,7 +9933,7 @@ def _process_dataclass__781af6b7d63e022308ad09d0c6af2f862222da8f():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sqlite', 'VectorHits'),
+        ('ommlds.minichain.backends.sqlite', 'VectorHits'),
         ('ommlds.minichain.llms._marshal', 'Tokens'),
     ),
 )
@@ -10071,7 +10071,7 @@ def _process_dataclass__120515e449a82cc5be86f01473d5807ef9f05130():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sqlite', 'VectorIndexed'),
+        ('ommlds.minichain.backends.sqlite', 'VectorIndexed'),
     ),
 )
 def _process_dataclass__5ea4d9b4bffc7de6c6a04b9485d0523083ae6558():
@@ -10218,7 +10218,7 @@ def _process_dataclass__5ea4d9b4bffc7de6c6a04b9485d0523083ae6558():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sqlite', 'VectorSearch'),
+        ('ommlds.minichain.backends.sqlite', 'VectorSearch'),
     ),
 )
 def _process_dataclass__24182e1dbb4c659bdb337ab276f9ac3b06f71444():
@@ -10363,7 +10363,7 @@ def _process_dataclass__24182e1dbb4c659bdb337ab276f9ac3b06f71444():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sqlite', 'VectorSearchSimilarity'),
+        ('ommlds.minichain.backends.sqlite', 'VectorSearchSimilarity'),
     ),
 )
 def _process_dataclass__6ee6b20d9248a588cdacec2ceb396c5517b1412d():
@@ -10506,7 +10506,7 @@ def _process_dataclass__6ee6b20d9248a588cdacec2ceb396c5517b1412d():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.sqlite', '_StorageImpl'),
+        ('ommlds.minichain.backends.sqlite', '_StorageImpl'),
     ),
 )
 def _process_dataclass__7955baf54c2bb5ec0faef8b59a6d2d1df6355b6c():

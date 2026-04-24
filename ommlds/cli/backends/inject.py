@@ -12,7 +12,7 @@ from .injection import backend_configs
 
 
 with lang.auto_proxy_import(globals()):
-    from ...minichain.backends.impls.huggingface import repos as hf_repos
+    from ...minichain.backends.huggingface import repos as hf_repos
     from . import catalog as _catalog
     from . import meta as _meta
     from . import types as _types
