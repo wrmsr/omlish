@@ -1,21 +1,6 @@
-import typing as ta
-
-from omlish import lang
-
-from .... import minichain as mc
-
-
-##
-
-
-DEFAULT_BACKEND = 'openai'
-
-
-InitialBackendSpec = ta.NewType('InitialBackendSpec', mc.BackendSpec)
-
-
-class BackendSpecGetter(lang.AsyncCachedFunc0[mc.BackendSpec]):
-    pass
+from ..... import minichain as mc
+from .types import DEFAULT_BACKEND
+from .types import InitialBackendSpec
 
 
 ##

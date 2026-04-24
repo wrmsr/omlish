@@ -9,7 +9,7 @@ from omlish import lang
 from ..... import minichain as mc
 from ....backends.injection import backend_configs
 from ....backends.types import BackendConfigs
-from ..backends import BackendSpecGetter
+from ..backends.types import BackendSpecGetter
 from .configs import DriverConfig
 from .printing import AiMessagesEventPrinter
 from .printing import AiStreamEventPrinter
