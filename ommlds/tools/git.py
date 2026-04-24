@@ -84,10 +84,10 @@ class StandardGitAiBackend(GitAiBackend['StandardGitAiBackend.Config']):
             mc.BackendSpec.of(self._config.backend or self.DEFAULT_BACKEND_NAME),
         )
 
-        llm = mc.instantiate_backend_spec(
+        llm = lang.sync_await(mc.instantiate_backend_spec(
             rbs,
             http_client=http.SyncAsyncHttpClient(http.client()),  # FIXME
-        )
+        ))
 
         resp = lang.sync_await(llm.invoke(mc.ChatChoicesRequest(
             [mc.UserMessage(prompt)],

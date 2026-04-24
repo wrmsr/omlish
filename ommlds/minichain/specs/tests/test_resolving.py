@@ -1,3 +1,5 @@
+from omlish import lang
+
 from ...chat.choices.services import ChatChoicesService
 from ..instantiate import instantiate_backend_spec
 from ..resolving import DEFAULT_BACKEND_SPEC_RESOLVER
@@ -24,7 +26,7 @@ def test_resolving():
             rbs = bsr.resolve(ChatChoicesService, bs)
             print(rbs)
 
-            svc = instantiate_backend_spec(rbs)
+            svc = lang.sync_await(instantiate_backend_spec(rbs))
             print(svc)
 
             print()

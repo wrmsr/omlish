@@ -46,10 +46,10 @@ class ServiceProviderImpl(mc.ServiceProvider[ServiceT]):
         )
 
         async with lang.async_or_sync_maybe_managing(
-                mc.instantiate_backend_spec(
-                    rbs,
-                    *(self._configs or []),
-                ),
+            await mc.instantiate_backend_spec(
+                rbs,
+                *(self._configs or []),
+            ),
         ) as service:
             yield service
 
@@ -84,7 +84,7 @@ class ServiceOfProviderImpl(mc.ServiceOfProvider):
         )
 
         async with lang.async_or_sync_maybe_managing(
-            mc.instantiate_backend_spec(
+            await mc.instantiate_backend_spec(
                 rbs,
                 *(self._configs or []),
             ),

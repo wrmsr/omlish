@@ -1,12 +1,18 @@
+"""
+TODO:
+ - async
+ - injector (the whole point)
+"""
 import typing as ta
 
+from .types import BackendSpecInstantiator
 from .types import ResolvedBackendSpec
 
 
 ##
 
 
-def instantiate_backend_spec(rbs: ResolvedBackendSpec, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+async def instantiate_backend_spec(rbs: ResolvedBackendSpec, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
     def rec(cur: ResolvedBackendSpec) -> ta.Any:
         cur_args: list[ta.Any] = []
 
@@ -26,3 +32,6 @@ def instantiate_backend_spec(rbs: ResolvedBackendSpec, *args: ta.Any, **kwargs: 
         )
 
     return rec(rbs)
+
+
+DEFAULT_BACKEND_SPEC_INSTANTIATOR: BackendSpecInstantiator = instantiate_backend_spec

@@ -540,6 +540,8 @@ with _lang.auto_proxy_init(
 
     from .specs.instantiate import (  # noqa
         instantiate_backend_spec,
+
+        DEFAULT_BACKEND_SPEC_INSTANTIATOR,
     )
 
     from .specs.resolving import (  # noqa
@@ -556,6 +558,10 @@ with _lang.auto_proxy_init(
         DEFAULT_BACKEND_SPEC_RESOLVER,
     )
 
+    from .specs.services import (  # noqa
+        BackendSpecServiceProvider,
+    )
+
     from .specs.types import (  # noqa
         CanBackendSpec,
         BackendSpec,
@@ -569,6 +575,8 @@ with _lang.auto_proxy_init(
 
         ResolvedBackendSpec,
         BackendSpecResolver,
+
+        BackendSpecInstantiator,
     )
 
     ##
