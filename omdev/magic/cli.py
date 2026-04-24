@@ -2,8 +2,8 @@
 import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
-from omlish.argparse.cli import argparse_arg
-from omlish.argparse.cli import argparse_cmd
+from omlish.argparse.parsers import argparse_arg
+from omlish.argparse.parsers import argparse_cmd
 
 from .find import find_magic_files
 from .find import find_magic_py_modules

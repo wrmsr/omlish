@@ -12,8 +12,8 @@ import typing as ta
 
 from omdev.home.paths import get_home_paths
 from omlish.argparse.cli import ArgparseCli
-from omlish.argparse.cli import argparse_arg
-from omlish.argparse.cli import argparse_cmd
+from omlish.argparse.parsers import argparse_arg
+from omlish.argparse.parsers import argparse_cmd
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.configs import load_config_file_obj

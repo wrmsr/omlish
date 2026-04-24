@@ -6,6 +6,10 @@ from .. import lang as _lang
 
 with _lang.auto_proxy_init(globals()):
     from .cli import (  # noqa
+        ArgparseCli as Cli,
+    )
+
+    from .parsers import (  # noqa
         ArgparseArg as Arg,
         argparse_arg as arg,
         argparse_arg_ as arg_,
@@ -13,8 +17,6 @@ with _lang.auto_proxy_init(globals()):
         ArgparseCmdFn as CmdFn,
         ArgparseCmd as Cmd,
         argparse_cmd as cmd,
-
-        ArgparseCli as Cli,
     )
 
     from .utils import (  # noqa

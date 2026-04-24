@@ -4,6 +4,7 @@ import argparse
 import unittest
 
 from .. import cli
+from .. import parsers
 
 
 ##
@@ -12,9 +13,9 @@ from .. import cli
 class JunkCli(cli.ArgparseCli):
     num_runs = 0
 
-    @cli.argparse_cmd(
-        cli.argparse_arg('foo', metavar='foo'),
-        cli.argparse_arg('--bar', dest='bar', action='store_true'),
+    @parsers.argparse_cmd(
+        parsers.argparse_arg('foo', metavar='foo'),
+        parsers.argparse_arg('--bar', dest='bar', action='store_true'),
     )
     def run(self) -> None:
         self.num_runs += 1
@@ -32,10 +33,10 @@ class TestCli(unittest.TestCase):
 
 
 class ClassVarCli(cli.ArgparseCli):
-    _foo = cli.argparse_arg('--foo')
+    _foo = parsers.argparse_arg('--foo')
 
-    @cli.argparse_cmd(
-        cli.argparse_arg('--bar'),
+    @parsers.argparse_cmd(
+        parsers.argparse_arg('--bar'),
     )
     def baz(self) -> None:
         pass
@@ -51,15 +52,15 @@ class TestClassVar(unittest.TestCase):
 
 
 class FormatHelpCli(cli.ArgparseCli):
-    _baz = cli.argparse_arg('--baz')
+    _baz = parsers.argparse_arg('--baz')
 
-    @cli.argparse_cmd(
-        cli.argparse_arg('qux'),
+    @parsers.argparse_cmd(
+        parsers.argparse_arg('qux'),
     )
     def foo(self):
         pass
 
-    @cli.argparse_cmd()
+    @parsers.argparse_cmd()
     def bar(self):
         pass
 

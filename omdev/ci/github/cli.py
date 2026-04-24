@@ -6,8 +6,8 @@ See:
 import dataclasses as dc
 
 from omlish.argparse.cli import ArgparseCli
-from omlish.argparse.cli import argparse_arg
-from omlish.argparse.cli import argparse_cmd
+from omlish.argparse.parsers import argparse_arg
+from omlish.argparse.parsers import argparse_cmd
 from omlish.lite.json import json_dumps_pretty
 
 from .api.v1.client import GithubCacheServiceV1Client

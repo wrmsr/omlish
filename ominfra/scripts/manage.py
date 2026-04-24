@@ -110,7 +110,7 @@ def __omlish_amalg__():  # noqa
             dict(path='remote/payload.py', sha1='acacf4c2901b7708224af5d4414ecb823947297a'),
             dict(path='targets/bestpython.py', sha1='75c16ab86397a8e81017f148a2ef711567b6ab27'),
             dict(path='targets/targets.py', sha1='d07f2d30c31bad89bd4a3b44bb6a5b6c95c05888'),
-            dict(path='../../omlish/argparse/cli.py', sha1='ae89334840eadb9838667d98a0bdd4870bdd790b'),
+            dict(path='../../omlish/argparse/parsers.py', sha1='93e1ecadeee2cdc7ac2b8593ad25829335a7546d'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
@@ -128,6 +128,7 @@ def __omlish_amalg__():  # noqa
             dict(path='deploy/tags.py', sha1='bde9d054381dd1887889f2098748dcc15c648637'),
             dict(path='marshal.py', sha1='175f59215a92afd42468f6258f1202b9ec3362cb'),
             dict(path='remote/channel.py', sha1='2b6498da48ff89901b88a6a1ef84c58b37ddb410'),
+            dict(path='../../omlish/argparse/cli.py', sha1='7ea2eaeb804dc60c22d6b610932f0de1153a3ba6'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/configs/nginx.py', sha1='98730055f70019525ef17a24fadfa7b1ca28804d'),
@@ -201,7 +202,7 @@ def __omlish_amalg__():  # noqa
             dict(path='deploy/inject.py', sha1='d84e9c3e980c5a1ec62d18628d8911f5b6bb125f'),
             dict(path='inject.py', sha1='b1c173df021f190d3631f3828470fa1564e0b4b4'),
             dict(path='bootstrap_.py', sha1='96fff62e0152795271c79ea29face58dadab0894'),
-            dict(path='main.py', sha1='ddddcdb54aabe67188dce6a5f65e04ce296a75b0'),
+            dict(path='main.py', sha1='1284547099cd364f3f25394d63cb77c4f9e51aaf'),
         ],
     )
 
@@ -262,7 +263,7 @@ UnparsedVersion = ta.Union['Version', str]  # ta.TypeAlias
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]  # ta.TypeAlias
 
-# ../../omlish/argparse/cli.py
+# ../../omlish/argparse/parsers.py
 ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 
 # ../../omlish/lite/maybes.py
@@ -6392,19 +6393,7 @@ class SubprocessManageTarget(LocalManageTarget, PythonRemoteManageTarget):
 
 
 ########################################
-# ../../../omlish/argparse/cli.py
-"""
-FIXME:
- - exit_on_error lol
-
-TODO:
- - default command
- - auto match all underscores to hyphens
- - pre-run, post-run hooks
- - exitstack?
- - suggestion - difflib.get_close_matches
- - add_argument_group - group kw on ArgparseKwarg?
-"""
+# ../../../omlish/argparse/parsers.py
 
 
 ##
@@ -6520,23 +6509,14 @@ def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
         raise TypeError(ann)
 
 
-class _ArgparseCliAnnotationBox:
+class _ArgparseAnnotationBox:
     def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
         super().__init__()
 
         self.__annotations__ = annotations  # type: ignore
 
 
-class ArgparseCli:
-    def __init__(self, argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-        super().__init__()
-
-        self._argv = argv if argv is not None else sys.argv[1:]
-
-        self._args, self._unknown_args = self.get_parser().parse_known_args(self._argv)
-
-    #
-
+class ArgparseParserClass(Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -6555,7 +6535,7 @@ class ArgparseCli:
 
         #
 
-        anns = ta.get_type_hints(_ArgparseCliAnnotationBox({
+        anns = ta.get_type_hints(_ArgparseAnnotationBox({
             **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
             **ns.get('__annotations__', {}),
         }), globalns=ns.get('__globals__', {}))
@@ -6624,82 +6604,6 @@ class ArgparseCli:
     @classmethod
     def get_parser(cls) -> argparse.ArgumentParser:
         return cls._parser
-
-    @property
-    def argv(self) -> ta.Sequence[str]:
-        return self._argv
-
-    @property
-    def args(self) -> argparse.Namespace:
-        return self._args
-
-    @property
-    def unknown_args(self) -> ta.Sequence[str]:
-        return self._unknown_args
-
-    #
-
-    def _bind_cli_cmd(self, cmd: ArgparseCmd) -> ta.Callable:
-        return cmd.__get__(self, type(self))
-
-    def prepare_cli_run(self) -> ta.Optional[ta.Callable]:
-        cmd = getattr(self.args, '_cmd', None)
-
-        if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
-            msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
-            if (parser := self.get_parser()).exit_on_error:  # noqa
-                parser.error(msg)
-            else:
-                raise argparse.ArgumentError(None, msg)
-
-        if cmd is None:
-            self.get_parser().print_help()
-            return None
-
-        return self._bind_cli_cmd(cmd)
-
-    #
-
-    def cli_run(self) -> ta.Optional[int]:
-        if (fn := self.prepare_cli_run()) is None:
-            return 0
-
-        return fn()
-
-    def cli_run_and_exit(self) -> ta.NoReturn:
-        rc = self.cli_run()
-        if not isinstance(rc, int):
-            rc = 0
-        raise SystemExit(rc)
-
-    def __call__(self, *, exit: bool = False) -> ta.Optional[int]:  # noqa
-        if exit:
-            return self.cli_run_and_exit()
-        else:
-            return self.cli_run()
-
-    #
-
-    async def async_cli_run(
-            self,
-            *,
-            force_async: bool = False,
-    ) -> ta.Optional[int]:
-        if (fn := self.prepare_cli_run()) is None:
-            return 0
-
-        if force_async:
-            is_async = True
-        else:
-            tfn = fn
-            if isinstance(tfn, ArgparseCmd):
-                tfn = tfn.fn
-            is_async = inspect.iscoroutinefunction(tfn)
-
-        if is_async:
-            return await fn()
-        else:
-            return fn()
 
 
 ########################################
@@ -9606,6 +9510,110 @@ class RemoteChannelImpl(RemoteChannel):
     async def recv_obj(self, ty: ta.Type[T]) -> ta.Optional[T]:
         async with self._input_lock:
             return await self._recv_obj(ty)
+
+
+########################################
+# ../../../omlish/argparse/cli.py
+"""
+FIXME:
+ - exit_on_error lol
+
+TODO:
+ - default command
+ - auto match all underscores to hyphens
+ - pre-run, post-run hooks
+ - exitstack?
+ - suggestion - difflib.get_close_matches
+ - add_argument_group - group kw on ArgparseKwarg?
+"""
+
+
+##
+
+
+class ArgparseCli(ArgparseParserClass, Abstract):
+    def __init__(self, argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+        super().__init__()
+
+        self._argv = argv if argv is not None else sys.argv[1:]
+
+        self._args, self._unknown_args = self.get_parser().parse_known_args(self._argv)
+
+    @property
+    def argv(self) -> ta.Sequence[str]:
+        return self._argv
+
+    @property
+    def args(self) -> argparse.Namespace:
+        return self._args
+
+    @property
+    def unknown_args(self) -> ta.Sequence[str]:
+        return self._unknown_args
+
+    #
+
+    def _bind_cli_cmd(self, cmd: ArgparseCmd) -> ta.Callable:
+        return cmd.__get__(self, type(self))
+
+    def prepare_cli_run(self) -> ta.Optional[ta.Callable]:
+        cmd = getattr(self.args, '_cmd', None)
+
+        if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
+            msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
+            if (parser := self.get_parser()).exit_on_error:  # noqa
+                parser.error(msg)
+            else:
+                raise argparse.ArgumentError(None, msg)
+
+        if cmd is None:
+            self.get_parser().print_help()
+            return None
+
+        return self._bind_cli_cmd(cmd)
+
+    #
+
+    def cli_run(self) -> ta.Optional[int]:
+        if (fn := self.prepare_cli_run()) is None:
+            return 0
+
+        return fn()
+
+    def cli_run_and_exit(self) -> ta.NoReturn:
+        rc = self.cli_run()
+        if not isinstance(rc, int):
+            rc = 0
+        raise SystemExit(rc)
+
+    def __call__(self, *, exit: bool = False) -> ta.Optional[int]:  # noqa
+        if exit:
+            return self.cli_run_and_exit()
+        else:
+            return self.cli_run()
+
+    #
+
+    async def async_cli_run(
+            self,
+            *,
+            force_async: bool = False,
+    ) -> ta.Optional[int]:
+        if (fn := self.prepare_cli_run()) is None:
+            return 0
+
+        if force_async:
+            is_async = True
+        else:
+            tfn = fn
+            if isinstance(tfn, ArgparseCmd):
+                tfn = tfn.fn
+            is_async = inspect.iscoroutinefunction(tfn)
+
+        if is_async:
+            return await fn()
+        else:
+            return fn()
 
 
 ########################################

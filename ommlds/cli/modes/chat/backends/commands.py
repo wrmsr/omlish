@@ -45,5 +45,5 @@ class BackendCommand(mc.facades.Command):
 
     async def _run_set(self, ctx: mc.facades.Command.Context, args: ap.Namespace) -> None:
         be = mc.BackendSpec.of(check.non_empty_str(args.spec))
-        await self._manager.set_backend_spec(be)
+        be = await self._manager.set_backend_spec(be)
         await ctx.print(be.as_json())
