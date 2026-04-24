@@ -85,6 +85,7 @@ r"""
 
     return inj.as_elements(*lst)
 """  # noqa
+import functools
 import typing as ta
 
 from omlish import inject as inj
@@ -129,11 +130,15 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
         mc.CompletionService,
         mc.EmbeddingService,
     ]:
-        bp_iface: ta.Any = mc.ServiceProvider[service_cls]  # noqa
-        bp_impl: ta.Any = mc.GenericServiceProvider[service_cls]  # noqa
         lst.extend([
-            inj.bind(bp_impl, to_fn=bp_impl, singleton=True),
-            inj.bind(bp_iface, to_key=bp_impl),
+            inj.bind(
+                mc.ServiceProvider[service_cls],  # noqa
+                to_fn=functools.partial(
+                    _impl.ServiceProviderImpl,
+                    service_cls,
+                ),
+                singleton=True,
+            ),
         ])
 
     #
