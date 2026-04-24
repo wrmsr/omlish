@@ -3,7 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
-from omlish.argparse import all as argparse
+from omlish.argparse import all as ap
 from omlish.formats import json
 from omlish.formats import json5
 
@@ -25,7 +25,7 @@ class PermissionsCommand(Command):
 
         self._permissions = permissions
 
-    def _configure_parser(self, parser: argparse.ArgumentParser) -> None:
+    def _configure_parser(self, parser: ap.ArgumentParser) -> None:
         super()._configure_parser(parser)
 
         subparsers = parser.add_subparsers()
@@ -35,12 +35,12 @@ class PermissionsCommand(Command):
         parser_list.set_defaults(cmd='list')
 
         parser_set = subparsers.add_parser('add')
+        parser_set.set_defaults(cmd='add')
         parser_set.add_argument('state', choices=('allow', 'ask', 'deny'))
         parser_set.add_argument('kind')
         parser_set.add_argument('body')
-        parser_set.set_defaults(cmd='add')
 
-    async def _run_args(self, ctx: Command.Context, args: argparse.Namespace) -> None:
+    async def _run_args(self, ctx: Command.Context, args: ap.Namespace) -> None:
         if args.cmd == 'list':
             await self._run_list(ctx, args)
         elif args.cmd == 'add':
@@ -56,7 +56,7 @@ class PermissionsCommand(Command):
         ToolPermissionState.ALLOW: 'green',
     }
 
-    async def _run_list(self, ctx: Command.Context, args: argparse.Namespace) -> None:
+    async def _run_list(self, ctx: Command.Context, args: ap.Namespace) -> None:
         rules = self._permissions.get_rules()
         if not rules:
             await ctx.print('No permissions set')
@@ -79,8 +79,9 @@ class PermissionsCommand(Command):
 
     #
 
-    async def _run_add(self, ctx: Command.Context, args: argparse.Namespace) -> None:
-        dct: dict = {check.non_empty_str(args.kind): json5.loads(args.body or '{}')}
+    async def _run_add(self, ctx: Command.Context, args: ap.Namespace) -> None:
+        body = json5.loads(args.body or '{}', allow_ident_values=True)
+        dct: dict = {check.non_empty_str(args.kind): body}
         matcher = msh.unmarshal(dct, ToolPermissionMatcher)
         rule = ToolPermissionRule(matcher, ToolPermissionState[args.state.upper()])
 

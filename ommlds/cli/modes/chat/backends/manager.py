@@ -1,3 +1,5 @@
+from omlish import check
+
 from ..... import minichain as mc
 from .types import DEFAULT_BACKEND
 from .types import InitialBackendSpec
@@ -22,3 +24,6 @@ class BackendManager:
 
     async def get_backend_spec(self) -> mc.BackendSpec:
         return self._backend_spec
+
+    async def set_backend_spec(self, backend_spec: mc.BackendSpec) -> None:
+        self._backend_spec = check.isinstance(backend_spec, mc.BackendSpec)
