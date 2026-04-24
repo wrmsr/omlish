@@ -1,48 +1,4 @@
-import typing as ta
-
-from omlish import inject as inj
-from omlish import lang
-from omlish import typedvalues as tv
-
-from ... import minichain as mc
-from ._catalogs.base import BackendCatalog
-from ._catalogs.strings import BackendStringBackendCatalog
-from .configs import BackendConfig
-from .injection import backend_configs
-
-
-with lang.auto_proxy_import(globals()):
-    from ...minichain.backends.huggingface import repos as hf_repos
-    from . import catalog as _catalog
-    from . import meta as _meta
-    from . import types as _types
-
-
-##
-
-
-def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
-    lst: list[inj.Elemental] = []
-
-    #
-
-    lst.extend([
-        inj.bind(BackendStringBackendCatalog, singleton=True),
-        inj.bind(BackendCatalog, to_key=BackendStringBackendCatalog),
-    ])
-
-    lst.extend([
-        inj.bind(hf_repos.HuggingfaceModelRepoResolver, singleton=True),
-        inj.bind(mc.ModelRepoResolver, to_key=hf_repos.HuggingfaceModelRepoResolver),
-
-    ])
-
-    #
-
-    lst.append(backend_configs().bind_items_provider(singleton=True))
-
-    #
-
+r"""
     if cfg.backend is not None:
         lst.append(inj.bind(_types.BackendName, to_const=cfg.backend))
     else:
@@ -118,7 +74,7 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     #
 
     async def catalog_backend_instantiator_provider(injector: inj.AsyncInjector) -> _catalog.CatalogBackendProvider.Instantiator:  # noqa
-        async def inner(be: BackendCatalog.Backend, cfgs: _types.BackendConfigs | None) -> ta.Any:
+        async def inner(be: BackendInstantiator.Backend, cfgs: _types.BackendConfigs | None) -> ta.Any:
             kwt = inj.build_kwargs_target(be.factory, non_strict=True)
             kw = await injector.provide_kwargs(kwt)
             return be.factory(*tv.collect(*(be.configs or []), *(cfgs or []), override=True), **kw)
@@ -126,5 +82,58 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
         return _catalog.CatalogBackendProvider.Instantiator(inner)
 
     lst.append(inj.bind(_catalog.CatalogBackendProvider.Instantiator, to_async_fn=catalog_backend_instantiator_provider))  # noqa
+
+    return inj.as_elements(*lst)
+"""  # noqa
+from omlish import inject as inj
+from omlish import lang
+
+from .configs import BackendConfig
+from .injection import backend_configs
+
+
+with lang.auto_proxy_import(globals()):
+    from . import impl as _impl
+    from . import types as _types
+
+
+##
+
+
+def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
+    lst: list[inj.Elemental] = []
+
+    #
+
+    lst.extend([
+        inj.bind(_impl.BackendInstantiatorImpl, singleton=True),
+        inj.bind(_types.BackendInstantiator, to_key=_impl.BackendInstantiatorImpl),
+    ])
+
+    #
+
+    lst.append(backend_configs().bind_items_provider(singleton=True))
+
+    #
+
+    if cfg.backend is not None:
+        lst.append(inj.bind(_types.BackendName, to_const=cfg.backend))
+    else:
+        lst.append(inj.bind(_types.BackendName, to_fn=inj.target(dbn=_types.DefaultBackendName)(lambda dbn: dbn)))
+
+    backend_provider_pairs: list = [
+        (_types.ChatChoicesServiceBackendProvider, _impl.ChatChoicesServiceBackendProviderImpl),
+        (_types.ChatChoicesStreamServiceBackendProvider, _impl.ChatChoicesStreamServiceBackendProviderImpl),
+        (_types.CompletionServiceBackendProvider, _impl.CompletionServiceBackendProviderImpl),
+        (_types.EmbeddingServiceBackendProvider, _impl.EmbeddingServiceBackendProviderImpl),
+    ]
+
+    for bp_iface, bp_impl in backend_provider_pairs:
+        lst.extend([
+            inj.bind(bp_impl, singleton=True),
+            inj.bind(bp_iface, to_key=bp_impl),
+        ])
+
+    #
 
     return inj.as_elements(*lst)

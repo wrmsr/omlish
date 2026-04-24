@@ -6,19 +6,23 @@ from .types import ResolvedBackendSpec
 ##
 
 
-def instantiate_backend_spec(rbs: ResolvedBackendSpec, **kwargs: ta.Any) -> ta.Any:
+def instantiate_backend_spec(rbs: ResolvedBackendSpec, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
     def rec(cur: ResolvedBackendSpec) -> ta.Any:
-        args: list[ta.Any] = []
+        cur_args: list[ta.Any] = []
 
         if (ch := cur.children) is None:
             pass
         elif isinstance(ch, tuple):
-            args.append(tuple(rec(x) for x in ch))
+            cur_args.append(tuple(rec(x) for x in ch))
         else:
-            args.append(rec(ch))
+            cur_args.append(rec(ch))
 
-        args.extend(cur.configs or ())
+        cur_args.extend(cur.configs or ())
 
-        return cur.ctor(*args, **(kwargs if ch is None else {}))
+        return cur.ctor(
+            *cur_args,
+            *(args if ch is None else ()),
+            **(kwargs if ch is None else {}),
+        )
 
     return rec(rbs)

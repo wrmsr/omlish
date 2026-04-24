@@ -21,6 +21,21 @@ BackendConfigs = ta.NewType('BackendConfigs', ta.Sequence['mc.Config'])
 ##
 
 
+class BackendInstantiator(lang.Abstract):
+    @abc.abstractmethod
+    def new_backend(
+            self,
+            service_cls: ta.Any,
+            spec: mc.CanBackendSpec,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[ta.Any]:
+        raise NotImplementedError
+
+
+##
+
+
 class BackendProvider(lang.Abstract, ta.Generic[ServiceT]):
     @abc.abstractmethod
     def provide_backend(self) -> ta.AsyncContextManager[ServiceT]:
