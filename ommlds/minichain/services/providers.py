@@ -29,9 +29,6 @@ class ServiceProvider(lang.Abstract, ta.Generic[ServiceT]):
         raise NotImplementedError
 
 
-#
-
-
 class GenericServiceProvider(ServiceProvider[ServiceT]):
     def __init__(self, service_of_provider: ServiceOfProvider) -> None:
         super().__init__()
