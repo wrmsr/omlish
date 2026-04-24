@@ -123,7 +123,7 @@ def bind_backends(
 
     service_cls: ta.Any
     for service_cls in service_cls_lst:
-        lst.extend([
+        lst.append(
             inj.bind(
                 mc.ServiceProvider[service_cls],  # noqa
                 to_fn=inj.target(
@@ -135,7 +135,7 @@ def bind_backends(
                 )),
                 singleton=True,
             ),
-        ])
+        )
 
     #
 

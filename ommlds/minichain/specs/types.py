@@ -6,6 +6,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
+from omlish.formats import json
 
 from ..configs import Config
 
@@ -34,6 +35,19 @@ class BackendSpec(lang.Sealed):
 
         else:
             raise TypeError(obj)
+
+    #
+
+    def as_json(self) -> str:
+        try:
+            return self._as_json  # type: ignore[attr-defined]
+        except AttributeError:
+            pass
+
+        as_json = json.dumps_compact(msh.marshal(self, BackendSpec))
+
+        object.__setattr__(self, '_as_json', as_json)
+        return as_json
 
 
 ##

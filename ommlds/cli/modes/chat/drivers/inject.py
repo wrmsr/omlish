@@ -1,12 +1,15 @@
+import functools
 import os
+import typing as ta
 
 from omdev.home.paths import get_home_paths
 from omlish import inject as inj
 from omlish import lang
 
 from ..... import minichain as mc
-from ....backends.types import DefaultBackendName
-from .configs import DEFAULT_BACKEND
+from ....backends.injection import backend_configs
+from ....backends.types import BackendConfigs
+from ..backends import BackendSpecGetter
 from .configs import DriverConfig
 from .printing import AiMessagesEventPrinter
 from .printing import AiStreamEventPrinter
@@ -14,7 +17,6 @@ from .printing import ToolUseEventsPrinter
 
 
 with lang.auto_proxy_import(globals()):
-    from ....backends import inject as _backends
     from .state import inject as _state
 
 
@@ -30,15 +32,32 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         mc.drivers.inject.bind_driver(cfg),
 
         _state.bind_state(cfg.state),
-
-        _backends.bind_backends(
-            [
-                mc.ChatChoicesStreamService,
-                mc.ChatChoicesService,
-            ],
-            cfg.backend,
-        ),
     ])
+
+    #
+
+    els.append(backend_configs().bind_items_provider(singleton=True))
+
+    #
+
+    service_cls: ta.Any
+    for service_cls in [
+        mc.ChatChoicesService,
+        mc.ChatChoicesStreamService,
+    ]:
+        els.append(
+            inj.bind(
+                mc.ServiceProvider[service_cls],  # noqa
+                to_fn=inj.target(
+                    spec=BackendSpecGetter,
+                    configs=BackendConfigs,
+                )(functools.partial(
+                    mc.BackendSpecServiceProvider,
+                    service_cls,
+                )),
+                singleton=True,
+            ),
+        )
 
     #
 
@@ -75,10 +94,6 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         ])),
         inj.bind(mc.ToolPermissionsManager, to_key=mc.SimpleToolPermissionsManager),
     ])
-
-    #
-
-    els.append(inj.bind(DefaultBackendName, to_const=DEFAULT_BACKEND))
 
     #
 
