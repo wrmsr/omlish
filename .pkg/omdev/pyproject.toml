@@ -29,6 +29,8 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
+    'ominfra == 0.0.11',
+    'ommlds == 0.0.11',
     'black ~= 26.3',
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
@@ -43,6 +45,12 @@ all = [
     'textual ~= 8.2',
     'textual-dev ~= 1.8',
     'textual-speedups ~= 0.2',
+]
+ominfra = [
+    'ominfra == 0.0.11',
+]
+ommlds = [
+    'ommlds == 0.0.11',
 ]
 black = [
     'black ~= 26.3',

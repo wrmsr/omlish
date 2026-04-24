@@ -12,6 +12,16 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies = {
+        'ominfra': [
+            f'ominfra == {__version__}',
+        ],
+
+        'ommlds': [
+            f'ommlds == {__version__}',
+        ],
+
+        #
+
         'black': [
             'black ~= 26.3',
         ],
