@@ -12,6 +12,9 @@ from .providers import (  # noqa
 
     ServiceProvider,
     GenericServiceProvider,
+
+    ServiceProviderProxyService,
+    ServiceProviderProxyStreamService,
 )
 
 from .reflect import (  # noqa

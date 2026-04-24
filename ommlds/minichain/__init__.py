@@ -467,6 +467,9 @@ with _lang.auto_proxy_init(
         ServiceProvider,
         GenericServiceProvider,
 
+        ServiceProviderProxyService,
+        ServiceProviderProxyStreamService,
+
         #
 
         ReflectedService,
