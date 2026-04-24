@@ -1,7 +1,7 @@
 from omlish import check
 
 from .... import minichain as mc
-from ...backends.types import CompletionServiceBackendProvider
+from ...backends.types import BackendProvider
 from ..base import Mode
 from .configs import CompletionConfig
 
@@ -14,7 +14,7 @@ class CompletionMode(Mode):
             self,
             config: CompletionConfig,
             *,
-            service_provider: CompletionServiceBackendProvider,
+            service_provider: BackendProvider[mc.CompletionService],
     ) -> None:
         super().__init__()
 

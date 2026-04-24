@@ -1,7 +1,7 @@
 from omlish.formats import json
 
 from .... import minichain as mc
-from ...backends.types import EmbeddingServiceBackendProvider
+from ...backends.types import BackendProvider
 from ..base import Mode
 from .configs import EmbeddingConfig
 
@@ -14,7 +14,7 @@ class EmbeddingMode(Mode):
             self,
             config: EmbeddingConfig,
             *,
-            service_provider: EmbeddingServiceBackendProvider,
+            service_provider: BackendProvider[mc.EmbeddingService],
     ) -> None:
         super().__init__()
 

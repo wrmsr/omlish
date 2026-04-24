@@ -1,6 +1,5 @@
 from ..... import minichain as mc
-from ....backends.types import ChatChoicesServiceBackendProvider
-from ....backends.types import ChatChoicesStreamServiceBackendProvider
+from ....backends.types import BackendProvider
 
 
 ##
@@ -9,7 +8,7 @@ from ....backends.types import ChatChoicesStreamServiceBackendProvider
 class ChatChoicesServiceBackendProviderProxy:
     def __init__(
             self,
-            service_provider: ChatChoicesServiceBackendProvider,
+            service_provider: BackendProvider[mc.ChatChoicesService],
     ) -> None:
         super().__init__()
 
@@ -23,7 +22,7 @@ class ChatChoicesServiceBackendProviderProxy:
 class ChatChoicesStreamServiceBackendProviderProxy:
     def __init__(
             self,
-            service_provider: ChatChoicesStreamServiceBackendProvider,
+            service_provider: BackendProvider[mc.ChatChoicesStreamService],
     ) -> None:
         super().__init__()
 

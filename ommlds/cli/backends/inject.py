@@ -85,6 +85,8 @@ r"""
 
     return inj.as_elements(*lst)
 """  # noqa
+import typing as ta
+
 from omlish import inject as inj
 from omlish import lang
 
@@ -115,14 +117,15 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     else:
         lst.append(inj.bind(_types.BackendName, to_fn=inj.target(dbn=_types.DefaultBackendName)(lambda dbn: dbn)))
 
-    backend_provider_pairs: list = [
-        (_types.ChatChoicesServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.ChatChoicesService]),
-        (_types.ChatChoicesStreamServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.ChatChoicesStreamService]),
-        (_types.CompletionServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.CompletionService]),
-        (_types.EmbeddingServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.EmbeddingService]),
-    ]
-
-    for bp_iface, bp_impl in backend_provider_pairs:
+    service_cls: ta.Any
+    for service_cls in [
+        mc.ChatChoicesService,
+        mc.ChatChoicesStreamService,
+        mc.CompletionService,
+        mc.EmbeddingService,
+    ]:
+        bp_iface: ta.Any = _types.BackendProvider[service_cls]  # noqa
+        bp_impl: ta.Any = _impl.GenericBackendProviderImpl[service_cls]  # noqa
         lst.extend([
             inj.bind(bp_impl, to_fn=bp_impl, singleton=True),
             inj.bind(bp_iface, to_key=bp_impl),

@@ -12,6 +12,7 @@ import typing as ta
 
 from .types import Annotated
 from .types import Any
+from .types import ForwardRef
 from .types import Generic
 from .types import GenericLike
 from .types import NewType
@@ -26,7 +27,7 @@ from .types import typeof
 
 
 def strip_objs(ty: Type) -> Type:
-    if isinstance(ty, (type, ta.TypeVar, NewType, Any)):
+    if isinstance(ty, (type, ta.TypeVar, NewType, Any, ForwardRef)):
         return ty
 
     if isinstance(ty, Union):
@@ -45,7 +46,7 @@ def strip_objs(ty: Type) -> Type:
 
 
 def strip_rfl_annotations(ty: Type) -> Type:
-    if isinstance(ty, (type, ta.TypeVar, NewType, Any)):
+    if isinstance(ty, (type, ta.TypeVar, NewType, ForwardRef, Any)):
         return ty
 
     if isinstance(ty, Union):
