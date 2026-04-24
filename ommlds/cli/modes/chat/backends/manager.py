@@ -1,7 +1,7 @@
 from omlish import check
 
 from ..... import minichain as mc
-from .types import DEFAULT_BACKEND
+from .configs import DEFAULT_BACKEND
 from .types import InitialBackendSpec
 
 

@@ -8,9 +8,6 @@ from ..... import minichain as mc
 ##
 
 
-DEFAULT_BACKEND = 'openai'
-
-
 InitialBackendSpec = ta.NewType('InitialBackendSpec', mc.BackendSpec)
 
 
