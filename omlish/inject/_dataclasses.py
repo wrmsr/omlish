@@ -505,26 +505,26 @@ def _process_dataclass__454972cdb0715dc22365cb0a504288ac36355c45():
         "Plans(tup=(CopyPlan(fields=('ty',)), EqPlan(fields=('ty',)), FrozenPlan(fields=('ty',), allow_dynamic_dunder_a"
         "ttrs=False), HashPlan(action='add', fields=('ty',), cache=True), InitPlan(fields=(InitPlan.Field(name='ty', an"
         "notation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None, check_type=None),),"
-        " self_param='self', std_params=('ty',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, in"
-        "it_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ty', kw_only=False, fn=None),), id=False, t"
-        "erse=False, default_fn=None)))"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=OpRef(name='init.fields.0.validate'), check_type=None),"
+        "), self_param='self', std_params=('ty',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, "
+        "init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ty', kw_only=False, fn=None),), id=False,"
+        " terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='d152f7efec7ea241cf364f9c170bbe40950b82d9',
+    plan_repr_sha1='310f8fbacb05af68e1c4c6c6f947aabbfa4eee3c',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
+        '__dataclass__init__fields__0__validate',
     ),
     cls_names=(
         ('omlish.inject.binder', 'CtorProvider'),
     ),
 )
-def _process_dataclass__d152f7efec7ea241cf364f9c170bbe40950b82d9():
+def _process_dataclass__310f8fbacb05af68e1c4c6c6f947aabbfa4eee3c():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__coerce,
+        __dataclass__init__fields__0__validate,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -620,7 +620,13 @@ def _process_dataclass__d152f7efec7ea241cf364f9c170bbe40950b82d9():
             self,
             ty: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
-            ty = __dataclass__init__fields__0__coerce(ty)
+            if not __dataclass__init__fields__0__validate(ty): 
+                raise __dataclass__FieldFnValidationError(
+                    obj=self,
+                    fn=__dataclass__init__fields__0__validate,
+                    field='ty',
+                    value=ty,
+                )
             __dataclass__object_setattr(self, 'ty', ty)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"

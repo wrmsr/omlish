@@ -1,16 +1,14 @@
 import contextlib
 import typing as ta
 
+from omlish import check
 from omlish import lang
+from omlish import reflect as rfl
 
 from ... import minichain as mc
 from .types import BackendConfigs
 from .types import BackendName
 from .types import BackendProvider
-from .types import ChatChoicesServiceBackendProvider
-from .types import ChatChoicesStreamServiceBackendProvider
-from .types import CompletionServiceBackendProvider
-from .types import EmbeddingServiceBackendProvider
 from .types import ServiceT
 
 
@@ -59,33 +57,8 @@ class BackendProviderImpl(BackendProvider[ServiceT], lang.Abstract):
 ##
 
 
-class ChatChoicesServiceBackendProviderImpl(
-    BackendProviderImpl['mc.ChatChoicesService'],
-    ChatChoicesServiceBackendProvider,
-):
-    def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesService]:
-        return self._provide_backend(mc.ChatChoicesService)  # type: ignore[type-abstract]
-
-
-class ChatChoicesStreamServiceBackendProviderImpl(
-    BackendProviderImpl['mc.ChatChoicesStreamService'],
-    ChatChoicesStreamServiceBackendProvider,
-):
-    def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesStreamService]:
-        return self._provide_backend(mc.ChatChoicesStreamService)  # type: ignore[type-abstract]
-
-
-class CompletionServiceBackendProviderImpl(
-    BackendProviderImpl['mc.CompletionService'],
-    CompletionServiceBackendProvider,
-):
-    def provide_backend(self) -> ta.AsyncContextManager[mc.CompletionService]:
-        return self._provide_backend(mc.CompletionService)  # type: ignore[type-abstract]
-
-
-class EmbeddingServiceBackendProviderImpl(
-    BackendProviderImpl['mc.EmbeddingService'],
-    EmbeddingServiceBackendProvider,
-):
-    def provide_backend(self) -> ta.AsyncContextManager[mc.EmbeddingService]:
-        return self._provide_backend(mc.EmbeddingService)  # type: ignore[type-abstract]
+class GenericBackendProviderImpl(BackendProviderImpl[ServiceT]):
+    def provide_backend(self) -> ta.AsyncContextManager[ServiceT]:
+        rty = rfl.typeof(rfl.get_orig_class(self))
+        [service_cls] = check.isinstance(rty, rfl.Generic).args
+        return self._provide_backend(service_cls)  # type: ignore[arg-type]

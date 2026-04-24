@@ -72,8 +72,13 @@ def build_kwargs_target(
     if isinstance(obj, KwargsTarget):
         return obj
 
-    sig = signature(obj)
-    tags = _TAGS.get(obj)
+    tgt = obj
+
+    if rfl.is_simple_generic_alias_type(type(tgt)):
+        tgt = ta.get_origin(tgt)
+
+    sig = signature(tgt)
+    tags = _TAGS.get(tgt)
 
     skip_names: set[str] = set()
     if skip_kwargs is not None:

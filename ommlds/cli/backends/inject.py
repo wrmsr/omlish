@@ -88,6 +88,7 @@ r"""
 from omlish import inject as inj
 from omlish import lang
 
+from ... import minichain as mc
 from .configs import BackendConfig
 from .injection import backend_configs
 
@@ -115,15 +116,15 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
         lst.append(inj.bind(_types.BackendName, to_fn=inj.target(dbn=_types.DefaultBackendName)(lambda dbn: dbn)))
 
     backend_provider_pairs: list = [
-        (_types.ChatChoicesServiceBackendProvider, _impl.ChatChoicesServiceBackendProviderImpl),
-        (_types.ChatChoicesStreamServiceBackendProvider, _impl.ChatChoicesStreamServiceBackendProviderImpl),
-        (_types.CompletionServiceBackendProvider, _impl.CompletionServiceBackendProviderImpl),
-        (_types.EmbeddingServiceBackendProvider, _impl.EmbeddingServiceBackendProviderImpl),
+        (_types.ChatChoicesServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.ChatChoicesService]),
+        (_types.ChatChoicesStreamServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.ChatChoicesStreamService]),
+        (_types.CompletionServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.CompletionService]),
+        (_types.EmbeddingServiceBackendProvider, _impl.GenericBackendProviderImpl[mc.EmbeddingService]),
     ]
 
     for bp_iface, bp_impl in backend_provider_pairs:
         lst.extend([
-            inj.bind(bp_impl, singleton=True),
+            inj.bind(bp_impl, to_fn=bp_impl, singleton=True),
             inj.bind(bp_iface, to_key=bp_impl),
         ])
 

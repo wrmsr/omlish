@@ -3,6 +3,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .. import reflect as rfl
 from .inspect import KwargsTarget
 from .keys import Key
 
@@ -33,7 +34,9 @@ class FnProvider(Provider):
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
 class CtorProvider(Provider):
-    ty: type = dc.xfield(coerce=check.of_isinstance(type))
+    """Functionally identical to `FnProvider`, but limited to simple types to communicate intent."""
+
+    ty: type = dc.xfield(validate=lambda ty: isinstance(ty, type) or rfl.is_simple_generic_alias_type(ty))
 
 
 @dc.dataclass(frozen=True)

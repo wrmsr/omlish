@@ -8,7 +8,9 @@ from .callables import (  # noqa
 )
 
 from .providers import (  # noqa
+    ServiceOfProvider,
     ServiceProvider,
+    GenericServiceProvider,
 )
 
 from .reflect import (  # noqa
