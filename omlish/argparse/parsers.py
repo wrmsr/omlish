@@ -11,7 +11,7 @@ from ..lite.reflect import get_optional_alias_arg
 from ..lite.reflect import is_optional_alias
 
 
-ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
+ArgparseCmdFn = ta.Callable[[], ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]]  # ta.TypeAlias
 
 
 ##
@@ -79,7 +79,7 @@ class ArgparseCmd:
             return self
         return dc.replace(self, fn=self.fn.__get__(instance, owner))  # noqa
 
-    def __call__(self, *args, **kwargs) -> ta.Optional[int]:
+    def __call__(self, *args, **kwargs) -> ta.Union[ta.Optional[int], ta.Awaitable[ta.Optional[int]]]:
         return self.fn(*args, **kwargs)
 
 
@@ -127,11 +127,95 @@ def _get_argparse_arg_ann_kwargs(ann: ta.Any) -> ta.Mapping[str, ta.Any]:
         raise TypeError(ann)
 
 
-class _ArgparseAnnotationBox:
+class _ArgparseParserClassAnnotationBox:
     def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
         super().__init__()
 
         self.__annotations__ = annotations  # type: ignore
+
+
+def configure_argparse_parser_class_parser(
+        cls: type,
+        parser: ta.Optional[argparse.ArgumentParser] = None,
+) -> argparse.ArgumentParser:
+    ns = cls.__dict__
+    objs = {}
+    mro = cls.__mro__[::-1]
+    for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
+        bseen = set()  # type: ignore
+        for k, v in bns.items():
+            if isinstance(v, (ArgparseCmd, ArgparseArg)):
+                check.not_in(v, bseen)
+                bseen.add(v)
+                objs[k] = v
+            elif k in objs:
+                del [k]
+
+    #
+
+    anns = ta.get_type_hints(_ArgparseParserClassAnnotationBox({
+        **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
+        **ns.get('__annotations__', {}),
+    }), globalns=ns.get('__globals__', {}))
+
+    #
+
+    if parser is None:
+        parser = argparse.ArgumentParser()
+
+    #
+
+    subparsers = parser.add_subparsers()
+
+    for att, obj in objs.items():
+        if isinstance(obj, ArgparseCmd):
+            if obj.parent is not None:
+                raise NotImplementedError
+
+            for cn in [obj.name, *(obj.aliases or [])]:
+                subparser = subparsers.add_parser(cn)
+
+                for arg in (obj.args or []):
+                    if (
+                            len(arg.args) == 1 and
+                            isinstance(arg.args[0], str) and
+                            not (n := check.isinstance(arg.args[0], str)).startswith('-') and
+                            'metavar' not in arg.kwargs
+                    ):
+                        subparser.add_argument(
+                            n.replace('-', '_'),
+                            **arg.kwargs,
+                            metavar=n,
+                        )
+                    else:
+                        subparser.add_argument(*arg.args, **arg.kwargs)
+
+                subparser.set_defaults(_cmd=obj)
+
+        elif isinstance(obj, ArgparseArg):
+            if obj.group is not None:
+                # FIXME: add_argument_group
+                raise NotImplementedError
+
+            if att in anns:
+                ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
+                obj.kwargs = {**ann_kwargs, **obj.kwargs}
+
+            if not obj.dest:
+                if 'dest' in obj.kwargs:
+                    obj.dest = obj.kwargs['dest']
+                else:
+                    obj.dest = obj.kwargs['dest'] = att  # type: ignore
+
+            parser.add_argument(*obj.args, **obj.kwargs)
+
+        else:
+            raise TypeError(obj)
+
+    return parser
+
+
+##
 
 
 class ArgparseParserClass(Abstract):
@@ -139,81 +223,15 @@ class ArgparseParserClass(Abstract):
         super().__init_subclass__(**kwargs)
 
         ns = cls.__dict__
-        objs = {}
-        mro = cls.__mro__[::-1]
-        for bns in [bcls.__dict__ for bcls in reversed(mro)] + [ns]:
-            bseen = set()  # type: ignore
-            for k, v in bns.items():
-                if isinstance(v, (ArgparseCmd, ArgparseArg)):
-                    check.not_in(v, bseen)
-                    bseen.add(v)
-                    objs[k] = v
-                elif k in objs:
-                    del [k]
-
-        #
-
-        anns = ta.get_type_hints(_ArgparseAnnotationBox({
-            **{k: v for bcls in reversed(mro) for k, v in getattr(bcls, '__annotations__', {}).items()},
-            **ns.get('__annotations__', {}),
-        }), globalns=ns.get('__globals__', {}))
-
-        #
 
         if '_parser' in ns:
             parser = check.isinstance(ns['_parser'], argparse.ArgumentParser)
         else:
             parser = argparse.ArgumentParser()
-            setattr(cls, '_parser', parser)
 
-        #
+        configure_argparse_parser_class_parser(cls, parser)
 
-        subparsers = parser.add_subparsers()
-
-        for att, obj in objs.items():
-            if isinstance(obj, ArgparseCmd):
-                if obj.parent is not None:
-                    raise NotImplementedError
-
-                for cn in [obj.name, *(obj.aliases or [])]:
-                    subparser = subparsers.add_parser(cn)
-
-                    for arg in (obj.args or []):
-                        if (
-                                len(arg.args) == 1 and
-                                isinstance(arg.args[0], str) and
-                                not (n := check.isinstance(arg.args[0], str)).startswith('-') and
-                                'metavar' not in arg.kwargs
-                        ):
-                            subparser.add_argument(
-                                n.replace('-', '_'),
-                                **arg.kwargs,
-                                metavar=n,
-                            )
-                        else:
-                            subparser.add_argument(*arg.args, **arg.kwargs)
-
-                    subparser.set_defaults(_cmd=obj)
-
-            elif isinstance(obj, ArgparseArg):
-                if obj.group is not None:
-                    # FIXME: add_argument_group
-                    raise NotImplementedError
-
-                if att in anns:
-                    ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
-                    obj.kwargs = {**ann_kwargs, **obj.kwargs}
-
-                if not obj.dest:
-                    if 'dest' in obj.kwargs:
-                        obj.dest = obj.kwargs['dest']
-                    else:
-                        obj.dest = obj.kwargs['dest'] = att  # type: ignore
-
-                parser.add_argument(*obj.args, **obj.kwargs)
-
-            else:
-                raise TypeError(obj)
+        setattr(cls, '_parser', parser)
 
     #
 

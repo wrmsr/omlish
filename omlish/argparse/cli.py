@@ -18,6 +18,7 @@ import sys
 import typing as ta
 
 from ..lite.abstract import Abstract
+from ..lite.check import check
 from .parsers import ArgparseCmd
 from .parsers import ArgparseParserClass
 
@@ -72,7 +73,7 @@ class ArgparseCli(ArgparseParserClass, Abstract):
         if (fn := self.prepare_cli_run()) is None:
             return 0
 
-        return fn()
+        return check.isinstance(fn(), (int, None))
 
     def cli_run_and_exit(self) -> ta.NoReturn:
         rc = self.cli_run()
