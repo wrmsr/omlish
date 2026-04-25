@@ -174,7 +174,10 @@ class InMemoryStore(Store):
 
             return lst
 
-        ix = ts.indexes[si.index._store_name]
+        try:
+            ix = ts.indexes[si.index._store_name]
+        except KeyError:
+            return []
         try:
             xs = ix.keys[si.index_key]
         except KeyError:
@@ -266,11 +269,12 @@ class InMemoryStore(Store):
                 [idx_key] = idx_key
 
             iz = idx_keys[idx_key]
-            check.in_(k, iz)
 
             if idx._is_unique:
+                check.equal(k, iz)
                 idx_keys = idx_keys.without(idx_key)
             else:
+                check.in_(k, iz)
                 iz -= frozenset([k])
                 if not iz:
                     idx_keys = idx_keys.without(idx_key)
