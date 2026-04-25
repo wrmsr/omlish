@@ -42,6 +42,10 @@ class Command(lang.Abstract):
         )
         self._configure_parser(self.__parser)
 
+    @property
+    def _parser(self) -> ap.ArgumentParser:
+        return self.__parser
+
     #
 
     class _ArgumentParser(ap.NoExitArgumentParser):

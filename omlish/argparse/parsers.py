@@ -56,6 +56,7 @@ class ArgparseCmd:
     aliases: ta.Optional[ta.Sequence[str]] = None
     parent: ta.Optional['ArgparseCmd'] = None
     accepts_unknown: bool = False
+    default: bool = False
 
     def __post_init__(self) -> None:
         def check_name(s: str) -> None:
@@ -89,12 +90,14 @@ def argparse_cmd(
         aliases: ta.Optional[ta.Iterable[str]] = None,
         parent: ta.Optional[ArgparseCmd] = None,
         accepts_unknown: bool = False,
+        default: bool = False,
 ) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
     for arg in args:
         check.isinstance(arg, ArgparseArg)
     check.isinstance(name, (str, type(None)))
     check.isinstance(parent, (ArgparseCmd, type(None)))
     check.not_isinstance(aliases, str)
+    check.isinstance(default, bool)
 
     def inner(fn):
         return ArgparseCmd(
@@ -104,6 +107,7 @@ def argparse_cmd(
             aliases=tuple(aliases) if aliases is not None else None,
             parent=parent,
             accepts_unknown=accepts_unknown,
+            default=default,
         )
 
     return inner
@@ -167,10 +171,17 @@ def configure_argparse_parser_class_parser(
 
     subparsers = parser.add_subparsers()
 
+    default_cmd: ta.Optional[ArgparseCmd] = None
+
     for att, obj in objs.items():
         if isinstance(obj, ArgparseCmd):
             if obj.parent is not None:
                 raise NotImplementedError
+
+            if obj.default:
+                if default_cmd:
+                    raise TypeError(f'Already have a default command: {default_cmd}, {obj}')
+                default_cmd = obj
 
             for cn in [obj.name, *(obj.aliases or [])]:
                 subparser = subparsers.add_parser(cn)
@@ -211,6 +222,9 @@ def configure_argparse_parser_class_parser(
 
         else:
             raise TypeError(obj)
+
+    if default_cmd is not None:
+        parser.set_defaults(_cmd=default_cmd)
 
     return parser
 

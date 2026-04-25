@@ -129,7 +129,7 @@ def __omlish_amalg__():  # noqa
             dict(path='github/bootstrap.py', sha1='9bf24b05603cd1a82db8be8b645bbad3e0d3f22f'),
             dict(path='../oci/datarefs.py', sha1='793ce5f2774e052b28d04b226a5f1eff6eec0a72'),
             dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
-            dict(path='../../omlish/argparse/parsers.py', sha1='ad6071bc2bff5ea7b8ebd7c920675057f40bc9b7'),
+            dict(path='../../omlish/argparse/parsers.py', sha1='f874eb5c45e22156b2e9a762cfb68a2311b6d1f8'),
             dict(path='../../omlish/formats/yaml/goyaml/errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
@@ -4030,6 +4030,7 @@ class ArgparseCmd:
     aliases: ta.Optional[ta.Sequence[str]] = None
     parent: ta.Optional['ArgparseCmd'] = None
     accepts_unknown: bool = False
+    default: bool = False
 
     def __post_init__(self) -> None:
         def check_name(s: str) -> None:
@@ -4063,12 +4064,14 @@ def argparse_cmd(
         aliases: ta.Optional[ta.Iterable[str]] = None,
         parent: ta.Optional[ArgparseCmd] = None,
         accepts_unknown: bool = False,
+        default: bool = False,
 ) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
     for arg in args:
         check.isinstance(arg, ArgparseArg)
     check.isinstance(name, (str, type(None)))
     check.isinstance(parent, (ArgparseCmd, type(None)))
     check.not_isinstance(aliases, str)
+    check.isinstance(default, bool)
 
     def inner(fn):
         return ArgparseCmd(
@@ -4078,6 +4081,7 @@ def argparse_cmd(
             aliases=tuple(aliases) if aliases is not None else None,
             parent=parent,
             accepts_unknown=accepts_unknown,
+            default=default,
         )
 
     return inner
@@ -4141,10 +4145,17 @@ def configure_argparse_parser_class_parser(
 
     subparsers = parser.add_subparsers()
 
+    default_cmd: ta.Optional[ArgparseCmd] = None
+
     for att, obj in objs.items():
         if isinstance(obj, ArgparseCmd):
             if obj.parent is not None:
                 raise NotImplementedError
+
+            if obj.default:
+                if default_cmd:
+                    raise TypeError(f'Already have a default command: {default_cmd}, {obj}')
+                default_cmd = obj
 
             for cn in [obj.name, *(obj.aliases or [])]:
                 subparser = subparsers.add_parser(cn)
@@ -4185,6 +4196,9 @@ def configure_argparse_parser_class_parser(
 
         else:
             raise TypeError(obj)
+
+    if default_cmd is not None:
+        parser.set_defaults(_cmd=default_cmd)
 
     return parser
 

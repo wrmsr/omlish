@@ -17,6 +17,8 @@ with _lang.auto_proxy_init(globals()):
         ArgparseCmdFn as CmdFn,
         ArgparseCmd as Cmd,
         argparse_cmd as cmd,
+
+        configure_argparse_parser_class_parser as configure_parser_class_parser,
     )
 
     from .utils import (  # noqa
