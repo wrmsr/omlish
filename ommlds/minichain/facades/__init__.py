@@ -23,6 +23,8 @@ with _lang.auto_proxy_init(globals()):
         ArgsCommandError,
 
         Command,
+
+        ParserClassCommand,
     )
 
     from .commands.manager import (  # noqa

@@ -117,3 +117,32 @@ class Command(lang.Abstract):
     @abc.abstractmethod
     def _run_args(self, ctx: Context, args: ap.Namespace) -> ta.Awaitable[None]:
         raise NotImplementedError
+
+
+##
+
+
+class ParserClassCommand(Command, lang.Abstract):
+    def _configure_parser(self, parser: ap.ArgumentParser) -> None:
+        super()._configure_parser(parser)
+
+        ap.configure_parser_class_parser(type(self), parser)
+
+    async def _run_args(self, ctx: Command.Context, args: ap.Namespace) -> None:
+        cmd = getattr(args, '_cmd', None)
+
+        # FIXME:
+        # if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
+        #     msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
+        #     if (parser := self.get_parser()).exit_on_error:  # noqa
+        #         parser.error(msg)
+        #     else:
+        #         raise argparse.ArgumentError(None, msg)
+
+        if cmd is None:
+            self._parser.print_help()
+            return
+
+        fn = cmd.__get__(self, type(self))  # noqa
+
+        await fn(ctx, args)
