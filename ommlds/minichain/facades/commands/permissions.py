@@ -13,40 +13,17 @@ from ...tools.permissions.types import ToolPermissionRule
 from ...tools.permissions.types import ToolPermissionState
 from ..text import FacadeText
 from ..text import FacadeTextColor
-from .base import Command
+from .base import ParserClassCommand
 
 
 ##
 
 
-class PermissionsCommand(Command):
+class PermissionsCommand(ParserClassCommand):
     def __init__(self, permissions: ToolPermissionsManager) -> None:
         super().__init__()
 
         self._permissions = permissions
-
-    def _configure_parser(self, parser: ap.ArgumentParser) -> None:
-        super()._configure_parser(parser)
-
-        subparsers = parser.add_subparsers()
-        parser.set_defaults(cmd='list')
-
-        parser_list = subparsers.add_parser('list')
-        parser_list.set_defaults(cmd='list')
-
-        parser_set = subparsers.add_parser('add')
-        parser_set.set_defaults(cmd='add')
-        parser_set.add_argument('state', choices=('allow', 'ask', 'deny'))
-        parser_set.add_argument('kind')
-        parser_set.add_argument('body')
-
-    async def _run_args(self, ctx: Command.Context, args: ap.Namespace) -> None:
-        if args.cmd == 'list':
-            await self._run_list(ctx, args)
-        elif args.cmd == 'add':
-            await self._run_add(ctx, args)
-        else:
-            raise RuntimeError(f'Unknown command: {args.cmd}')
 
     #
 
@@ -56,7 +33,11 @@ class PermissionsCommand(Command):
         ToolPermissionState.ALLOW: 'green',
     }
 
-    async def _run_list(self, ctx: Command.Context, args: ap.Namespace) -> None:
+    @ap.cmd(
+        name='list',
+        default=True,
+    )
+    async def _run_list(self, ctx: ParserClassCommand.Context, args: ap.Namespace) -> None:
         rules = self._permissions.get_rules()
         if not rules:
             await ctx.print('No permissions set')
@@ -79,7 +60,13 @@ class PermissionsCommand(Command):
 
     #
 
-    async def _run_add(self, ctx: Command.Context, args: ap.Namespace) -> None:
+    @ap.cmd(
+        ap.arg('state', choices=('allow', 'ask', 'deny')),
+        ap.arg('kind'),
+        ap.arg('body'),
+        name='add',
+    )
+    async def _run_add(self, ctx: ParserClassCommand.Context, args: ap.Namespace) -> None:
         body = json5.loads(args.body or '{}', allow_ident_values=True)
         dct: dict = {check.non_empty_str(args.kind): body}
         matcher = msh.unmarshal(dct, ToolPermissionMatcher)
