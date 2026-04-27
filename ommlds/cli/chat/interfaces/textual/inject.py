@@ -2,13 +2,11 @@
 FIXME:
  - too lazy to lazy import guts like every other proper inject module lol >_<
 """
-import asyncio
 import contextlib
 
 from omlish import inject as inj
 from omlish import lang
 
-from ..... import minichain as mc
 from ..base import ChatInterface
 from .configs import TextualInterfaceConfig
 from .types import ChatAppGetter
@@ -18,14 +16,11 @@ with lang.auto_proxy_import(globals()):
     from omdev.tui import textual as tx
 
     from . import app as _app
-    from . import chat as _chat
-    from . import facades as _facades
     from . import inputhistory as _inputhistory
     from . import interface as _interface
     from . import suggestions as _suggestions
     from . import termrender as _termrender
-    from . import tools as _tools
-    from . import welcome as _welcome
+    from .drivers import inject as _drivers
 
 
 ##
@@ -45,28 +40,7 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
 
     #
 
-    els.extend([
-        inj.bind(_app.ChatEventQueue, to_const=asyncio.Queue()),
-
-        mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(eq=_app.ChatEventQueue)(lambda eq: lambda ev: eq.put(ev))),  # noqa
-    ])
-
-    #
-
-    if cfg.enable_tools:
-        if cfg.dangerous_no_tool_confirmation:
-            els.append(inj.bind(
-                mc.drivers.ToolPermissionConfirmation,
-                to_ctor=mc.drivers.UnsafeAlwaysAllowToolPermissionConfirmation,
-                singleton=True,
-            ))
-
-        else:
-            els.append(inj.bind(
-                mc.drivers.ToolPermissionConfirmation,
-                to_ctor=_tools.ChatAppToolPermissionConfirmation,
-                singleton=True,
-            ))
+    els.append(_drivers.bind_driver(cfg))
 
     #
 
@@ -87,20 +61,6 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
             to_async_fn=inj.target(mgr=tx.DevtoolsManager)(lambda mgr: mgr.get_setup()),
             singleton=True,
         ),
-    ])
-
-    #
-
-    els.extend([
-        inj.bind(_chat.TextualUserInputSender, singleton=True),
-        inj.bind(mc.facades.UserInputSender, to_key=_chat.TextualUserInputSender),
-    ])
-
-    #
-
-    els.extend([
-        inj.bind(_facades.ChatAppUiMessageDisplayer, singleton=True),
-        inj.bind(mc.facades.UiMessageDisplayer, to_key=_facades.ChatAppUiMessageDisplayer),
     ])
 
     #
@@ -127,10 +87,6 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     els.extend([
         inj.bind(_termrender.BackgroundTerminalRenderer, singleton=True),
     ])
-
-    #
-
-    els.append(inj.bind(_welcome.build_welcome_message, singleton=True))
 
     #
 

@@ -1,7 +1,7 @@
 from omlish.formats import json
 
-from ..... import minichain as mc
-from .types import ChatAppGetter
+from ...... import minichain as mc
+from .types import ChatDriverInterfaceGetter
 
 
 ##
@@ -11,11 +11,11 @@ class ChatAppToolPermissionConfirmation(mc.drivers.ToolPermissionConfirmation):
     def __init__(
             self,
             *,
-            app: ChatAppGetter,
+            chat_driver_interface: ChatDriverInterfaceGetter,
     ) -> None:
         super().__init__()
 
-        self._app = app
+        self._chat_driver_interface = chat_driver_interface
 
     async def confirm_tool_permission(
             self,
@@ -29,7 +29,7 @@ class ChatAppToolPermissionConfirmation(mc.drivers.ToolPermissionConfirmation):
             # spec=msh.marshal(tce.spec),
         )
 
-        if await (await self._app()).confirm_tool_use(
+        if await (await self._chat_driver_interface()).confirm_tool_use(
                 'Execute requested tool?',
                 json.dumps_pretty(tr_dct),
         ):

@@ -1,7 +1,6 @@
 from omdev.tui import rich
 
 from ..... import minichain as mc
-from .types import ChatAppGetter
 
 
 ##
@@ -56,21 +55,3 @@ def facade_text_to_rich_text(t: mc.facades.CanFacadeText) -> rich.Text:
     visit(root, mc.facades.FacadeTextStyle.DEFAULT)
 
     return out
-
-
-##
-
-
-class ChatAppUiMessageDisplayer(mc.facades.UiMessageDisplayer):
-    def __init__(
-            self,
-            *,
-            app: ChatAppGetter,
-    ) -> None:
-        super().__init__()
-
-        self._app = app
-
-    async def display_ui_message(self, text: mc.facades.CanFacadeText) -> None:
-        rt = facade_text_to_rich_text(text)
-        await (await self._app()).display_ui_message(rt)

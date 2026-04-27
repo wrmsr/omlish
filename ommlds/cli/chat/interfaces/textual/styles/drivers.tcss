@@ -1,0 +1,5 @@
+/* Container */
+
+.chat-driver-interface {
+    height: 1fr;
+}

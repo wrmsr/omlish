@@ -153,7 +153,7 @@ def _process_dataclass__7e444005d72adfa0923b925c66293dae30c293cc():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('ommlds.cli.chat.interfaces.textual.app', 'ChatApp.UserInput'),
+        ('ommlds.cli.chat.interfaces.textual.app', 'ChatDriverInterface.UserInput'),
     ),
 )
 def _process_dataclass__a147f14d22fda2880e5bb366e3496276b9fa48e1():
