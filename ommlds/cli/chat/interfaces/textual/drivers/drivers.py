@@ -45,6 +45,7 @@ class ChatDriverInterface(
             *,
             chat_facade: mc.facades.Facade,
             chat_driver: mc.drivers.Driver,
+            commands_manager: mc.facades.CommandsManager,
             chat_event_queue: ChatEventQueue,
             background_terminal_renderer: BackgroundTerminalRenderer,
             welcome_message: WelcomeMessage | None = None,
@@ -53,6 +54,7 @@ class ChatDriverInterface(
 
         self._chat_facade = chat_facade
         self._chat_driver = chat_driver
+        self._commands_manager = commands_manager
         self._chat_event_queue = chat_event_queue
         self._background_terminal_renderer = background_terminal_renderer
 
@@ -319,3 +321,9 @@ class ChatDriverInterface(
                 await tcm.respond(allowed)
 
             self._pending_tool_confirmations.discard(tcm)
+
+    ##
+    # Commands
+
+    def get_commands(self) -> ta.Sequence[mc.facades.Command]:
+        return list(self._commands_manager.get_commands().values())

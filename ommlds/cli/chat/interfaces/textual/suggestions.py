@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
-from ..... import minichain as mc
+from .drivers.types import ChatDriverInterfaceGetter
 
 
 ##
@@ -28,12 +28,12 @@ class SuggestionsManager:
             self,
             config: Config = Config(),
             *,
-            commands_manager: mc.facades.CommandsManager,
+            chat_driver_interface: ChatDriverInterfaceGetter,
     ) -> None:
         super().__init__()
 
         self._config = config
-        self._commands_manager = commands_manager
+        self._chat_driver_interface = chat_driver_interface
 
         self._suggestions: list[SuggestionItem] | None = None
         self._selected_index: int | None = None
@@ -68,13 +68,13 @@ class SuggestionsManager:
 
         return self._suggestions[self._selected_index]
 
-    def update_suggestions(self, prefix: str = '') -> ta.Sequence[SuggestionItem]:
+    async def update_suggestions(self, prefix: str = '') -> ta.Sequence[SuggestionItem]:
         self._selected_index = None
 
         if prefix.startswith('/'):
             pfx_cmds = list(itertools.islice((
                 cmd
-                for cmd in sorted(self._commands_manager.get_commands().values(), key=lambda cmd: cmd.name)
+                for cmd in sorted((await self._chat_driver_interface()).get_commands(), key=lambda cmd: cmd.name)
                 if cmd.name.startswith(prefix[1:])
             ), self._config.max_items))
 

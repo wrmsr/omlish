@@ -90,7 +90,7 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
     def mode(self) -> InputMode:
         return self._mode
 
-    def set_mode(self, mode: InputMode) -> bool:
+    async def set_mode(self, mode: InputMode) -> bool:
         """Returns if changed."""
 
         if self._mode == mode:
@@ -100,13 +100,13 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
 
         self._ic._input_glyph.content = mode
 
-        self._update_suggestions()
+        await self._update_suggestions()
 
         return True
 
-    def _update_suggestions(self) -> None:
+    async def _update_suggestions(self) -> None:
         if self.mode == '/':
-            sis = self._ic._suggestions_manager.update_suggestions(self.text)
+            sis = await self._ic._suggestions_manager.update_suggestions(self.text)
             self._ic._suggestions_popup.update_suggestions(sis)
 
         else:
@@ -158,12 +158,12 @@ class InputTextArea(tx.InitAddClass, tx.TextArea):
         text = self.text
 
         if not text:
-            self.set_mode('>')
+            await self.set_mode('>')
 
         elif text[0] == '/':
-            if not self.set_mode('/'):
+            if not await self.set_mode('/'):
                 if not was_cycling:
-                    self._update_suggestions()
+                    await self._update_suggestions()
 
     async def on_key(self, event: tx.Key) -> None:
         if event.key == 'tab':
