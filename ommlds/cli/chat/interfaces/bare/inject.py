@@ -2,6 +2,7 @@ from omlish import inject as inj
 from omlish import lang
 
 from ..... import minichain as mc
+from ...configs import ChatConfig
 from ..base import ChatInterface
 from .configs import BareInterfaceConfig
 
@@ -9,17 +10,37 @@ from .configs import BareInterfaceConfig
 with lang.auto_proxy_import(globals()):
     from ....interfaces.bare.inputs import asyncs as _inputs_asyncs
     from ....interfaces.bare.inputs import sync as _inputs_sync
+    from ....interfaces.bare.printing import inject as _printing2
+    from ...backends import inject as _backends
+    from ...drivers import inject as _drivers
     from . import chat as _chat
     from . import interactive as _interactive
     from . import oneshot as _oneshot
+    from . import printing as _printing
     from . import tools as _tools
 
 
 ##
 
 
-def bind_bare(cfg: BareInterfaceConfig = BareInterfaceConfig()) -> inj.Elements:
+def bind_bare(
+        cfg: BareInterfaceConfig = BareInterfaceConfig(),
+        *,
+        chat_cfg: ChatConfig = ChatConfig(),
+) -> inj.Elements:
     els: list[inj.Elemental] = []
+
+    #
+
+    els.extend([
+        _backends.bind_backend(chat_cfg),
+
+        _drivers.bind_driver(chat_cfg.driver, chat_cfg=chat_cfg),
+
+        mc.facades.inject.bind_facade(chat_cfg.facade),
+
+        _printing2.bind_printing(chat_cfg.printing),
+    ])
 
     #
 
@@ -70,6 +91,30 @@ def bind_bare(cfg: BareInterfaceConfig = BareInterfaceConfig()) -> inj.Elements:
         inj.bind(mc.facades.PrintMessageDisplayer, singleton=True),
         inj.bind(mc.facades.UiMessageDisplayer, to_key=mc.facades.PrintMessageDisplayer),
     ])
+
+    #
+
+    if cfg.print_ai_responses:
+        if chat_cfg.driver.ai.stream:
+            els.extend([
+                inj.bind(_printing.AiStreamEventPrinter, singleton=True),
+
+                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=_printing.AiStreamEventPrinter)(lambda o: o.handle_event)),  # noqa
+            ])
+
+        else:
+            els.extend([
+                inj.bind(_printing.AiMessagesEventPrinter, singleton=True),
+
+                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=_printing.AiMessagesEventPrinter)(lambda o: o.handle_event)),  # noqa
+            ])
+
+    if cfg.print_tool_use:
+        els.extend([
+            inj.bind(_printing.ToolUseEventsPrinter, singleton=True),
+
+            mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=_printing.ToolUseEventsPrinter)(lambda o: o.handle_event)),  # noqa
+        ])
 
     #
 

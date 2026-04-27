@@ -13,3 +13,6 @@ class BareInterfaceConfig(InterfaceConfig):
     interactive: bool = False
 
     use_readline: bool | ta.Literal['auto'] = 'auto'
+
+    print_ai_responses: bool = False
+    print_tool_use: bool = False

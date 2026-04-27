@@ -13,6 +13,3 @@ class DriverConfig(mc.drivers.DriverConfig):
     state: StateConfig = StateConfig()
 
     backend: BackendConfig = BackendConfig()
-
-    print_ai_responses: bool = False
-    print_tool_use: bool = False

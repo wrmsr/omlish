@@ -3,11 +3,11 @@ import typing as ta
 
 from omlish import check
 
-from .... import minichain as mc
-from ...content.messages import MessageContentExtractor
-from ...content.messages import MessageContentExtractorImpl
-from ...interfaces.bare.printing.types import ContentPrinting
-from ...interfaces.bare.printing.types import StreamContentPrinting
+from ..... import minichain as mc
+from ....content.messages import MessageContentExtractor
+from ....content.messages import MessageContentExtractorImpl
+from ....interfaces.bare.printing.types import ContentPrinting
+from ....interfaces.bare.printing.types import StreamContentPrinting
 
 
 ##

@@ -10,10 +10,8 @@ from .... import minichain as mc
 from ...backends.injection import backend_configs
 from ...backends.types import BackendConfigs
 from ..backends.types import BackendSpecGetter
+from ..configs import ChatConfig
 from .configs import DriverConfig
-from .printing import AiMessagesEventPrinter
-from .printing import AiStreamEventPrinter
-from .printing import ToolUseEventsPrinter
 
 
 with lang.auto_proxy_import(globals()):
@@ -23,7 +21,11 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
+def bind_driver(
+        cfg: DriverConfig = DriverConfig(),
+        *,
+        chat_cfg: ChatConfig = ChatConfig(),
+) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
@@ -33,6 +35,11 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
         _state.bind_state(cfg.state),
     ])
+
+    #
+
+    for mod_cfg in chat_cfg.modules or []:
+        els.extend(mc.modules.inject.bind_module(mod_cfg))
 
     #
 
@@ -94,30 +101,6 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         ])),
         inj.bind(mc.ToolPermissionsManager, to_key=mc.SimpleToolPermissionsManager),
     ])
-
-    #
-
-    if cfg.print_ai_responses:
-        if cfg.ai.stream:
-            els.extend([
-                inj.bind(AiStreamEventPrinter, singleton=True),
-
-                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=AiStreamEventPrinter)(lambda o: o.handle_event)),  # noqa
-            ])
-
-        else:
-            els.extend([
-                inj.bind(AiMessagesEventPrinter, singleton=True),
-
-                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=AiMessagesEventPrinter)(lambda o: o.handle_event)),  # noqa
-            ])
-
-    if cfg.print_tool_use:
-        els.extend([
-            inj.bind(ToolUseEventsPrinter, singleton=True),
-
-            mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=ToolUseEventsPrinter)(lambda o: o.handle_event)),  # noqa
-        ])
 
     #
 

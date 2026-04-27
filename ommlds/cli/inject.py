@@ -2,7 +2,6 @@ from omlish import inject as inj
 from omlish import lang
 from omlish import lifecycles as lc
 
-from .. import minichain as mc
 from .chat.configs import ChatConfig
 from .completion.configs import CompletionConfig
 from .configs import EntrypointConfig
@@ -52,11 +51,6 @@ def bind_main(
 
     else:
         raise TypeError(entrypoint_cfg)
-
-    #
-
-    for mod_cfg in entrypoint_cfg.modules or []:
-        els.extend(mc.modules.inject.bind_module(mod_cfg))
 
     #
 

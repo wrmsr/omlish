@@ -8,7 +8,7 @@ from ..backends.manager import BackendManager
 ##
 
 
-class BackendCommand(mc.facades.ParserClassCommand):
+class BackendCommand(mc.facades.Command):
     def __init__(
             self,
             *,
@@ -18,19 +18,15 @@ class BackendCommand(mc.facades.ParserClassCommand):
 
         self._manager = manager
 
-    @ap.cmd(
-        name='get',
-        default=True,
-    )
-    async def _run_get(self, ctx: mc.facades.Command.Context, args: ap.Namespace) -> None:
-        be = await self._manager.get_backend_spec()
-        await ctx.print(be.as_json())
+    def _configure_parser(self, parser: ap.ArgumentParser) -> None:
+        super()._configure_parser(parser)
 
-    @ap.cmd(
-        ap.arg('spec'),
-        name='set',
-    )
-    async def _run_set(self, ctx: mc.facades.Command.Context, args: ap.Namespace) -> None:
-        be = mc.BackendSpec.of(check.non_empty_str(args.spec))
-        be = await self._manager.set_backend_spec(be)
+        parser.add_argument('spec', nargs='?')
+
+    async def _run_args(self, ctx: mc.facades.Command.Context, args: ap.Namespace) -> None:
+        if (new_spec := args.spec) is not None:
+            be = mc.BackendSpec.of(check.non_empty_str(new_spec))
+            be = await self._manager.set_backend_spec(be)
+        else:
+            be = await self._manager.get_backend_spec()
         await ctx.print(be.as_json())

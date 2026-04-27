@@ -2,10 +2,12 @@ import io
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish.formats import json
 from omlish.text import templating as tpl
 
 from ..containers import BlocksContent
 from ..content import Content
+from ..json import JsonContent
 from ..placeholders import PlaceholderContents
 from ..text import TextContent
 from ..transform.containers import JoinContainerContentsTransform
@@ -63,6 +65,9 @@ class StandardContentRenderer(ContentStrRenderer):
                 if i > 0:
                     self.w(self.o._config.block_sep)  # noqa
                 self.visit(x, None)
+
+        def visit_json_content(self, c: JsonContent, ctx: None) -> None:
+            self.w(json.dumps_pretty(c.v))
 
     def _transform(self, c: Content, ctx: Context) -> Content:
         c = RecursiveContentTransform(

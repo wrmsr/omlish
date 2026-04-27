@@ -7,6 +7,7 @@ import contextlib
 from omlish import inject as inj
 from omlish import lang
 
+from ...configs import ChatConfig
 from ..base import ChatInterface
 from .configs import TextualInterfaceConfig
 from .types import ChatAppGetter
@@ -26,7 +27,11 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.Elements:
+def bind_textual(
+        cfg: TextualInterfaceConfig = TextualInterfaceConfig(),
+        *,
+        chat_cfg: ChatConfig = ChatConfig(),
+) -> inj.Elements:
     els: list[inj.Elemental] = [
         inj.bind(ChatInterface, to_ctor=_interface.TextualChatInterface, singleton=True),
     ]
@@ -40,7 +45,7 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
 
     #
 
-    els.append(_drivers.bind_driver(cfg))
+    els.append(_drivers.bind_driver(cfg, chat_cfg=chat_cfg))
 
     #
 

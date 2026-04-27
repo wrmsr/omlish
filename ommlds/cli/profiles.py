@@ -165,11 +165,11 @@ class ChatProfile(AspectProfile[ChatConfig]):
                     cfg,
                     driver=dc.replace(
                         cfg.driver,
-                        print_ai_responses=True,
                     ),
                     interface=dc.replace(
                         check.isinstance(cfg.interface, BareInterfaceConfig),
                         interactive=ctx.args.interactive,
+                        print_ai_responses=True,
                     ),
                 )
 
@@ -313,7 +313,6 @@ class ChatProfile(AspectProfile[ChatConfig]):
                             *(cfg.driver.tools.enabled_tools or []),
                             *enabled_tools,
                         },
-                        # print_executions=True,
                     ),
                 ),
                 interface=dc.replace(
