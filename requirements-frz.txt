@@ -48,7 +48,7 @@ cramjam==2.11.0
 cryptography==47.0.0
 cycler==0.12.1
 Cython==3.2.4
-datasets==4.8.4
+datasets==4.8.5
 ddgs==9.14.1
 debugpy==1.8.20
 decorator==5.2.1
@@ -80,7 +80,7 @@ google-auth-httplib2==0.3.1
 google-cloud-compute==1.47.0
 googleapis-common-protos==1.74.0
 gprof2dot==2025.4.14
-greenlet==3.4.0
+greenlet==3.5.0
 grpcio==1.80.0
 grpcio-status==1.80.0
 guppy3==3.1.6
@@ -134,7 +134,7 @@ lark==1.3.1
 lazy-loader==0.5
 librt==0.9.0
 linkify-it-py==2.1.0
-llama_cpp_python==0.3.20
+llama_cpp_python==0.3.21
 lsprotocol==2025.0.0
 lxml==6.1.0
 lxml-stubs==0.5.1
@@ -165,7 +165,7 @@ nbconvert==7.17.1
 nbformat==5.10.4
 nest-asyncio==1.6.0
 networkx==3.6.1
-nh3==0.3.4
+nh3==0.3.5
 nodeenv==1.10.0
 nodejs-wheel-binaries==24.15.0
 notebook==7.5.5
@@ -181,7 +181,7 @@ pandas==3.0.2
 pandocfilters==1.5.1
 paramiko==4.0.0
 parso==0.8.6
-pathspec==1.1.0
+pathspec==1.1.1
 pcpp==1.30
 pexpect==4.9.0
 pg8000==1.31.5
@@ -313,7 +313,7 @@ tree-sitter-yaml==0.7.2
 trino==0.337.0
 trio==0.33.0
 twine==6.2.0
-typer==0.24.2
+typer==0.25.0
 types-awscrt==0.31.3
 types-boto3==1.42.96
 types-docutils==0.22.3.20260408
@@ -336,7 +336,7 @@ uritemplate==4.2.0
 urllib3==2.6.3
 urwid==4.0.0
 urwid_readline==0.15.1
-uv==0.11.7
+uv==0.11.8
 uvicorn==0.46.0
 watchdog==6.0.0
 wcwidth==0.6.0
@@ -348,7 +348,7 @@ widgetsnbextension==4.0.15
 wikitextparser==0.56.4
 wrapt==2.1.2
 wsproto==1.3.2
-xxhash==3.6.0
+xxhash==3.7.0
 yappi==1.7.6
 yarl==1.23.0
 zipp==3.23.1
