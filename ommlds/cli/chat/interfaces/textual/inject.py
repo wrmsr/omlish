@@ -3,13 +3,17 @@ FIXME:
  - too lazy to lazy import guts like every other proper inject module lol >_<
 """
 import contextlib
+import functools
+import typing as ta
 
+from omlish import check
 from omlish import inject as inj
 from omlish import lang
 
 from ...configs import ChatConfig
 from ..base import ChatInterface
 from .configs import TextualInterfaceConfig
+from .drivers.types import ChatDriverInterfaceGetter
 from .types import ChatAppGetter
 
 
@@ -21,7 +25,38 @@ with lang.auto_proxy_import(globals()):
     from . import interface as _interface
     from . import suggestions as _suggestions
     from . import termrender as _termrender
+    from .drivers import drivers as _drivers2
     from .drivers import inject as _drivers
+
+
+##
+
+
+async def _provide_chat_driver_interface(
+        chat_cfg: ChatConfig,
+        *,
+        injector: inj.AsyncInjector,
+        aes: contextlib.AsyncExitStack,
+) -> ChatDriverInterfaceGetter:
+    @contextlib.asynccontextmanager
+    async def provide_child() -> ta.Any:
+        async with contextlib.AsyncExitStack() as child_aes:
+            ec = inj.collect_elements(inj.as_elements(
+                inj.bind(contextlib.AsyncExitStack, to_const=child_aes),
+
+                _drivers.bind_driver(
+                    check.isinstance(chat_cfg.interface, TextualInterfaceConfig),
+                    chat_cfg=chat_cfg,
+                ),
+            ))
+
+            from omlish.inject.impl.injector import create_async_injector  # noqa
+
+            child_injector = await create_async_injector(ec, injector)
+
+            yield await child_injector[ChatDriverInterfaceGetter]
+
+    return await aes.enter_async_context(provide_child())
 
 
 ##
@@ -45,7 +80,14 @@ def bind_textual(
 
     #
 
-    els.append(_drivers.bind_driver(cfg, chat_cfg=chat_cfg))
+    els.extend([
+        inj.bind(
+            functools.partial(_provide_chat_driver_interface, chat_cfg),
+            singleton=True,
+        ),
+
+        inj.bind(_drivers2.ChatDriverInterface, to_async_fn=inj.target(g=ChatDriverInterfaceGetter)(lambda g: g())),
+    ])
 
     #
 
