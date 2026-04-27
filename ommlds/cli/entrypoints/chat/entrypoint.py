@@ -1,6 +1,6 @@
 import typing as ta
 
-from ..base import Mode
+from ..base import Entrypoint
 from .interfaces.base import ChatInterface
 
 
@@ -8,7 +8,7 @@ from .interfaces.base import ChatInterface
 
 
 @ta.final
-class ChatMode(Mode):
+class ChatEntrypoint(Entrypoint):
     def __init__(
             self,
             *,

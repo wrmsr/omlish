@@ -2,13 +2,13 @@ from omlish import inject as inj
 from omlish import lang
 
 from .... import minichain as mc
-from ..base import Mode
+from ..base import Entrypoint
 from .configs import ChatConfig
 
 
 with lang.auto_proxy_import(globals()):
     from ...interfaces.bare.printing import inject as _printing
-    from . import mode as _mode
+    from . import entrypoint as _entrypoint
     from .backends import inject as _backends
     from .drivers import inject as _drivers
     from .interfaces import inject as _interfaces
@@ -38,7 +38,7 @@ def bind_chat(cfg: ChatConfig = ChatConfig()) -> inj.Elements:
 
     els.extend([
         # inj.bind(cfg),  # NOTE: *not* done - the code is properly structured around not needing it.
-        inj.bind(Mode, to_ctor=_mode.ChatMode, singleton=True),
+        inj.bind(Entrypoint, to_ctor=_entrypoint.ChatEntrypoint, singleton=True),
     ])
 
     #

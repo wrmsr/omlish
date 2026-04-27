@@ -2,12 +2,12 @@ from omlish import inject as inj
 from omlish import lang
 from omlish import lifecycles as lc
 
-from .modes.configs import ModeConfig
+from .entrypoints.configs import EntrypointConfig
 
 
 with lang.auto_proxy_import(globals()):
     from . import asyncs
-    from .modes import inject as _modes
+    from .entrypoints import inject as _entrypoints
 
 
 ##
@@ -15,7 +15,7 @@ with lang.auto_proxy_import(globals()):
 
 def bind_main(
         *,
-        mode_cfg: ModeConfig,
+        entrypoint_cfg: EntrypointConfig,
         profile_name: str | None = None,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
@@ -30,8 +30,8 @@ def bind_main(
     #
 
     els.extend([
-        _modes.bind_modes(
-            mode_cfg,
+        _entrypoints.bind_entrypoints(
+            entrypoint_cfg,
             profile_name=profile_name,
         ),
     ])

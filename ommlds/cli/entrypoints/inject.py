@@ -4,7 +4,7 @@ from omlish import lang
 from ... import minichain as mc
 from .chat.configs import ChatConfig
 from .completion.configs import CompletionConfig
-from .configs import ModeConfig
+from .configs import EntrypointConfig
 from .embedding.configs import EmbeddingConfig
 from .types import ProfileName
 
@@ -18,8 +18,8 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_modes(
-        cfg: ModeConfig,
+def bind_entrypoints(
+        cfg: EntrypointConfig,
         *,
         profile_name: str | None = None,
 ) -> inj.Elements:

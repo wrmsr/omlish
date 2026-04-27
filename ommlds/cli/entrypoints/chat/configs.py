@@ -2,7 +2,7 @@ from omlish import dataclasses as dc
 
 from .... import minichain as mc
 from ...interfaces.bare.printing.configs import PrintingConfig
-from ..configs import ModeConfig
+from ..configs import EntrypointConfig
 from .drivers.configs import DriverConfig
 from .interfaces.bare.configs import BareInterfaceConfig
 from .interfaces.configs import InterfaceConfig
@@ -12,7 +12,7 @@ from .interfaces.configs import InterfaceConfig
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ChatConfig(ModeConfig):
+class ChatConfig(EntrypointConfig):
     driver: DriverConfig = DriverConfig()
     facade: mc.facades.FacadeConfig = mc.facades.FacadeConfig()
     interface: InterfaceConfig = BareInterfaceConfig()

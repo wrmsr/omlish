@@ -9,9 +9,9 @@ from omlish import inject as inj
 from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
+from .entrypoints.base import Entrypoint
+from .entrypoints.configs import EntrypointConfig
 from .inject import bind_main
-from .modes.base import Mode
-from .modes.configs import ModeConfig
 from .profiles import PROFILE_TYPES
 from .secrets import install_env_secrets
 
@@ -36,16 +36,16 @@ def _process_main_extra_args(args: ap.Namespace) -> None:
 ##
 
 
-async def _run_mode_cfg(
-        mode_cfg: ModeConfig,
+async def _run_entrypoint_cfg(
+        entrypoint_cfg: EntrypointConfig,
         *,
         profile_name: str | None = None,
 ) -> None:
     async with inj.create_async_managed_injector(bind_main(
-            mode_cfg=mode_cfg,
+            entrypoint_cfg=entrypoint_cfg,
             profile_name=profile_name,
     )) as injector:
-        await (await injector[Mode]).run()
+        await (await injector[Entrypoint]).run()
 
 
 ##
@@ -53,7 +53,7 @@ async def _run_mode_cfg(
 
 MAIN_PROFILE_ARGS: ta.Sequence[ap.Arg] = [
     ap.arg('-h', '--help', action='store_true'),
-    ap.arg('profile', choices=list(PROFILE_TYPES)),
+    ap.arg('profile', choices=[*PROFILE_TYPES]),
     ap.arg('args', nargs=ap.REMAINDER),
 ]
 
@@ -73,14 +73,14 @@ async def _a_main(argv: ta.Any = None) -> None:
     profile_cls = PROFILE_TYPES[args.profile]
     profile = profile_cls()
 
-    mode_cfg = profile.configure([
+    entrypoint_cfg = profile.configure([
         *unk_args,
         *(['--help'] if args.help else []),
         *args.args,
     ])
 
-    await _run_mode_cfg(
-        mode_cfg,
+    await _run_entrypoint_cfg(
+        entrypoint_cfg,
         profile_name=args.profile,
     )
 

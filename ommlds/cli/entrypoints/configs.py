@@ -10,5 +10,5 @@ from ... import minichain as mc
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ModeConfig(lang.Abstract):
+class EntrypointConfig(lang.Abstract):
     modules: ta.Sequence[mc.modules.ModuleConfig] | None = None

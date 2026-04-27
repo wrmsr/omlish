@@ -1,14 +1,14 @@
 from omlish.formats import json
 
 from .... import minichain as mc
-from ..base import Mode
+from ..base import Entrypoint
 from .configs import EmbeddingConfig
 
 
 ##
 
 
-class EmbeddingMode(Mode):
+class EmbeddingEntrypoint(Entrypoint):
     def __init__(
             self,
             config: EmbeddingConfig,

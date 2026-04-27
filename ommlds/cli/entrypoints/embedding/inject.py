@@ -4,14 +4,14 @@ from omlish import lang
 from .... import minichain as mc
 from ...backends.configs import BackendConfig
 from ...backends.types import DefaultBackendName
-from ..base import Mode
+from ..base import Entrypoint
 from .configs import DEFAULT_BACKEND
 from .configs import EmbeddingConfig
 
 
 with lang.auto_proxy_import(globals()):
     from ...backends import inject as _backends
-    from . import mode as _mode
+    from . import entrypoint as _entrypoint
 
 
 ##
@@ -24,7 +24,7 @@ def bind_embedding(cfg: EmbeddingConfig) -> inj.Elements:
 
     els.extend([
         inj.bind(cfg),
-        inj.bind(Mode, to_ctor=_mode.EmbeddingMode, singleton=True),
+        inj.bind(Entrypoint, to_ctor=_entrypoint.EmbeddingEntrypoint, singleton=True),
     ])
 
     #

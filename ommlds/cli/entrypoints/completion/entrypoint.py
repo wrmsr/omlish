@@ -1,14 +1,14 @@
 from omlish import check
 
 from .... import minichain as mc
-from ..base import Mode
+from ..base import Entrypoint
 from .configs import CompletionConfig
 
 
 ##
 
 
-class CompletionMode(Mode):
+class CompletionEntrypoint(Entrypoint):
     def __init__(
             self,
             config: CompletionConfig,

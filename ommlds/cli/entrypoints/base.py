@@ -7,7 +7,7 @@ from omlish import lang
 ##
 
 
-class Mode(lang.Abstract):
+class Entrypoint(lang.Abstract):
     @abc.abstractmethod
     def run(self) -> ta.Awaitable[None]:
         raise NotImplementedError

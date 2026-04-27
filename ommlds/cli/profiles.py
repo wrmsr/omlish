@@ -10,32 +10,32 @@ from omlish import lang
 from omlish.argparse import all as ap
 
 from .. import minichain as mc
-from .modes.chat.configs import ChatConfig
-from .modes.chat.interfaces.bare.configs import BareInterfaceConfig
-from .modes.chat.interfaces.configs import InterfaceConfig
-from .modes.chat.interfaces.textual.configs import TextualInterfaceConfig
-from .modes.completion.configs import CompletionConfig
-from .modes.configs import ModeConfig
-from .modes.embedding.configs import EmbeddingConfig
+from .entrypoints.chat.configs import ChatConfig
+from .entrypoints.chat.interfaces.bare.configs import BareInterfaceConfig
+from .entrypoints.chat.interfaces.configs import InterfaceConfig
+from .entrypoints.chat.interfaces.textual.configs import TextualInterfaceConfig
+from .entrypoints.completion.configs import CompletionConfig
+from .entrypoints.configs import EntrypointConfig
+from .entrypoints.embedding.configs import EmbeddingConfig
 
 
-ModeConfigT = ta.TypeVar('ModeConfigT', bound=ModeConfig)
-ModeConfigU = ta.TypeVar('ModeConfigU', bound=ModeConfig)
+EntrypointConfigT = ta.TypeVar('EntrypointConfigT', bound=EntrypointConfig)
+EntrypointConfigU = ta.TypeVar('EntrypointConfigU', bound=EntrypointConfig)
 
 
 ##
 
 
-class Profile(lang.Abstract, ta.Generic[ModeConfigT]):
+class Profile(lang.Abstract, ta.Generic[EntrypointConfigT]):
     @abc.abstractmethod
-    def configure(self, argv: ta.Sequence[str]) -> ModeConfigT:
+    def configure(self, argv: ta.Sequence[str]) -> EntrypointConfigT:
         raise NotImplementedError
 
 
 ##
 
 
-class ProfileAspect(lang.Abstract, ta.Generic[ModeConfigT]):
+class ProfileAspect(lang.Abstract, ta.Generic[EntrypointConfigT]):
     @property
     def name(self) -> str:
         return lang.camel_to_snake(type(self).__name__).lower()
@@ -50,25 +50,25 @@ class ProfileAspect(lang.Abstract, ta.Generic[ModeConfigT]):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class ConfigureContext(ta.Generic[ModeConfigU]):
-        profile: Profile[ModeConfigU]
+    class ConfigureContext(ta.Generic[EntrypointConfigU]):
+        profile: Profile[EntrypointConfigU]
         args: ap.Namespace
 
     @abc.abstractmethod
-    def configure(self, ctx: ConfigureContext[ModeConfigT], cfg: ModeConfigT) -> ModeConfigT:
+    def configure(self, ctx: ConfigureContext[EntrypointConfigT], cfg: EntrypointConfigT) -> EntrypointConfigT:
         raise NotImplementedError
 
 
-class AspectProfile(Profile[ModeConfigT], lang.Abstract):
+class AspectProfile(Profile[EntrypointConfigT], lang.Abstract):
     @abc.abstractmethod
-    def _build_aspects(self) -> ta.Sequence[ProfileAspect[ModeConfigT]]:
+    def _build_aspects(self) -> ta.Sequence[ProfileAspect[EntrypointConfigT]]:
         return []
 
-    __aspects: ta.Sequence[ProfileAspect[ModeConfigT]]
+    __aspects: ta.Sequence[ProfileAspect[EntrypointConfigT]]
 
     @ta.final
     @property
-    def aspects(self) -> ta.Sequence[ProfileAspect[ModeConfigT]]:
+    def aspects(self) -> ta.Sequence[ProfileAspect[EntrypointConfigT]]:
         try:
             return self.__aspects
         except AttributeError:
@@ -79,12 +79,12 @@ class AspectProfile(Profile[ModeConfigT], lang.Abstract):
     #
 
     @abc.abstractmethod
-    def initial_config(self) -> ModeConfigT:
+    def initial_config(self) -> EntrypointConfigT:
         raise NotImplementedError
 
     #
 
-    def configure(self, argv: ta.Sequence[str]) -> ModeConfigT:
+    def configure(self, argv: ta.Sequence[str]) -> EntrypointConfigT:
         parser = ap.ArgumentParser()
 
         pa_grps: dict[str, ta.Any] = {}
@@ -438,7 +438,7 @@ class CodeProfile(ChatProfile):
 
 
 class CompletionProfile(Profile):
-    def configure(self, argv: ta.Sequence[str]) -> ModeConfig:
+    def configure(self, argv: ta.Sequence[str]) -> EntrypointConfig:
         parser = ap.ArgumentParser()
         parser.add_argument('prompt', nargs='*')
         parser.add_argument('-b', '--backend', default='openai')
@@ -458,7 +458,7 @@ class CompletionProfile(Profile):
 
 
 class EmbedProfile(Profile):
-    def configure(self, argv: ta.Sequence[str]) -> ModeConfig:
+    def configure(self, argv: ta.Sequence[str]) -> EntrypointConfig:
         parser = ap.ArgumentParser()
         parser.add_argument('prompt', nargs='*')
         parser.add_argument('-b', '--backend', default='openai')
