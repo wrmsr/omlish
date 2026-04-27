@@ -2,7 +2,6 @@ import typing as ta
 import weakref
 
 from omdev.tui import textual as tx
-from omlish import inject as inj
 from omlish.logs import all as logs
 
 from .drivers.drivers import ChatDriverInterface
@@ -76,8 +75,6 @@ class ChatApp(
             input_history_manager: InputHistoryManager,
             suggestions_manager: SuggestionsManager,
 
-            injector: inj.AsyncInjector,
-
             chat_driver_interface: ChatDriverInterface,
     ) -> None:
         super().__init__()
@@ -86,8 +83,6 @@ class ChatApp(
             devtools_setup(self)
 
         self._input_history_manager = input_history_manager
-
-        self._injector = injector
 
         self._chat_driver_interface = chat_driver_interface
 
