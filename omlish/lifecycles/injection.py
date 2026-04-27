@@ -55,7 +55,7 @@ class _LifecycleRegistrar(lang.Final):
             key: inj.Key,
             binding: inj.Binding | None,
             fn: ta.Callable[[], ta.Awaitable[ta.Any]],
-    ) -> ta.Awaitable[ta.Any]:
+    ) -> ta.Any:
         st = _LifecycleRegistrar.State(key)
         self._stack.append(st)
         try:

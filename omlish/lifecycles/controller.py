@@ -61,11 +61,12 @@ class LifecycleController(Lifecycle, lang.Final):
             post_listener_fn: ta.Callable[[LifecycleListener], ta.Callable[[Lifecycle], None]] | None = None,
     ) -> None:
         with self._lock():
+            check.state(self._state in transition.old)
+
             if pre_listener_fn is not None:
                 for listener in self._listeners:
                     pre_listener_fn(listener)(self._controlled)
 
-            check.state(self._state in transition.old)
             self._set_state(transition.new_intermediate)
 
             try:
@@ -164,11 +165,12 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
             post_listener_fn: ta.Callable[[AsyncLifecycleListener], ta.Callable[[AsyncLifecycle], ta.Awaitable[None]]] | None = None,  # noqa
     ) -> None:
         async with self._lock():
+            check.state(self._state in transition.old)
+
             if pre_listener_fn is not None:
                 for listener in self._listeners:
                     await pre_listener_fn(listener)(self._controlled)
 
-            check.state(self._state in transition.old)
             await self._set_state(transition.new_intermediate)
 
             try:

@@ -130,7 +130,13 @@ class _InnerLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
     @ta.override
     async def _lifecycle_start(self) -> None:
+        seen: set[LifecycleManagerEntry] = set()
+
         async def rec(e: LifecycleManagerEntry) -> None:
+            if e in seen:
+                return
+            seen.add(e)
+
             for dep in e.dependencies:
                 await rec(dep)
 
@@ -148,7 +154,13 @@ class _InnerLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
     @ta.override
     async def _lifecycle_stop(self) -> None:
+        seen: set[LifecycleManagerEntry] = set()
+
         async def rec(e: LifecycleManagerEntry) -> None:
+            if e in seen:
+                return
+            seen.add(e)
+
             for dep in e.dependents:
                 await rec(dep)
 
@@ -163,7 +175,13 @@ class _InnerLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
     @ta.override
     async def _lifecycle_destroy(self) -> None:
+        seen: set[LifecycleManagerEntry] = set()
+
         async def rec(e: LifecycleManagerEntry) -> None:
+            if e in seen:
+                return
+            seen.add(e)
+
             for dep in e.dependents:
                 await rec(dep)
 
