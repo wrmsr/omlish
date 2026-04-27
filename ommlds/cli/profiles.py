@@ -10,13 +10,13 @@ from omlish import lang
 from omlish.argparse import all as ap
 
 from .. import minichain as mc
-from .entrypoints.chat.configs import ChatConfig
-from .entrypoints.chat.interfaces.bare.configs import BareInterfaceConfig
-from .entrypoints.chat.interfaces.configs import InterfaceConfig
-from .entrypoints.chat.interfaces.textual.configs import TextualInterfaceConfig
-from .entrypoints.completion.configs import CompletionConfig
-from .entrypoints.configs import EntrypointConfig
-from .entrypoints.embedding.configs import EmbeddingConfig
+from .chat.configs import ChatConfig
+from .chat.interfaces.bare.configs import BareInterfaceConfig
+from .chat.interfaces.configs import InterfaceConfig
+from .chat.interfaces.textual.configs import TextualInterfaceConfig
+from .completion.configs import CompletionConfig
+from .configs import EntrypointConfig
+from .embedding.configs import EmbeddingConfig
 
 
 EntrypointConfigT = ta.TypeVar('EntrypointConfigT', bound=EntrypointConfig)

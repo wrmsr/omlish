@@ -1,0 +1,28 @@
+from omlish.formats import json
+
+from ... import minichain as mc
+from ..types import Entrypoint
+from .configs import EmbeddingConfig
+
+
+##
+
+
+class EmbeddingEntrypoint(Entrypoint):
+    def __init__(
+            self,
+            config: EmbeddingConfig,
+            *,
+            service_provider: mc.ServiceProvider[mc.EmbeddingService],
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        self._service_provider = service_provider
+
+    async def run(self) -> None:
+        mdl: mc.EmbeddingService
+        async with self._service_provider.provide_service() as mdl:
+            response = await mdl.invoke(mc.EmbeddingRequest(self._config.content))
+
+        print(json.dumps_compact(list(map(float, response.v))))

@@ -2,12 +2,19 @@ from omlish import inject as inj
 from omlish import lang
 from omlish import lifecycles as lc
 
-from .entrypoints.configs import EntrypointConfig
+from .. import minichain as mc
+from .chat.configs import ChatConfig
+from .completion.configs import CompletionConfig
+from .configs import EntrypointConfig
+from .embedding.configs import EmbeddingConfig
+from .types import ProfileName
 
 
 with lang.auto_proxy_import(globals()):
     from . import asyncs
-    from .entrypoints import inject as _entrypoints
+    from .chat import inject as _chat
+    from .completion import inject as _completion
+    from .embedding import inject as _embedding
 
 
 ##
@@ -29,12 +36,27 @@ def bind_main(
 
     #
 
-    els.extend([
-        _entrypoints.bind_entrypoints(
-            entrypoint_cfg,
-            profile_name=profile_name,
-        ),
-    ])
+    if profile_name is not None:
+        els.append(inj.bind(ProfileName, to_const=profile_name))
+
+    #
+
+    if isinstance(entrypoint_cfg, ChatConfig):
+        els.append(_chat.bind_chat(entrypoint_cfg))
+
+    elif isinstance(entrypoint_cfg, CompletionConfig):
+        els.append(_completion.bind_completion(entrypoint_cfg))
+
+    elif isinstance(entrypoint_cfg, EmbeddingConfig):
+        els.append(_embedding.bind_embedding(entrypoint_cfg))
+
+    else:
+        raise TypeError(entrypoint_cfg)
+
+    #
+
+    for mod_cfg in entrypoint_cfg.modules or []:
+        els.extend(mc.modules.inject.bind_module(mod_cfg))
 
     #
 

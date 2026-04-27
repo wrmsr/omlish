@@ -130,6 +130,6 @@ exclude = [
     'AUTHORS',
     'DESIGN.md',
 ]
-'ommlds.cli.entrypoints.chat.interfaces.textual.styles' = [
+'ommlds.cli.chat.interfaces.textual.styles' = [
     '*.tcss',
 ]

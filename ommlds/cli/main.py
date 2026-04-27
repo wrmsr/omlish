@@ -9,11 +9,11 @@ from omlish import inject as inj
 from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
-from .entrypoints.base import Entrypoint
-from .entrypoints.configs import EntrypointConfig
+from .configs import EntrypointConfig
 from .inject import bind_main
 from .profiles import PROFILE_TYPES
 from .secrets import install_env_secrets
+from .types import Entrypoint
 
 
 ##
