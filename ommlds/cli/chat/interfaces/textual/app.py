@@ -4,7 +4,7 @@ import weakref
 from omdev.tui import textual as tx
 from omlish.logs import all as logs
 
-from .drivers.drivers import ChatDriverInterface
+from .drivers.interface import ChatDriverInterface
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
 from .suggestions import SuggestionsManager

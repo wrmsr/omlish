@@ -25,8 +25,8 @@ with lang.auto_proxy_import(globals()):
     from . import interface as _interface
     from . import suggestions as _suggestions
     from . import termrender as _termrender
-    from .drivers import drivers as _drivers2
     from .drivers import inject as _drivers
+    from .drivers import interface as _interface2
 
 
 ##
@@ -84,7 +84,7 @@ def bind_textual(
             singleton=True,
         ),
 
-        inj.bind(_drivers2.ChatDriverInterface, to_async_fn=inj.target(g=ChatDriverInterfaceGetter)(lambda g: g())),
+        inj.bind(_interface2.ChatDriverInterface, to_async_fn=inj.target(g=ChatDriverInterfaceGetter)(lambda g: g())),
     ])
 
     #

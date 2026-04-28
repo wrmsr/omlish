@@ -4,7 +4,7 @@ from omlish import lang
 
 
 if ta.TYPE_CHECKING:
-    from .drivers import ChatDriverInterface  # noqa
+    from .interface import ChatDriverInterface  # noqa
 
 
 ##
