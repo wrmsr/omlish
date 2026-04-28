@@ -1,10 +1,4 @@
 /**
- * SSE (Server-Sent Events) Decoder Module
- *
- * Provides utilities for decoding SSE streams using TransformStream.
- */
-
-/**
  * Creates a TransformStream that decodes SSE formatted data.
  *
  * SSE format:

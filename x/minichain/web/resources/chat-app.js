@@ -1,10 +1,4 @@
 /**
- * Chat Application Module
- *
- * Main Alpine.js application logic for the chat interface.
- */
-
-/**
  * Creates the main chat application Alpine.js component.
  */
 window.chatApp = function() {

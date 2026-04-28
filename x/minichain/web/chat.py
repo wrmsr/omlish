@@ -1,81 +1,104 @@
-import abc
-import asyncio
+import json
 import time
-import typing as ta
+
+from omlish import check
+from omlish.io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
+from ommlds import minichain as mc
 
 
 ##
 
 
-class ChatClient(abc.ABC):
-    """Abstract base class for chat completion clients."""
+class ChatCompletionsHandler:
+    async def handle(self, receive, send):
+        ev = await receive()
 
-    @abc.abstractmethod
-    def stream_chat_completion(self, messages: list, model: str) -> ta.AsyncGenerator[dict]:
-        """
-        Stream chat completion responses.
+        check.state(ev['type'] == 'http.request')
+        check.state(not ev['more_body'])
 
-        Args:
-            messages: List of message dictionaries with 'role' and 'content'
-            model: Model identifier to use
+        d = json.loads(ev['body'].decode('utf-8'))
 
-        Yields:
-            Dictionary chunks in OpenAI's format
-        """
+        check.state(d['stream'])
 
-        pass
+        chat: list[mc.Message] = []
+        for md in d['messages']:
+            mr = md['role']
+            ms = md['content']
+            if not ms:
+                continue
+            if mr == 'user':
+                chat.append(mc.UserMessage(ms))
+            elif mr == 'assistant':
+                chat.append(mc.AiMessage(ms))
+            else:
+                raise ValueError(mr)
 
+        await send({
+            'type': 'http.response.start',
+            'status': 200,
+            'headers': [
+                (b'content-type', b'text/event-stream'),
+                (b'x-accel-buffering', b'no'),
+            ],
+        })
 
-class OpenaiChatClient(ChatClient):
-    """OpenAI chat client implementation."""
+        llm = mc.registry_new(mc.ChatChoicesStreamService, 'openai')
 
-    async def stream_chat_completion(self, messages: list, model: str) -> ta.AsyncGenerator[dict]:
-        """Stream chat completion from OpenAI."""
+        idx = 0
 
-        # stream = self.client.chat.completions.create(
-        #     model=model,
-        #     messages=messages,
-        #     stream=True
-        # )
-        #
-        # for chunk in stream:
-        #     yield chunk
+        async with (await llm.invoke(mc.ChatChoicesStreamRequest(chat))).v as st_resp:
+            async for o in st_resp:
+                deltas = check.single(o.choices).deltas
+                for delta in deltas:
+                    cd = check.isinstance(delta, mc.ContentAiDelta)
+                    await send({
+                        'type': 'http.response.body',
+                        'body': ''.join([
+                            f'data: ',
+                            json.dumps(
+                                {
+                                    'id': 'chatcmpl-mock',
+                                    'object': 'chat.completion.chunk',
+                                    'created': int(time.time()),
+                                    'model': d['model'],
+                                    'choices': [{
+                                        'index': idx,
+                                        'delta': {'content': check.isinstance(cd.c, str)},
+                                        'finish_reason': None
+                                    }]
+                                },
+                            ),
+                            '\n\n',
+                        ]).encode('utf-8'),
+                        'more_body': True,
+                    })
+                    idx += 1
 
-        raise NotImplementedError
+        await send({
+            'type': 'http.response.body',
+            'body': ''.join([
+                f'data: ',
+                json.dumps(
+                    {
+                        'id': 'chatcmpl-mock',
+                        'object': 'chat.completion.chunk',
+                        'created': int(time.time()),
+                        'model': d['model'],
+                        'choices': [{
+                            'index': idx,
+                            'delta': {},
+                            'finish_reason': 'stop'
+                        }]
+                    },
+                ),
+                '\n\n',
+            ]).encode('utf-8'),
+            'more_body': True,
+        })
+        idx += 1
 
-
-class MockChatClient(ChatClient):
-    """Mock chat client for testing without API calls."""
-
-    async def stream_chat_completion(self, messages: list, model: str) -> ta.AsyncGenerator[dict]:
-        """Stream a mock chat completion response."""
-
-        mock_response = "This is a mock response. Set OPENAI_API_KEY to use real OpenAI API."
-
-        for i, char in enumerate(mock_response):
-            chunk = {
-                'id': 'chatcmpl-mock',
-                'object': 'chat.completion.chunk',
-                'created': int(time.time()),
-                'model': model,
-                'choices': [{
-                    'index': 0,
-                    'delta': {'content': char},
-                    'finish_reason': None
-                }]
-            }
-            yield chunk
-            await asyncio.sleep(0.05)
-
-        final_chunk = {
-            'id': 'chatcmpl-mock',
-            'object': 'chat.completion.chunk',
-            'created': int(time.time()),
-            'model': model,
-            'choices': [{
-                'index': 0,
-                'delta': {},
-                'finish_reason': 'stop'
-            }]
-        }
-        yield final_chunk
+        await send({
+            'type': 'http.response.body',
+            'body': 'data: [DONE]\n\n'.encode('utf-8'),
+            'more_body': False,
+        })
