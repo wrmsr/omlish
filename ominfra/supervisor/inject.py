@@ -142,7 +142,9 @@ def bind_server(
             inj.bind(HttpServer, singleton=True, eager=True),
             inj.bind(HasDispatchers, array=True, to_key=HttpServer),
 
-            inj.bind(HttpServer.Address(('localhost', config.http_port))),
+            inj.bind(HttpServer.Address(
+                ('localhost', config.http_port) if isinstance(config.http_port, int) else config.http_port,
+            )),
 
             inj.bind(SupervisorSimpleHttpHandler, singleton=True),
             inj.bind(_provide_http_handler),

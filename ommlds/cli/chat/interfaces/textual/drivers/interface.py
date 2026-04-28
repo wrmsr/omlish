@@ -362,3 +362,6 @@ class ChatDriverInterface(
 
     def get_commands(self) -> ta.Sequence[mc.facades.Command]:
         return list(self._commands_manager.get_commands().values())
+
+    async def handle_quit(self) -> None:
+        self.app.exit()

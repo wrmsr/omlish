@@ -43,11 +43,17 @@ def bind_driver_internal(
 
     #
 
+    def _provide_quit_handler(cdi: ChatDriverInterfaceGetter) -> mc.facades.UiQuitSignal:
+        async def inner() -> None:
+            await (await cdi()).handle_quit()
+
+        return mc.facades.UiQuitSignal(inner)
+
     els.append(
         inj.override(
             mc.facades.inject.bind_facade(chat_cfg.facade),
 
-            inj.bind(mc.facades.UiQuitSignal(mc.facades.RaiseUiQuitSignal(SystemExit))),
+            inj.bind(_provide_quit_handler, singleton=True),
         ),
     )
 

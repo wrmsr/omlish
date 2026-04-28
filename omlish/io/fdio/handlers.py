@@ -54,7 +54,7 @@ class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
             sock: socket.socket,
-            addr: SocketAddress,
+            addr: ta.Optional[SocketAddress] = None,
     ) -> None:
         super().__init__()
 
@@ -80,10 +80,16 @@ class SocketFdioHandler(FdioHandler, Abstract):
 class ServerSocketFdioHandler(SocketFdioHandler):
     def __init__(
             self,
-            addr: SocketAddress,
+            sock_or_addr: ta.Union[socket.socket, SocketAddress],
             on_connect: ta.Callable[[socket.socket, SocketAddress], None],
     ) -> None:
-        sock = socket.create_server(addr)
+        if isinstance(sock_or_addr, socket.socket):
+            sock = sock_or_addr
+            addr = sock.getsockname()
+        else:
+            addr = sock_or_addr
+            sock = socket.create_server(sock_or_addr)
+
         sock.setblocking(False)
 
         super().__init__(sock, addr)

@@ -240,7 +240,7 @@ class ServerConfig:
 
     #
 
-    http_port: ta.Optional[int] = None
+    http_port: ta.Union[int, str, None] = None
 
     #
 

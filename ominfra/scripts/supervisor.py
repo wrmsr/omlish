@@ -141,7 +141,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='5cdb46afb542d4b6be8d4e4f8369ea190fa99fb4'),  # noqa
-            dict(path='../../omlish/io/fdio/handlers.py', sha1='60ee5f66ab2fb38ad7f62c7d69b69f207d8c2853'),
+            dict(path='../../omlish/io/fdio/handlers.py', sha1='5a4303b50f3f48fdb8fbdcc625e52888c09227bf'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/io/pipelines/core.py', sha1='8d6fd4e81969f9e6558aee3aea99f0a42d94ceee'),
             dict(path='../../omlish/io/streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
@@ -153,7 +153,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='6396355bebd4e2a7c445e94a2815c5a45c18fb5b'),
+            dict(path='configs.py', sha1='9968ed4673fcc2cabe75eb3aee90c40156dac5b9'),
             dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
@@ -208,7 +208,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='35aac87aea283a4f6603ec1924381eb4b3cea625'),
-            dict(path='inject.py', sha1='bd9596e612217fe2b968966a59c7a43d37ea84da'),
+            dict(path='inject.py', sha1='7c82795ee6e33d21ced509d324c79619a28b6a48'),
             dict(path='main.py', sha1='5c8aee376656d78008b6341fe12cae52065b8243'),
         ],
     )
@@ -7056,7 +7056,7 @@ class SocketFdioHandler(FdioHandler, Abstract):
     def __init__(
             self,
             sock: socket.socket,
-            addr: SocketAddress,
+            addr: ta.Optional[SocketAddress] = None,
     ) -> None:
         super().__init__()
 
@@ -7082,10 +7082,16 @@ class SocketFdioHandler(FdioHandler, Abstract):
 class ServerSocketFdioHandler(SocketFdioHandler):
     def __init__(
             self,
-            addr: SocketAddress,
+            sock_or_addr: ta.Union[socket.socket, SocketAddress],
             on_connect: ta.Callable[[socket.socket, SocketAddress], None],
     ) -> None:
-        sock = socket.create_server(addr)
+        if isinstance(sock_or_addr, socket.socket):
+            sock = sock_or_addr
+            addr = sock.getsockname()
+        else:
+            addr = sock_or_addr
+            sock = socket.create_server(sock_or_addr)
+
         sock.setblocking(False)
 
         super().__init__(sock, addr)
@@ -11450,7 +11456,7 @@ class ServerConfig:
 
     #
 
-    http_port: ta.Optional[int] = None
+    http_port: ta.Union[int, str, None] = None
 
     #
 
@@ -22321,7 +22327,9 @@ def bind_server(
             inj.bind(HttpServer, singleton=True, eager=True),
             inj.bind(HasDispatchers, array=True, to_key=HttpServer),
 
-            inj.bind(HttpServer.Address(('localhost', config.http_port))),
+            inj.bind(HttpServer.Address(
+                ('localhost', config.http_port) if isinstance(config.http_port, int) else config.http_port,
+            )),
 
             inj.bind(SupervisorSimpleHttpHandler, singleton=True),
             inj.bind(_provide_http_handler),
