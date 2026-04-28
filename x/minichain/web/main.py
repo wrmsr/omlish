@@ -16,7 +16,7 @@ from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
 from omlish.io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from omlish.io.pipelines.core import IoPipeline
-from omlish.io.pipelines.drivers.asyncio import SimpleAsyncioStreamIoPipelineDriver
+from omlish.io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriver
 from ommlds import minichain as mc
 
 from .chat import ChatClient
@@ -28,7 +28,7 @@ from .chat import MockChatClient
 
 async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = SimpleAsyncioStreamIoPipelineDriver(
+        drv = PollAsyncioStreamIoPipelineDriver(
             IoPipeline.Spec(
                 [
                     IoPipelineHttpRequestDecoder(),
@@ -37,13 +37,13 @@ async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
                     AsgiHandler(spec.app),
                 ],
             ).update_config(
-                # raise_immediately=True,
+                raise_immediately=True,
             ),
             reader,
             writer,
         )
 
-        await drv.run()
+        await drv.loop_until_done()
 
     srv = await asyncio.start_server(_handle_client, spec.host, spec.port)
     async with srv:
@@ -259,9 +259,15 @@ async def app(scope, receive, send):
 
 
 def _main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('port', type=int, nargs='?')
+    args = parser.parse_args()
+
     install_env_secrets('openai_api_key')
 
-    app_spec = AsgiSpec(app)
+    app_spec = AsgiSpec(app, port=args.port or 8087)
 
     serve_asgi_pipeline(app_spec)
 

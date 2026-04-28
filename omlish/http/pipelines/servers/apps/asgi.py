@@ -254,8 +254,6 @@ class _AsgiDriver:
             else:
                 d = b''
 
-            self._read_q.append(d)
-
             if self._state == _AsgiDriver.State.RECEIVING:
                 f = check.not_none(self._receiving_fut)
                 self._receiving_fut = None
