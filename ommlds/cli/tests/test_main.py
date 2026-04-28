@@ -2,8 +2,8 @@ import os.path
 
 import pytest
 
+from ..chat.profiles import ChatProfile
 from ..main import _run_entrypoint_cfg
-from ..profiles import ChatProfile
 
 
 @pytest.mark.asyncs('asyncio')

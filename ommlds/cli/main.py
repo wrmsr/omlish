@@ -9,11 +9,28 @@ from omlish import inject as inj
 from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
+from .chat.profiles import ChatProfile
+from .chat.profiles import CodeProfile
+from .completion.profiles import CompletionProfile
 from .configs import EntrypointConfig
+from .embedding.profiles import EmbeddingProfile
 from .inject import bind_main
-from .profiles import PROFILE_TYPES
+from .profiles import Profile
 from .secrets import install_env_secrets
 from .types import Entrypoint
+
+
+##
+
+
+PROFILE_TYPES: ta.Mapping[str, type[Profile]] = {
+    'chat': ChatProfile,
+    'code': CodeProfile,
+
+    'complete': CompletionProfile,
+
+    'embed': EmbeddingProfile,
+}
 
 
 ##
