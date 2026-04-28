@@ -118,6 +118,8 @@ class PollAsyncioStreamIoPipelineDriver:
             return self._pipeline
         self._has_init = True
 
+        self._pending_awaits = set()
+
         self._sched = self._SchedulingService(self)
 
         services = IoPipelineServices.of(self._spec.services)
@@ -389,6 +391,83 @@ class PollAsyncioStreamIoPipelineDriver:
         pass
 
     ##
+    # awaits
+
+    @dc.dataclass(frozen=True)
+    class _AwaitCompletedCommand(_Command):
+        msg: AsyncIoPipelineMessages.Await
+        fut: ta.Optional[asyncio.Future]
+
+    @dc.dataclass(frozen=True)
+    class _AwaitFailedCommand(_Command):
+        msg: AsyncIoPipelineMessages.Await
+        exc: BaseException
+
+    _pending_awaits: ta.Set[asyncio.Future]
+
+    async def _handle_command_await_completed(self, cmd: _AwaitCompletedCommand) -> None:
+        fut = cmd.fut
+
+        if fut is None:
+            # Bare yield / sleep(0) case.
+            with self._pipeline.enter():
+                cmd.msg.set_succeeded(None)
+            return
+
+        self._pending_awaits.discard(fut)
+
+        try:
+            result = fut.result()
+        except BaseException as e:  # noqa
+            with self._pipeline.enter():
+                cmd.msg.set_failed(e)
+        else:
+            with self._pipeline.enter():
+                cmd.msg.set_succeeded(result)
+
+    async def _handle_command_await_failed(self, cmd: _AwaitFailedCommand) -> None:
+        with self._pipeline.enter():
+            cmd.msg.set_failed(cmd.exc)
+
+    async def _handle_output_await(
+            self,
+            msg: AsyncIoPipelineMessages.Await,
+    ) -> ta.Optional[str]:
+        loop = asyncio.get_running_loop()
+
+        try:
+            fut = asyncio.ensure_future(msg.obj)
+        except BaseException as e:  # noqa
+            self._command_queue.put_nowait(
+                PollAsyncioStreamIoPipelineDriver._AwaitFailedCommand(msg, e),
+            )
+            return None
+
+        try:
+            fut_loop = fut.get_loop()
+        except AttributeError:
+            fut_loop = loop
+
+        if fut_loop is not loop:
+            self._command_queue.put_nowait(
+                PollAsyncioStreamIoPipelineDriver._AwaitFailedCommand(
+                    msg,
+                    RuntimeError(f'awaitable {fut!r} is attached to a different event loop'),
+                ),
+            )
+            return None
+
+        self._pending_awaits.add(fut)
+
+        def done_callback(f: asyncio.Future) -> None:
+            self._command_queue.put_nowait(
+                PollAsyncioStreamIoPipelineDriver._AwaitCompletedCommand(msg, f),
+            )
+
+        fut.add_done_callback(done_callback)  # noqa
+        return None
+
+    ##
     # command handling
 
     def _build_command_handlers(self) -> ta.Mapping[
@@ -399,6 +478,8 @@ class PollAsyncioStreamIoPipelineDriver:
             PollAsyncioStreamIoPipelineDriver._FeedInCommand: self._handle_command_feed_in,
             PollAsyncioStreamIoPipelineDriver._ReadCompletedCommand: self._handle_command_read_completed,
             PollAsyncioStreamIoPipelineDriver._ScheduledCommand: self._handle_command_scheduled,
+            PollAsyncioStreamIoPipelineDriver._AwaitCompletedCommand: self._handle_command_await_completed,
+            PollAsyncioStreamIoPipelineDriver._AwaitFailedCommand: self._handle_command_await_failed,
         }
 
     async def _handle_command(self, cmd: _Command) -> None:
@@ -443,20 +524,6 @@ class PollAsyncioStreamIoPipelineDriver:
         self._want_read_event.set()
         return None
 
-    async def _handle_output_await(self, msg: AsyncIoPipelineMessages.Await) -> ta.Optional[str]:
-        try:
-            result = await msg.obj
-
-        except BaseException as e:  # noqa
-            with self._pipeline.enter():
-                msg.set_failed(e)
-
-        else:
-            with self._pipeline.enter():
-                msg.set_succeeded(result)
-
-        return None
-
     def _build_output_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[ta.Optional[str]]]]:
         return {
             IoPipelineMessages.FinalOutput: self._handle_output_final_output,
@@ -485,6 +552,9 @@ class PollAsyncioStreamIoPipelineDriver:
     # core loop
 
     def _has_pending_work(self) -> bool:
+        if self._pending_awaits:
+            return True
+
         if self._read_task is not None and not self._read_task.done():
             return True
 
