@@ -4,6 +4,7 @@ JSON Schema to Python dataclass code generator.
 import io
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.lang.casing import StringCasingError
@@ -132,6 +133,13 @@ class AnyOfUnionTypeDef(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+class AllOfIntersectionTypeDef(lang.Final):
+    name: str
+    description: str | None = None
+    members: ta.Sequence[TypeDef | TypeRef] = ()
+
+
+@dc.dataclass(frozen=True, kw_only=True)
 class TypeAliasTypeDef(lang.Final):
     name: str
     description: str | None = None
@@ -149,6 +157,7 @@ TypeDef: ta.TypeAlias = ta.Union[
     StringEnumTypeDef,
     DiscriminatedUnionTypeDef,
     AnyOfUnionTypeDef,
+    AllOfIntersectionTypeDef,
     TypeAliasTypeDef,
     EmptyTypeDef,
 ]
@@ -171,23 +180,29 @@ class VariantWrapperDef(lang.Final):
 
 
 class JsonSchemaCodeGen:
-    def __init__(self, root_kws: js.Keywords) -> None:
+    def __init__(self, defs: js.Keywords | ta.Mapping[str, js.Keywords]) -> None:
         super().__init__()
 
-        self._defs: dict[str, js.Keywords] = dict(root_kws[js.Defs].m)
+        if isinstance(defs, js.Keywords):
+            defs = defs[js.Defs].m
+
+        self._defs: dict[str, js.Keywords] = dict(defs)
         self._type_defs: dict[str, TypeDef] = {}
         self._disc_unions: dict[str, DiscriminatedUnionTypeDef] = {}
         self._variant_wrappers: list[VariantWrapperDef] = []
 
         self._classify_all()
         self._build_variant_wrappers()
+        self._build_intersection_types()
 
     # Classification
 
     def _classify_all(self) -> None:
         for name, kws in self._defs.items():
             td = self._classify_def(name, kws)
+
             self._type_defs[name] = td
+
             if isinstance(td, DiscriminatedUnionTypeDef):
                 self._disc_unions[name] = td
 
@@ -222,6 +237,10 @@ class JsonSchemaCodeGen:
         if type_kw is not None:
             target = self._resolve_type_from_type_kw(type_kw, kws)
             return TypeAliasTypeDef(name=name, description=desc_str, target=target)
+
+        all_of_kw = by_type.get(js.AllOf)
+        if all_of_kw is not None:
+            return self._classify_all_of(name, desc_str, all_of_kw)
 
         return EmptyTypeDef(name=name, description=desc_str)
 
@@ -273,7 +292,12 @@ class JsonSchemaCodeGen:
             variants=variants,
         )
 
-    def _classify_object(self, name: str, desc_str: str | None, kws: js.Keywords) -> ObjectTypeDef:
+    def _classify_object(
+            self,
+            name: str,
+            desc_str: str | None,
+            kws: js.Keywords,
+    ) -> ObjectTypeDef:
         props = kws.by_type[js.Properties]
         req_kw = kws.by_type.get(js.Required)
         required_names: ta.AbstractSet[str]
@@ -288,7 +312,12 @@ class JsonSchemaCodeGen:
 
         return ObjectTypeDef(name=name, description=desc_str, fields=fields)
 
-    def _classify_field(self, json_name: str, kws: js.Keywords, required: bool) -> FieldDef:
+    def _classify_field(
+            self,
+            json_name: str,
+            kws: js.Keywords,
+            required: bool,
+    ) -> FieldDef:
         python_name = _snake_name(json_name)
         type_ref = self._resolve_field_type(kws)
 
@@ -348,6 +377,32 @@ class JsonSchemaCodeGen:
             return TypeAliasTypeDef(name=name, description=desc_str, target=members[0])
 
         return AnyOfUnionTypeDef(name=name, description=desc_str, members=members)
+
+    def _classify_all_of(
+            self,
+            name: str,
+            desc_str: str | None,
+            all_of: js.AllOf,
+    ) -> TypeDef:
+        members: list[TypeDef | TypeRef] = []
+
+        for kws in all_of.kws:
+            by_type = kws.by_type
+
+            if by_type.get(js.Properties) is not None:
+                members.append(self._classify_def('?', kws))
+
+            elif by_type.get(js.Ref) is not None:
+                members.append(self._resolve_field_type(kws))
+
+            else:
+                raise NotImplementedError(kws)
+
+        return AllOfIntersectionTypeDef(
+            name=name,
+            description=desc_str,
+            members=members,
+        )
 
     # Type reference resolution
 
@@ -460,6 +515,48 @@ class JsonSchemaCodeGen:
                     tag_value=variant.tag_value,
                     source_fields=source_fields,
                 ))
+
+    # Intersection generation
+
+    def _build_intersection_types(self) -> None:
+        intersection_type_names = {n for n, td in self._type_defs.items() if isinstance(td, AllOfIntersectionTypeDef)}
+        if not intersection_type_names:
+            return
+
+        def rec(n: str) -> ObjectTypeDef:
+            intersection_type_names.remove(n)
+
+            fields: list[FieldDef] = []
+
+            td = check.isinstance(self._type_defs[n], AllOfIntersectionTypeDef)
+
+            for m in td.members:
+                if isinstance(m, TypeDef):
+                    fields.extend(check.isinstance(m, ObjectTypeDef).fields)
+
+                elif isinstance(m, TypeRef):
+                    md = self._type_defs[m.name]
+
+                    if isinstance(md, AllOfIntersectionTypeDef):
+                        md = rec(m.name)
+
+                    fields.extend(check.isinstance(md, ObjectTypeDef).fields)
+
+                else:
+                    raise TypeError(m)
+
+            otd = ObjectTypeDef(
+                name=td.name,
+                description=td.description,
+                fields=fields,
+            )
+
+            self._type_defs[n] = otd
+
+            return otd
+
+        while intersection_type_names:
+            rec(next(iter(intersection_type_names)))
 
     # Code generation
 
