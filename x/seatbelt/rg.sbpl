@@ -1,0 +1,33 @@
+(version 1)
+
+(deny default)
+
+;; Allow sandbox-exec to exec exactly this rg binary.
+(allow process-exec
+  (literal (param "RG_BIN")))
+
+;; Harmless-ish runtime queries; rg/rayon/libSystem may want these.
+(allow sysctl-read)
+
+;; Runtime/tool reads. Tighten this once tested on your machines.
+(allow file-read*
+  (subpath "/System/Library")
+  (subpath "/usr/lib")
+  (subpath "/usr/share")
+  (literal (param "RG_BIN"))
+  (subpath (param "RG_DIR")))
+
+;; Homebrew / MacPorts cases, only include whichever applies.
+;; (allow file-read* (subpath "/opt/homebrew"))
+;; (allow file-read* (subpath "/usr/local/Cellar"))
+;; (allow file-read* (subpath "/usr/local/opt"))
+;; (allow file-read* (subpath "/opt/local"))
+
+;; Your generated code adds, per allowed root:
+;; (allow file-read* (literal (param "ROOT_0")))
+;; (allow file-read* (subpath (param "ROOT_0")))
+;;
+;; And metadata-only access to ancestor dirs for path resolution:
+;; (allow file-read-metadata (literal "/"))
+;; (allow file-read-metadata (literal "/Users"))
+;; ...
