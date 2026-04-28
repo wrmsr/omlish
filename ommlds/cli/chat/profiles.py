@@ -155,7 +155,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                     ),
                     state=dc.replace(
                         cfg.driver.state,
-                        state='new' if ctx.args.new else 'continue',
+                        new=ctx.args.new,
                     ),
                 ),
             )

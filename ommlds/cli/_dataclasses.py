@@ -2514,18 +2514,18 @@ def _process_dataclass__254623427d52b86f69ed60d24a0e95b0b1b391ca():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('state', 'chat_id')), EqPlan(fields=('state', 'chat_id')), FrozenPlan(fields=('sta"
-        "te', 'chat_id'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('state', 'chat_id'), cache="
-        "False), InitPlan(fields=(InitPlan.Field(name='state', annotation=OpRef(name='init.fields.0.annotation'), defau"
-        "lt=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='chat_id', annotation=OpRef(name='"
-        "init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, over"
-        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', s"
-        "td_params=(), kw_only_params=('state', 'chat_id'), frozen=True, slots=False, post_init_params=None, init_fns=("
-        "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='chat_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('new', 'chat_id')), EqPlan(fields=('new', 'chat_id')), FrozenPlan(fields=('new', '"
+        "chat_id'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('new', 'chat_id'), cache=False), "
+        "InitPlan(fields=(InitPlan.Field(name='new', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(n"
+        "ame='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='chat_id', annotation=OpRef(name='init.field"
+        "s.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params="
+        "(), kw_only_params=('new', 'chat_id'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_"
+        "fns=()), ReprPlan(fields=(ReprPlan.Field(name='new', kw_only=True, fn=None), ReprPlan.Field(name='chat_id', kw"
+        "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='76648be4a999973a966584081092052c01632d85',
+    plan_repr_sha1='18ddc55be4f3b835e33c2f5607749808ade8b9ec',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2536,7 +2536,7 @@ def _process_dataclass__254623427d52b86f69ed60d24a0e95b0b1b391ca():
         ('ommlds.cli.inject', 'StateConfig'),
     ),
 )
-def _process_dataclass__76648be4a999973a966584081092052c01632d85():
+def _process_dataclass__18ddc55be4f3b835e33c2f5607749808ade8b9ec():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2562,7 +2562,7 @@ def _process_dataclass__76648be4a999973a966584081092052c01632d85():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                state=self.state,
+                new=self.new,
                 chat_id=self.chat_id,
             )
 
@@ -2577,7 +2577,7 @@ def _process_dataclass__76648be4a999973a966584081092052c01632d85():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.state == other.state and
+                self.new == other.new and
                 self.chat_id == other.chat_id
             )
 
@@ -2587,7 +2587,7 @@ def _process_dataclass__76648be4a999973a966584081092052c01632d85():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'state',
+            'new',
             'chat_id',
         }
 
@@ -2605,7 +2605,7 @@ def _process_dataclass__76648be4a999973a966584081092052c01632d85():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'state',
+            'new',
             'chat_id',
         }
 
@@ -2624,7 +2624,7 @@ def _process_dataclass__76648be4a999973a966584081092052c01632d85():
 
         def __hash__(self):
             return hash((
-                self.state,
+                self.new,
                 self.chat_id,
             ))
 
@@ -2634,10 +2634,10 @@ def _process_dataclass__76648be4a999973a966584081092052c01632d85():
         def __init__(
             self,
             *,
-            state: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            new: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             chat_id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'state', state)
+            __dataclass__object_setattr(self, 'new', new)
             __dataclass__object_setattr(self, 'chat_id', chat_id)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -2648,7 +2648,7 @@ def _process_dataclass__76648be4a999973a966584081092052c01632d85():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"state={self.state!r}")
+            parts.append(f"new={self.new!r}")
             parts.append(f"chat_id={self.chat_id!r}")
             return (
                 f"{self.__class__.__qualname__}("

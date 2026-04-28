@@ -40,29 +40,25 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
 
     #
 
-    if cfg.state in ('continue', 'new'):
-        if cfg.state == 'new':
-            els.append(inj.bind(mc.drivers.ChatId(cfg.chat_id) if cfg.chat_id is not None else _new_chat_id()))
+    if cfg.new:
+        els.append(inj.bind(mc.drivers.ChatId(cfg.chat_id) if cfg.chat_id is not None else _new_chat_id()))
 
-        elif cfg.chat_id is not None:
-            els.append(inj.bind(mc.drivers.ChatId(cfg.chat_id)))
-
-        else:
-            els.append(inj.bind(mc.drivers.ChatId, to_async_fn=_get_last_or_new_chat_id, singleton=True))
-
-        #
-
-        els.extend([
-            inj.bind(LastChatIdManager, singleton=True),
-
-            mc.drivers.injection.phase_callbacks().bind_item(to_fn=inj.target(
-                lcm=LastChatIdManager,
-                cid=mc.drivers.ChatId,
-            )(lambda lcm, cid: mc.drivers.PhaseCallback(mc.drivers.Phase.STARTING, lambda: lcm.set_last_chat_id(cid)))),  # noqa
-        ])
+    elif cfg.chat_id is not None:
+        els.append(inj.bind(mc.drivers.ChatId(cfg.chat_id)))
 
     else:
-        raise TypeError(cfg.state)
+        els.append(inj.bind(mc.drivers.ChatId, to_async_fn=_get_last_or_new_chat_id, singleton=True))
+
+    #
+
+    els.extend([
+        inj.bind(LastChatIdManager, singleton=True),
+
+        mc.drivers.injection.phase_callbacks().bind_item(to_fn=inj.target(
+            lcm=LastChatIdManager,
+            cid=mc.drivers.ChatId,
+        )(lambda lcm, cid: mc.drivers.PhaseCallback(mc.drivers.Phase.STARTING, lambda: lcm.set_last_chat_id(cid)))),  # noqa
+    ])
 
     #
 
