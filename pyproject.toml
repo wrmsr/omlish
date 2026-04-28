@@ -346,6 +346,7 @@ ignore = [
     'TRY002',    # raise-vanilla-class
     'TRY003',    # raise-vanilla-args
     'TRY300',    # try-consider-else
+    'TRY301',    # raise-within-try
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
     'UP040',  # non-pep695-type-alias

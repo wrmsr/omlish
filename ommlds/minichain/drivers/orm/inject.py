@@ -45,9 +45,20 @@ async def _provide_sql_store(
             os.makedirs(db_dir, exist_ok=True)
             # os.chmod(state_dir, 0o770)  # noqa
 
-        return sqlite3.connect(
+        conn = sqlite3.connect(
             file_path,
         )
+
+        try:
+            mode = conn.execute('pragma journal_mode=wal').fetchone()[0]
+            if str(mode).lower() != 'wal':
+                raise RuntimeError(f'failed to enable WAL mode: {mode!r}')
+
+            return conn
+
+        except BaseException:
+            conn.close()
+            raise
 
     db = sql.api.DbapiDb(lambda: contextlib.closing(connect()))
 
