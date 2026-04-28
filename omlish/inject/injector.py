@@ -18,6 +18,9 @@ else:
 
 
 T = ta.TypeVar('T')
+T_contra = ta.TypeVar('T_contra', contravariant=True)
+R = ta.TypeVar('R')
+R_co = ta.TypeVar('R_co', covariant=True)
 
 
 ##
@@ -50,28 +53,34 @@ class AsyncInjector(lang.Abstract):
 ##
 
 
+class _InjectorCreatorFactory(ta.Protocol[T_contra, R_co]):
+    def __call__(self, ce: CollectedElements, p: T_contra | None = None, /) -> R_co: ...
+
+
 @ta.final
-class _InjectorCreator(ta.Generic[T]):
-    def __init__(self, fac: ta.Callable[[CollectedElements], T]) -> None:
+class _InjectorCreator(ta.Generic[T, R]):
+    def __init__(self, fac: _InjectorCreatorFactory[T, R]) -> None:
         self._fac = fac
 
     @ta.overload
-    def __call__(self, es: CollectedElements, /) -> T: ...
+    def __call__(self, es: CollectedElements, /, *, parent: T | None = None) -> R: ...
 
     @ta.overload
-    def __call__(self, *es: Elemental) -> T: ...
+    def __call__(self, *es: Elemental, parent: T | None = None) -> R: ...  # noqa
 
-    def __call__(self, arg0, *argv):
+    def __call__(self, arg0, *argv, parent=None):
         ce: CollectedElements
         if isinstance(arg0, CollectedElements):
             check.arg(not argv)
             ce = arg0
         else:
             ce = collect_elements(as_elements(arg0, *argv))
-        return self._fac(ce)
+        return self._fac(ce, parent)
 
 
 ##
 
 
-create_async_injector = _InjectorCreator[ta.Awaitable[AsyncInjector]](lambda ce: _injector.create_async_injector(ce))
+create_async_injector = _InjectorCreator[AsyncInjector, ta.Awaitable[AsyncInjector]](
+    lambda ce, p=None: _injector.create_async_injector(ce, p),
+)

@@ -1,5 +1,7 @@
+# ruff: noqa: SLF001
 import typing as ta
 
+from ... import check
 from ... import lang
 from ..elements import CollectedElements
 from ..injector import AsyncInjector
@@ -29,15 +31,20 @@ class MaysyncInjectorImpl(MaysyncInjector, lang.Final):
         return lang.run_maysync(self._ai.inject(obj))
 
 
-def create_maysync_injector(ce: CollectedElements) -> MaysyncInjector:
+def create_maysync_injector(ce: CollectedElements, p: MaysyncInjector | None = None) -> MaysyncInjector:
+    ap: AsyncInjectorImpl | None = None
+    if p is not None:
+        ap = check.isinstance(check.isinstance(p, MaysyncInjectorImpl)._ai, AsyncInjectorImpl)
+
     si = MaysyncInjectorImpl()
     ai = AsyncInjectorImpl(
         ce,
+        ap,
         internal_consts={
             Key(MaysyncInjector): si,
             Key(Injector): si,
         },
     )
-    si._ai = ai  # noqa
-    lang.run_maysync(ai._init())  # noqa
+    si._ai = ai
+    lang.run_maysync(ai._init())
     return si

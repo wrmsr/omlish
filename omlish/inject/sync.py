@@ -46,4 +46,6 @@ class Injector(lang.Abstract):
 ##
 
 
-create_injector = _InjectorCreator[Injector](lambda ce: _sync.create_injector(ce))
+create_injector = _InjectorCreator[Injector, Injector](
+    lambda ce, p=None: _sync.create_injector(ce, p),
+)

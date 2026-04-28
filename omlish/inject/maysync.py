@@ -24,4 +24,6 @@ class MaysyncInjector(Injector, lang.Abstract):
 ##
 
 
-create_maysync_injector = _InjectorCreator[MaysyncInjector](lambda ce: _maysync.create_maysync_injector(ce))
+create_maysync_injector = _InjectorCreator[MaysyncInjector, MaysyncInjector](
+    lambda ce, p=None: _maysync.create_maysync_injector(ce, p),
+)

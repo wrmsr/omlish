@@ -50,9 +50,7 @@ async def _provide_chat_driver_interface(
                 ),
             ))
 
-            from omlish.inject.impl.injector import create_async_injector  # noqa
-
-            child_injector = await create_async_injector(ec, injector)
+            child_injector = await inj.create_async_injector(ec, parent=injector)
 
             yield await child_injector[ChatDriverInterfaceGetter]
 

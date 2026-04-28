@@ -1,5 +1,7 @@
+# ruff: noqa: SLF001
 import typing as ta
 
+from ... import check
 from ... import lang
 from ..elements import CollectedElements
 from ..injector import AsyncInjector
@@ -28,14 +30,19 @@ class InjectorImpl(Injector, lang.Final):
         return lang.sync_await(self._ai.inject(obj))
 
 
-def create_injector(ce: CollectedElements) -> Injector:
+def create_injector(ce: CollectedElements, p: Injector | None = None) -> Injector:
+    ap: AsyncInjectorImpl | None = None
+    if p is not None:
+        ap = check.isinstance(check.isinstance(p, InjectorImpl)._ai, AsyncInjectorImpl)
+
     si = InjectorImpl()
     ai = AsyncInjectorImpl(
         ce,
+        ap,
         internal_consts={
             Key(Injector): si,
         },
     )
-    si._ai = ai  # noqa
-    lang.sync_await(ai._init())  # noqa
+    si._ai = ai
+    lang.sync_await(ai._init())
     return si
