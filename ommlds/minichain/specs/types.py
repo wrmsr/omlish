@@ -125,17 +125,3 @@ class BackendSpecResolver(lang.Abstract):
 class BackendSpecInstantiator(ta.Protocol):
     def __call__(self, rbs: ResolvedBackendSpec, *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[ta.Any]:
         ...
-
-
-##
-
-
-@msh.register_global_lazy_init
-def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
-    msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(
-            BackendSpec,
-            strip_suffix=True,
-            naming=msh.Naming.SNAKE,
-        ),
-    ))

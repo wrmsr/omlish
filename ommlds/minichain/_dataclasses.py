@@ -7995,7 +7995,7 @@ def _process_dataclass__95d65e05398b42908ba7d67d961be3c1dae7f5b4():
         ('ommlds.minichain.modules.inject', 'BashConfig'),
         ('ommlds.minichain.modules.inject', 'CodeConfig'),
         ('ommlds.minichain.modules.inject', 'TodoConfig'),
-        ('ommlds.minichain.specs.instantiate', 'BackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'BackendSpec'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -11358,7 +11358,7 @@ def _process_dataclass__e30bbf6583f0c07b205da9e025567d24f6d42bcc():
     ),
     cls_names=(
         ('ommlds.minichain.chat._marshal', 'OriginAddingMessageTransform'),
-        ('ommlds.minichain.specs.instantiate', 'RetryBackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'RetryBackendSpec'),
     ),
 )
 def _process_dataclass__9024fb7569f3cdb9de637a9068a1db5ef0178937():
@@ -25457,7 +25457,7 @@ def _process_dataclass__c4fcb2b1f1cadf2a1ca803a56157e3f9b7cd6e1a():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.specs.instantiate', 'ConfigBackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'ConfigBackendSpec'),
     ),
 )
 def _process_dataclass__6030c7931cbce826b04c63f13115f62b1dbf8310():
@@ -25601,7 +25601,7 @@ def _process_dataclass__6030c7931cbce826b04c63f13115f62b1dbf8310():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.specs.instantiate', 'FirstInWinsBackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'FirstInWinsBackendSpec'),
     ),
 )
 def _process_dataclass__8390811a304c1b08264c919ffc6824d6ea4a3a2c():
@@ -25735,8 +25735,8 @@ def _process_dataclass__8390811a304c1b08264c919ffc6824d6ea4a3a2c():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.specs.instantiate', 'ModelBackendSpec'),
-        ('ommlds.minichain.specs.instantiate', 'NameBackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'ModelBackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'NameBackendSpec'),
     ),
 )
 def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
@@ -25890,7 +25890,7 @@ def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
         '__dataclass__repr__default_fn',
     ),
     cls_names=(
-        ('ommlds.minichain.specs.instantiate', 'ResolvedBackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'ResolvedBackendSpec'),
     ),
 )
 def _process_dataclass__24dd5b1b86ad2e7ec88870da3090310b065d38e5():
@@ -26068,7 +26068,7 @@ def _process_dataclass__24dd5b1b86ad2e7ec88870da3090310b065d38e5():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.specs.instantiate', 'StringBackendSpec'),
+        ('ommlds.minichain.specs._marshal', 'StringBackendSpec'),
     ),
 )
 def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
