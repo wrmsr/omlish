@@ -17,7 +17,10 @@ log, alog = logs.get_module_loggers(globals())
 ##
 
 
-class MessageDivider(tx.InitAddClass, tx.Static):
+class MessageDivider(
+    tx.InitAddClass,
+    tx.Static,
+):
     init_add_class = 'message-divider'
 
     def __init__(
@@ -77,7 +80,10 @@ class MessageFinalized(tx.Event):
     widget: tx.Widget
 
 
-class OnMountMessageFinalized(tx.Widget, lang.Abstract):
+class OnMountMessageFinalized(
+    tx.Widget,
+    lang.Abstract,
+):
     __has_finalized = False
 
     @tx.on(tx.Mount)
@@ -91,7 +97,11 @@ class OnMountMessageFinalized(tx.Widget, lang.Abstract):
 ##
 
 
-class Message(tx.InitAddClass, tx.Static, lang.Abstract):
+class Message(
+    tx.InitAddClass,
+    tx.Static,
+    lang.Abstract,
+):
     init_add_class = 'message'
 
     def __init__(
@@ -109,7 +119,11 @@ class Message(tx.InitAddClass, tx.Static, lang.Abstract):
         return self._message_uuid
 
 
-class StaticMessage(OnMountMessageFinalized, Message, lang.Abstract):
+class StaticMessage(
+    OnMountMessageFinalized,
+    Message,
+    lang.Abstract,
+):
     pass
 
 
@@ -335,7 +349,10 @@ class StreamAiMessage(AiMessage):
 ##
 
 
-class ToolConfirmationControls(tx.InitAddClass, tx.Static):
+class ToolConfirmationControls(
+    tx.InitAddClass,
+    tx.Static,
+):
     init_add_class = 'tool-confirmation-controls'
 
     class ClickedAllow(tx.Message):
@@ -469,7 +486,11 @@ class UiMessage(StaticMessage):
 ##
 
 
-class MessagesContainer(tx.InitAddClass, tx.ComposeOnce, tx.VerticalScroll):
+class MessagesContainer(
+    tx.InitAddClass,
+    tx.ComposeOnce,
+    tx.VerticalScroll,
+):
     init_add_class = 'messages-container'
 
     def __init__(self, init_messages: ta.Sequence[Message] | None = None) -> None:

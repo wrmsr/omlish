@@ -2,6 +2,7 @@ import asyncio
 import traceback
 import typing as ta
 import uuid
+import weakref
 
 from omdev.tui import textual as tx
 from omlish import check
@@ -68,6 +69,8 @@ class ChatDriverInterface(
             self._schedule_drain_append_stream_ai_message_buffer,
         )
 
+        self._suppressed_background_terminal_render_set: ta.MutableSet[tx.Widget] = weakref.WeakSet()
+
         #
 
         self._messages_container = MessagesContainer([welcome_message] if welcome_message is not None else [])
@@ -106,7 +109,12 @@ class ChatDriverInterface(
     ##
     # Messages
 
+    @tx.on(MessageFinalized)
     async def _on_message_finalized(self, event: MessageFinalized) -> None:
+        if event.widget in self._suppressed_background_terminal_render_set:
+            self._suppressed_background_terminal_render_set.remove(event.widget)
+            return
+
         if isinstance(event.widget, WelcomeMessage):
             return
 
@@ -123,6 +131,40 @@ class ChatDriverInterface(
         parts = await self._append_stream_ai_message_buffer.swap()
         await self._messages_container.append_stream_ai_message_content(parts)
 
+    async def mount_messages(
+            self,
+            chat: mc.Chat,
+            *,
+            suppress_background_terminal_render: bool = False,
+    ) -> None:
+        wx: list[Message] = []
+
+        for msg in chat:
+            if isinstance(msg, mc.AiMessage):
+                wx.append(
+                    StaticAiMessage(
+                        check.isinstance(msg.c, str),
+                        markdown=True,
+                        message_uuid=msg.metadata[mc.MessageUuid].v,
+                    ),
+                )
+
+            elif isinstance(msg, mc.UserMessage):
+                wx.append(UserMessage(
+                    check.isinstance(msg.c, str),
+                    message_uuid=msg.metadata[mc.MessageUuid].v,
+                ))
+
+        if not wx:
+            return
+
+        if suppress_background_terminal_render:
+            for w in wx:
+                self._suppressed_background_terminal_render_set.add(w)
+
+        await self._messages_container.enqueue_mount_messages(*wx)
+        self.call_later(self._messages_container.mount_messages)
+
     ##
     # Chat events
 
@@ -131,21 +173,14 @@ class ChatDriverInterface(
     async def _handle_chat_queue_event(self, ev: ta.Any) -> None:
         if isinstance(ev, mc.drivers.AiMessagesEvent):
             if not ev.streamed:
-                wx: list[Message] = []
+                ai_msgs = [
+                    msg
+                    for msg in ev.chat
+                    if isinstance(msg, mc.AiMessage)
+                ]
 
-                for ai_msg in ev.chat:
-                    if isinstance(ai_msg, mc.AiMessage):
-                        wx.append(
-                            StaticAiMessage(
-                                check.isinstance(ai_msg.c, str),
-                                markdown=True,
-                                message_uuid=ai_msg.metadata[mc.MessageUuid].v,
-                            ),
-                        )
-
-                if wx:
-                    await self._messages_container.enqueue_mount_messages(*wx)
-                    self.call_later(self._messages_container.mount_messages)
+                if ai_msgs:
+                    await self.mount_messages(ai_msgs)
 
         elif isinstance(ev, mc.drivers.AiStreamBeginEvent):
             # self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa

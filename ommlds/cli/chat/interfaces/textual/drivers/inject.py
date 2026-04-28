@@ -15,6 +15,7 @@ with lang.auto_proxy_import(globals()):
     from . import chat as _chat
     from . import facades as _facades
     from . import interface as _interface
+    from . import replay as _replay
     from . import tools as _tools
     from . import welcome as _welcome
 
@@ -66,6 +67,16 @@ def bind_driver_internal(
     #
 
     els.append(inj.bind(_welcome.build_welcome_message, singleton=True))
+
+    #
+
+    els.extend([
+        inj.bind(_replay.PreviousMessageReplayer, singleton=True),
+
+        mc.drivers.injection.phase_callbacks().bind_item(to_fn=inj.target(
+            rpm=_replay.PreviousMessageReplayer,
+        )(lambda rpm: mc.drivers.PhaseCallback(mc.drivers.Phase.STARTED, lambda: rpm.replay_previous_messages()))),
+    ])
 
     #
 
