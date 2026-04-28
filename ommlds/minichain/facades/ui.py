@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 
 from .text import CanFacadeText
@@ -33,5 +34,9 @@ class UiQuitSignal(lang.Func0[ta.Awaitable[None]]):
     pass
 
 
-async def raise_system_exit_ui_quit_signal() -> None:
-    raise SystemExit
+@dc.dataclass(frozen=True)
+class RaiseUiQuitSignal:
+    exc: BaseException | type[BaseException]
+
+    async def __call__(self) -> None:
+        raise self.exc

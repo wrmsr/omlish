@@ -65,7 +65,7 @@ with _lang.auto_proxy_init(globals()):
         PrintMessageDisplayer,
 
         UiQuitSignal,
-        raise_system_exit_ui_quit_signal,
+        RaiseUiQuitSignal,
     )
 
     ##

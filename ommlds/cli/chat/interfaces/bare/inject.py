@@ -35,12 +35,26 @@ def bind_bare(
     els.extend([
         _backends.bind_backend(chat_cfg),
 
-        _drivers.bind_driver(chat_cfg.driver, chat_cfg=chat_cfg),
-
-        mc.facades.inject.bind_facade(chat_cfg.facade),
-
         _printing2.bind_printing(chat_cfg.printing),
     ])
+
+    #
+
+    els.append(
+        inj.override(
+            _drivers.bind_driver(chat_cfg.driver, chat_cfg=chat_cfg),
+        ),
+    )
+
+    #
+
+    els.append(
+        inj.override(
+            mc.facades.inject.bind_facade(chat_cfg.facade),
+
+            inj.bind(mc.facades.UiQuitSignal(mc.facades.RaiseUiQuitSignal(SystemExit))),
+        ),
+    )
 
     #
 

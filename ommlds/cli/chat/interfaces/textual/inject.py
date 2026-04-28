@@ -6,7 +6,6 @@ import contextlib
 import functools
 import typing as ta
 
-from omlish import check
 from omlish import inject as inj
 from omlish import lang
 
@@ -45,7 +44,6 @@ async def _provide_chat_driver_interface(
                 inj.bind(contextlib.AsyncExitStack, to_const=child_aes),
 
                 _drivers.bind_driver(
-                    check.isinstance(chat_cfg.interface, TextualInterfaceConfig),
                     chat_cfg=chat_cfg,
                 ),
             ))

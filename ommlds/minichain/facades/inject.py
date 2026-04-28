@@ -39,7 +39,7 @@ def bind_facade(cfg: FacadeConfig = FacadeConfig()) -> inj.Elements:
 
     #
 
-    els.append(inj.bind(_ui.UiQuitSignal(_ui.raise_system_exit_ui_quit_signal)))
+    els.append(inj.bind(_ui.UiQuitSignal(_ui.RaiseUiQuitSignal(NotImplementedError))))
 
     #
 
