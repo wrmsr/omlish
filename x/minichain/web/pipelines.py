@@ -5,7 +5,6 @@ from omlish.http.pipelines.servers.apps.asgi import AsgiSpec
 from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
 from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
-from omlish.io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from omlish.io.pipelines.core import IoPipeline
 from omlish.io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriver
 

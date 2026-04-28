@@ -3,7 +3,6 @@ import typing as ta
 from omdev.cache import data as dcache
 from omlish import check
 from omlish import lang
-from omlish.io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 
 
 ##

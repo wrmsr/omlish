@@ -2,7 +2,6 @@ import json
 import time
 
 from omlish import check
-from omlish.io.pipelines.asyncs import AsyncIoPipelineMessages  # noqa
 from ommlds import minichain as mc
 
 
