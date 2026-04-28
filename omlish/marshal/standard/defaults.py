@@ -29,6 +29,8 @@ from ..singular.datetimes import DATETIME_MARSHALER_FACTORY
 from ..singular.datetimes import DATETIME_UNMARSHALER_FACTORY
 from ..singular.enums import EnumMarshalerFactory
 from ..singular.enums import EnumUnmarshalerFactory
+from ..singular.ipaddress import IPADDRESS_MARSHALER_FACTORY
+from ..singular.ipaddress import IPADDRESS_UNMARSHALER_FACTORY
 from ..singular.numbers import NUMBERS_MARSHALER_FACTORY
 from ..singular.numbers import NUMBERS_UNMARSHALER_FACTORY
 from ..singular.opaquerepr import OPAQUE_REPR_MARSHALER_FACTORY
@@ -88,6 +90,7 @@ DEFAULT_STANDARD_FACTORIES: ta.Final = DefaultStandardFactories.of_pairs([
     (NUMBERS_MARSHALER_FACTORY,         NUMBERS_UNMARSHALER_FACTORY),
     (UUID_MARSHALER_FACTORY,            UUID_UNMARSHALER_FACTORY),
     (DATETIME_MARSHALER_FACTORY,        DATETIME_UNMARSHALER_FACTORY),
+    (IPADDRESS_MARSHALER_FACTORY,       IPADDRESS_UNMARSHALER_FACTORY),
     (MaybeMarshalerFactory(),           MaybeUnmarshalerFactory()),
     (MappingMarshalerFactory(),         MappingUnmarshalerFactory()),
     (SequenceNotStrMarshalerFactory(),  SequenceNotStrUnmarshalerFactory()),

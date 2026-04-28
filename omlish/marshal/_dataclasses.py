@@ -3465,6 +3465,7 @@ def _process_dataclass__029e3b873ec8e37ed64107b36d9c83f6511951e8():
         ('omlish.marshal.singular.base64', 'Base64MarshalerUnmarshaler'),
         ('omlish.marshal.singular.enums', 'EnumMarshaler'),
         ('omlish.marshal.singular.enums', 'EnumUnmarshaler'),
+        ('omlish.marshal.singular.ipaddress', 'IpaddressUnmarshaler'),
         ('omlish.marshal.singular.primitives', 'PrimitiveMarshalerUnmarshaler'),
     ),
 )

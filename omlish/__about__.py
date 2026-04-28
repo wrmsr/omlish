@@ -67,7 +67,7 @@ class Project(ProjectBase):
 
             'pyyaml ~= 6.0',
 
-            'cbor2 ~= 5.9',
+            'cbor2 ~= 6.0',
 
             'cloudpickle ~= 3.1',
         ],
@@ -120,9 +120,6 @@ class Project(ProjectBase):
     #
 
     _plus_dependencies = [
-        'anyio',
-        'sniffio',
-
         'asttokens',
         'executing',
 

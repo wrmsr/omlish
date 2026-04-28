@@ -36,7 +36,7 @@ botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.4
 cattrs==26.1.0
-cbor2==5.9.0
+cbor2==6.0.0
 certifi==2026.4.22
 cffi==2.0.0
 charset-normalizer==3.4.7
