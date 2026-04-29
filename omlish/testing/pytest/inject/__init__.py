@@ -6,3 +6,13 @@ from .harness import (  # noqa
     bind,
     register,
 )
+
+from .metadata import (  # noqa
+    RunMetadata,
+
+    SessionRunMetadata,
+    PackageRunMetadata,
+    ModuleRunMetadata,
+    ClassRunMetadata,
+    FunctionRunMetadata,
+)

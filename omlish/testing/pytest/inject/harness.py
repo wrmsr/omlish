@@ -177,12 +177,12 @@ def register(*args: inj.Element | inj.Elements) -> None:
 def bind(
         scope: PytestScope | str = PytestScope.SESSION,
         *,
-        eager: bool = False,  # FIXME
+        eager: bool = False,
 ) -> ta.Callable[[T], T]:
     def inner(obj):
         pts = scope if isinstance(scope, PytestScope) else PytestScope[check.isinstance(scope, str).upper()]
         register(inj.as_elements(
-            inj.bind(obj, in_=_SCOPES_BY_PYTEST_SCOPE[pts]),
+            inj.bind(obj, in_=_SCOPES_BY_PYTEST_SCOPE[pts], eager=eager),
         ))
         return obj
     return inner
