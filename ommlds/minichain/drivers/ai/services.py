@@ -10,6 +10,7 @@ from ...chat.choices.stream.services import ChatChoicesStreamService
 from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiChat
 from ...chat.messages import Chat
+from ...chat.metadata import MessageUuid
 from ...chat.stream.joining import AiDeltaJoiner
 from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
 from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform
@@ -62,6 +63,9 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
 
         out = self._mt.transform(out)
 
+        for m in out:
+            check.in_(MessageUuid, m.metadata)
+
         return out
 
 
@@ -103,5 +107,8 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
                         await delta_callback(delta)
 
         out = joiner.build()
+
+        for m in out:
+            check.in_(MessageUuid, m.metadata)
 
         return out

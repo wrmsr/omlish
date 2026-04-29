@@ -109,12 +109,17 @@ class AiDeltaJoiner:
         self._all.append(d)
 
         if isinstance(d, ToolUseAiDelta):
-            self._out.append(ToolUseMessage(ToolUse(
+            tum = ToolUseMessage(ToolUse(
                 id=d.id,
                 name=check.not_none(d.name),
                 args=d.args or {},
                 raw_args=json.dumps_compact(d.args),
-            )))
+            ))
+
+            if (mu := d.metadata.get(MessageUuid)) is not None:
+                tum = tum.with_metadata(mu)
+
+            self._out.append(tum)
 
         else:
             self._queue.append(d)
