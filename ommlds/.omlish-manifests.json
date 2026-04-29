@@ -902,6 +902,33 @@
     }
   },
   {
+    "module": ".minichain.modules.bash.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/bash/descriptors.py",
+    "line": 8,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.modules.bash.descriptors",
+        "attr": "BASH_MODULE",
+        "name": "bash",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/descriptors.py",
+    "line": 10,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "ommlds.minichain.modules.descriptors",
+        "attr": "ModuleDescriptor"
+      }
+    }
+  },
+  {
     "module": ".minichain.search",
     "attr": null,
     "file": "ommlds/minichain/search.py",

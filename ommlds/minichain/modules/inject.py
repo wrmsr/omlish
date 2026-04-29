@@ -32,6 +32,10 @@ CONFIG_MODULES: ta.Mapping[type[ModuleConfig], ta.Callable[[ta.Any], inj.Element
 
 
 def bind_module(cfg: ModuleConfig) -> inj.Elements:
+    # reg = get_global_registry()
+    # mt = reg.get_type(ModuleDescriptor).lookup('bash')
+    # print(mt)
+
     els: list[inj.Elemental] = []
 
     for cls, bind_fn in CONFIG_MODULES.items():
