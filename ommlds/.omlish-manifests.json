@@ -905,7 +905,7 @@
     "module": ".minichain.modules.bash.descriptors",
     "attr": null,
     "file": "ommlds/minichain/modules/bash/descriptors.py",
-    "line": 8,
+    "line": 14,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.modules.bash.descriptors",
@@ -917,14 +917,89 @@
     }
   },
   {
+    "module": ".minichain.modules.code.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/code/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.modules.code.descriptors",
+        "attr": "CODE_MODULE",
+        "name": "code",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
     "module": ".minichain.modules.descriptors",
     "attr": null,
     "file": "ommlds/minichain/modules/descriptors.py",
-    "line": 10,
+    "line": 16,
     "value": {
       "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.modules.descriptors",
         "attr": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.fs.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/fs/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.modules.fs.descriptors",
+        "attr": "FS_MODULE",
+        "name": "fs",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.skills.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/skills/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.modules.skills.descriptors",
+        "attr": "SKILLS_MODULE",
+        "name": "skills",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.todo.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/todo/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.modules.todo.descriptors",
+        "attr": "TODO_MODULE",
+        "name": "todo",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
+    "module": ".minichain.modules.weathertest.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/weathertest/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.modules.weathertest.descriptors",
+        "attr": "WEATHER_TEST_MODULE",
+        "name": "weather_test",
+        "aliases": null,
+        "type": "ModuleDescriptor"
       }
     }
   },

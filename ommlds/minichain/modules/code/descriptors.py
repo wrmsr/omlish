@@ -1,7 +1,7 @@
 from omlish import lang
 
 from ..descriptors import ModuleDescriptor
-from .configs import BashConfig
+from .configs import CodeConfig
 
 
 with lang.auto_proxy_import(globals()):
@@ -12,11 +12,11 @@ with lang.auto_proxy_import(globals()):
 
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
-#     name='bash',
+#     name='code',
 #     type='ModuleDescriptor',
 # )
-BASH_MODULE = ModuleDescriptor(
-    name='bash',
-    config_cls=BashConfig,
-    binder=lambda cfg: _inject.bind_bash(cfg),
+CODE_MODULE = ModuleDescriptor(
+    name='code',
+    config_cls=CodeConfig,
+    binder=lambda cfg: _inject.bind_code(cfg),
 )

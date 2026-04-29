@@ -12,7 +12,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_bash(cfg: WeatherTestConfig = WeatherTestConfig()) -> inj.Elements:
+def bind_weather_test(cfg: WeatherTestConfig = WeatherTestConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
