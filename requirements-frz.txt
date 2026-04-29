@@ -36,7 +36,7 @@ botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.4
 cattrs==26.1.0
-cbor2==6.0.0
+cbor2==6.0.1
 certifi==2026.4.22
 cffi==2.0.0
 charset-normalizer==3.4.7
@@ -53,7 +53,7 @@ ddgs==9.14.1
 debugpy==1.8.20
 decorator==5.2.1
 defusedxml==0.7.1
-deno==2.7.12
+deno==2.7.14
 diffusers==0.37.1
 dill==0.4.1
 diskcache==5.6.3
@@ -276,7 +276,7 @@ sqlean.py==3.50.4.5
 sqlite-vec==0.1.9
 stack-data==0.6.3
 sympy==1.14.0
-tavily-python==0.7.23
+tavily-python==0.7.24
 terminado==0.18.1
 textual==8.2.4
 textual-dev==1.8.0
