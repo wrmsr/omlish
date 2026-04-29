@@ -738,6 +738,146 @@ def _process_dataclass__3fe3bb9ac13c6d7f416ca5fe3e49bc54d50d4126():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('name', 'type', 'not_null', 'default', 'identity')), EqPlan(fields=('name', 'type'"
+        ", 'not_null', 'default', 'identity')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fields=("
+        "InitPlan.Field(name='name', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='type', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
+        "itPlan.Field(name='not_null', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fiel"
+        "ds.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='default', annotation=OpRef(name='init.fields.3.annotation"
+        "'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='identity', annotation=Op"
+        "Ref(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param"
+        "='self', std_params=('name', 'type'), kw_only_params=('not_null', 'default', 'identity'), frozen=False, slots="
+        "False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_o"
+        "nly=False, fn=None), ReprPlan.Field(name='type', kw_only=False, fn=None), ReprPlan.Field(name='not_null', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='default', kw_only=True, fn=None), ReprPlan.Field(name='identity', kw_"
+        "only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='b9c230ab2410f845d95a76ef7a5345b2fc9c8321',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+    ),
+    cls_names=(
+        ('omlish.sql.tabledefs', 'RenderColumn'),
+    ),
+)
+def _process_dataclass__b9c230ab2410f845d95a76ef7a5345b2fc9c8321():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                name=self.name,
+                type=self.type,
+                not_null=self.not_null,
+                default=self.default,
+                identity=self.identity,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.name == other.name and
+                self.type == other.type and
+                self.not_null == other.not_null and
+                self.default == other.default and
+                self.identity == other.identity
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        setattr(__dataclass__cls, '__hash__', None)
+
+        def __init__(
+            self,
+            name: __dataclass__init__fields__0__annotation,
+            type: __dataclass__init__fields__1__annotation,
+            *,
+            not_null: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            default: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            identity: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+        ) -> __dataclass__None:
+            self.name = name
+            self.type = type
+            self.not_null = not_null
+            self.default = default
+            self.identity = identity
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"name={self.name!r}")
+            parts.append(f"type={self.type!r}")
+            parts.append(f"not_null={self.not_null!r}")
+            parts.append(f"default={self.default!r}")
+            parts.append(f"identity={self.identity!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('name', 'type', 'not_null', 'default')), EqPlan(fields=('name', 'type', 'not_null'"
         ", 'default')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='nam"
         "e', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override"

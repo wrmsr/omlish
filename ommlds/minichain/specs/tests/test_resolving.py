@@ -20,8 +20,8 @@ def test_resolving():
             BackendSpec.of("{model: 'gpt'}"),
             ConfigBackendSpec(ModelBackendSpec('gpt'), [{'api_key': 'foo'}]),
             RetryBackendSpec(ConfigBackendSpec(ModelBackendSpec('gpt'), [{'api_key': 'foo'}])),
-            BackendSpec.of("{config: {child: {name: 'ollama'}, configs: [{model_name: 'qwen3.6:35b-a3b-mlx-bf16'}]}}"),
-            BackendSpec.of("{config: {child: {name: ollama}, configs: [{model_name: 'qwen3.6:35b-a3b-mlx-bf16'}]}}"),
+            BackendSpec.of("{config: {child: {name: 'ollama'}, configs: [{model_name: 'qwen3.6:35b'}]}}"),
+            BackendSpec.of("{config: {child: {name: ollama}, configs: [{model_name: 'qwen3.6:35b'}]}}"),
         ]:
             rbs = bsr.resolve(ChatChoicesService, bs)
             print(rbs)

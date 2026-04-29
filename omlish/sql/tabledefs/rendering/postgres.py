@@ -1,34 +1,64 @@
 import io
 import typing as ta
 
-from ... import check
-from ... import collections as col
-from ... import dataclasses as dc
-from .dtypes import Datetime
-from .dtypes import Integer
-from .dtypes import String
-from .dtypes import Uuid
-from .elements import Column
-from .elements import Index
-from .elements import PrimaryKey
-from .elements import UpdatedAtTrigger
-from .tabledefs import TableDef
-from .values import Now
+from .... import check
+from .... import collections as col
+from .... import dataclasses as dc
+from ..dtypes import Datetime
+from ..dtypes import Integer
+from ..dtypes import String
+from ..dtypes import Uuid
+from ..elements import Column
+from ..elements import Index
+from ..elements import PrimaryKey
+from ..elements import UpdatedAtTrigger
+from ..tabledefs import TableDef
+from ..values import Now
 
 
 ##
 
 
+CREATE_UPDATED_AT_TRIGGER_FUNCTION_SRC = """\
+create or replace function {function_name}()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.{column_name} is not distinct from old.{column_name} then
+    new.{column_name} := current_timestamp;
+  end if;
+
+  return new;
+end;
+$$\
+"""
+
+
 CREATE_UPDATED_AT_TRIGGER_SRC = """\
-create trigger {preamble} {trigger_name}
-after update on {table_name}
+create trigger {trigger_name}
+before update on {table_name}
 for each row
-when new.{column_name} = old.{column_name}
-  begin
-  update {table_name}
-  set {column_name} = current_timestamp
-  where {where};
-end\
+execute function {function_name}()
+"""
+
+
+CREATE_UPDATED_AT_TRIGGER_IF_NOT_EXISTS_SRC = """\
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = '{trigger_name}'
+      and tgrelid = '{table_name}'::regclass
+  ) then
+    create trigger {trigger_name}
+    before update on {table_name}
+    for each row
+    execute function {function_name}();
+  end if;
+end
+$$\
 """
 
 
@@ -46,9 +76,10 @@ class RenderColumn:
 
     not_null: bool = False
     default: str | None = None
+    identity: bool = False
 
 
-def render_create_statements(
+def render_postgres_create_statements(
         tbl: TableDef,
         *,
         if_not_exists: bool = False,
@@ -61,21 +92,39 @@ def render_create_statements(
 
     #
 
+    if (pk := tbl.elements.get(PrimaryKey)) is not None:
+        identity_column = (
+            pk.columns[0]
+            if len(pk.columns) == 1 and isinstance(cols[pk.columns[0]].type, Integer)
+            else None
+        )
+    else:
+        identity_column = None
+
+    #
+
     r_cols: dict[str, RenderColumn] = {}
 
     for c in cols.values():
+        is_identity = c.name == identity_column
+
         ct: str
-        if isinstance(c.type, (String, Uuid)):
-            ct = 'string'
+        if isinstance(c.type, String):
+            ct = 'text'
+        elif isinstance(c.type, Uuid):
+            ct = 'uuid'
         elif isinstance(c.type, Integer):
-            ct = 'integer'
+            ct = 'bigint' if is_identity else 'integer'
         elif isinstance(c.type, Datetime):
-            ct = 'datetime'
+            ct = 'timestamp with time zone'
         else:
             raise TypeError(c.type)
 
         dfl: str | None = None
         if c.default.present:
+            if is_identity:
+                raise TypeError(c)
+
             dv = c.default.must()
 
             if isinstance(dv, Now):
@@ -88,22 +137,15 @@ def render_create_statements(
             ct,
             not_null=not c.nullable,
             default=dfl,
+            identity=is_identity,
         )
 
     #
 
     constraints: list[str] = []
-    options: list[str] = []
 
     indexes: list[str] = []
     triggers: list[str] = []
-
-    if (pk := tbl.elements.get(PrimaryKey)) is not None:
-        has_rowid = len(pk.columns) == 1 and isinstance(cols[pk.columns[0]].type, Integer)
-    else:
-        has_rowid = False
-    if not has_rowid:
-        options.append('without rowid')
 
     for e in tbl.elements:
         if isinstance(e, Column):
@@ -114,16 +156,22 @@ def render_create_statements(
             constraints.append(f'primary key ({", ".join(e.columns)})')
 
         elif isinstance(e, UpdatedAtTrigger):
-            if pk is not None:
-                pk_cols = check.not_empty(pk.columns)
-            else:
-                pk_cols = ['rowid']
-            triggers.append(CREATE_UPDATED_AT_TRIGGER_SRC.format(
-                preamble='if not exists' if if_not_exists else '',
-                trigger_name=f'{tbl.name}__trigger__updated_at__{e.column}',
-                table_name=tbl.name,
+            function_name = f'{tbl.name}__function__updated_at__{e.column}'
+            trigger_name = f'{tbl.name}__trigger__updated_at__{e.column}'
+
+            triggers.append(CREATE_UPDATED_AT_TRIGGER_FUNCTION_SRC.format(
+                function_name=function_name,
                 column_name=e.column,
-                where=' and '.join(f'{c} = new.{c}' for c in pk_cols),
+            ))
+
+            triggers.append((
+                CREATE_UPDATED_AT_TRIGGER_IF_NOT_EXISTS_SRC
+                if if_not_exists
+                else CREATE_UPDATED_AT_TRIGGER_SRC
+            ).format(
+                function_name=function_name,
+                trigger_name=trigger_name,
+                table_name=tbl.name,
             ))
 
         elif isinstance(e, Index):
@@ -156,6 +204,9 @@ def render_create_statements(
     for i, rc in enumerate(r_cols.values()):
         cts.write(f'  {rc.name} {rc.type}')
 
+        if rc.identity:
+            cts.write(' generated by default as identity')
+
         if rc.not_null:
             cts.write(' not null')
 
@@ -176,11 +227,6 @@ def render_create_statements(
         cts.write('\n')
 
     cts.write(')')
-
-    for opt in options:
-        cts.write('\n')
-
-        cts.write(opt)
 
     #
 

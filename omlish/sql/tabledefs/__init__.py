@@ -39,8 +39,12 @@ from .lower import (  # noqa
     lower_table_elements,
 )
 
-from .rendering import (  # noqa
-    render_create_statements,
+from .rendering.postgres import (  # noqa
+    render_postgres_create_statements,
+)
+
+from .rendering.sqlite import (  # noqa
+    render_sqlite_create_statements,
 )
 
 from .tabledefs import (  # noqa

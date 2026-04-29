@@ -248,7 +248,7 @@ class SqlStore(Store):
             for m in self._registry.mappers:
                 td = self._mapper_table_def(m)
 
-                for stmt in sql.td.render_create_statements(
+                for stmt in sql.td.render_sqlite_create_statements(
                         sql.td.lower_table_elements(td),
                         if_not_exists=True,
                 ):
