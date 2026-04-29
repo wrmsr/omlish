@@ -14,6 +14,7 @@ from .configs import ChatConfig
 from .interfaces.bare.configs import BareInterfaceConfig
 from .interfaces.configs import InterfaceConfig
 from .interfaces.textual.configs import TextualInterfaceConfig
+from .interfaces.web.configs import WebInterfaceConfig
 
 
 ##
@@ -43,6 +44,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
         parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
             ap.arg('-i', '--interactive', action='store_true'),
             ap.arg('-T', '--textual', action='store_true'),
+            ap.arg('-W', '--web', action='store_true'),
             ap.arg('-e', '--editor', action='store_true'),
             ap.arg('-x', '--autoexec', action='append'),
         ]
@@ -58,6 +60,16 @@ class ChatProfile(AspectProfile[ChatConfig]):
                 cfg = dc.replace(
                     cfg,
                     interface=TextualInterfaceConfig(**{
+                        f.name: getattr(cfg.interface, f.name)
+                        for f in dc.fields(InterfaceConfig)
+                    }),
+                )
+
+            elif ctx.args.web:
+                check.isinstance(cfg.interface, BareInterfaceConfig)
+                cfg = dc.replace(
+                    cfg,
+                    interface=WebInterfaceConfig(**{
                         f.name: getattr(cfg.interface, f.name)
                         for f in dc.fields(InterfaceConfig)
                     }),
@@ -98,7 +110,11 @@ class ChatProfile(AspectProfile[ChatConfig]):
         ]
 
         def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
-            if ctx.args.interactive or ctx.args.textual:
+            if (
+                    ctx.args.interactive or
+                    ctx.args.textual or
+                    ctx.args.web
+            ):
                 check.arg(not ctx.args.message)
 
             elif ctx.args.message:

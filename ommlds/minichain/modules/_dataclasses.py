@@ -37,6 +37,7 @@ def _register(**kwargs):
         ('ommlds.minichain.modules.inject', 'BashConfig'),
         ('ommlds.minichain.modules.inject', 'CodeConfig'),
         ('ommlds.minichain.modules.inject', 'TodoConfig'),
+        ('ommlds.minichain.modules.weathertest.configs', 'WeatherTestConfig'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():

@@ -7995,6 +7995,7 @@ def _process_dataclass__95d65e05398b42908ba7d67d961be3c1dae7f5b4():
         ('ommlds.minichain.modules.inject', 'BashConfig'),
         ('ommlds.minichain.modules.inject', 'CodeConfig'),
         ('ommlds.minichain.modules.inject', 'TodoConfig'),
+        ('ommlds.minichain.modules.weathertest.configs', 'WeatherTestConfig'),
         ('ommlds.minichain.specs._marshal', 'BackendSpec'),
     ),
 )

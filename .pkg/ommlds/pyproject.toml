@@ -133,6 +133,6 @@ exclude = [
 'ommlds.cli.chat.interfaces.textual.styles' = [
     '*.tcss',
 ]
-'ommlds.cli.tests.web' = [
+'ommlds.cli.chat.interfaces.web' = [
     'resources/*',
 ]

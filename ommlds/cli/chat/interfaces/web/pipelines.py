@@ -12,7 +12,7 @@ from omlish.io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriv
 ##
 
 
-async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
+async def serve_asgi_pipeline(spec: AsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = PollAsyncioStreamIoPipelineDriver(
             IoPipeline.Spec(
@@ -34,7 +34,3 @@ async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
     srv = await asyncio.start_server(_handle_client, spec.host, spec.port)
     async with srv:
         await srv.serve_forever()
-
-
-def serve_asgi_pipeline(spec: AsgiSpec) -> None:
-    asyncio.run(a_serve_asgi_pipeline(spec))

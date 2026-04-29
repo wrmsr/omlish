@@ -5,11 +5,13 @@ from ..configs import ChatConfig
 from .bare.configs import BareInterfaceConfig
 from .configs import InterfaceConfig
 from .textual.configs import TextualInterfaceConfig
+from .web.configs import WebInterfaceConfig
 
 
 with lang.auto_proxy_import(globals()):
     from .bare import inject as _bare
     from .textual import inject as _textual
+    from .web import inject as _web
 
 
 ##
@@ -27,6 +29,9 @@ def bind_interface(
 
     elif isinstance(cfg, BareInterfaceConfig):
         els.append(_bare.bind_bare(cfg, chat_cfg=chat_cfg))
+
+    elif isinstance(cfg, WebInterfaceConfig):
+        els.append(_web.bind_web(cfg, chat_cfg=chat_cfg))
 
     else:
         raise TypeError(cfg)

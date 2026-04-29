@@ -3,7 +3,7 @@ import time
 
 from omlish import check
 
-from .... import minichain as mc
+from ..... import minichain as mc
 
 
 ##
