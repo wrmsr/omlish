@@ -3,7 +3,6 @@ from .events.injection import event_callbacks  # noqa
 from .phases.injection import phase_callbacks  # noqa
 from .preparing.injection import placeholder_contents_providers  # noqa
 from .preparing.injection import system_message_providers  # noqa
-from .tools.injection import ToolSetBinder  # noqa
 from .tools.injection import bind_tool_context_provider_to_key  # noqa
 from .tools.injection import tool_catalog_entries  # noqa
 from .tools.injection import tool_context_providers  # noqa
