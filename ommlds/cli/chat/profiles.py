@@ -232,6 +232,10 @@ class ChatProfile(AspectProfile[ChatConfig]):
                         enable_tools=True,
                     ),
                 ),
+                interface=dc.replace(
+                    cfg.interface,
+                    enable_tools=True,
+                ),
             )
 
             return cfg
