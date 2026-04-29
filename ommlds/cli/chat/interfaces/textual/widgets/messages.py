@@ -119,12 +119,161 @@ class Message(
         return self._message_uuid
 
 
+#
+
+
 class StaticMessage(
     OnMountMessageFinalized,
     Message,
     lang.Abstract,
 ):
     pass
+
+
+#
+
+
+StreamMessageState: ta.TypeAlias = ta.Literal[  # noqa
+    'new',
+    'new_finalizing',
+    'streaming',
+    'finalized',
+]
+
+
+@dc.dataclass(frozen=True)
+class StreamMessagePart(lang.Abstract):
+    message_cls: type[StreamMessage]
+    message_uuid: uuid.UUID
+
+
+@dc.dataclass(frozen=True)
+class ContentStreamMessagePart(StreamMessagePart):
+    content: str
+
+
+@dc.dataclass(frozen=True)
+class FinalStreamMessagePart(StreamMessagePart):
+    pass
+
+
+class StreamMessage(Message, lang.Abstract):
+    def __init__(
+            self,
+            *initial_contents: str,
+            message_uuid: uuid.UUID | None = None,
+    ) -> None:
+        super().__init__(
+            message_uuid=message_uuid,
+        )
+
+        self._initial_contents: list[str] = list(initial_contents)
+
+        self._state: StreamMessageState = 'new'
+
+    @property
+    def state(self) -> StreamMessageState:
+        return self._state
+
+    #
+
+    _final_content: str
+
+    @property
+    def final_content(self) -> str:
+        check.state(self._state == 'finalized')
+        return self._final_content
+
+    #
+
+    _stream_content: io.StringIO
+
+    @ta.final
+    async def start_stream(self) -> None:
+        check.state(self._state in ('new', 'new_finalizing'))
+
+        self._stream_content = io.StringIO()
+
+        await self._start_stream_content()
+
+        if (ics := self._initial_contents):
+            for ic in ics:
+                self._stream_content.write(ic)
+                await self._append_stream_content(ic)
+
+        del self._initial_contents
+
+        if self._state == 'new':
+            self._state = 'streaming'
+
+        elif self._state == 'new_finalizing':
+            await self._finalize_stream()
+
+        else:
+            raise RuntimeError(f'unexpected state: {self._state}')
+
+    @abc.abstractmethod
+    async def _start_stream_content(self) -> None:
+        raise NotImplementedError
+
+    async def append_stream_content(self, content: str) -> None:
+        if not content:
+            return
+
+        if self._state == 'new':
+            self._initial_contents.append(content)
+
+        elif self._state == 'streaming':
+            self._stream_content.write(content)
+            await self._append_stream_content(content)
+
+        else:
+            raise RuntimeError(f'unexpected state: {self._state}')
+
+    @abc.abstractmethod
+    async def _append_stream_content(self, c: str) -> None:
+        raise NotImplementedError
+
+    async def _finalize_stream(self) -> None:
+        await self._finalize_stream_content()
+
+        self._final_content = self._stream_content.getvalue()
+        del self._stream_content
+
+        self._state = 'finalized'
+
+        self.post_message(MessageFinalized(self))
+
+    @abc.abstractmethod
+    async def _finalize_stream_content(self) -> None:
+        raise NotImplementedError
+
+    async def finalize_stream(self) -> None:
+        if self._state == 'new':
+            self._state = 'new_finalizing'
+
+        elif self._state == 'streaming':
+            await self._finalize_stream()
+
+        else:
+            raise RuntimeError(f'unexpected state: {self._state}')
+
+
+#
+
+
+class MarkdownStreamMessage(StreamMessage, lang.Abstract):
+    _stream: tx.MarkdownStream
+
+    async def _start_stream_content(self) -> None:
+        self._stream = tx.Markdown.get_stream(self.query_one(tx.Markdown))
+
+    async def _append_stream_content(self, c: str) -> None:
+        await self._stream.write(c)
+
+    async def _finalize_stream_content(self) -> None:
+        await self._stream.stop()
+        del self._stream
 
 
 ##
@@ -228,122 +377,11 @@ class StaticAiMessage(StaticMessage, AiMessage):
 ##
 
 
-StreamAiMessageState: ta.TypeAlias = ta.Literal[  # noqa
-    'new',
-    'new_finalizing',
-    'streaming',
-    'finalized',
-]
-
-
-@dc.dataclass(frozen=True)
-class StreamAiMessagePart(lang.Abstract):
-    message_uuid: uuid.UUID
-
-
-@dc.dataclass(frozen=True)
-class ContentStreamAiMessagePart(StreamAiMessagePart):
-    content: str
-
-
-@dc.dataclass(frozen=True)
-class FinalStreamAiMessagePart(StreamAiMessagePart):
-    pass
-
-
-class StreamAiMessage(AiMessage):
+class StreamAiMessage(AiMessage, MarkdownStreamMessage):
     init_add_class = 'stream-ai-message'
-
-    def __init__(
-            self,
-            *initial_contents: str,
-            message_uuid: uuid.UUID | None = None,
-    ) -> None:
-        super().__init__(
-            message_uuid=message_uuid,
-        )
-
-        self._initial_contents: list[str] = list(initial_contents)
-
-        self._state: StreamAiMessageState = 'new'
-
-    @property
-    def state(self) -> StreamAiMessageState:
-        return self._state
 
     def _compose_content(self) -> ta.Generator:
         yield tx.Markdown('')
-
-    #
-
-    _final_content: str
-
-    @property
-    def final_content(self) -> str:
-        check.state(self._state == 'finalized')
-        return self._final_content
-
-    #
-
-    _stream_content: io.StringIO
-    _stream: tx.MarkdownStream
-
-    async def start_stream(self) -> None:
-        check.state(self._state in ('new', 'new_finalizing'))
-
-        self._stream_content = io.StringIO()
-        self._stream = tx.Markdown.get_stream(self.query_one(tx.Markdown))
-
-        if (ics := self._initial_contents):
-            for ic in ics:
-                self._stream_content.write(ic)
-                await self._stream.write(ic)
-
-        del self._initial_contents
-
-        if self._state == 'new':
-            self._state = 'streaming'
-
-        elif self._state == 'new_finalizing':
-            await self._finalize_stream()
-
-        else:
-            raise RuntimeError(f'unexpected state: {self._state}')
-
-    async def append_stream_content(self, content: str) -> None:
-        if not content:
-            return
-
-        if self._state == 'new':
-            self._initial_contents.append(content)
-
-        elif self._state == 'streaming':
-            self._stream_content.write(content)
-            await self._stream.write(content)
-
-        else:
-            raise RuntimeError(f'unexpected state: {self._state}')
-
-    async def _finalize_stream(self) -> None:
-        await self._stream.stop()
-        del self._stream
-
-        self._final_content = self._stream_content.getvalue()
-        del self._stream_content
-
-        self._state = 'finalized'
-
-        self.post_message(MessageFinalized(self))
-
-    async def finalize_stream(self) -> None:
-        if self._state == 'new':
-            self._state = 'new_finalizing'
-
-        elif self._state == 'streaming':
-            await self._finalize_stream()
-
-        else:
-            raise RuntimeError(f'unexpected state: {self._state}')
 
 
 ##
@@ -535,18 +573,18 @@ class MessagesContainer(
 
     #
 
-    async def append_stream_ai_message_content(self, parts: ta.Sequence[StreamAiMessagePart]) -> None:
+    async def append_stream_message_content(self, parts: ta.Sequence[StreamMessagePart]) -> None:
         mount_messages = False
         refresh = False
         scroll_to_bottom = False
 
         for part in parts:
-            if isinstance(part, ContentStreamAiMessagePart):
+            if isinstance(part, ContentStreamMessagePart):
                 message_uuid = part.message_uuid
                 content = part.content
 
                 if (msg := self._messages_by_uuid.get(message_uuid)) is None:
-                    aim = StreamAiMessage(content, message_uuid=message_uuid)
+                    aim = part.message_cls(content, message_uuid=message_uuid)
 
                     self._messages_by_uuid[message_uuid] = aim
 
@@ -556,18 +594,18 @@ class MessagesContainer(
                     refresh = True
 
                 else:
-                    aim = check.isinstance(msg, StreamAiMessage)
+                    aim = check.isinstance(msg, part.message_cls)
 
                     if aim.is_mounted:
                         scroll_to_bottom |= self._is_messages_at_bottom()
 
                     await aim.append_stream_content(content)
 
-            elif isinstance(part, FinalStreamAiMessagePart):
+            elif isinstance(part, FinalStreamMessagePart):
                 if (msg := self._messages_by_uuid.get(part.message_uuid)) is None:
                     continue
 
-                aim = check.isinstance(msg, StreamAiMessage)
+                aim = check.isinstance(msg, part.message_cls)
 
                 await aim.finalize_stream()
 
@@ -593,7 +631,7 @@ class MessagesContainer(
                 except KeyError:
                     pass
                 else:
-                    if not (isinstance(msg, StreamAiMessage) and xm is msg):
+                    if not (isinstance(msg, StreamMessage) and xm is msg):
                         raise ValueError(f'message uuid already in use: {mu}')
 
             await self.mount(msg)
@@ -601,7 +639,7 @@ class MessagesContainer(
             if mu is not None:
                 self._messages_by_uuid[mu] = msg
 
-            if isinstance(msg, StreamAiMessage):
+            if isinstance(msg, StreamMessage):
                 await msg.start_stream()
 
         self._pending_mount_messages = None
