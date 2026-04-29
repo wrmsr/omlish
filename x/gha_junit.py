@@ -40,10 +40,8 @@ jobs:
             --annotations \
             --max-annotations 50
 """
-
-from __future__ import annotations
-
 import argparse
+import collections
 import dataclasses as dc
 import glob
 import os
@@ -51,7 +49,6 @@ import pathlib
 import sys
 import typing as ta
 import xml.etree.ElementTree as ET
-from collections import defaultdict
 
 
 # ---------------------------------------------------------------------------
@@ -347,7 +344,7 @@ def render_summary(
         lines.append('</details>')
         lines.append('')
 
-    by_suite: dict[str, list[TestCase]] = defaultdict(list)
+    by_suite: dict[str, list[TestCase]] = collections.defaultdict(list)
     for c in cases:
         by_suite[c.suite].append(c)
 
