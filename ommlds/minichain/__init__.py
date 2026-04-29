@@ -93,6 +93,8 @@ with _lang.auto_proxy_init(
         AnyToolUseAiDelta,
         ToolUseAiDelta,
         PartialToolUseAiDelta,
+
+        ThinkingAiDelta,
     )
 
     from .chat.tools.execution import (  # noqa
@@ -151,11 +153,17 @@ with _lang.auto_proxy_init(
         check_ai_chat,
 
         SystemMessage,
+
         DeveloperMessage,
+
         UserMessage,
+
         AiMessage,
+
         ToolUseMessage,
         ToolUseResultMessage,
+
+        ThinkingMessage,
     )
 
     from .chat.metadata import (  # noqa

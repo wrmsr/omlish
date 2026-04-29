@@ -5420,8 +5420,10 @@ def _process_dataclass__b6c34a783666972a7006d8f0b1419093054d280a():
     ),
     cls_names=(
         ('ommlds.minichain.backends.anthropic.stream', 'ContentAiDelta'),
+        ('ommlds.minichain.backends.anthropic.stream', 'ThinkingAiDelta'),
         ('ommlds.minichain.backends.mistral', 'DeveloperMessage'),
         ('ommlds.minichain.backends.mistral', 'SystemMessage'),
+        ('ommlds.minichain.backends.mistral', 'ThinkingMessage'),
     ),
 )
 def _process_dataclass__5cf06a8666aafbd9f13b7cc116ca35266a2043de():

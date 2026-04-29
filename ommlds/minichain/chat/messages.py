@@ -159,3 +159,11 @@ class ToolUseMessage(AnyAiMessage, lang.Final):
 @dc.dataclass(frozen=True)
 class ToolUseResultMessage(AnyUserMessage, lang.Final):
     tur: ToolUseResult
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ThinkingMessage(AnyAiMessage, lang.Final):
+    c: str

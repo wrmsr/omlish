@@ -74,3 +74,11 @@ class ToolUseAiDelta(AnyToolUseAiDelta, lang.Final):
 @dc.dataclass(frozen=True, kw_only=True)
 class PartialToolUseAiDelta(AnyToolUseAiDelta, lang.Final):
     raw_args: ta.Any | None = None
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ThinkingAiDelta(AiDelta, lang.Final):
+    c: str

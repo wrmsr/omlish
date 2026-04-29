@@ -7,12 +7,14 @@ from ...tools.types import ToolUse
 from ..messages import AiChat
 from ..messages import AiMessage
 from ..messages import AnyAiMessage
+from ..messages import ThinkingMessage
 from ..messages import ToolUseMessage
 from ..metadata import MessageUuid
 from .types import AiDelta
 from .types import AiDeltas
 from .types import ContentAiDelta
 from .types import PartialToolUseAiDelta
+from .types import ThinkingAiDelta
 from .types import ToolUseAiDelta
 
 
@@ -49,6 +51,13 @@ class AiDeltaJoiner:
             aim = AiMessage(''.join(check.isinstance(cd.c, str) for cd in cds))
 
             return self._confer_uuid(aim, cds)
+
+        elif dty is ThinkingAiDelta:
+            ths = ta.cast('ta.Sequence[ThinkingAiDelta]', deltas)
+
+            tm = ThinkingMessage(''.join(check.isinstance(th.c, str) for th in ths))
+
+            return self._confer_uuid(tm, ths)
 
         elif dty is ToolUseAiDelta:
             raise TypeError(dty)

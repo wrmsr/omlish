@@ -15,6 +15,7 @@ from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
 from ...chat.stream.types import AiDelta
 from ...chat.stream.types import ContentAiDelta
+from ...chat.stream.types import ThinkingAiDelta
 from ...chat.stream.types import ToolUseAiDelta
 from ...chat.tools.types import Tool
 from ...content.render.standard import render_content_str
@@ -130,6 +131,9 @@ def build_mc_ai_choice_deltas(ol_resp: pt.ChatResponse) -> AiChoiceDeltas:
 
         if ol_msg.content:
             lst.append(ContentAiDelta(ol_msg.content))
+
+        if ol_msg.thinking:
+            lst.append(ThinkingAiDelta(ol_msg.thinking))
 
         for tc in ol_msg.tool_calls or []:
             lst.append(ToolUseAiDelta(
