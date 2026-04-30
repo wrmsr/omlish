@@ -65,7 +65,7 @@ psycopg2==2.9.12
 # py/cy
 psycopg==3.3.3
 
-mysql-connector-python==9.6.0
+mysql-connector-python==9.7.0
 mysqlclient==2.2.8; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
 ujson==5.12.0  # https://github.com/ultrajson/ultrajson/issues/684
@@ -104,8 +104,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 # must be kept in sync
-textual==8.2.4
-textual[syntax]==8.2.4  # @omlish-venv !14t !14dt !15t
+textual==8.2.5
+textual[syntax]==8.2.5  # @omlish-venv !14t !14dt !15t
 
 rich==15.0.0
 textual-dev==1.8.0
@@ -116,7 +116,7 @@ snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !15t
 
 trino==0.337.0  # @omlish-venv !14t !14dt !15t  # orjson
 
-huggingface-hub==1.12.2  # @omlish-venv !15t
+huggingface-hub==1.13.0  # @omlish-venv !15t
 hf-xet==1.4.3  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
