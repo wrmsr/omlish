@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import dataclasses as dc
 import json
 import typing as ta
@@ -32,6 +33,9 @@ def make_render_kwargs(opts: RenderingOptions) -> ta.Mapping[str, ta.Any]:
         sort_keys=opts.sort_keys,
         ensure_ascii=not opts.unicode,
     )
+
+
+##
 
 
 class Renderer(lang.Abstract):
@@ -95,11 +99,30 @@ class StreamRenderer(Renderer):
     def __init__(self, opts: RenderingOptions) -> None:
         super().__init__(opts)
 
-        self._renderer = StreamJsonRenderer(
+        self._renderer = self._StreamJsonRenderer(
+            self,
             style=term_color if self._opts.color else None,
             delimiter='\n',
             **self._kw,
         )
+
+    class _StreamJsonRenderer(StreamJsonRenderer):
+        def __init__(self, o: StreamRenderer, **kwargs: ta.Any) -> None:
+            super().__init__(**kwargs)
+
+            self.__o = o
+
+        def _format_scalar(self, o: ta.Any, state: StreamJsonRenderer.State | None = None) -> str:
+            if self.__o._opts.five:
+                return Json5Renderer.render_str(
+                    o,
+                    **self.__o._kw,
+                    multiline_strings=True,
+                    softwrap_length=self.__o._opts.softwrap_length,
+                )
+
+            else:
+                return super()._format_scalar(o, state)
 
     def render(self, e: Event) -> ta.Iterator[str]:
         return self._renderer.render((e,))
