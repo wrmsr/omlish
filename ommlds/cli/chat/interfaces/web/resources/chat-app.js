@@ -34,7 +34,6 @@ window.chatApp = function() {
                 }
             });
 
-            // Load any saved messages from localStorage
             this.loadMessages();
         },
 
@@ -42,7 +41,9 @@ window.chatApp = function() {
          * Render markdown content to HTML
          */
         renderMarkdown(content) {
-            if (!content) return '';
+            if (!content) {
+                return '';
+            }
 
             if (window.marked) {
                 return marked.parse(content);
@@ -57,7 +58,9 @@ window.chatApp = function() {
          */
         autoResizeTextarea() {
             const textarea = this.$refs.input;
-            if (!textarea) return;
+            if (!textarea) {
+                return;
+            }
 
             // Reset height to auto to get the correct scrollHeight
             textarea.style.height = 'auto';
@@ -184,9 +187,6 @@ window.chatApp = function() {
                     }
                 );
 
-                // Save messages to localStorage
-                this.saveMessages();
-
             } catch (error) {
                 // Check if this was an abort (cancellation)
                 if (error.name === 'AbortError') {
@@ -243,23 +243,9 @@ window.chatApp = function() {
             });
         },
 
-        /**
-         * Save messages to localStorage
-         */
-        saveMessages() {
-            try {
-                localStorage.setItem('vibechat_messages', JSON.stringify(this.messages));
-            } catch (e) {
-                console.error('Failed to save messages:', e);
-            }
-        },
-
-        /**
-         * Load messages from localStorage
-         */
         loadMessages() {
             try {
-                const saved = localStorage.getItem('vibechat_messages');
+                const saved = null;
                 if (saved) {
                     this.messages = JSON.parse(saved);
                     this.scrollToBottom();
@@ -269,12 +255,8 @@ window.chatApp = function() {
             }
         },
 
-        /**
-         * Clear all messages
-         */
         clearMessages() {
             this.messages = [];
-            this.saveMessages();
         }
     };
 };
