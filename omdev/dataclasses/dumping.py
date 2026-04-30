@@ -56,6 +56,7 @@ class _DataclassCodegenDumper:
             *,
             init_file_path: str,
             out_file_path: str,
+            cfg_pkg_name: ta.Optional[str] = None,
     ) -> None:
         from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
         from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
@@ -75,6 +76,13 @@ class _DataclassCodegenDumper:
                 prepared: GeneratorProcessor.Prepared,
                 comp: OpCompiler.CompileResult,
         ) -> None:
+            if (
+                    cfg_pkg_name is not None and
+                    ctx.pkg_cfg.pkg is not None and
+                    ctx.pkg_cfg.pkg != cfg_pkg_name
+            ):
+                return
+
             d_refs: ta.List[DumpedDataclassCodegen.Ref] = []
             for ref in comp.refs:
                 if isinstance(ref, OpRef):

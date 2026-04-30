@@ -10,13 +10,21 @@ from .codegen import DataclassCodeGen
 class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('roots', metavar='root', nargs='+'),
+        ap.arg('--dump-inline', action='store_true'),
+        ap.arg('--dry-run', action='store_true'),
+        ap.arg('--print-code', action='store_true'),
+        ap.arg('-j', '--jobs', type=int),
     )
     def codegen(self) -> None:
         import asyncio
+
         asyncio.run(DataclassCodeGen(
-            # dump_inline=True,
+            dump_inline=self.args.dump_inline,
+            print_code=self.args.print_code,
+            dry_run=self.args.dry_run,
         ).run(
             self.args.roots,
+            **(dict(concurrency=self.args.jobs) if self.args.jobs is not None else {}),
         ))
 
 

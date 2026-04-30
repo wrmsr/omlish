@@ -74,12 +74,16 @@ class DataclassCodeGen:
             *,
             target_line_width: int | None = None,
             dump_inline: bool = False,
+            print_code: bool = False,
+            dry_run: bool = False,
             subprocess_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__()
 
         self._target_line_width = target_line_width or self.DEFAULT_TARGET_LINE_WIDTH
         self._dump_inline = dump_inline
+        self._print_code = print_code
+        self._dry_run = dry_run
         self._subprocess_kwargs = subprocess_kwargs
 
     #
@@ -198,6 +202,7 @@ class DataclassCodeGen:
         dumper_kwargs = dict(
             init_file_path=cfg_pkg.init_file_path,
             out_file_path=out_file_path,
+            cfg_pkg_name=cfg_pkg.name,
         )
 
         start_time = time.time()
@@ -235,7 +240,8 @@ class DataclassCodeGen:
                 raise RuntimeError(f'Refusing to overwrite non-generated file: {gen_file_path!r}')
 
             if not output.dumped:
-                os.unlink(gen_file_path)
+                if not self._dry_run:
+                    os.unlink(gen_file_path)
                 return
 
         #
@@ -351,8 +357,14 @@ class DataclassCodeGen:
 
         lines.append('')
 
-        with open(gen_file_path, 'w') as f:  # noqa
-            f.write('\n'.join(lines))
+        code = '\n'.join(lines)
+
+        if self._print_code:
+            print(code)
+
+        if not self._dry_run:
+            with open(gen_file_path, 'w') as f:  # noqa
+                f.write(code)
 
     async def run(
             self,

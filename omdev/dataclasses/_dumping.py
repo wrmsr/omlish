@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
-            dict(path='dumping.py', sha1='982d4f7a46f40e48da4daadb082b7e66acb34ae9'),
+            dict(path='dumping.py', sha1='ae4148f671d2cb1e7bf1a819b78ca388b4680bbc'),
         ],
     )
 
@@ -1909,6 +1909,7 @@ class _DataclassCodegenDumper:
             *,
             init_file_path: str,
             out_file_path: str,
+            cfg_pkg_name: ta.Optional[str] = None,
     ) -> None:
         from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
         from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
@@ -1928,6 +1929,13 @@ class _DataclassCodegenDumper:
                 prepared: GeneratorProcessor.Prepared,
                 comp: OpCompiler.CompileResult,
         ) -> None:
+            if (
+                    cfg_pkg_name is not None and
+                    ctx.pkg_cfg.pkg is not None and
+                    ctx.pkg_cfg.pkg != cfg_pkg_name
+            ):
+                return
+
             d_refs: ta.List[DumpedDataclassCodegen.Ref] = []
             for ref in comp.refs:
                 if isinstance(ref, OpRef):
