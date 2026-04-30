@@ -1,3 +1,10 @@
+"""
+TODO:
+ - managed injector interop
+  - expose ExitStack?
+ - hierarchies
+ - 'un_enter_context' or something - deregister
+"""
 import abc
 import contextlib
 import typing as ta

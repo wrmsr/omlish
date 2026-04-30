@@ -1,6 +1,6 @@
 import typing as ta
 
-from .chat import ChatCompletionsHandler
+from .chat.handler import ChatCompletionsHandler
 from .serving import serve_data_cache_url
 from .serving import serve_not_found
 from .serving import serve_resource

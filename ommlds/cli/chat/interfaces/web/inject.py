@@ -4,14 +4,13 @@ from omlish import lang
 from ...configs import ChatConfig
 from ..base import ChatInterface
 from .configs import WebInterfaceConfig
-from .types import ChatStreamer
 from .types import ServerPort
 
 
 with lang.auto_proxy_import(globals()):
     from . import app as _app
-    from . import chat as _chat
     from . import interface as _interface
+    from .chat import inject as _chat
 
 
 ##
@@ -27,6 +26,12 @@ def bind_web(
     #
 
     els.extend([
+        _chat.bind_chat(),
+    ])
+
+    #
+
+    els.extend([
         inj.bind(_interface.WebChatInterface, singleton=True),
         inj.bind(ChatInterface, to_key=_interface.WebChatInterface),
 
@@ -37,10 +42,6 @@ def bind_web(
 
     els.extend([
         inj.bind(_app.ChatApp, singleton=True),
-        inj.bind(_chat.ChatCompletionsHandler, singleton=True),
-
-        inj.bind(_chat.DefaultChatStreamer, singleton=True),
-        inj.bind(ChatStreamer, to_key=_chat.DefaultChatStreamer),
     ])
 
     #
