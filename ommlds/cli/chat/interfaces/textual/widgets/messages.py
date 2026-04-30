@@ -10,6 +10,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.logs import all as logs
 
+from .actionmenu import ActionMenuScreen
+
 
 log, alog = logs.get_module_loggers(globals())
 
@@ -42,6 +44,30 @@ class MessageDivider(
         self._text_style = text_style
 
         self._refresh()
+
+    def on_click(self, event: tx.Click) -> None:
+        if event.button != 1:
+            return
+
+        event.stop()
+
+        def handle_action(action: ta.Any | None) -> None:
+            match action:
+                case 'copy':
+                    pass
+
+                case _:
+                    pass
+
+        self.app.push_screen(
+            ActionMenuScreen(
+                (event.screen_x, event.screen_y),
+                [
+                    ('Copy', 'copy'),
+                ],
+            ),
+            handle_action,
+        )
 
     def set_text(self, text: str) -> None:
         self._text = text

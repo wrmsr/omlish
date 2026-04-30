@@ -77,31 +77,30 @@ class AutoComplete(Widget):
     ]
 
     DEFAULT_CSS = """
-    AutoComplete {
-        height: auto;
-        width: auto;
-        max-height: 12;
-        display: none;
-        background: $surface;
-        overlay: screen;
-
-        & AutoCompleteList {
-            width: auto;
+        AutoComplete {
             height: auto;
-            border: none;
-            padding: 0;
-            margin: 0;
-            scrollbar-size-vertical: 1;
-            text-wrap: nowrap;
-            color: $foreground;
-            background: transparent;
-        }
+            width: auto;
+            max-height: 12;
+            display: none;
+            background: $surface;
+            overlay: screen;
 
-        & .autocomplete--highlight-match {
-            text-style: bold;
-        }
+            & AutoCompleteList {
+                width: auto;
+                height: auto;
+                border: none;
+                padding: 0;
+                margin: 0;
+                scrollbar-size-vertical: 1;
+                text-wrap: nowrap;
+                color: $foreground;
+                background: transparent;
+            }
 
-    }
+            & .autocomplete--highlight-match {
+                text-style: bold;
+            }
+        }
     """
 
     COMPONENT_CLASSES: ta.ClassVar[set[str]] = {
