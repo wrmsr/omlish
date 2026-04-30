@@ -1,8 +1,19 @@
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 from ..chat.messages import UserChat
 from .types import Action
+from .types import Event
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+@msh.update_fields_options(['action'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
+class ActionEvent(Event, lang.Final):
+    action: Action | lang.OpaqueRepr
 
 
 ##

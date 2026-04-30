@@ -1,3 +1,7 @@
+"""
+TODO:
+ - replace outright with omlish.lifecycles? or does this become 'awaiting_user' / 'awaiting_ai' / 'awaiting_tool' ...
+"""
 import enum
 import typing as ta
 
