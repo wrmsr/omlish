@@ -58,6 +58,30 @@ class ChatApp(
         *tx.App.BINDINGS,
 
         tx.Binding(
+            'ctrl+z',  # FIXME: remap undo
+            'suspend_process',
+            'Suspend',
+            show=False,
+            priority=True,
+        ),
+
+        tx.Binding(
+            'alt+z',
+            'global_undo',
+            'Undo',
+            show=False,
+            priority=True,
+        ),
+
+        tx.Binding(
+            'alt+z',
+            'global_redo',
+            'Undo',
+            show=False,
+            priority=True,
+        ),
+
+        tx.Binding(
             'escape',
             'cancel',
             'Cancel current operation',
@@ -121,6 +145,15 @@ class ChatApp(
     async def on_mount(self) -> None:
         self._input_container.input_text_area.focus()
 
+        self.app_resume_signal.subscribe(self, self._after_resume)
+
+    def _after_resume(self, _: ta.Any) -> None:
+        self.call_later(self._hard_redraw)
+
+    def _hard_redraw(self) -> None:
+        self.refresh(repaint=True, layout=True)
+        self.screen.refresh(repaint=True, layout=True)
+
     ##
     # Input
 
@@ -143,6 +176,14 @@ class ChatApp(
             ita.focus()
 
             self.screen.post_message(tx.Key(event.key, event.character))
+
+    async def action_global_undo(self) -> None:
+        if (focused := self.focused) is not None and hasattr(focused, 'action_undo'):
+            focused.action_undo()
+
+    async def action_global_redo(self) -> None:
+        if (focused := self.focused) is not None and hasattr(focused, 'action_redo'):
+            focused.action_redo()
 
     async def action_cancel(self) -> None:
         await self._chat_driver_interface.cancel_current_action()
