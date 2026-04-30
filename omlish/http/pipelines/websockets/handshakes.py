@@ -14,13 +14,13 @@ from ..requests import FullIoPipelineHttpRequest
 from ..requests import IoPipelineHttpRequestHead
 from ..responses import FullIoPipelineHttpResponse
 from ..responses import IoPipelineHttpResponseHead
-from .objects import WsOpen
+from .objects import IoPipelineWebsocketOpen
 
 
 ##
 
 
-class WebsocketHandshakes(NamespaceClass):
+class IoPipelineWebsocketHandshakes(NamespaceClass):
     WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
     @classmethod
@@ -30,7 +30,7 @@ class WebsocketHandshakes(NamespaceClass):
         return base64.b64encode(d).decode('ascii')
 
 
-class ServerWebsocketUpgradeHandler(IoPipelineHandler):
+class IoPipelineWebsocketServerUpgradeHandler(IoPipelineHandler):
     """
     Detects and accepts an HTTP/1.1 Websocket Upgrade request, responds with 101, and emits WsOpen. After upgrade,
     passes through subsequent messages unchanged.
@@ -59,7 +59,7 @@ class ServerWebsocketUpgradeHandler(IoPipelineHandler):
 
             key = msg.headers.single.get('Sec-Websocket-Key')
 
-            accept = WebsocketHandshakes.compute_accept_for_key(check.not_none(key))
+            accept = IoPipelineWebsocketHandshakes.compute_accept_for_key(check.not_none(key))
 
             chosen_proto: ta.Optional[str] = None
             if self._subprotocols:
@@ -88,7 +88,7 @@ class ServerWebsocketUpgradeHandler(IoPipelineHandler):
             ctx.feed_out(resp)
 
             self._upgraded = True
-            ctx.feed_in(WsOpen(subprotocol=chosen_proto))
+            ctx.feed_in(IoPipelineWebsocketOpen(subprotocol=chosen_proto))
             return
 
         elif isinstance(msg, FullIoPipelineHttpRequest):
@@ -111,7 +111,7 @@ class ServerWebsocketUpgradeHandler(IoPipelineHandler):
         return True
 
 
-class ClientWebsocketUpgradeHandler(IoPipelineHandler):
+class IoPipelineWebsocketClientUpgradeHandler(IoPipelineHandler):
     """
     Injects required headers in outbound HTTP request for Websocket upgrade. Validates 101 response inbound and emits
     WsOpen.
@@ -160,12 +160,12 @@ class ClientWebsocketUpgradeHandler(IoPipelineHandler):
             check.state(self._key_b64 is not None)
             accept = msg.headers.single.get('Sec-Websocket-Accept')
             check.not_none(accept)
-            check.equal(accept, WebsocketHandshakes.compute_accept_for_key(self._key_b64))  # type: ignore[arg-type]
+            check.equal(accept, IoPipelineWebsocketHandshakes.compute_accept_for_key(self._key_b64))  # type: ignore[arg-type]  # noqa
 
             chosen_proto = msg.headers.single.get('Sec-Websocket-Protocol')
 
             self._upgraded = True
-            ctx.feed_in(WsOpen(subprotocol=chosen_proto))
+            ctx.feed_in(IoPipelineWebsocketOpen(subprotocol=chosen_proto))
             return
 
         elif isinstance(msg, FullIoPipelineHttpResponse):

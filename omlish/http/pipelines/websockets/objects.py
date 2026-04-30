@@ -11,12 +11,8 @@ from ....lite.check import check
 ##
 
 
-class IoPipelineWebsocketObject(Abstract):
-    """Marker base for websocket pipeline objects."""
-
-
 @ta.final
-class WsOpcode(enum.IntEnum):
+class IoPipelineWebsocketOpcode(enum.IntEnum):
     CONTINUATION = 0x0
     TEXT = 0x1
     BINARY = 0x2
@@ -29,11 +25,11 @@ class WsOpcode(enum.IntEnum):
 
 @ta.final
 @dc.dataclass(frozen=True)
-class WsFrame(IoPipelineWebsocketObject):
+class IoPipelineWebsocketFrame:
     """A single websocket frame, payload is unmasked."""
 
     fin: bool
-    opcode: WsOpcode
+    opcode: IoPipelineWebsocketOpcode
 
     payload: bytes
 
@@ -43,26 +39,37 @@ class WsFrame(IoPipelineWebsocketObject):
 
     def __post_init__(self) -> None:
         # Control frames must be <= 125 and not fragmented
-        if self.opcode in (WsOpcode.CLOSE, WsOpcode.PING, WsOpcode.PONG):
+        if self.opcode in (
+            IoPipelineWebsocketOpcode.CLOSE,
+            IoPipelineWebsocketOpcode.PING,
+            IoPipelineWebsocketOpcode.PONG,
+        ):
             check.arg(self.fin)
             check.arg(len(self.payload) <= 125)
 
 
+##
+
+
+class IoPipelineWebsocketObject(Abstract):
+    pass
+
+
 @ta.final
 @dc.dataclass(frozen=True)
-class WsText(IoPipelineWebsocketObject):
+class IoPipelineWebsocketText(IoPipelineWebsocketObject):
     text: str
 
 
 @ta.final
 @dc.dataclass(frozen=True)
-class WsBinary(IoPipelineWebsocketObject):
+class IoPipelineWebsocketBinary(IoPipelineWebsocketObject):
     data: bytes
 
 
 @ta.final
 @dc.dataclass(frozen=True)
-class WsPing(IoPipelineWebsocketObject):
+class IoPipelineWebsocketPing(IoPipelineWebsocketObject):
     data: bytes = b''
 
     def __post_init__(self) -> None:
@@ -71,7 +78,7 @@ class WsPing(IoPipelineWebsocketObject):
 
 @ta.final
 @dc.dataclass(frozen=True)
-class WsPong(IoPipelineWebsocketObject):
+class IoPipelineWebsocketPong(IoPipelineWebsocketObject):
     data: bytes = b''
 
     def __post_init__(self) -> None:
@@ -80,7 +87,7 @@ class WsPong(IoPipelineWebsocketObject):
 
 @ta.final
 @dc.dataclass(frozen=True)
-class WsClose(IoPipelineWebsocketObject):
+class IoPipelineWebsocketClose(IoPipelineWebsocketObject):
     code: int = 1000
     reason: str = ''
 
@@ -90,12 +97,12 @@ class WsClose(IoPipelineWebsocketObject):
 
 @ta.final
 @dc.dataclass(frozen=True)
-class WsOpen(IoPipelineWebsocketObject):
+class IoPipelineWebsocketOpen(IoPipelineWebsocketObject):
     subprotocol: ta.Optional[str] = None
     extensions: ta.Sequence[str] = ()
 
 
 @ta.final
 @dc.dataclass(frozen=True)
-class WsError(IoPipelineWebsocketObject):
+class IoPipelineWebsocketError(IoPipelineWebsocketObject):
     exc: BaseException

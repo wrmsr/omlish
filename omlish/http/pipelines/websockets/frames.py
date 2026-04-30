@@ -6,19 +6,19 @@ import typing as ta
 from ....io.pipelines.core import IoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....lite.namespaces import NamespaceClass
-from .objects import WsBinary
-from .objects import WsClose
-from .objects import WsFrame
-from .objects import WsOpcode
-from .objects import WsPing
-from .objects import WsPong
-from .objects import WsText
+from .objects import IoPipelineWebsocketBinary
+from .objects import IoPipelineWebsocketClose
+from .objects import IoPipelineWebsocketFrame
+from .objects import IoPipelineWebsocketOpcode
+from .objects import IoPipelineWebsocketPing
+from .objects import IoPipelineWebsocketPong
+from .objects import IoPipelineWebsocketText
 
 
 ##
 
 
-class WebsocketFrames(NamespaceClass):
+class IoPipelineWebsocketFrames(NamespaceClass):
     @staticmethod
     def mask_xor(data: bytes, key: bytes) -> bytes:
         out = bytearray(len(data))
@@ -30,10 +30,12 @@ class WebsocketFrames(NamespaceClass):
         return bytes(out)
 
 
-class WebsocketFrameEncoder(IoPipelineHandler):
+##
+
+
+class IoPipelineWebsocketFrameEncoder(IoPipelineHandler):
     """
-    Encodes WsFrame or high-level WsText/WsBinary/WsPing/WsPong/WsClose into bytes. If is_client=True, applies masking
-    as required by RFC 6455.
+    Encodes WsFrame or high-level WsText/WsBinary/WsPing/WsPong/WsClose into bytes.
     """
 
     def __init__(self, *, mask: bool = False) -> None:
@@ -42,43 +44,63 @@ class WebsocketFrameEncoder(IoPipelineHandler):
         self._mask = mask
 
     def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, WsFrame):
+        if isinstance(msg, IoPipelineWebsocketFrame):
             ctx.feed_out(self._encode_frame(msg, mask=self._mask))
             return
 
-        if isinstance(msg, WsText):
-            frame = WsFrame(fin=True, opcode=WsOpcode.TEXT, payload=msg.text.encode('utf-8'))
+        if isinstance(msg, IoPipelineWebsocketText):
+            frame = IoPipelineWebsocketFrame(
+                fin=True,
+                opcode=IoPipelineWebsocketOpcode.TEXT,
+                payload=msg.text.encode('utf-8'),
+            )
             ctx.feed_out(self._encode_frame(frame, mask=self._mask))
             return
 
-        if isinstance(msg, WsBinary):
-            frame = WsFrame(fin=True, opcode=WsOpcode.BINARY, payload=msg.data)
+        if isinstance(msg, IoPipelineWebsocketBinary):
+            frame = IoPipelineWebsocketFrame(
+                fin=True,
+                opcode=IoPipelineWebsocketOpcode.BINARY,
+                payload=msg.data,
+            )
             ctx.feed_out(self._encode_frame(frame, mask=self._mask))
             return
 
-        if isinstance(msg, WsPing):
-            frame = WsFrame(fin=True, opcode=WsOpcode.PING, payload=msg.data)
+        if isinstance(msg, IoPipelineWebsocketPing):
+            frame = IoPipelineWebsocketFrame(
+                fin=True,
+                opcode=IoPipelineWebsocketOpcode.PING,
+                payload=msg.data,
+            )
             ctx.feed_out(self._encode_frame(frame, mask=self._mask))
             return
 
-        if isinstance(msg, WsPong):
-            frame = WsFrame(fin=True, opcode=WsOpcode.PONG, payload=msg.data)
+        if isinstance(msg, IoPipelineWebsocketPong):
+            frame = IoPipelineWebsocketFrame(
+                fin=True,
+                opcode=IoPipelineWebsocketOpcode.PONG,
+                payload=msg.data,
+            )
             ctx.feed_out(self._encode_frame(frame, mask=self._mask))
             return
 
-        if isinstance(msg, WsClose):
+        if isinstance(msg, IoPipelineWebsocketClose):
             payload = b''
             if msg.code or msg.reason:
                 payload = msg.code.to_bytes(2, 'big')
                 if msg.reason:
                     payload += msg.reason.encode('utf-8')
-            frame = WsFrame(fin=True, opcode=WsOpcode.CLOSE, payload=payload)
+            frame = IoPipelineWebsocketFrame(
+                fin=True,
+                opcode=IoPipelineWebsocketOpcode.CLOSE,
+                payload=payload,
+            )
             ctx.feed_out(self._encode_frame(frame, mask=self._mask))
             return
 
         ctx.feed_out(msg)
 
-    def _encode_frame(self, frame: WsFrame, *, mask: bool) -> bytes:
+    def _encode_frame(self, frame: IoPipelineWebsocketFrame, *, mask: bool) -> bytes:
         b0 = (
             (0x80 if frame.fin else 0x00) |
             (0x40 if frame.rsv1 else 0) |
@@ -106,12 +128,25 @@ class WebsocketFrameEncoder(IoPipelineHandler):
         if mask:
             key = os.urandom(4)
             h.extend(key)
-            payload = WebsocketFrames.mask_xor(payload, key)
+            payload = IoPipelineWebsocketFrames.mask_xor(payload, key)
 
         return bytes(h) + payload
 
 
-class WebsocketFrameDecoder(IoPipelineHandler):
+class IoPipelineWebsocketClientFrameEncoder(IoPipelineWebsocketFrameEncoder):
+    def __init__(self) -> None:
+        super().__init__(mask=True)
+
+
+class IoPipelineWebsocketServerFrameEncoder(IoPipelineWebsocketFrameEncoder):
+    def __init__(self) -> None:
+        super().__init__(mask=False)
+
+
+##
+
+
+class IoPipelineWebsocketFrameDecoder(IoPipelineHandler):
     """
     Decodes inbound bytes into WsFrame objects. If expect_masked is True/False, validates the MASK bit accordingly; if
     None, accepts either.
@@ -139,7 +174,7 @@ class WebsocketFrameDecoder(IoPipelineHandler):
                 break
             ctx.feed_in(frm)
 
-    def _try_parse_one(self) -> ta.Optional[WsFrame]:
+    def _try_parse_one(self) -> ta.Optional[IoPipelineWebsocketFrame]:
         b = self._buf
         if len(b) < 2:
             return None
@@ -151,7 +186,7 @@ class WebsocketFrameDecoder(IoPipelineHandler):
         rsv1 = bool(b0 & 0x40)
         rsv2 = bool(b0 & 0x20)
         rsv3 = bool(b0 & 0x10)
-        opcode = WsOpcode(b0 & 0x0F)
+        opcode = IoPipelineWebsocketOpcode(b0 & 0x0F)
 
         masked = bool(b1 & 0x80)
         ln = (b1 & 0x7F)
@@ -188,14 +223,18 @@ class WebsocketFrameDecoder(IoPipelineHandler):
             pass
 
         if masked and key is not None:
-            payload = WebsocketFrames.mask_xor(payload, key)
+            payload = IoPipelineWebsocketFrames.mask_xor(payload, key)
 
         # Basic control-frame checks
-        if opcode in (WsOpcode.CLOSE, WsOpcode.PING, WsOpcode.PONG):
+        if opcode in (
+            IoPipelineWebsocketOpcode.CLOSE,
+            IoPipelineWebsocketOpcode.PING,
+            IoPipelineWebsocketOpcode.PONG,
+        ):
             if not fin or ln > 125:
                 raise ValueError('invalid control frame')
 
-        return WsFrame(
+        return IoPipelineWebsocketFrame(
             fin=fin,
             opcode=opcode,
             payload=payload,
@@ -203,3 +242,13 @@ class WebsocketFrameDecoder(IoPipelineHandler):
             rsv2=rsv2,
             rsv3=rsv3,
         )
+
+
+class IoPipelineWebsocketClientFrameDecoder(IoPipelineWebsocketFrameDecoder):
+    def __init__(self) -> None:
+        super().__init__(expect_masked=False)
+
+
+class IoPipelineWebsocketServerFrameDecoder(IoPipelineWebsocketFrameDecoder):
+    def __init__(self) -> None:
+        super().__init__(expect_masked=True)
