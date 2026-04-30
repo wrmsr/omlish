@@ -10,13 +10,16 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.logs import all as logs
 
-from .actionmenu import ActionMenuScreen
-
 
 log, alog = logs.get_module_loggers(globals())
 
 
 ##
+
+
+@dc.dataclass()
+class MessageDividerClicked(tx.Event):
+    event: tx.Click
 
 
 class MessageDivider(
@@ -51,23 +54,7 @@ class MessageDivider(
 
         event.stop()
 
-        def handle_action(action: ta.Any | None) -> None:
-            match action:
-                case 'copy':
-                    pass
-
-                case _:
-                    pass
-
-        self.app.push_screen(
-            ActionMenuScreen(
-                (event.screen_x, event.screen_y),
-                [
-                    ('Copy', 'copy'),
-                ],
-            ),
-            handle_action,
-        )
+        self.post_message(MessageDividerClicked(event))
 
     def set_text(self, text: str) -> None:
         self._text = text
@@ -141,8 +128,39 @@ class Message(
         self._message_uuid = message_uuid
 
     @property
+    @abc.abstractmethod
+    def message_content(self) -> ta.Any | None:
+        raise NotImplementedError
+
+    @property
     def message_uuid(self) -> uuid.UUID | None:
         return self._message_uuid
+
+    @tx.on(MessageDividerClicked)
+    async def _on_message_divider_clicked(self, event: MessageDividerClicked) -> None:
+        event.stop()
+
+        content = self.message_content
+        if content is None:
+            return
+
+        def handle_action(action: ta.Any | None) -> None:
+            match action:
+                case 'copy':
+                    content  # noqa
+
+                case _:
+                    pass
+
+        self.app.push_screen(
+            tx.ActionMenuScreen(
+                (event.event.screen_x, event.event.screen_y),
+                [
+                    ('Copy', 'copy'),
+                ],
+            ),
+            handle_action,
+        )
 
 
 #
@@ -200,6 +218,18 @@ class StreamMessage(Message, lang.Abstract):
     @property
     def state(self) -> StreamMessageState:
         return self._state
+
+    #
+
+    @property
+    def message_content(self) -> ta.Any | None:
+        match self._state:
+            case 'new':
+                return None
+            case 'finalized':
+                return self._final_content
+            case _:
+                return self._stream_content.getvalue()
 
     #
 
@@ -320,6 +350,10 @@ class WelcomeMessage(StaticMessage):
 
         self._content = content
 
+    @property
+    def message_content(self) -> ta.Any | None:
+        return self._content
+
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='welcome-message-outer message-outer'):
             yield tx.Static(self._content, classes='welcome-message-content')
@@ -342,6 +376,10 @@ class UserMessage(StaticMessage):
         )
 
         self._content = content
+
+    @property
+    def message_content(self) -> ta.Any | None:
+        return self._content
 
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='user-message-divider-container message-divider-container'):
@@ -392,6 +430,10 @@ class StaticAiMessage(StaticMessage, AiMessage):
 
         self._content = content
         self._markdown = markdown
+
+    @property
+    def message_content(self) -> ta.Any | None:
+        return self._content
 
     def _compose_content(self) -> ta.Generator:
         if self._markdown:
@@ -457,6 +499,10 @@ class ToolConfirmationMessage(Message):
 
         self._has_rendered = False
         self._has_responded = False
+
+    @property
+    def message_content(self) -> None:
+        return None
 
     @property
     def has_rendered(self) -> bool:
@@ -536,6 +582,10 @@ class UiMessage(StaticMessage):
         )
 
         self._content = content
+
+    @property
+    def message_content(self) -> ta.Any | None:
+        return self._content
 
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='ui-message-divider-container message-divider-container'):

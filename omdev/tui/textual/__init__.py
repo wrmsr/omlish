@@ -249,6 +249,12 @@ with _lang.auto_proxy_init(globals()):
 
     ##
 
+    from .actionmenu import (  # noqa
+        ActionMenuButton,
+        ActionMenu,
+        ActionMenuScreen,
+    )
+
     from .app2 import (  # noqa
         App,
     )
@@ -303,3 +309,7 @@ with _lang.auto_proxy_init(globals()):
         ComposeOnce,
         InitAddClass,
     )
+
+    #
+
+    from ..rich.trirule import TriRule as RichTriRule  # noqa

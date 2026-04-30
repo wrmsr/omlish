@@ -1,12 +1,17 @@
 import typing as ta
 
-from omdev.tui import textual as tx
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.containers import Vertical
+from textual.events import Click
+from textual.screen import ModalScreen
+from textual.widgets import Button
 
 
 ##
 
 
-class ActionMenuButton(tx.Button):
+class ActionMenuButton(Button):
     def __init__(
             self,
             label: str,
@@ -22,7 +27,7 @@ class ActionMenuButton(tx.Button):
         self._value = value
 
 
-class ActionMenu(tx.Vertical):
+class ActionMenu(Vertical):
     DEFAULT_CSS = """
         ActionMenu {
             width: 16;
@@ -45,19 +50,19 @@ class ActionMenu(tx.Vertical):
 
         self._items = items
 
-    def compose(self) -> tx.ComposeResult:
+    def compose(self) -> ComposeResult:
         for label, value in self._items:
             yield ActionMenuButton(label, value)
 
-    def on_click(self, event: tx.Click) -> None:
+    def on_click(self, event: Click) -> None:
         # Don't let clicks inside the menu bubble to the modal screen, because the modal screen treats clicks as
         # "outside" clicks.
         event.stop()
 
 
-class ActionMenuScreen(tx.ModalScreen[ta.Any | None]):
+class ActionMenuScreen(ModalScreen[ta.Any | None]):
     BINDINGS = [  # noqa
-        tx.Binding('escape', 'cancel', show=False),
+        Binding('escape', 'cancel', show=False),
     ]
 
     DEFAULT_CSS = """
@@ -81,7 +86,7 @@ class ActionMenuScreen(tx.ModalScreen[ta.Any | None]):
         self._position = position
         self._items = items
 
-    def compose(self) -> tx.ComposeResult:
+    def compose(self) -> ComposeResult:
         yield ActionMenu(self._items)
 
     def on_mount(self) -> None:
@@ -100,14 +105,14 @@ class ActionMenuScreen(tx.ModalScreen[ta.Any | None]):
         menu.styles.offset = (x, y)
         menu.focus()
 
-    def on_click(self, event: tx.Click) -> None:
+    def on_click(self, event: Click) -> None:
         # Any click that reaches the screen was outside the menu.
         self.dismiss(None)
 
     def action_cancel(self) -> None:
         self.dismiss(None)
 
-    def on_button_pressed(self, event: tx.Button.Pressed) -> None:
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
 
         if isinstance(amb := event.button, ActionMenuButton):
