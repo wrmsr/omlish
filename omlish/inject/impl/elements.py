@@ -199,7 +199,7 @@ class ElementCollection(CollectedElements, lang.Final):
                 pm[k] = BindingImpl(b.key, p, b.scope, b)
 
             if es_by_ty:
-                raise TypeError(set(es_by_ty))
+                raise TypeError(es_by_ty)
 
         return pm
 

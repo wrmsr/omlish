@@ -79,6 +79,10 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
         check.is_(rty.cls, self.__class__)
         return check.single(rty.args)
 
+    @cached.property
+    def _set_binder(self) -> SetBinder[ItemT]:
+        return SetBinder[self._item_rty]()  # type: ignore
+
     @dc.dataclass(frozen=True, eq=False)
     class _ItemsBox:
         vs: ta.Sequence
@@ -102,6 +106,7 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     def bind_item_consts(self, *items: ItemT) -> Elements:
         return as_elements(
+            self._set_binder,
             bind_set_entry_const(self._set_key, self._items_box(items)),
         )
 
@@ -115,6 +120,7 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
         item_key: Key = Key(ta.Any, tag=tag)
         items_box_key: Key = Key(self._items_box, tag=tag)
         return as_elements(
+            self._set_binder,
             bind(item_key, **kwargs),
             bind(
                 items_box_key,
@@ -128,7 +134,7 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     def bind_items_provider(self, **kwargs: ta.Any) -> Elements:
         return as_elements(
-            SetBinder[self._item_rty](),  # type: ignore
+            self._set_binder,
             bind(
                 self._items_cls,
                 to_provider=FnProvider(KwargsTarget.of(
