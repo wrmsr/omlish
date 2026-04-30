@@ -123,7 +123,7 @@ hf-xet==1.4.3  # @omlish-venv !15t
 
 datasets==4.8.5  # @omlish-venv !15 !15t  # !! includes arrow and pandas and shit
 
-transformers==5.6.2  # @omlish-venv !14t !14dt !15 !15t
+transformers==5.7.0  # @omlish-venv !14t !14dt !15 !15t
 sentence-transformers==5.4.1  # @omlish-venv !14t !14dt !15 !15t
 
 sentencepiece==0.2.1
