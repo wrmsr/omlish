@@ -65,7 +65,7 @@ class OrmDriver:
 ##
 
 
-def state_mappers() -> ta.Sequence[orm.Mapper]:
+def storage_mappers() -> ta.Sequence[orm.Mapper]:
     return [
 
         orm.dataclass_mapper(

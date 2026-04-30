@@ -7989,7 +7989,7 @@ def _process_dataclass__95d65e05398b42908ba7d67d961be3c1dae7f5b4():
         ('ommlds.minichain.chat.tools.execution', 'ToolFn.RawStringOutput'),
         ('ommlds.minichain.completion', 'MetadataContainerDataclass'),
         ('ommlds.minichain.drivers.configs', 'SessionConfig'),
-        ('ommlds.minichain.drivers.configs', 'StateConfig'),
+        ('ommlds.minichain.drivers.configs', 'StorageConfig'),
         ('ommlds.minichain.drivers.configs', 'ToolsConfig'),
         ('ommlds.minichain.drivers.inject', 'ToolPermissionTarget'),
         ('ommlds.minichain.modules.bash.bash', 'BashToolPermissionMatcher'),
@@ -19212,31 +19212,31 @@ def _process_dataclass__fa9a12747b9b6bd7388e4e31d6ef418fcf060b87():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('ai', 'orm', 'session', 'state', 'tools', 'user')), EqPlan(fields=('ai', 'orm', 's"
-        "ession', 'state', 'tools', 'user')), FrozenPlan(fields=('ai', 'orm', 'session', 'state', 'tools', 'user'), all"
-        "ow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ai', 'orm', 'session', 'state', 'tools', 'user"
-        "'), cache=False), InitPlan(fields=(InitPlan.Field(name='ai', annotation=OpRef(name='init.fields.0.annotation')"
-        ", default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='orm', annotation=OpRef(nam"
-        "e='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='session', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='state', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(n"
-        "ame='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='tools', annotation=OpRef(name='init.fields."
-        "4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='user', annot"
-        "ation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), se"
-        "lf_param='self', std_params=(), kw_only_params=('ai', 'orm', 'session', 'state', 'tools', 'user'), frozen=True"
-        ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ai'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='orm', kw_only=True, fn=None), ReprPlan.Field(name='session', kw"
-        "_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name='tools', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='user', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)"
-        "))"
+        "Plans(tup=(CopyPlan(fields=('ai', 'orm', 'session', 'storage', 'tools', 'user')), EqPlan(fields=('ai', 'orm', "
+        "'session', 'storage', 'tools', 'user')), FrozenPlan(fields=('ai', 'orm', 'session', 'storage', 'tools', 'user'"
+        "), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ai', 'orm', 'session', 'storage', 'tools"
+        "', 'user'), cache=False), InitPlan(fields=(InitPlan.Field(name='ai', annotation=OpRef(name='init.fields.0.anno"
+        "tation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='orm', annotation=O"
+        "pRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='session', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='storage', annotation=OpRef(name='init.fields.3.annotation'), defau"
+        "lt=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType."
+        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tools', annotation=OpRef(name='in"
+        "it.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='us"
+        "er', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None)), self_param='self', std_params=(), kw_only_params=('ai', 'orm', 'session', 'storage', 'tools', 'user'),"
+        " frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Fie"
+        "ld(name='ai', kw_only=True, fn=None), ReprPlan.Field(name='orm', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "session', kw_only=True, fn=None), ReprPlan.Field(name='storage', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "tools', kw_only=True, fn=None), ReprPlan.Field(name='user', kw_only=True, fn=None)), id=False, terse=False, de"
+        "fault_fn=None)))"
     ),
-    plan_repr_sha1='c575c0c182203a61c889d4d0bb9ee7c40e54e44d',
+    plan_repr_sha1='13b7d689a0412804652a8806e39bd4895bea072e',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -19255,7 +19255,7 @@ def _process_dataclass__fa9a12747b9b6bd7388e4e31d6ef418fcf060b87():
         ('ommlds.minichain.drivers.configs', 'DriverConfig'),
     ),
 )
-def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
+def _process_dataclass__13b7d689a0412804652a8806e39bd4895bea072e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -19292,7 +19292,7 @@ def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
                 ai=self.ai,
                 orm=self.orm,
                 session=self.session,
-                state=self.state,
+                storage=self.storage,
                 tools=self.tools,
                 user=self.user,
             )
@@ -19311,7 +19311,7 @@ def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
                 self.ai == other.ai and
                 self.orm == other.orm and
                 self.session == other.session and
-                self.state == other.state and
+                self.storage == other.storage and
                 self.tools == other.tools and
                 self.user == other.user
             )
@@ -19325,7 +19325,7 @@ def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
             'ai',
             'orm',
             'session',
-            'state',
+            'storage',
             'tools',
             'user',
         }
@@ -19347,7 +19347,7 @@ def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
             'ai',
             'orm',
             'session',
-            'state',
+            'storage',
             'tools',
             'user',
         }
@@ -19370,7 +19370,7 @@ def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
                 self.ai,
                 self.orm,
                 self.session,
-                self.state,
+                self.storage,
                 self.tools,
                 self.user,
             ))
@@ -19384,14 +19384,14 @@ def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
             ai: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             orm: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             session: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            state: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            storage: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             tools: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             user: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'ai', ai)
             __dataclass__object_setattr(self, 'orm', orm)
             __dataclass__object_setattr(self, 'session', session)
-            __dataclass__object_setattr(self, 'state', state)
+            __dataclass__object_setattr(self, 'storage', storage)
             __dataclass__object_setattr(self, 'tools', tools)
             __dataclass__object_setattr(self, 'user', user)
 
@@ -19406,7 +19406,7 @@ def _process_dataclass__c575c0c182203a61c889d4d0bb9ee7c40e54e44d():
             parts.append(f"ai={self.ai!r}")
             parts.append(f"orm={self.orm!r}")
             parts.append(f"session={self.session!r}")
-            parts.append(f"state={self.state!r}")
+            parts.append(f"storage={self.storage!r}")
             parts.append(f"tools={self.tools!r}")
             parts.append(f"user={self.user!r}")
             return (

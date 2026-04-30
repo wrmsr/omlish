@@ -15,7 +15,7 @@ async def build_welcome_message(
         entrypoint_profile_name: ProfileName | None = None,
         driver_id: mc.drivers.DriverId,
         chat_id: mc.drivers.ChatId,
-        chat_manager: mc.drivers.DriverStateManager,
+        chat_manager: mc.drivers.DriverStorageManager,
 ) -> WelcomeMessage:
     chat = await chat_manager.get_chat()
 

@@ -9,7 +9,7 @@ from ...chat.messages import Chat
 ##
 
 
-class DriverStateManager(lang.Abstract):
+class DriverStorageManager(lang.Abstract):
     @abc.abstractmethod
     def get_chat(self) -> ta.Awaitable[Chat]:
         raise NotImplementedError

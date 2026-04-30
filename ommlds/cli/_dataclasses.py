@@ -2115,34 +2115,37 @@ def _process_dataclass__d081083bc028fb9729b8423fbe45bb996d3e439f():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('ai', 'orm', 'session', 'state', 'tools', 'user', 'backend')), EqPlan(fields=('ai'"
-        ", 'orm', 'session', 'state', 'tools', 'user', 'backend')), FrozenPlan(fields=('ai', 'orm', 'session', 'state',"
-        " 'tools', 'user', 'backend'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ai', 'orm', '"
-        "session', 'state', 'tools', 'user', 'backend'), cache=False), InitPlan(fields=(InitPlan.Field(name='ai', annot"
-        "ation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='orm', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.d"
+        "Plans(tup=(CopyPlan(fields=('ai', 'orm', 'session', 'storage', 'tools', 'user', 'backend', 'state')), EqPlan(f"
+        "ields=('ai', 'orm', 'session', 'storage', 'tools', 'user', 'backend', 'state')), FrozenPlan(fields=('ai', 'orm"
+        "', 'session', 'storage', 'tools', 'user', 'backend', 'state'), allow_dynamic_dunder_attrs=False), HashPlan(act"
+        "ion='add', fields=('ai', 'orm', 'session', 'storage', 'tools', 'user', 'backend', 'state'), cache=False), Init"
+        "Plan(fields=(InitPlan.Field(name='ai', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='"
+        "init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='orm', annotation=OpRef(name='init.fields.1.annot"
+        "ation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='session', annotatio"
+        "n=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='storage', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.d"
         "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='session', annotation=OpRef(name='init.fields.2.annotation'), de"
-        "fault=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='state', annotation=OpRef(name="
-        "'init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'tools', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='user', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='"
-        "init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='backend', annotation=OpRef(name='init.fields.6.a"
-        "nnotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), k"
-        "w_only_params=('ai', 'orm', 'session', 'state', 'tools', 'user', 'backend'), frozen=True, slots=False, post_in"
-        "it_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ai', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='orm', kw_only=True, fn=None), ReprPlan.Field(name='session', kw_only=True, fn=None), "
-        "ReprPlan.Field(name='state', kw_only=True, fn=None), ReprPlan.Field(name='tools', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='user', kw_only=True, fn=None), ReprPlan.Field(name='backend', kw_only=True, fn=None)), id=Fal"
-        "se, terse=False, default_fn=None)))"
+        "e=None, check_type=None), InitPlan.Field(name='tools', annotation=OpRef(name='init.fields.4.annotation'), defa"
+        "ult=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='user', annotation=OpRef(name='in"
+        "it.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ba"
+        "ckend', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='state', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='"
+        "init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('ai', 'orm', 'sess"
+        "ion', 'storage', 'tools', 'user', 'backend', 'state'), frozen=True, slots=False, post_init_params=None, init_f"
+        "ns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ai', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='orm', kw_only=True, fn=None), ReprPlan.Field(name='session', kw_only=True, fn=None), ReprPlan.Field(name='s"
+        "torage', kw_only=True, fn=None), ReprPlan.Field(name='tools', kw_only=True, fn=None), ReprPlan.Field(name='use"
+        "r', kw_only=True, fn=None), ReprPlan.Field(name='backend', kw_only=True, fn=None), ReprPlan.Field(name='state'"
+        ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f0402652477df270307b20c10ba5403f5e635dc2',
+    plan_repr_sha1='10a0ff9a963b0444eb147246be1f5203f51f1949',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2158,12 +2161,14 @@ def _process_dataclass__d081083bc028fb9729b8423fbe45bb996d3e439f():
         '__dataclass__init__fields__5__default',
         '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
     cls_names=(
         ('ommlds.cli.inject', 'DriverConfig'),
     ),
 )
-def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
+def _process_dataclass__10a0ff9a963b0444eb147246be1f5203f51f1949():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2181,6 +2186,8 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
+        __dataclass__init__fields__7__annotation,
+        __dataclass__init__fields__7__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2202,10 +2209,11 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
                 ai=self.ai,
                 orm=self.orm,
                 session=self.session,
-                state=self.state,
+                storage=self.storage,
                 tools=self.tools,
                 user=self.user,
                 backend=self.backend,
+                state=self.state,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2222,10 +2230,11 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
                 self.ai == other.ai and
                 self.orm == other.orm and
                 self.session == other.session and
-                self.state == other.state and
+                self.storage == other.storage and
                 self.tools == other.tools and
                 self.user == other.user and
-                self.backend == other.backend
+                self.backend == other.backend and
+                self.state == other.state
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2237,10 +2246,11 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
             'ai',
             'orm',
             'session',
-            'state',
+            'storage',
             'tools',
             'user',
             'backend',
+            'state',
         }
 
         def __setattr__(self, name, value):
@@ -2260,10 +2270,11 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
             'ai',
             'orm',
             'session',
-            'state',
+            'storage',
             'tools',
             'user',
             'backend',
+            'state',
         }
 
         def __delattr__(self, name):
@@ -2284,10 +2295,11 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
                 self.ai,
                 self.orm,
                 self.session,
-                self.state,
+                self.storage,
                 self.tools,
                 self.user,
                 self.backend,
+                self.state,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2299,18 +2311,20 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
             ai: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             orm: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             session: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            state: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            storage: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             tools: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             user: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
             backend: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            state: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'ai', ai)
             __dataclass__object_setattr(self, 'orm', orm)
             __dataclass__object_setattr(self, 'session', session)
-            __dataclass__object_setattr(self, 'state', state)
+            __dataclass__object_setattr(self, 'storage', storage)
             __dataclass__object_setattr(self, 'tools', tools)
             __dataclass__object_setattr(self, 'user', user)
             __dataclass__object_setattr(self, 'backend', backend)
+            __dataclass__object_setattr(self, 'state', state)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2323,10 +2337,11 @@ def _process_dataclass__f0402652477df270307b20c10ba5403f5e635dc2():
             parts.append(f"ai={self.ai!r}")
             parts.append(f"orm={self.orm!r}")
             parts.append(f"session={self.session!r}")
-            parts.append(f"state={self.state!r}")
+            parts.append(f"storage={self.storage!r}")
             parts.append(f"tools={self.tools!r}")
             parts.append(f"user={self.user!r}")
             parts.append(f"backend={self.backend!r}")
+            parts.append(f"state={self.state!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

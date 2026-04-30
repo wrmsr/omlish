@@ -12,7 +12,7 @@ from ...standard import ApiKey
 from ..ai.configs import AiConfig
 from ..configs import DriverConfig
 from ..inject import bind_driver
-from ..state.types import ChatId
+from ..storage.types import ChatId
 from ..types import Driver
 from ..user.configs import UserConfig
 

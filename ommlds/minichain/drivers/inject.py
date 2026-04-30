@@ -13,7 +13,7 @@ from .injection import system_message_providers
 from .orm.inject import bind_orm
 from .phases.inject import bind_phases
 from .preparing.inject import bind_preparing
-from .state.inject import bind_state
+from .storage.inject import bind_storage
 from .tools.inject import bind_tools
 from .types import Driver
 from .types import DriverGetter
@@ -35,7 +35,7 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         bind_orm(cfg.orm),
         bind_phases(),
         bind_preparing(),
-        bind_state(cfg.state),
+        bind_storage(cfg.storage),
         bind_tools(cfg.tools),
         bind_user(cfg.user),
     ])

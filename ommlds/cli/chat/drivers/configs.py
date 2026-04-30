@@ -10,6 +10,5 @@ from .state.configs import StateConfig
 
 @dc.dataclass(frozen=True, kw_only=True)
 class DriverConfig(mc.drivers.DriverConfig):
-    state: StateConfig = StateConfig()
-
     backend: BackendConfig = BackendConfig()
+    state: StateConfig = StateConfig()

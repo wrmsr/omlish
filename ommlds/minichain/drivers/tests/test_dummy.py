@@ -12,7 +12,7 @@ from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
 from ..configs import DriverConfig
 from ..inject import bind_driver
-from ..state.types import ChatId
+from ..storage.types import ChatId
 from ..types import Driver
 from ..user.configs import UserConfig
 

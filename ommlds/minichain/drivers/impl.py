@@ -16,7 +16,7 @@ from .events.manager import EventsManager
 from .phases.manager import PhaseManager
 from .phases.types import Phase
 from .preparing.types import ChatPreparer
-from .state.manager import DriverStateManager
+from .storage.manager import DriverStorageManager
 from .types import Action
 from .types import Driver
 from .user.events import UserMessagesEvent
@@ -32,7 +32,7 @@ class DriverImpl(Driver):
             *,
             phases: PhaseManager,
             ai_chat_generator: AiChatGenerator,
-            driver_state_manager: DriverStateManager,
+            driver_storage_manager: DriverStorageManager,
             events: EventsManager,
             chat_preparer: ChatPreparer | None = None,
             user_chat_transform: UserChatChatTransform | None = None,
@@ -41,7 +41,7 @@ class DriverImpl(Driver):
 
         self._phases = phases
         self._ai_chat_generator = ai_chat_generator
-        self._driver_state_manager = driver_state_manager
+        self._driver_storage_manager = driver_storage_manager
         self._events = events
         self._chat_preparer = chat_preparer
         self._user_chat_transform = user_chat_transform
@@ -79,7 +79,7 @@ class DriverImpl(Driver):
 
         await self._events.emit_event(UserMessagesEvent(next_user_chat))
 
-        prev_chat = await self._driver_state_manager.get_chat()
+        prev_chat = await self._driver_storage_manager.get_chat()
 
         prepared_chat: Chat = [*prev_chat, *next_user_chat]
         if self._chat_preparer is not None:
@@ -89,4 +89,4 @@ class DriverImpl(Driver):
             prepared_chat,
         ))
 
-        await self._driver_state_manager.extend_chat([*next_user_chat, *next_ai_chat])
+        await self._driver_storage_manager.extend_chat([*next_user_chat, *next_ai_chat])

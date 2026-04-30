@@ -4,7 +4,7 @@ from ...chat.messages import Chat
 from ...chat.metadata import MessageUuid
 from ..orm.types import Orm
 from ..types import DriverId
-from .manager import DriverStateManager
+from .manager import DriverStorageManager
 from .models import OrmChat
 from .models import OrmDriver
 from .models import OrmMessage
@@ -14,7 +14,7 @@ from .types import ChatId
 ##
 
 
-class DriverStateManagerImpl(DriverStateManager):
+class DriverStorageManagerImpl(DriverStorageManager):
     def __init__(
             self,
             *,

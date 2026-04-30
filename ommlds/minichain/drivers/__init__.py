@@ -100,15 +100,15 @@ with _lang.auto_proxy_init(globals()):
 
     #
 
-    from .state.configs import (  # noqa
-        StateConfig,
+    from .storage.configs import (  # noqa
+        StorageConfig,
     )
 
-    from .state.manager import (  # noqa
-        DriverStateManager,
+    from .storage.manager import (  # noqa
+        DriverStorageManager,
     )
 
-    from .state.types import (  # noqa
+    from .storage.types import (  # noqa
         ChatId,
     )
 

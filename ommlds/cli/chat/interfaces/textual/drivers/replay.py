@@ -10,7 +10,7 @@ class PreviousMessageReplayer:
             self,
             *,
             chat_driver_interface: ChatDriverInterfaceGetter,
-            chat_manager: mc.drivers.DriverStateManager,
+            chat_manager: mc.drivers.DriverStorageManager,
     ) -> None:
         super().__init__()
 
