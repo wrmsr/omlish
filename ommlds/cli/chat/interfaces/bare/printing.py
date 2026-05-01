@@ -28,7 +28,7 @@ class AiMessagesEventPrinter:
         self._printer = printer
 
     async def handle_event(self, event: mc.Event) -> None:
-        if isinstance(event, mc.drivers.AiMessagesEvent):
+        if isinstance(event, mc.AiMessagesEvent):
             for msg in event.chat:
                 if (c := self._extractor.extract_message_content(msg)) is not None:
                     await self._printer.print_content(c)
@@ -52,18 +52,18 @@ class AiStreamEventPrinter:
         self._close_print_ctx: ta.Callable[[], ta.Awaitable[ta.Any]] | None = None
 
     async def handle_event(self, event: mc.Event) -> None:
-        if isinstance(event, mc.drivers.AiStreamBeginEvent):
+        if isinstance(event, mc.AiStreamBeginEvent):
             check.none(self._print_ctx)
             check.none(self._close_print_ctx)
             acm = self._printer.create_context()
             self._print_ctx = await acm.__aenter__()
             self._close_print_ctx = functools.partial(acm.__aexit__, None, None, None)
 
-        elif isinstance(event, mc.drivers.AiStreamDeltaEvent):
+        elif isinstance(event, mc.AiStreamDeltaEvent):
             if isinstance(event.delta, mc.ContentAiDelta):
                 await check.not_none(self._print_ctx).print_content(event.delta.c)
 
-        elif isinstance(event, mc.drivers.AiStreamEndEvent):
+        elif isinstance(event, mc.AiStreamEndEvent):
             check.not_none(self._print_ctx)
             await (check.not_none(self._close_print_ctx)())
             self._print_ctx = None

@@ -72,6 +72,13 @@ with _lang.auto_proxy_init(
         AiChoices,
     )
 
+    from .chat.stream.events import (  # noqa
+        AiStreamEvent,
+        AiStreamBeginEvent,
+        AiStreamDeltaEvent,
+        AiStreamEndEvent,
+    )
+
     from .chat.stream.joining import (  # noqa
         AiDeltaJoiner,
     )
@@ -123,6 +130,11 @@ with _lang.auto_proxy_init(
         CreatedAtAddingMessageTransform,
         MessageUuidAddingMessageTransform,
         TurnUuidAddingMessageTransform,
+    )
+
+    from .chat.events import (  # noqa
+        UserMessagesEvent,
+        AiMessagesEvent,
     )
 
     from .chat.formats import (  # noqa

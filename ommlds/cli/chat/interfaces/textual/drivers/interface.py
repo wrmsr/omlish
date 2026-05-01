@@ -172,7 +172,7 @@ class ChatDriverInterface(
     _chat_event_queue_task: asyncio.Task[None] | None = None
 
     async def _handle_chat_queue_event(self, ev: ta.Any) -> None:
-        if isinstance(ev, mc.drivers.AiMessagesEvent):
+        if isinstance(ev, mc.AiMessagesEvent):
             if not ev.streamed:
                 ai_msgs = [
                     msg
@@ -183,11 +183,11 @@ class ChatDriverInterface(
                 if ai_msgs:
                     await self.mount_messages(ai_msgs)
 
-        elif isinstance(ev, mc.drivers.AiStreamBeginEvent):
+        elif isinstance(ev, mc.AiStreamBeginEvent):
             # self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa
             pass
 
-        elif isinstance(ev, mc.drivers.AiStreamDeltaEvent):
+        elif isinstance(ev, mc.AiStreamDeltaEvent):
             if isinstance(ev.delta, mc.ContentAiDelta):
                 await self._append_stream_message_buffer.push(
                     ContentStreamMessagePart(
@@ -200,7 +200,7 @@ class ChatDriverInterface(
             elif isinstance(ev.delta, mc.ToolUseAiDelta):
                 pass
 
-        elif isinstance(ev, mc.drivers.AiStreamEndEvent):
+        elif isinstance(ev, mc.AiStreamEndEvent):
             await self._append_stream_message_buffer.push(
                 FinalStreamMessagePart(
                     StreamAiMessage,

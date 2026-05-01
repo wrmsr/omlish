@@ -7,6 +7,7 @@ import typing as ta
 
 from omlish.asyncs.asyncio import all as au
 
+from ..chat.events import UserMessagesEvent
 from ..chat.messages import Chat
 from ..chat.messages import UserChat
 from ..events.manager import EventsManager
@@ -20,7 +21,6 @@ from .preparing.types import ChatPreparer
 from .storage.manager import DriverStorageManager
 from .types import Action
 from .types import Driver
-from .user.events import UserMessagesEvent
 from .user.transforms import UserChatChatTransform
 
 

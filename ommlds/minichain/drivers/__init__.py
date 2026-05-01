@@ -22,15 +22,6 @@ with _lang.auto_proxy_init(globals()):
         AiConfig,
     )
 
-    from .ai.events import (  # noqa
-        AiMessagesEvent,
-
-        AiStreamEvent,
-        AiStreamBeginEvent,
-        AiStreamDeltaEvent,
-        AiStreamEndEvent,
-    )
-
     from .ai.services import (  # noqa
         ChatChoicesServiceOptionsProvider,
         ChatChoicesServiceOptionsProviders,
@@ -126,10 +117,6 @@ with _lang.auto_proxy_init(globals()):
 
     from .user.configs import (  # noqa
         UserConfig,
-    )
-
-    from .user.events import (  # noqa
-        UserMessagesEvent,
     )
 
     #
