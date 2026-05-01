@@ -14,6 +14,7 @@ from ..api.values import Value
 from .api import FieldTypeTagging
 from .api import Impls
 from .api import Polymorphism
+from .api import PolymorphismTagError
 from .api import TypeTagging
 from .api import WrapperTypeTagging
 from .impls import get_polymorphism_impls
@@ -48,7 +49,10 @@ class WrapperPolymorphismUnmarshaler(PolymorphismUnmarshaler):
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = check.isinstance(v, collections.abc.Mapping)
         [(tag, iv)] = ma.items()
-        u = self.m[tag]
+        try:
+            u = self.m[tag]
+        except KeyError:
+            raise PolymorphismTagError(tag) from None
         return u.unmarshal(ctx, iv)
 
 
@@ -70,7 +74,10 @@ class FieldPolymorphismUnmarshaler(PolymorphismUnmarshaler):
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = dict(check.isinstance(v, collections.abc.Mapping))
         tag = ma.pop(self.tf)
-        u = self.m[tag]
+        try:
+            u = self.m[tag]
+        except KeyError:
+            raise PolymorphismTagError(tag) from None
         return u.unmarshal(ctx, ma)
 
 

@@ -199,23 +199,37 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .polymorphism.api import (  # noqa
+        PolymorphismTagError,
+        PolymorphismImplError,
+
         AutoStripSuffix,
+
+        TypeTagging,
+        WrapperTypeTagging,
         FieldTypeTagging,
+
         Impl,
         Impls,
         ImplBase,
         ImplBases,
         Polymorphism,
-        TypeTagging,
-        WrapperTypeTagging,
+
         polymorphism_from_impls,
         polymorphism_from_subclasses,
+
+        OpenPolymorphismOptions,
+        OpenPolymorphismImpl,
     )
 
     from .polymorphism.marshal import (  # noqa
         PolymorphismMarshaler,
         PolymorphismMarshalerFactory,
         make_polymorphism_marshaler,
+    )
+
+    from .polymorphism.open import (  # noqa
+        OpenPolymorphismMarshalerFactory,
+        OpenPolymorphismUnmarshalerFactory,
     )
 
     from .polymorphism.standard import (  # noqa

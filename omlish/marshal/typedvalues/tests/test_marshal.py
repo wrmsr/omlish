@@ -5,6 +5,7 @@ import pytest
 from .... import lang
 from .... import marshal as msh
 from .... import typedvalues as tv
+from ...polymorphism.api import PolymorphismTagError
 
 
 class Opt(tv.TypedValue, lang.Abstract, lang.Sealed):
@@ -37,7 +38,7 @@ def test_marshal_abstract():
     tvs2 = msh.unmarshal([*mtvs, {'opt_c': 'ghi'}], tv.TypedValues[Opt])
     assert list(tvs2) == [*tvs, OptC('ghi')]
 
-    with pytest.raises(KeyError):
+    with pytest.raises(PolymorphismTagError):
         msh.unmarshal([*mtvs, {'other_opt': 'huh'}], tv.TypedValues[Opt])
 
 
@@ -48,7 +49,7 @@ def test_marshal_union():
     tvs2 = msh.unmarshal(mtvs, tv.TypedValues[OptA | OptB])
     assert list(tvs2) == list(tvs)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(PolymorphismTagError):
         msh.unmarshal([*mtvs, {'opt_c': 'ghi'}], tv.TypedValues[OptA | OptB])
 
 
@@ -59,5 +60,5 @@ def test_marshal_union2():
     tvs2 = msh.unmarshal(mtvs, tv.TypedValues[OptA | OptB | OtherOpt])
     assert list(tvs) == list(tvs2)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(PolymorphismTagError):
         msh.unmarshal([*mtvs, {'opt_c': 'ghi'}], tv.TypedValues[OptA | OptB])

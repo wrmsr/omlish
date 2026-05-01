@@ -5,8 +5,20 @@ from ... import check
 from ... import lang
 from ... import reflect as rfl
 from ..api.configs import Config
+from ..api.errors import MarshalError
 from ..api.naming import Naming
 from ..api.naming import translate_name
+
+
+##
+
+
+class PolymorphismTagError(MarshalError):
+    pass
+
+
+class PolymorphismImplError(MarshalError):
+    pass
 
 
 ##

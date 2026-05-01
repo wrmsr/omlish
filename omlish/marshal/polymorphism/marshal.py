@@ -13,6 +13,7 @@ from ..api.values import Value
 from .api import FieldTypeTagging
 from .api import Impls
 from .api import Polymorphism
+from .api import PolymorphismImplError
 from .api import TypeTagging
 from .api import WrapperTypeTagging
 from .impls import get_polymorphism_impls
@@ -45,7 +46,11 @@ class WrapperPolymorphismMarshaler(PolymorphismMarshaler):
         return self.impls
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
-        tag, m = self.m[type(o)]
+        ot = type(o)
+        try:
+            tag, m = self.m[ot]
+        except KeyError:
+            raise PolymorphismImplError(ot) from None
         return {tag: m.marshal(ctx, o)}
 
 
@@ -65,7 +70,11 @@ class FieldPolymorphismMarshaler(PolymorphismMarshaler):
         return self.impls
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
-        tag, m = self.m[type(o)]
+        ot = type(o)
+        try:
+            tag, m = self.m[ot]
+        except KeyError:
+            raise PolymorphismImplError(ot) from None
         return {self.tf: tag, **m.marshal(ctx, o)}  # type: ignore
 
 

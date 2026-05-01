@@ -2,7 +2,7 @@ import dataclasses as dc
 
 import pytest
 
-from ...api.errors import UnhandledTypeError
+from ...api.naming import Naming
 from ...api.types import SimpleMarshaling
 from ...factories.multi import MultiMarshalerFactory
 from ...factories.multi import MultiUnmarshalerFactory
@@ -12,6 +12,7 @@ from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..api import OpenPolymorphismImpl
 from ..api import OpenPolymorphismOptions
+from ..api import PolymorphismImplError
 from ..open import OpenPolymorphismMarshalerFactory
 from ..open import OpenPolymorphismUnmarshalerFactory
 
@@ -39,6 +40,7 @@ def test_open():
     msh = SimpleMarshaling(
         marshaler_factory=MultiMarshalerFactory(
             OpenPolymorphismMarshalerFactory(Foo, opo := OpenPolymorphismOptions(
+                naming=Naming.SNAKE,
                 strip_suffix=True,
             )),
             DataclassMarshalerFactory(),
@@ -64,8 +66,8 @@ def test_open():
     assert (mv := msh.marshal(StrFoo('420'), Foo)) == {'str': {'s': '420'}}
     assert msh.unmarshal(mv, Foo) == StrFoo('420')
 
-    with pytest.raises(UnhandledTypeError):
-        msh.marshal(BoolFoo(True))
+    with pytest.raises(PolymorphismImplError):
+        msh.marshal(BoolFoo(True), Foo)
 
     msh.config_registry.update(
         Foo,

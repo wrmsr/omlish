@@ -1,8 +1,16 @@
+"""
+TODO:
+ - configurable deser behavior - UnknownImpl vs raise
+ - manifest interop
+"""
+import abc
 import typing as ta
 
+from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
+from ..api.configs import ConfigRegistry
 from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
@@ -13,15 +21,21 @@ from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
 from ..api.values import Value
 from .api import Impls
+from .api import OpenPolymorphismImpl
 from .api import OpenPolymorphismOptions
-from .marshal import PolymorphismMarshaler
-from .unmarshal import PolymorphismUnmarshaler
+from .api import polymorphism_from_impls
+from .marshal import make_polymorphism_marshaler
+from .unmarshal import make_polymorphism_unmarshaler
+
+
+HandlerContextT = ta.TypeVar('HandlerContextT', bound=MarshalContext | UnmarshalContext)
+HandlerT = ta.TypeVar('HandlerT', bound=Marshaler | Unmarshaler)
 
 
 ##
 
 
-class _OpenPolymorphismBase(lang.Abstract):
+class _OpenPolymorphismBase(lang.Abstract, ta.Generic[HandlerContextT, HandlerT]):
     def __init__(
             self,
             ty: type,
@@ -32,24 +46,84 @@ class _OpenPolymorphismBase(lang.Abstract):
         self._ty = ty
         self._opts = opts
 
-    def get_impls(self) -> Impls | None:
-        return None
+        self._state: _OpenPolymorphismBase._State | None = None
 
+    class _State(ta.NamedTuple):
+        ics: ta.Any
+        impls: Impls
+        h: ta.Any
 
-class OpenPolymorphismMarshaler(_OpenPolymorphismBase, PolymorphismMarshaler):
-    def get_marshaler_map(self) -> ta.Mapping[type, tuple[str, Marshaler]]:
+    def _get_handler(self, ctx: HandlerContextT) -> HandlerT:
+        cr = check.isinstance(ctx.configs, ConfigRegistry)
+
+        st: ta.Any = self._state
+        ics: ta.Any = cr.get(self._ty).get(OpenPolymorphismImpl)
+        if st is not None and ics is not None and st.ics is ics:
+            return st.h
+
+        with cr._lock:  # noqa
+            st = self._state
+            ics = cr.get(self._ty).get(OpenPolymorphismImpl)
+            if st is not None and ics is not None and st.ics is ics:
+                return st.h
+
+            impls = polymorphism_from_impls(
+                self._ty,
+                [ic.impl_ty for ic in ics],
+                naming=self._opts.naming,
+                strip_suffix=self._opts.strip_suffix,
+            ).impls
+
+            h = self._make_handler(ctx, impls)
+
+            st = self._State(
+                ics,
+                impls,
+                h,
+            )
+
+            self._state = st
+            return h
+
+    @abc.abstractmethod
+    def _make_handler(
+            self,
+            ctx: HandlerContextT,
+            impls: Impls,
+    ) -> HandlerT:
         raise NotImplementedError
+
+
+class OpenPolymorphismMarshaler(_OpenPolymorphismBase[MarshalContext, Marshaler], Marshaler):
+    def _make_handler(
+            self,
+            ctx: MarshalContext,
+            impls: Impls,
+    ) -> Marshaler:
+        return make_polymorphism_marshaler(
+            impls,
+            self._opts.type_tagging,
+            ctx.marshal_factory_context,
+        )
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
-        raise NotImplementedError
+        return self._get_handler(ctx).marshal(ctx, o)
 
 
-class OpenPolymorphismUnmarshaler(_OpenPolymorphismBase, PolymorphismUnmarshaler):
-    def get_unmarshaler_map(self) -> ta.Mapping[str, Unmarshaler]:
-        raise NotImplementedError
+class OpenPolymorphismUnmarshaler(_OpenPolymorphismBase[UnmarshalContext, Unmarshaler], Unmarshaler):
+    def _make_handler(
+            self,
+            ctx: UnmarshalContext,
+            impls: Impls,
+    ) -> Unmarshaler:
+        return make_polymorphism_unmarshaler(
+            impls,
+            self._opts.type_tagging,
+            ctx.unmarshal_factory_context,
+        )
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
-        raise NotImplementedError
+        return self._get_handler(ctx).unmarshal(ctx, v)
 
 
 ##
