@@ -299,7 +299,7 @@ class ChatDriverInterface(
         if not no_echo:
             await self._messages_container.mount_messages(
                 UserMessage(
-                    s,
+                    tx.Text(s),
                     message_uuid=input_uuid,
                 ),
             )

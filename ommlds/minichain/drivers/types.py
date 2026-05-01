@@ -6,6 +6,16 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
 
+from ..events.types import Event
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DriverEvent(Event, lang.Abstract):
+    pass
+
 
 ##
 

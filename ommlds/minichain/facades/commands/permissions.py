@@ -11,6 +11,7 @@ from ...tools.permissions.managers import ToolPermissionsManager
 from ...tools.permissions.types import ToolPermissionMatcher
 from ...tools.permissions.types import ToolPermissionRule
 from ...tools.permissions.types import ToolPermissionState
+from ..text import CanFacadeText
 from ..text import FacadeText
 from ..text import FacadeTextColor
 from .base import ParserClassCommand
@@ -33,6 +34,28 @@ class PermissionsCommand(ParserClassCommand):
         ToolPermissionState.ALLOW: 'green',
     }
 
+    _TOOL_PERMISSION_STATE_NAME_LEN: ta.ClassVar = max(len(tps.name) for tps in ToolPermissionState)
+
+    def _render_rule(self, rmd: str, r: ToolPermissionRule) -> CanFacadeText:
+        sp = ' ' * 2
+        return list(lang.interleave(sp, [
+            rmd,
+            FacadeText.style(
+                r.result.name.lower().ljust(self._TOOL_PERMISSION_STATE_NAME_LEN),
+                bold=True,
+                color=self._PERMISSION_STATE_COLORS[r.result],
+            ),
+            json.dumps_compact(msh.marshal(r.matcher, ToolPermissionMatcher)),
+        ]))
+
+    def _render_rules(self, rs: ta.Iterable[tuple[str, ToolPermissionRule]]) -> CanFacadeText:
+        return FacadeText.join('\n', [
+            self._render_rule(rmd, r)
+            for rmd, r in rs
+        ])
+
+    #
+
     @ap.cmd(
         name='list',
         default=True,
@@ -43,20 +66,7 @@ class PermissionsCommand(ParserClassCommand):
             await ctx.print('No permissions set')
             return
 
-        sp = ' ' * 2
-        slj = max(len(tps.name) for tps in ToolPermissionState)
-        await ctx.print(FacadeText.join('\n', [
-            list(lang.interleave(sp, [
-                rmd,
-                FacadeText.style(
-                    r.result.name.lower().ljust(slj),
-                    bold=True,
-                    color=self._PERMISSION_STATE_COLORS[r.result],
-                ),
-                json.dumps_compact(msh.marshal(r.matcher, ToolPermissionMatcher)),
-            ]))
-            for rmd, r in rules.by_min_digest.items()
-        ]))
+        await ctx.print(self._render_rules(rules.by_min_digest.items()))
 
     #
 
@@ -73,3 +83,6 @@ class PermissionsCommand(ParserClassCommand):
         rule = ToolPermissionRule(matcher, ToolPermissionState[args.state.upper()])
 
         self._permissions.add_rule(rule)
+
+        rmd = self._permissions.get_rules().min_digests[rule]
+        await ctx.print(self._render_rule(rmd, rule))

@@ -57,11 +57,36 @@ def not_fn(fn: ta.Callable[P, bool]) -> ta.Callable[P, bool]:
     return inner
 
 
-def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
-    def rec(*args, **kwargs) -> T:  # noqa
+##
+
+
+def recurse(fn: ta.Callable[ta.Concatenate[ta.Callable[P, T], P], T], *args: P.args, **kwargs: P.kwargs) -> T:
+    def rec(*args: P.args, **kwargs: P.kwargs) -> T:  # noqa
         return fn(rec, *args, **kwargs)
 
     return rec(*args, **kwargs)
+
+
+def unnest(
+    fn: ta.Callable[[T], ta.Sequence[T] | None],
+    obj: T,
+) -> list[T]:
+    def inner(
+        rec: ta.Callable[[T], list[T]],
+        obj: T,
+    ) -> list[T]:
+        children = fn(obj)
+
+        if children is None:
+            return [obj]
+
+        out: list[T] = []
+        for child in children:
+            out.extend(rec(child))
+
+        return out
+
+    return recurse(inner, obj)
 
 
 ##

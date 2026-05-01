@@ -135,7 +135,7 @@ with _lang.auto_proxy_init(globals()):
     #
 
     from .actions import (  # noqa
-        ActionEvent,
+        ActionDriverEvent,
 
         SendUserMessagesAction,
     )
@@ -145,6 +145,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .types import (  # noqa
+        DriverEvent,
+
         Action,
 
         DriverId,

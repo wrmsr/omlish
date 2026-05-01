@@ -565,10 +565,10 @@ def _process_dataclass__b85c47820b05dab0f4c49061d498738fe67a73a4():
         "ide=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
         "l', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override"
         "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_p"
-        "arams=('l',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()"
-        ")))"
+        "arams=('l',), kw_only_params=(), frozen=True, slots=False, post_init_params=(), init_fns=(), validate_fns=()))"
+        ")"
     ),
-    plan_repr_sha1='d8fe535b51d70dc7c60329bed3f200e1230f614a',
+    plan_repr_sha1='30c3cfbd3078ff6d612c66f613e50ddf96bca5cc',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
     ),
@@ -576,7 +576,7 @@ def _process_dataclass__b85c47820b05dab0f4c49061d498738fe67a73a4():
         ('ommlds.minichain.facades.impl', 'ConcatFacadeText'),
     ),
 )
-def _process_dataclass__d8fe535b51d70dc7c60329bed3f200e1230f614a():
+def _process_dataclass__30c3cfbd3078ff6d612c66f613e50ddf96bca5cc():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -679,6 +679,7 @@ def _process_dataclass__d8fe535b51d70dc7c60329bed3f200e1230f614a():
             l: __dataclass__init__fields__1__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'l', l)
+            self.__post_init__()
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1288,10 +1289,10 @@ def _process_dataclass__f4e6b81cb21510ffec9598279f74b9afddc6c1de():
         ".Field(name='y', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'"
         "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
         " check_type=None)), self_param='self', std_params=('c', 'y'), kw_only_params=(), frozen=True, slots=False, pos"
-        "t_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='c', kw_only=False, fn"
-        "=None), ReprPlan.Field(name='y', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
+        "t_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='c', kw_only=False, fn=N"
+        "one), ReprPlan.Field(name='y', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='1146b322d3d7f9de2743046ef41ed24699798077',
+    plan_repr_sha1='82bc12cdc7d90d1a2cc323667faa10c3124d2d9d',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
@@ -1301,7 +1302,7 @@ def _process_dataclass__f4e6b81cb21510ffec9598279f74b9afddc6c1de():
         ('ommlds.minichain.facades.impl', 'StyleFacadeText'),
     ),
 )
-def _process_dataclass__1146b322d3d7f9de2743046ef41ed24699798077():
+def _process_dataclass__82bc12cdc7d90d1a2cc323667faa10c3124d2d9d():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1413,6 +1414,7 @@ def _process_dataclass__1146b322d3d7f9de2743046ef41ed24699798077():
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'c', c)
             __dataclass__object_setattr(self, 'y', y)
+            self.__post_init__()
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:

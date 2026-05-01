@@ -40,6 +40,7 @@ def _register(**kwargs):
     ),
     cls_names=(
         ('ommlds.minichain.drivers.actions', 'Action'),
+        ('ommlds.minichain.drivers.actions', 'DriverEvent'),
     ),
 )
 def _process_dataclass__d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb():
@@ -180,7 +181,7 @@ def _process_dataclass__d54bb147650f2eef0cd7c9669f2e1ff9c0e24fdb():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.drivers.actions', 'ActionEvent'),
+        ('ommlds.minichain.drivers.actions', 'ActionDriverEvent'),
     ),
 )
 def _process_dataclass__ab056a4f68b888351847dc1336ace5690a9d0feb():

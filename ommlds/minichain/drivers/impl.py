@@ -10,7 +10,7 @@ from omlish.asyncs.asyncio import all as au
 from ..chat.messages import Chat
 from ..chat.messages import UserChat
 from ..events.manager import EventsManager
-from .actions import ActionEvent
+from .actions import ActionDriverEvent
 from .actions import SendUserMessagesAction
 from .ai.types import AiChatGenerator
 from .ai.types import GenerateAiChatArgs
@@ -66,7 +66,7 @@ class DriverImpl(Driver):
             await self._do_action(action)
 
     async def _do_action(self, action: Action) -> None:
-        await self._events.emit_event(ActionEvent(action))
+        await self._events.emit_event(ActionDriverEvent(action))
 
         if isinstance(action, SendUserMessagesAction):
             await self._do_action_send_user_messages(action)

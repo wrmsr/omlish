@@ -50,6 +50,10 @@ class ToolPermissionRules(fh.FieldHashable, lang.Final):
         mdl = self.min_digest_len
         return col.make_map(((k[:mdl], v) for k, v in self.by_digest.items()), strict=True)
 
+    @lang.cached_property
+    def min_digests(self) -> ta.Mapping[ToolPermissionRule, str]:
+        return {v: k for k, v in self.by_min_digest.items()}
+
     #
 
     def __len__(self) -> int:
