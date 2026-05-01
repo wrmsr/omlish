@@ -28,6 +28,13 @@ class FieldTypeTagging(TypeTagging, lang.Final):
 ##
 
 
+class AutoStripSuffix(lang.Marker):
+    pass
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class Impl(lang.Final):
     ty: type
@@ -165,8 +172,7 @@ class Polymorphism:
         return self._bases
 
 
-class AutoStripSuffix(lang.Marker):
-    pass
+#
 
 
 def polymorphism_from_impls(
@@ -245,3 +251,18 @@ def polymorphism_from_subclasses(
         naming=naming,
         strip_suffix=strip_suffix,
     )
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class OpenPolymorphismOptions(lang.Final):
+    type_tagging: TypeTagging = WrapperTypeTagging()
+    naming: Naming | None = None
+    strip_suffix: bool | type[AutoStripSuffix] | str = False
+
+
+@dc.dataclass(frozen=True)
+class OpenPolymorphismImpl(Config, lang.Final):
+    impl_ty: type
