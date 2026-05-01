@@ -2,6 +2,7 @@ from omlish import inject as inj
 
 from .injection import event_callbacks
 from .manager import EventsManager
+from .types import EventCallback
 
 
 ##
@@ -16,7 +17,14 @@ def bind_events() -> inj.Elements:
 
     #
 
-    els.append(inj.bind(EventsManager, singleton=True))
+    els.extend([
+        inj.bind(EventsManager, singleton=True),
+        inj.bind(
+            EventCallback,
+            to_fn=inj.target(em=EventsManager)(lambda em: EventCallback(em.emit_event)),
+            singleton=True,
+        ),
+    ])
 
     #
 

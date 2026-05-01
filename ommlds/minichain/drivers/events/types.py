@@ -14,6 +14,13 @@ class EventCallback(lang.Func1[Event, ta.Awaitable[None]]):
     pass
 
 
+async def _nop_event_callback(event: Event) -> None:
+    pass
+
+
+NOP_EVENT_CALLBACK = EventCallback(_nop_event_callback)
+
+
 EventCallbacks = ta.NewType('EventCallbacks', ta.Sequence[EventCallback])
 
 
