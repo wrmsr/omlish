@@ -22,3 +22,13 @@ class ActionEvent(Event, lang.Final):
 @dc.dataclass(frozen=True)
 class SendUserMessagesAction(Action, lang.Final):
     next_user_chat: UserChat
+
+
+##
+
+
+@msh.register_global_lazy_init
+def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
+    cfgs.update(Event, *[msh.OpenPolymorphismImpl(et) for et in [
+        ActionEvent,
+    ]])
