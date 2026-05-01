@@ -30,23 +30,29 @@ class MessageDivider(
 
     def __init__(
             self,
-            text: str | None = None,
             *,
-            align: tx.AlignMethod = 'center',
+            left_text: str | None = None,
+            center_text: str | None = None,
+            right_text: str | None = None,
             line_style: ta.Any | None = None,
             text_style: ta.Any | None = None,
     ) -> None:
         super().__init__()
 
-        if text is None:
-            text = lang.localnow().strftime('%Y-%m-%d %H:%M:%S')
-
-        self._text = text
-        self._align = align
+        self._left_text = left_text
+        self._center_text = center_text
+        self._right_text = right_text
         self._line_style = line_style
         self._text_style = text_style
 
         self._refresh()
+
+    @classmethod
+    def for_message(cls, msg: Message) -> MessageDivider:
+        return cls(
+            center_text=lang.localnow().strftime('%Y-%m-%d %H:%M:%S'),
+            right_text=str(mu) if (mu := msg.message_uuid) is not None else None,
+        )
 
     def on_click(self, event: tx.Click) -> None:
         if event.button != 1:
@@ -56,31 +62,24 @@ class MessageDivider(
 
         self.post_message(MessageDividerClicked(event))
 
-    def set_text(self, text: str) -> None:
-        self._text = text
-        self._refresh()
-
-    def set_align(self, align: tx.AlignMethod) -> None:
-        self._align = align
-        self._refresh()
-
     def _refresh(self) -> None:
         if (text_style := self._text_style) is None:
             text_style = tx.RichStyle(color=self.rich_style.color)
 
-        text = tx.Text(
-            self._text,
-            style=text_style,
-        ) if self._text else ''
+        def make_text(s):
+            return tx.Text(s, style=text_style) if s else ''  # noqa
 
         if (line_style := self._line_style) is None:
             line_style = tx.RichStyle(color=self.app.current_theme.primary)
 
         self.update(
-            tx.RichRule(
-                text,
-                align=self._align,
+            tx.RichTriRule(
+                left=make_text(self._left_text),
+                center=make_text(self._center_text),
+                right=make_text(self._right_text),
                 style=line_style,
+                left_pad=1,
+                right_pad=1,
             ),
         )
 
@@ -383,7 +382,7 @@ class UserMessage(StaticMessage):
 
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='user-message-divider-container message-divider-container'):
-            yield MessageDivider()
+            yield MessageDivider.for_message(self)
 
             with tx.Horizontal(classes='user-message-outer message-outer'):
                 yield tx.Static('> ', classes='user-message-glyph message-glyph')
@@ -399,7 +398,7 @@ class AiMessage(Message, lang.Abstract):
 
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='ai-message-divider-container message-divider-container'):
-            yield MessageDivider()
+            yield MessageDivider.for_message(self)
 
             with tx.Horizontal(classes='ai-message-outer message-outer'):
                 yield tx.Static('< ', classes='ai-message-glyph message-glyph')
@@ -536,7 +535,7 @@ class ToolConfirmationMessage(Message):
 
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='tool-confirmation-message-divider-container message-divider-container'):
-            yield MessageDivider()
+            yield MessageDivider.for_message(self)
 
             with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
                 yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
@@ -589,7 +588,7 @@ class UiMessage(StaticMessage):
 
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='ui-message-divider-container message-divider-container'):
-            yield MessageDivider()
+            yield MessageDivider.for_message(self)
 
             with tx.Horizontal(classes='ui-message-outer message-outer'):
                 yield tx.Static('~ ', classes='ui-message-glyph message-glyph')

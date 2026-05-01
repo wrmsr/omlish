@@ -30,6 +30,10 @@ class TriRule(JupyterMixin):
         align (str, optional): Where legacy `title` goes if explicit slot not provided.
         min_left_length (int | None): Best-effort minimum visible cell width for left text.
         min_right_length (int | None): Best-effort minimum visible cell width for right text.
+        left_pad (int | None): If not None and left text is present, render this many rule cells at far left,
+            followed by one space, before the left text. `0` means just one separating space. `None` means no pad.
+        right_pad (int | None): If not None and right text is present, render one space after the right text,
+            followed by this many rule cells at far right. `0` means just one separating space. `None` means no pad.
     """
 
     def __init__(
@@ -45,6 +49,8 @@ class TriRule(JupyterMixin):
             align: AlignMethod = 'center',
             min_left_length: int | None = None,
             min_right_length: int | None = None,
+            left_pad: int | None = None,
+            right_pad: int | None = None,
     ) -> None:
         if cell_len(characters) < 1:
             raise ValueError("'characters' argument must have a cell width of at least 1")
@@ -54,6 +60,10 @@ class TriRule(JupyterMixin):
             raise ValueError('min_left_length must be >= 0 or None')
         if min_right_length is not None and min_right_length < 0:
             raise ValueError('min_right_length must be >= 0 or None')
+        if left_pad is not None and left_pad < 0:
+            raise ValueError('left_pad must be >= 0 or None')
+        if right_pad is not None and right_pad < 0:
+            raise ValueError('right_pad must be >= 0 or None')
 
         super().__init__()
 
@@ -67,6 +77,8 @@ class TriRule(JupyterMixin):
         self.align = align
         self.min_left_length = min_left_length
         self.min_right_length = min_right_length
+        self.left_pad = left_pad
+        self.right_pad = right_pad
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.title!r}, {self.characters!r})'
@@ -169,8 +181,8 @@ class TriRule(JupyterMixin):
         min_left = min(left_width, min_left_length or 0)
         min_right = min(right_width, min_right_length or 0)
 
-        # Preserve approximately the original Rule behavior for single-title cases:
-        # leave room for line + separator space where possible.
+        # Preserve approximately the original Rule behavior for single-title cases: leave room for line + separator
+        # space where possible.
         if present_count == 1:
             if has_center:
                 return 0, min(center_width, max(0, width - 4)), 0
@@ -208,8 +220,7 @@ class TriRule(JupyterMixin):
             return 0, center_alloc, right_alloc
 
         # All three.
-        # First: best-effort side minima while trying to leave at least 1 cell
-        # for center if possible.
+        # First: best-effort side minima while trying to leave at least 1 cell for center if possible.
         side_min_budget = max(0, width - 1)
         left_alloc, right_alloc = cls._allocate_evenly(
             side_min_budget,
@@ -276,6 +287,14 @@ class TriRule(JupyterMixin):
         return cls._rule_chars(characters, width)
 
     @classmethod
+    def _left_pad_text(cls, characters: str, left_pad: int) -> str:
+        return cls._rule_chars(characters, left_pad) + ' '
+
+    @classmethod
+    def _right_pad_text(cls, characters: str, right_pad: int) -> str:
+        return ' ' + cls._rule_chars(characters, right_pad)
+
+    @classmethod
     def render_rule_text(
             cls,
             *,
@@ -288,6 +307,8 @@ class TriRule(JupyterMixin):
             right: Text | None = None,
             min_left_length: int | None = None,
             min_right_length: int | None = None,
+            left_pad: int | None = None,
+            right_pad: int | None = None,
     ) -> Text:
         """
         Render a rule from already-rendered Text slots.
@@ -299,19 +320,56 @@ class TriRule(JupyterMixin):
 
         if cell_len(characters) < 1:
             raise ValueError("'characters' argument must have a cell width of at least 1")
+        if left_pad is not None and left_pad < 0:
+            raise ValueError('left_pad must be >= 0 or None')
+        if right_pad is not None and right_pad < 0:
+            raise ValueError('right_pad must be >= 0 or None')
 
         left = cls._copy_clean_text(left)
         center = cls._copy_clean_text(center)
         right = cls._copy_clean_text(right)
 
+        use_left_pad = left_pad is not None and left is not None
+        use_right_pad = right_pad is not None and right is not None
+
+        left_pad_width = (left_pad + 1) if use_left_pad else 0  # type: ignore[operator]
+        right_pad_width = (right_pad + 1) if use_right_pad else 0  # type: ignore[operator]
+
+        layout_width = max(0, width - left_pad_width - right_pad_width)
+
+        def wrap_with_side_padding(inner_text: Text) -> Text:
+            if not use_left_pad and not use_right_pad:
+                inner_text.end = end
+                inner_text.plain = set_cell_size(inner_text.plain, width)
+                return inner_text
+
+            outer_text = Text(end=end)
+
+            if use_left_pad:
+                outer_text.append(
+                    cls._left_pad_text(characters, check.not_none(left_pad)),
+                    style,
+                )
+
+            outer_text.append_text(inner_text)
+
+            if use_right_pad:
+                outer_text.append(
+                    cls._right_pad_text(characters, check.not_none(right_pad)),
+                    style,
+                )
+
+            outer_text.plain = set_cell_size(outer_text.plain, width)
+            return outer_text
+
         if not left and not center and not right:
-            rule_text = Text(cls._rule_chars(characters, width), style, end=end)
-            rule_text.truncate(width)
-            rule_text.plain = set_cell_size(rule_text.plain, width)
-            return rule_text
+            rule_text = Text(cls._rule_chars(characters, layout_width), style, end='')
+            rule_text.truncate(layout_width)
+            rule_text.plain = set_cell_size(rule_text.plain, layout_width)
+            return wrap_with_side_padding(rule_text)
 
         left_width, center_width, right_width = cls._allocate_text_widths(
-            width=width,
+            width=layout_width,
             left_width=left.cell_len if left else 0,
             center_width=center.cell_len if center else 0,
             right_width=right.cell_len if right else 0,
@@ -328,12 +386,12 @@ class TriRule(JupyterMixin):
         right_width = right.cell_len if right else 0
 
         if not left and not center and not right:
-            rule_text = Text(cls._rule_chars(characters, width), style, end=end)
-            rule_text.truncate(width)
-            rule_text.plain = set_cell_size(rule_text.plain, width)
-            return rule_text
+            rule_text = Text(cls._rule_chars(characters, layout_width), style, end='')
+            rule_text.truncate(layout_width)
+            rule_text.plain = set_cell_size(rule_text.plain, layout_width)
+            return wrap_with_side_padding(rule_text)
 
-        rule_text = Text(end=end)
+        rule_text = Text(end='')
 
         def append_gap(
             gap_width: int,
@@ -357,68 +415,75 @@ class TriRule(JupyterMixin):
                 rule_text.append_text(text)
 
         # Single slot cases.
+
         if left and not center and not right:
             append_text(left)
-            append_gap(width - left_width, left_text=True)
+            append_gap(layout_width - left_width, left_text=True)
+
         elif right and not left and not center:
-            append_gap(width - right_width, right_text=True)
+            append_gap(layout_width - right_width, right_text=True)
             append_text(right)
+
         elif center and not left and not right:
-            start = (width - center_width) // 2
+            start = (layout_width - center_width) // 2
             append_gap(start, right_text=True)
             append_text(center)
-            append_gap(width - start - center_width, left_text=True)
+            append_gap(layout_width - start - center_width, left_text=True)
 
         # Two slot cases.
+
         elif left and right and not center:
             append_text(left)
-            append_gap(width - left_width - right_width, left_text=True, right_text=True)
+            append_gap(layout_width - left_width - right_width, left_text=True, right_text=True)
             append_text(right)
+
         elif left and center and not right:
-            target_center_start = (width - center_width) // 2
+            target_center_start = (layout_width - center_width) // 2
             center_start = max(left_width, target_center_start)
-            center_start = min(center_start, width - center_width)
+            center_start = min(center_start, layout_width - center_width)
 
             append_text(left)
             append_gap(center_start - left_width, left_text=True, right_text=True)
             append_text(center)
-            append_gap(width - center_start - center_width, left_text=True)
+            append_gap(layout_width - center_start - center_width, left_text=True)
+
         elif center and right and not left:
-            target_center_start = (width - center_width) // 2
-            center_start = min(target_center_start, width - center_width - right_width)
+            target_center_start = (layout_width - center_width) // 2
+            center_start = min(target_center_start, layout_width - center_width - right_width)
             center_start = max(0, center_start)
 
             append_gap(center_start, right_text=True)
             append_text(center)
             append_gap(
-                width - center_start - center_width - right_width,
+                layout_width - center_start - center_width - right_width,
                 left_text=True,
                 right_text=True,
             )
             append_text(right)
 
         # Three slot case.
+
         else:
             left = check.not_none(left)
             center = check.not_none(center)
             right = check.not_none(right)
 
-            target_center_start = (width - center_width) // 2
+            target_center_start = (layout_width - center_width) // 2
             center_start = max(left_width, target_center_start)
-            center_start = min(center_start, width - center_width - right_width)
+            center_start = min(center_start, layout_width - center_width - right_width)
 
             append_text(left)
             append_gap(center_start - left_width, left_text=True, right_text=True)
             append_text(center)
             append_gap(
-                width - center_start - center_width - right_width,
+                layout_width - center_start - center_width - right_width,
                 left_text=True,
                 right_text=True,
             )
             append_text(right)
 
-        rule_text.plain = set_cell_size(rule_text.plain, width)
-        return rule_text
+        rule_text.plain = set_cell_size(rule_text.plain, layout_width)
+        return wrap_with_side_padding(rule_text)
 
     def _render_title(
         self,
@@ -450,8 +515,7 @@ class TriRule(JupyterMixin):
         center = self.center
         right = self.right
 
-        # Backwards compatibility: legacy `title` maps into the `align` slot,
-        # unless that slot was explicitly supplied.
+        # Backwards compatibility: legacy `title` maps into the `align` slot, unless that slot was explicitly supplied.
         if not self._is_blank_title(self.title):
             if self.align == 'left' and left is None:
                 left = self.title
@@ -470,6 +534,8 @@ class TriRule(JupyterMixin):
             right=self._render_title(console, right),
             min_left_length=self.min_left_length,
             min_right_length=self.min_right_length,
+            left_pad=self.left_pad,
+            right_pad=self.right_pad,
         )
 
     def _rule_line(self, chars_len: int, width: int) -> Text:
