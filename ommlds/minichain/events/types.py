@@ -1,10 +1,19 @@
 import typing as ta
+import uuid as uuid_
 
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
-from ..types import Event
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Event(lang.Abstract):
+    _: dc.KW_ONLY
+
+    uuid: uuid_.UUID = dc.field(default_factory=uuid_.uuid4, repr=False)
 
 
 ##

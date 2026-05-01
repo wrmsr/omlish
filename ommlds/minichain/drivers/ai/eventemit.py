@@ -8,7 +8,7 @@ from omlish.asyncs.asyncio import all as au
 from ...chat.messages import Chat
 from ...chat.metadata import MessageUuid
 from ...chat.stream.types import AiDelta
-from ..events.manager import EventsManager
+from ...events.types import EventCallback
 from .events import AiMessagesEvent
 from .events import AiStreamBeginEvent
 from .events import AiStreamDeltaEvent
@@ -26,17 +26,17 @@ class EventEmittingAiChatGenerator(AiChatGenerator):
             self,
             *,
             wrapped: AiChatGenerator,
-            events: EventsManager,
+            on_event: EventCallback,
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
-        self._events = events
+        self._on_event = on_event
 
     async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
         out = await self._wrapped.generate_ai_chat(args)
 
-        await self._events.emit_event(AiMessagesEvent(out))
+        await self._on_event(AiMessagesEvent(out))
 
         return out
 
@@ -46,12 +46,12 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             self,
             *,
             wrapped: StreamAiChatGenerator,
-            events: EventsManager,
+            on_event: EventCallback,
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
-        self._events = events
+        self._on_event = on_event
 
     async def generate_ai_chat_streamed(
             self,
@@ -68,17 +68,17 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
             if mu != last_message_uuid:
                 await emit_end()
 
-                await self._events.emit_event(AiStreamBeginEvent(message_uuid=mu))
+                await self._on_event(AiStreamBeginEvent(message_uuid=mu))
                 last_message_uuid = mu
 
-            await self._events.emit_event(AiStreamDeltaEvent(delta, message_uuid=mu))
+            await self._on_event(AiStreamDeltaEvent(delta, message_uuid=mu))
 
             if delta_callback is not None:
                 await delta_callback(delta)
 
         async def emit_end() -> None:
             if last_message_uuid:
-                await self._events.emit_event(AiStreamEndEvent(message_uuid=last_message_uuid, exception=end_exception))
+                await self._on_event(AiStreamEndEvent(message_uuid=last_message_uuid, exception=end_exception))
 
         async with au.shielded_finally(emit_end):
             try:
@@ -87,6 +87,6 @@ class EventEmittingStreamAiChatGenerator(StreamAiChatGenerator):
                 end_exception = e
                 raise
 
-        await self._events.emit_event(AiMessagesEvent(out, streamed=True))
+        await self._on_event(AiMessagesEvent(out, streamed=True))
 
         return out

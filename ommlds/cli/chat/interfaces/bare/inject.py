@@ -113,21 +113,27 @@ def bind_bare(
             els.extend([
                 inj.bind(_printing.AiStreamEventPrinter, singleton=True),
 
-                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=_printing.AiStreamEventPrinter)(lambda o: o.handle_event)),  # noqa
+                mc.injection.event_callbacks().bind_item(
+                    to_fn=inj.target(o=_printing.AiStreamEventPrinter)(lambda o: o.handle_event),
+                ),
             ])
 
         else:
             els.extend([
                 inj.bind(_printing.AiMessagesEventPrinter, singleton=True),
 
-                mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=_printing.AiMessagesEventPrinter)(lambda o: o.handle_event)),  # noqa
+                mc.injection.event_callbacks().bind_item(
+                    to_fn=inj.target(o=_printing.AiMessagesEventPrinter)(lambda o: o.handle_event),
+                ),
             ])
 
     if cfg.print_tool_use:
         els.extend([
             inj.bind(_printing.ToolUseEventsPrinter, singleton=True),
 
-            mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=_printing.ToolUseEventsPrinter)(lambda o: o.handle_event)),  # noqa
+            mc.injection.event_callbacks().bind_item(
+                to_fn=inj.target(o=_printing.ToolUseEventsPrinter)(lambda o: o.handle_event),
+            ),
         ])
 
     #

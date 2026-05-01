@@ -1,5 +1,4 @@
 from .ai.injection import chat_options_providers  # noqa
-from .events.injection import event_callbacks  # noqa
 from .phases.injection import phase_callbacks  # noqa
 from .preparing.injection import placeholder_contents_providers  # noqa
 from .preparing.injection import system_message_providers  # noqa

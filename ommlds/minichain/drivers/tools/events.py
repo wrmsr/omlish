@@ -3,7 +3,7 @@ from omlish import lang
 from omlish import marshal as msh
 
 from ...chat.messages import ToolUseResultMessage
-from ..types import Event
+from ...events.types import Event
 from .execution import ToolUseExecution
 
 

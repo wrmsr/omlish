@@ -390,7 +390,30 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .events.logging import (  # noqa
+        JsonlFileEventLogger,
+    )
+
+    from .events.manager import (  # noqa
+        EventsManager,
+    )
+
+    from .events.types import (  # noqa
+        Event,
+
+        EventCallback,
+        EventCallbacks,
+
+        ErrorEvent,
+    )
+
+    ##
+
     from . import facades  # noqa
+
+    ##
+
+    from . import injection  # noqa
 
     ##
 

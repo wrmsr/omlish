@@ -11,13 +11,6 @@ from omlish import typedvalues as tv
 
 
 @dc.dataclass(frozen=True)
-class Event(lang.Abstract):
-    _: dc.KW_ONLY
-
-    uuid: uuid_.UUID = dc.field(default_factory=uuid_.uuid4, repr=False)
-
-
-@dc.dataclass(frozen=True)
 class Action(lang.Abstract, lang.PackageSealed):
     _: dc.KW_ONLY
 

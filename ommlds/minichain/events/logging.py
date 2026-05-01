@@ -1,18 +1,19 @@
 import asyncio
 import fcntl
 import os.path
+import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import marshal as msh
 from omlish.formats import json
 
-from ..types import Event
+from .types import Event
 
 
 ##
 
 
-class EventLogger:
+class JsonlFileEventLogger:
     @dc.dataclass(frozen=True)
     class Config:
         file_path: str
@@ -28,9 +29,10 @@ class EventLogger:
 
         self._lock = asyncio.Lock()
 
-    async def handle_event(self, event: Event) -> None:
-        m = msh.marshal(event, Event)
-        j = json.dumps_compact(m)
+    async def log_events(self, events: ta.Iterable[Event]) -> None:
+        ms = [msh.marshal(e) for e in events]
+        js = [json.dumps_compact(m) for m in ms]
+        j = '\n'.join([*js, ''])
 
         os.makedirs(os.path.dirname(self._config.file_path), exist_ok=True)
 
@@ -43,8 +45,11 @@ class EventLogger:
                         raise RuntimeError(f'Driver event log file {self._config.file_path} is locked') from None
 
                 try:
-                    f.write(j + '\n')
+                    f.write(j)
 
                 finally:
                     if not nl:
                         fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+    async def log_event(self, event: Event) -> None:
+        await self.log_events([event])

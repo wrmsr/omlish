@@ -6,7 +6,7 @@ from omlish import marshal as msh
 
 from ...chat.messages import Chat
 from ...chat.stream.types import AiDelta
-from ..types import Event
+from ...events.types import Event
 
 
 ##

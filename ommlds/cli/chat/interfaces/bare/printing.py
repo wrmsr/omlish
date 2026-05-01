@@ -27,7 +27,7 @@ class AiMessagesEventPrinter:
         self._extractor = extractor
         self._printer = printer
 
-    async def handle_event(self, event: mc.drivers.Event) -> None:
+    async def handle_event(self, event: mc.Event) -> None:
         if isinstance(event, mc.drivers.AiMessagesEvent):
             for msg in event.chat:
                 if (c := self._extractor.extract_message_content(msg)) is not None:
@@ -51,7 +51,7 @@ class AiStreamEventPrinter:
         self._print_ctx: ContentPrinting | None = None
         self._close_print_ctx: ta.Callable[[], ta.Awaitable[ta.Any]] | None = None
 
-    async def handle_event(self, event: mc.drivers.Event) -> None:
+    async def handle_event(self, event: mc.Event) -> None:
         if isinstance(event, mc.drivers.AiStreamBeginEvent):
             check.none(self._print_ctx)
             check.none(self._close_print_ctx)
@@ -83,7 +83,7 @@ class ToolUseEventsPrinter:
 
         self._printer = printer
 
-    async def handle_event(self, event: mc.drivers.Event) -> None:
+    async def handle_event(self, event: mc.Event) -> None:
         if isinstance(event, mc.drivers.ToolUseEvent):
             await self._printer.print_content(mc.JsonContent(dict(
                 id=event.tue.use.id,

@@ -9,11 +9,11 @@ from omlish.asyncs.asyncio import all as au
 
 from ..chat.messages import Chat
 from ..chat.messages import UserChat
+from ..events.manager import EventsManager
 from .actions import ActionEvent
 from .actions import SendUserMessagesAction
 from .ai.types import AiChatGenerator
 from .ai.types import GenerateAiChatArgs
-from .events.manager import EventsManager
 from .phases.manager import PhaseManager
 from .phases.types import Phase
 from .preparing.types import ChatPreparer

@@ -78,7 +78,9 @@ def bind_driver_internal(
     els.extend([
         inj.bind(_interface.ChatEventQueue, to_const=asyncio.Queue()),
 
-        mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(eq=_interface.ChatEventQueue)(lambda eq: lambda ev: eq.put(ev))),  # noqa
+        mc.injection.event_callbacks().bind_item(
+            to_fn=inj.target(eq=_interface.ChatEventQueue)(lambda eq: lambda ev: eq.put(ev)),
+        ),
     ])
 
     #

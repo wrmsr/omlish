@@ -3,8 +3,8 @@ from omlish import lang
 from omlish import marshal as msh
 
 from ..chat.messages import UserChat
+from ..events.types import Event
 from .types import Action
-from .types import Event
 
 
 ##

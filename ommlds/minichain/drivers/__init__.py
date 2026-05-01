@@ -47,23 +47,6 @@ with _lang.auto_proxy_init(globals()):
 
     #
 
-    from .events.logging import (  # noqa
-        EventLogger,
-    )
-
-    from .events.manager import (  # noqa
-        EventsManager,
-    )
-
-    from .events.types import (  # noqa
-        EventCallback,
-        EventCallbacks,
-
-        ErrorEvent,
-    )
-
-    #
-
     from .orm.configs import (  # noqa
         OrmConfig,
     )
@@ -163,8 +146,6 @@ with _lang.auto_proxy_init(globals()):
 
     from .types import (  # noqa
         Action,
-
-        Event,
 
         DriverId,
         DriverGetter,

@@ -105,15 +105,17 @@ def bind_driver(
     #
 
     els.extend([
-        inj.bind(mc.drivers.EventLogger.Config, to_fn=inj.target(
+        inj.bind(mc.JsonlFileEventLogger.Config, to_fn=inj.target(
             did=mc.drivers.DriverId,
-        )(lambda did: mc.drivers.EventLogger.Config(
+        )(lambda did: mc.JsonlFileEventLogger.Config(
             os.path.join(get_home_paths().log_dir, 'minichain', 'drivers', f'{did.v}.jsonl'),
         ))),
 
-        inj.bind(mc.drivers.EventLogger, singleton=True),
+        inj.bind(mc.JsonlFileEventLogger, singleton=True),
 
-        mc.drivers.injection.event_callbacks().bind_item(to_fn=inj.target(o=mc.drivers.EventLogger)(lambda o: o.handle_event)),  # noqa
+        mc.injection.event_callbacks().bind_item(
+            to_fn=inj.target(o=mc.JsonlFileEventLogger)(lambda o: o.log_event),
+        ),
     ])
 
     #

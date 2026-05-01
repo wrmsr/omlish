@@ -2,11 +2,11 @@ import uuid
 
 from omlish import inject as inj
 
+from ..events.inject import bind_events
 from ..registries.globals import get_global_registry
 from ..registries.registry import Registry
 from .ai.inject import bind_ai
 from .configs import DriverConfig
-from .events.inject import bind_events
 from .impl import DriverImpl
 from .injection import placeholder_contents_providers
 from .injection import system_message_providers
