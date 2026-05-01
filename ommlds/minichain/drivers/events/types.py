@@ -32,3 +32,20 @@ EventCallbacks = ta.NewType('EventCallbacks', ta.Sequence[EventCallback])
 class ErrorEvent(Event, lang.Final):
     message: str | None = None
     error: BaseException | lang.OpaqueRepr | None = None
+
+
+##
+
+
+@msh.register_global_lazy_init
+def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories_to(
+        cfgs,
+        msh.OpenPolymorphismMarshalerFactory(Event, opo := msh.OpenPolymorphismOptions(
+            naming=msh.Naming.SNAKE,
+            strip_suffix=True,
+        )),
+        msh.OpenPolymorphismUnmarshalerFactory(Event, opo),
+    )
+
+    cfgs.update(Event, msh.OpenPolymorphismImpl(ErrorEvent))

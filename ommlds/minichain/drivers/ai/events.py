@@ -47,3 +47,17 @@ class AiStreamEndEvent(AiStreamEvent, lang.Final):
     _: dc.KW_ONLY
 
     exception: BaseException | lang.OpaqueRepr | None = None
+
+
+##
+
+
+@msh.register_global_lazy_init
+def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
+    cfgs.update(Event, *[msh.OpenPolymorphismImpl(et) for et in [
+        AiMessagesEvent,
+
+        AiStreamBeginEvent,
+        AiStreamDeltaEvent,
+        AiStreamEndEvent,
+    ]])

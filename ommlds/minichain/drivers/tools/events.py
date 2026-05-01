@@ -1,5 +1,6 @@
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 from ...chat.messages import ToolUseResultMessage
 from ..types import Event
@@ -18,3 +19,14 @@ class ToolUseEvent(Event, lang.Final):
 class ToolUseResultEvent(Event, lang.Final):
     tue: ToolUseExecution
     message: ToolUseResultMessage
+
+
+##
+
+
+@msh.register_global_lazy_init
+def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
+    cfgs.update(Event, *[msh.OpenPolymorphismImpl(et) for et in [
+        ToolUseEvent,
+        ToolUseResultEvent,
+    ]])

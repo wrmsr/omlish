@@ -1,5 +1,8 @@
 """
 TODO:
+ - unions / bases
+  - prob just 'sharing' / 'inheriting'?
+   - well, prob better to have fat registration than polling multiple cfg changes every time
  - configurable deser behavior - UnknownImpl vs raise
  - manifest interop
 """
