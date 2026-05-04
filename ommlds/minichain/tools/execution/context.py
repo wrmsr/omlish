@@ -64,17 +64,17 @@ _TOOL_CONTEXT: contextvars.ContextVar[ToolContext] = contextvars.ContextVar(f'{_
 
 
 @ta.overload
-def bind_tool_context(ctx: ToolContext) -> ta.ContextManager[ToolContext]:
+def activate_tool_context(ctx: ToolContext) -> ta.ContextManager[ToolContext]:
     ...
 
 
 @ta.overload
-def bind_tool_context(*items: ta.Any) -> ta.ContextManager[ToolContext]:
+def activate_tool_context(*items: ta.Any) -> ta.ContextManager[ToolContext]:
     ...
 
 
 @contextlib.contextmanager  # type: ignore[misc]
-def bind_tool_context(*args):
+def activate_tool_context(*args):
     if args and isinstance(args[0], ToolContext):
         check.arg(len(args) == 1)
         ctx = args[0]

@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -29,7 +30,8 @@ ToolContextProviders = ta.NewType('ToolContextProviders', ta.Sequence[ToolContex
 @dc.dataclass(frozen=True)
 class ToolUseExecution(lang.Final):
     use: ToolUse
-    tce: ToolCatalogEntry
+
+    tce: ToolCatalogEntry | None = None
 
     ctx_items: ta.Sequence[ta.Any] = ()
 
@@ -63,6 +65,6 @@ class ToolUseExecutorImpl(ToolUseExecutor):
                 *self._ctx_provider(),
                 *tue.ctx_items,
             ),
-            tue.tce.executor(),
+            check.not_none(tue.tce).executor(),
             tue.use,
         )

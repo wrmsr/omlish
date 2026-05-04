@@ -12,7 +12,7 @@ from ...content.content import Content
 from ..fns import ToolFn
 from ..fns import execute_tool_fn
 from .context import ToolContext
-from .context import bind_tool_context
+from .context import activate_tool_context
 
 
 ##
@@ -42,7 +42,7 @@ class ToolFnToolExecutor(ToolExecutor):
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> Content:
-        with bind_tool_context(ctx):
+        with activate_tool_context(ctx):
             return await execute_tool_fn(
                 self.tool_fn,
                 args,

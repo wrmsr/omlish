@@ -2396,19 +2396,20 @@ def _process_dataclass__480e21cd323805e51ddc44e801886407502157f4():
         " 'tce', 'ctx_items'), cache=False), InitPlan(fields=(InitPlan.Field(name='use', annotation=OpRef(name='init.fi"
         "elds.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
         "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tce', annotation=OpRef(name='init.fiel"
-        "ds.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
-        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ctx_items', annotation=OpRef(name='init."
-        "fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override="
-        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_pa"
-        "rams=('use', 'tce', 'ctx_items'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns"
-        "=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='use', kw_only=False, fn=None), ReprPlan.Field(nam"
-        "e='tce', kw_only=False, fn=None), ReprPlan.Field(name='ctx_items', kw_only=False, fn=None)), id=False, terse=F"
-        "alse, default_fn=None)))"
+        "ds.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ctx_items"
+        "', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne)), self_param='self', std_params=('use', 'tce', 'ctx_items'), kw_only_params=(), frozen=True, slots=False, "
+        "post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='use', kw_only=Fals"
+        "e, fn=None), ReprPlan.Field(name='tce', kw_only=False, fn=None), ReprPlan.Field(name='ctx_items', kw_only=Fals"
+        "e, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='4f55d315df7f0c5e8a931eb6415321d771013fe2',
+    plan_repr_sha1='c393af07e58e33d5f119a749d2898ca9208dd922',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
     ),
@@ -2416,12 +2417,13 @@ def _process_dataclass__480e21cd323805e51ddc44e801886407502157f4():
         ('ommlds.minichain.drivers.inject', 'ToolUseExecution'),
     ),
 )
-def _process_dataclass__4f55d315df7f0c5e8a931eb6415321d771013fe2():
+def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
         __dataclass__FieldFnValidationError,  # noqa
@@ -2519,7 +2521,7 @@ def _process_dataclass__4f55d315df7f0c5e8a931eb6415321d771013fe2():
         def __init__(
             self,
             use: __dataclass__init__fields__0__annotation,
-            tce: __dataclass__init__fields__1__annotation,
+            tce: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             ctx_items: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'use', use)

@@ -634,7 +634,7 @@ with _lang.auto_proxy_init(
         ToolContextKeyError,
         ToolContext,
 
-        bind_tool_context,
+        activate_tool_context,
         tool_context,
     )
 
