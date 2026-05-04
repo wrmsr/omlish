@@ -108,7 +108,7 @@ async def _no_async_tool_impl(*args, **kwargs):
 ##
 
 
-async def execute_tool_fn(
+async def invoke_tool_fn(
         tfn: ToolFn,
         args: ta.Mapping[str, ta.Any],
         *,

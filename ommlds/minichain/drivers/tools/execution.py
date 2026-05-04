@@ -30,7 +30,7 @@ ToolContextProviders = ta.NewType('ToolContextProviders', ta.Sequence[ToolContex
 class ToolUseExecution(lang.Final):
     use: ToolUse
 
-    tce: ToolCatalogEntry | None = None
+    catalog_entry: ToolCatalogEntry | None = None
 
     ctx_items: ta.Sequence[ta.Any] = ()
 
@@ -62,6 +62,6 @@ class ToolUseExecutorImpl(ToolUseExecutor):
                 *self._ctx_provider(),
                 *tue.ctx_items,
             ),
-            check.not_none(tue.tce).executor(),
+            check.not_none(tue.catalog_entry).invoker(),
             tue.use,
         )

@@ -2391,21 +2391,22 @@ def _process_dataclass__480e21cd323805e51ddc44e801886407502157f4():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('use', 'tce', 'ctx_items')), EqPlan(fields=('use', 'tce', 'ctx_items')), FrozenPla"
-        "n(fields=('use', 'tce', 'ctx_items'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('use',"
-        " 'tce', 'ctx_items'), cache=False), InitPlan(fields=(InitPlan.Field(name='use', annotation=OpRef(name='init.fi"
-        "elds.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tce', annotation=OpRef(name='init.fiel"
-        "ds.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=Fals"
-        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ctx_items"
-        "', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne)), self_param='self', std_params=('use', 'tce', 'ctx_items'), kw_only_params=(), frozen=True, slots=False, "
-        "post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='use', kw_only=Fals"
-        "e, fn=None), ReprPlan.Field(name='tce', kw_only=False, fn=None), ReprPlan.Field(name='ctx_items', kw_only=Fals"
-        "e, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('use', 'catalog_entry', 'ctx_items')), EqPlan(fields=('use', 'catalog_entry', 'ctx"
+        "_items')), FrozenPlan(fields=('use', 'catalog_entry', 'ctx_items'), allow_dynamic_dunder_attrs=False), HashPla"
+        "n(action='add', fields=('use', 'catalog_entry', 'ctx_items'), cache=False), InitPlan(fields=(InitPlan.Field(na"
+        "me='use', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
+        "='catalog_entry', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='ctx_items', annotation=OpRef(name='init.fields.2.annotation'), defaul"
+        "t=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('use', 'catalog_entry',"
+        " 'ctx_items'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=("
+        ")), ReprPlan(fields=(ReprPlan.Field(name='use', kw_only=False, fn=None), ReprPlan.Field(name='catalog_entry', "
+        "kw_only=False, fn=None), ReprPlan.Field(name='ctx_items', kw_only=False, fn=None)), id=False, terse=False, def"
+        "ault_fn=None)))"
     ),
-    plan_repr_sha1='c393af07e58e33d5f119a749d2898ca9208dd922',
+    plan_repr_sha1='ac7c6699e43b00cb1c80b2bb480536f5d891a49f',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -2417,7 +2418,7 @@ def _process_dataclass__480e21cd323805e51ddc44e801886407502157f4():
         ('ommlds.minichain.drivers.inject', 'ToolUseExecution'),
     ),
 )
-def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
+def _process_dataclass__ac7c6699e43b00cb1c80b2bb480536f5d891a49f():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2445,7 +2446,7 @@ def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 use=self.use,
-                tce=self.tce,
+                catalog_entry=self.catalog_entry,
                 ctx_items=self.ctx_items,
             )
 
@@ -2461,7 +2462,7 @@ def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
                 return NotImplemented
             return (
                 self.use == other.use and
-                self.tce == other.tce and
+                self.catalog_entry == other.catalog_entry and
                 self.ctx_items == other.ctx_items
             )
 
@@ -2472,7 +2473,7 @@ def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
 
         __dataclass___setattr_frozen_fields = {
             'use',
-            'tce',
+            'catalog_entry',
             'ctx_items',
         }
 
@@ -2491,7 +2492,7 @@ def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
 
         __dataclass___delattr_frozen_fields = {
             'use',
-            'tce',
+            'catalog_entry',
             'ctx_items',
         }
 
@@ -2511,7 +2512,7 @@ def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
         def __hash__(self):
             return hash((
                 self.use,
-                self.tce,
+                self.catalog_entry,
                 self.ctx_items,
             ))
 
@@ -2521,11 +2522,11 @@ def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
         def __init__(
             self,
             use: __dataclass__init__fields__0__annotation,
-            tce: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            catalog_entry: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             ctx_items: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'use', use)
-            __dataclass__object_setattr(self, 'tce', tce)
+            __dataclass__object_setattr(self, 'catalog_entry', catalog_entry)
             __dataclass__object_setattr(self, 'ctx_items', ctx_items)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -2537,7 +2538,7 @@ def _process_dataclass__c393af07e58e33d5f119a749d2898ca9208dd922():
         def __repr__(self):
             parts = []
             parts.append(f"use={self.use!r}")
-            parts.append(f"tce={self.tce!r}")
+            parts.append(f"catalog_entry={self.catalog_entry!r}")
             parts.append(f"ctx_items={self.ctx_items!r}")
             return (
                 f"{self.__class__.__qualname__}("

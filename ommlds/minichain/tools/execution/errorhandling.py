@@ -3,30 +3,30 @@ import typing as ta
 from ...content.content import Content
 from .context import ToolContext
 from .errors import ToolExecutionError
-from .executors import ToolExecutor
+from .invokers import ToolInvoker
 
 
 ##
 
 
-class ErrorHandlingToolExecutor(ToolExecutor):
+class ErrorHandlingToolInvoker(ToolInvoker):
     def __init__(
             self,
             *,
-            wrapped: ToolExecutor,
+            wrapped: ToolInvoker,
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
 
-    async def execute_tool(
+    async def invoke_tool(
             self,
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> Content:
         try:
-            return await self._wrapped.execute_tool(ctx, name, args)
+            return await self._wrapped.invoke_tool(ctx, name, args)
 
         except ToolExecutionError as txe:
             return txe.content

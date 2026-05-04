@@ -16,7 +16,7 @@ class InteractiveToolPermissionConfirmation(mc.drivers.ToolPermissionConfirmatio
     ) -> mc.DecidedToolPermissionState:
         tr_dct = dict(
             id=tue.use.id,
-            name=check.not_none(tue.tce).spec.name,
+            name=check.not_none(tue.catalog_entry).spec.name,
             args=tue.use.args,
             # spec=msh.marshal(tce.spec),
         )

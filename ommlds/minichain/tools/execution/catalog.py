@@ -9,8 +9,8 @@ from ...content.content import Content
 from ..fns import ToolFn
 from ..types import ToolSpec
 from .context import ToolContext
-from .executors import ToolExecutor
-from .executors import ToolFnToolExecutor
+from .invokers import ToolFnToolInvoker
+from .invokers import ToolInvoker
 
 
 ##
@@ -20,7 +20,7 @@ from .executors import ToolFnToolExecutor
 @msh.update_fields_options(['target'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
 class ToolCatalogEntry(lang.Final):
     spec: ToolSpec
-    target: ToolFn | ToolExecutor
+    target: ToolFn | ToolInvoker
 
     _: dc.KW_ONLY
 
@@ -34,10 +34,10 @@ class ToolCatalogEntry(lang.Final):
         check.non_empty_str(self.name)
 
     @lang.cached_function
-    def executor(self) -> ToolExecutor:
+    def invoker(self) -> ToolInvoker:
         if isinstance(self.target, ToolFn):
-            return ToolFnToolExecutor(self.target)
-        elif isinstance(self.target, ToolExecutor):
+            return ToolFnToolInvoker(self.target)
+        elif isinstance(self.target, ToolInvoker):
             return self.target
         else:
             raise TypeError(self.target)
@@ -46,7 +46,7 @@ class ToolCatalogEntry(lang.Final):
 ToolCatalogEntries = ta.NewType('ToolCatalogEntries', ta.Sequence[ToolCatalogEntry])
 
 
-class ToolCatalog(ToolExecutor):
+class ToolCatalog(ToolInvoker):
     def __init__(
             self,
             entries: ToolCatalogEntries,
@@ -66,7 +66,7 @@ class ToolCatalog(ToolExecutor):
     def by_name(self) -> ta.Mapping[str, ToolCatalogEntry]:
         return self._by_name
 
-    async def execute_tool(
+    async def invoke_tool(
             self,
             ctx: ToolContext,
             name: str,
@@ -74,7 +74,7 @@ class ToolCatalog(ToolExecutor):
     ) -> Content:
         e = self._by_name[name]
 
-        return await e.executor().execute_tool(
+        return await e.invoker().invoke_tool(
             ctx,
             name,
             args,

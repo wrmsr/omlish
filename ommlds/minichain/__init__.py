@@ -639,7 +639,7 @@ with _lang.auto_proxy_init(
     )
 
     from .tools.execution.errorhandling import (  # noqa
-        ErrorHandlingToolExecutor,
+        ErrorHandlingToolInvoker,
     )
 
     from .tools.execution.errors import (  # noqa
@@ -647,12 +647,12 @@ with _lang.auto_proxy_init(
         PermissionDeniedToolExecutionError,
     )
 
-    from .tools.execution.executors import (  # noqa
-        ToolExecutor,
+    from .tools.execution.invokers import (  # noqa
+        ToolInvoker,
 
-        ToolFnToolExecutor,
+        ToolFnToolInvoker,
 
-        NameSwitchedToolExecutor,
+        NameSwitchedToolInvoker,
     )
 
     from .tools.execution.permissions import (  # noqa
@@ -706,7 +706,7 @@ with _lang.auto_proxy_init(
     from .tools.fns import (  # noqa
         ToolFn,
 
-        execute_tool_fn,
+        invoke_tool_fn,
     )
 
     from .tools.jsonschema import (  # noqa

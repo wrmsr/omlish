@@ -7,7 +7,7 @@ from omlish import check
 from ......chat.messages import ToolUse
 from ......chat.tools.execution import execute_tool_use
 from ......tools.execution.context import ToolContext
-from ......tools.execution.executors import NameSwitchedToolExecutor
+from ......tools.execution.invokers import NameSwitchedToolInvoker
 from ......tools.execution.permissions import StaticToolPermissionDecider
 from ......tools.jsonschema import build_tool_spec_json_schema
 from ......tools.permissions.types import ToolPermissionState
@@ -38,8 +38,8 @@ async def test_recursive_ls_tool():
         args=tool_args,
     )
 
-    tool_executor = NameSwitchedToolExecutor({
-        check.not_none(rlt.name): rlt.executor(),
+    tool_invoker = NameSwitchedToolInvoker({
+        check.not_none(rlt.name): rlt.invoker(),
     })
 
     tool_exec_result = await execute_tool_use(
@@ -48,7 +48,7 @@ async def test_recursive_ls_tool():
             StaticToolPermissionDecider(ToolPermissionState.ALLOW),
             FsContext(root_dir=root_dir),
         ),
-        tool_executor,
+        tool_invoker,
         tool_exec_request,
     )
 
