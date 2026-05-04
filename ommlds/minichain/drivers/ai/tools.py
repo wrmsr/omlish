@@ -4,9 +4,14 @@ from omlish import dataclasses as dc
 from ...chat.messages import Chat
 from ...chat.messages import Message
 from ...chat.messages import ToolUseMessage
+from ...chat.messages import ToolUseResultMessage
+from ...chat.transform.metadata import CreatedAtAddingMessageTransform
+from ...chat.transform.metadata import MessageUuidAddingMessageTransform
+from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
+from ...chat.transform.types import CompositeMessageTransform
 from ...tools.execution.catalog import ToolCatalog
-from ..tools.execution import ToolUseExecution
-from ..tools.execution import ToolUseExecutor
+from ...tools.execution.execution import ToolUseExecution
+from ...tools.execution.execution import ToolUseExecutor
 from .types import AiChatGenerator
 from .types import GenerateAiChatArgs
 
@@ -28,6 +33,12 @@ class ToolExecutingAiChatGenerator(AiChatGenerator):
         self._catalog = catalog
         self._executor = executor
 
+        self._mt = CompositeMessageTransform([
+            CreatedAtAddingMessageTransform(),
+            MessageUuidAddingMessageTransform(),
+            OriginalMetadataStrippingMessageTransform(),
+        ])
+
     async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:
         out: list[Message] = []
 
@@ -46,10 +57,14 @@ class ToolExecutingAiChatGenerator(AiChatGenerator):
 
                     tce = self._catalog.by_name[check.non_empty_str(use.name)]
 
-                    trm = await self._executor.execute_tool_use(ToolUseExecution(
+                    trr = await self._executor.execute_tool_use(ToolUseExecution(
                         msg.tu,
                         tce,
                     ))
+
+                    trm = ToolUseResultMessage(trr)
+
+                    trm = check.isinstance(check.single(self._mt.transform(trm)), ToolUseResultMessage)
 
                     out.append(trm)
 

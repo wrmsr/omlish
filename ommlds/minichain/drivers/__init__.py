@@ -92,18 +92,6 @@ with _lang.auto_proxy_init(globals()):
         ToolsConfig,
     )
 
-    from .tools.eventemit import (  # noqa
-        ToolUseEvent,
-        ToolUseResultEvent,
-    )
-
-    from .tools.execution import (  # noqa
-        ToolContextProvider,
-
-        ToolUseExecution,
-        ToolUseExecutor,
-    )
-
     from .tools.permissions import (  # noqa
         ToolPermissionConfirmation,
 

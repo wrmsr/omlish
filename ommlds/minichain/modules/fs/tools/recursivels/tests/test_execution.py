@@ -5,8 +5,8 @@ import pytest
 from omlish import check
 
 from ......chat.messages import ToolUse
-from ......chat.tools.execution import execute_tool_use
 from ......tools.execution.context import ToolContext
+from ......tools.execution.execution import execute_tool_use
 from ......tools.execution.invokers import NameSwitchedToolInvoker
 from ......tools.execution.permissions import StaticToolPermissionDecider
 from ......tools.jsonschema import build_tool_spec_json_schema
@@ -53,4 +53,4 @@ async def test_recursive_ls_tool():
     )
 
     print()
-    print(tool_exec_result.tur.c)
+    print(tool_exec_result.c)

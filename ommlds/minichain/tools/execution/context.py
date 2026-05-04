@@ -60,6 +60,16 @@ class ToolContext(lang.Final):
 ##
 
 
+class ToolContextProvider(lang.Func0[ta.Sequence[ta.Any]]):
+    pass
+
+
+ToolContextProviders = ta.NewType('ToolContextProviders', ta.Sequence[ToolContextProvider])
+
+
+##
+
+
 _TOOL_CONTEXT: contextvars.ContextVar[ToolContext] = contextvars.ContextVar(f'{__name__}._TOOL_CONTEXT')
 
 

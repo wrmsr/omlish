@@ -104,10 +104,6 @@ with _lang.auto_proxy_init(
         ThinkingAiDelta,
     )
 
-    from .chat.tools.execution import (  # noqa
-        execute_tool_use,
-    )
-
     from .chat.transform.types import (  # noqa
         MessageTransform,
 
@@ -634,6 +630,9 @@ with _lang.auto_proxy_init(
         ToolContextKeyError,
         ToolContext,
 
+        ToolContextProvider,
+        ToolContextProviders,
+
         activate_tool_context,
         tool_context,
     )
@@ -645,6 +644,20 @@ with _lang.auto_proxy_init(
     from .tools.execution.errors import (  # noqa
         ToolExecutionError,
         PermissionDeniedToolExecutionError,
+    )
+
+    from .tools.execution.events import (  # noqa
+        ToolUseEvent,
+        ToolUseResultEvent,
+    )
+
+    from .tools.execution.execution import (  # noqa
+        ToolUseExecution,
+
+        ToolUseExecutor,
+        ToolUseExecutorImpl,
+
+        execute_tool_use,
     )
 
     from .tools.execution.invokers import (  # noqa

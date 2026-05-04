@@ -1,9 +1,9 @@
-from ...chat.messages import ToolUseResultMessage
 from ...events.types import EventCallback
 from .events import ToolUseEvent
 from .events import ToolUseResultEvent
 from .execution import ToolUseExecution
 from .execution import ToolUseExecutor
+from .execution import ToolUseResult
 
 
 ##
@@ -21,7 +21,7 @@ class EventEmittingToolUseExecutor(ToolUseExecutor):
         self._wrapped = wrapped
         self._on_event = on_event
 
-    async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResultMessage:
+    async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResult:
         await self._on_event(ToolUseEvent(tue))
 
         out = await self._wrapped.execute_tool_use(tue)

@@ -1,8 +1,8 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ...drivers.tools.injection import tool_catalog_entries
 from ...facades.commands.injection import commands
+from ...tools.execution.injection import tool_catalog_entries
 from .configs import SkillsConfig
 
 

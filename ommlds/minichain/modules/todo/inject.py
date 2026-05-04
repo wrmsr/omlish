@@ -1,8 +1,8 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ...drivers.tools.injection import bind_tool_context_provider_to_key
-from ...drivers.tools.injection import tool_catalog_entries
+from ...tools.execution.injection import bind_tool_context_provider_to_key
+from ...tools.execution.injection import tool_catalog_entries
 from .configs import TodoConfig
 
 

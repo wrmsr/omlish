@@ -5,8 +5,8 @@ from omlish import lang
 
 from ...tools.execution.catalog import ToolCatalogEntries
 from ...tools.execution.catalog import ToolCatalogEntry
-from .execution import ToolContextProvider
-from .execution import ToolContextProviders
+from .context import ToolContextProvider
+from .context import ToolContextProviders
 
 
 ##

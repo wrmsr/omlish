@@ -20,7 +20,7 @@ class ChatAppToolPermissionConfirmation(mc.drivers.ToolPermissionConfirmation):
 
     async def confirm_tool_permission(
             self,
-            tue: mc.drivers.ToolUseExecution,
+            tue: mc.ToolUseExecution,
             target: mc.ToolPermissionTarget,
     ) -> mc.DecidedToolPermissionState:
         tr_dct = dict(

@@ -1,7 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ...drivers.tools.injection import tool_catalog_entries
+from ...tools.execution.injection import tool_catalog_entries
 from .configs import WeatherTestConfig
 
 

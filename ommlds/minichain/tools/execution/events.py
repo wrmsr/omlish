@@ -2,9 +2,9 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
-from ...chat.messages import ToolUseResultMessage
 from ...events.types import Event
 from .execution import ToolUseExecution
+from .execution import ToolUseResult
 
 
 ##
@@ -18,7 +18,7 @@ class ToolUseEvent(Event, lang.Final):
 @dc.dataclass(frozen=True)
 class ToolUseResultEvent(Event, lang.Final):
     tue: ToolUseExecution
-    message: ToolUseResultMessage
+    tur: ToolUseResult
 
 
 ##

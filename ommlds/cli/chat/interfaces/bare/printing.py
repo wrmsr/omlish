@@ -84,12 +84,12 @@ class ToolUseEventsPrinter:
         self._printer = printer
 
     async def handle_event(self, event: mc.Event) -> None:
-        if isinstance(event, mc.drivers.ToolUseEvent):
+        if isinstance(event, mc.ToolUseEvent):
             await self._printer.print_content(mc.JsonContent(dict(
                 id=event.tue.use.id,
                 name=event.tue.use.name,
                 args=event.tue.use.args,
             )))
 
-        elif isinstance(event, mc.drivers.ToolUseResultEvent):
-            await self._printer.print_content(event.message.tur.c)
+        elif isinstance(event, mc.ToolUseResultEvent):
+            await self._printer.print_content(event.tur.c)

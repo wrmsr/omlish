@@ -4,12 +4,12 @@ import typing as ta
 from omlish import lang
 
 from ...tools.execution.context import tool_context
+from ...tools.execution.execution import ToolUseExecution
 from ...tools.execution.permissions import DecidedToolPermissionState
 from ...tools.execution.permissions import ToolPermissionDecider
 from ...tools.permissions.managers import ToolPermissionsManager
 from ...tools.permissions.types import ToolPermissionState
 from ...tools.permissions.types import ToolPermissionTarget
-from .execution import ToolUseExecution
 
 
 ##
