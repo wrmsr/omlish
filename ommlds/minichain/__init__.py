@@ -713,6 +713,14 @@ with _lang.auto_proxy_init(
         build_tool_spec_json_schema,
     )
 
+    from .tools.metadata import (  # noqa
+        ToolUseMetadata,
+        ToolUseMetadatas,
+
+        ToolUseResultMetadata,
+        ToolUseResultMetadatas,
+    )
+
     from .tools.reflect import (  # noqa
         tool_spec_attach,
         tool_spec_override,

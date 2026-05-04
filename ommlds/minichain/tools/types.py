@@ -11,6 +11,9 @@ from omlish import marshal as msh
 from omlish import reflect as rfl
 
 from ..content.content import Content
+from ..metadata import MetadataContainerDataclass
+from .metadata import ToolUseMetadatas
+from .metadata import ToolUseResultMetadatas
 
 
 msh.register_global_module_import('._marshal', __package__)
@@ -186,16 +189,52 @@ class ToolSpec:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ToolUse(lang.Final):
+class ToolUse(MetadataContainerDataclass[ToolUseMetadatas], lang.Final):
     id: str | None = None
     name: str
     args: ta.Mapping[str, ta.Any]
 
     raw_args: str | None = None
 
+    #
+
+    _metadata: ta.Sequence[ToolUseMetadatas] = dc.field(default=(), kw_only=True, repr=False)
+
+    MetadataContainerDataclass._configure_metadata_field(_metadata, ToolUseMetadatas)  # noqa
+
+    def with_metadata(
+            self,
+            *add: ToolUseMetadatas,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
+    ) -> ta.Self:
+        return self._with_metadata(
+            *add,
+            discard=discard,
+            mode=mode,
+        )
+
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ToolUseResult(lang.Final):
+class ToolUseResult(MetadataContainerDataclass[ToolUseResultMetadatas], lang.Final):
     id: str | None = None
     name: str
     c: Content
+
+    #
+
+    _metadata: ta.Sequence[ToolUseResultMetadatas] = dc.field(default=(), kw_only=True, repr=False)
+
+    MetadataContainerDataclass._configure_metadata_field(_metadata, ToolUseResultMetadatas)  # noqa
+
+    def with_metadata(
+            self,
+            *add: ToolUseResultMetadatas,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
+    ) -> ta.Self:
+        return self._with_metadata(
+            *add,
+            discard=discard,
+            mode=mode,
+        )

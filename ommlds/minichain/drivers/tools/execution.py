@@ -7,7 +7,6 @@ from omlish import lang
 
 from ...chat.messages import ToolUseResultMessage
 from ...chat.tools.execution import execute_tool_use
-from ...tools.execution.catalog import ToolCatalog
 from ...tools.execution.catalog import ToolCatalogEntry
 from ...tools.execution.context import ToolContext
 from ...tools.types import ToolUse
@@ -49,12 +48,10 @@ class ToolUseExecutorImpl(ToolUseExecutor):
     def __init__(
             self,
             *,
-            catalog: ToolCatalog,
             ctx_provider: ToolContextProvider,
     ) -> None:
         super().__init__()
 
-        self._catalog = catalog
         self._ctx_provider = ctx_provider
 
     async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResultMessage:
