@@ -266,7 +266,12 @@ class DataclassCodeGen:
                 continue
 
             cls_name_tup = (x.cls_module, x.cls_qualname)
-            check.not_in(cls_name_tup, seen_cls_name_tups)
+            check.not_in(
+                cls_name_tup,
+                seen_cls_name_tups,
+                f'Class {cls_name_tup!r} has already been seen - this is usually caused by the module failing to '
+                f'successfully import (and trying again) - ensure the module imports successfully.',
+            )
             seen_cls_name_tups.add(cls_name_tup)
 
             try:
