@@ -23,6 +23,7 @@ from .itemlist import ItemListContent
 from .json import JsonContent
 from .link import LinkContent
 from .markdown import MarkdownContent
+from .namespaces import NamespaceContent
 from .placeholders import ContentPlaceholder
 from .placeholders import PlaceholderContent
 from .quote import QuoteContent
@@ -209,6 +210,32 @@ class _RawContentUnmarshalerFactory(msh.UnmarshalerFactory):
 ##
 
 
+_NAMESPACE_KEY = '\\$NAMESPACE'
+_NAMESPACE_FQCN_KEY = '$'
+
+
+class _NamespaceContentMarshaler(msh.Marshaler):
+    def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        nc = check.isinstance(o, NamespaceContent)
+        fq = lang.get_cls_fqcn(nc.ns)
+        return {_NAMESPACE_KEY: {_NAMESPACE_FQCN_KEY: fq}}
+
+
+class _NamespaceContentUnmarshaler(msh.Unmarshaler):
+    def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+        dct = check.isinstance(v, ta.Mapping)
+        [(k, v)] = dct.items()
+        check.equal(k, _NAMESPACE_KEY)
+        vm = check.isinstance(v, ta.Mapping)
+        [(mk, fq)] = vm.items()
+        check.equal(mk, _NAMESPACE_FQCN_KEY)
+        cl = lang.get_fqcn_cls(check.isinstance(fq, str))  # noqa
+        return NamespaceContent(cl)
+
+
+##
+
+
 _PLACEHOLDER_KEY = '\\$PLACEHOLDER'
 _PLACEHOLDER_FQCN_KEY = '$'
 
@@ -294,6 +321,8 @@ def _install_standard_marshaling() -> None:
 
             msh.Impl(TextContent, 'text'),
 
+            # FIXME: forbid again? these should be reified..
+            msh.Impl(NamespaceContent, 'namespace'),
             msh.Impl(PlaceholderContent, 'placeholder'),
 
         ],
@@ -347,10 +376,12 @@ def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         msh.TypeMapMarshalerFactory({
             ImageContent: _ImageContentMarshaler(),
+            NamespaceContent: _NamespaceContentMarshaler(),
             PlaceholderContent: _PlaceholderContentMarshaler(),
         }),
         msh.TypeMapUnmarshalerFactory({
             ImageContent: _ImageContentUnmarshaler(),
+            NamespaceContent: _NamespaceContentUnmarshaler(),
             PlaceholderContent: _PlaceholderContentUnmarshaler(),
         }),
     )

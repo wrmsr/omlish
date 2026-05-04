@@ -283,6 +283,10 @@ with _lang.auto_proxy_init(globals()):
         set_root_logger_to_devtools,
     )
 
+    from .dom2 import (  # noqa
+        find_ancestor,
+    )
+
     from .drivers2 import (  # noqa
         PendingWritesDriverMixin,
         get_pending_writes_driver_class,

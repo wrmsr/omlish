@@ -4,6 +4,7 @@ import typing as ta
 import uuid
 import weakref
 
+from omdev import clipboard as cpb
 from omdev.tui import textual as tx
 from omlish import check
 from omlish import dataclasses as dc
@@ -50,6 +51,7 @@ class ChatDriverInterface(
             commands_manager: mc.facades.CommandsManager,
             chat_event_queue: ChatEventQueue,
             background_terminal_renderer: BackgroundTerminalRenderer,
+            clipboard: cpb.Clipboard | None = None,
             welcome_message: WelcomeMessage | None = None,
     ) -> None:
         super().__init__()
@@ -59,6 +61,7 @@ class ChatDriverInterface(
         self._commands_manager = commands_manager
         self._chat_event_queue = chat_event_queue
         self._background_terminal_renderer = background_terminal_renderer
+        self._clipboard = clipboard
 
         #
 
@@ -74,7 +77,10 @@ class ChatDriverInterface(
 
         #
 
-        self._messages_container = MessagesContainer([welcome_message] if welcome_message is not None else [])
+        self._messages_container = MessagesContainer(
+            [welcome_message] if welcome_message is not None else [],
+            clipboard=self._clipboard,
+        )
 
     ##
     # Compose

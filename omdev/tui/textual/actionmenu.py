@@ -39,6 +39,8 @@ class ActionMenu(Vertical):
 
         ActionMenu ActionMenuButton {
             width: 100%;
+            content-align: left middle;
+            text-align: left;
         }
     """
 

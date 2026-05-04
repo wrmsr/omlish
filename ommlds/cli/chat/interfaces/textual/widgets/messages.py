@@ -1,9 +1,11 @@
+# ruff: noqa: SLF001
 import abc
 import asyncio
 import io
 import typing as ta
 import uuid
 
+from omdev import clipboard as cpb
 from omdev.tui import textual as tx
 from omlish import check
 from omlish import dataclasses as dc
@@ -127,6 +129,10 @@ class Message(
         self._message_uuid = message_uuid
 
     @property
+    def messages_container(self) -> MessagesContainer:
+        return check.not_none(tx.find_ancestor(MessagesContainer, self))
+
+    @property
     @abc.abstractmethod
     def message_content(self) -> ta.Any | None:
         raise NotImplementedError
@@ -139,26 +145,31 @@ class Message(
     async def _on_message_divider_clicked(self, event: MessageDividerClicked) -> None:
         event.stop()
 
-        content = self.message_content
-        if content is None:
+        actions: list[tuple[str, ta.Callable]] = []
+
+        if (clipboard := self.messages_container._clipboard) is not None:
+            if (mu := self._message_uuid) is not None:
+                def copy_mu() -> None:
+                    clipboard.put(cpb.TextClipboardContents(str(mu)))
+
+                actions.append(('Copy Id', copy_mu))
+
+            if (content := self.message_content) is not None:
+                def copy_content() -> None:
+                    # FIXME: Copy Markdown, Copy Text
+                    clipboard.put(cpb.TextClipboardContents(str(content)))
+
+                actions.append(('Copy Content', copy_content))
+
+        if not actions:
             return
-
-        def handle_action(action: ta.Any | None) -> None:
-            match action:
-                case 'copy':
-                    content  # noqa
-
-                case _:
-                    pass
 
         self.app.push_screen(
             tx.ActionMenuScreen(
                 (event.event.screen_x, event.event.screen_y),
-                [
-                    ('Copy', 'copy'),
-                ],
+                actions,
             ),
-            handle_action,
+            lambda fn: fn() if fn is not None else None,
         )
 
 
@@ -342,12 +353,14 @@ class WelcomeMessage(StaticMessage):
             content: tx.VisualType,
             *,
             message_uuid: uuid.UUID | None = None,
+            copy_contents: ta.Mapping[str, tuple[str, str]] | None = None,
     ) -> None:
         super().__init__(
             message_uuid=message_uuid,
         )
 
         self._content = content
+        self._copy_contents = copy_contents
 
     @property
     def message_content(self) -> ta.Any | None:
@@ -356,6 +369,34 @@ class WelcomeMessage(StaticMessage):
     def compose(self) -> tx.ComposeResult:
         with tx.Vertical(classes='welcome-message-outer message-outer'):
             yield tx.Static(self._content, classes='welcome-message-content')
+
+    def on_click(self, event: tx.Click) -> None:
+        if event.button != 1:
+            return
+
+        event.stop()
+
+        if not (cc := self._copy_contents):
+            return
+
+        if (clipboard := self.messages_container._clipboard) is None:
+            return
+
+        def handle_action(k: str | None) -> None:
+            if not k:
+                return
+
+            v, _ = cc[k]
+
+            clipboard.put(cpb.TextClipboardContents(v))
+
+        self.app.push_screen(
+            tx.ActionMenuScreen(
+                (event.screen_x, event.screen_y),
+                [('Copy ' + t, k) for k, (t, _) in cc.items()],
+            ),
+            handle_action,
+        )
 
 
 ##
@@ -606,8 +647,15 @@ class MessagesContainer(
 ):
     init_add_class = 'messages-container'
 
-    def __init__(self, init_messages: ta.Sequence[Message] | None = None) -> None:
+    def __init__(
+            self,
+            init_messages: ta.Sequence[Message] | None = None,
+            *,
+            clipboard: cpb.Clipboard | None = None,
+    ) -> None:
         super().__init__()
+
+        self._clipboard = clipboard
 
         self._messages_by_uuid: dict[uuid.UUID, Message] = {}
 

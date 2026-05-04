@@ -19,11 +19,17 @@ async def build_welcome_message(
 ) -> WelcomeMessage:
     chat = await chat_manager.get_chat()
 
-    return WelcomeMessage('\n'.join([
-        *([f'Profile: {entrypoint_profile_name}'] if entrypoint_profile_name is not None else []),
-        f'Chat Id: {chat_id.v}',
-        f'Chat Length: {len(chat)}',
-        f'Driver Id: {driver_id.v}',
-        f'Backend: {(await backend()).as_json() if backend is not None else "?"}',
-        f'Working Dir: {os.getcwd()}',
-    ]))
+    return WelcomeMessage(
+        '\n'.join([
+            *([f'Profile: {entrypoint_profile_name}'] if entrypoint_profile_name is not None else []),
+            f'Chat Id: {chat_id.v}',
+            f'Chat Length: {len(chat)}',
+            f'Driver Id: {driver_id.v}',
+            f'Backend: {(await backend()).as_json() if backend is not None else "?"}',
+            f'Working Dir: {os.getcwd()}',
+        ]),
+        copy_contents={
+            'chat_id': ('Chat Id', str(chat_id.v)),
+            'driver_id': ('Driver Id', str(driver_id.v)),
+        },
+    )

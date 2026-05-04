@@ -17,6 +17,7 @@ from .types import ChatAppGetter
 
 
 with lang.auto_proxy_import(globals()):
+    from omdev import clipboard as cpb
     from omdev.tui import textual as tx
 
     from . import app as _app
@@ -86,6 +87,10 @@ def bind_textual(
     ])
 
     #
+
+    els.extend([
+        inj.bind(cpb.Clipboard, to_fn=cpb.get_platform_clipboard, singleton=True),
+    ])
 
     els.extend([
         inj.bind(tx.DevtoolsConfig(port=41932)),  # FIXME: lol
