@@ -14,6 +14,70 @@ from .divider import MessageDivider
 ##
 
 
+class ToolMessage(Message):
+    init_add_class = 'tool-message'
+
+    class State(enum.StrEnum):
+        RUNNING = 'running'
+        COMPLETE = 'complete'
+        CONFIRMING = 'confirming'
+        DENIED = 'denied'
+        FAILED = 'failed'
+
+    def __init__(
+            self,
+            outer_content: tx.VisualType,
+            inner_content: tx.VisualType,
+            state: State,
+            *,
+            message_uuid: uuid.UUID | None = None,
+    ) -> None:
+        super().__init__(
+            message_uuid=message_uuid,
+        )
+
+        self._outer_content = outer_content
+        self._inner_content = inner_content
+        self._state = state
+
+        self._has_rendered = False
+
+    @property
+    def message_content(self) -> None:
+        return None
+
+    @property
+    def has_rendered(self) -> bool:
+        return self._has_rendered
+
+    @property
+    def state(self) -> State:
+        return self._state
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Vertical(classes='tool-message-divider-container message-divider-container'):
+            yield MessageDivider.for_message(self)
+
+            with tx.Horizontal(classes='tool-message-outer message-outer'):
+                yield tx.Static('? ', classes='tool-message-glyph message-glyph')
+                with tx.Vertical(classes=' '.join([
+                    'tool-message-inner',
+                    'tool-message-inner-open',
+                    'message-inner',
+                ])):
+                    yield tx.Static(self._outer_content, classes='tool-message-outer-content')
+                    yield tx.Static(self._inner_content, classes='tool-message-inner-content')
+
+    def on_mount(self) -> None:
+        def inner():
+            self._has_rendered = True
+
+        self.call_after_refresh(inner)
+
+
+##
+
+
 class ToolConfirmationControls(
     tx.InitAddClass,
     tx.Static,
@@ -37,21 +101,14 @@ class ToolConfirmationControls(
         self.post_message(self.ClickedDeny())
 
 
-class ToolMessage(Message):
-    init_add_class = 'tool-message'
-
-    class State(enum.StrEnum):
-        RUNNING = 'running'
-        COMPLETE = 'complete'
-        DENIED = 'denied'
-        CONFIRMING = 'confirming'
+class ToolConfirmationMessage(Message):
+    init_add_class = 'tool-confirmation-message'
 
     def __init__(
             self,
             outer_content: tx.VisualType,
             inner_content: tx.VisualType,
-            state: State,
-            confirmation_fut: asyncio.Future[bool] | None = None,
+            fut: asyncio.Future[bool],
             *,
             message_uuid: uuid.UUID | None = None,
     ) -> None:
@@ -61,10 +118,10 @@ class ToolMessage(Message):
 
         self._outer_content = outer_content
         self._inner_content = inner_content
-        self._state = state
-        self._confirmation_fut = confirmation_fut
+        self._fut = fut
 
         self._has_rendered = False
+        self._has_responded = False
 
     @property
     def message_content(self) -> None:
@@ -75,49 +132,46 @@ class ToolMessage(Message):
         return self._has_rendered
 
     @property
-    def state(self) -> State:
-        return self._state
+    def has_responded(self) -> bool:
+        return self._has_responded
 
     async def respond(self, allowed: bool) -> None:
-        check.equal(self._state, ToolMessage.State.CONFIRMING)
+        check.equal(self._fut.done(), self._has_responded)
 
-        if allowed:
-            self._state = ToolMessage.State.RUNNING
-        else:
-            self._state = ToolMessage.State.DENIED
+        if self._has_responded:
+            return
+        self._has_responded = True
 
-        inner = self.query_one('.tool-message-inner')
+        inner = self.query_one('.tool-confirmation-message-inner')
 
         await inner.query_one(ToolConfirmationControls).remove()
 
-        inner.remove_class('tool-message-inner-open')
-        inner.add_class('tool-message-inner-closed')
+        inner.remove_class('tool-confirmation-message-inner-open')
+        inner.add_class('tool-confirmation-message-inner-closed')
 
-        inner.query_one('.tool-message-outer-content', tx.Static).update(
+        inner.query_one('.tool-confirmation-message-outer-content', tx.Static).update(
             f'Tool use {"allowed" if allowed else "denied"}.',
         )
 
-        if (cf := self._confirmation_fut) is not None:
-            cf.set_result(allowed)
-            self._confirmation_fut = None
+        self._fut.set_result(allowed)
 
         self.post_message(MessageFinalized(self))
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Vertical(classes='tool-message-divider-container message-divider-container'):
+        with tx.Vertical(classes='tool-confirmation-message-divider-container message-divider-container'):
             yield MessageDivider.for_message(self)
 
-            with tx.Horizontal(classes='tool-message-outer message-outer'):
-                yield tx.Static('? ', classes='tool-message-glyph message-glyph')
+            with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
+                yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
                 with tx.Vertical(classes=' '.join([
-                    'tool-message-inner',
-                    'tool-message-inner-open',
+                    'tool-confirmation-message-inner',
+                    'tool-confirmation-message-inner-open',
                     'message-inner',
                 ])):
-                    yield tx.Static(self._outer_content, classes='tool-message-outer-content')
-                    yield tx.Static(self._inner_content, classes='tool-message-inner-content')
+                    yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
+                    yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
 
-                    yield ToolConfirmationControls(classes='tool-message-confirmation-controls')
+                    yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
 
     def on_mount(self) -> None:
         def inner():

@@ -38,9 +38,9 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
 
     els.append(exec_stack.push_bind(to_ctor=ErrorHandlingToolUseExecutor, singleton=True))
 
-    els.append(exec_stack.push_bind(to_ctor=MetadataAddingToolUseExecutor, singleton=True))
-
     els.append(exec_stack.push_bind(to_ctor=EventEmittingToolUseExecutor, singleton=True))
+
+    els.append(exec_stack.push_bind(to_ctor=MetadataAddingToolUseExecutor, singleton=True))
 
     els.extend([
         inj.bind(ToolUseExecutor, to_key=exec_stack.top),

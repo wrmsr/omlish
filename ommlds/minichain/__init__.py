@@ -730,6 +730,8 @@ with _lang.auto_proxy_init(
         ToolUseMetadata,
         ToolUseMetadatas,
 
+        ToolUseUuid,
+
         ToolUseResultMetadata,
         ToolUseResultMetadatas,
     )
