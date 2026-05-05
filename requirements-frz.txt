@@ -30,8 +30,8 @@ bitsandbytes==0.49.2
 black==26.3.1
 bleach==6.3.0
 blobfile==3.2.0
-boto3==1.43.3
-botocore==1.43.3
+boto3==1.43.4
+botocore==1.43.4
 botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.5.0
@@ -312,7 +312,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.25.1
 types-awscrt==0.31.3
-types-boto3==1.43.3
+types-boto3==1.43.4
 types-docutils==0.22.3.20260408
 types-greenlet==3.5.0.20260428
 types-paramiko==4.0.0.20260408
@@ -333,7 +333,7 @@ uritemplate==4.2.0
 urllib3==2.6.3
 urwid==4.0.0
 urwid_readline==0.15.1
-uv==0.11.9
+uv==0.11.10
 uvicorn==0.46.0
 watchdog==6.0.0
 wcwidth==0.7.0
