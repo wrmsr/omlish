@@ -21,7 +21,7 @@ from ..widgets.messages.container import MessagesContainer
 from ..widgets.messages.stream import ContentStreamMessagePart
 from ..widgets.messages.stream import FinalStreamMessagePart
 from ..widgets.messages.stream import StreamMessagePart
-from ..widgets.messages.tools import ToolConfirmationMessage
+from ..widgets.messages.tools import ToolMessage
 from ..widgets.messages.ui import UiMessage
 from ..widgets.messages.user import UserMessage
 from ..widgets.messages.welcome import WelcomeMessage
@@ -71,7 +71,7 @@ class ChatDriverInterface(
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
-        self._pending_tool_confirmations: set[ToolConfirmationMessage] = set()
+        self._pending_tool_confirmations: set[ToolMessage] = set()
 
         self._append_stream_message_buffer: SchedulingAsyncBufferRelay[StreamMessagePart] = SchedulingAsyncBufferRelay(  # noqa
             self._schedule_drain_append_stream_message_buffer,
@@ -363,9 +363,10 @@ class ChatDriverInterface(
     ) -> bool:
         fut: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
 
-        tcm = ToolConfirmationMessage(
+        tcm = ToolMessage(
             outer_message,
             inner_message,
+            ToolMessage.State.CONFIRMING,
             fut,
         )
 
@@ -397,7 +398,7 @@ class ChatDriverInterface(
             if not tcm.has_rendered:
                 continue
 
-            if not tcm.has_responded:
+            if tcm.state == ToolMessage.State.CONFIRMING:
                 await tcm.respond(allowed)
 
             self._pending_tool_confirmations.discard(tcm)

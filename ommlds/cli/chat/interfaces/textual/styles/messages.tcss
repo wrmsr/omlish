@@ -131,49 +131,49 @@
 }
 
 
-/* Tool Confirmation Message */
+/* Tool Message */
 
-.tool-confirmation-message {
+.tool-message {
     margin: 0 0 1 0;
 }
 
-.tool-confirmation-message-divider-container {
+.tool-message-divider-container {
 }
 
-.tool-confirmation-message-outer {
+.tool-message-outer {
 }
 
-.tool-confirmation-message-glyph {
+.tool-message-glyph {
 }
 
-.tool-confirmation-message-inner {
+.tool-message-inner {
 }
 
-.tool-confirmation-message-inner-open {
+.tool-message-inner-open {
     background: $warning-lighten-3 15%;
 }
 
-.tool-confirmation-message-inner-closed {
+.tool-message-inner-closed {
     margin: 0 0 1 0;
 }
 
-.tool-confirmation-message-outer-content {
+.tool-message-outer-content {
 }
 
-.tool-confirmation-message-inner-content {
+.tool-message-inner-content {
     background: $background;
 
     margin: 1 1 0 1;
     padding: 1;
 }
 
-.tool-confirmation-message-controls {
+.tool-message-confirmation-controls {
     margin: 1;
     layout: horizontal;
     height: auto;
 }
 
-.tool-confirmation-message-controls Button {
+.tool-message-confirmation-controls Button {
     margin-right: 1;
 }
 
