@@ -22,6 +22,7 @@ from ..widgets.messages.stream import ContentStreamMessagePart
 from ..widgets.messages.stream import FinalStreamMessagePart
 from ..widgets.messages.stream import StreamMessagePart
 from ..widgets.messages.tools import ToolConfirmationMessage
+from ..widgets.messages.tools import ToolMessage
 from ..widgets.messages.ui import UiMessage
 from ..widgets.messages.user import UserMessage
 from ..widgets.messages.welcome import WelcomeMessage
@@ -234,6 +235,19 @@ class ChatDriverInterface(
                     check.not_none(ev.message_uuid),
                 ),
             )
+
+        elif isinstance(ev, mc.ToolUseEvent):
+            tm = ToolMessage(
+                ev.tue.use.name,
+                None,
+                ToolMessage.State.RUNNING,
+            )
+            self._suppressed_background_terminal_render_set.add(tm)
+            await self._messages_container.enqueue_mount_messages(tm)
+            self.call_later(self._messages_container.mount_messages)
+
+        elif isinstance(ev, mc.ToolUseResultEvent):
+            pass
 
     @logs.async_exception_logging(alog, BaseException)
     async def _chat_event_queue_task_main(self) -> None:
