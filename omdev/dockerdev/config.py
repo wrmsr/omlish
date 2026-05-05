@@ -6,13 +6,17 @@ from omlish import dataclasses as dc
 ##
 
 
+DEFAULT_UID = 4317
+DEFAULT_GID = DEFAULT_UID
+
+
 @dc.dataclass(frozen=True)
 class Config:
     base_image: str
 
     user: str | None = None
-    uid: int = 2000
-    gid: int = 2000
+    uid: int = DEFAULT_UID
+    gid: int = DEFAULT_GID
 
     workdir: str | None = None
 

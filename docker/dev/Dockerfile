@@ -60,6 +60,7 @@ DEPS="$DEPS\
   git\
   gnupg\
   gnupg-agent\
+  gosu\
   graphviz\
   htop\
   iputils-ping\
@@ -147,15 +148,25 @@ apt-get install -y $DEPS ;\
 
 RUN (\
 export NEW_USER='omlish' ;\
-export NEW_UID='2000' ;\
-export NEW_GID='2000' ;\
+export NEW_UID='4317' ;\
+export NEW_GID='4317' ;\
 \
 set -ex ;\
 umask 0002 ;\
 \
+if id -u ubuntu >/dev/null 2>&1; then\
+    userdel ubuntu ;\
+fi ;\
+if getent group ubuntu >/dev/null 2>&1; then\
+    groupdel ubuntu ;\
+fi ;\
+rm -rf /home/ubuntu ;\
+\
 groupadd --gid ${NEW_GID} ${NEW_USER} ;\
 useradd --uid ${NEW_UID} --gid ${NEW_GID} -m -s /bin/bash -d /${NEW_USER} ${NEW_USER} ;\
+\
 echo "${NEW_USER} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${NEW_USER} ;\
+\
 chmod 0440 /etc/sudoers.d/${NEW_USER} ;\
 )
 
@@ -371,7 +382,7 @@ done ;\
 ## pyenv
 
 RUN \
-  --mount=target=/omlish/.pyenv_cache,type=cache,sharing=locked,uid=2000,gid=2000 \
+  --mount=target=/omlish/.pyenv_cache,type=cache,sharing=locked,uid=4317,gid=4317 \
 ( \
 export PYENV_VERSIONS='3.8.20 3.13.13 3.14.4 3.14.4t 3.15.0a8 3.15.0a8t' ;\
 \

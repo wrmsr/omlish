@@ -6,6 +6,7 @@ deps = [
 
   # base system
   'dumb-init',
+  'gosu',
   'lsb-release',
   'sudo',
 
