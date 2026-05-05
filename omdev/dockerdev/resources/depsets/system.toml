@@ -9,6 +9,9 @@ deps = [
   'lsb-release',
   'sudo',
 
+  # filesystem
+  'bindfs',
+
   # networking & network diagnostics
   'aria2',
   'bmon',

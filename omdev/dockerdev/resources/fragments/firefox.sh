@@ -1,5 +1,3 @@
-set -ex ;
-
 sudo add-apt-repository ppa:mozillateam/ppa ;
 
 echo "

@@ -2,10 +2,12 @@ import collections.abc
 import functools
 import io
 import json
+import re
 import shlex
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 
 from .content import Content
 from .content import LazyContent
@@ -20,6 +22,7 @@ from .ops import From
 from .ops import Op
 from .ops import Run
 from .ops import Section
+from .ops import Shell
 from .ops import User
 from .ops import Workdir
 from .ops import Write
@@ -32,26 +35,43 @@ INDENT = ' ' * 2
 
 
 ##
+# Context
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class RenderContext:
+    resource_preambles: ta.Sequence[tuple[re.Pattern, ta.Sequence[str]]] | None = None
+
+    write_chmod: str | None = None
+
+
+##
 # Content
 
 
 @functools.singledispatch
-def render_content(c: Content) -> str:
+def render_content(c: Content, ctx: RenderContext) -> str:
     raise TypeError(c)
 
 
 @render_content.register(str)
-def render_str(c: str) -> str:
+def render_str(c: str, ctx: RenderContext) -> str:
     return c
 
 
 @render_content.register(Resource)
-def render_resource(c: Resource) -> str:
-    return read_resource(c)
+def render_resource(c: Resource, ctx: RenderContext) -> str:
+    s = read_resource(c)
+
+    for pat, lines in ctx.resource_preambles or []:
+        if lines and pat.match(c.path):
+            s = '\n'.join([*lines, '', s])
+
+    return s
 
 
 @render_content.register(WithStaticEnv)
-def render_with_static_env(c: WithStaticEnv) -> str:
+def render_with_static_env(c: WithStaticEnv, ctx: RenderContext) -> str:
     out = io.StringIO()
 
     if c.env:
@@ -72,19 +92,19 @@ def render_with_static_env(c: WithStaticEnv) -> str:
 
         out.write('\\\n')
 
-    out.write(render_content(c.body))
+    out.write(render_content(c.body, ctx))
 
     return out.getvalue()
 
 
 @render_content.register(LazyContent)
-def render_lazy_content(c: LazyContent) -> str:
-    return render_content(c.fn())
+def render_lazy_content(c: LazyContent, ctx: RenderContext) -> str:
+    return render_content(c.fn(), ctx)
 
 
 @render_content.register(collections.abc.Sequence)
-def render_sequence_content(c: ta.Sequence[Content]) -> str:
-    return '\n'.join([render_content(cc) for cc in c])
+def render_sequence_content(c: ta.Sequence[Content], ctx: RenderContext) -> str:
+    return '\n'.join([render_content(cc, ctx) for cc in c])
 
 
 ##
@@ -147,17 +167,17 @@ def render_var_sections(
 
 
 @functools.singledispatch
-def render_op(op: Op) -> str:
+def render_op(op: Op, ctx: RenderContext) -> str:
     raise TypeError(op)
 
 
 @render_op.register(From)
-def render_from(op: From) -> str:
+def render_from(op: From, ctx: RenderContext) -> str:
     return f'FROM {op.spec}'
 
 
 @render_op.register(Section)
-def render_section(op: Section) -> str:
+def render_section(op: Section, ctx: RenderContext) -> str:
     out = io.StringIO()
 
     out.write(f'## {op.header or ""}'.strip())
@@ -167,13 +187,13 @@ def render_section(op: Section) -> str:
         if i:
             out.write('\n')
         out.write('\n')
-        out.write(render_op(c))
+        out.write(render_op(c, ctx))
 
     return out.getvalue()
 
 
 @render_op.register(Env)
-def render_env(op: Env) -> str:
+def render_env(op: Env, ctx: RenderContext) -> str:
     return '\n'.join([
         f'ENV {k}={v}'
         for k, v in op.items
@@ -181,22 +201,27 @@ def render_env(op: Env) -> str:
 
 
 @render_op.register(User)
-def render_user(op: User) -> str:
+def render_user(op: User, ctx: RenderContext) -> str:
     return f'USER {op.user}'
 
 
+@render_op.register(Shell)
+def render_shell(op: Shell, ctx: RenderContext) -> str:
+    return f'SHELL {render_cmd_parts(*op.parts)}'
+
+
 @render_op.register(Copy)
-def render_copy(op: Copy) -> str:
+def render_copy(op: Copy, ctx: RenderContext) -> str:
     return f'COPY {op.src} {op.dst}'
 
 
 @render_op.register(Write)
-def render_write(op: Write) -> str:
+def render_write(op: Write, ctx: RenderContext) -> str:
     out = io.StringIO()
 
     out.write("RUN echo '\\\n")
 
-    c = render_content(op.content)
+    c = render_content(op.content, ctx)
     s = sh_quote(c)[1:-1]
     for l in s.splitlines(keepends=True):
         # l = l.replace('$', '\\$')
@@ -207,13 +232,16 @@ def render_write(op: Write) -> str:
             out.write(l)
             out.write('\\\n')
 
-    out.write(f"' {'>>' if op.append else '>'} {op.path}")
+    last = f"' {'>>' if op.append else '>'} {op.path}"
+    if ctx.write_chmod is not None:
+        last += f' && chmod {ctx.write_chmod} {op.path}'
+    out.write(last)
 
     return out.getvalue()
 
 
 @render_op.register(Run)
-def render_run(op: Run) -> str:
+def render_run(op: Run, ctx: RenderContext) -> str:
     out = io.StringIO()
 
     if op.cache_mounts:
@@ -233,7 +261,7 @@ def render_run(op: Run) -> str:
     else:
         out.write('RUN (\\\n')
 
-    s = render_content(op.body)
+    s = render_content(op.body, ctx)
     for l in s.strip().splitlines():
         out.write(l)
         if not l.rstrip().endswith('\\'):
@@ -246,15 +274,15 @@ def render_run(op: Run) -> str:
 
 
 @render_op.register(Workdir)
-def render_workdir(op: Workdir) -> str:
+def render_workdir(op: Workdir, ctx: RenderContext) -> str:
     return f'WORKDIR {op.path}'
 
 
 @render_op.register(Entrypoint)
-def render_entrypoint(op: Entrypoint) -> str:
+def render_entrypoint(op: Entrypoint, ctx: RenderContext) -> str:
     return f'ENTRYPOINT {render_cmd_parts(*op.parts)}'
 
 
 @render_op.register(Cmd)
-def render_cmd(op: Cmd) -> str:
+def render_cmd(op: Cmd, ctx: RenderContext) -> str:
     return f'CMD {render_cmd_parts(*op.parts)}'

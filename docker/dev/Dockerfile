@@ -15,6 +15,7 @@ RUN \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
 set -ex ;\
+umask 0002 ;\
 \
 rm -f /etc/apt/apt.conf.d/docker-clean ;\
 rm -f /etc/dpkg/dpkg.cfg.d/excludes ;\
@@ -36,6 +37,7 @@ DEPS="$DEPS\
   apt-transport-https\
   aria2\
   autoconf\
+  bindfs\
   bison\
   bmon\
   btop\
@@ -144,16 +146,17 @@ apt-get install -y $DEPS ;\
 ## user
 
 RUN (\
-export NEWUSER='omlish' ;\
-export NEWUID='2000' ;\
-export NEWGID='2000' ;\
+export NEW_USER='omlish' ;\
+export NEW_UID='2000' ;\
+export NEW_GID='2000' ;\
 \
 set -ex ;\
+umask 0002 ;\
 \
-groupadd --gid ${NEWGID} ${NEWUSER} ;\
-useradd --uid ${NEWUID} --gid ${NEWGID} -m -s /bin/bash -d /${NEWUSER} ${NEWUSER} ;\
-echo "${NEWUSER} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${NEWUSER} ;\
-chmod 0440 /etc/sudoers.d/${NEWUSER} ;\
+groupadd --gid ${NEW_GID} ${NEW_USER} ;\
+useradd --uid ${NEW_UID} --gid ${NEW_GID} -m -s /bin/bash -d /${NEW_USER} ${NEW_USER} ;\
+echo "${NEW_USER} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${NEW_USER} ;\
+chmod 0440 /etc/sudoers.d/${NEW_USER} ;\
 )
 
 USER omlish
@@ -166,6 +169,7 @@ RUN \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
 set -ex ;\
+umask 0002 ;\
 \
 sudo add-apt-repository ppa:mozillateam/ppa ;\
 \
@@ -194,6 +198,7 @@ RUN \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
 set -ex ;\
+umask 0002 ;\
 \
 mkdir -p /etc/apt/keyrings ;\
 curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg ;\
@@ -215,6 +220,7 @@ RUN \
 export JDKS='zulu21-ca-jdk zulu25-ca-jdk zulu26-ca-jdk' ;\
 \
 set -ex ;\
+umask 0002 ;\
 \
 sudo apt install gnupg ca-certificates curl ;\
 curl -s 'https://repos.azul.com/azul-repo.key' | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg ;\
@@ -229,6 +235,7 @@ sudo apt-get install -y ${JDKS} ;\
 
 RUN (\
 set -ex ;\
+umask 0002 ;\
 \
 yes | sudo unminimize ;\
 )
@@ -238,6 +245,7 @@ yes | sudo unminimize ;\
 
 RUN (\
 set -ex ;\
+umask 0002 ;\
 \
 curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y ;\
 \
@@ -254,6 +262,7 @@ $HOME/.cargo/bin/cargo install \
 
 RUN (\
 set -ex ;\
+umask 0002 ;\
 \
 GO_VERSION=$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -n1 | sed 's/^go//') ;\
 \
@@ -271,6 +280,7 @@ export PATH="$GOROOT/bin:$PATH"\n\
 
 RUN (\
 set -ex ;\
+umask 0002 ;\
 \
 ZIG_VERSION=$(\
   curl -fsSL 'https://ziglang.org/download/index.json' |\
@@ -291,6 +301,7 @@ export PATH="$HOME/.zig:$PATH"\n\
 
 RUN (\
 set -ex ;\
+umask 0002 ;\
 \
 git clone 'https://github.com/microsoft/vcpkg' ~/.vcpkg_root ;\
 (cd ~/.vcpkg_root && ./bootstrap-vcpkg.sh) ;\
@@ -307,6 +318,7 @@ RUN (\
 export NVM_VERSIONS='20 22 25' ;\
 \
 set -ex ;\
+umask 0002 ;\
 \
 NVM_VERSION=$(\
   curl -fsSL -o /dev/null -w '%{url_effective}' 'https://github.com/nvm-sh/nvm/releases/latest' |\
@@ -330,6 +342,7 @@ RUN (\
 export RBENV_VERSIONS='3.4 4.0' ;\
 \
 set -ex ;\
+umask 0002 ;\
 \
 curl -fsSL 'https://rbenv.org/install.sh' | bash ;\
 \
@@ -345,6 +358,7 @@ RUN (\
 export UV_PYTHON_VERSIONS='3.13 3.14 3.14+freethreaded' ;\
 \
 set -ex ;\
+umask 0002 ;\
 \
 curl -LsSf 'https://astral.sh/uv/install.sh' | sh ;\
 \
@@ -362,6 +376,7 @@ RUN \
 export PYENV_VERSIONS='3.8.20 3.13.13 3.14.4 3.14.4t 3.15.0a8 3.15.0a8t' ;\
 \
 set -ex ;\
+umask 0002 ;\
 \
 git clone 'https://github.com/pyenv/pyenv' ~/.pyenv ;\
 \
@@ -371,10 +386,37 @@ done ;\
 )
 
 
+## workdir
+
+RUN (\
+export WORKDIR='/work' ;\
+\
+set -ex ;\
+umask 0002 ;\
+\
+mkdir -p "$WORKDIR" ;\
+)
+
+
+## chgrp
+
+RUN (\
+export CHGRP_ROOTS='/omlish /work' ;\
+\
+set -ex ;\
+umask 0002 ;\
+\
+for D in ${CHGRP_ROOTS} ; do\
+  chgrp -R $(id -g) "$D" && chmod -R g=u "$D" ;\
+done ;\
+)
+
+
 ## sshd
 
 RUN (\
 set -ex ;\
+umask 0002 ;\
 \
 sudo sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config ;\
 sudo sed -i 's/^#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config ;\
@@ -389,14 +431,14 @@ sudo mkdir /var/run/sshd ;\
 RUN echo '\
 handle SIGUSR1 nostop noprint\n\
 handle SIGUSR2 nostop noprint\n\
-' > /omlish/.gdbinit
+' > /omlish/.gdbinit && chmod 664 /omlish/.gdbinit
 
 RUN echo '\
 .headers on\n\
 .mode line\n\
 .timer on\n\
 .changes on\n\
-' > /omlish/.sqliterc
+' > /omlish/.sqliterc && chmod 664 /omlish/.sqliterc
 
 RUN echo '\
 setw -g mode-keys vi\n\
@@ -406,7 +448,7 @@ set -g status-fg black\n\
 set -g history-limit 50000\n\
 set -g update-environment "DISPLAY"\n\
 set -sg default-terminal "xterm-256color"\n\
-' > /omlish/.tmux.conf
+' > /omlish/.tmux.conf && chmod 664 /omlish/.tmux.conf
 
 RUN echo '\
 set number\n\
@@ -415,7 +457,7 @@ filetype indent plugin on\n\
 set tabstop=4\n\
 set shiftwidth=4\n\
 set expandtab\n\
-' > /omlish/.vimrc
+' > /omlish/.vimrc && chmod 664 /omlish/.vimrc
 
 
 ## scripts
@@ -429,14 +471,14 @@ RUN echo '\
 set -ex\n\
 \n\
 curl -fsSL '"'"'https://claude.ai/install.sh'"'"' | bash\n\
-' > /omlish/scripts/install-claude
+' > /omlish/scripts/install-claude && chmod 664 /omlish/scripts/install-claude
 
 RUN echo '\
 #!/bin/bash\n\
 set -ex\n\
 \n\
 npm i -g @openai/codex\n\
-' > /omlish/scripts/install-codex
+' > /omlish/scripts/install-codex && chmod 664 /omlish/scripts/install-codex
 
 RUN echo '\
 #!/bin/bash\n\
@@ -444,7 +486,7 @@ set -ex\n\
 \n\
 sudo mkdir -p /var/run/dbus /run/dbus\n\
 sudo dbus-daemon --system --nofork --nopidfile\n\
-' > /omlish/scripts/run-dbus
+' > /omlish/scripts/run-dbus && chmod 664 /omlish/scripts/run-dbus
 
 RUN (\
 chmod a+x /omlish/scripts/* ;\

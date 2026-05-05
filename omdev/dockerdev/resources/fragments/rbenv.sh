@@ -1,5 +1,3 @@
-set -ex ;
-
 curl -fsSL 'https://rbenv.org/install.sh' | bash ;
 
 for RV in ${RBENV_VERSIONS}; do

@@ -1,5 +1,3 @@
-set -ex ;
-
 ZIG_VERSION=$(
   curl -fsSL 'https://ziglang.org/download/index.json' |
   jq -r 'to_entries | map(select(.key != "master")) | map(.value) | sort_by(.version) | last | .version'

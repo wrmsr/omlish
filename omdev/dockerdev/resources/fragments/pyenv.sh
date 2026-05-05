@@ -1,5 +1,3 @@
-set -ex ;
-
 git clone 'https://github.com/pyenv/pyenv' ~/.pyenv ;
 
 for V in ${PYENV_VERSIONS} ; do

@@ -4,6 +4,7 @@ TODO:
  - install pnpm
 """
 import io
+import re
 import typing as ta
 
 from omlish import lang
@@ -26,6 +27,7 @@ from .ops import Section
 from .ops import User
 from .ops import Workdir
 from .ops import Write
+from .rendering import RenderContext
 from .rendering import render_op
 
 
@@ -70,9 +72,9 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
                 WithStaticEnv(
                     Resource('fragments/user.sh'),
                     {
-                        'NEWUSER': cfg.user,
-                        'NEWUID': str(cfg.uid),
-                        'NEWGID': str(cfg.gid),
+                        'NEW_USER': cfg.user,
+                        'NEW_UID': str(cfg.uid),
+                        'NEW_GID': str(cfg.gid),
                     },
                 ),
             ),
@@ -137,6 +139,27 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
     ))
 
     ##
+    # ownership
+
+    if cfg.workdir is not None:
+        ops.append(fragment_section(
+            'workdir',
+            static_env={
+                'WORKDIR': cfg.workdir,
+            },
+        ))
+
+    ops.append(fragment_section(
+        'chgrp',
+        static_env={
+            'CHGRP_ROOTS': [
+                home,
+                *([cfg.workdir] if cfg.workdir is not None else []),
+            ],
+        },
+    ))
+
+    ##
     # config
 
     ops.append(fragment_section('sshd'))
@@ -167,13 +190,32 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
     return ops
 
 
+##
+
+
+RESOURCE_PREAMBLES: ta.Sequence[tuple[re.Pattern, ta.Sequence[str]]] = [
+    (re.compile(r'.*\.sh$'), [
+        'set -ex ;',
+        'umask 0002 ;',
+    ]),
+]
+
+
+WRITE_CHMOD = '664'
+
+
 def gen_src(cfg: Config) -> str:
     ops = gen_ops(cfg)
+
+    ctx = RenderContext(
+        resource_preambles=RESOURCE_PREAMBLES,
+        write_chmod=WRITE_CHMOD,
+    )
 
     out = io.StringIO()
     for i, section in enumerate(ops):
         if i:
             out.write('\n\n\n')
-        out.write(render_op(section))
+        out.write(render_op(section, ctx))
 
     return out.getvalue()

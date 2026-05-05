@@ -1,5 +1,3 @@
-set -ex ;
-
 git clone 'https://github.com/microsoft/vcpkg' ~/.vcpkg_root ;
 (cd ~/.vcpkg_root && ./bootstrap-vcpkg.sh) ;
 

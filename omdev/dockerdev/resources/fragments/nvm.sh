@@ -1,5 +1,3 @@
-set -ex ;
-
 NVM_VERSION=$(
   curl -fsSL -o /dev/null -w '%{url_effective}' 'https://github.com/nvm-sh/nvm/releases/latest' |
   sed 's#.*\/tag/##'

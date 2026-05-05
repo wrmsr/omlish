@@ -1,5 +1,3 @@
-set -ex ;
-
 rm -f /etc/apt/apt.conf.d/docker-clean ;
 rm -f /etc/dpkg/dpkg.cfg.d/excludes ;
 

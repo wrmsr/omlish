@@ -34,6 +34,11 @@ class User(Op):
     user: str
 
 
+@dc.dataclass(frozen=True)
+class Shell(Op):
+    parts: ta.Sequence[str]
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class Copy(Op):
     src: str
