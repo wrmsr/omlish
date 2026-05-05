@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 """
 FIXME:
  - too lazy to lazy import guts like every other proper inject module lol >_<
@@ -13,6 +14,7 @@ from ...configs import ChatConfig
 from ..base import ChatInterface
 from .configs import TextualInterfaceConfig
 from .drivers.types import ChatDriverInterfaceGetter
+from .drivers.types import ChatDriverInterfaceStateListener
 from .types import ChatAppGetter
 
 
@@ -85,6 +87,15 @@ def bind_textual(
 
         inj.bind(_interface2.ChatDriverInterface, to_async_fn=inj.target(g=ChatDriverInterfaceGetter)(lambda g: g())),
     ])
+
+    #
+
+    async def _app_driver_state_listener(ag: ChatAppGetter) -> ChatDriverInterfaceStateListener:
+        async def fn(d, s):
+            await (await ag())._on_driver_state_change(d, s)
+        return ChatDriverInterfaceStateListener(fn)
+
+    els.append(inj.bind(_app_driver_state_listener, singleton=True))
 
     #
 

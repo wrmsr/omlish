@@ -25,6 +25,8 @@ from ..widgets.messages.tools import ToolConfirmationMessage
 from ..widgets.messages.ui import UiMessage
 from ..widgets.messages.user import UserMessage
 from ..widgets.messages.welcome import WelcomeMessage
+from .types import ChatDriverInterfaceState
+from .types import ChatDriverInterfaceStateListener
 
 
 log, alog = logs.get_module_loggers(globals())
@@ -52,6 +54,7 @@ class ChatDriverInterface(
             chat_event_queue: ChatEventQueue,
             background_terminal_renderer: BackgroundTerminalRenderer,
             clipboard: cpb.Clipboard | None = None,
+            state_listener: ChatDriverInterfaceStateListener | None = None,
             welcome_message: WelcomeMessage | None = None,
     ) -> None:
         super().__init__()
@@ -62,6 +65,7 @@ class ChatDriverInterface(
         self._chat_event_queue = chat_event_queue
         self._background_terminal_renderer = background_terminal_renderer
         self._clipboard = clipboard
+        self._state_listener = state_listener
 
         #
 
@@ -81,6 +85,23 @@ class ChatDriverInterface(
             [welcome_message] if welcome_message is not None else [],
             clipboard=self._clipboard,
         )
+
+    #
+
+    _state: ChatDriverInterfaceState = ChatDriverInterfaceState.IDLE
+
+    async def _set_state(self, st: ChatDriverInterfaceState) -> None:
+        if self._state == st:
+            return
+
+        self._state = st
+
+        if (sl := self._state_listener) is not None:
+            await sl(self, st)
+
+    @property
+    def state(self) -> ChatDriverInterfaceState:
+        return self._state
 
     ##
     # Compose
@@ -262,11 +283,14 @@ class ChatDriverInterface(
 
     async def _execute_chat_action(self, fn: ta.Callable[[], ta.Any]) -> None:
         check.state(self._cur_chat_action is None)
+        check.state(self._state == ChatDriverInterfaceState.IDLE)
 
-        self._cur_chat_action = asyncio.create_task(fn())
+        self._cur_chat_action = cca = asyncio.create_task(fn())
 
         try:
-            await self._cur_chat_action
+            await self._set_state(ChatDriverInterfaceState.ACTIVE)
+
+            await cca
 
         except asyncio.CancelledError:
             pass
@@ -276,6 +300,8 @@ class ChatDriverInterface(
 
         finally:
             self._cur_chat_action = None
+
+            await self._set_state(ChatDriverInterfaceState.IDLE)
 
     #
 

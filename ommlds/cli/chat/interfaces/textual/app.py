@@ -5,6 +5,7 @@ from omdev.tui import textual as tx
 from omlish.logs import all as logs
 
 from .drivers.interface import ChatDriverInterface
+from .drivers.types import ChatDriverInterfaceState
 from .inputhistory import InputHistoryManager
 from .styles import read_app_css
 from .suggestions import SuggestionsManager
@@ -193,3 +194,9 @@ class ChatApp(
 
     async def action_deny_all_pending_tool_uses(self) -> None:
         await self._chat_driver_interface.respond_to_all_pending_tool_uses(False)
+
+    ##
+    # Status bar
+
+    async def _on_driver_state_change(self, driver: ChatDriverInterface, state: ChatDriverInterfaceState) -> None:
+        pass

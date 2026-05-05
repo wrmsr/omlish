@@ -1,3 +1,4 @@
+import enum
 import typing as ta
 
 from omlish import lang
@@ -11,4 +12,16 @@ if ta.TYPE_CHECKING:
 
 
 class ChatDriverInterfaceGetter(lang.AsyncCachedFunc0['ChatDriverInterface']):
+    pass
+
+
+##
+
+
+class ChatDriverInterfaceState(enum.StrEnum):
+    IDLE = 'idle'
+    ACTIVE = 'active'
+
+
+class ChatDriverInterfaceStateListener(lang.Func2['ChatDriverInterface', ChatDriverInterfaceState, ta.Awaitable[None]]):
     pass
