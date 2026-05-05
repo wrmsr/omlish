@@ -3,7 +3,7 @@ import os
 from ...... import minichain as mc
 from .....types import ProfileName
 from ....backends.types import BackendSpecGetter
-from ..widgets.messages import WelcomeMessage
+from ..widgets.messages.welcome import WelcomeMessage
 
 
 ##

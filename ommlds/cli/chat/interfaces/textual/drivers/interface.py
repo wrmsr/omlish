@@ -13,18 +13,18 @@ from omlish.logs import all as logs
 
 from ...... import minichain as mc
 from ..termrender import BackgroundTerminalRenderer
-from ..widgets.messages import ContentStreamMessagePart
-from ..widgets.messages import FinalStreamMessagePart
-from ..widgets.messages import Message
-from ..widgets.messages import MessageFinalized
-from ..widgets.messages import MessagesContainer
-from ..widgets.messages import StaticAiMessage
-from ..widgets.messages import StreamAiMessage
-from ..widgets.messages import StreamMessagePart
-from ..widgets.messages import ToolConfirmationMessage
-from ..widgets.messages import UiMessage
-from ..widgets.messages import UserMessage
-from ..widgets.messages import WelcomeMessage
+from ..widgets.messages.ai import StaticAiMessage
+from ..widgets.messages.ai import StreamAiMessage
+from ..widgets.messages.base import Message
+from ..widgets.messages.base import MessageFinalized
+from ..widgets.messages.container import MessagesContainer
+from ..widgets.messages.stream import ContentStreamMessagePart
+from ..widgets.messages.stream import FinalStreamMessagePart
+from ..widgets.messages.stream import StreamMessagePart
+from ..widgets.messages.tools import ToolConfirmationMessage
+from ..widgets.messages.ui import UiMessage
+from ..widgets.messages.user import UserMessage
+from ..widgets.messages.welcome import WelcomeMessage
 
 
 log, alog = logs.get_module_loggers(globals())
