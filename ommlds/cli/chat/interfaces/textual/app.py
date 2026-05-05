@@ -199,4 +199,5 @@ class ChatApp(
     # Status bar
 
     async def _on_driver_state_change(self, driver: ChatDriverInterface, state: ChatDriverInterfaceState) -> None:
-        pass
+        # FIXME: multiple drivers
+        self._status_container.set_driver_state(state)
