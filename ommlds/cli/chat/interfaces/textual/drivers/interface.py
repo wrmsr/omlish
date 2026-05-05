@@ -249,6 +249,18 @@ class ChatDriverInterface(
     ##
     # Chat actions
 
+    async def _show_exception(self, e: BaseException) -> None:
+        e_msg = '\n\n'.join([
+            *(
+                [''.join(traceback.format_exception(type(e), e, e.__traceback__)).strip()]
+                if e.__traceback__ is not None else []
+            ),
+            repr(e).strip(),
+            *([e_str] if (e_str := str(e)).strip() else []),
+        ])
+
+        await self.display_ui_message(tx.Text(e_msg))
+
     @dc.dataclass(frozen=True)
     class UserInput:
         text: str
@@ -265,17 +277,7 @@ class ChatDriverInterface(
             )
 
         except Exception as e:  # noqa
-            # TODO: rich lol
-            e_msg = '\n\n'.join([
-                *(
-                    [''.join(traceback.format_exception(type(e), e, e.__traceback__)).strip()]
-                    if e.__traceback__ is not None else []
-                ),
-                repr(e).strip(),
-                *([e_str] if (e_str := str(e)).strip() else []),
-            ])
-
-            await self.display_ui_message(tx.Text(e_msg))
+            await self._show_exception(e)
 
     #
 
@@ -293,15 +295,23 @@ class ChatDriverInterface(
             await cca
 
         except asyncio.CancelledError:
-            pass
+            async def show_cancelled() -> None:
+                await self.display_ui_message(tx.Text('Chat action cancelled'))
+
+            self.call_next(show_cancelled)
 
         except BaseException as e:  # noqa
+            self.call_next(self._show_exception, e)
+
             raise
 
         finally:
             self._cur_chat_action = None
 
-            await self._set_state(ChatDriverInterfaceState.IDLE)
+            async def set_idle() -> None:
+                await self._set_state(ChatDriverInterfaceState.IDLE)
+
+            self.call_next(set_idle)
 
     #
 
