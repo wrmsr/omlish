@@ -1,6 +1,6 @@
 from omdev.tui import textual as tx
 from omlish import check
-from omlish.formats import json
+from omlish.formats import json5
 
 from ...... import minichain as mc
 from .types import ChatDriverInterfaceGetter
@@ -33,7 +33,7 @@ class ChatAppToolPermissionConfirmation(mc.drivers.ToolPermissionConfirmation):
 
         if await (await self._chat_driver_interface()).confirm_tool_use(
                 tx.Text('Execute requested tool?'),
-                tx.Text(json.dumps_pretty(tr_dct)),
+                tx.Text(json5.dumps_pretty(tr_dct, multiline_strings=True)),
         ):
             return mc.ToolPermissionState.ALLOW
         else:

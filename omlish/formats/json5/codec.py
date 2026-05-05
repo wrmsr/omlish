@@ -34,12 +34,38 @@ def dumps(
         return json.dumps(obj, **kwargs)
 
 
-def dumps_pretty(obj: ta.Any, **kwargs: ta.Any) -> str:
-    return dumps(obj, **json.PRETTY_KWARGS, **kwargs)
+def dumps_pretty(
+        obj: ta.Any,
+        multiline_strings: bool = False,
+        **kwargs: ta.Any,
+) -> str:
+    if multiline_strings:
+        return rendering.Json5Renderer.render_str(
+            obj,
+            **json.PRETTY_KWARGS,
+            multiline_strings=True,
+            **kwargs,
+        )
+
+    else:
+        return json.dumps_pretty(obj, **kwargs)
 
 
-def dumps_compact(obj: ta.Any, **kwargs: ta.Any) -> str:
-    return dumps(obj, **json.COMPACT_KWARGS, **kwargs)
+def dumps_compact(
+        obj: ta.Any,
+        multiline_strings: bool = False,
+        **kwargs: ta.Any,
+) -> str:
+    if multiline_strings:
+        return rendering.Json5Renderer.render_str(
+            obj,
+            **json.COMPACT_KWARGS,
+            multiline_strings=True,
+            **kwargs,
+        )
+
+    else:
+        return json.dumps_compact(obj, **kwargs)
 
 
 def dump(obj: ta.Any, fp: ta.Any, **kwargs: ta.Any) -> None:
