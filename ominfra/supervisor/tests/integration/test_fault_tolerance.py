@@ -42,7 +42,7 @@ class TestFaultTolerance(SupervisorTestBase):
             self.assertIsNotNone(proc)
 
             # Should eventually give up and enter FATAL
-            proc = self.wait_for_process_state(sup, 'bad_cmd', ProcessState.FATAL, timeout=15.0)
+            proc = self.wait_for_process_state(sup, 'bad_cmd', ProcessState.FATAL, timeout=15.0)  # noqa
 
     def test_bad_command_not_executable(self):
         """Process with non-executable file should fail gracefully."""

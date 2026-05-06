@@ -12,6 +12,7 @@ import typing as ta
 import unittest
 
 from omlish.lite.inject import inj
+from omlish.lite.marshal import unmarshal_obj
 
 from ...configs import ServerConfig
 from ...configs import prepare_server_config
@@ -99,7 +100,9 @@ class SupervisorTestBase(unittest.TestCase):
 
         prepared = prepare_server_config(merged)
 
-        return ServerConfig(**prepared)
+        # return ServerConfig(**prepared)
+
+        return unmarshal_obj(prepared, ServerConfig)
 
     #
 

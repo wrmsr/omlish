@@ -5,6 +5,12 @@ Reads Python source from stdin and outputs to stdout with docstrings reformatted
 1. If docstring fits on a single 120-char line (including triple-quotes and indentation), make it single-line
 2. Otherwise, put each triple-quote on its own line with no content sharing the line
 3. Always ensure a blank line follows every docstring
+
+TODO:
+ - write in-place
+ - dir roots, recursive
+ - ignore pats
+ - multiprocessing executor
 """
 import ast
 import sys
@@ -47,6 +53,7 @@ class DocstringFixer:
 
     def _find_docstring_positions(self) -> set[tuple[int, int]]:
         """Find all docstring positions (line, col_offset) in the AST."""
+
         if self._tree is None:
             return set()
 
@@ -72,6 +79,7 @@ class DocstringFixer:
 
     def _is_docstring(self, token: tks.Token) -> bool:
         """Check if a token is a docstring based on AST positions."""
+
         if token.name != 'STRING':
             return False
 
@@ -88,6 +96,7 @@ class DocstringFixer:
             - quotes is the quote style (', ", ''', \"\"\")
             - content is the actual string content
         """
+
         src = token_src
 
         # Extract prefix
@@ -113,6 +122,7 @@ class DocstringFixer:
 
     def _calculate_display_width(self, s: str) -> int:
         """Calculate the display width of a string (treating tabs as single characters for simplicity)."""
+
         # For docstring width calculation, we need to account for indentation
         # Tabs are typically 8 spaces, but in code they align to tab stops
         # For simplicity, we'll count each tab as 4 spaces
@@ -124,6 +134,7 @@ class DocstringFixer:
 
         Returns a list of tokens to replace the original docstring token.
         """
+
         prefix, quotes, content = self._get_string_content(token.src)
 
         # Only handle triple-quoted strings as docstrings
@@ -171,6 +182,7 @@ class DocstringFixer:
 
         Returns modified token list.
         """
+
         # Find the next NEWLINE token after the docstring
         idx = docstring_idx + 1
         while idx < len(tokens) and tokens[idx].name == 'UNIMPORTANT_WS':
@@ -209,6 +221,7 @@ class DocstringFixer:
 
     def fix(self) -> str:
         """Fix all docstrings in the source and return the modified source."""
+
         if self._tree is None:
             # Can't parse, return original
             return self._src
@@ -253,6 +266,7 @@ class DocstringFixer:
 
 def _main() -> None:
     """Read from stdin, fix docstrings, write to stdout."""
+
     src = sys.stdin.read()
 
     fixer = DocstringFixer(src)
