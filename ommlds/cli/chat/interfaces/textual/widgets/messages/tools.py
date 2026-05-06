@@ -62,7 +62,8 @@ class ToolMessage(Message):
                 yield tx.Static('* ', classes='tool-message-glyph message-glyph')
                 with tx.Vertical(classes='tool-message-inner message-inner'):
                     with tx.Horizontal(classes='tool-message-summary-row'):
-                        yield tx.Static(tx.Text('[+]'), classes='tool-message-expand-button')
+                        if self._inner_content is not None:
+                            yield tx.Static(tx.Text('[+]'), classes='tool-message-expand-button')
 
                         yield tx.Static(self._outer_content, classes='tool-message-outer-content')
 
@@ -74,6 +75,23 @@ class ToolMessage(Message):
             self._has_rendered = True
 
         self.call_after_refresh(inner)
+
+    def toggle_inner_content(self) -> None:
+        xb = check.isinstance(self.query_one('.tool-message-expand-button'), tx.Static)
+        ic = check.isinstance(self.query_one('.tool-message-inner-content'), tx.Static)
+        if ic.styles.display == 'none':
+            xb.content = tx.Text('[-]')
+            ic.styles.display = 'block'
+        else:
+            xb.content = tx.Text('[+]')
+            ic.styles.display = 'none'
+
+    def on_click(self, event: tx.Click) -> None:
+        if (wx := event.widget) is not None:
+            if 'tool-message-expand-button' in wx.classes:
+                event.stop()
+                self.toggle_inner_content()
+                return
 
 
 ##

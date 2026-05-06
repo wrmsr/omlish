@@ -81,6 +81,8 @@ with _lang.auto_proxy_init(globals()):
     from textual.content import ContentType  # noqa
     from textual.content import EMPTY_CONTENT  # noqa
     from textual.content import Span  # noqa
+    from textual.css.query import NoMatches  # noqa
+    from textual.css.query import WrongType  # noqa
     from textual.document._document import Document  # noqa
     from textual.document._document import Location  # noqa
     from textual.document._document import Selection  # noqa
