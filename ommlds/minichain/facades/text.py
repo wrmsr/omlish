@@ -5,6 +5,7 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
 
 
 CanFacadeText: ta.TypeAlias = ta.Union[
@@ -26,6 +27,7 @@ FacadeTextColor: ta.TypeAlias = ta.Literal[
 
 @dc.dataclass(frozen=True, kw_only=True)
 @dc.extra_class_params(cache_hash=True, default_repr_fn=lang.opt_repr)
+@msh.update_object_options( field_defaults=msh.FieldOptions(omit_if=lang.is_none))
 class FacadeTextStyle(lang.Final):
     DEFAULT: ta.ClassVar[FacadeTextStyle]
 
@@ -200,6 +202,7 @@ class FacadeText(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
+@msh.update_object_options(unwrap_if_single_field=True)
 class StrFacadeText(FacadeText, lang.Final):
     s: str
 
@@ -220,6 +223,7 @@ FacadeText._BLANK = StrFacadeText('')  # noqa
 
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
+@msh.update_object_options(unwrap_if_single_field=True)
 class ConcatFacadeText(FacadeText, lang.Final):
     l: ta.Sequence[FacadeText]
 
@@ -263,3 +267,13 @@ class StyleFacadeText(FacadeText, lang.Final):
 
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
         self.c.write_str_to(fn)
+
+
+##
+
+
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
+        msh.polymorphism_from_subclasses(FacadeText, naming=msh.Naming.SNAKE, strip_suffix=True),
+    ))

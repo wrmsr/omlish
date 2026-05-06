@@ -1,6 +1,8 @@
 # ruff: noqa: B017 PT011
 import pytest
 
+from omlish import marshal as msh
+
 from ..text import ConcatFacadeText
 from ..text import FacadeText
 from ..text import FacadeTextStyle
@@ -280,3 +282,20 @@ def test_many_nested_singletons_with_strings_are_linearish() -> None:
     assert isinstance(t, StrFacadeText)
     assert t.s == ''.join(f'{i}-' for i in range(1_000))
     assert_canonical(t)
+
+
+def test_marshal() -> None:
+    tx = ConcatFacadeText((
+        StrFacadeText('abc'),
+        StyleFacadeText(
+            StrFacadeText('def'),
+            FacadeTextStyle(color='red'),
+        ),
+        StrFacadeText('ghi'),
+    ))
+
+    v = msh.marshal(tx, FacadeText)
+
+    tx2 = msh.unmarshal(v, FacadeText)
+
+    assert tx2 == tx
