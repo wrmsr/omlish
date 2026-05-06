@@ -1,8 +1,9 @@
 main:
 
 - supervisor pidfile
-- named instances
 - process pidfiles
+- named instances
+- nested instances
 - log infra (self and forwarded from subprocesses)
   - rotating
 - journald no longer default, but supported
