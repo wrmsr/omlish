@@ -149,12 +149,16 @@
 .tool-message-inner {
 }
 
-.tool-message-inner-open {
-    background: $warning-lighten-3 15%;
+.tool-message-summary-row {
+    width: 1fr;
+    height: auto;
 }
 
-.tool-message-inner-closed {
-    margin: 0 0 1 0;
+.tool-message-expand-button {
+    width: auto;
+    height: auto;
+
+    margin: 0 1 0 0;
 }
 
 .tool-message-outer-content {

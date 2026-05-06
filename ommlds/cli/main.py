@@ -70,7 +70,7 @@ async def _run_entrypoint_cfg(
 
 MAIN_PROFILE_ARGS: ta.Sequence[ap.Arg] = [
     ap.arg('-h', '--help', action='store_true'),
-    ap.arg('profile', choices=[*PROFILE_TYPES]),
+    ap.arg('profile', choices=[*PROFILE_TYPES], nargs='?', default='chat'),
     ap.arg('args', nargs=ap.REMAINDER),
 ]
 

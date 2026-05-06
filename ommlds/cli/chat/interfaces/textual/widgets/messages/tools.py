@@ -60,12 +60,12 @@ class ToolMessage(Message):
 
             with tx.Horizontal(classes='tool-message-outer message-outer'):
                 yield tx.Static('* ', classes='tool-message-glyph message-glyph')
-                with tx.Vertical(classes=' '.join([
-                    'tool-message-inner',
-                    'tool-message-inner-open',
-                    'message-inner',
-                ])):
-                    yield tx.Static(self._outer_content, classes='tool-message-outer-content')
+                with tx.Vertical(classes='tool-message-inner message-inner'):
+                    with tx.Horizontal(classes='tool-message-summary-row'):
+                        yield tx.Static(tx.Text('[+]'), classes='tool-message-expand-button')
+
+                        yield tx.Static(self._outer_content, classes='tool-message-outer-content')
+
                     if self._inner_content is not None:
                         yield tx.Static(self._inner_content, classes='tool-message-inner-content')
 
