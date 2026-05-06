@@ -7,11 +7,13 @@ Reads Python source from stdin and outputs to stdout with docstrings reformatted
 3. Always ensure a blank line follows every docstring
 
 TODO:
- - no blank line after module docstring
- - write in-place
- - dir roots, recursive
- - ignore pats
- - multiprocessing executor
+ - actually don't add a blank line after module docstring, but other rules still apply
+ - optional overwrite in-place
+   - only write out if different
+ - accept dir args, recursive
+ - nargs='*' of ignore path regex pats, can like `--ignore '.*/tests/.*'`
+ - multiprocessing executor, `--j, --workers', if None/0 (default) then run in process serially
+
 """
 import ast
 import sys
