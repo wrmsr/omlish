@@ -125,7 +125,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
             dict(path='../../omlish/sockets/io.py', sha1='011c38fe63b0e070e12f40b52eb55530f43ca8f7'),
             dict(path='github/api/v1/api.py', sha1='684744408bf968b8104d031dc4f35bbbc526b4b7'),
-            dict(path='github/api/v2/api.py', sha1='1ebec97c249db9f55ef24c5c176443a46f073613'),
+            dict(path='github/api/v2/api.py', sha1='4adbabd4d4cd1a954d7cc49ab33b88c28a59a365'),
             dict(path='github/bootstrap.py', sha1='9bf24b05603cd1a82db8be8b645bbad3e0d3f22f'),
             dict(path='../oci/datarefs.py', sha1='793ce5f2774e052b28d04b226a5f1eff6eec0a72'),
             dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
@@ -178,9 +178,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../dataserver/handlers.py', sha1='029b20a1cfe336f16a02c395384cd1bd4dcc5058'),
             dict(path='../dataserver/routes.py', sha1='97379cba6a531ca1bde33de0eb432bd9b36791c1'),
-            dict(path='../oci/media.py', sha1='a20324c5b0661c9a9a7679406d019ab3ba4acd98'),
+            dict(path='../oci/media.py', sha1='ccebb9fa56214759e48fe5e65368b4ce70fe0417'),
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
-            dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='6d21da91079afcd58467a58153951a6b97a97c20'),
+            dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='5ae8fa62a717986ac45024d5988b626850ed1786'),
             dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='35114ed9cf2db0d910261b7c861617147f9ed5d3'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
@@ -3514,7 +3514,6 @@ curl -s \
   -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
   -d '{"key": "foo", "restoreKeys": [], "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
   | jq .
-
 """  # noqa
 
 
@@ -16272,7 +16271,9 @@ def unmarshal_oci_media_dataclass(
 
 @dc.dataclass()
 class OciMediaDescriptor:
-    """https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/descriptor.md#properties"""  # noqa
+    """
+    https://github.com/opencontainers/image-spec/blob/92353b0bee778725c617e7d57317b568a7796bd0/descriptor.md#properties
+    """  # noqa
 
     media_type: str = dc.field(metadata={OBJ_MARSHALER_FIELD_KEY: 'mediaType'})
     digest: str
@@ -17286,9 +17287,7 @@ def _yaml_go_is_print(char_ord):
 
 
 def _yaml_strconv_quote(s: str) -> str:
-    """
-    Produces a double-quoted string literal with Go-style escapes, similar to Go's strconv.Quote.
-    """
+    """Produces a double-quoted string literal with Go-style escapes, similar to Go's strconv.Quote."""
 
     res = ['"']
     for char_val in s:

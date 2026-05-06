@@ -27,7 +27,7 @@
     "module": ".cexts.cmake",
     "attr": "_CLI_MODULE",
     "file": "omdev/cexts/cmake.py",
-    "line": 375,
+    "line": 374,
     "value": {
       "!.cli.types.CliModule": {
         "name": "cmake",
@@ -209,7 +209,7 @@
     "module": ".py.bracepy",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/bracepy.py",
-    "line": 94,
+    "line": 92,
     "value": {
       "!.cli.types.CliModule": {
         "name": "bracepy",
@@ -502,7 +502,7 @@
     "module": ".tools.pawk.pawk",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/pawk/pawk.py",
-    "line": 392,
+    "line": 393,
     "value": {
       "!.cli.types.CliModule": {
         "name": "pawk",

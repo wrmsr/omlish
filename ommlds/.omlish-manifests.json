@@ -57,7 +57,7 @@
     "module": ".minichain.backends.anthropic.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/anthropic/names.py",
-    "line": 46,
+    "line": 45,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -117,7 +117,7 @@
     "module": ".minichain.backends.cerebras.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/cerebras/names.py",
-    "line": 36,
+    "line": 34,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -225,7 +225,7 @@
     "module": ".minichain.backends.google.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/google/chat.py",
-    "line": 33,
+    "line": 31,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.google.chat",
@@ -240,7 +240,7 @@
     "module": ".minichain.backends.google.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/google/names.py",
-    "line": 65,
+    "line": 64,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -276,7 +276,7 @@
     "module": ".minichain.backends.google.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/google/stream.py",
-    "line": 35,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.google.stream",
@@ -306,7 +306,7 @@
     "module": ".minichain.backends.groq.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/groq/names.py",
-    "line": 50,
+    "line": 49,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -437,7 +437,7 @@
     "module": ".minichain.backends.mistral",
     "attr": null,
     "file": "ommlds/minichain/backends/mistral.py",
-    "line": 29,
+    "line": 27,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mistral",
@@ -589,7 +589,7 @@
     "module": ".minichain.backends.openai.names",
     "attr": "_CHAT_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/openai/names.py",
-    "line": 82,
+    "line": 81,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -645,7 +645,7 @@
     "module": ".minichain.backends.openai.names",
     "attr": "_COMPLETION_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/openai/names.py",
-    "line": 96,
+    "line": 95,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -660,7 +660,7 @@
     "module": ".minichain.backends.openai.names",
     "attr": "_EMBEDDING_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/openai/names.py",
-    "line": 108,
+    "line": 107,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -675,7 +675,7 @@
     "module": ".minichain.backends.openai.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/stream.py",
-    "line": 35,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.openai.stream",

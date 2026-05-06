@@ -100,7 +100,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/os/deathsig.py', sha1='5d3f1a22132b7029d32e29b13c1cc20497c8f7a8'),
             dict(path='../../omlish/os/environ.py', sha1='5e9ed4817af65683b496af49fef996630c3113b1'),
-            dict(path='../../omlish/os/linux.py', sha1='58443c3959ad047279bebc9a636589248d79ba77'),
+            dict(path='../../omlish/os/linux.py', sha1='3e104ec5cbb84879f58fccae2a23800437249f4b'),
             dict(path='../../omlish/os/paths.py', sha1='56c40b7c2aa84d1778d60ee4cda498f8c380cc8d'),
             dict(path='../../omlish/shlex.py', sha1='a69721913bcd4f4008600e390fb7822637c2a8ec'),
             dict(path='../../omdev/home/paths.py', sha1='4006c1d740600ba6e07142cf990c3efeb290062e'),
@@ -5044,9 +5044,7 @@ ID=debian
 
 @dc.dataclass(frozen=True)
 class LinuxOsRelease:
-    """
-    https://man7.org/linux/man-pages/man5/os-release.5.html
-    """
+    """https://man7.org/linux/man-pages/man5/os-release.5.html"""
 
     raw: ta.Mapping[str, str]
 

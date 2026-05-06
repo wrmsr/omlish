@@ -39,7 +39,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
             dict(path='tokens.py', sha1='e9744c171d982ea8b4a6ace5f937926d51d5ec30'),
-            dict(path='ast.py', sha1='6d21da91079afcd58467a58153951a6b97a97c20'),
+            dict(path='ast.py', sha1='5ae8fa62a717986ac45024d5988b626850ed1786'),
             dict(path='scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
             dict(path='parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
             dict(path='decoding.py', sha1='5047d6c283348c2cd4265c955bb94651e971addd'),
@@ -2856,9 +2856,7 @@ def _yaml_go_is_print(char_ord):
 
 
 def _yaml_strconv_quote(s: str) -> str:
-    """
-    Produces a double-quoted string literal with Go-style escapes, similar to Go's strconv.Quote.
-    """
+    """Produces a double-quoted string literal with Go-style escapes, similar to Go's strconv.Quote."""
 
     res = ['"']
     for char_val in s:

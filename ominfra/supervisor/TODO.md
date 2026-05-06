@@ -3,8 +3,9 @@ main:
 - supervisor pidfile
 - named instances
 - process pidfiles
-- log infra
+- log infra (self and forwarded from subprocesses)
   - rotating
+- journald no longer default, but supported
 - richer json http endpoints
   - POSTs
     - `POST /api/processes/{name}/start` - Start process
@@ -22,6 +23,7 @@ main:
 - serializable / diffable process cfg, process state
 
 tests:
+
 - more knobs
   - backoff_secs
 - more logging (special json event stream)

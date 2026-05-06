@@ -136,7 +136,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
-            dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
+            dict(path='../../omlish/configs/processing/names.py', sha1='7a9e97a9e13571431e1eb54bae7ba36e65235804'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
@@ -198,7 +198,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
-            dict(path='processimpl.py', sha1='9b69da768c22f93fe29286769127f1d044b62e0a'),
+            dict(path='processimpl.py', sha1='a4d83e6caf43394801aa7e61977776d4c4ddc7b9'),
             dict(path='setupimpl.py', sha1='7ab3e7397090c1420cd967730c8aa072c1e68f8e'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
@@ -4568,9 +4568,7 @@ def get_user(name: str) -> User:
 
 ########################################
 # ../../../omlish/configs/processing/names.py
-"""
-usecase: supervisor process groups
-"""
+"""usecase: supervisor process groups"""
 
 
 ##
@@ -19873,9 +19871,7 @@ class ProcessImpl(Process):
     #
 
     def _check_and_adjust_for_system_clock_rollback(self, test_time: float) -> None:
-        """
-        Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
-        """
+        """Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time."""
 
         if self._state == ProcessState.STARTING:
             self._last_start = min(test_time, self._last_start)
