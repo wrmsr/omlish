@@ -297,17 +297,23 @@ class _Runner:
     def __init__(
             self,
             *,
+            print_diff: bool = False,
             overwrite: bool = False,
             dry_run: bool = False,
+
             num_workers: int | None = None,
+
             exclude_file_pats: ta.Sequence[re.Pattern] | None = None,
             exclude_src_pats: ta.Sequence[re.Pattern] | None = None,
     ) -> None:
         super().__init__()
 
+        self._print_diff = print_diff
         self._overwrite = overwrite
         self._dry_run = dry_run
+
         self._num_workers = num_workers
+
         self._exclude_file_pats = exclude_file_pats
         self._exclude_src_pats = exclude_src_pats
 
@@ -406,11 +412,25 @@ class _Runner:
                     fp, fixed_src = res
 
                     if not self._overwrite:
+                        if self._print_diff:
+                            with open(fp) as f:
+                                src = f.read()
+
+                            import difflib
+
+                            out = ''.join(difflib.unified_diff(
+                                src.splitlines(keepends=True),
+                                fixed_src.splitlines(keepends=True),
+                            ))
+
+                        else:
+                            out = fixed_src
+
                         sys.stdout.write('\n'.join([
                             '====',
                             fp,
                             '====',
-                            fixed_src,
+                            out,
                             '',
                         ]))
 
@@ -432,10 +452,15 @@ def _main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
+
     parser.add_argument('src', nargs='+')
+
+    parser.add_argument('-D', '--diff', action='store_true')
     parser.add_argument('-W', '--overwrite', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
+
     parser.add_argument('-j', '--workers')
+
     parser.add_argument('-x', '--exclude-file', action='append')
     parser.add_argument('-X', '--exclude-src', action='append')
 
@@ -463,9 +488,12 @@ def _main() -> None:
             nw = int(nw)
 
     _Runner(
+        print_diff=bool(args.diff),
         overwrite=bool(args.overwrite),
         dry_run=bool(args.dry_run),
+
         num_workers=nw,
+
         exclude_file_pats=[re.compile(xp) for xp in args.exclude_file] if args.exclude_file else None,
         exclude_src_pats=[re.compile(xp) for xp in args.exclude_src] if args.exclude_src else None,
     ).run(args.src)

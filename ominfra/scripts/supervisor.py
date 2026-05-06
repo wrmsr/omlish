@@ -132,7 +132,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
-            dict(path='events.py', sha1='d30d903b7d664f76e738ed939b7ec0e6e6861a0a'),
+            dict(path='events.py', sha1='f862c832689986f96d469949ec595d8ec7fb3201'),
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
@@ -4235,6 +4235,7 @@ class EventRejectedEvent:  # purposely does not subclass Event
 
 class ProcessStateEvent(Event):
     """Abstract class, never raised directly."""
+
     frm = None
     to = None
 
