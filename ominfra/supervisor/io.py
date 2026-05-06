@@ -70,8 +70,8 @@ class IoManager(HasDispatchers):
                     log.exception('Error in dispatcher: %r', dispatcher)
                     dispatcher.on_error(exc)
             else:
-                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
-                # time, which may cause 100% cpu usage
+                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every time,
+                # which may cause 100% cpu usage
                 log.debug('unexpected read event from fd %r', fd)
                 try:
                     self._poller.unregister_readable(fd)

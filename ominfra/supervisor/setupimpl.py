@@ -254,9 +254,9 @@ class SupervisorSetupImpl(SupervisorSetup):
             else:
                 log.info('set current directory: %r', self._config.directory)
 
-        os.dup2(0, os.open('/dev/null', os.O_RDONLY))
-        os.dup2(1, os.open('/dev/null', os.O_WRONLY))
-        os.dup2(2, os.open('/dev/null', os.O_WRONLY))
+        os.dup2(os.open('/dev/null', os.O_RDONLY), 0)
+        os.dup2(os.open('/dev/null', os.O_WRONLY), 1)
+        os.dup2(os.open('/dev/null', os.O_WRONLY), 2)
 
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
         # file descriptors. In his Network Programming book, he additionally recommends ignoring SIGHUP and forking

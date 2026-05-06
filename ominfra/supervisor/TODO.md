@@ -1,0 +1,13 @@
+- supervisor pidfile
+- named instances
+- process pidfiles
+- log infra
+  - rotating
+- richer json http endpoints
+- serve http on unix socket
+- event listeners
+- scheduler
+- systemd? less urgent now
+- self-update - state handoff - fd's, subprocesses, timers, etc
+  - synergy with info http endpoints anyway
+- 

@@ -61,6 +61,9 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     except OSError:
         return 'Could not set group id of effective user'
 
-    os.setuid(uid)
+    try:
+        os.setuid(uid)
+    except OSError:
+        return 'Could not set user id of effective user'
 
     return None

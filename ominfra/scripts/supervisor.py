@@ -101,7 +101,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='errors.py', sha1='eed49133c64621fb5f081ba7f249e8c4c8745025'),
-            dict(path='privileges.py', sha1='80fffb4966565e70b6300381800ff849616a1daa'),
+            dict(path='privileges.py', sha1='abc782c02828c9778a396053fb062720d0c3d38e'),
             dict(path='states.py', sha1='7e80da5abde756a47bb01fff1967e35ee9f754e5'),
             dict(path='utils/diag.py', sha1='65f6491a57b3b8ff6dc166c4136c39e49e008c8d'),
             dict(path='utils/fs.py', sha1='f18fd3d60c863e05d91c8e4735b86629334f5181'),
@@ -197,9 +197,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
-            dict(path='io.py', sha1='6ba708a8396c212afdd1d314c9b5804c2d66646e'),
+            dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
             dict(path='processimpl.py', sha1='9b69da768c22f93fe29286769127f1d044b62e0a'),
-            dict(path='setupimpl.py', sha1='b4b8b8c3e1d71a0e6794fb0a845181f3662a6bfd'),
+            dict(path='setupimpl.py', sha1='7ab3e7397090c1420cd967730c8aa072c1e68f8e'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
@@ -395,7 +395,10 @@ def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
     except OSError:
         return 'Could not set group id of effective user'
 
-    os.setuid(uid)
+    try:
+        os.setuid(uid)
+    except OSError:
+        return 'Could not set user id of effective user'
 
     return None
 
@@ -19651,8 +19654,8 @@ class IoManager(HasDispatchers):
                     log.exception('Error in dispatcher: %r', dispatcher)
                     dispatcher.on_error(exc)
             else:
-                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every
-                # time, which may cause 100% cpu usage
+                # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every time,
+                # which may cause 100% cpu usage
                 log.debug('unexpected read event from fd %r', fd)
                 try:
                     self._poller.unregister_readable(fd)
@@ -20404,9 +20407,9 @@ class SupervisorSetupImpl(SupervisorSetup):
             else:
                 log.info('set current directory: %r', self._config.directory)
 
-        os.dup2(0, os.open('/dev/null', os.O_RDONLY))
-        os.dup2(1, os.open('/dev/null', os.O_WRONLY))
-        os.dup2(2, os.open('/dev/null', os.O_WRONLY))
+        os.dup2(os.open('/dev/null', os.O_RDONLY), 0)
+        os.dup2(os.open('/dev/null', os.O_WRONLY), 1)
+        os.dup2(os.open('/dev/null', os.O_WRONLY), 2)
 
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
         # file descriptors. In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
