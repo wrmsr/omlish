@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/omlish'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.14'
-version = '0.0.14'
+version = '0.0.15'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -24,13 +24,13 @@ classifiers = [
 ]
 description = 'omdev'
 dependencies = [
-    'omlish == 0.0.14',
+    'omlish == 0.0.15',
 ]
 
 [project.optional-dependencies]
 all = [
-    'ominfra == 0.0.14',
-    'ommlds == 0.0.14',
+    'ominfra == 0.0.15',
+    'ommlds == 0.0.15',
     'black ~= 26.3',
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
@@ -47,10 +47,10 @@ all = [
     'textual-speedups ~= 0.2',
 ]
 ominfra = [
-    'ominfra == 0.0.14',
+    'ominfra == 0.0.15',
 ]
 ommlds = [
-    'ommlds == 0.0.14',
+    'ommlds == 0.0.15',
 ]
 black = [
     'black ~= 26.3',
