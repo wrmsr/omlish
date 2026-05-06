@@ -283,6 +283,17 @@ The original in-process tests (`test_process_lifecycle.py`, etc.) are **still pr
 
 ## Current State
 
-**Ready to use!** The subprocess test infrastructure is functional and 13 tests are converted and working.
+**Ready to use!** ✅ The subprocess test infrastructure is complete and all 13 initial tests are passing.
+
+### Test Results
+```bash
+$ ./python -m pytest ominfra/supervisor/tests/integration/test_subprocess_*.py -v
+========================= 13 passed in 51.82s ==========================
+```
+
+**All tests passing:**
+- 8 lifecycle tests ✅
+- 2 signal tests ✅
+- 3 restart policy tests ✅
 
 You can start using this approach immediately for new tests, and we can gradually migrate the rest.
