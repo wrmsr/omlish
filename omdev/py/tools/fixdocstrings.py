@@ -14,6 +14,7 @@ import typing as ta
 
 from omlish import check
 from omlish.logs import all as logs
+from omlish.re import regex_to_string
 
 from ..tokens import all as tks
 
@@ -299,19 +300,26 @@ class _Runner:
             overwrite: bool = False,
             dry_run: bool = False,
             num_workers: int | None = None,
-            exclude_pats: ta.Sequence[re.Pattern] | None = None,
+            exclude_file_pats: ta.Sequence[re.Pattern] | None = None,
+            exclude_src_pats: ta.Sequence[re.Pattern] | None = None,
     ) -> None:
         super().__init__()
 
         self._overwrite = overwrite
         self._dry_run = dry_run
         self._num_workers = num_workers
-        self._exclude_pats = exclude_pats
+        self._exclude_file_pats = exclude_file_pats
+        self._exclude_src_pats = exclude_src_pats
+
+        self._exclude_src_pats_srcs = [
+            check.isinstance(regex_to_string(xp), str)
+            for xp in exclude_src_pats
+        ] if exclude_src_pats else None
 
     #
 
     def _should_exclude_file(self, file_path: str) -> bool:
-        if (xps := self._exclude_pats):
+        if (xps := self._exclude_file_pats):
             for xp in xps:
                 if xp.match(file_path):
                     return True
@@ -350,9 +358,16 @@ class _Runner:
     def _run_one(
             cls,
             file_path: str,
+            *,
+            exclude_src_pats_srcs: ta.Sequence[str] | None = None,
     ) -> tuple[str, str] | None:
         with open(file_path) as f:
             src = f.read()
+
+        if exclude_src_pats_srcs is not None:
+            for xp in exclude_src_pats_srcs:
+                if re.match(xp, src):
+                    return None
 
         fixed_src = DocstringFixer(src).fix()
 
@@ -378,7 +393,11 @@ class _Runner:
             cf.ProcessPoolExecutor,
         ) as exe:
             futs: list[cf.Future] = [
-                exe.submit(self._run_one, fp)
+                exe.submit(
+                    self._run_one,
+                    fp,
+                    exclude_src_pats_srcs=self._exclude_src_pats_srcs,
+                )
                 for fp in file_paths
             ]
 
@@ -417,7 +436,8 @@ def _main() -> None:
     parser.add_argument('-W', '--overwrite', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('-j', '--workers')
-    parser.add_argument('-x', '--exclude', action='append')
+    parser.add_argument('-x', '--exclude-file', action='append')
+    parser.add_argument('-X', '--exclude-src', action='append')
 
     args = parser.parse_args()
 
@@ -446,7 +466,8 @@ def _main() -> None:
         overwrite=bool(args.overwrite),
         dry_run=bool(args.dry_run),
         num_workers=nw,
-        exclude_pats=[re.compile(xp) for xp in args.exclude] if args.exclude else None,
+        exclude_file_pats=[re.compile(xp) for xp in args.exclude_file] if args.exclude_file else None,
+        exclude_src_pats=[re.compile(xp) for xp in args.exclude_src] if args.exclude_src else None,
     ).run(args.src)
 
 
