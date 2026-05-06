@@ -21,8 +21,12 @@ import sys
 import typing as ta
 
 from omlish import check
+from omlish.logs import all as logs
 
 from ..tokens import all as tks
+
+
+log = logs.get_module_logger(globals())
 
 
 ##
@@ -293,12 +297,14 @@ class _Runner:
             self,
             *,
             overwrite: bool = False,
+            dry_run: bool = False,
             num_workers: int | None = None,
             exclude_pats: ta.Sequence[re.Pattern] | None = None,
     ) -> None:
         super().__init__()
 
         self._overwrite = overwrite
+        self._dry_run = dry_run
         self._num_workers = num_workers
         self._exclude_pats = exclude_pats
 
@@ -344,17 +350,16 @@ class _Runner:
     def _run_one(
             cls,
             file_path: str,
-            *,
-            overwrite: bool = False,
-    ) -> None:
+    ) -> tuple[str, str] | None:
         with open(file_path) as f:
             src = f.read()
 
         fixed_src = DocstringFixer(src).fix()
 
-        # sys.stdout.write(fixed_src)
+        if fixed_src == src:
+            return None
 
-        print(fixed_src)
+        return (file_path, fixed_src)
 
     def run(
             self,
@@ -378,7 +383,23 @@ class _Runner:
             ]
 
             for fut in futs:
-                fut.result()
+                if (res := fut.result()) is not None:
+                    fp, src = res
+
+                    if not self._overwrite:
+                        sys.stdout.write('\n'.join([
+                            '====',
+                            fp,
+                            '====',
+                            src,
+                            '',
+                        ]))
+
+                    elif self._dry_run:
+                        log.info(lambda: f'Would overwrite {fp}')
+
+                    else:
+                        raise NotImplementedError
 
 
 ##
@@ -392,6 +413,7 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('src', nargs='+')
     parser.add_argument('-W', '--overwrite', action='store_true')
+    parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('-j', '--workers', type=int)
     parser.add_argument('-x', '--exclude', action='append')
 
@@ -399,6 +421,8 @@ def _main() -> None:
 
     if not args.src:
         raise Exception('src must be specified')
+
+    logs.configure_standard_logging()
 
     if '-' in args.src:
         if list(args.src) != ['-']:
@@ -414,7 +438,7 @@ def _main() -> None:
         overwrite=bool(args.overwrite),
         num_workers=args.workers,
         exclude_pats=[re.compile(xp) for xp in args.exclude] if args.exclude else None,
-    ).run(args.roots)
+    ).run(args.src)
 
 
 if __name__ == '__main__':
