@@ -536,6 +536,25 @@ class TestWhitespacePreservation:
 class TestDocstringContent:
     """Test various docstring content patterns."""
 
+    def test_squashed_docstring_strips_indentation(self) -> None:
+        """When squashing multiline to single-line, internal indentation should be stripped."""
+
+        src = normalize_indentation('''
+            def foo():
+                """
+                This is a short docstring.
+                """
+                pass
+        ''').lstrip()
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should be squashed to single line WITHOUT the internal indentation
+        assert '"""This is a short docstring."""' in result
+        # Should NOT have the indentation preserved
+        assert '"""    This is a short docstring."""' not in result
+
     def test_docstring_with_quotes_inside(self) -> None:
         """Docstrings containing quotes should be handled."""
 

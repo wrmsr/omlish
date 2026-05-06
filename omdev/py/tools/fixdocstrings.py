@@ -169,10 +169,16 @@ class DocstringFixer:
         while lines and not lines[-1].strip():
             lines.pop()
 
-        stripped_content = '\n'.join(lines)
+        # Check if the content has explicit newlines (i.e., it's meant to be multi-line)
+        has_explicit_newlines = len(lines) > 1
 
-        # Check if the *stripped* content has explicit newlines (i.e., it's meant to be multi-line)
-        has_explicit_newlines = '\n' in stripped_content
+        # For single-line docstrings, strip all leading/trailing whitespace from the content
+        if not has_explicit_newlines:
+            # Single line - strip all whitespace
+            stripped_content = lines[0].strip() if lines else ''
+        else:
+            # Multi-line - preserve the structure
+            stripped_content = '\n'.join(lines)
 
         # Calculate if single-line format fits in 120 chars
         single_line = f'{prefix}{quotes}{stripped_content}{quotes}'
