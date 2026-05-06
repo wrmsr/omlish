@@ -44,11 +44,9 @@ class StreamMessage(Message, lang.Abstract):
     def __init__(
             self,
             *initial_contents: str,
-            message_uuid: uuid.UUID | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(
-            message_uuid=message_uuid,
-        )
+        super().__init__(**kwargs)
 
         self._initial_contents: list[str] = list(initial_contents)
 

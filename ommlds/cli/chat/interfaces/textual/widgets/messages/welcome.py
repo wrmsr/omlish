@@ -1,6 +1,5 @@
 # ruff: noqa: SLF001
 import typing as ta
-import uuid
 
 from omdev import clipboard as cpb
 from omdev.tui import textual as tx
@@ -18,12 +17,10 @@ class WelcomeMessage(StaticMessage):
             self,
             content: tx.VisualType,
             *,
-            message_uuid: uuid.UUID | None = None,
             copy_contents: ta.Mapping[str, tuple[str, str]] | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(
-            message_uuid=message_uuid,
-        )
+        super().__init__(**kwargs)
 
         self._content = content
         self._copy_contents = copy_contents

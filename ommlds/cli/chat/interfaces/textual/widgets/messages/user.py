@@ -1,6 +1,5 @@
 # ruff: noqa: SLF001
 import typing as ta
-import uuid
 
 from omdev.tui import textual as tx
 
@@ -17,12 +16,9 @@ class UserMessage(StaticMessage):
     def __init__(
             self,
             content: tx.VisualType,
-            *,
-            message_uuid: uuid.UUID | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(
-            message_uuid=message_uuid,
-        )
+        super().__init__(**kwargs)
 
         self._content = content
 

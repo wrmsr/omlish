@@ -1,7 +1,7 @@
 # ruff: noqa: SLF001
 import asyncio
 import enum
-import uuid
+import typing as ta
 
 from omdev.tui import textual as tx
 from omlish import check
@@ -29,12 +29,9 @@ class ToolMessage(Message):
             outer_content: tx.VisualType,
             inner_content: tx.VisualType | None,
             state: State,
-            *,
-            message_uuid: uuid.UUID | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(
-            message_uuid=message_uuid,
-        )
+        super().__init__(**kwargs)
 
         self._outer_content = outer_content
         self._inner_content = inner_content
@@ -128,12 +125,9 @@ class ToolConfirmationMessage(Message):
             outer_content: tx.VisualType,
             inner_content: tx.VisualType,
             fut: asyncio.Future[bool],
-            *,
-            message_uuid: uuid.UUID | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(
-            message_uuid=message_uuid,
-        )
+        super().__init__(**kwargs)
 
         self._outer_content = outer_content
         self._inner_content = inner_content

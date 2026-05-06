@@ -28,15 +28,21 @@ class MessagesContainer(
             init_messages: ta.Sequence[Message] | None = None,
             *,
             clipboard: cpb.Clipboard | None = None,
+            chat_uuid: uuid.UUID | None = None,
     ) -> None:
         super().__init__()
 
         self._clipboard = clipboard
+        self._chat_uuid = chat_uuid
 
         self._messages_by_uuid: dict[uuid.UUID, Message] = {}
 
         if init_messages:
             self._pending_mount_messages = list(init_messages)
+
+    @property
+    def chat_uuid(self) -> uuid.UUID | None:
+        return self._chat_uuid
 
     #
 

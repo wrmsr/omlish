@@ -1,7 +1,6 @@
 # ruff: noqa: SLF001
 import abc
 import typing as ta
-import uuid
 
 from omdev.tui import textual as tx
 from omlish import lang
@@ -43,11 +42,9 @@ class StaticAiMessage(StaticMessage, AiMessage):
             content: str,
             *,
             markdown: bool = False,
-            message_uuid: uuid.UUID | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(
-            message_uuid=message_uuid,
-        )
+        super().__init__(**kwargs)
 
         self._content = content
         self._markdown = markdown

@@ -46,6 +46,7 @@ class MessageDivider(
     @classmethod
     def for_message(cls, msg: Message) -> MessageDivider:
         return cls(
+            # left_text=str(cu) if (cu := msg.messages_container.chat_uuid) is not None else None,
             center_text=lang.localnow().strftime('%Y-%m-%d %H:%M:%S'),
             right_text=str(mu) if (mu := msg.message_uuid) is not None else None,
         )

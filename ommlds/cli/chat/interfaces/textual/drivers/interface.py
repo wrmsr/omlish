@@ -57,6 +57,7 @@ class ChatDriverInterface(
             clipboard: cpb.Clipboard | None = None,
             state_listener: ChatDriverInterfaceStateListener | None = None,
             welcome_message: WelcomeMessage | None = None,
+            chat_id: mc.drivers.ChatId,
     ) -> None:
         super().__init__()
 
@@ -67,6 +68,7 @@ class ChatDriverInterface(
         self._background_terminal_renderer = background_terminal_renderer
         self._clipboard = clipboard
         self._state_listener = state_listener
+        self._chat_id = chat_id
 
         #
 
@@ -85,6 +87,7 @@ class ChatDriverInterface(
         self._messages_container = MessagesContainer(
             [welcome_message] if welcome_message is not None else [],
             clipboard=self._clipboard,
+            chat_uuid=chat_id.v,
         )
 
     #

@@ -337,6 +337,37 @@ class TriRule(JupyterMixin):
 
         layout_width = max(0, width - left_pad_width - right_pad_width)
 
+        def absolute_center_start(center_width: int) -> int:
+            return (width - center_width) // 2
+
+        def absolute_to_layout_start(absolute_start: int) -> int:
+            return absolute_start - left_pad_width
+
+        def clamp_center_start(
+                center_start: int,
+                *,
+                center_width: int,
+                left_width: int = 0,
+                right_width: int = 0,
+        ) -> int:
+            center_start = max(left_width, center_start)
+            center_start = min(center_start, layout_width - center_width - right_width)
+            center_start = max(0, center_start)
+            return center_start
+
+        def centered_layout_start(
+                center_width: int,
+                *,
+                left_width: int = 0,
+                right_width: int = 0,
+        ) -> int:
+            return clamp_center_start(
+                absolute_to_layout_start(absolute_center_start(center_width)),
+                center_width=center_width,
+                left_width=left_width,
+                right_width=right_width,
+            )
+
         def wrap_with_side_padding(inner_text: Text) -> Text:
             if not use_left_pad and not use_right_pad:
                 inner_text.end = end
@@ -425,7 +456,7 @@ class TriRule(JupyterMixin):
             append_text(right)
 
         elif center and not left and not right:
-            start = (layout_width - center_width) // 2
+            start = centered_layout_start(center_width)
             append_gap(start, right_text=True)
             append_text(center)
             append_gap(layout_width - start - center_width, left_text=True)
@@ -438,19 +469,20 @@ class TriRule(JupyterMixin):
             append_text(right)
 
         elif left and center and not right:
-            target_center_start = (layout_width - center_width) // 2
-            center_start = max(left_width, target_center_start)
-            center_start = min(center_start, layout_width - center_width)
+            center_start = centered_layout_start(
+                center_width,
+                left_width=left_width,
+            )
 
             append_text(left)
             append_gap(center_start - left_width, left_text=True, right_text=True)
             append_text(center)
             append_gap(layout_width - center_start - center_width, left_text=True)
-
         elif center and right and not left:
-            target_center_start = (layout_width - center_width) // 2
-            center_start = min(target_center_start, layout_width - center_width - right_width)
-            center_start = max(0, center_start)
+            center_start = centered_layout_start(
+                center_width,
+                right_width=right_width,
+            )
 
             append_gap(center_start, right_text=True)
             append_text(center)
@@ -468,9 +500,11 @@ class TriRule(JupyterMixin):
             center = check.not_none(center)
             right = check.not_none(right)
 
-            target_center_start = (layout_width - center_width) // 2
-            center_start = max(left_width, target_center_start)
-            center_start = min(center_start, layout_width - center_width - right_width)
+            center_start = centered_layout_start(
+                center_width,
+                left_width=left_width,
+                right_width=right_width,
+            )
 
             append_text(left)
             append_gap(center_start - left_width, left_text=True, right_text=True)
