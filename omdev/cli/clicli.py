@@ -75,6 +75,7 @@ class CliCli(ap.Cli):
     @ap.cmd(
         ap.arg('args', nargs=ap.REMAINDER),
         name='python',
+        aliases=['py'],
         accepts_unknown=True,
     )
     def python_cmd(self) -> None:
