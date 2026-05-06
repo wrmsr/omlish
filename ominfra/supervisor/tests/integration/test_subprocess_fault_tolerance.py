@@ -9,6 +9,8 @@ import sys
 import tempfile
 import time
 
+from omlish.lite.check import check
+
 from ...states import ProcessState
 from .subprocess_base import SupervisorSubprocessTestBase
 
@@ -226,8 +228,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         time.sleep(3)
 
         # Should still be running or exited cleanly
-        proc_info = self.get_process_info('flood')
-        assert proc_info is not None
+        proc_info = check.not_none(self.get_process_info('flood'))
         self.assertIn(proc_info['state'], ['RUNNING', 'EXITED'])
 
     def test_empty_command_string(self):

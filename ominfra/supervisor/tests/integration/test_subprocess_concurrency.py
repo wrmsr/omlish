@@ -3,6 +3,8 @@
 import sys
 import time
 
+from omlish.lite.check import check
+
 from ...states import ProcessState
 from .subprocess_base import SupervisorSubprocessTestBase
 
@@ -82,10 +84,8 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         time.sleep(5.0)
 
         # Stable processes should still be running
-        proc1_info = self.get_process_info('stable1')
-        proc2_info = self.get_process_info('stable2')
-        assert proc1_info is not None
-        assert proc2_info is not None
+        proc1_info = check.not_none(self.get_process_info('stable1'))
+        proc2_info = check.not_none(self.get_process_info('stable2'))
 
         self.assertEqual(proc1_info['state'], 'RUNNING')
         self.assertEqual(proc2_info['state'], 'RUNNING')
@@ -255,14 +255,12 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         time.sleep(3.0)
 
         # Stable should still be running with same PID
-        stable_info = self.get_process_info('stable')
-        assert stable_info is not None
+        stable_info = check.not_none(self.get_process_info('stable'))
         self.assertEqual(stable_info['state'], 'RUNNING')
         self.assertEqual(stable_info['pid'], stable_pid)
         self.assert_process_running(stable_pid)
 
         # restarter should be in some restart cycle state
-        restarter_info = self.get_process_info('restarter')
-        assert restarter_info is not None
+        restarter_info = check.not_none(self.get_process_info('restarter'))
         # Should be actively restarting or in backoff
         self.assertIn(restarter_info['state'], ['STARTING', 'BACKOFF', 'RUNNING', 'EXITED'])

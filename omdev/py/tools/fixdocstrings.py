@@ -15,6 +15,7 @@ TODO:
 
 """
 import ast
+import os.path
 import re
 import sys
 import typing as ta
@@ -301,6 +302,44 @@ class _Runner:
         self._num_workers = num_workers
         self._exclude_pats = exclude_pats
 
+    #
+
+    def _should_exclude_file(self, file_path: str) -> bool:
+        if (xps := self._exclude_pats):
+            for xp in xps:
+                if xp.match(file_path):
+                    return True
+
+        return False
+
+    def _find_file_paths(self, roots: ta.Iterable[str]) -> set[str]:
+        roots = sorted({check.non_empty_str(s) for s in check.not_isinstance(roots, str)})
+
+        file_paths: set[str] = set()
+
+        for root in roots:
+            if os.path.isfile(root):
+                if not self._should_exclude_file(root):
+                    file_paths.add(root)
+
+            elif os.path.isdir(root):
+                for dp, _dns, fns in os.walk(root):
+                    for fn in fns:
+                        if not fn.endswith('.py'):
+                            continue
+
+                        fp = os.path.join(dp, fn)
+
+                        if not self._should_exclude_file(fp):
+                            file_paths.add(fp)
+
+            else:
+                raise FileNotFoundError(root)
+
+        return file_paths
+
+    #
+
     @classmethod
     def _run_one(
             cls,
@@ -308,13 +347,22 @@ class _Runner:
             *,
             overwrite: bool = False,
     ) -> None:
-        raise NotImplementedError
+        with open(file_path) as f:
+            src = f.read()
+
+        fixed_src = DocstringFixer(src).fix()
+
+        # sys.stdout.write(fixed_src)
+
+        print(fixed_src)
 
     def run(
             self,
             roots: ta.Iterable[str],
     ) -> None:
-        roots = sorted({check.non_empty_str(s) for s in check.not_isinstance(roots, str)})
+        file_paths = self._find_file_paths(roots)
+
+        #
 
         import concurrent.futures as cf
 
@@ -324,7 +372,13 @@ class _Runner:
             self._num_workers,
             cf.ProcessPoolExecutor,
         ) as exe:
-            pass
+            futs: list[cf.Future] = [
+                exe.submit(self._run_one, fp)
+                for fp in file_paths
+            ]
+
+            for fut in futs:
+                fut.result()
 
 
 ##
@@ -343,12 +397,24 @@ def _main() -> None:
 
     args = parser.parse_args()
 
-    src = sys.stdin.read()
+    if not args.src:
+        raise Exception('src must be specified')
 
-    fixer = DocstringFixer(src)
-    fixed_src = fixer.fix()
+    if '-' in args.src:
+        if list(args.src) != ['-']:
+            raise Exception('if - in src it must be only src')
 
-    sys.stdout.write(fixed_src)
+        src = sys.stdin.read()
+        fixed_src = DocstringFixer(src).fix()
+        sys.stdout.write(fixed_src)
+
+        return
+
+    _Runner(
+        overwrite=bool(args.overwrite),
+        num_workers=args.workers,
+        exclude_pats=[re.compile(xp) for xp in args.exclude] if args.exclude else None,
+    ).run(args.roots)
 
 
 if __name__ == '__main__':
