@@ -20,9 +20,9 @@ Successfully created a **subprocess-based integration test harness** that runs s
 - Auto-allocates ports, manages temp directories
 - Clean teardown with signal handling
 
-### Converted Tests (13 tests)
+### Converted Tests (27 tests)
 
-✅ **Lifecycle tests** (`test_subprocess_lifecycle.py`) - 9 tests
+✅ **Lifecycle tests** (`test_subprocess_lifecycle.py`) - 8 tests
 - Process starts and runs
 - auto_start=True/False
 - Process successful exit
@@ -31,7 +31,6 @@ Successfully created a **subprocess-based integration test harness** that runs s
 - Supervisor shutdown via signal
 - Process exits too quickly → BACKOFF
 - HTTP API accuracy
-- Process state transitions
 
 ✅ **Signal tests** (`test_subprocess_signals.py`) - 2 tests
 - SIGTERM graceful shutdown
@@ -41,6 +40,24 @@ Successfully created a **subprocess-based integration test harness** that runs s
 - auto_restart='unexpected'
 - auto_restart=False
 - start_retries limit → FATAL
+
+✅ **HTTP API tests** (`test_subprocess_http_api.py`) - 5 tests
+- HTTP server starts and responds
+- Process state in HTTP response
+- State transitions reflected in API
+- Concurrent connections
+- Survives process crashes
+
+✅ **Edge case tests** (`test_subprocess_edge_cases.py`) - 9 tests
+- Custom working directory
+- Environment variables
+- Orphan processes
+- Custom umask
+- Quoted command arguments
+- exec() chains
+- Closed file descriptors
+- Special characters in names
+- Priority = 0
 
 ### Documentation
 
@@ -283,17 +300,21 @@ The original in-process tests (`test_process_lifecycle.py`, etc.) are **still pr
 
 ## Current State
 
-**Ready to use!** ✅ The subprocess test infrastructure is complete and all 13 initial tests are passing.
+**Ready to use!** ✅ The subprocess test infrastructure is complete and **27 tests are passing**.
 
 ### Test Results
 ```bash
 $ ./python -m pytest ominfra/supervisor/tests/integration/test_subprocess_*.py -v
-========================= 13 passed in 51.82s ==========================
+======================== 27 passed in 86.72s (0:01:26) =========================
 ```
 
 **All tests passing:**
 - 8 lifecycle tests ✅
 - 2 signal tests ✅
 - 3 restart policy tests ✅
+- 5 HTTP API tests ✅
+- 9 edge case tests ✅
+
+**Total: 27 comprehensive integration tests with zero mocks!**
 
 You can start using this approach immediately for new tests, and we can gradually migrate the rest.
