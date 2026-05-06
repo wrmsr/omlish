@@ -388,10 +388,11 @@ class _Runner:
                         ]))
 
                     elif self._dry_run:
-                        log.info(lambda: f'Would overwrite {fp}')
+                        log.info(lambda: f'Would fix {fp}')
 
                     else:
-                        with open(fp) as f:
+                        log.info(lambda: f'Fixing {fp}')
+                        with open(fp, 'w') as f:
                             f.write(fixed_src)
 
 
