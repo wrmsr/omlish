@@ -198,7 +198,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
-            dict(path='processimpl.py', sha1='a4d83e6caf43394801aa7e61977776d4c4ddc7b9'),
+            dict(path='processimpl.py', sha1='0668cfc3ab10999e0ec5a6a58f4beea8277399d8'),
             dict(path='setupimpl.py', sha1='7ab3e7397090c1420cd967730c8aa072c1e68f8e'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
@@ -19995,7 +19995,7 @@ class ProcessImpl(Process):
 
         args: tuple
         if not self.pid:
-            fmt, args = "Attempted to send %s sig %s but it wasn't running", (self.name, sig_name(sig))
+            fmt, args = "Attempted to send %s (pid %s) sig %s but it wasn't running", (self.name, self.pid, sig_name(sig))  # noqa
             log.debug(fmt, *args)
             return fmt % args
 
@@ -20020,7 +20020,7 @@ class ProcessImpl(Process):
                 raise
         except Exception:  # noqa
             tb = traceback.format_exc()
-            fmt, args = 'unknown problem sending sig %s (%s):%s', (self.name, self.pid, tb)
+            fmt, args = 'unknown problem sending %s (pid %s) sig %s : %s', (self.name, self.pid, sig_name(sig), tb)
             log.critical(fmt, *args)
             self._change_state(ProcessState.UNKNOWN)
             return fmt % args

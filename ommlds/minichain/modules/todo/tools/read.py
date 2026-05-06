@@ -30,7 +30,7 @@ from ..types import TodoItem
         - Use this information to track progress and plan next steps.
     """,
 )
-def execute_todo_read_tool() -> ta.Sequence[TodoItem]:
+def todo_read() -> ta.Sequence[TodoItem]:
     ctx = tool_todo_context()
 
     return ctx.get_items() or []
@@ -39,6 +39,6 @@ def execute_todo_read_tool() -> ta.Sequence[TodoItem]:
 @lang.cached_function
 def todo_read_tool() -> ToolCatalogEntry:
     return reflect_tool_catalog_entry(
-        execute_todo_read_tool,
+        todo_read,
         marshal_output=True,
     )

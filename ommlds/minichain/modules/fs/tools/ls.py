@@ -11,7 +11,7 @@ from ..context import tool_fs_context
 ##
 
 
-async def execute_ls_tool(
+async def ls(
         dir_path: str,
 ) -> str:
     """
@@ -35,4 +35,4 @@ async def execute_ls_tool(
 
 @lang.cached_function
 def ls_tool() -> ToolCatalogEntry:
-    return reflect_tool_catalog_entry(execute_ls_tool)
+    return reflect_tool_catalog_entry(ls)

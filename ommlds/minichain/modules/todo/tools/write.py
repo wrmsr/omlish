@@ -314,7 +314,7 @@ class TodoWriteDescriptionChunks(ContentNamespace):
 @tool_spec_override(
     desc=NamespaceContent(TodoWriteDescriptionChunks),
 )
-def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> ta.Sequence[TodoItem]:
+def todo_write(todo_items: ta.Sequence[TodoItem]) -> ta.Sequence[TodoItem]:
     if todo_items:
         todo_items = [
             msh.unmarshal(o, TodoItem) if not isinstance(o, TodoItem) else o  # noqa
@@ -330,7 +330,7 @@ def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> ta.Sequence[To
 @lang.cached_function
 def todo_write_tool() -> ToolCatalogEntry:
     return reflect_tool_catalog_entry(
-        execute_todo_write_tool,
+        todo_write,
         marshal_input=True,
         marshal_output=True,
     )

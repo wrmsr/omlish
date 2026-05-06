@@ -58,7 +58,7 @@ MAX_LINE_LENGTH = 2_000
         ),
     ],
 )
-async def execute_read_tool(
+async def read_file(
         file_path: str,
         *,
         line_offset: int = 0,
@@ -112,4 +112,4 @@ async def execute_read_tool(
 
 @lang.cached_function
 def read_tool() -> ToolCatalogEntry:
-    return reflect_tool_catalog_entry(execute_read_tool)
+    return reflect_tool_catalog_entry(read_file)

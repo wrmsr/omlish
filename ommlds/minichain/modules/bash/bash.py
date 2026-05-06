@@ -13,7 +13,7 @@ from .context import tool_bash_context
 ##
 
 
-async def execute_bash_tool(
+async def bash(
         bash_code: str,
 ) -> str:
     """
@@ -52,4 +52,4 @@ async def execute_bash_tool(
 
 @lang.cached_function
 def bash_tool() -> ToolCatalogEntry:
-    return reflect_tool_catalog_entry(execute_bash_tool)
+    return reflect_tool_catalog_entry(bash)

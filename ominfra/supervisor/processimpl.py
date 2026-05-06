@@ -334,7 +334,7 @@ class ProcessImpl(Process):
 
         args: tuple
         if not self.pid:
-            fmt, args = "Attempted to send %s sig %s but it wasn't running", (self.name, sig_name(sig))
+            fmt, args = "Attempted to send %s (pid %s) sig %s but it wasn't running", (self.name, self.pid, sig_name(sig))  # noqa
             log.debug(fmt, *args)
             return fmt % args
 
@@ -359,7 +359,7 @@ class ProcessImpl(Process):
                 raise
         except Exception:  # noqa
             tb = traceback.format_exc()
-            fmt, args = 'unknown problem sending sig %s (%s):%s', (self.name, self.pid, tb)
+            fmt, args = 'unknown problem sending %s (pid %s) sig %s : %s', (self.name, self.pid, sig_name(sig), tb)
             log.critical(fmt, *args)
             self._change_state(ProcessState.UNKNOWN)
             return fmt % args

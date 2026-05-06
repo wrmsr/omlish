@@ -7,7 +7,7 @@ from ...tools.execution.reflect import reflect_tool_catalog_entry
 ##
 
 
-async def execute_skill_tool(
+async def skill(
         name: str,
         args: str | None = None,
 ) -> str:
@@ -24,4 +24,4 @@ async def execute_skill_tool(
 
 @lang.cached_function
 def skill_tool() -> ToolCatalogEntry:
-    return reflect_tool_catalog_entry(execute_skill_tool)
+    return reflect_tool_catalog_entry(skill)

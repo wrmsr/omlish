@@ -42,7 +42,7 @@ class OldStringPresentMultipleTimesError(EditToolError):
 ##
 
 
-async def execute_edit_tool(
+async def edit_file(
         *,
         file_path: str,
         old_string: str,
@@ -101,4 +101,4 @@ async def execute_edit_tool(
 
 @lang.cached_function
 def edit_tool() -> ToolCatalogEntry:
-    return reflect_tool_catalog_entry(execute_edit_tool)
+    return reflect_tool_catalog_entry(edit_file)

@@ -10,7 +10,7 @@ from .running import LsRunner
 ##
 
 
-async def execute_recursive_ls_tool(
+async def recursive_ls(
         base_path: str,
 ) -> str:
     """
@@ -37,4 +37,4 @@ async def execute_recursive_ls_tool(
 
 @lang.cached_function
 def recursive_ls_tool() -> ToolCatalogEntry:
-    return reflect_tool_catalog_entry(execute_recursive_ls_tool)
+    return reflect_tool_catalog_entry(recursive_ls)
