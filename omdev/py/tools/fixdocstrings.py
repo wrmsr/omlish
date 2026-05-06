@@ -227,11 +227,15 @@ class DocstringFixer:
             # Use single-line format
             new_src = single_line
         else:
-            # Use multi-line format with triple-quotes on separate lines. Indent each line of content to match the
-            # opening quotes.
-            indented_lines = [indent + line if line.strip() else '' for line in stripped_content.split('\n')]
-            indented_content = '\n'.join(indented_lines)
-            new_src = f'{prefix}{quotes}\n{indented_content}\n{indent}{quotes}'
+            # Use multi-line format with triple-quotes on separate lines.
+            if already_multiline_format:
+                # Already in multiline format - content already has the correct indentation, don't add more
+                new_src = f'{prefix}{quotes}\n{stripped_content}\n{indent}{quotes}'
+            else:
+                # Reformatting from single-line-ish format - need to indent each line
+                indented_lines = [indent + line if line.strip() else '' for line in stripped_content.split('\n')]
+                indented_content = '\n'.join(indented_lines)
+                new_src = f'{prefix}{quotes}\n{indented_content}\n{indent}{quotes}'
 
         return [tks.Token(name='STRING', src=new_src, line=token.line, utf8_byte_offset=token.utf8_byte_offset)]
 

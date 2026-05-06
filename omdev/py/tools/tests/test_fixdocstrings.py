@@ -604,6 +604,36 @@ class TestDocstringContent:
         # Should preserve the exact indentation structure
         assert result == src
 
+    def test_class_docstring_already_formatted_not_over_indented(self) -> None:
+        """Class docstrings already in proper format should not get extra indentation."""
+
+        src = normalize_indentation('''
+            class CCompiler:
+                """
+                Abstract base class to define the interface.
+
+                More details here.
+                """
+                pass
+        ''').lstrip()
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should add blank line after docstring but NOT add extra indentation to content
+        expected = normalize_indentation('''
+            class CCompiler:
+                """
+                Abstract base class to define the interface.
+
+                More details here.
+                """
+
+                pass
+        ''').lstrip()
+
+        assert result == expected
+
     def test_docstring_with_quotes_inside(self) -> None:
         """Docstrings containing quotes should be handled."""
 
