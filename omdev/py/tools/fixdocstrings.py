@@ -5,14 +5,6 @@ Reads Python source from stdin and outputs to stdout with docstrings reformatted
 1. If docstring fits on a single 120-char line (including triple-quotes and indentation), make it single-line
 2. Otherwise, put each triple-quote on its own line with no content sharing the line
 3. Always ensure a blank line follows class/function docstrings (but NOT module docstrings)
-
-TODO:
- - optional overwrite in-place
-   - only write out if different
- - accept dir args, recursive
- - nargs='*' of ignore path regex pats, can like `--ignore '.*/tests/.*'`
- - multiprocessing executor, `--j, --workers', if None/0 (default) then run in process serially
-
 """
 import ast
 import os.path
@@ -384,14 +376,14 @@ class _Runner:
 
             for fut in futs:
                 if (res := fut.result()) is not None:
-                    fp, src = res
+                    fp, fixed_src = res
 
                     if not self._overwrite:
                         sys.stdout.write('\n'.join([
                             '====',
                             fp,
                             '====',
-                            src,
+                            fixed_src,
                             '',
                         ]))
 
@@ -399,7 +391,8 @@ class _Runner:
                         log.info(lambda: f'Would overwrite {fp}')
 
                     else:
-                        raise NotImplementedError
+                        with open(fp) as f:
+                            f.write(fixed_src)
 
 
 ##
@@ -436,6 +429,7 @@ def _main() -> None:
 
     _Runner(
         overwrite=bool(args.overwrite),
+        dry_run=bool(args.dry_run),
         num_workers=args.workers,
         exclude_pats=[re.compile(xp) for xp in args.exclude] if args.exclude else None,
     ).run(args.src)
