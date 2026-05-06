@@ -213,13 +213,9 @@ ruff: venv
 ruff-stats: venv
 	${PYTHON} -m ruff check --statistics ${SRCS}
 
-.PHONY: ruff-fix
-ruff-fix: venv
-	if ! $$(git diff-files --quiet --ignore-submodules) ; then \
-		echo 'there are unstaged changes - refusing to run' ; \
-		exit 1 ; \
-	fi
-	${PYTHON} -m ruff check --fix ${SRCS}
+.PHONY: fix-docstrings
+fix-docstrings: venv
+	${PYTHON} -m omdev.py.tools.fixdocstrings -j- -X '(?m)^# @omlish-generated$$' -W --dry-run ${SRCS}
 
 RUFF_FIX_CODES:=\
 	COM812 \
@@ -230,9 +226,12 @@ RUFF_FIX_CODES:=\
 	W292 \
 	W293
 
-.PHONY: fix
-fix: venv
+.PHONY: fix-ruff
+fix-ruff: venv
 	${PYTHON} -m ruff check --select $(shell echo "$(RUFF_FIX_CODES)" | tr ' ' ',') --fix ${SRCS}
+
+.PHONY: fix
+fix: fix-ruff
 
 MYPY_OPTS=\
 	--check-untyped-defs \
