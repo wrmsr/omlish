@@ -62,29 +62,18 @@ class Cli(ap.Cli):
 
     #
 
-    def _build(
-            self,
-            cfg: Config | None = None,
-            *,
-            offline: bool = False,
-            verbose: bool = False,
-    ) -> str:
-        if cfg is None:
-            cfg = self._load_config()
-
-        return build_image(
-            cfg,
-            offline=offline,
-            verbose=verbose,
-        )
-
     @ap.cmd(
         ap.arg('-v', '--verbose', action='store_true'),
-        ap.arg('args', nargs=ap.REMAINDER),
+
+        ap.arg('-O', '--offline', action='store_true'),
     )
     def build(self) -> None:
-        sha = self._build(
-            verbose=self.args.verbose,
+        sha = build_image(
+            self._load_config(),
+
+            offline=bool(self.args.offline),
+
+            verbose=bool(self.args.verbose),
         )
 
         print(sha)
@@ -111,10 +100,8 @@ class Cli(ap.Cli):
         accepts_unknown=True,
     )
     def run(self) -> None:
-        cfg = self._load_config()
-
         run_image(
-            cfg,
+            self._load_config(),
 
             RunArgs(
                 verbose=bool(self.args.verbose),
