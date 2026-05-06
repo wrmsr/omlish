@@ -4,8 +4,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .text import CanFacadeText
-from .text import FacadeText
+from ..ui.text import CanUiText
+from ..ui.text import UiText
 
 
 ##
@@ -13,18 +13,18 @@ from .text import FacadeText
 
 class UiMessageDisplayer(lang.Abstract):
     @abc.abstractmethod
-    def display_ui_message(self, text: CanFacadeText) -> ta.Awaitable[None]:
+    def display_ui_message(self, text: CanUiText) -> ta.Awaitable[None]:
         pass
 
 
 class NopUiMessageDisplayer(UiMessageDisplayer):
-    async def display_ui_message(self, text: CanFacadeText) -> None:
+    async def display_ui_message(self, text: CanUiText) -> None:
         pass
 
 
 class PrintMessageDisplayer(UiMessageDisplayer):
-    async def display_ui_message(self, text: CanFacadeText) -> None:
-        print(FacadeText.str_of(text))
+    async def display_ui_message(self, text: CanUiText) -> None:
+        print(UiText.str_of(text))
 
 
 ##

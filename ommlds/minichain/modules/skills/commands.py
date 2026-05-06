@@ -1,7 +1,7 @@
 from omlish.argparse import all as argparse
 
 from ...facades.commands.base import Command
-from ...facades.text import FacadeText
+from ...ui.text import UiText
 from .manager import SkillsManager
 
 
@@ -21,11 +21,11 @@ class SkillsCommand(Command):
     async def _run_args(self, ctx: Command.Context, args: argparse.Namespace) -> None:
         skills = await self._manager.get_skills()
 
-        parts: list[FacadeText] = []
+        parts: list[UiText] = []
         for sk in skills.values():
-            parts.append(FacadeText.of(sk.name))
+            parts.append(UiText.of(sk.name))
 
-        await ctx.print(FacadeText.join('\n', parts))
+        await ctx.print(UiText.join('\n', parts))
 
 
 ##

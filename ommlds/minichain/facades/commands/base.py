@@ -6,7 +6,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.argparse import all as ap
 
-from ..text import CanFacadeText
+from ...ui.text import CanUiText
 
 
 ##
@@ -85,7 +85,7 @@ class Command(lang.Abstract):
 
     @dc.dataclass(frozen=True, kw_only=True)
     class Context:
-        print: ta.Callable[[CanFacadeText], ta.Awaitable[None]]
+        print: ta.Callable[[CanUiText], ta.Awaitable[None]]
 
     @ta.final
     async def run(self, ctx: Context, argv: list[str]) -> None:

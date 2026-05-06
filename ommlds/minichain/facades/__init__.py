@@ -43,18 +43,6 @@ with _lang.auto_proxy_init(globals()):
         UserInputSender,
     )
 
-    from .text import (  # noqa
-        CanFacadeText,
-        FacadeTextColor,
-
-        FacadeTextStyle,
-
-        FacadeText,
-        StrFacadeText,
-        ConcatFacadeText,
-        StyleFacadeText,
-    )
-
     from .types import (  # noqa
         Facade,
     )

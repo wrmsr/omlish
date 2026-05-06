@@ -1,28 +1,33 @@
 from omdev.tui import rich
 
-from ..... import minichain as mc
+from .text import CanUiText
+from .text import ConcatUiText
+from .text import StrUiText
+from .text import StyleUiText
+from .text import UiText
+from .text import UiTextStyle
 
 
 ##
 
 
-def facade_text_to_rich_text(t: mc.facades.CanFacadeText) -> rich.Text:
-    """Convert FacadeText tree into rich.Text with correct nested style inheritance."""
+def ui_text_to_rich_text(t: CanUiText) -> rich.Text:
+    """Convert UiText tree into rich.Text with correct nested style inheritance."""
 
-    root = mc.facades.FacadeText.of(t)
+    root = UiText.of(t)
     out = rich.Text()
 
     def merge_style(
-            parent: mc.facades.FacadeTextStyle,
-            child: mc.facades.FacadeTextStyle,
-    ) -> mc.facades.FacadeTextStyle:
-        return mc.facades.FacadeTextStyle(
+            parent: UiTextStyle,
+            child: UiTextStyle,
+    ) -> UiTextStyle:
+        return UiTextStyle(
             color=child.color if child.color is not None else parent.color,
             bold=child.bold if child.bold is not None else parent.bold,
             italic=child.italic if child.italic is not None else parent.italic,
         )
 
-    def to_rich_style(s: mc.facades.FacadeTextStyle) -> rich.Style | None:
+    def to_rich_style(s: UiTextStyle) -> rich.Style | None:
         if (
                 s.color is None and
                 s.bold is None and
@@ -36,22 +41,22 @@ def facade_text_to_rich_text(t: mc.facades.CanFacadeText) -> rich.Text:
             italic=s.italic,
         )
 
-    def visit(node: mc.facades.FacadeText, style: mc.facades.FacadeTextStyle) -> None:
-        if isinstance(node, mc.facades.StrFacadeText):
+    def visit(node: UiText, style: UiTextStyle) -> None:
+        if isinstance(node, StrUiText):
             if node.s:
                 out.append(node.s, style=to_rich_style(style))
 
-        elif isinstance(node, mc.facades.ConcatFacadeText):
+        elif isinstance(node, ConcatUiText):
             for c in node.l:
                 visit(c, style)
 
-        elif isinstance(node, mc.facades.StyleFacadeText):
+        elif isinstance(node, StyleUiText):
             new_style = merge_style(style, node.y)
             visit(node.c, new_style)
 
         else:
             raise TypeError(node)
 
-    visit(root, mc.facades.FacadeTextStyle.DEFAULT)
+    visit(root, UiTextStyle.DEFAULT)
 
     return out

@@ -11,9 +11,9 @@ from ...tools.permissions.managers import ToolPermissionsManager
 from ...tools.permissions.types import ToolPermissionMatcher
 from ...tools.permissions.types import ToolPermissionRule
 from ...tools.permissions.types import ToolPermissionState
-from ..text import CanFacadeText
-from ..text import FacadeText
-from ..text import FacadeTextColor
+from ...ui.text import CanUiText
+from ...ui.text import UiText
+from ...ui.text import UiTextColor
 from .base import ParserClassCommand
 
 
@@ -28,7 +28,7 @@ class PermissionsCommand(ParserClassCommand):
 
     #
 
-    _PERMISSION_STATE_COLORS: ta.ClassVar[ta.Mapping[ToolPermissionState, FacadeTextColor]] = {  # noqa
+    _PERMISSION_STATE_COLORS: ta.ClassVar[ta.Mapping[ToolPermissionState, UiTextColor]] = {  # noqa
         ToolPermissionState.DENY: 'red',
         ToolPermissionState.ASK: 'yellow',
         ToolPermissionState.ALLOW: 'green',
@@ -36,11 +36,11 @@ class PermissionsCommand(ParserClassCommand):
 
     _TOOL_PERMISSION_STATE_NAME_LEN: ta.ClassVar = max(len(tps.name) for tps in ToolPermissionState)
 
-    def _render_rule(self, rmd: str, r: ToolPermissionRule) -> CanFacadeText:
+    def _render_rule(self, rmd: str, r: ToolPermissionRule) -> CanUiText:
         sp = ' ' * 2
         return list(lang.interleave(sp, [
             rmd,
-            FacadeText.style(
+            UiText.style(
                 r.result.name.lower().ljust(self._TOOL_PERMISSION_STATE_NAME_LEN),
                 bold=True,
                 color=self._PERMISSION_STATE_COLORS[r.result],
@@ -48,8 +48,8 @@ class PermissionsCommand(ParserClassCommand):
             json.dumps_compact(msh.marshal(r.matcher, ToolPermissionMatcher)),
         ]))
 
-    def _render_rules(self, rs: ta.Iterable[tuple[str, ToolPermissionRule]]) -> CanFacadeText:
-        return FacadeText.join('\n', [
+    def _render_rules(self, rs: ta.Iterable[tuple[str, ToolPermissionRule]]) -> CanUiText:
+        return UiText.join('\n', [
             self._render_rule(rmd, r)
             for rmd, r in rs
         ])

@@ -768,6 +768,24 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .ui.rich import (  # noqa
+        ui_text_to_rich_text,
+    )
+
+    from .ui.text import (  # noqa
+        CanUiText,
+        UiTextColor,
+
+        UiTextStyle,
+
+        UiText,
+        StrUiText,
+        ConcatUiText,
+        StyleUiText,
+    )
+
+    ##
+
     from .vectors.embeddings import (  # noqa
         EmbeddingOption,
         EmbeddingOptions,

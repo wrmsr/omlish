@@ -8,13 +8,13 @@ from omlish import lang
 from omlish import marshal as msh
 
 
-CanFacadeText: ta.TypeAlias = ta.Union[
-    'FacadeText',
+CanUiText: ta.TypeAlias = ta.Union[
+    'UiText',
     str,
-    ta.Sequence['CanFacadeText'],
+    ta.Sequence['CanUiText'],
 ]
 
-FacadeTextColor: ta.TypeAlias = ta.Literal[
+UiTextColor: ta.TypeAlias = ta.Literal[
     'red',
     'green',
     'yellow',
@@ -27,56 +27,56 @@ FacadeTextColor: ta.TypeAlias = ta.Literal[
 
 @dc.dataclass(frozen=True, kw_only=True)
 @dc.extra_class_params(cache_hash=True, default_repr_fn=lang.opt_repr)
-@msh.update_object_options( field_defaults=msh.FieldOptions(omit_if=lang.is_none))
-class FacadeTextStyle(lang.Final):
-    DEFAULT: ta.ClassVar[FacadeTextStyle]
+@msh.update_object_options(field_defaults=msh.FieldOptions(omit_if=lang.is_none))
+class UiTextStyle(lang.Final):
+    DEFAULT: ta.ClassVar[UiTextStyle]
 
-    color: FacadeTextColor | None = None
+    color: UiTextColor | None = None
 
     bold: bool | None = None
     italic: bool | None = None
 
 
-FacadeTextStyle.DEFAULT = FacadeTextStyle()
+UiTextStyle.DEFAULT = UiTextStyle()
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class FacadeText(lang.Abstract, lang.Sealed):
-    _BLANK: ta.ClassVar[StrFacadeText]
+class UiText(lang.Abstract, lang.Sealed):
+    _BLANK: ta.ClassVar[StrUiText]
 
     @classmethod
-    def blank(cls) -> StrFacadeText:
-        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
+    def blank(cls) -> StrUiText:
+        check.is_(cls, UiText, 'Method must not be accessed through subclasses.')
 
         return cls._BLANK
 
     @classmethod
-    def of(cls, *objs: CanFacadeText) -> FacadeText:
-        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
+    def of(cls, *objs: CanUiText) -> UiText:
+        check.is_(cls, UiText, 'Method must not be accessed through subclasses.')
 
         if not objs:
             return cls._BLANK
 
-        if len(objs) == 1 and isinstance(o0 := objs[0], FacadeText):
+        if len(objs) == 1 and isinstance(o0 := objs[0], UiText):
             return o0
 
-        out: list[FacadeText] = []
+        out: list[UiText] = []
         pending_strs: list[str] = []
 
         def flush_strs() -> None:
             if pending_strs:
-                out.append(StrFacadeText(''.join(pending_strs)))
+                out.append(StrUiText(''.join(pending_strs)))
                 pending_strs.clear()
 
-        def emit_node(t: FacadeText) -> None:
-            if isinstance(t, StrFacadeText):
+        def emit_node(t: UiText) -> None:
+            if isinstance(t, StrUiText):
                 if t.s:
                     pending_strs.append(t.s)
 
-            elif isinstance(t, ConcatFacadeText):
+            elif isinstance(t, ConcatUiText):
                 # Should normally be handled by stack expansion before this point. Kept here so future
                 # node-normalization hooks have one safe sink.
                 for c in t.l:
@@ -94,10 +94,10 @@ class FacadeText(lang.Abstract, lang.Sealed):
                 #   - Style(Style(x, a), b) -> Style(x, a.merge(b))
                 #   - adjacent equal Style nodes maybe merge their children
                 #
-                # For now, preserve StyleFacadeText exactly as a boundary node.
+                # For now, preserve StyleUiText exactly as a boundary node.
                 out.append(t)
 
-        stack: list[CanFacadeText] = list(reversed(objs))
+        stack: list[CanUiText] = list(reversed(objs))
 
         while stack:
             o = stack.pop()
@@ -106,14 +106,14 @@ class FacadeText(lang.Abstract, lang.Sealed):
                 if o:
                     pending_strs.append(o)
 
-            elif isinstance(o, StrFacadeText):
+            elif isinstance(o, StrUiText):
                 if o.s:
                     pending_strs.append(o.s)
 
-            elif isinstance(o, ConcatFacadeText):
+            elif isinstance(o, ConcatUiText):
                 stack.extend(reversed(o.l))
 
-            elif isinstance(o, FacadeText):
+            elif isinstance(o, UiText):
                 emit_node(o)
 
             elif isinstance(o, ta.Sequence):
@@ -130,11 +130,11 @@ class FacadeText(lang.Abstract, lang.Sealed):
         if len(out) == 1:
             return out[0]
 
-        return ConcatFacadeText(tuple(out))
+        return ConcatUiText(tuple(out))
 
     @classmethod
-    def str_of(cls, obj: CanFacadeText) -> str:
-        check.is_(cls, FacadeText, 'Method must not be accessed through subclasses.')
+    def str_of(cls, obj: CanUiText) -> str:
+        check.is_(cls, UiText, 'Method must not be accessed through subclasses.')
 
         if isinstance(obj, str):
             return obj
@@ -145,28 +145,28 @@ class FacadeText(lang.Abstract, lang.Sealed):
     #
 
     def join(
-            self: CanFacadeText,
-            items: ta.Iterable[CanFacadeText],
-    ) -> FacadeText:
-        delim = FacadeText.of(self)
+            self: CanUiText,
+            items: ta.Iterable[CanUiText],
+    ) -> UiText:
+        delim = UiText.of(self)
 
         if not delim:
-            return FacadeText.of(*items)
+            return UiText.of(*items)
 
-        return FacadeText.of(*lang.interleave(delim, map(FacadeText.of, items)))
+        return UiText.of(*lang.interleave(delim, map(UiText.of, items)))
 
     def style(
-            self: CanFacadeText,
+            self: CanUiText,
             *,
-            color: FacadeTextColor | None = None,
+            color: UiTextColor | None = None,
 
             bold: bool | None = None,
             italic: bool | None = None,
-    ) -> FacadeText:
-        x = FacadeText.of(self)
+    ) -> UiText:
+        x = UiText.of(self)
 
         if not x:
-            return FacadeText._BLANK
+            return UiText._BLANK
 
         if (
                 color is None and
@@ -175,9 +175,9 @@ class FacadeText(lang.Abstract, lang.Sealed):
         ):
             return x
 
-        return StyleFacadeText(
+        return StyleUiText(
             x,
-            FacadeTextStyle(
+            UiTextStyle(
                 color=color,
                 bold=bold,
                 italic=italic,
@@ -203,7 +203,7 @@ class FacadeText(lang.Abstract, lang.Sealed):
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
 @msh.update_object_options(unwrap_if_single_field=True)
-class StrFacadeText(FacadeText, lang.Final):
+class StrUiText(UiText, lang.Final):
     s: str
 
     def __bool__(self) -> bool:
@@ -215,7 +215,7 @@ class StrFacadeText(FacadeText, lang.Final):
         fn(self.s)
 
 
-FacadeText._BLANK = StrFacadeText('')  # noqa
+UiText._BLANK = StrUiText('')  # noqa
 
 
 ##
@@ -224,16 +224,16 @@ FacadeText._BLANK = StrFacadeText('')  # noqa
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
 @msh.update_object_options(unwrap_if_single_field=True)
-class ConcatFacadeText(FacadeText, lang.Final):
-    l: ta.Sequence[FacadeText]
+class ConcatUiText(UiText, lang.Final):
+    l: ta.Sequence[UiText]
 
     def __post_init__(self) -> None:
         last_was_str = False
         for c in check.not_empty(self.l):
             check.arg(bool(c))
-            check.not_isinstance(c, ConcatFacadeText)
+            check.not_isinstance(c, ConcatUiText)
 
-            is_str = isinstance(c, StrFacadeText)
+            is_str = isinstance(c, StrUiText)
             check.arg(not (last_was_str and is_str))
             last_was_str = is_str
 
@@ -254,9 +254,9 @@ class ConcatFacadeText(FacadeText, lang.Final):
 
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True, terse_repr=True)
-class StyleFacadeText(FacadeText, lang.Final):
-    c: FacadeText
-    y: FacadeTextStyle = FacadeTextStyle.DEFAULT
+class StyleUiText(UiText, lang.Final):
+    c: UiText
+    y: UiTextStyle = UiTextStyle.DEFAULT
 
     #
 
@@ -275,5 +275,5 @@ class StyleFacadeText(FacadeText, lang.Final):
 @msh.register_global_lazy_init
 def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
     msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(FacadeText, naming=msh.Naming.SNAKE, strip_suffix=True),
+        msh.polymorphism_from_subclasses(UiText, naming=msh.Naming.SNAKE, strip_suffix=True),
     ))
