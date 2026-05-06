@@ -20,7 +20,7 @@ Successfully created a **subprocess-based integration test harness** that runs s
 - Auto-allocates ports, manages temp directories
 - Clean teardown with signal handling
 
-### Converted Tests (27 tests)
+### Converted Tests (50 tests - ALL COMPLETE!)
 
 ✅ **Lifecycle tests** (`test_subprocess_lifecycle.py`) - 8 tests
 - Process starts and runs
@@ -58,6 +58,35 @@ Successfully created a **subprocess-based integration test harness** that runs s
 - Closed file descriptors
 - Special characters in names
 - Priority = 0
+
+✅ **Concurrency tests** (`test_subprocess_concurrency.py`) - 6 tests
+- Multiple processes starting simultaneously
+- Process crashes while others running
+- Reaping while spawning
+- Mixed lifecycle operations
+- Concurrent process exits
+- High process churn handling
+
+✅ **Fault tolerance tests** (`test_subprocess_fault_tolerance.py`) - 11 tests
+- Bad command (no such file)
+- Bad command (not executable)
+- Process crashes during startup
+- Rapid repeated crashes
+- Zombie process reaping
+- Many processes (10 simultaneous)
+- Process output flood
+- Empty command string
+- Very long command line
+- Clock skew tolerance
+- File descriptor handling
+
+✅ **Logging tests** (`test_subprocess_logging.py`) - 6 tests
+- stdout events_enabled
+- stderr events_enabled
+- redirect_stderr
+- events_enabled=False
+- High output volume
+- Mixed logging configurations
 
 ### Documentation
 
@@ -232,17 +261,17 @@ GET /api/events?since=123    # Polling
 - [x] Convert restart tests (3 tests)
 - [x] Document approach
 
-### Phase 2: Enhanced Observability 🔄 IN PROGRESS
+### Phase 2: Full Migration ✅ COMPLETE
+- [x] Convert HTTP API tests (5 tests)
+- [x] Convert edge case tests (9 tests)
+- [x] Convert concurrency tests (6 tests)
+- [x] Convert fault tolerance tests (11 tests)
+- [x] Convert logging tests (6 tests)
+
+### Phase 3: Enhanced Observability (Future)
 - [ ] Add JSON event logging to supervisor
 - [ ] Enhance HTTP API (start/stop/signal endpoints)
 - [ ] Add event reading to test harness
-
-### Phase 3: Full Migration
-- [ ] Convert fault tolerance tests (~13 tests)
-- [ ] Convert logging tests (~7 tests)
-- [ ] Convert HTTP API tests (~6 tests)
-- [ ] Convert edge case tests (~11 tests)
-- [ ] Convert concurrency tests (~6 tests)
 
 ### Phase 4: Cleanup
 - [ ] Delete old in-process tests (won't work anyway)
@@ -300,12 +329,12 @@ The original in-process tests (`test_process_lifecycle.py`, etc.) are **still pr
 
 ## Current State
 
-**Ready to use!** ✅ The subprocess test infrastructure is complete and **27 tests are passing**.
+**MIGRATION COMPLETE!** ✅ All subprocess integration tests are passing.
 
 ### Test Results
 ```bash
 $ ./python -m pytest ominfra/supervisor/tests/integration/test_subprocess_*.py -v
-======================== 27 passed in 86.72s (0:01:26) =========================
+======================== 50 passed in 170.43s (0:02:50) =========================
 ```
 
 **All tests passing:**
@@ -314,7 +343,24 @@ $ ./python -m pytest ominfra/supervisor/tests/integration/test_subprocess_*.py -
 - 3 restart policy tests ✅
 - 5 HTTP API tests ✅
 - 9 edge case tests ✅
+- 6 concurrency tests ✅
+- 11 fault tolerance tests ✅
+- 6 logging tests ✅
 
-**Total: 27 comprehensive integration tests with zero mocks!**
+**Total: 50 comprehensive integration tests with zero mocks!**
 
-You can start using this approach immediately for new tests, and we can gradually migrate the rest.
+### Test Execution Time
+- Total time: 170.43 seconds (~2 minutes 50 seconds)
+- Average per test: ~3.4 seconds
+- Slowest test: `test_rapid_repeated_crashes` (17.38s) - tests backoff behavior
+- Most tests complete in under 5 seconds
+
+### Test Files
+1. `test_subprocess_lifecycle.py` - 8 tests (core process lifecycle)
+2. `test_subprocess_signals.py` - 2 tests (signal handling)
+3. `test_subprocess_restart.py` - 3 tests (restart policies)
+4. `test_subprocess_http_api.py` - 5 tests (HTTP API functionality)
+5. `test_subprocess_edge_cases.py` - 9 tests (unusual but valid scenarios)
+6. `test_subprocess_concurrency.py` - 6 tests (concurrent operations)
+7. `test_subprocess_fault_tolerance.py` - 11 tests (failure handling)
+8. `test_subprocess_logging.py` - 6 tests (output configuration)

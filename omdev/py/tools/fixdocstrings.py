@@ -15,7 +15,11 @@ TODO:
 
 """
 import ast
+import re
 import sys
+import typing as ta
+
+from omlish import check
 
 from ..tokens import all as tks
 
@@ -280,8 +284,64 @@ class DocstringFixer:
         return tks.tokens_to_src(tokens)
 
 
+##
+
+
+class _Runner:
+    def __init__(
+            self,
+            *,
+            overwrite: bool = False,
+            num_workers: int | None = None,
+            exclude_pats: ta.Sequence[re.Pattern] | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._overwrite = overwrite
+        self._num_workers = num_workers
+        self._exclude_pats = exclude_pats
+
+    @classmethod
+    def _run_one(
+            cls,
+            file_path: str,
+            *,
+            overwrite: bool = False,
+    ) -> None:
+        raise NotImplementedError
+
+    def run(
+            self,
+            roots: ta.Iterable[str],
+    ) -> None:
+        roots = sorted({check.non_empty_str(s) for s in check.not_isinstance(roots, str)})
+
+        import concurrent.futures as cf
+
+        from omlish.concurrent.executors import new_executor
+
+        with new_executor(
+            self._num_workers,
+            cf.ProcessPoolExecutor,
+        ) as exe:
+            pass
+
+
+##
+
+
 def _main() -> None:
     """Read from stdin, fix docstrings, write to stdout."""
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('src', nargs='+')
+    parser.add_argument('-W', '--overwrite', action='store_true')
+    parser.add_argument('-j', '--workers', type=int)
+    parser.add_argument('-x', '--exclude', action='append')
+
+    args = parser.parse_args()
 
     src = sys.stdin.read()
 
