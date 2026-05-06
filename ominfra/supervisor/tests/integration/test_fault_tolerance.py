@@ -20,6 +20,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_bad_command_no_such_file(self):
         """Process with nonexistent command should fail gracefully."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -46,6 +47,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_bad_command_not_executable(self):
         """Process with non-executable file should fail gracefully."""
+
         # Create a non-executable file
         temp_dir = self.make_temp_dir()
         not_exec = os.path.join(temp_dir, 'not_executable')
@@ -76,6 +78,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_process_crashes_during_startup(self):
         """Process that crashes immediately during startup should backoff."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -101,6 +104,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_rapid_repeated_crashes(self):
         """Rapid repeated crashes should be handled with backoff."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -129,6 +133,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_process_becomes_zombie(self):
         """Supervisor should handle zombie processes (already reaped by OS)."""
+
         # This is tricky to test - when a process exits, it becomes a zombie until
         # waitpid() is called. Supervisor should reap it quickly.
 
@@ -161,6 +166,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_clock_skew_backward(self):
         """Supervisor should handle system clock going backward."""
+
         # We can't actually change the system clock in a test, but we can verify
         # the clock adjustment logic doesn't crash
         config = self.make_config({
@@ -186,6 +192,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_broken_pipe_stdin(self):
         """Handle process closing stdin unexpectedly."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -213,6 +220,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_supervisor_with_many_processes(self):
         """Supervisor should handle many processes without issues."""
+
         # Create config with 10 processes
         processes = {
             f'worker{i}': {
@@ -252,6 +260,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_process_output_flood(self):
         """Handle process generating lots of output quickly."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -281,6 +290,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_empty_command_string(self):
         """Handle empty command string gracefully."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -304,6 +314,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_very_long_command(self):
         """Handle very long command line."""
+
         # Create a command with many arguments
         long_cmd = (
             f'{sys.executable} -c "import sys; print(len(sys.argv))" ' +
@@ -331,6 +342,7 @@ class TestFaultTolerance(SupervisorTestBase):
 
     def test_process_fd_exhaustion_recovery(self):
         """Supervisor should recover gracefully from FD exhaustion."""
+
         # This is hard to test without actually exhausting FDs, which could affect the test runner
         # We'll just verify supervisor's error handling doesn't crash
         config = self.make_config({

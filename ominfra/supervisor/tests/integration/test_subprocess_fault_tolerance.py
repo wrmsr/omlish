@@ -20,6 +20,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_bad_command_no_such_file(self):
         """Process with nonexistent command should fail gracefully."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -43,6 +44,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_bad_command_not_executable(self):
         """Process with non-executable file should fail gracefully."""
+
         # Create a non-executable file
         temp_dir = pathlib.Path(tempfile.mkdtemp(prefix='supervisor_test_notexec_'))
         try:
@@ -78,6 +80,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_process_crashes_during_startup(self):
         """Process that crashes immediately during startup should backoff."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -102,6 +105,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_rapid_repeated_crashes(self):
         """Rapid repeated crashes should be handled with backoff."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -137,6 +141,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_process_becomes_zombie(self):
         """Supervisor should handle zombie processes (reap them quickly)."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -167,6 +172,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_supervisor_with_many_processes(self):
         """Supervisor should handle many processes without issues."""
+
         # Create config with 10 processes
         processes = {
             f'worker{i}': {
@@ -202,6 +208,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_process_output_flood(self):
         """Handle process generating lots of output quickly."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -233,6 +240,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_empty_command_string(self):
         """Handle empty command string gracefully."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -255,6 +263,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_very_long_command(self):
         """Handle very long command line."""
+
         # Test a very long command string (the point is testing command line parsing/length handling)
         # Use Python's -c with a long but valid command
         long_python_code = 'import time; ' + '; '.join([f'x{i} = {i}' for i in range(50)]) + '; time.sleep(5)'
@@ -281,6 +290,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_clock_skew_tolerance(self):
         """Supervisor should handle timing edge cases."""
+
         # We can't actually change the system clock in a test, but we can verify
         # normal operation works (the clock adjustment logic is internal)
         config = self.make_config({
@@ -306,6 +316,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
     def test_fd_handling_normal_operation(self):
         """Supervisor should handle file descriptors correctly."""
+
         # This verifies supervisor's FD handling doesn't crash under normal conditions
         config = self.make_config({
             'groups': {

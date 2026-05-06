@@ -14,6 +14,7 @@ class TestSignals(SupervisorTestBase):
 
     def test_sigterm_stops_process_gracefully(self):
         """Process should handle SIGTERM and stop gracefully."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -46,6 +47,7 @@ class TestSignals(SupervisorTestBase):
 
     def test_sigkill_if_process_ignores_sigterm(self):
         """Process ignoring SIGTERM should be killed with SIGKILL."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -82,6 +84,7 @@ class TestSignals(SupervisorTestBase):
 
     def test_custom_stop_signal(self):
         """Process with custom stop_signal should receive that signal."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -111,6 +114,7 @@ class TestSignals(SupervisorTestBase):
 
     def test_stop_as_group(self):
         """stop_as_group should send signal to process group."""
+
         config = self.make_config({
             'groups': {
                 'test': {

@@ -16,6 +16,7 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
 
     def test_process_with_stdout_events_enabled(self):
         """Process with stdout events_enabled should start and run."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -38,6 +39,7 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
 
     def test_process_with_stderr_events_enabled(self):
         """Process with stderr events_enabled should start and run."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -62,6 +64,7 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
 
     def test_process_with_redirect_stderr(self):
         """Process with redirect_stderr=True should combine stderr into stdout."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -85,6 +88,7 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
 
     def test_process_without_logging_events(self):
         """Process with events_enabled=False should still run."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -108,6 +112,7 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
 
     def test_high_output_volume_handling(self):
         """Process generating lots of output should be handled gracefully."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -133,6 +138,7 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
 
     def test_mixed_logging_configurations(self):
         """Multiple processes with different logging configs should coexist."""
+
         config = self.make_config({
             'groups': {
                 'test': {

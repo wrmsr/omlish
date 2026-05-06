@@ -16,6 +16,7 @@ class TestRestartPolicies(SupervisorTestBase):
 
     def test_auto_restart_unexpected(self):
         """auto_restart='unexpected' should restart on unexpected exit codes."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -53,6 +54,7 @@ class TestRestartPolicies(SupervisorTestBase):
 
     def test_auto_restart_unconditional(self):
         """auto_restart='unconditional' should always restart."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -81,6 +83,7 @@ class TestRestartPolicies(SupervisorTestBase):
 
     def test_auto_restart_false(self):
         """auto_restart=False should not restart."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -115,6 +118,7 @@ class TestRestartPolicies(SupervisorTestBase):
 
     def test_expected_exit_codes(self):
         """Processes exiting with expected codes should not restart (unless unconditional)."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -146,6 +150,7 @@ class TestRestartPolicies(SupervisorTestBase):
 
     def test_start_retries_limit(self):
         """Process exceeding start_retries should enter FATAL state."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -176,6 +181,7 @@ class TestRestartPolicies(SupervisorTestBase):
 
     def test_backoff_timing(self):
         """Backoff delay should increase with each retry."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -210,6 +216,7 @@ class TestRestartPolicies(SupervisorTestBase):
 
     def test_successful_start_after_retry(self):
         """Process that eventually starts successfully should clear backoff."""
+
         # This test uses a process that fails the first time but succeeds after
         # We'll use slow_starter with a delay that's initially too short
         config = self.make_config({

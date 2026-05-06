@@ -18,6 +18,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_process_starts_and_runs(self):
         """Process with auto_start=True should start and reach RUNNING state."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -56,6 +57,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_process_with_auto_start_false(self):
         """Process with auto_start=False should remain STOPPED."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -82,6 +84,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_process_successful_exit(self):
         """Process that exits with expected code should reach EXITED state."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -111,6 +114,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_multiple_processes_in_group(self):
         """Multiple processes in same group should all start."""
+
         config = self.make_config({
             'groups': {
                 'multi': {
@@ -149,6 +153,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_multiple_groups(self):
         """Multiple process groups should all start."""
+
         config = self.make_config({
             'groups': {
                 'group1': {
@@ -182,6 +187,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_supervisor_shutdown_via_signal(self):
         """Sending SIGTERM to supervisor should trigger graceful shutdown."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -219,6 +225,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_process_exits_too_quickly_enters_backoff(self):
         """Process that exits before start_secs should enter BACKOFF."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -252,6 +259,7 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
 
     def test_http_api_shows_correct_state(self):
         """HTTP API should accurately reflect process states."""
+
         config = self.make_config({
             'groups': {
                 'test': {

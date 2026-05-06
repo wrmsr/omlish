@@ -14,6 +14,7 @@ class TestHttpApi(SupervisorTestBase):
 
     def test_http_server_starts(self):
         """HTTP server should start and be accessible."""
+
         config = self.make_config({
             'http_port': 19001,  # Use non-standard port to avoid conflicts
             'groups': {
@@ -63,6 +64,7 @@ class TestHttpApi(SupervisorTestBase):
 
     def test_http_shows_process_state(self):
         """HTTP API should show current process states."""
+
         config = self.make_config({
             'http_port': 19002,
             'groups': {
@@ -121,6 +123,7 @@ class TestHttpApi(SupervisorTestBase):
 
     def test_http_shows_state_transitions(self):
         """HTTP API should reflect real-time state changes."""
+
         config = self.make_config({
             'http_port': 19003,
             'groups': {
@@ -174,6 +177,7 @@ class TestHttpApi(SupervisorTestBase):
 
     def test_http_concurrent_connections(self):
         """HTTP server should handle concurrent connections."""
+
         config = self.make_config({
             'http_port': 19004,
             'groups': {
@@ -211,6 +215,7 @@ class TestHttpApi(SupervisorTestBase):
 
     def test_http_survives_process_crash(self):
         """HTTP server should continue working even if processes crash."""
+
         config = self.make_config({
             'http_port': 19005,
             'groups': {

@@ -14,6 +14,7 @@ class TestLogging(SupervisorTestBase):
 
     def test_stdout_capture_with_events(self):
         """stdout with events_enabled should generate ProcessLogStdoutEvent."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -46,6 +47,7 @@ class TestLogging(SupervisorTestBase):
 
     def test_stderr_capture_with_events(self):
         """stderr with events_enabled should generate ProcessLogStderrEvent."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -75,6 +77,7 @@ class TestLogging(SupervisorTestBase):
 
     def test_redirect_stderr_combines_streams(self):
         """redirect_stderr=True should combine stderr into stdout."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -105,6 +108,7 @@ class TestLogging(SupervisorTestBase):
 
     def test_events_contain_process_info(self):
         """Log events should contain process and PID information."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -136,6 +140,7 @@ class TestLogging(SupervisorTestBase):
 
     def test_output_without_events_enabled(self):
         """Process output without events_enabled should not generate events."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -165,6 +170,7 @@ class TestLogging(SupervisorTestBase):
 
     def test_output_from_multiple_processes(self):
         """Multiple processes should have their output captured separately."""
+
         config = self.make_config({
             'groups': {
                 'test': {

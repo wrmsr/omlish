@@ -16,6 +16,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_process_starts_and_runs(self):
         """Process with auto_start=True should start and reach RUNNING state."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -48,6 +49,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_process_with_auto_start_false(self):
         """Process with auto_start=False should remain STOPPED."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -72,6 +74,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_process_transitions_through_starting(self):
         """Process should transition STOPPED -> STARTING -> RUNNING."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -102,6 +105,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_process_exits_too_quickly_enters_backoff(self):
         """Process that exits before start_secs should enter BACKOFF."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -128,6 +132,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_process_successful_exit(self):
         """Process that exits with expected code should reach EXITED state."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -160,6 +165,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_multiple_processes_in_group(self):
         """Multiple processes in same group should all start."""
+
         config = self.make_config({
             'groups': {
                 'multi': {
@@ -197,6 +203,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_multiple_groups(self):
         """Multiple process groups should all start."""
+
         config = self.make_config({
             'groups': {
                 'group1': {
@@ -229,6 +236,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_process_stop_transition(self):
         """Stopping a running process should transition to STOPPED."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -262,6 +270,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
     def test_priority_based_startup_order(self):
         """Processes should start in priority order (lower priority first)."""
+
         config = self.make_config({
             'groups': {
                 'ordered': {

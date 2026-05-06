@@ -27,6 +27,7 @@ from ...utils.ostypes import Pid
 
 def get_free_port() -> int:
     """Get a free TCP port."""
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.bind(('localhost', 0))
@@ -38,6 +39,7 @@ def get_free_port() -> int:
 
 def is_process_running(pid: Pid) -> bool:
     """Check if process with PID exists."""
+
     try:
         os.kill(pid, 0)
         return True
@@ -101,6 +103,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
 
         Returns dict (not ServerConfig) since we'll serialize to JSON.
         """
+
         return {
             'nodaemon': nodaemon,
             'silent': True,
@@ -127,6 +130,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
             wait_for_http: Wait for HTTP API to be ready
             timeout: Timeout for HTTP readiness
         """
+
         # Ensure no supervisor already running
         if self.supervisor_proc is not None:
             raise RuntimeError('Supervisor already running')
@@ -171,6 +175,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
 
     def _wait_for_http_api(self, timeout: float = 5.0) -> None:
         """Poll until HTTP API responds."""
+
         deadline = time.time() + timeout
 
         while time.time() < deadline:
@@ -200,12 +205,14 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
 
     def _read_supervisor_pid(self) -> None:
         """Read supervisor PID from pidfile."""
+
         if self.pid_file.exists():
             with open(self.pid_file) as f:
                 self._supervisor_pid = Pid(int(f.read().strip()))
 
     def _stop_supervisor(self, timeout: float = 5.0) -> None:
         """Stop supervisor subprocess."""
+
         if self.supervisor_proc is None:
             return
 
@@ -225,6 +232,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
 
     def get_status(self) -> ta.Dict[str, ta.Any]:
         """Get supervisor status via HTTP API."""
+
         conn = http.client.HTTPConnection('localhost', self.http_port, timeout=5)
         try:
             conn.request('GET', '/')
@@ -246,6 +254,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
         Returns:
             Process info dict or None if not found
         """
+
         status = self.get_status()
 
         if ':' in name:
@@ -283,6 +292,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
         Raises:
             AssertionError: If timeout or process not found
         """
+
         if isinstance(state, ProcessState):
             state_str = state.name
         else:
@@ -318,12 +328,14 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
 
     def get_logs(self) -> str:
         """Read supervisor log file."""
+
         if self.log_file.exists():
             return self.log_file.read_text()
         return ''
 
     def assert_log_contains(self, text: str, message: ta.Optional[str] = None) -> None:
         """Assert log file contains text."""
+
         logs = self.get_logs()
         if text not in logs:
             self.fail(message or f'Log does not contain: {text}')
@@ -332,6 +344,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
 
     def send_signal(self, sig: int) -> None:
         """Send signal to supervisor process."""
+
         if self._supervisor_pid is None:
             self._read_supervisor_pid()
 
@@ -344,11 +357,13 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
 
     def assert_process_running(self, pid: Pid) -> None:
         """Assert process with PID is running."""
+
         if not is_process_running(pid):
             self.fail(f'Process {pid} is not running')
 
     def assert_process_dead(self, pid: Pid, timeout: float = 1.0) -> None:
         """Assert process with PID is dead (with optional wait)."""
+
         deadline = time.time() + timeout
 
         while time.time() < deadline:
@@ -366,6 +381,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
             message: ta.Optional[str] = None,
     ) -> None:
         """Poll until condition is true or timeout."""
+
         deadline = time.time() + timeout
 
         while time.time() < deadline:

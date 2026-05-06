@@ -35,6 +35,7 @@ PROGRAMS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'program
 
 def get_program_path(name: str) -> str:
     """Get absolute path to a test program."""
+
     return os.path.join(PROGRAMS_DIR, name)
 
 
@@ -62,6 +63,7 @@ class SupervisorTestBase(unittest.TestCase):
 
     def make_temp_dir(self) -> str:
         """Create a temporary directory that will be cleaned up."""
+
         d = tempfile.mkdtemp(prefix='supervisor_test_')
         self._temp_dirs.append(d)
         return d
@@ -108,6 +110,7 @@ class SupervisorTestBase(unittest.TestCase):
 
     def _event_callback(self, event: Event) -> None:
         """Internal event callback that captures all events."""
+
         self._events.append(event)
 
     @contextlib.contextmanager
@@ -132,6 +135,7 @@ class SupervisorTestBase(unittest.TestCase):
         Yields:
             Supervisor instance
         """
+
         self._events.clear()
 
         with contextlib.ExitStack() as es:
@@ -265,6 +269,7 @@ class SupervisorTestBase(unittest.TestCase):
         Raises:
             AssertionError: If timeout or process not found
         """
+
         deadline = time.time() + timeout
 
         while time.time() < deadline:
@@ -310,6 +315,7 @@ class SupervisorTestBase(unittest.TestCase):
         Raises:
             AssertionError: If timeout
         """
+
         deadline = time.time() + timeout
 
         while time.time() < deadline:
@@ -340,6 +346,7 @@ class SupervisorTestBase(unittest.TestCase):
         Raises:
             AssertionError: If timeout or sequence doesn't match
         """
+
         deadline = time.time() + timeout
         matches: ta.List[Event] = []
         search_idx = 0
@@ -370,6 +377,7 @@ class SupervisorTestBase(unittest.TestCase):
 
     def assert_process_alive(self, pid: Pid) -> None:
         """Assert process with PID is alive."""
+
         try:
             os.kill(pid, 0)
         except ProcessLookupError:
@@ -380,6 +388,7 @@ class SupervisorTestBase(unittest.TestCase):
 
     def assert_process_dead(self, pid: Pid, timeout: float = 1.0) -> None:
         """Assert process with PID is dead (with optional wait)."""
+
         deadline = time.time() + timeout
 
         while time.time() < deadline:
@@ -407,6 +416,7 @@ class SupervisorTestBase(unittest.TestCase):
             interval: Polling interval
             message: Custom failure message
         """
+
         deadline = time.time() + timeout
 
         while time.time() < deadline:

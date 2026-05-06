@@ -14,6 +14,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
 
     def test_multiple_processes_start_simultaneously(self):
         """Multiple processes starting at same time should all succeed."""
+
         # Create 10 processes that all auto-start
         processes = {
             f'concurrent{i}': {
@@ -49,6 +50,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
 
     def test_process_crashes_while_others_running(self):
         """One process crashing shouldn't affect others."""
+
         config = self.make_config({
             'groups': {
                 'mixed': {
@@ -94,6 +96,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
 
     def test_reaping_while_spawning(self):
         """Reaping dead processes while new ones are spawning."""
+
         config = self.make_config({
             'groups': {
                 'churn': {
@@ -141,6 +144,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
 
     def test_mixed_lifecycle_operations(self):
         """Different processes in different lifecycle stages simultaneously."""
+
         config = self.make_config({
             'groups': {
                 'mixed': {
@@ -192,6 +196,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
 
     def test_concurrent_process_exits(self):
         """Multiple processes exiting at similar times."""
+
         processes = {
             f'exiter{i}': {
                 'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 {1.0 + i * 0.2}',
@@ -224,6 +229,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
 
     def test_supervisor_handles_process_churn(self):
         """Supervisor handles high process churn correctly."""
+
         config = self.make_config({
             'groups': {
                 'churn': {

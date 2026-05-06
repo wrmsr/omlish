@@ -14,6 +14,7 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
 
     def test_auto_restart_unexpected(self):
         """auto_restart='unexpected' should restart on unexpected exit codes."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -66,6 +67,7 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
 
     def test_auto_restart_false(self):
         """auto_restart=False should not restart."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -100,6 +102,7 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
 
     def test_start_retries_limit(self):
         """Process exceeding start_retries should enter FATAL state."""
+
         config = self.make_config({
             'groups': {
                 'test': {

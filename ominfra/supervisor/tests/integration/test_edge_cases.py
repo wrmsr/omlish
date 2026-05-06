@@ -12,6 +12,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_with_working_directory(self):
         """Process with custom working directory should start in that directory."""
+
         temp_dir = self.make_temp_dir()
 
         config = self.make_config({
@@ -37,6 +38,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_with_environment_vars(self):
         """Process with custom environment variables."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -65,6 +67,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_spawns_children_orphans(self):
         """Process that spawns children and exits (creates orphans)."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -96,6 +99,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_rapid_start_stop_cycles(self):
         """Rapid start/stop cycles should be handled correctly."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -124,6 +128,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_with_umask(self):
         """Process with custom umask setting."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -146,6 +151,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_num_procs_multiple_instances(self):
         """num_procs > 1 should create multiple process instances."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -174,6 +180,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_command_with_quotes_and_spaces(self):
         """Command with quoted arguments and spaces."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -195,6 +202,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_that_execs_another_program(self):
         """Process that exec's another program (replaces itself)."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -220,6 +228,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_closes_all_fds(self):
         """Process that closes all file descriptors including stdio."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -244,6 +253,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_process_name_with_special_characters(self):
         """Process names with special characters (but valid)."""
+
         config = self.make_config({
             'groups': {
                 'test': {
@@ -269,6 +279,7 @@ class TestEdgeCases(SupervisorTestBase):
 
     def test_priority_zero(self):
         """Process with priority=0 should work."""
+
         config = self.make_config({
             'groups': {
                 'test': {
