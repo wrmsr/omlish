@@ -584,6 +584,26 @@ class TestDocstringContent:
 
         assert result == expected
 
+    def test_multiline_already_formatted_preserves_indentation(self) -> None:
+        """Multiline docstrings already in proper format should preserve internal indentation."""
+
+        src = normalize_indentation('''
+            """
+            TODO:
+             - user specified key construction
+             - option to not cache if too fast
+             - auto metadata:
+              - source
+              - qualname
+            """
+        ''').lstrip()
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should preserve the exact indentation structure
+        assert result == src
+
     def test_docstring_with_quotes_inside(self) -> None:
         """Docstrings containing quotes should be handled."""
 

@@ -157,6 +157,9 @@ class DocstringFixer:
         if len(quotes) != 3:
             return [token]
 
+        # Check if the docstring is already in "proper" multiline format (starts with newline after opening quotes)
+        already_multiline_format = content.startswith('\n')
+
         # Strip leading/trailing newlines (and any surrounding whitespace on those lines) from content that come from
         # multi-line format - these are formatting artifacts
         lines = content.split('\n')
@@ -177,38 +180,44 @@ class DocstringFixer:
             # Single line - strip all whitespace
             stripped_content = lines[0].strip() if lines else ''
         else:
-            # Multi-line - we need to normalize the indentation. Python's textwrap.dedent doesn't work well when the
-            # first line has no indent, so we do it manually: find the minimum indent of non-empty lines (excluding the
-            # first), then strip that from all lines.
-            dedented_lines = []
+            # Multi-line - only dedent if we're reformatting from "content on same line as quotes" format.
+            # If it's already in proper multiline format, preserve the content structure exactly.
+            if already_multiline_format:
+                # Already properly formatted - just preserve the content
+                stripped_content = '\n'.join(lines)
+            else:
+                # Needs reformatting - dedent the content. Python's textwrap.dedent doesn't work well when the first
+                # line has no indent, so we do it manually: find the minimum indent of non-empty lines (excluding the
+                # first), then strip that from all lines.
+                dedented_lines = []
 
-            # Find the minimum indentation of non-empty, non-first lines
-            min_indent = None
-            for _i, line in enumerate(lines[1:], start=1):  # Skip first line
-                if line.strip():  # Only consider non-empty lines
-                    # Count leading whitespace
-                    stripped = line.lstrip()
-                    indent_len = len(line) - len(stripped)
-                    if min_indent is None or indent_len < min_indent:
-                        min_indent = indent_len
+                # Find the minimum indentation of non-empty, non-first lines
+                min_indent = None
+                for _i, line in enumerate(lines[1:], start=1):  # Skip first line
+                    if line.strip():  # Only consider non-empty lines
+                        # Count leading whitespace
+                        stripped = line.lstrip()
+                        indent_len = len(line) - len(stripped)
+                        if min_indent is None or indent_len < min_indent:
+                            min_indent = indent_len
 
-            # If we found no indented lines, just use the lines as-is
-            if min_indent is None:
-                min_indent = 0
+                # If we found no indented lines, just use the lines as-is
+                if min_indent is None:
+                    min_indent = 0
 
-            # Now strip that minimum indent from all lines
-            for i, line in enumerate(lines):
-                if i == 0:
-                    # First line - just strip any leading/trailing whitespace
-                    dedented_lines.append(line.strip())
-                elif not line.strip():
-                    # Empty line - keep it empty
-                    dedented_lines.append('')
-                else:
-                    # Other lines - remove the minimum indent
-                    dedented_lines.append(line[min_indent:] if len(line) >= min_indent else line.lstrip())
+                # Now strip that minimum indent from all lines
+                for i, line in enumerate(lines):
+                    if i == 0:
+                        # First line - just strip any leading/trailing whitespace
+                        dedented_lines.append(line.strip())
+                    elif not line.strip():
+                        # Empty line - keep it empty
+                        dedented_lines.append('')
+                    else:
+                        # Other lines - remove the minimum indent
+                        dedented_lines.append(line[min_indent:] if len(line) >= min_indent else line.lstrip())
 
-            stripped_content = '\n'.join(dedented_lines)
+                stripped_content = '\n'.join(dedented_lines)
 
         # Calculate if single-line format fits in 120 chars
         single_line = f'{prefix}{quotes}{stripped_content}{quotes}'
