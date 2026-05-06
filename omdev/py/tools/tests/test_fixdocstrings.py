@@ -19,7 +19,7 @@ class TestSingleLineDocstrings:
         """Short module docstrings should remain on a single line."""
 
         src = '"""Short module docstring"""\n'
-        expected = '"""Short module docstring"""\n\n'
+        expected = '"""Short module docstring"""\n'
         fixer = DocstringFixer(src)
         result = fixer.fix()
         assert result == expected
@@ -176,10 +176,10 @@ class TestMultiLineDocstrings:
 
 
 class TestBlankLineAfterDocstring:
-    """Test that blank lines are always added after docstrings."""
+    """Test that blank lines are added after class/function docstrings (but not module docstrings)."""
 
-    def test_blank_line_added_after_module_docstring(self) -> None:
-        """Blank line should be added after module docstring."""
+    def test_blank_line_not_added_after_module_docstring(self) -> None:
+        """Blank line should NOT be added after module docstring."""
 
         src = normalize_indentation('''
             """Module doc"""
@@ -189,8 +189,8 @@ class TestBlankLineAfterDocstring:
         fixer = DocstringFixer(src)
         result = fixer.fix()
 
-        # Should have blank line between docstring and import
-        assert '"""Module doc"""\n\nimport os' in result
+        # Should NOT have blank line between docstring and import
+        assert '"""Module doc"""\nimport os' in result
 
     def test_blank_line_added_after_class_docstring(self) -> None:
         """Blank line should be added after class docstring."""
@@ -438,9 +438,11 @@ class TestEdgeCases:
         fixer = DocstringFixer(src)
         result = fixer.fix()
 
-        # All docstrings should have blank lines after them
-        docstrings = [
-            '"""Module docstring"""',
+        # Module docstring should NOT have blank line after it
+        assert '"""Module docstring"""\nclass A:' in result
+
+        # All class/function docstrings should have blank lines after them
+        class_function_docstrings = [
             '"""Class A"""',
             '"""Method A"""',
             '"""Class B"""',
@@ -448,7 +450,7 @@ class TestEdgeCases:
             '"""Standalone function"""',
         ]
 
-        for docstring in docstrings:
+        for docstring in class_function_docstrings:
             assert docstring in result
             # Check that there's a blank line after each
             assert f'{docstring}\n\n' in result

@@ -30,7 +30,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
             indent: int | str | None = None,
             separators: tuple[str, str] | None = None,
             sort_keys: bool = False,
-            style: ta.Callable[[ta.Any, State], tuple[str, str]] | None = None,
+            style: ta.Callable[[ta.Any, State], tuple[ta.Any, ta.Any]] | None = None,
             ensure_ascii: bool = True,
     ) -> None:
         super().__init__()

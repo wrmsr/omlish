@@ -4,10 +4,9 @@ Fix docstring formatting in Python source code.
 Reads Python source from stdin and outputs to stdout with docstrings reformatted according to:
 1. If docstring fits on a single 120-char line (including triple-quotes and indentation), make it single-line
 2. Otherwise, put each triple-quote on its own line with no content sharing the line
-3. Always ensure a blank line follows every docstring
+3. Always ensure a blank line follows class/function docstrings (but NOT module docstrings)
 
 TODO:
- - actually don't add a blank line after module docstring, but other rules still apply
  - optional overwrite in-place
    - only write out if different
  - accept dir args, recursive
@@ -42,6 +41,7 @@ class DocstringFixer:
             self._tokens = []
             self._tree = None
             self._docstring_positions: set[tuple[int, int]] = set()
+            self._module_docstring_positions: set[tuple[int, int]] = set()
             return
 
         # Parse AST to identify docstring positions
@@ -51,6 +51,7 @@ class DocstringFixer:
             # If we can't parse, don't try to fix anything
             self._tree = None
             self._docstring_positions = set()
+            self._module_docstring_positions = set()
         else:
             self._docstring_positions = self._find_docstring_positions()
 
@@ -61,6 +62,7 @@ class DocstringFixer:
             return set()
 
         positions = set()
+        module_positions = set()
 
         for node in ast.walk(self._tree):
             # Only these node types can have docstrings
@@ -76,8 +78,13 @@ class DocstringFixer:
                 expr_node = node.body[0]
                 if isinstance(expr_node.value, ast.Constant) and isinstance(expr_node.value.value, str):
                     # Record position (line, col_offset)
-                    positions.add((expr_node.lineno, expr_node.col_offset))
+                    pos = (expr_node.lineno, expr_node.col_offset)
+                    positions.add(pos)
+                    # Track module-level docstrings separately
+                    if isinstance(node, ast.Module):
+                        module_positions.add(pos)
 
+        self._module_docstring_positions = module_positions
         return positions
 
     def _is_docstring(self, token: tks.Token) -> bool:
@@ -88,6 +95,11 @@ class DocstringFixer:
 
         # Check if this token's position matches a docstring position
         return (token.line, token.utf8_byte_offset) in self._docstring_positions
+
+    def _is_module_docstring(self, token: tks.Token) -> bool:
+        """Check if a token is a module-level docstring."""
+
+        return (token.line, token.utf8_byte_offset) in self._module_docstring_positions
 
     def _get_string_content(self, token_src: str) -> tuple[str, str, str]:
         """
@@ -259,8 +271,9 @@ class DocstringFixer:
                 fixed_tokens = self._fix_docstring(token, indent)
                 tokens = tokens[:i] + fixed_tokens + tokens[i + 1:]
 
-                # Ensure blank line after docstring
-                tokens = self._ensure_blank_line_after_docstring(tokens, i)
+                # Ensure blank line after docstring (but not for module docstrings)
+                if not self._is_module_docstring(token):
+                    tokens = self._ensure_blank_line_after_docstring(tokens, i)
 
             i += 1
 
