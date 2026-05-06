@@ -654,3 +654,78 @@ def test_string_prefixes(prefix: str) -> None:
 
     # Prefix should be preserved
     assert f'{prefix}"""Docstring"""' in result
+
+
+class TestEndOfFile:
+    """Test that docstrings at the end of file don't add extra newlines."""
+
+    def test_function_docstring_at_eof(self) -> None:
+        """Function docstring at EOF should only have one trailing newline."""
+
+        src = 'def foo():\n    """Docstring"""\n    pass\n'
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should have blank line after docstring, but only one newline at EOF
+        assert result == 'def foo():\n    """Docstring"""\n\n    pass\n'
+        # Should NOT end with double newline
+        assert not result.endswith('\n\n')
+
+    def test_class_docstring_at_eof(self) -> None:
+        """Class docstring at EOF should only have one trailing newline."""
+
+        src = 'class Foo:\n    """Class docstring"""\n    pass\n'
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should have blank line after docstring, but only one newline at EOF
+        assert result == 'class Foo:\n    """Class docstring"""\n\n    pass\n'
+        assert not result.endswith('\n\n')
+
+    def test_method_docstring_at_eof(self) -> None:
+        """Method ending the file should only have one trailing newline."""
+
+        src = normalize_indentation('''
+            class Foo:
+                """Class doc"""
+
+                def method(self):
+                    """Method doc"""
+                    pass
+        ''').lstrip()
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should NOT end with double newline
+        assert not result.endswith('\n\n')
+        # Should end with exactly one newline
+        assert result.endswith('\n')
+        assert result.endswith('pass\n')
+
+    def test_empty_function_with_only_docstring_at_eof(self) -> None:
+        """Function with only a docstring at EOF should only have one trailing newline."""
+
+        src = 'def foo():\n    """Just a docstring"""\n'
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should NOT end with double newline
+        assert not result.endswith('\n\n')
+        # Should end with exactly one newline
+        assert result.endswith('\n')
+
+    def test_module_docstring_only_at_eof(self) -> None:
+        """Module with only a docstring should keep one trailing newline."""
+
+        src = '"""Module docstring"""\n'
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Module docstrings don't get blank lines, so should be unchanged
+        assert result == src
+        assert not result.endswith('\n\n')

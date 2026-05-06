@@ -139,9 +139,8 @@ class DocstringFixer:
     def _calculate_display_width(self, s: str) -> int:
         """Calculate the display width of a string (treating tabs as single characters for simplicity)."""
 
-        # For docstring width calculation, we need to account for indentation
-        # Tabs are typically 8 spaces, but in code they align to tab stops
-        # For simplicity, we'll count each tab as 4 spaces
+        # For docstring width calculation, we need to account for indentation. Tabs are typically 8 spaces, but in code
+        # they align to tab stops. For simplicity, we'll count each tab as 4 spaces.
         return len(s.replace('\t', '    '))
 
     def _fix_docstring(self, token: tks.Token, indent: str) -> list[tks.Token]:
@@ -157,8 +156,8 @@ class DocstringFixer:
         if len(quotes) != 3:
             return [token]
 
-        # Strip leading/trailing newlines (and any surrounding whitespace on those lines)
-        # from content that come from multi-line format - these are formatting artifacts
+        # Strip leading/trailing newlines (and any surrounding whitespace on those lines) from content that come from
+        # multi-line format - these are formatting artifacts
         lines = content.split('\n')
 
         # Remove empty leading lines
@@ -182,9 +181,8 @@ class DocstringFixer:
             # Use single-line format
             new_src = single_line
         else:
-            # Use multi-line format with triple-quotes on separate lines
-            # Keep the original content structure (including any indentation within)
-            # The closing quotes should be indented to match the opening quotes
+            # Use multi-line format with triple-quotes on separate lines. Keep the original content structure (including
+            # any indentation within). The closing quotes should be indented to match the opening quotes.
             new_src = f'{prefix}{quotes}\n{stripped_content}\n{indent}{quotes}'
 
         return [tks.Token(name='STRING', src=new_src, line=token.line, utf8_byte_offset=token.utf8_byte_offset)]
@@ -226,11 +224,20 @@ class DocstringFixer:
             else:
                 break
 
-        # If we don't have at least one blank line (2 newlines total including the one right after docstring),
-        # we need to add a NL token
+        # Check if we're at EOF (only ENDMARKER or nothing left, possibly with DEDENT/INDENT tokens). If so, don't add a
+        # blank line as it would create an extra newline at EOF.
+        temp_idx = idx
+        while temp_idx < len(tokens) and tokens[temp_idx].name in ('DEDENT', 'INDENT'):
+            temp_idx += 1
+
+        if temp_idx >= len(tokens) or tokens[temp_idx].name == 'ENDMARKER':
+            return tokens
+
+        # If we don't have at least one blank line (2 newlines total including the one right after docstring), we need
+        # to add a NL token
         if newline_count == 0:
-            # Insert a NL token to create a blank line
-            # We need to insert it right after the first NEWLINE following the docstring
+            # Insert a NL token to create a blank line. We need to insert it right after the first NEWLINE following the
+            # docstring.
             new_tokens = [*tokens[:first_newline_idx], tks.Token('NL', '\n'), *tokens[first_newline_idx:]]
             return new_tokens
 
@@ -251,8 +258,8 @@ class DocstringFixer:
             token = tokens[i]
 
             if self._is_docstring(token):
-                # Get the indentation before this token
-                # The indentation could be an INDENT token or UNIMPORTANT_WS before the docstring on the same line
+                # Get the indentation before this token. The indentation could be an INDENT token or UNIMPORTANT_WS
+                # before the docstring on the same line.
                 indent = ''
                 j = i - 1
 
