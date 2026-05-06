@@ -8,6 +8,8 @@ import os
 import sys
 import time
 
+from omlish.lite.check import check
+
 from ...events import ProcessStateBackoffEvent
 from ...states import ProcessState
 from .base import SupervisorTestBase
@@ -242,7 +244,7 @@ class TestFaultTolerance(SupervisorTestBase):
             # Collect all PIDs
             pids = set()
             for i in range(10):
-                proc = self.get_process(sup, f'worker{i}')
+                proc = check.not_none(self.get_process(sup, f'worker{i}'))
                 pids.add(proc.pid)
 
             # All PIDs should be unique

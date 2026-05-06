@@ -171,7 +171,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/inject.py', sha1='8cfee01601e9b8d7a4689cb5ba38de8c2bdb4706'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='types.py', sha1='6df5c3fe0ea068f00491eff16bb676aae0bd3de2'),
+            dict(path='types.py', sha1='2c63168e6d580757273f1f0b446dd183ca68c09d'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='35114ed9cf2db0d910261b7c861617147f9ed5d3'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
             dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='eedb25b2f30534b6c2f1799a8ecbab2129ec12d6'),  # noqa
@@ -14812,6 +14812,11 @@ class Process(
     @property
     @abc.abstractmethod
     def state(self) -> ProcessState:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def backoff(self) -> int:
         raise NotImplementedError
 
     @abc.abstractmethod

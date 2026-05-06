@@ -12,12 +12,15 @@ import time
 from .helpers import log
 
 
+##
+
+
 def sigterm_handler(signum, frame):
     log(f'Received signal {signum}, exiting')
     sys.exit(0)
 
 
-def main():
+def main() -> None:
     signal.signal(signal.SIGTERM, sigterm_handler)
 
     startup_delay = float(sys.argv[1]) if len(sys.argv) > 1 else 3.0

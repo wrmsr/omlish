@@ -12,7 +12,10 @@ import time
 from .helpers import log
 
 
-def main():
+##
+
+
+def main() -> None:
     signal.signal(signal.SIGTERM, signal.SIG_IGN)
     interval = float(sys.argv[1]) if len(sys.argv) > 1 else 1.0
 

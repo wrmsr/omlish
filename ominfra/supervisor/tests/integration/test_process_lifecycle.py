@@ -66,7 +66,7 @@ class TestProcessLifecycle(SupervisorTestBase):
             time.sleep(1.0)
 
             proc = self.get_process(sup, 'manual')
-            self.assertIsNotNone(proc)
+            assert proc is not None
             self.assertEqual(proc.state, ProcessState.STOPPED)
             self.assertEqual(proc.pid, 0)
 
@@ -92,6 +92,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
             # Process should be in STARTING state initially
             proc = self.get_process(sup, 'slow')
+            assert proc is not None
             self.assertIn(proc.state, [ProcessState.STARTING, ProcessState.RUNNING])
 
             # Eventually should reach RUNNING
@@ -122,6 +123,7 @@ class TestProcessLifecycle(SupervisorTestBase):
 
             # Process should be in BACKOFF or later state
             proc = self.get_process(sup, 'quick_exit')
+            assert proc is not None
             self.assertIn(proc.state, [ProcessState.BACKOFF, ProcessState.STARTING, ProcessState.FATAL])
 
     def test_process_successful_exit(self):

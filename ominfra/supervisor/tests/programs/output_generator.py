@@ -12,7 +12,10 @@ from .helpers import err
 from .helpers import log
 
 
-def main():
+##
+
+
+def main() -> None:
     num_lines = int(sys.argv[1]) if len(sys.argv) > 1 else 10
     interval = float(sys.argv[2]) if len(sys.argv) > 2 else 0.5
     stderr_ratio = float(sys.argv[3]) if len(sys.argv) > 3 else 0.2  # fraction to stderr

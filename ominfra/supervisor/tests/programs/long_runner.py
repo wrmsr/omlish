@@ -12,12 +12,15 @@ from .helpers import err
 from .helpers import log
 
 
+##
+
+
 def sigterm_handler(signum, frame):
     err(f'Received signal {signum}, exiting gracefully')
     sys.exit(0)
 
 
-def main():
+def main() -> None:
     signal.signal(signal.SIGTERM, sigterm_handler)
     signal.signal(signal.SIGINT, sigterm_handler)
 

@@ -3,6 +3,8 @@
 import sys
 import time
 
+from ...events import Event
+from ...groups import ProcessGroupManager
 from ...states import ProcessState
 from .base import SupervisorTestBase
 
@@ -205,12 +207,11 @@ class TestConcurrency(SupervisorTestBase):
             time.sleep(1.0)
 
             # Get the group
-            from ...groups import ProcessGroupManager
-            groups = sup._process_groups  # type: ignore
+            groups = sup._process_groups
 
             if isinstance(groups, ProcessGroupManager):
                 group = groups.get('dynamic')
-                self.assertIsNotNone(group)
+                assert group is not None
 
                 # Try group operations while processes are transitioning
                 unstopped = group.get_unstopped_processes()
@@ -256,7 +257,6 @@ class TestConcurrency(SupervisorTestBase):
             self.assertGreater(len(self._events), 5, 'Should have multiple events')
 
             # Events should be well-formed (no corruption from concurrency)
-            from ...events import Event
             for event in self._events:
                 self.assertIsInstance(event, Event)
 
@@ -293,12 +293,16 @@ class TestConcurrency(SupervisorTestBase):
 
             # Long should still be running
             long_proc = self.get_process(sup, 'long')
+            assert long_proc is not None
+
             self.assertEqual(long_proc.state, ProcessState.RUNNING)
             self.assert_process_alive(long_proc.pid)
 
             # Short processes should be exited
             short1 = self.get_process(sup, 'short1')
             short2 = self.get_process(sup, 'short2')
+            assert short1 is not None
+            assert short2 is not None
 
             self.assertEqual(short1.state, ProcessState.EXITED)
             self.assertEqual(short2.state, ProcessState.EXITED)

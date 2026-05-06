@@ -156,6 +156,11 @@ class Process(
     def state(self) -> ProcessState:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def backoff(self) -> int:
+        raise NotImplementedError
+
     @abc.abstractmethod
     def after_setuid(self) -> None:
         raise NotImplementedError

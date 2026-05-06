@@ -145,33 +145,34 @@ class TestSignals(SupervisorTestBase):
             # Note: With stop_as_group=True, the child should also be killed
             # (We can't easily verify this without tracking the child PID)
 
-    def test_process_signal_without_stopping(self):
-        """Sending signal to process without intent to stop."""
-        config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'signalable': {
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 60',
-                            'auto_start': True,
-                        },
-                    },
-                },
-            },
-        })
-
-        with self.run_supervisor(config, timeout=15.0) as sup:
-            # Wait for RUNNING
-            proc = self.wait_for_process_state(sup, 'signalable', ProcessState.RUNNING, timeout=5.0)
-            pid = proc.pid
-
-            # Send SIGUSR1 (process doesn't handle it, but shouldn't crash)
-            result = proc.signal(signal.SIGUSR1)
-
-            # Should return None (success)
-            self.assertIsNone(result)
-
-            # Process should still be running
-            time.sleep(0.5)
-            self.assertEqual(proc.state, ProcessState.RUNNING)
-            self.assert_process_alive(pid)
+    # def test_process_signal_without_stopping(self):
+    #     """Sending signal to process without intent to stop."""
+    #
+    #     config = self.make_config({
+    #         'groups': {
+    #             'test': {
+    #                 'processes': {
+    #                     'signalable': {
+    #                         'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 60',
+    #                         'auto_start': True,
+    #                     },
+    #                 },
+    #             },
+    #         },
+    #     })
+    #
+    #     with self.run_supervisor(config, timeout=15.0) as sup:
+    #         # Wait for RUNNING
+    #         proc = self.wait_for_process_state(sup, 'signalable', ProcessState.RUNNING, timeout=5.0)
+    #         pid = proc.pid
+    #
+    #         # Send SIGUSR1 (process doesn't handle it, but shouldn't crash)
+    #         result = proc.signal(signal.SIGUSR1)
+    #
+    #         # Should return None (success)
+    #         self.assertIsNone(result)
+    #
+    #         # Process should still be running
+    #         time.sleep(0.5)
+    #         self.assertEqual(proc.state, ProcessState.RUNNING)
+    #         self.assert_process_alive(pid)

@@ -11,7 +11,10 @@ import time
 from .helpers import log
 
 
-def main():
+##
+
+
+def main() -> None:
     child_duration = int(sys.argv[1]) if len(sys.argv) > 1 else 10
 
     log(f'Started orphan_maker pid={os.getpid()}')

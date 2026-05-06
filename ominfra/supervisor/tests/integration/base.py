@@ -3,8 +3,10 @@
 import contextlib
 import os
 import os.path
+import shutil
 import signal
 import tempfile
+import threading
 import time
 import typing as ta
 import unittest
@@ -12,8 +14,10 @@ import unittest
 from omlish.lite.inject import inj
 
 from ...configs import ServerConfig
+from ...configs import prepare_server_config
 from ...events import Event
 from ...events import EventCallbacks
+from ...groups import ProcessGroupManager
 from ...inject import bind_server
 from ...states import ProcessState
 from ...supervisor import Supervisor
@@ -51,7 +55,6 @@ class SupervisorTestBase(unittest.TestCase):
         # Clean up temp directories
         for d in self._temp_dirs:
             if os.path.exists(d):
-                import shutil
                 shutil.rmtree(d, ignore_errors=True)
 
     #
@@ -85,7 +88,6 @@ class SupervisorTestBase(unittest.TestCase):
                 }
             })
         """
-        from ...configs import prepare_server_config
 
         merged = {
             'nodaemon': nodaemon,
@@ -97,7 +99,7 @@ class SupervisorTestBase(unittest.TestCase):
 
         prepared = prepare_server_config(merged)
 
-        return ServerConfig(**prepared)  # type: ignore
+        return ServerConfig(**prepared)
 
     #
 
@@ -166,7 +168,6 @@ class SupervisorTestBase(unittest.TestCase):
             supervisor._test_should_stop = should_stop  # type: ignore
 
             # Run in background thread so we can yield control
-            import threading
 
             exc_holder: ta.List[ta.Optional[BaseException]] = [None]
 
@@ -204,10 +205,9 @@ class SupervisorTestBase(unittest.TestCase):
 
     def _cleanup_processes(self, supervisor: Supervisor) -> None:
         """Force cleanup of all supervisor child processes."""
-        from ...groups import ProcessGroupManager
 
         try:
-            groups = supervisor._process_groups  # type: ignore
+            groups = supervisor._process_groups
             if isinstance(groups, ProcessGroupManager):
                 for proc in groups.all_processes():
                     if proc.pid:
@@ -222,11 +222,8 @@ class SupervisorTestBase(unittest.TestCase):
 
     def get_process(self, supervisor: Supervisor, name: str) -> ta.Optional[Process]:
         """Get a process by name (format: 'group:process' or 'process')."""
-        from ...groups import ProcessGroupManager
 
-        groups = supervisor._process_groups  # type: ignore
-        if not isinstance(groups, ProcessGroupManager):
-            return None
+        groups = supervisor._process_groups
 
         if ':' in name:
             group_name, proc_name = name.split(':', 1)

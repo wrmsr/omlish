@@ -46,6 +46,7 @@ class TestHttpApi(SupervisorTestBase):
 
                 # Should be JSON
                 content_type = resp.getheader('Content-Type')
+                assert content_type is not None
                 self.assertIn('json', content_type.lower())
 
                 # Read and parse body

@@ -10,7 +10,10 @@ import sys
 from .helpers import log
 
 
-def main():
+##
+
+
+def main() -> None:
     log(f'Started stdin_echo pid={os.getpid()}')
 
     try:

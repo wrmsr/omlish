@@ -22,7 +22,18 @@ class DocstringFixer:
         super().__init__()
 
         self._src = src
-        self._tokens = list(tks.src_to_tokens(src))
+
+        self._tree: ast.Module | None
+
+        # Try to tokenize and parse - if either fails, we can't fix anything
+        try:
+            self._tokens = list(tks.src_to_tokens(src))
+        except Exception:  # noqa
+            # If tokenization fails, we can't do anything
+            self._tokens = []
+            self._tree = None
+            self._docstring_positions: set[tuple[int, int]] = set()
+            return
 
         # Parse AST to identify docstring positions
         try:
@@ -30,12 +41,15 @@ class DocstringFixer:
         except SyntaxError:
             # If we can't parse, don't try to fix anything
             self._tree = None
-            self._docstring_positions: set[tuple[int, int]] = set()
+            self._docstring_positions = set()
         else:
             self._docstring_positions = self._find_docstring_positions()
 
     def _find_docstring_positions(self) -> set[tuple[int, int]]:
         """Find all docstring positions (line, col_offset) in the AST."""
+        if self._tree is None:
+            return set()
+
         positions = set()
 
         for node in ast.walk(self._tree):
@@ -86,10 +100,10 @@ class DocstringFixer:
 
         # Extract quotes
         remainder = src[i:]
-        if remainder.startswith('"""') or remainder.startswith("'''"):
+        if remainder.startswith(('"""', "'''")):
             quotes = remainder[:3]
             content = remainder[3:-3]
-        elif remainder.startswith('"') or remainder.startswith("'"):
+        elif remainder.startswith(('"', "'")):
             quotes = remainder[0]
             content = remainder[1:-1]
         else:
@@ -116,19 +130,34 @@ class DocstringFixer:
         if len(quotes) != 3:
             return [token]
 
-        # Check if content has explicit newlines
-        has_newlines = '\n' in content
+        # Strip leading/trailing newlines (and any surrounding whitespace on those lines)
+        # from content that come from multi-line format - these are formatting artifacts
+        lines = content.split('\n')
+
+        # Remove empty leading lines
+        while lines and not lines[0].strip():
+            lines.pop(0)
+
+        # Remove empty trailing lines
+        while lines and not lines[-1].strip():
+            lines.pop()
+
+        stripped_content = '\n'.join(lines)
+
+        # Check if the *stripped* content has explicit newlines (i.e., it's meant to be multi-line)
+        has_explicit_newlines = '\n' in stripped_content
 
         # Calculate if single-line format fits in 120 chars
-        single_line = f'{prefix}{quotes}{content}{quotes}'
+        single_line = f'{prefix}{quotes}{stripped_content}{quotes}'
         single_line_with_indent = f'{indent}{single_line}'
 
-        if not has_newlines and self._calculate_display_width(single_line_with_indent) <= 120:
+        if not has_explicit_newlines and self._calculate_display_width(single_line_with_indent) <= 120:
             # Use single-line format
             new_src = single_line
         else:
             # Use multi-line format with triple-quotes on separate lines
-            new_src = f'{prefix}{quotes}\n{content}\n{quotes}'
+            # Keep the original content structure (including any indentation within)
+            new_src = f'{prefix}{quotes}\n{stripped_content}\n{quotes}'
 
         return [tks.Token(name='STRING', src=new_src, line=token.line, utf8_byte_offset=token.utf8_byte_offset)]
 
@@ -144,7 +173,7 @@ class DocstringFixer:
         """
         # Find the next NEWLINE token after the docstring
         idx = docstring_idx + 1
-        while idx < len(tokens) and tokens[idx].name in ('UNIMPORTANT_WS',):
+        while idx < len(tokens) and tokens[idx].name == 'UNIMPORTANT_WS':
             idx += 1
 
         if idx >= len(tokens) or tokens[idx].name != 'NEWLINE':
@@ -173,7 +202,7 @@ class DocstringFixer:
         if newline_count == 0:
             # Insert a NL token to create a blank line
             # We need to insert it right after the first NEWLINE following the docstring
-            new_tokens = tokens[:first_newline_idx] + [tks.Token('NL', '\n')] + tokens[first_newline_idx:]
+            new_tokens = [*tokens[:first_newline_idx], tks.Token('NL', '\n'), *tokens[first_newline_idx:]]
             return new_tokens
 
         return tokens
@@ -186,22 +215,29 @@ class DocstringFixer:
 
         tokens = self._tokens[:]
 
-        # Process tokens in reverse order to avoid index shifting issues
-        # First pass: identify and fix docstrings
+        # Identify and fix docstrings
         i = 0
         while i < len(tokens):
             token = tokens[i]
 
             if self._is_docstring(token):
                 # Get the indentation before this token
+                # The indentation could be an INDENT token or UNIMPORTANT_WS before the docstring on the same line
                 indent = ''
                 j = i - 1
-                while j >= 0 and tokens[j].name == 'UNIMPORTANT_WS':
-                    indent = tokens[j].src + indent
-                    j -= 1
-                    if '\n' in tokens[j + 1].src:
-                        # We found the whitespace on the same line as the docstring
+
+                # Look backwards for INDENT or UNIMPORTANT_WS
+                while j >= 0:
+                    if tokens[j].name == 'INDENT':
+                        indent = tokens[j].src
                         break
+                    elif tokens[j].name == 'UNIMPORTANT_WS' and '\n' not in tokens[j].src:
+                        indent = tokens[j].src
+                        break
+                    elif tokens[j].name in ('NEWLINE', 'NL'):
+                        # Reached the previous line without finding indent
+                        break
+                    j -= 1
 
                 # Fix the docstring
                 fixed_tokens = self._fix_docstring(token, indent)
