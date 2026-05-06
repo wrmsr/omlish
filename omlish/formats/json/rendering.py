@@ -30,7 +30,7 @@ class AbstractJsonRenderer(lang.Abstract, ta.Generic[I]):
             indent: int | str | None = None,
             separators: tuple[str, str] | None = None,
             sort_keys: bool = False,
-            style: ta.Callable[[ta.Any, State], tuple[ta.Any, ta.Any]] | None = None,
+            style: ta.Callable[[ta.Any, State], tuple[ta.Any, ta.Any] | None] | None = None,
             ensure_ascii: bool = True,
     ) -> None:
         super().__init__()
@@ -122,11 +122,11 @@ class JsonRenderer(AbstractJsonRenderer[ta.Any]):
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
     ) -> None:
+        post: ta.Any = None
         if self._style is not None:
-            pre, post = self._style(o, state)
-            self._write(pre)
-        else:
-            post = None
+            if (st := self._style(o, state)) is not None:
+                pre, post = st
+                self._write(pre)
 
         if isinstance(o, SCALAR_TYPES):
             # FIXME: `less` workaround, doesn't carry color code across newlines

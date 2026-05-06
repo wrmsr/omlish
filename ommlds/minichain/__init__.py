@@ -768,6 +768,10 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .ui.json import (  # noqa
+        render_json_ui_text,
+    )
+
     from .ui.rich import (  # noqa
         ui_text_to_rich_text,
     )

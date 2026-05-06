@@ -37,11 +37,11 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[Event]]):
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
     ) -> ta.Iterator[str]:
+        post: ta.Any = None
         if self._style is not None:
-            pre, post = self._style(o, state)
-            yield pre
-        else:
-            post = None
+            if (tp := self._style(o, state)) is not None:
+                pre, post = tp
+                yield pre
 
         if isinstance(o, SCALAR_TYPES):
             yield self._format_scalar(o)  # type: ignore

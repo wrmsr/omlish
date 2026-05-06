@@ -18,3 +18,14 @@ with _lang.auto_proxy_init(globals()):
     from .errors import (  # noqa
         Json5Error,
     )
+
+    from .literals import (  # noqa
+        translate_string_literal,
+        parse_string_literal,
+
+        parse_number_literal,
+    )
+
+    from .rendering import (  # noqa
+        Json5Renderer,
+    )
