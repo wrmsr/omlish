@@ -215,7 +215,7 @@ ruff-stats: venv
 
 .PHONY: fix-docstrings
 fix-docstrings: venv
-	${PYTHON} -m omdev.py.tools.fixdocstrings -j- -X '(?m)^# @omlish-generated$$' -W --dry-run ${SRCS}
+	${PYTHON} -m omdev.py.tools.fixdocstrings -j- -X '(?m)^# @omlish-generated$$' -W ${SRCS}
 
 RUFF_FIX_CODES:=\
 	COM812 \
