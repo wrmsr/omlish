@@ -1,3 +1,4 @@
+# @omlish-no-fixdocstrings
 """Tests for parse_from_object function and attribute docstrings."""
 from unittest.mock import patch
 

@@ -1,3 +1,4 @@
+# @omlish-no-fixdocstrings
 """Tests for generic docstring routines."""
 import pytest
 

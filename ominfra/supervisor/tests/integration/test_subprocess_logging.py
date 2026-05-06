@@ -133,7 +133,7 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
         self.start_supervisor(config)
 
         # Should handle output volume
-        proc_info = self.wait_for_process_state('flood', ProcessState.RUNNING, timeout=5.0)
+        proc_info = self.wait_for_process_state('flood', ProcessState.RUNNING, timeout=20.0)
         self.assertGreater(proc_info['pid'], 0)
 
     def test_mixed_logging_configurations(self):

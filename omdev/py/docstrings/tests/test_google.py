@@ -1,3 +1,4 @@
+# @omlish-no-fixdocstrings
 """Tests for Google-style docstring routines."""
 import functools
 import itertools
