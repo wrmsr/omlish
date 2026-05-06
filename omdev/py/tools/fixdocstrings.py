@@ -442,7 +442,7 @@ class _Runner:
                     fp,
                     exclude_src_pats_srcs=self._exclude_src_pats_srcs,
                 )
-                for fp in file_paths
+                for fp in sorted(file_paths)
             ]
 
             for fut in futs:
