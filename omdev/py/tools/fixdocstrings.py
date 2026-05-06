@@ -7,6 +7,7 @@ Reads Python source from stdin and outputs to stdout with docstrings reformatted
 3. Always ensure a blank line follows every docstring
 
 TODO:
+ - no blank line after module docstring
  - write in-place
  - dir roots, recursive
  - ignore pats

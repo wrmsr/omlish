@@ -1,6 +1,4 @@
-"""
-Comprehensive test suite for fixdocstrings tool.
-"""
+"""Comprehensive test suite for fixdocstrings tool."""
 import textwrap
 
 import pytest
@@ -10,6 +8,7 @@ from ..fixdocstrings import DocstringFixer
 
 def normalize_indentation(s: str) -> str:
     """Remove common leading indentation from a string."""
+
     return textwrap.dedent(s)
 
 
@@ -18,6 +17,7 @@ class TestSingleLineDocstrings:
 
     def test_short_module_docstring_stays_single_line(self) -> None:
         """Short module docstrings should remain on a single line."""
+
         src = '"""Short module docstring"""\n'
         expected = '"""Short module docstring"""\n\n'
         fixer = DocstringFixer(src)
@@ -26,6 +26,7 @@ class TestSingleLineDocstrings:
 
     def test_short_class_docstring_stays_single_line(self) -> None:
         """Short class docstrings should remain on a single line."""
+
         src = normalize_indentation('''
             class Foo:
                 """Short"""
@@ -45,6 +46,7 @@ class TestSingleLineDocstrings:
 
     def test_short_function_docstring_stays_single_line(self) -> None:
         """Short function docstrings should remain on a single line."""
+
         src = normalize_indentation('''
             def foo():
                 """Returns nothing"""
@@ -64,6 +66,7 @@ class TestSingleLineDocstrings:
 
     def test_short_method_docstring_stays_single_line(self) -> None:
         """Short method docstrings should remain on a single line."""
+
         src = normalize_indentation('''
             class Foo:
                 """Class doc"""
@@ -89,6 +92,7 @@ class TestSingleLineDocstrings:
 
     def test_120_char_limit_single_line(self) -> None:
         """Docstrings that fit exactly on 120 chars should stay single-line."""
+
         # 120 chars total including indentation and triple-quotes
         # 4 spaces indent + 3 (""") + content + 3 (""") = 120
         # So content should be 120 - 4 - 6 = 110 chars
@@ -110,6 +114,7 @@ class TestMultiLineDocstrings:
 
     def test_long_single_line_converts_to_multiline(self) -> None:
         """Long single-line docstrings should be converted to multi-line."""
+
         # Create a docstring that's definitely too long
         content = (
             'This is a very long docstring that definitely exceeds 120 characters '
@@ -126,6 +131,7 @@ class TestMultiLineDocstrings:
 
     def test_multiline_docstring_preserved(self) -> None:
         """Multi-line docstrings should keep their structure."""
+
         src = normalize_indentation('''
             def foo():
                 """
@@ -145,6 +151,7 @@ class TestMultiLineDocstrings:
 
     def test_multiline_with_internal_formatting(self) -> None:
         """Multi-line docstrings with internal formatting should preserve it."""
+
         src = normalize_indentation('''
             def foo():
                 """
@@ -173,6 +180,7 @@ class TestBlankLineAfterDocstring:
 
     def test_blank_line_added_after_module_docstring(self) -> None:
         """Blank line should be added after module docstring."""
+
         src = normalize_indentation('''
             """Module doc"""
             import os
@@ -186,6 +194,7 @@ class TestBlankLineAfterDocstring:
 
     def test_blank_line_added_after_class_docstring(self) -> None:
         """Blank line should be added after class docstring."""
+
         src = normalize_indentation('''
             class Foo:
                 """Class doc"""
@@ -204,6 +213,7 @@ class TestBlankLineAfterDocstring:
 
     def test_blank_line_added_after_function_docstring(self) -> None:
         """Blank line should be added after function docstring."""
+
         src = normalize_indentation('''
             def foo():
                 """Function doc"""
@@ -219,6 +229,7 @@ class TestBlankLineAfterDocstring:
 
     def test_existing_blank_line_preserved(self) -> None:
         """Existing blank lines after docstrings should be preserved."""
+
         src = normalize_indentation('''
             def foo():
                 """Function doc"""
@@ -238,6 +249,7 @@ class TestNonDocstringStrings:
 
     def test_regular_string_untouched(self) -> None:
         """Regular triple-quoted strings should not be modified."""
+
         src = normalize_indentation('''
             def foo():
                 """Real docstring"""
@@ -254,6 +266,7 @@ class TestNonDocstringStrings:
 
     def test_long_regular_string_untouched(self) -> None:
         """Long regular strings should not be converted to multi-line."""
+
         long_str = 'x' * 150
         src = f'x = """{long_str}"""\n'
 
@@ -265,6 +278,7 @@ class TestNonDocstringStrings:
 
     def test_multiline_regular_string_untouched(self) -> None:
         """Multi-line regular strings should not be modified."""
+
         src = normalize_indentation('''
             x = """Line 1
             Line 2
@@ -283,6 +297,7 @@ class TestIndentation:
 
     def test_nested_class_indentation(self) -> None:
         """Nested classes should handle indentation correctly."""
+
         src = normalize_indentation('''
             class Outer:
                 """Outer class"""
@@ -305,6 +320,7 @@ class TestIndentation:
 
     def test_deeply_indented_function(self) -> None:
         """Deeply indented functions should calculate width correctly."""
+
         # 8 spaces indent + long docstring should convert to multi-line
         content = 'x' * 100  # 100 + 6 (""") + 8 (indent) = 114, but create longer to be sure
         content = 'x' * 120
@@ -322,6 +338,7 @@ class TestEdgeCases:
 
     def test_async_function_docstring(self) -> None:
         """Async function docstrings should be handled."""
+
         src = normalize_indentation('''
             async def foo():
                 """Async function"""
@@ -335,6 +352,7 @@ class TestEdgeCases:
 
     def test_single_quote_docstrings(self) -> None:
         """Triple single-quote docstrings should be handled."""
+
         src = "def foo():\n    '''Single quote docstring'''\n    pass\n"
 
         fixer = DocstringFixer(src)
@@ -345,6 +363,7 @@ class TestEdgeCases:
 
     def test_raw_string_docstring(self) -> None:
         """Raw string docstrings should be handled."""
+
         src = 'def foo():\n    r"""Raw docstring with \\n escape"""\n    pass\n'
 
         fixer = DocstringFixer(src)
@@ -355,6 +374,7 @@ class TestEdgeCases:
 
     def test_empty_module(self) -> None:
         """Empty modules should not crash."""
+
         src = ''
 
         fixer = DocstringFixer(src)
@@ -364,6 +384,7 @@ class TestEdgeCases:
 
     def test_module_with_only_comments(self) -> None:
         """Modules with only comments should work."""
+
         src = '# Just a comment\n'
 
         fixer = DocstringFixer(src)
@@ -373,6 +394,7 @@ class TestEdgeCases:
 
     def test_syntax_error_returns_original(self) -> None:
         """Files with syntax errors should return original source."""
+
         src = 'def foo(\n'  # Incomplete function
 
         fixer = DocstringFixer(src)
@@ -382,6 +404,7 @@ class TestEdgeCases:
 
     def test_single_line_docstring_without_newline(self) -> None:
         """Single-line docstrings at EOF without newline should work."""
+
         src = '"""Module docstring"""'
 
         fixer = DocstringFixer(src)
@@ -392,6 +415,7 @@ class TestEdgeCases:
 
     def test_multiple_classes_and_functions(self) -> None:
         """Complex modules with multiple elements should all be fixed."""
+
         src = normalize_indentation('''
             """Module docstring"""
             class A:
@@ -435,6 +459,7 @@ class TestWhitespacePreservation:
 
     def test_comments_preserved(self) -> None:
         """Comments should be preserved exactly."""
+
         src = normalize_indentation('''
             # This is a comment
             def foo():
@@ -452,6 +477,7 @@ class TestWhitespacePreservation:
 
     def test_blank_lines_between_functions_preserved(self) -> None:
         """Blank lines between functions should be preserved."""
+
         src = normalize_indentation('''
             def foo():
                 """First"""
@@ -471,6 +497,7 @@ class TestWhitespacePreservation:
 
     def test_trailing_whitespace_on_other_lines_preserved(self) -> None:
         """Trailing whitespace on non-docstring lines should be preserved."""
+
         # Note: This is a bit tricky to test since we want to preserve source exactly
         src = 'def foo():\n    """Doc"""\n    x = 5  \n    return x\n'
 
@@ -486,6 +513,7 @@ class TestDocstringContent:
 
     def test_docstring_with_quotes_inside(self) -> None:
         """Docstrings containing quotes should be handled."""
+
         src = '''def foo():\n    """This has "quotes" inside"""\n    pass\n'''
 
         fixer = DocstringFixer(src)
@@ -495,6 +523,7 @@ class TestDocstringContent:
 
     def test_docstring_with_newlines_in_content(self) -> None:
         """Docstrings with explicit newlines should be multi-line."""
+
         src = normalize_indentation('''
             def foo():
                 """Line 1
@@ -512,6 +541,7 @@ class TestDocstringContent:
 
     def test_empty_docstring(self) -> None:
         """Empty docstrings should be handled."""
+
         src = 'def foo():\n    """"""\n    pass\n'
 
         fixer = DocstringFixer(src)
@@ -526,6 +556,7 @@ class TestRealWorldExamples:
 
     def test_numpy_style_docstring(self) -> None:
         """Numpy-style docstrings should be formatted correctly."""
+
         src = normalize_indentation('''
             def function(arg1, arg2):
                 """
@@ -558,6 +589,7 @@ class TestRealWorldExamples:
 
     def test_google_style_docstring(self) -> None:
         """Google-style docstrings should be formatted correctly."""
+
         src = normalize_indentation('''
             def function(arg1, arg2):
                 """
@@ -585,6 +617,7 @@ class TestRealWorldExamples:
 @pytest.mark.parametrize('prefix', ['r', 'R', 'u', 'U', 'f', 'F', 'b', 'B', 'br', 'rb', 'fr', 'rf'])
 def test_string_prefixes(prefix: str) -> None:
     """Test that various string prefixes are handled correctly."""
+
     # Skip f-strings as they can't be docstrings (they're evaluated)
     if 'f' in prefix.lower():
         pytest.skip('f-strings cannot be docstrings')
