@@ -177,8 +177,38 @@ class DocstringFixer:
             # Single line - strip all whitespace
             stripped_content = lines[0].strip() if lines else ''
         else:
-            # Multi-line - preserve the structure
-            stripped_content = '\n'.join(lines)
+            # Multi-line - we need to normalize the indentation. Python's textwrap.dedent doesn't work well when the
+            # first line has no indent, so we do it manually: find the minimum indent of non-empty lines (excluding the
+            # first), then strip that from all lines.
+            dedented_lines = []
+
+            # Find the minimum indentation of non-empty, non-first lines
+            min_indent = None
+            for _i, line in enumerate(lines[1:], start=1):  # Skip first line
+                if line.strip():  # Only consider non-empty lines
+                    # Count leading whitespace
+                    stripped = line.lstrip()
+                    indent_len = len(line) - len(stripped)
+                    if min_indent is None or indent_len < min_indent:
+                        min_indent = indent_len
+
+            # If we found no indented lines, just use the lines as-is
+            if min_indent is None:
+                min_indent = 0
+
+            # Now strip that minimum indent from all lines
+            for i, line in enumerate(lines):
+                if i == 0:
+                    # First line - just strip any leading/trailing whitespace
+                    dedented_lines.append(line.strip())
+                elif not line.strip():
+                    # Empty line - keep it empty
+                    dedented_lines.append('')
+                else:
+                    # Other lines - remove the minimum indent
+                    dedented_lines.append(line[min_indent:] if len(line) >= min_indent else line.lstrip())
+
+            stripped_content = '\n'.join(dedented_lines)
 
         # Calculate if single-line format fits in 120 chars
         single_line = f'{prefix}{quotes}{stripped_content}{quotes}'
@@ -188,9 +218,11 @@ class DocstringFixer:
             # Use single-line format
             new_src = single_line
         else:
-            # Use multi-line format with triple-quotes on separate lines. Keep the original content structure (including
-            # any indentation within). The closing quotes should be indented to match the opening quotes.
-            new_src = f'{prefix}{quotes}\n{stripped_content}\n{indent}{quotes}'
+            # Use multi-line format with triple-quotes on separate lines. Indent each line of content to match the
+            # opening quotes.
+            indented_lines = [indent + line if line.strip() else '' for line in stripped_content.split('\n')]
+            indented_content = '\n'.join(indented_lines)
+            new_src = f'{prefix}{quotes}\n{indented_content}\n{indent}{quotes}'
 
         return [tks.Token(name='STRING', src=new_src, line=token.line, utf8_byte_offset=token.utf8_byte_offset)]
 

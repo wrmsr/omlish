@@ -149,7 +149,14 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env={**os.environ, 'OMLISH_PYCHARM_RUNHACK_ENABLED': '0'},
+            env={
+                **os.environ,
+                'PYTHONPATH': ':'.join([
+                    os.getcwd(),
+                    *([pp] if (pp := os.environ.get('PYTHONPATH')) else []),
+                ]),
+                'OMLISH_PYCHARM_RUNHACK_ENABLED': '0',
+            },
             cwd=str(self.temp_dir),
         )
 

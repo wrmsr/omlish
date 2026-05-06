@@ -555,6 +555,35 @@ class TestDocstringContent:
         # Should NOT have the indentation preserved
         assert '"""    This is a short docstring."""' not in result
 
+    def test_multiline_first_line_on_same_line_as_quotes(self) -> None:
+        """Multiline docstrings with first line on same line as quotes should be properly indented."""
+
+        src = normalize_indentation('''
+            def mkpath():
+                """Create a directory and any missing ancestor directories.
+
+                If the directory already exists, then do nothing.
+                """
+                pass
+        ''').lstrip()
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should be reformatted with proper indentation on all content lines
+        expected = normalize_indentation('''
+            def mkpath():
+                """
+                Create a directory and any missing ancestor directories.
+
+                If the directory already exists, then do nothing.
+                """
+
+                pass
+        ''').lstrip()
+
+        assert result == expected
+
     def test_docstring_with_quotes_inside(self) -> None:
         """Docstrings containing quotes should be handled."""
 
