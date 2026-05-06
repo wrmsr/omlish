@@ -23,6 +23,7 @@ def _copy_file_contents(src, dst, buffer_size=16 * 1024):  # noqa: C901
     to 'dst', raises DistutilsFileError.  Data is read/written in chunks of 'buffer_size' bytes (default 16k).  No
     attempt is made to handle anything apart from regular files.
     """
+
     # Stolen from shutil module in the standard library, but with custom error-handling added.
     fsrc = None
     fdst = None
@@ -92,6 +93,7 @@ def copy_file(  # noqa: C901
     Return a tuple (dest_name, copied): 'dest_name' is the actual name of the output file, and 'copied' is true if the
     file was copied (or would have been copied, if 'dry_run' true).
     """
+
     # if the destination file already exists, we clobber it if copying, but blow up if linking.  Hmmm.  And I don't know
     # what macostools.copyfile() does.  Should definitely be consistent, and should probably blow up if destination
     # exists and we would be changing it (ie. it's not already a hard/soft link to src OR (not update) and (src newer
@@ -170,6 +172,7 @@ def move_file(src, dst, verbose=1, dry_run=False):  # noqa: C901
 
     Handles cross-device moves on Unix using 'copy_file()'.  What about other systems???
     """
+
     import errno
     from os.path import basename
     from os.path import dirname

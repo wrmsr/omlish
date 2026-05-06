@@ -1,6 +1,4 @@
-"""
-https://swagger.io/specification/
-"""
+"""https://swagger.io/specification/"""
 import typing as ta
 
 from ... import check

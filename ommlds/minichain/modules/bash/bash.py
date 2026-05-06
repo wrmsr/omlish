@@ -1,6 +1,4 @@
-"""
-Obviously insanely unsafe at the moment, lol.
-"""
+"""Obviously insanely unsafe at the moment, lol."""
 import asyncio
 import shutil
 

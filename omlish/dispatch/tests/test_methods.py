@@ -135,6 +135,7 @@ def test_accessor_wrapper_atts():
         @methods.method()
         def f(self, x: object):
             """foo"""
+
             return 'A:object'
 
     class B(A):

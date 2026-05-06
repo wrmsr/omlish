@@ -1,6 +1,4 @@
-"""
-https://inference-docs.cerebras.ai/resources/openai
-"""
+"""https://inference-docs.cerebras.ai/resources/openai"""
 import typing as ta
 
 from omlish import dataclasses as dc

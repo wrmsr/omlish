@@ -25,7 +25,6 @@ In [9]: import struct, hashlib
 
 In [14]: struct.unpack('>q', hashlib.sha1(b'foo').digest()[:8])
 Out[14]: (859844163007352795,)
-
 """  # noqa
 import contextlib
 import hashlib

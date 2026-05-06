@@ -19,6 +19,7 @@ def newer(source, target):
 
     Raises DistutilsFileError if 'source' does not exist.
     """
+
     if not os.path.exists(source):
         raise DistutilsFileError(f"file '{os.path.abspath(source)}' does not exist")
 

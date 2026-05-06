@@ -754,9 +754,7 @@ def _yaml_go_is_print(char_ord):
 
 
 def _yaml_strconv_quote(s: str) -> str:
-    """
-    Produces a double-quoted string literal with Go-style escapes, similar to Go's strconv.Quote.
-    """
+    """Produces a double-quoted string literal with Go-style escapes, similar to Go's strconv.Quote."""
 
     res = ['"']
     for char_val in s:

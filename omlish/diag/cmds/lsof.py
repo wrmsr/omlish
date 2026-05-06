@@ -1,8 +1,6 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
-"""
-https://man7.org/linux/man-pages/man8/lsof.8.html
-"""
+"""https://man7.org/linux/man-pages/man8/lsof.8.html"""
 import dataclasses as dc
 import enum
 import typing as ta

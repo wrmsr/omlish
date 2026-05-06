@@ -27,7 +27,6 @@ gpt-5.4-nano-2026-03-17
 
 gpt-5.4-pro
 gpt-5.4-pro-2026-03-05
-
 """  # noqa
 from ...models.names import ModelNameCollection
 from ...specs.manifests import BackendStringsManifest

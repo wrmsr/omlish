@@ -1708,6 +1708,7 @@ class FileIO(RawIOBase):
         Only makes one system call, so not all of the data may be written. The number of bytes actually written is
         returned.  In non-blocking mode, returns None if the write would block.
         """
+
         self._checkClosed()
         self._checkWritable()
         try:
@@ -1736,7 +1737,8 @@ class FileIO(RawIOBase):
         """
         tell() -> int.  Current file position.
 
-        Can raise OSError for non seekable files."""
+        Can raise OSError for non seekable files.
+        """
 
         self._checkClosed()
         return os.lseek(self._fd, 0, io.SEEK_CUR)

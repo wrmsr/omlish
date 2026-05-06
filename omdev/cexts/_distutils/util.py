@@ -63,6 +63,7 @@ if sys.platform == 'darwin':
 
 def _clear_cached_macosx_ver() -> None:
     """For testing only. Do not call."""
+
     global _syscfg_macosx_ver
     _syscfg_macosx_ver = None
 
@@ -75,6 +76,7 @@ def get_macosx_target_ver_from_syscfg() -> str:
     Get the version of macOS latched in the Python interpreter configuration. Returns the version as a string or None
     if can't obtain one. Cached.
     """
+
     global _syscfg_macosx_ver
     if _syscfg_macosx_ver is None:
         from . import sysconfig
@@ -119,6 +121,7 @@ def get_macosx_target_ver() -> str:
 
 def split_version(s) -> list[int]:
     """Convert a dot-separated string into a list of numbers for comparisons"""
+
     return [int(n) for n in s.split('.')]
 
 
@@ -195,6 +198,7 @@ def execute(
     have to do is supply the function to call and an argument tuple for it (to embody the "external action" being
     performed), and an optional message to print.
     """
+
     if msg is None:
         msg = f'{func.__name__}{args!r}'
         if msg[-2:] == ',)':  # correct for singleton tuple

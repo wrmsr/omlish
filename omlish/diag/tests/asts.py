@@ -1,6 +1,4 @@
-"""
-Has to be outside of test_*.py files or pytest rewrites them for assert tracking, confusing the ast machinery.
-"""
+"""Has to be outside of test_*.py files or pytest rewrites them for assert tracking, confusing the ast machinery."""
 from ..asts import ArgsRenderer
 
 

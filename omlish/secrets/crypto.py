@@ -115,7 +115,9 @@ class AesgcmCrypto(Crypto):
 
 
 class Chacha20Poly1305Crypto(Crypto):
-    """https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305"""  # noqa
+    """
+    https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305
+    """  # noqa
 
     def generate_key(self) -> bytes:
         return cry_aead.ChaCha20Poly1305.generate_key()

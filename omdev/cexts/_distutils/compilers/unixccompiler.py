@@ -70,6 +70,7 @@ def _split_env(cmd: list[str]) -> tuple[list[str], list[str]]:
     >>> _split_env(['/usr/bin/env', 'A=3', 'gcc'])
     (['/usr/bin/env', 'A=3'], ['gcc'])
     """
+
     pivot = 0
     if os.path.basename(cmd[0]) == 'env':
         pivot = 1
@@ -88,6 +89,7 @@ def _split_aix(cmd: list[str]) -> tuple[list[str], list[str]]:
     >>> _split_aix(['/bin/foo/ld_so_aix', 'gcc'])
     (['/bin/foo/ld_so_aix'], ['gcc'])
     """
+
     pivot = os.path.basename(cmd[0]) == 'ld_so_aix'
     return cmd[:pivot], cmd[pivot:]
 
@@ -111,6 +113,7 @@ def _linker_params(linker_cmd: list[str], compiler_cmd: list[str]) -> list[str]:
     >>> _linker_params(['gcc'], ['gcc'])
     []
     """
+
     c_len = len(compiler_cmd)
     pivot = c_len if linker_cmd[:c_len] == compiler_cmd else 1
     return linker_cmd[pivot:]
@@ -355,6 +358,7 @@ class UnixCCompiler(CCompiler):
         vs
           /usr/lib/libedit.dylib
         """
+
         cflags = sysconfig.get_config_var('CFLAGS')
         match = re.search(r'-isysroot\s*(\S+)', cflags)
 
@@ -374,6 +378,7 @@ class UnixCCompiler(CCompiler):
         Second-guess the linker with not much hard data to go on: GCC seems to prefer the shared library, so assume that
         *all* Unix C compilers do, ignoring even GCC's "-static" option.
         """
+
         lib_names = (
             self.library_filename(lib, lib_type=ty)
             for ty in ['dylib', 'xcode_stub', 'shared', 'static']

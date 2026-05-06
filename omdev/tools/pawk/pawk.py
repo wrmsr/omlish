@@ -13,7 +13,8 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # https://github.com/alecthomas/pawk/blob/d60f78399e8a01857ebd73415a00e7eb424043ab/pawk.py
-"""cat input | pawk [<options>] <expr>
+"""
+cat input | pawk [<options>] <expr>
 
 A Python line-processor (like awk).
 

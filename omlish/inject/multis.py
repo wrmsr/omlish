@@ -1,6 +1,3 @@
-"""
-TODO:
-"""
 import collections.abc
 import typing as ta
 

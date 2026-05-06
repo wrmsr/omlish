@@ -1,7 +1,5 @@
 # @omlish-lite
-"""
-foo includes
-"""
+"""foo includes"""
 # Hi!
 import os.path
 

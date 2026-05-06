@@ -24,7 +24,6 @@ gemini-3.1-pro-preview-customtools
 gemini-flash-latest
 gemini-flash-lite-latest
 gemini-pro-latest
-
 """  # noqa
 from ...models.names import ModelNameCollection
 from ...specs.manifests import BackendStringsManifest

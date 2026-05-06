@@ -1,6 +1,4 @@
-"""
-Hi!
-"""
+"""Hi!"""
 # also
 import os.path  # noqa
 import pprint

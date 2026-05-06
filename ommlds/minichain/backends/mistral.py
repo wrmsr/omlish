@@ -1,6 +1,4 @@
-"""
-https://docs.mistral.ai/getting-started/models/
-"""
+"""https://docs.mistral.ai/getting-started/models/"""
 import os
 import typing as ta
 

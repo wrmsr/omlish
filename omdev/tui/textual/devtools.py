@@ -1,7 +1,5 @@
 # ruff: noqa: UP037 UP045
-"""
-./python -m textual_dev console --port=41932 -x EVENT
-"""
+"""./python -m textual_dev console --port=41932 -x EVENT"""
 import inspect
 import logging
 import typing as ta

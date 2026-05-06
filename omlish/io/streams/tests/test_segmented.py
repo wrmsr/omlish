@@ -633,9 +633,7 @@ class TestSegmentedByteStreamBufferActiveBoundaryBugs(unittest.TestCase):
         self.assertEqual(pos, 1, "Should find 'BCDE' spanning boundary in reverse")
 
     def test_find_with_multiple_segments_and_active_chunk(self) -> None:
-        """
-        Test find() with a pattern spanning multiple segments ending in a small active chunk.
-        """
+        """Test find() with a pattern spanning multiple segments ending in a small active chunk."""
 
         b = SegmentedByteStreamBuffer(chunk_size=8)
         b.write(b'ABC')   # Segment 1
@@ -659,9 +657,7 @@ class TestSegmentedByteStreamBufferActiveBoundaryBugs(unittest.TestCase):
         self.assertEqual(total[pos:pos + 2], b'XY')
 
     def test_rfind_with_multiple_segments_and_small_active(self) -> None:
-        """
-        Test rfind() with multiple segments where an earlier segment was a small active chunk.
-        """
+        """Test rfind() with multiple segments where an earlier segment was a small active chunk."""
 
         b = SegmentedByteStreamBuffer(chunk_size=8)
 
@@ -679,9 +675,7 @@ class TestSegmentedByteStreamBufferActiveBoundaryBugs(unittest.TestCase):
         self.assertEqual(pos, 0, 'Should find pattern in reverse spanning from small segment')
 
     def test_no_false_positives_from_uninitialized_data(self) -> None:
-        """
-        Verify that uninitialized bytes in active chunks don't cause false positive matches.
-        """
+        """Verify that uninitialized bytes in active chunks don't cause false positive matches."""
 
         b = SegmentedByteStreamBuffer(chunk_size=16)
         b.write(b'TEST')
@@ -707,9 +701,7 @@ class TestSegmentedByteStreamBufferActiveBoundaryBugs(unittest.TestCase):
         self.assertEqual(result, -1)
 
     def test_find_edge_case_empty_active_chunk(self) -> None:
-        """
-        Test find() when active chunk exists but has 0 committed bytes.
-        """
+        """Test find() when active chunk exists but has 0 committed bytes."""
 
         b = SegmentedByteStreamBuffer(chunk_size=8)
         b.write(b'HELLO')
@@ -726,9 +718,7 @@ class TestSegmentedByteStreamBufferActiveBoundaryBugs(unittest.TestCase):
         self.assertEqual(pos, -1)
 
     def test_rfind_edge_case_empty_previous_segment(self) -> None:
-        """
-        Test rfind() when previous segment was an active chunk with 0 committed bytes.
-        """
+        """Test rfind() when previous segment was an active chunk with 0 committed bytes."""
 
         b = SegmentedByteStreamBuffer(chunk_size=8)
 

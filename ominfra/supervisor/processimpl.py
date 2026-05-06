@@ -210,9 +210,7 @@ class ProcessImpl(Process):
     #
 
     def _check_and_adjust_for_system_clock_rollback(self, test_time: float) -> None:
-        """
-        Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
-        """
+        """Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time."""
 
         if self._state == ProcessState.STARTING:
             self._last_start = min(test_time, self._last_start)

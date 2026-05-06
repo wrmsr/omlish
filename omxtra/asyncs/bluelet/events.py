@@ -56,6 +56,7 @@ class WaitableBlueletEvent(BlueletEvent, Abstract):
         Return "waitable" objects to pass to select(). Should return three iterables for input readiness, output
         readiness, and exceptional conditions (i.e., the three lists passed to select()).
         """
+
         return BlueletWaitables()
 
     def fire(self) -> ta.Any:

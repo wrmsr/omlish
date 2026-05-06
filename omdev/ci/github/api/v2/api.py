@@ -19,7 +19,6 @@ curl -s \
   -H "Authorization: Bearer $ACTIONS_RUNTIME_TOKEN" \
   -d '{"key": "foo", "restoreKeys": [], "version": "0000000000000000000000000000000000000000000000000000000000000001" }' \
   | jq .
-
 """  # noqa
 import dataclasses as dc
 import typing as ta

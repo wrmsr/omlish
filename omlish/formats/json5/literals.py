@@ -1,6 +1,4 @@
-"""
-https://spec.json5.org/
-"""
+"""https://spec.json5.org/"""
 import io
 import json
 import typing as ta

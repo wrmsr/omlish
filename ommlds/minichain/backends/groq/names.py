@@ -25,7 +25,6 @@ openai/gpt-oss-safeguard-20b
 qwen/qwen3-32b
 whisper-large-v3
 whisper-large-v3-turbo
-
 """  # noqa
 from ...models.names import ModelNameCollection
 from ...specs.manifests import BackendStringsManifest

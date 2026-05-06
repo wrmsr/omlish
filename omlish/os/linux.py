@@ -37,9 +37,7 @@ import typing as ta
 
 @dc.dataclass(frozen=True)
 class LinuxOsRelease:
-    """
-    https://man7.org/linux/man-pages/man5/os-release.5.html
-    """
+    """https://man7.org/linux/man-pages/man5/os-release.5.html"""
 
     raw: ta.Mapping[str, str]
 

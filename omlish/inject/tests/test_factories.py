@@ -1,6 +1,4 @@
-"""
-Backported from lite injector.
-"""
+"""Backported from lite injector."""
 import dataclasses as dc
 import functools
 import typing as ta

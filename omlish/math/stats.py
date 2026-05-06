@@ -25,9 +25,7 @@ def get_quantile(sorted_data: ta.Sequence[float], q: float) -> float:
 
 
 class Stats(ta.Sequence[float]):
-    """
-    ~ https://github.com/mahmoud/boltons/blob/47e0c3bfcbd3291a1366f34069f23e43659717cd/boltons/statsutils.py
-    """
+    """~ https://github.com/mahmoud/boltons/blob/47e0c3bfcbd3291a1366f34069f23e43659717cd/boltons/statsutils.py"""
 
     def __init__(
             self,

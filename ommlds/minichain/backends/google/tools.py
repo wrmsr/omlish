@@ -1,6 +1,4 @@
-"""
-https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
-"""
+"""https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models"""
 import typing as ta
 
 from omlish import check

@@ -1,6 +1,4 @@
-"""
-https://peps.python.org/pep-0249/
-"""
+"""https://peps.python.org/pep-0249/"""
 import enum
 import typing as ta
 

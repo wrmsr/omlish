@@ -1,6 +1,4 @@
-"""
-https://datatracker.ietf.org/doc/html/rfc5234
-"""
+"""https://datatracker.ietf.org/doc/html/rfc5234"""
 import typing as ta
 
 from ... import check

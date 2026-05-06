@@ -1,6 +1,4 @@
-"""
-https://docs.ollama.com/api
-"""
+"""https://docs.ollama.com/api"""
 import datetime
 import typing as ta
 

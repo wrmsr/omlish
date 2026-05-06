@@ -2,9 +2,7 @@
 # ruff: noqa: UP045
 # @omlish-lite
 # @omlish-script
-"""
-curl -LsSf 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py' | python3 -
-"""
+"""curl -LsSf 'https://raw.githubusercontent.com/wrmsr/omlish/master/omdev/cli/install.py' | python3 -"""
 import abc
 import argparse
 import dataclasses as dc

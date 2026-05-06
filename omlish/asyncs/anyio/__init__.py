@@ -21,7 +21,6 @@ async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
     await anyio.sleep(sleep_s)
     log.warning('Killing')
     shutdown.set()
-
 """  # noqa
 
 from .backends import (  # noqa

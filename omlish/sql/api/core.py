@@ -1,6 +1,4 @@
-"""
-This module contains the core resourceful interfaces that must be implemented by any backend.
-"""
+"""This module contains the core resourceful interfaces that must be implemented by any backend."""
 import abc
 import typing as ta
 

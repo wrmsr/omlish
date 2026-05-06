@@ -1,3 +1,1 @@
-"""
-Python source-related utilities.
-"""
+"""Python source-related utilities."""

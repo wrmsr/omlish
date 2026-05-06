@@ -17,9 +17,7 @@ Eviction: ta.TypeAlias = ta.Callable[['Cache'], None]
 
 
 class Cache(ta.MutableMapping[K, V]):
-    """
-    https://google.github.io/guava/releases/16.0/api/docs/com/google/common/cache/CacheBuilder.html
-    """
+    """https://google.github.io/guava/releases/16.0/api/docs/com/google/common/cache/CacheBuilder.html"""
 
     @abc.abstractmethod
     def reap(self) -> None:

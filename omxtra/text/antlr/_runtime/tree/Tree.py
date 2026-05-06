@@ -152,6 +152,7 @@ class ParseTreeWalker(object):
 	    @param listener The listener used by the walker to process grammar rules
 	    @param t The parse tree to be walked on
         """
+
         if isinstance(t, ErrorNode):
             listener.visitErrorNode(t)
             return
@@ -176,6 +177,7 @@ class ParseTreeWalker(object):
 	    @param listener The listener responding to the trigger events
 	    @param r The grammar rule containing the rule context
         """
+
         ctx = r.getRuleContext()
         listener.enterEveryRule(ctx)
         ctx.enterRule(listener)
@@ -187,6 +189,7 @@ class ParseTreeWalker(object):
 	    @param listener The listener responding to the trigger events
 	    @param r The grammar rule containing the rule context
         """
+
         ctx = r.getRuleContext()
         ctx.exitRule(listener)
         listener.exitEveryRule(ctx)

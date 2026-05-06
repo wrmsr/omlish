@@ -143,6 +143,7 @@ class Tokenization:
     @classmethod
     def parse_string_literal(cls, src: str) -> ta.Tuple[str, str]:
         """parse a string literal's source into (prefix, string)"""
+
         match = check.not_none(cls._STRING_RE.match(src))
         return match.group(1), match.group(2)
 

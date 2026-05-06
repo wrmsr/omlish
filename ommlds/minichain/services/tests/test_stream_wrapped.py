@@ -1,7 +1,5 @@
 # ruff: noqa: UP028
-"""
-NOTE: This has been largely supplanted by the 'minichain.wrappers' package. Currently kept around for reference
-"""
+"""NOTE: This has been largely supplanted by the 'minichain.wrappers' package. Currently kept around for reference"""
 import typing as ta
 
 import pytest

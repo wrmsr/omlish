@@ -15,7 +15,6 @@ PGPASSWORD=secrets_owner_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 
 PGPASSWORD=secrets_reader_password .venv/bin/pgcli --host 127.0.0.1 --port 35225 --user secrets_reader --dbname omlish
 
 set search_path to secrets, public;
-
 """
 # import contextlib
 #

@@ -1,6 +1,4 @@
-"""
-https://github.com/openshift/docker-distribution/blob/master/docs/spec/manifest-v2-2.md
-"""
+"""https://github.com/openshift/docker-distribution/blob/master/docs/spec/manifest-v2-2.md"""
 import typing as ta
 
 from .. import dataclasses as dc

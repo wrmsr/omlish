@@ -40,6 +40,7 @@ else:
 
 def _is_python_source_dir(d):
     """Return True if the target directory appears to point to an un-installed Python."""
+
     modules = pathlib.Path(d).joinpath('Modules')
     return any(modules.joinpath(fn).is_file() for fn in ('Setup', 'Setup.local'))
 
@@ -49,6 +50,7 @@ _sys_home = getattr(sys, '_home', None)
 
 def _is_parent(dir_a, dir_b):
     """Return True if a is a parent of b."""
+
     return os.path.normcase(dir_a).startswith(os.path.normcase(dir_b))
 
 
@@ -76,6 +78,7 @@ def get_python_version():
     Return a string containing the major and minor Python version, leaving off the patchlevel.  Sample return values
     could be '1.5' or '2.2'.
     """
+
     return '%d.%d' % sys.version_info[:2]  # noqa
 
 
@@ -88,6 +91,7 @@ def get_python_inc(plat_specific=0, prefix=None):
 
     If 'prefix' is supplied, use it instead of sys.base_prefix or sys.base_exec_prefix -- i.e., ignore 'plat_specific'.
     """
+
     default_prefix = BASE_EXEC_PREFIX if plat_specific else BASE_PREFIX
     resolved_prefix = prefix if prefix is not None else default_prefix
     try:
@@ -100,6 +104,7 @@ def get_python_inc(plat_specific=0, prefix=None):
 @pass_none
 def _extant(path):
     """Replace path with None if it doesn't exist."""
+
     return path if os.path.exists(path) else None
 
 
@@ -118,6 +123,7 @@ def _get_python_inc_posix_python(plat_specific):
     Assume the executable is in the build directory. The pyconfig.h file should be in the same directory. Since the
     build directory may not be the source directory, use "srcdir" from the makefile to find the "Include" directory.
     """
+
     if not python_build:
         return None
     if plat_specific:
@@ -142,6 +148,7 @@ def _get_python_inc_from_config(plat_specific, spec_prefix):
     >>> gpifc(True, None)
     'confincludepy'
     """
+
     if spec_prefix is None:
         return get_config_var('CONF' * plat_specific + 'INCLUDEPY')
     return None
@@ -230,11 +237,13 @@ def _customize_macos():
 
 
 def customize_compiler(compiler):  # noqa: C901
-    """Do any platform-specific customization of a CCompiler instance.
+    """
+    Do any platform-specific customization of a CCompiler instance.
 
     Mainly needed on Unix, so we can plug in the information that varies across Unices and is stored in Python's
     Makefile.
     """
+
     if compiler.compiler_type == 'unix':
         _customize_macos()
 
@@ -308,6 +317,7 @@ def customize_compiler(compiler):  # noqa: C901
 
 def get_config_h_filename():
     """Return full pathname of installed pyconfig.h file."""
+
     return sysconfig.get_config_h_filename()
 
 
@@ -318,6 +328,7 @@ def parse_config_h(fp, g=None):
     A dictionary containing name/value pairs is returned.  If an optional dictionary is passed in as the second
     argument, it is used instead of a new dictionary.
     """
+
     return sysconfig.parse_config_h(fp, vars=g)
 
 
@@ -333,6 +344,7 @@ def get_config_vars(*args):
     With arguments, return a list of values that result from looking up each argument in the configuration variable
     dictionary.
     """
+
     global _config_vars
     if _config_vars is None:
         _config_vars = sysconfig.get_config_vars().copy()
@@ -345,6 +357,7 @@ def get_config_var(name):
     Return the value of a single variable using the dictionary returned by 'get_config_vars()'.  Equivalent to
     get_config_vars().get(name)
     """
+
     if name == 'SO':
         import warnings
 

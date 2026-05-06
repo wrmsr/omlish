@@ -1,7 +1,5 @@
 # ruff: noqa: Q000
-"""
-https:#github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/strconv/quote.go
-"""
+"""https:#github.com/golang/go/blob/3d33437c450aa74014ea1d41cd986b6ee6266984/src/strconv/quote.go"""
 # Copyright 2009 The Go Authors.
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the

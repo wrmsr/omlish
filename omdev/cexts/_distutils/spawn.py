@@ -32,6 +32,7 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=False, env=None, debug=False): 
 
     Raise DistutilsExecError if running the program fails in any way; just return on success.
     """
+
     # cmd is documented as a list, but just in case some code passes a tuple in, protect our %-formatting code against
     # horrible death
     cmd = list(cmd)
@@ -77,6 +78,7 @@ def find_executable(executable, path=None):
     A string listing directories separated by 'os.pathsep'; defaults to os.environ['PATH'].  Returns the complete
     filename or None if not found.
     """
+
     _, ext = os.path.splitext(executable)
     if (sys.platform == 'win32') and (ext != '.exe'):
         executable = executable + '.exe'

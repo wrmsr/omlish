@@ -97,7 +97,6 @@ def test_backend_strings():
             path='Meta-Llama-3-8B.Q8_0.gguf',
         ),
     )
-
 """
 # from omlish import check
 # from omlish import marshal as msh

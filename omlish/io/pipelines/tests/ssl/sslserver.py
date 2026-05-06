@@ -103,9 +103,8 @@ def run_openssl(args: list) -> None:
 
 
 def generate_self_signed_cert(tmpdir: str) -> ta.Tuple[str, str]:
-    """
-    Returns (cert_pem_path, key_pem_path).
-    """
+    """Returns (cert_pem_path, key_pem_path)."""
+
     if shutil.which('openssl') is None:
         raise RuntimeError('openssl not found on PATH')
 

@@ -189,6 +189,7 @@ class StrictVersion(Version):
         case 2: self doesn't have prerelease, other does: self is greater
         case 3: both or neither have prerelease: compare them!
         """
+
         if self.prerelease and not other.prerelease:
             return -1
         elif not self.prerelease and other.prerelease:

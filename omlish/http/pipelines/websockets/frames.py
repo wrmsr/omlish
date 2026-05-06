@@ -34,9 +34,7 @@ class IoPipelineWebsocketFrames(NamespaceClass):
 
 
 class IoPipelineWebsocketFrameEncoder(IoPipelineHandler):
-    """
-    Encodes WsFrame or high-level WsText/WsBinary/WsPing/WsPong/WsClose into bytes.
-    """
+    """Encodes WsFrame or high-level WsText/WsBinary/WsPing/WsPong/WsClose into bytes."""
 
     def __init__(self, *, mask: bool = False) -> None:
         super().__init__()

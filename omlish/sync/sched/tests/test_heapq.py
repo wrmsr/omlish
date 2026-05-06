@@ -428,6 +428,7 @@ def test_shutdown_with_timeout_success(request):
 
 def test_shutdown_with_timeout_expires(request):
     """Test shutdown with timeout that expires."""
+
     timer = HeapqScheduledRunner()
 
     executed = []

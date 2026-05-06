@@ -237,7 +237,7 @@ fix-ruff: venv
 	${PYTHON} -m ruff check --select $(shell echo "$(RUFF_FIX_CODES)" | tr ' ' ',') --fix ${SRCS}
 
 .PHONY: fix
-fix: fix-ruff
+fix: fix-docstrings fix-ruff
 
 MYPY_OPTS=\
 	--check-untyped-defs \

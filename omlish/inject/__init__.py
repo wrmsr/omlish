@@ -1,6 +1,4 @@
-"""
-~> https://github.com/google/guice/commit/70248eafa90cd70a68b293763e53f6aec656e73c
-"""
+"""~> https://github.com/google/guice/commit/70248eafa90cd70a68b293763e53f6aec656e73c"""
 from .. import dataclasses as _dc
 
 

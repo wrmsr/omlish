@@ -1,6 +1,4 @@
-"""
-https://docs.claude.com/en/api/messages
-"""
+"""https://docs.claude.com/en/api/messages"""
 import typing as ta
 
 from omlish import dataclasses as dc

@@ -1,6 +1,4 @@
-"""
-https://github.com/wrmsr/bane/tree/master/x/storage
-"""
+"""https://github.com/wrmsr/bane/tree/master/x/storage"""
 import abc
 import contextlib
 import dataclasses as dc

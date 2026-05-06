@@ -51,9 +51,7 @@ def LFU(cache: 'Cache') -> None:  # noqa
 
 
 class CacheImpl(Cache[K, V]):
-    """
-    https://google.github.io/guava/releases/16.0/api/docs/com/google/common/cache/CacheBuilder.html
-    """
+    """https://google.github.io/guava/releases/16.0/api/docs/com/google/common/cache/CacheBuilder.html"""
 
     class Link:
         __slots__ = [

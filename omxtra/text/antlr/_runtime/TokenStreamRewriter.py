@@ -26,6 +26,7 @@ class TokenStreamRewriter(object):
         :param tokens:
         :return:
         """
+
         super(TokenStreamRewriter, self).__init__()
         self.tokens = tokens
         self.programs = {self.DEFAULT_PROGRAM_NAME: []}
@@ -109,9 +110,8 @@ class TokenStreamRewriter(object):
         return self.getText(self.DEFAULT_PROGRAM_NAME, 0, len(self.tokens.tokens) - 1)
 
     def getText(self, program_name, start:int, stop:int):
-        """
-        :return: the text in tokens[start, stop](closed interval)
-        """
+        """:return: the text in tokens[start, stop](closed interval)"""
+
         rewrites = self.programs.get(program_name)
 
         # ensure start/end are in range
@@ -210,6 +210,7 @@ class TokenStreamRewriter(object):
             :param text:
             :return:
             """
+
             self.tokens = tokens
             self.index = index
             self.text = text
@@ -221,6 +222,7 @@ class TokenStreamRewriter(object):
             :param buf:
             :return:
             """
+
             return self.index
 
         def __str__(self):

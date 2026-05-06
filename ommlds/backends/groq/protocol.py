@@ -1,6 +1,4 @@
-"""
-https://console.groq.com/docs/api-reference#chat-create
-"""
+"""https://console.groq.com/docs/api-reference#chat-create"""
 import typing as ta
 
 from omlish import dataclasses as dc

@@ -1,8 +1,6 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-"""
-usecase: supervisor process groups
-"""
+"""usecase: supervisor process groups"""
 import typing as ta
 
 from ...lite.check import check

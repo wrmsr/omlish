@@ -1,6 +1,4 @@
-"""
-https://docs.python.org/3/library/itertools.html#itertools-recipes
-"""
+"""https://docs.python.org/3/library/itertools.html#itertools-recipes"""
 import collections
 import itertools
 import typing as ta

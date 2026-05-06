@@ -22,7 +22,6 @@ if rev.text and '#invoke' in rev.text.text:
     ctx.start_page(page.title)
     tree = ctx.parse(rev.text.text)
     print(tree)
-
 """
 import argparse
 import concurrent.futures as cf

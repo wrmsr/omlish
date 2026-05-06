@@ -180,6 +180,7 @@ class CCompiler:
         Ensures that every element of 'definitions' is a valid macro definition, ie. either (name,value) 2-tuple or a
         (name,) tuple.  Do nothing if all definitions are OK, raise TypeError otherwise.
         """
+
         for defn in definitions:
             if not (
                     isinstance(defn, tuple)
@@ -200,6 +201,7 @@ class CCompiler:
         should be a string; if it is not supplied, then the macro will be defined without an explicit value and the
         exact outcome depends on the compiler used (XXX true? does ANSI say anything about this?)
         """
+
         # Delete from the list of macro definitions/undefinitions if already there (so that this one will take
         # precedence).
         i = self._find_macro(name)
@@ -215,6 +217,7 @@ class CCompiler:
         redefinitions or undefinitions).  If the macro is redefined/undefined on a per-compilation basis (ie. in the
         call to 'compile()'), then that takes precedence.
         """
+
         # Delete from the list of macro definitions/undefinitions if already there (so that this one will take
         # precedence).
         i = self._find_macro(name)
@@ -229,6 +232,7 @@ class CCompiler:
         Add 'dir' to the list of directories that will be searched for header files.  The compiler is instructed to
         search directories in the order in which they are supplied by successive calls to 'add_include_dir()'.
         """
+
         self.include_dirs.append(dir)
 
     def set_include_dirs(self, dirs):
@@ -237,6 +241,7 @@ class CCompiler:
         to 'add_include_dir()'; subsequence calls to 'add_include_dir()' add to the list passed to 'set_include_dirs()'.
         This does not affect any list of standard include directories that the compiler may search by default.
         """
+
         self.include_dirs = dirs[:]
 
     def add_library(self, libname):
@@ -249,6 +254,7 @@ class CCompiler:
         and/or 'set_libraries()'.  It is perfectly valid to duplicate library names; the linker will be instructed to
         link against libraries as many times as they are mentioned.
         """
+
         self.libraries.append(libname)
 
     def set_libraries(self, libnames):
@@ -256,6 +262,7 @@ class CCompiler:
         Set the list of libraries to be included in all links driven by this compiler object to 'libnames' (a list of
         strings).  This does not affect any standard system libraries that the linker may include by default.
         """
+
         self.libraries = libnames[:]
 
     def add_library_dir(self, dir):  # noqa
@@ -264,6 +271,7 @@ class CCompiler:
         'set_libraries()'.  The linker will be instructed to search for libraries in the order they are supplied to
         'add_library_dir()' and/or 'set_library_dirs()'.
         """
+
         self.library_dirs.append(dir)
 
     def set_library_dirs(self, dirs):
@@ -271,12 +279,12 @@ class CCompiler:
         Set the list of library search directories to 'dirs' (a list of strings).  This does not affect any standard
         library search path that the linker may search by default.
         """
+
         self.library_dirs = dirs[:]
 
     def add_runtime_library_dir(self, dir):  # noqa
-        """
-        Add 'dir' to the list of directories that will be searched for shared libraries at runtime.
-        """
+        """Add 'dir' to the list of directories that will be searched for shared libraries at runtime."""
+
         self.runtime_library_dirs.append(dir)
 
     def set_runtime_library_dirs(self, dirs):
@@ -284,6 +292,7 @@ class CCompiler:
         Set the list of directories to search for shared libraries at runtime to 'dirs' (a list of strings).  This does
         not affect any standard search path that the runtime linker may search by default.
         """
+
         self.runtime_library_dirs = dirs[:]
 
     def add_link_object(self, object):  # noqa
@@ -291,6 +300,7 @@ class CCompiler:
         Add 'object' to the list of object files (or analogues, such as explicitly named library files or the output of
         "resource compilers") to be included in every link driven by this compiler object.
         """
+
         self.objects.append(object)
 
     def set_link_objects(self, objects):
@@ -298,6 +308,7 @@ class CCompiler:
         Set the list of object files (or analogues) to be included in every link to 'objects'.  This does not affect any
         standard object files that the linker may include by default (such as system libraries).
         """
+
         self.objects = objects[:]
 
     # -- Private utility methods --------------------------------------
@@ -307,6 +318,7 @@ class CCompiler:
 
     def _setup_compile(self, outdir, macros, incdirs, sources, depends, extra):
         """Process arguments and decide which source files to compile."""
+
         outdir, macros, incdirs = self._fix_compile_args(outdir, macros, incdirs)
 
         if extra is None:
@@ -345,6 +357,7 @@ class CCompiler:
         that the returned values are of the correct type, i.e. for 'output_dir' either string or None, and for 'macros'
         and 'include_dirs' either list or None.
         """
+
         if output_dir is None:
             output_dir = self.output_dir
         elif not isinstance(output_dir, str):
@@ -376,6 +389,7 @@ class CCompiler:
         Determine the list of object files corresponding to 'sources', and figure out which ones really need to be
         recompiled. Return a list of all object files and a dictionary telling which source files can be skipped.
         """
+
         # Get the list of expected output (object) files
         objects = self.object_filenames(sources, output_dir=output_dir)
         check.equal(len(objects), len(sources))
@@ -389,6 +403,7 @@ class CCompiler:
         Typecheck and fix up some arguments supplied to various methods. Specifically: ensure that 'objects' is a list;
         if output_dir is None, replace with self.output_dir.  Return fixed versions of 'objects' and 'output_dir'.
         """
+
         if not isinstance(objects, (list, tuple)):
             raise TypeError("'objects' must be a list or tuple of strings")
         objects = list(objects)
@@ -406,6 +421,7 @@ class CCompiler:
         arguments are lists, and augment them with their permanent versions (eg. 'self.libraries' augments 'libraries').
         Return a tuple with fixed versions of all arguments.
         """
+
         if libraries is None:
             libraries = list(self.libraries)
         elif isinstance(libraries, (list, tuple)):
@@ -434,6 +450,7 @@ class CCompiler:
 
     def _need_link(self, objects, output_file):
         """Return true if we need to relink the files listed in 'objects' to recreate 'output_file'."""
+
         if self.force:
             return True
         else:
@@ -447,6 +464,7 @@ class CCompiler:
         """
         Detect the language of a given file, or list of files. Uses language_map, and language_order to do the job.
         """
+
         if not isinstance(sources, list):
             sources = [sources]
         lang = None
@@ -529,6 +547,7 @@ class CCompiler:
 
         Raises CompileError on failure.
         """
+
         # A concrete compiler class can either override this method entirely or implement _compile().
         macros, objects, extra_postargs, pp_opts, build = self._setup_compile(
             output_dir, macros, include_dirs, sources, depends, extra_postargs,
@@ -547,6 +566,7 @@ class CCompiler:
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         """Compile 'src' to product 'obj'."""
+
         # A concrete compiler class that does not override compile() should implement _compile().
 
     def create_static_lib(
@@ -628,6 +648,7 @@ class CCompiler:
 
         Raises LinkError on failure.
         """
+
         raise NotImplementedError
 
     # Old 'link_*()' methods, rewritten to use the new 'link()' method.
@@ -729,16 +750,19 @@ class CCompiler:
 
     def library_dir_option(self, dir):  # noqa
         """Return the compiler option to add 'dir' to the list of directories searched for libraries."""
+
         raise NotImplementedError
 
     def runtime_library_dir_option(self, dir):  # noqa
         """Return the compiler option to add 'dir' to the list of directories searched for runtime libraries."""
+
         raise NotImplementedError
 
     def library_option(self, lib):
         """
         Return the compiler option to add 'lib' to the list of libraries linked into the shared library or executable.
         """
+
         raise NotImplementedError
 
     def has_function(  # noqa: C901
@@ -759,6 +783,7 @@ class CCompiler:
         The includes and include_dirs arguments are deprecated. Usually, supplying include files with function
         declarations will cause function detection to fail even in cases where the symbol is available for linking.
         """
+
         # this can't be included at module scope because it tries to import math which might not be available at that
         # point - maybe the necessary logic should just be inlined?
         import tempfile
@@ -829,6 +854,7 @@ int main (int argc, char **argv) {{
         that file.  If 'debug' true, look for a debugging version (if that makes sense on the current platform).  Return
         None if 'lib' wasn't found in any of the specified directories.
         """
+
         raise NotImplementedError
 
     # -- Filename generation methods -----------------------------------
@@ -890,6 +916,7 @@ int main (int argc, char **argv) {{
         In order to ensure that a filename always honors the indicated output_dir, make sure it's relative. Ref
         python/cpython#37775.
         """
+
         # Chop off the drive
         no_drive = os.path.splitdrive(base)[1]
         # If abs, chop off leading /
@@ -969,6 +996,7 @@ def get_default_compiler(osname=None, platform=None):
 
     The default values are os.name and sys.platform in case the parameters are not given.
     """
+
     if osname is None:
         osname = os.name
     if platform is None:
@@ -1004,6 +1032,7 @@ def new_compiler(
     Visual C++ (MSVCCompiler class).  Note that it's perfectly possible to ask for a Unix compiler object under Windows,
     and a Microsoft compiler object under Unix -- if you supply a value for 'compiler', 'plat' is ignored.
     """
+
     if plat is None:
         plat = os.name
 

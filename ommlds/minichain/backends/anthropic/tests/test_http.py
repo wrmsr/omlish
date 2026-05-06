@@ -1,6 +1,4 @@
-"""
-https://docs.anthropic.com/en/api/getting-started
-"""
+"""https://docs.anthropic.com/en/api/getting-started"""
 import pytest
 
 from omlish import lang

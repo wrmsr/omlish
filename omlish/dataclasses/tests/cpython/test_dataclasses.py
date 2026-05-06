@@ -2292,6 +2292,7 @@ class TestDocString(unittest.TestCase):
         @dataclass
         class C:
             """Lorem ipsum"""
+
             x: int
 
         self.assertEqual(C.__doc__, "Lorem ipsum")

@@ -1,8 +1,6 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-"""
-https://www.brandur.org/logfmt
-"""
+"""https://www.brandur.org/logfmt"""
 import re
 import typing as ta
 

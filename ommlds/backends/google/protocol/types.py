@@ -1,6 +1,4 @@
-"""
-https://ai.google.dev/api/generate-content
-"""
+"""https://ai.google.dev/api/generate-content"""
 import typing as ta
 
 from omlish import dataclasses as dc

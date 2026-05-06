@@ -1,6 +1,4 @@
-"""
-https://inference-docs.cerebras.ai/models/overview
-"""
+"""https://inference-docs.cerebras.ai/models/overview"""
 from ...models.names import ModelNameCollection
 from ...specs.manifests import BackendStringsManifest
 

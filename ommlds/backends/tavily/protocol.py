@@ -1,6 +1,4 @@
-"""
-https://docs.tavily.com/documentation/api-reference/endpoint/search
-"""
+"""https://docs.tavily.com/documentation/api-reference/endpoint/search"""
 import typing as ta
 
 from omlish import dataclasses as dc

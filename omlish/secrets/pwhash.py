@@ -1,6 +1,4 @@
-"""
-~> https://github.com/pallets/werkzeug/blob/7a76170c473c26685bdfa2774d083ba2386fc60f/src/werkzeug/security.py
-"""
+"""~> https://github.com/pallets/werkzeug/blob/7a76170c473c26685bdfa2774d083ba2386fc60f/src/werkzeug/security.py"""
 # Copyright 2007 Pallets
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the

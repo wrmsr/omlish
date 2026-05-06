@@ -233,9 +233,7 @@ class DefaultTypedLoggerValue(TypedLoggerValue[T], Abstract):
 
 
 class MultiTypedLoggerValue(TypedLoggerValue[T], Abstract):
-    """
-    Note: There is no DefaultMultiTypedLoggerValue.
-    """
+    """Note: There is no DefaultMultiTypedLoggerValue."""
 
     @classmethod
     @abc.abstractmethod

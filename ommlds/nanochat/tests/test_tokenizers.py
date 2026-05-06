@@ -202,8 +202,8 @@ def fast_merge_inplace(ids, pair, idx):
     """
     In the list of integers (ids), replace all consecutive occurrences of pair with the new integer token idx in place
     Example: ids=[1, 2, 3, 1, 2], pair=(1, 2), idx=4 -> [4, 3, 4]
-
     """
+
     # Find all positions where the pair occurs
     i = 0
     while i < len(ids) - 1:

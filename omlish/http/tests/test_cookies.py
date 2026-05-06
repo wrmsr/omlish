@@ -1,6 +1,4 @@
-"""
-https://github.com/pallets/werkzeug/blob/9e050f7750214d6779636813b8d661250804e811/tests/test_py
-"""
+"""https://github.com/pallets/werkzeug/blob/9e050f7750214d6779636813b8d661250804e811/tests/test_py"""
 # Copyright 2007 Pallets
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the

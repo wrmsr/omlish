@@ -3,9 +3,7 @@ from .... import lang
 
 
 class Examples(lang.Namespace):
-    """
-    https://github.com/chyh1990/yaml-rust/blob/360a34d75bb64357cfdbc5bb706bcde9a0ecbc23/tests/specexamples.rs.inc
-    """
+    """https://github.com/chyh1990/yaml-rust/blob/360a34d75bb64357cfdbc5bb706bcde9a0ecbc23/tests/specexamples.rs.inc"""
 
     EX2_1 = "- Mark McGwire\n- Sammy Sosa\n- Ken Griffey"
     EX2_2 = "hr:  65    # Home runs\navg: 0.278 # Batting average\nrbi: 147   # Runs Batted In"

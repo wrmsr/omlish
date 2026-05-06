@@ -102,6 +102,7 @@ def get_hub_repo_info(
         -s "https://registry-1.docker.io/v2/${repo}/manifests/latest" \
     | jq .
     """
+
     if tags is not None:
         check.not_isinstance(tags, str)
     else:

@@ -7,7 +7,6 @@ builtins and thus not distinguish it from a normal property.
     class C:
         @cached.property
         def p(self) -> str: ...
-
 """
 from .lang.cached.function import cached_function as _cached_function
 from .lang.cached.property import cached_property as _cached_property

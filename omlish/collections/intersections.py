@@ -1,6 +1,4 @@
-"""
-https://github.com/python/typing/issues/213
-"""
+"""https://github.com/python/typing/issues/213"""
 import typing as ta
 
 from .. import lang

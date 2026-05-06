@@ -21,6 +21,7 @@ def gen_preprocess_options(
     names to be added to the header file search path (-I).  Returns a list of command-line options suitable for either
     Unix compilers or Visual C++.
     """
+
     # it would be nice (mainly aesthetic, and so we don't generate stupid-looking command lines) to go over 'macros' and
     # eliminate redundant definitions/undefinitions (ie. ensure that only the latest mention of a particular macro winds
     # up on the command line).  I don't think it's essential, though, since most (all?) Unix C compilers only pay
@@ -58,6 +59,7 @@ def gen_lib_options(
     'library_dirs' are, respectively, lists of library names (not filenames!) and search directories.  Returns a list of
     command-line options suitable for use with some compiler (depending on the two format strings passed in).
     """
+
     lib_opts = []
 
     for dir in library_dirs:  # noqa

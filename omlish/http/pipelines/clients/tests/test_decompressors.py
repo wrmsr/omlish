@@ -21,6 +21,7 @@ class TestGzipDecompressorSimple(unittest.TestCase):
 
     def test_passthrough_no_encoding(self):
         """Test that data passes through unchanged when no content-encoding is present."""
+
         handler = IoPipelineHttpResponseDecompressor()
 
         channel = IoPipeline.new([
@@ -49,6 +50,7 @@ class TestGzipDecompressorSimple(unittest.TestCase):
 
     def test_simple_gzip_decompression(self):
         """Test basic gzip decompression with default config."""
+
         handler = IoPipelineHttpResponseDecompressor()
 
         channel = IoPipeline.new([
@@ -82,6 +84,7 @@ class TestGzipDecompressorSimple(unittest.TestCase):
 
     def test_gzip_multiple_chunks(self):
         """Test gzip decompression with multiple body data chunks."""
+
         handler = IoPipelineHttpResponseDecompressor()
 
         channel = IoPipeline.new([

@@ -1,6 +1,4 @@
-"""
-https://docs.anthropic.com/en/docs/build-with-claude/streaming#content-block-delta-types
-"""
+"""https://docs.anthropic.com/en/docs/build-with-claude/streaming#content-block-delta-types"""
 import typing as ta
 
 from omlish import dataclasses as dc

@@ -23,9 +23,7 @@ else:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class DumpOpts:
-    """
-    https://github.com/ultrajson/ultrajson/blob/2e4aba339b0ab08f893590aaa989d12846afc5d6/python/objToJSON.c#L662
-    """
+    """https://github.com/ultrajson/ultrajson/blob/2e4aba339b0ab08f893590aaa989d12846afc5d6/python/objToJSON.c#L662"""
 
     ensure_ascii: bool = True  # limits output to ASCII and escapes all extended characters above 127.
     encode_html_chars: bool = False  # enables special encoding of "unsafe" HTML characters into safer Unicode sequences
