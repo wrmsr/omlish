@@ -132,6 +132,7 @@ class EventRejectedEvent:  # purposely does not subclass Event
 
 class ProcessStateEvent(Event):
     """Abstract class, never raised directly."""
+
     frm = None
     to = None
 
