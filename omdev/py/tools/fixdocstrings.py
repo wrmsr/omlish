@@ -175,16 +175,27 @@ class DocstringFixer:
         # Check if the content has explicit newlines (i.e., it's meant to be multi-line)
         has_explicit_newlines = len(lines) > 1
 
-        # For single-line docstrings, strip all leading/trailing whitespace from the content
+        # Prepare the content based on whether it's single or multi-line
         if not has_explicit_newlines:
-            # Single line - strip all whitespace
-            stripped_content = lines[0].strip() if lines else ''
+            # Single line content - but we need to handle two cases:
+            # 1. If already in multiline format, preserve the line as-is for potential multiline output
+            # 2. For single-line output, we'll strip it
+            if already_multiline_format:
+                # Keep the content for multiline format (preserve indentation)
+                stripped_content_multiline = '\n'.join(lines)
+                # But also prepare a stripped version for single-line format
+                stripped_content_single = lines[0].strip() if lines else ''
+            else:
+                # Not in multiline format, just strip it
+                stripped_content_single = lines[0].strip() if lines else ''
+                stripped_content_multiline = stripped_content_single
         else:
             # Multi-line - only dedent if we're reformatting from "content on same line as quotes" format.
             # If it's already in proper multiline format, preserve the content structure exactly.
             if already_multiline_format:
                 # Already properly formatted - just preserve the content
-                stripped_content = '\n'.join(lines)
+                stripped_content_multiline = '\n'.join(lines)
+                stripped_content_single = '\n'.join(lines)  # Won't be used but set it anyway
             else:
                 # Needs reformatting - dedent the content. Python's textwrap.dedent doesn't work well when the first
                 # line has no indent, so we do it manually: find the minimum indent of non-empty lines (excluding the
@@ -217,10 +228,11 @@ class DocstringFixer:
                         # Other lines - remove the minimum indent
                         dedented_lines.append(line[min_indent:] if len(line) >= min_indent else line.lstrip())
 
-                stripped_content = '\n'.join(dedented_lines)
+                stripped_content_multiline = '\n'.join(dedented_lines)
+                stripped_content_single = '\n'.join(dedented_lines)
 
         # Calculate if single-line format fits in 120 chars
-        single_line = f'{prefix}{quotes}{stripped_content}{quotes}'
+        single_line = f'{prefix}{quotes}{stripped_content_single}{quotes}'
         single_line_with_indent = f'{indent}{single_line}'
 
         if not has_explicit_newlines and self._calculate_display_width(single_line_with_indent) <= 120:
@@ -230,10 +242,13 @@ class DocstringFixer:
             # Use multi-line format with triple-quotes on separate lines.
             if already_multiline_format:
                 # Already in multiline format - content already has the correct indentation, don't add more
-                new_src = f'{prefix}{quotes}\n{stripped_content}\n{indent}{quotes}'
+                new_src = f'{prefix}{quotes}\n{stripped_content_multiline}\n{indent}{quotes}'
             else:
                 # Reformatting from single-line-ish format - need to indent each line
-                indented_lines = [indent + line if line.strip() else '' for line in stripped_content.split('\n')]
+                indented_lines = [
+                    indent + line if line.strip() else ''
+                    for line in stripped_content_multiline.split('\n')
+                ]
                 indented_content = '\n'.join(indented_lines)
                 new_src = f'{prefix}{quotes}\n{indented_content}\n{indent}{quotes}'
 

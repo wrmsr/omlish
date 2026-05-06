@@ -1,3 +1,32 @@
+"""
+====
+
+./om dockerdev run -CG --user=0:0 --env=TARGET_UID=1000 --env=TARGET_GID=1000 --rm -it bash
+
+if [ "$TARGET_UID" != "0" ] && [ "$TARGET_UID" != "$(id -u omlish)" ]; then
+  # 1. Evict any existing user squatting on our target UID
+  CONFLICT_USER=$(getent passwd "$TARGET_UID" | cut -d: -f1)
+  if [ -n "$CONFLICT_USER" ] && [ "$CONFLICT_USER" != "omlish" ]; then
+      userdel "$CONFLICT_USER"
+  fi
+
+  # 2. Ensure the target group exists
+  getent group "$TARGET_GID" >/dev/null 2>&1 || groupadd -g "$TARGET_GID" hostgroup
+
+  # 3. DECOY: Temporarily point home dir away to bypass the automatic large chown
+  usermod -d /tmp omlish
+
+  # 4. Shift omlish's primary UID and GID to match the host, keeping original group
+  usermod -u "$TARGET_UID" -g "$TARGET_GID" -aG 4317 omlish
+
+  # 5. RESTORE: Point the home directory back
+  usermod -d /omlish omlish
+fi
+
+# TODO: unset TARGET_UID, TARGET_GID, dynamically get 4317/'omlish'
+
+exec gosu omlish bash  # "$@"
+"""
 import os.path
 import platform
 import shutil
@@ -128,12 +157,14 @@ def process_run_args(
 def run_image(
         cfg: Config,
         args: RunArgs = RunArgs(),
+        sha: str | None = None,
 ) -> None:
-    sha = build_image(
-        cfg,
-        offline=args.offline,
-        verbose=args.verbose,
-    )
+    if sha is None:
+        sha = build_image(
+            cfg,
+            offline=args.offline,
+            verbose=args.verbose,
+        )
 
     #
 

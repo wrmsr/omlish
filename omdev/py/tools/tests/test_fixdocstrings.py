@@ -634,6 +634,60 @@ class TestDocstringContent:
 
         assert result == expected
 
+    def test_single_line_content_in_multiline_format_gets_squashed(self) -> None:
+        """Single-line content in multiline format should be squashed if it fits."""
+
+        src = normalize_indentation('''
+            def detect_language(self, sources):
+                """
+                Detect the language of a given file, or list of files.
+                """
+                pass
+        ''').lstrip()
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should be squashed to single-line format since it fits
+        expected = normalize_indentation('''
+            def detect_language(self, sources):
+                """Detect the language of a given file, or list of files."""
+
+                pass
+        ''').lstrip()
+
+        assert result == expected
+
+    def test_single_line_content_in_multiline_format_stays_multiline_if_long(self) -> None:
+        """Single-line content in multiline format should preserve indentation when too long to squash."""
+
+        # Make it long enough that it won't fit on a single line with indentation
+        long_content = (
+            'This is a very long docstring that will definitely exceed the 120 character limit when indentation is '
+            'included.'
+        )
+
+        src = f'''def foo():
+    """
+    {long_content}
+    """
+    pass
+'''
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Should stay multiline and preserve indentation
+        expected = f'''def foo():
+    """
+    {long_content}
+    """
+
+    pass
+'''
+
+        assert result == expected
+
     def test_docstring_with_quotes_inside(self) -> None:
         """Docstrings containing quotes should be handled."""
 
