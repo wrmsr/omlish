@@ -184,7 +184,8 @@ class DocstringFixer:
         else:
             # Use multi-line format with triple-quotes on separate lines
             # Keep the original content structure (including any indentation within)
-            new_src = f'{prefix}{quotes}\n{stripped_content}\n{quotes}'
+            # The closing quotes should be indented to match the opening quotes
+            new_src = f'{prefix}{quotes}\n{stripped_content}\n{indent}{quotes}'
 
         return [tks.Token(name='STRING', src=new_src, line=token.line, utf8_byte_offset=token.utf8_byte_offset)]
 
@@ -408,7 +409,7 @@ def _main() -> None:
     parser.add_argument('src', nargs='+')
     parser.add_argument('-W', '--overwrite', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
-    parser.add_argument('-j', '--workers', type=int)
+    parser.add_argument('-j', '--workers')
     parser.add_argument('-x', '--exclude', action='append')
 
     args = parser.parse_args()
@@ -428,10 +429,16 @@ def _main() -> None:
 
         return
 
+    if (nw := args.workers) is not None:
+        if nw == '-':
+            nw = os.process_cpu_count()
+        else:
+            nw = int(nw)
+
     _Runner(
         overwrite=bool(args.overwrite),
         dry_run=bool(args.dry_run),
-        num_workers=args.workers,
+        num_workers=nw,
         exclude_pats=[re.compile(xp) for xp in args.exclude] if args.exclude else None,
     ).run(args.src)
 

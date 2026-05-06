@@ -127,7 +127,7 @@ class TestMultiLineDocstrings:
 
         # Should be multi-line with triple-quotes on separate lines
         assert '"""\n' in result
-        assert f'{content}\n"""' in result
+        assert f'{content}\n    """' in result
 
     def test_multiline_docstring_preserved(self) -> None:
         """Multi-line docstrings should keep their structure."""
@@ -294,6 +294,29 @@ class TestNonDocstringStrings:
 
 class TestIndentation:
     """Test correct handling of indentation."""
+
+    def test_closing_triplequote_preserves_indentation(self) -> None:
+        """Closing triple-quotes should be indented to match opening quotes."""
+
+        src = normalize_indentation('''
+            class Foo:
+                """
+                Multi-line docstring that is quite long and exceeds the character limit.
+                It has multiple lines to ensure it stays multi-line.
+                """
+                pass
+        ''').lstrip()
+
+        fixer = DocstringFixer(src)
+        result = fixer.fix()
+
+        # Closing triple-quotes should be at the same indentation as opening quotes
+        assert '    """\n' in result
+        assert '    """' in result
+        # Verify the closing quotes are indented (not at column 0)
+        lines = result.split('\n')
+        closing_line = next(l for l in lines if l.strip() == '"""' and '"""' not in l.replace('"""', '', 1))
+        assert closing_line.startswith('    ')  # Should have 4 spaces of indentation
 
     def test_nested_class_indentation(self) -> None:
         """Nested classes should handle indentation correctly."""
@@ -539,7 +562,7 @@ class TestDocstringContent:
         # Should be formatted as multi-line
         assert '"""\n' in result
         assert 'Line 1\n' in result
-        assert 'Line 2\n"""' in result
+        assert 'Line 2\n    """' in result
 
     def test_empty_docstring(self) -> None:
         """Empty docstrings should be handled."""
