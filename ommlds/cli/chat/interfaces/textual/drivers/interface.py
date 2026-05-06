@@ -9,7 +9,6 @@ from omdev.tui import textual as tx
 from omlish import check
 from omlish import dataclasses as dc
 from omlish.asyncs.relays import SchedulingAsyncBufferRelay
-from omlish.formats import json5
 from omlish.logs import all as logs
 
 from ...... import minichain as mc
@@ -245,9 +244,18 @@ class ChatDriverInterface(
                 # spec=msh.marshal(tce.spec),
             )
 
+            tr_uit = mc.render_json_ui_text(
+                tr_dct,
+                'pretty',
+                five=True,
+                multiline_strings=True,
+            )
+
+            tr_rt = mc.ui_text_to_rich_text(tr_uit)
+
             tm = ToolMessage(
                 tx.Text(ev.tue.use.name),
-                tx.Text(json5.dumps_pretty(tr_dct, multiline_strings=True)),
+                tr_rt,
                 ToolMessage.State.RUNNING,
             )
 

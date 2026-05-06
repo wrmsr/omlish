@@ -74,8 +74,8 @@ class _StyleRendererOut:
 
 def render_json_ui_text(
         obj: ta.Any,
-        *,
         mode: ta.Literal['pretty', 'compact', None] = None,
+        *,
         five: bool = False,
         multiline_strings: bool = False,
 ) -> UiText:
