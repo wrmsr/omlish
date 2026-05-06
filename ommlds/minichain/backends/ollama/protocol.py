@@ -10,6 +10,7 @@ from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Chat
 from ...chat.messages import SystemMessage
+from ...chat.messages import ThinkingMessage
 from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
@@ -33,12 +34,12 @@ def build_ol_request_messages(chat: Chat) -> list[pt.Message]:
         mc_msgs = list(g)
 
         if isinstance(mc_msgs[0], AnyAiMessage):
-            tups: list[tuple[AiMessage | None, list[ToolUseMessage]]] = []
+            tups: list[tuple[AiMessage | None, list[ToolUseMessage | ThinkingMessage]]] = []
             for mc_msg in mc_msgs:
                 if isinstance(mc_msg, AiMessage):
                     tups.append((mc_msg, []))
 
-                elif isinstance(mc_msg, ToolUseMessage):
+                elif isinstance(mc_msg, (ToolUseMessage, ThinkingMessage)):
                     if not tups:
                         tups.append((None, []))
                     tups[-1][1].append(mc_msg)
@@ -47,19 +48,31 @@ def build_ol_request_messages(chat: Chat) -> list[pt.Message]:
                     raise TypeError(mc_msg)
 
             for mc_ai_msg, mc_tu_msgs in tups:
+                tcs: list[pt.Message.ToolCall] = []
+                ths: list[str] = []
+
+                for tum in mc_tu_msgs or []:
+                    if isinstance(tum, ToolUseMessage):
+                        tcs.append(pt.Message.ToolCall(
+                            function=pt.Message.ToolCall.Function(
+                                name=tum.tu.name,
+                                arguments=tum.tu.args,
+                            ),
+                            id=check.not_none(tum.tu.id),
+                        ))
+
+                    elif isinstance(tum, ThinkingMessage):
+                        if (thc := tum.c.strip()):
+                            ths.append(thc)
+
+                    else:
+                        raise TypeError(tum)
+
                 ol_msgs.append(pt.Message(
                     role='assistant',
                     content=check.isinstance(mc_ai_msg.c, str) if mc_ai_msg is not None else None,
-                    tool_calls=[
-                        pt.Message.ToolCall(
-                            function=pt.Message.ToolCall.Function(
-                                name=mc_tu_msg.tu.name,
-                                arguments=mc_tu_msg.tu.args,
-                            ),
-                            id=check.not_none(mc_tu_msg.tu.id),
-                        )
-                        for mc_tu_msg in mc_tu_msgs
-                    ] if mc_tu_msgs else None,
+                    tool_calls=tcs or None,
+                    thinking='\n\n'.join(ths) if ths else None,
                 ))
 
         else:

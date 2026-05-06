@@ -10,6 +10,7 @@ from .messages import AnyUserMessage
 from .messages import DeveloperMessage
 from .messages import Message
 from .messages import SystemMessage
+from .messages import ThinkingMessage
 from .messages import ToolUseMessage
 from .messages import ToolUseResultMessage
 from .messages import UserMessage
@@ -64,6 +65,9 @@ class MessageVisitor(lang.Abstract, ta.Generic[C, R]):
         return self.visit_message(m, ctx)
 
     def visit_ai_message(self, m: AiMessage, ctx: C) -> R:
+        return self.visit_any_ai_message(m, ctx)
+
+    def visit_thinking_message(self, m: ThinkingMessage, ctx: C) -> R:
         return self.visit_any_ai_message(m, ctx)
 
     def visit_tool_use_message(self, m: ToolUseMessage, ctx: C) -> R:
