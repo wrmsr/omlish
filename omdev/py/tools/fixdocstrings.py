@@ -378,7 +378,7 @@ class _Runner:
 
         if exclude_src_pats_srcs is not None:
             for xp in exclude_src_pats_srcs:
-                if re.match(xp, src):
+                if re.search(xp, src):
                     return None
 
         fixed_src = DocstringFixer(src).fix()
@@ -401,7 +401,7 @@ class _Runner:
         from omlish.concurrent.executors import new_executor
 
         with new_executor(
-            self._num_workers,
+            self._num_workers if self._num_workers is not None else 0,
             cf.ProcessPoolExecutor,
         ) as exe:
             futs: list[cf.Future] = [
@@ -453,8 +453,6 @@ class _Runner:
 
 
 def _main() -> None:
-    """Read from stdin, fix docstrings, write to stdout."""
-
     import argparse
 
     parser = argparse.ArgumentParser()
