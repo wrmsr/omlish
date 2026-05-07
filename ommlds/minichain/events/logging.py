@@ -30,7 +30,7 @@ class JsonlFileEventLogger:
         self._lock = asyncio.Lock()
 
     async def log_events(self, events: ta.Iterable[Event]) -> None:
-        ms = [msh.marshal(e) for e in events]
+        ms = [msh.marshal(e, Event) for e in events]
         js = [json.dumps_compact(m) for m in ms]
         j = '\n'.join([*js, ''])
 
