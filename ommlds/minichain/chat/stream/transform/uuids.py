@@ -6,6 +6,7 @@ from omlish import check
 from ...metadata import MessageUuid
 from ..types import AiDelta
 from ..types import PartialToolUseAiDelta
+from ..types import ToolUseAiDelta
 from .types import AiDeltaTransform
 
 
@@ -52,7 +53,7 @@ class TypeSequentialMessageUuidAddingAiDeltaTransform(AiDeltaTransform):
             return [d]
 
         if MessageUuid not in d.metadata:
-            if type(d) == type(last):  # noqa
+            if (dt := type(d)) == type(last) and dt is not ToolUseAiDelta:  # noqa
                 d = d.with_metadata(last_mu)
             else:
                 d = d.with_metadata(MessageUuid(self._uuid_factory()))
