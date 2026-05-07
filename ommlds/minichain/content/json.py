@@ -1,3 +1,7 @@
+"""
+TODO:
+ - transient cached compact/pretty
+"""
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh

@@ -1,6 +1,7 @@
 import itertools
 
 from omlish import check
+from omlish.formats import json
 
 from ....backends.ollama import protocol as pt
 from ...chat.choices.services import ChatChoicesResponse
@@ -19,7 +20,9 @@ from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import ThinkingAiDelta
 from ...chat.stream.types import ToolUseAiDelta
 from ...chat.tools.types import Tool
+from ...content.json import JsonContent
 from ...content.render.standard import render_content_str
+from ...content.text import TextContent
 from ...tools.jsonschema import build_tool_spec_params_json_schema
 from ...tools.types import ToolUse
 
@@ -90,10 +93,21 @@ def build_ol_request_messages(chat: Chat) -> list[pt.Message]:
                     ))
 
                 elif isinstance(mc_msg, ToolUseResultMessage):
+                    # FIXME: generalized visitor lol
+                    tur_c = mc_msg.tur.c
+                    if isinstance(tur_c, str):
+                        tur_cs = tur_c
+                    elif isinstance(tur_c, TextContent):
+                        tur_cs = tur_c.s
+                    elif isinstance(tur_c, JsonContent):
+                        tur_cs = json.dumps_compact(tur_c.v)
+                    else:
+                        raise TypeError(tur_c)
+
                     ol_msgs.append(pt.Message(
                         role='tool',
                         tool_name=mc_msg.tur.name,
-                        content=check.isinstance(mc_msg.tur.c, str),
+                        content=tur_cs,
                     ))
 
                 else:

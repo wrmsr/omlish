@@ -49,7 +49,7 @@ class WelcomeMessage(StaticMessage):
             if not k:
                 return
 
-            v, _ = cc[k]
+            _, v = cc[k]
 
             clipboard.put(cpb.TextClipboardContents(v))
 
