@@ -214,6 +214,12 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .content.parse.simple import (  # noqa
+        parse_simple_content,
+    )
+
+    ##
+
     from .content.render.standard import (  # noqa
         StandardContentRenderer,
 
