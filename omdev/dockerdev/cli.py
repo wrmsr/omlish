@@ -31,6 +31,7 @@ finally:
     subprocess.check_call(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL)
 """
 import os
+import sys
 import tomllib
 
 from omlish import check
@@ -108,7 +109,8 @@ class Cli(ap.Cli):
             check.arg(not self.args.auto_shift_uid)
             shift_uid = tuple(map(int, su.split(':')))  # type: ignore[assignment]
         elif self.args.auto_shift_uid:
-            shift_uid = (os.getuid(), os.getgid())
+            if getattr(sys, 'platform') == 'linux':
+                shift_uid = (os.getuid(), os.getgid())
 
         run_image(
             self._load_config(),
