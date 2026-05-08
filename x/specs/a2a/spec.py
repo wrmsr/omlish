@@ -26,6 +26,15 @@ def _main() -> None:
 
     print(spec_src)
 
+    from omlish import check
+    from omlish.text import abnf
+    from omxtra.specs.proto.abnf import proto3_grammar
+
+    parsed = check.not_none(proto3_grammar().parse(spec_src))
+    parsed = abnf.only_match_rules(parsed)
+
+    print(parsed)
+
 
 if __name__ == '__main__':
     _main()

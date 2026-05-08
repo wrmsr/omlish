@@ -1,14 +1,26 @@
 import os.path
 
 from omlish import check
+from omlish import lang
 from omlish.text import abnf
 
 
-def _main() -> None:
-    with open(os.path.join(os.path.dirname(__file__), 'proto3.abnf')) as f:
-        gram_src = f.read()
+##
 
-    gram = abnf.parse_grammar(gram_src, root='proto-file')
+
+@lang.cached_function(lock=True)
+def proto3_grammar() -> abnf.Grammar:
+    with open(os.path.join(os.path.dirname(__file__), 'proto3.abnf')) as f:
+        src = f.read()
+
+    return abnf.parse_grammar(src, root='proto-file')
+
+
+##
+
+
+def _main() -> None:
+    gram = proto3_grammar()
 
     with open(os.path.join(os.path.dirname(__file__), 'tests', 'examples', 'addressbook.proto')) as f:
         addressbook_src = f.read()
