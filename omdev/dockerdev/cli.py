@@ -30,8 +30,10 @@ try:
 finally:
     subprocess.check_call(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL)
 """
+import os
 import tomllib
 
+from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
@@ -95,11 +97,19 @@ class Cli(ap.Cli):
         ap.arg('-X', '--x11', action='store_true'),
 
         ap.arg('--shift-uid'),
+        ap.arg('-U', '--auto-shift-uid', action='store_true'),
 
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
     def run(self) -> None:
+        shift_uid: tuple[int, int] | None = None
+        if (su := self.args.shift_uid) is not None:
+            check.arg(not self.args.auto_shift_uid)
+            shift_uid = tuple(map(int, su.split(':')))  # type: ignore[assignment]
+        elif self.args.auto_shift_uid:
+            shift_uid = (os.getuid(), os.getgid())
+
         run_image(
             self._load_config(),
 
@@ -121,7 +131,7 @@ class Cli(ap.Cli):
 
                 x11=bool(self.args.x11),
 
-                shift_uid=tuple(map(int, su.split(':'))) if (su := self.args.shift_uid) is not None else None,  # type: ignore[arg-type]  # noqa
+                shift_uid=shift_uid,
 
                 unknown_args=self.unknown_args,
                 extra_args=self.args.args,
