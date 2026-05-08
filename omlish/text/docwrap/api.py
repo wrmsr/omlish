@@ -29,6 +29,7 @@ def parse(
         s: str,
         *,
         tab_width: int | None = None,
+        ignore_lists: bool = False,
         allow_improper_list_children: bool | ta.Literal['lists_only'] | None = None,
 ) -> Part:
     s = replace_tabs(
@@ -40,9 +41,10 @@ def parse(
 
     root = group_indents(root)
 
-    root = ListBuilder(
-        allow_improper_children=allow_improper_list_children,
-    ).build_lists(root)
+    if not ignore_lists:
+        root = ListBuilder(
+            allow_improper_children=allow_improper_list_children,
+        ).build_lists(root)
 
     return root
 

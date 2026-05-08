@@ -64,9 +64,11 @@ with _lang.auto_proxy_init(globals()):
     from .preparing.types import (  # noqa
         ProvidedSystemMessage,
         SystemMessageProvider,
+        StaticSystemMessageProvider,
         SystemMessageProviders,
 
         PlaceholderContentsProvider,
+        StaticPlaceholderContentsProvider,
         PlaceholderContentsProviders,
 
         ChatPreparer,

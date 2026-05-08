@@ -2,6 +2,7 @@ from ...chat.messages import Chat
 from ...chat.messages import SystemMessage
 from ...chat.transform.content import ContentTransformMessageTransform
 from ...chat.transform.types import MessageTransformChatTransform
+from ...content.containers import BlocksContent
 from ...content.placeholders import PlaceholderContents
 from ...content.render.standard import StandardContentRenderer
 from ...content.transform.types import FnContentTransform
@@ -37,9 +38,9 @@ class SimpleChatPreparer(ChatPreparer):
 
         if psm_lst:
             psm_lst.sort(key=lambda x: x.priority or 0)
-            sm = SystemMessage([
+            sm = SystemMessage(BlocksContent([
                 psm.c for psm in psm_lst
-            ])
+            ]))
             chat = [sm, *chat]
 
         #

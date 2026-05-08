@@ -9,4 +9,4 @@ from .standard import StandardContent
 
 @dc.dataclass(frozen=True)
 class BlankContent(StandardContent, lang.Final):
-    pass
+    """A hard break."""

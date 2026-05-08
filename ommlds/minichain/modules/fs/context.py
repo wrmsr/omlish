@@ -8,6 +8,7 @@ from ...tools.execution.permissions import tool_permission_decider
 from ...tools.permissions.fs import FsToolPermissionTarget
 from .binfiles import has_binary_file_extension
 from .binfiles import is_binary_file
+from .errors import RequestedPathAlreadyExistsError
 from .errors import RequestedPathDoesNotExistError
 from .errors import RequestedPathOutsideRootDirError
 from .errors import RequestedPathWriteNotPermittedError
@@ -113,6 +114,24 @@ class FsContext:
             await self.check_writes_permitted(req_path)
 
         return st
+
+    async def check_not_exists(
+            self,
+            req_path: str,
+            *,
+            write: bool = False,
+    ) -> None:
+        await self.check_requested_path(req_path)
+
+        try:
+            os.stat(req_path)  # noqa
+        except FileNotFoundError:
+            pass
+        else:
+            raise RequestedPathAlreadyExistsError(req_path)
+
+        if write:
+            await self.check_writes_permitted(req_path)
 
     #
 

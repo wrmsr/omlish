@@ -1,5 +1,6 @@
 # TODO: :|
 import os
+import textwrap
 
 from ...content.content import Content
 from ...content.placeholders import ContentPlaceholder
@@ -14,25 +15,27 @@ class CodeAgentSystemPromptEnvironmentPlaceholder(ContentPlaceholder):
 
 
 CODE_AGENT_SYSTEM_PROMPT: Content = [
-    """\
-    You are an interactive assistant specializing in programming tasks.
+    textwrap.dedent("""\
+        You are an interactive assistant specializing in programming tasks.
 
-    Your goal is to assist the user by accomplishing the tasks and answering the questions given to you by the user
-    using your available tools.
+        Your goal is to assist the user by accomplishing the tasks and answering the questions given to you by the user
+        using your available tools.
 
-    <environment>\
-    """,
+        <environment>\
+    """),
+
     PlaceholderContent(CodeAgentSystemPromptEnvironmentPlaceholder),
-    """\
-    </environment>
-    """,
+
+    textwrap.dedent("""\
+        </environment>
+    """),
 ]
 
 
 def build_code_agent_system_prompt_environment() -> Content:
-    return f"""\
-    Working Directory: {os.getcwd()}
-    """
+    return textwrap.dedent(f"""\
+        Working Directory: {os.getcwd()}
+    """)
 
 
 # CODE_AGENT_SYSTEM_PROMPT = """

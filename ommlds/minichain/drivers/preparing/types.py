@@ -27,6 +27,14 @@ class SystemMessageProvider(lang.Abstract):
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
+class StaticSystemMessageProvider(SystemMessageProvider):
+    lst: ta.Sequence[ProvidedSystemMessage]
+
+    async def provide_system_messages(self) -> ta.Sequence[ProvidedSystemMessage]:
+        return self.lst
+
+
 SystemMessageProviders = ta.NewType('SystemMessageProviders', ta.Sequence[SystemMessageProvider])
 
 
@@ -37,6 +45,14 @@ class PlaceholderContentsProvider(lang.Abstract):
     @abc.abstractmethod
     def provide_placeholder_contents(self) -> ta.Awaitable[PlaceholderContents]:
         raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class StaticPlaceholderContentsProvider(PlaceholderContentsProvider):
+    lst: ta.Sequence[PlaceholderContents]
+
+    async def provide_placeholder_contents(self) -> ta.Sequence[PlaceholderContents]:
+        return self.lst
 
 
 PlaceholderContentsProviders = ta.NewType('PlaceholderContentsProviders', ta.Sequence[PlaceholderContentsProvider])

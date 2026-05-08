@@ -95,6 +95,14 @@ class RequestedPathDoesNotExistError(RequestedPathError):
         ])
 
 
+class RequestedPathAlreadyExistsError(RequestedPathError):
+    @property
+    def content(self) -> str:
+        return ''.join([
+            f'Requested path {self.requested_path!r} must not already exist.',
+        ])
+
+
 class RequestedPathWriteNotPermittedError(RequestedPathError):
     @property
     def content(self) -> str:
