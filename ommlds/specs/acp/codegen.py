@@ -1,4 +1,10 @@
-"""JSON Schema to Python dataclass code generator."""
+"""
+JSON Schema to Python dataclass code generator.
+
+TODO:
+ - generalize lol
+ - clean up.. productionize.. de-slop
+"""
 import io
 import typing as ta
 
