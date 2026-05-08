@@ -71,3 +71,11 @@ def render_keywords(kws: Keywords) -> dict[str, ta.Any]:
             raise KeyError(tag)
         dct[tag] = val
     return dct
+
+
+def render(obj: Keyword | Keywords) -> dict[str, ta.Any]:
+    if isinstance(obj, Keywords):
+        return render_keywords(obj)
+
+    else:
+        return render_keyword(obj)

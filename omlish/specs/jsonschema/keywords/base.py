@@ -8,13 +8,34 @@ from .... import dataclasses as dc
 from .... import lang
 
 
+with lang.auto_proxy_import(globals()):
+    from . import rendering as _rendering
+
+
 KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 
 
 ##
 
 
-class Keyword(lang.Abstract):
+class _Renderable:
+    _rendered: ta.ClassVar[ta.Any]
+
+    @ta.final
+    def render(self) -> ta.Any:
+        try:
+            return self._rendered
+        except AttributeError:
+            pass
+        ret = _rendering.render(self)  # type: ignore[arg-type]
+        object.__setattr__(self, '_rendered', ret)
+        return ret
+
+
+##
+
+
+class Keyword(_Renderable, lang.Abstract):
     tag: ta.ClassVar[str]
 
 
@@ -60,7 +81,7 @@ class UnknownKeyword(Keyword, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class Keywords(lang.Final):
+class Keywords(_Renderable, lang.Final):
     lst: ta.Sequence[Keyword]
 
     @cached.property

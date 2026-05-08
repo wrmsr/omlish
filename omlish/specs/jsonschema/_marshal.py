@@ -5,7 +5,7 @@ from ... import lang
 from ... import marshal as msh
 from .keywords.base import Keywords
 from .keywords.parse import KeywordParser
-from .keywords.render import render_keywords
+from .keywords.rendering import render_keywords
 
 
 ##

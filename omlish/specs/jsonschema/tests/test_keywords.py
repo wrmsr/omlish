@@ -10,7 +10,7 @@ https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 """
 from ....formats import json
 from ..keywords.parse import parse_keywords
-from ..keywords.render import render_keywords
+from ..keywords.rendering import render_keywords
 
 
 def test_keywords():

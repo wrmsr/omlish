@@ -36,9 +36,10 @@ from .keywords.parse import (  # noqa
     parse_keywords,
 )
 
-from .keywords.render import (  # noqa
+from .keywords.rendering import (  # noqa
     render_keyword,
     render_keywords,
+    render,
 )
 
 from .keywords.validation import (  # noqa
