@@ -4731,31 +4731,36 @@ def _process_dataclass__9e25e98278bf5baa0fa863c9a231781780c532e1():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('dry_run', 'instance_types', 'filters', 'max_results', 'next_token')), EqPlan(fiel"
-        "ds=('dry_run', 'instance_types', 'filters', 'max_results', 'next_token')), FrozenPlan(fields=('__shape__', 'dr"
-        "y_run', 'instance_types', 'filters', 'max_results', 'next_token'), allow_dynamic_dunder_attrs=False), HashPlan"
-        "(action='add', fields=('dry_run', 'instance_types', 'filters', 'max_results', 'next_token'), cache=False), Ini"
-        "tPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.1.annotation'), default=O"
-        "pRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_types', annotation=OpRef(nam"
-        "e='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, o"
-        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
-        "e='filters', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='max_results', annotation=OpRef(name='init.fields.4.annotation'), default=O"
-        "pRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_token', annotation=OpRef(name='i"
-        "nit.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', st"
-        "d_params=(), kw_only_params=('dry_run', 'instance_types', 'filters', 'max_results', 'next_token'), frozen=True"
+        "Plans(tup=(CopyPlan(fields=('dry_run', 'instance_types', 'filters', 'max_results', 'next_token', 'include_unsu"
+        "pported_in_region')), EqPlan(fields=('dry_run', 'instance_types', 'filters', 'max_results', 'next_token', 'inc"
+        "lude_unsupported_in_region')), FrozenPlan(fields=('__shape__', 'dry_run', 'instance_types', 'filters', 'max_re"
+        "sults', 'next_token', 'include_unsupported_in_region'), allow_dynamic_dunder_attrs=False), HashPlan(action='ad"
+        "d', fields=('dry_run', 'instance_types', 'filters', 'max_results', 'next_token', 'include_unsupported_in_regio"
+        "n'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.anno"
+        "tation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='dry_run', annotation=OpRef(name='init.fields.1.a"
+        "nnotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_types'"
+        ", annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='filters', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init"
+        ".fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='max_results', annotation=OpRef(name='init.fields.4.a"
+        "nnotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='next_token', an"
+        "notation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='include_unsupported_in_region', annotation=OpRef(name='init.fields.6.annotation'), defaul"
+        "t=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('dry"
+        "_run', 'instance_types', 'filters', 'max_results', 'next_token', 'include_unsupported_in_region'), frozen=True"
         ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='dry"
         "_run', kw_only=True, fn=None), ReprPlan.Field(name='instance_types', kw_only=True, fn=None), ReprPlan.Field(na"
         "me='filters', kw_only=True, fn=None), ReprPlan.Field(name='max_results', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='next_token', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "d(name='next_token', kw_only=True, fn=None), ReprPlan.Field(name='include_unsupported_in_region', kw_only=True"
+        ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='2bd409abcc1fe65745575c019ddf571add03c9e8',
+    plan_repr_sha1='440c21ba79a7017eb208e1941753d81c328b4259',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -4767,12 +4772,14 @@ def _process_dataclass__9e25e98278bf5baa0fa863c9a231781780c532e1():
         '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'DescribeInstanceTypesRequest'),
     ),
 )
-def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
+def _process_dataclass__440c21ba79a7017eb208e1941753d81c328b4259():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4786,6 +4793,8 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4809,6 +4818,7 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
                 filters=self.filters,
                 max_results=self.max_results,
                 next_token=self.next_token,
+                include_unsupported_in_region=self.include_unsupported_in_region,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -4826,7 +4836,8 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
                 self.instance_types == other.instance_types and
                 self.filters == other.filters and
                 self.max_results == other.max_results and
-                self.next_token == other.next_token
+                self.next_token == other.next_token and
+                self.include_unsupported_in_region == other.include_unsupported_in_region
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -4841,6 +4852,7 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
             'filters',
             'max_results',
             'next_token',
+            'include_unsupported_in_region',
         }
 
         def __setattr__(self, name, value):
@@ -4863,6 +4875,7 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
             'filters',
             'max_results',
             'next_token',
+            'include_unsupported_in_region',
         }
 
         def __delattr__(self, name):
@@ -4885,6 +4898,7 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
                 self.filters,
                 self.max_results,
                 self.next_token,
+                self.include_unsupported_in_region,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -4898,12 +4912,14 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
             filters: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             max_results: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             next_token: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            include_unsupported_in_region: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'dry_run', dry_run)
             __dataclass__object_setattr(self, 'instance_types', instance_types)
             __dataclass__object_setattr(self, 'filters', filters)
             __dataclass__object_setattr(self, 'max_results', max_results)
             __dataclass__object_setattr(self, 'next_token', next_token)
+            __dataclass__object_setattr(self, 'include_unsupported_in_region', include_unsupported_in_region)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -4918,6 +4934,7 @@ def _process_dataclass__2bd409abcc1fe65745575c019ddf571add03c9e8():
             parts.append(f"filters={self.filters!r}")
             parts.append(f"max_results={self.max_results!r}")
             parts.append(f"next_token={self.next_token!r}")
+            parts.append(f"include_unsupported_in_region={self.include_unsupported_in_region!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -18987,132 +19004,136 @@ def _process_dataclass__327236ea672fda2b2703a334052e0713bf4d89b0():
         "_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_accelerator_info', 'hibernation_supported'"
         ", 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_recovery_supported', 'supported_boot_m"
         "odes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info"
-        "', 'phc_support', 'reboot_migration_support')), EqPlan(fields=('instance_type', 'current_generation', 'free_ti"
-        "er_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtualization_types', 'bar"
-        "e_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_storage_supported', 'instance_"
-        "storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_acceler"
-        "ator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_rec"
-        "overy_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', 'me"
-        "dia_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support')), FrozenPlan(fields=('__shape"
-        "__', 'instance_type', 'current_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_d"
-        "evice_types', 'supported_virtualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'me"
-        "mory_info', 'instance_storage_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fp"
-        "ga_info', 'placement_group_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performanc"
-        "e_supported', 'dedicated_hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_"
-        "support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'rebo"
-        "ot_migration_support'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('instance_type', 'cu"
-        "rrent_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_"
-        "virtualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_sto"
-        "rage_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_grou"
-        "p_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_"
-        "hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_supp"
-        "ort', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'), c"
-        "ache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotatio"
-        "n'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init.fields.01"
-        ".annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='current_gene"
-        "ration', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), def"
-        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
-        "_type=None), InitPlan.Field(name='free_tier_eligible', annotation=OpRef(name='init.fields.03.annotation'), def"
-        "ault=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_usage_classes', anno"
-        "tation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory="
-        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='supported_root_device_types', annotation=OpRef(name='init.fields.05.annotation'), default"
-        "=OpRef(name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supported_virtualization_types', a"
-        "nnotation=OpRef(name='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_facto"
-        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
-        "), InitPlan.Field(name='bare_metal', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='i"
-        "nit.fields.07.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fields."
-        "08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='processor_"
-        "info', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='vcpu_info', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef("
-        "name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='memory_info', annotation=OpRef(name='init"
-        ".fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='in"
-        "stance_storage_supported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields"
-        ".12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='instance_storage_info', annotation=OpRef(name='init.fields"
-        ".13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=Fals"
-        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_info'"
-        ", annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_fa"
-        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
-        "one), InitPlan.Field(name='network_info', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(na"
-        "me='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='gpu_info', annotation=OpRef(name='init.fiel"
-        "ds.16.annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fpga_in"
-        "fo', annotation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='placement_group_info', annotation=OpRef(name='init.fields.18.annotation'), defau"
-        "lt=OpRef(name='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType"
-        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='inference_accelerator_info', ann"
-        "otation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='hibernation_supported', annotation=OpRef(name='init.fields.20.annotation'), default=OpRe"
-        "f(name='init.fields.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='burstable_performance_supported', annot"
-        "ation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='dedicated_hosts_supported', annotation=OpRef(name='init.fields.22.annotation'), default=Op"
-        "Ref(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='auto_recovery_supported', annotation="
-        "OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=None, i"
+        "', 'phc_support', 'reboot_migration_support', 'supported_in_region')), EqPlan(fields=('instance_type', 'curren"
+        "t_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virt"
+        "ualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_storage"
+        "_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_in"
+        "fo', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_host"
+        "s_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support'"
+        ", 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support', 'suppo"
+        "rted_in_region')), FrozenPlan(fields=('__shape__', 'instance_type', 'current_generation', 'free_tier_eligible'"
+        ", 'supported_usage_classes', 'supported_root_device_types', 'supported_virtualization_types', 'bare_metal', 'h"
+        "ypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_storage_supported', 'instance_storage_info"
+        "', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_accelerator_info', "
+        "'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_recovery_suppor"
+        "ted', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelera"
+        "tor_info', 'neuron_info', 'phc_support', 'reboot_migration_support', 'supported_in_region'), allow_dynamic_dun"
+        "der_attrs=False), HashPlan(action='add', fields=('instance_type', 'current_generation', 'free_tier_eligible', "
+        "'supported_usage_classes', 'supported_root_device_types', 'supported_virtualization_types', 'bare_metal', 'hyp"
+        "ervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_storage_supported', 'instance_storage_info',"
+        " 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'inference_accelerator_info', 'h"
+        "ibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_supported', 'auto_recovery_supporte"
+        "d', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerato"
+        "r_info', 'neuron_info', 'phc_support', 'reboot_migration_support', 'supported_in_region'), cache=False), InitP"
+        "lan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=None,"
+        " default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='instance_type', annotation=OpRef(name='init.fields.01.annotation'), def"
+        "ault=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='current_generation', annotatio"
+        "n=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='free_tier_eligible', annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name='i"
+        "nit.fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='supported_usage_classes', annotation=OpRef(name="
+        "'init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='supported_root_device_types', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init."
+        "fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='supported_virtualization_types', annotation=OpRef(na"
+        "me='init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='bare_metal', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fields.08.annotation'), d"
+        "efault=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='processor_info', annotation="
+        "OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, i"
         "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='supported_boot_modes', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(name='i"
-        "nit.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='nitro_enclaves_support', annotation=OpRef(name='"
-        "init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='nitro_tpm_support', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields.26.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='nitro_tpm_info', annotation=OpRef(name='init.fields.27.annotati"
-        "on'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='media_accelerator_inf"
-        "o', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='neuron_info', annotation=OpRef(name='init.fields.29.annotation'), default=OpRef(n"
-        "ame='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
-        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='phc_support', annotation=OpRef(name='init."
-        "fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='reb"
-        "oot_migration_support', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31"
+        "n.Field(name='vcpu_info', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields."
+        "10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='memory_info', annotation=OpRef(name='init.fields.11.annotat"
+        "ion'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_storage_sup"
+        "ported', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='instance_storage_info', annotation=OpRef(name='init.fields.13.annotation'), "
+        "default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_info', annotation=OpRef"
+        "(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='network_info', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15"
         ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('instance_type', 'current_gener"
-        "ation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_types', 'supported_virtualizat"
-        "ion_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_info', 'instance_storage_suppor"
-        "ted', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info', 'placement_group_info', 'i"
-        "nference_accelerator_info', 'hibernation_supported', 'burstable_performance_supported', 'dedicated_hosts_suppo"
-        "rted', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support', 'nitro_tpm_support', 'nitr"
-        "o_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migration_support'), frozen=True,"
-        " slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='inst"
-        "ance_type', kw_only=True, fn=None), ReprPlan.Field(name='current_generation', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name='supported_usage_classes', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='supported_root_device_types', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='supported_virtualization_types', kw_only=True, fn=None), ReprPlan.Field(name='bare_metal', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='processor_info', kw_o"
-        "nly=True, fn=None), ReprPlan.Field(name='vcpu_info', kw_only=True, fn=None), ReprPlan.Field(name='memory_info'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='instance_storage_supported', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='instance_storage_info', kw_only=True, fn=None), ReprPlan.Field(name='ebs_info', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='network_info', kw_only=True, fn=None), ReprPlan.Field(name='gpu_info', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='fpga_info', kw_only=True, fn=None), ReprPlan.Field(name='placement_group_info'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='inference_accelerator_info', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='hibernation_supported', kw_only=True, fn=None), ReprPlan.Field(name='burstable_performance_supporte"
-        "d', kw_only=True, fn=None), ReprPlan.Field(name='dedicated_hosts_supported', kw_only=True, fn=None), ReprPlan."
-        "Field(name='auto_recovery_supported', kw_only=True, fn=None), ReprPlan.Field(name='supported_boot_modes', kw_o"
-        "nly=True, fn=None), ReprPlan.Field(name='nitro_enclaves_support', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'nitro_tpm_support', kw_only=True, fn=None), ReprPlan.Field(name='nitro_tpm_info', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='media_accelerator_info', kw_only=True, fn=None), ReprPlan.Field(name='neuron_info', kw_only="
-        "True, fn=None), ReprPlan.Field(name='phc_support', kw_only=True, fn=None), ReprPlan.Field(name='reboot_migrati"
-        "on_support', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "ate=None, check_type=None), InitPlan.Field(name='gpu_info', annotation=OpRef(name='init.fields.16.annotation')"
+        ", default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fpga_info', annotation=Op"
+        "Ref(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='placement_group_info', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='ini"
+        "t.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='inference_accelerator_info', annotation=OpRef(name"
+        "='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='hibernation_supported', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.field"
+        "s.20.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='burstable_performance_supported', annotation=OpRef(name='"
+        "init.fields.21.annotation'), default=OpRef(name='init.fields.21.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
+        "='dedicated_hosts_supported', annotation=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fie"
+        "lds.22.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='auto_recovery_supported', annotation=OpRef(name='init.f"
+        "ields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='supp"
+        "orted_boot_modes', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef(name='init.fields.24.defa"
+        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
+        "one, check_type=None), InitPlan.Field(name='nitro_enclaves_support', annotation=OpRef(name='init.fields.25.ann"
+        "otation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nitro_tpm_suppor"
+        "t', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields.26.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='nitro_tpm_info', annotation=OpRef(name='init.fields.27.annotation'), default=OpRe"
+        "f(name='init.fields.27.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='media_accelerator_info', annotation=OpR"
+        "ef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='neuron_info', annotation=OpRef(name='init.fields.29.annotation'), default=OpRef(name='init.fields.2"
+        "9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='phc_support', annotation=OpRef(name='init.fields.30.annotati"
+        "on'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='reboot_migration_supp"
+        "ort', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='supported_in_region', annotation=OpRef(name='init.fields.32.annotation'), defau"
+        "lt=OpRef(name='init.fields.32.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('i"
+        "nstance_type', 'current_generation', 'free_tier_eligible', 'supported_usage_classes', 'supported_root_device_t"
+        "ypes', 'supported_virtualization_types', 'bare_metal', 'hypervisor', 'processor_info', 'vcpu_info', 'memory_in"
+        "fo', 'instance_storage_supported', 'instance_storage_info', 'ebs_info', 'network_info', 'gpu_info', 'fpga_info"
+        "', 'placement_group_info', 'inference_accelerator_info', 'hibernation_supported', 'burstable_performance_suppo"
+        "rted', 'dedicated_hosts_supported', 'auto_recovery_supported', 'supported_boot_modes', 'nitro_enclaves_support"
+        "', 'nitro_tpm_support', 'nitro_tpm_info', 'media_accelerator_info', 'neuron_info', 'phc_support', 'reboot_migr"
+        "ation_support', 'supported_in_region'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate"
+        "_fns=()), ReprPlan(fields=(ReprPlan.Field(name='instance_type', kw_only=True, fn=None), ReprPlan.Field(name='c"
+        "urrent_generation', kw_only=True, fn=None), ReprPlan.Field(name='free_tier_eligible', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='supported_usage_classes', kw_only=True, fn=None), ReprPlan.Field(name='supported_root_dev"
+        "ice_types', kw_only=True, fn=None), ReprPlan.Field(name='supported_virtualization_types', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='bare_metal', kw_only=True, fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='processor_info', kw_only=True, fn=None), ReprPlan.Field(name='vcpu_info', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='memory_info', kw_only=True, fn=None), ReprPlan.Field(name='instance_st"
+        "orage_supported', kw_only=True, fn=None), ReprPlan.Field(name='instance_storage_info', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='ebs_info', kw_only=True, fn=None), ReprPlan.Field(name='network_info', kw_only=True, fn="
+        "None), ReprPlan.Field(name='gpu_info', kw_only=True, fn=None), ReprPlan.Field(name='fpga_info', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='placement_group_info', kw_only=True, fn=None), ReprPlan.Field(name='inference_a"
+        "ccelerator_info', kw_only=True, fn=None), ReprPlan.Field(name='hibernation_supported', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='burstable_performance_supported', kw_only=True, fn=None), ReprPlan.Field(name='dedicated"
+        "_hosts_supported', kw_only=True, fn=None), ReprPlan.Field(name='auto_recovery_supported', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='supported_boot_modes', kw_only=True, fn=None), ReprPlan.Field(name='nitro_enclaves_su"
+        "pport', kw_only=True, fn=None), ReprPlan.Field(name='nitro_tpm_support', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='nitro_tpm_info', kw_only=True, fn=None), ReprPlan.Field(name='media_accelerator_info', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='neuron_info', kw_only=True, fn=None), ReprPlan.Field(name='phc_support', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='reboot_migration_support', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "supported_in_region', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='8116c7f65aa4861e765e4a02a83ff00ac3f2c212',
+    plan_repr_sha1='6841136d5ec3c2f24bbf5d6208e3cd3011320bc9',
     op_ref_idents=(
         '__dataclass__init__fields__01__annotation',
         '__dataclass__init__fields__01__default',
@@ -19176,12 +19197,14 @@ def _process_dataclass__327236ea672fda2b2703a334052e0713bf4d89b0():
         '__dataclass__init__fields__30__default',
         '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'InstanceTypeInfo'),
     ),
 )
-def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
+def _process_dataclass__6841136d5ec3c2f24bbf5d6208e3cd3011320bc9():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -19247,6 +19270,8 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
         __dataclass__init__fields__30__default,
         __dataclass__init__fields__31__annotation,
         __dataclass__init__fields__31__default,
+        __dataclass__init__fields__32__annotation,
+        __dataclass__init__fields__32__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -19296,6 +19321,7 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
                 neuron_info=self.neuron_info,
                 phc_support=self.phc_support,
                 reboot_migration_support=self.reboot_migration_support,
+                supported_in_region=self.supported_in_region,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -19339,7 +19365,8 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
                 self.media_accelerator_info == other.media_accelerator_info and
                 self.neuron_info == other.neuron_info and
                 self.phc_support == other.phc_support and
-                self.reboot_migration_support == other.reboot_migration_support
+                self.reboot_migration_support == other.reboot_migration_support and
+                self.supported_in_region == other.supported_in_region
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -19380,6 +19407,7 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
             'neuron_info',
             'phc_support',
             'reboot_migration_support',
+            'supported_in_region',
         }
 
         def __setattr__(self, name, value):
@@ -19428,6 +19456,7 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
             'neuron_info',
             'phc_support',
             'reboot_migration_support',
+            'supported_in_region',
         }
 
         def __delattr__(self, name):
@@ -19476,6 +19505,7 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
                 self.neuron_info,
                 self.phc_support,
                 self.reboot_migration_support,
+                self.supported_in_region,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -19515,6 +19545,7 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
             neuron_info: __dataclass__init__fields__29__annotation = __dataclass__init__fields__29__default,
             phc_support: __dataclass__init__fields__30__annotation = __dataclass__init__fields__30__default,
             reboot_migration_support: __dataclass__init__fields__31__annotation = __dataclass__init__fields__31__default,
+            supported_in_region: __dataclass__init__fields__32__annotation = __dataclass__init__fields__32__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'instance_type', instance_type)
             __dataclass__object_setattr(self, 'current_generation', current_generation)
@@ -19547,6 +19578,7 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
             __dataclass__object_setattr(self, 'neuron_info', neuron_info)
             __dataclass__object_setattr(self, 'phc_support', phc_support)
             __dataclass__object_setattr(self, 'reboot_migration_support', reboot_migration_support)
+            __dataclass__object_setattr(self, 'supported_in_region', supported_in_region)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -19587,6 +19619,7 @@ def _process_dataclass__8116c7f65aa4861e765e4a02a83ff00ac3f2c212():
             parts.append(f"neuron_info={self.neuron_info!r}")
             parts.append(f"phc_support={self.phc_support!r}")
             parts.append(f"reboot_migration_support={self.reboot_migration_support!r}")
+            parts.append(f"supported_in_region={self.supported_in_region!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

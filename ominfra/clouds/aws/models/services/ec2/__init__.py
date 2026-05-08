@@ -279,6 +279,8 @@ class ImdsSupportValues(_enum.Enum):
     V2_0 = 'v2.0'
 
 
+IncludeUnsupportedInRegion = _ta.NewType('IncludeUnsupportedInRegion', bool)
+
 InferenceDeviceCount = _ta.NewType('InferenceDeviceCount', int)
 
 InferenceDeviceManufacturerName = _ta.NewType('InferenceDeviceManufacturerName', str)
@@ -1994,6 +1996,9 @@ class SubnetState(_enum.Enum):
 class SupportedAdditionalProcessorFeature(_enum.Enum):
     AMD_SEV_SNP = 'amd-sev-snp'
     NESTED_VIRTUALIZATION = 'nested-virtualization'
+
+
+SupportedInRegion = _ta.NewType('SupportedInRegion', bool)
 
 
 class Tenancy(_enum.Enum):
@@ -6376,6 +6381,11 @@ class DescribeInstanceTypesRequest(
         shape_name='NextToken',
     ))
 
+    include_unsupported_in_region: IncludeUnsupportedInRegion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='IncludeUnsupportedInRegion',
+        shape_name='IncludeUnsupportedInRegion',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class DescribeInstancesRequest(
@@ -7915,6 +7925,12 @@ class InstanceTypeInfo(
         member_name='RebootMigrationSupport',
         serialization_name='rebootMigrationSupport',
         shape_name='RebootMigrationSupport',
+    ))
+
+    supported_in_region: SupportedInRegion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SupportedInRegion',
+        serialization_name='supportedInRegion',
+        shape_name='SupportedInRegion',
     ))
 
 
