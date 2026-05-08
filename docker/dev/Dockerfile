@@ -441,36 +441,40 @@ sudo mkdir /var/run/sshd ;\
 
 ## configs
 
-RUN echo '\
-handle SIGUSR1 nostop noprint\n\
-handle SIGUSR2 nostop noprint\n\
-' > /omlish/.gdbinit && chmod 664 /omlish/.gdbinit
+RUN cat > /omlish/.gdbinit <<'EOF' && chmod 664 /omlish/.gdbinit
+handle SIGUSR1 nostop noprint
+handle SIGUSR2 nostop noprint
+EOF
 
-RUN echo '\
-.headers on\n\
-.mode line\n\
-.timer on\n\
-.changes on\n\
-' > /omlish/.sqliterc && chmod 664 /omlish/.sqliterc
 
-RUN echo '\
-setw -g mode-keys vi\n\
-set -g status-keys vi\n\
-set -sg escape-time 0\n\
-set -g status-fg black\n\
-set -g history-limit 50000\n\
-set -g update-environment "DISPLAY"\n\
-set -sg default-terminal "xterm-256color"\n\
-' > /omlish/.tmux.conf && chmod 664 /omlish/.tmux.conf
+RUN cat > /omlish/.sqliterc <<'EOF' && chmod 664 /omlish/.sqliterc
+.headers on
+.mode line
+.timer on
+.changes on
+EOF
 
-RUN echo '\
-set number\n\
-syntax on\n\
-filetype indent plugin on\n\
-set tabstop=4\n\
-set shiftwidth=4\n\
-set expandtab\n\
-' > /omlish/.vimrc && chmod 664 /omlish/.vimrc
+
+RUN cat > /omlish/.tmux.conf <<'EOF' && chmod 664 /omlish/.tmux.conf
+setw -g mode-keys vi
+set -g status-keys vi
+set -sg escape-time 0
+set -g status-fg black
+set -g history-limit 50000
+set -g update-environment "DISPLAY"
+set -sg default-terminal "xterm-256color"
+EOF
+
+
+RUN cat > /omlish/.vimrc <<'EOF' && chmod 664 /omlish/.vimrc
+set number
+syntax on
+filetype indent plugin on
+set tabstop=4
+set shiftwidth=4
+set expandtab
+EOF
+
 
 
 ## scripts
@@ -479,27 +483,30 @@ RUN (\
 mkdir /omlish/scripts && chmod -R g=u /omlish/scripts ;\
 )
 
-RUN echo '\
-#!/bin/bash\n\
-set -ex\n\
-\n\
-curl -fsSL '"'"'https://claude.ai/install.sh'"'"' | bash\n\
-' > /omlish/scripts/install-claude && chmod 664 /omlish/scripts/install-claude
+RUN cat > /omlish/scripts/install-claude <<'EOF' && chmod 664 /omlish/scripts/install-claude
+#!/bin/bash
+set -ex
 
-RUN echo '\
-#!/bin/bash\n\
-set -ex\n\
-\n\
-npm i -g @openai/codex\n\
-' > /omlish/scripts/install-codex && chmod 664 /omlish/scripts/install-codex
+curl -fsSL 'https://claude.ai/install.sh' | bash
+EOF
 
-RUN echo '\
-#!/bin/bash\n\
-set -ex\n\
-\n\
-sudo mkdir -p /var/run/dbus /run/dbus\n\
-sudo dbus-daemon --system --nofork --nopidfile\n\
-' > /omlish/scripts/run-dbus && chmod 664 /omlish/scripts/run-dbus
+
+RUN cat > /omlish/scripts/install-codex <<'EOF' && chmod 664 /omlish/scripts/install-codex
+#!/bin/bash
+set -ex
+
+npm i -g @openai/codex
+EOF
+
+
+RUN cat > /omlish/scripts/run-dbus <<'EOF' && chmod 664 /omlish/scripts/run-dbus
+#!/bin/bash
+set -ex
+
+sudo mkdir -p /var/run/dbus /run/dbus
+sudo dbus-daemon --system --nofork --nopidfile
+EOF
+
 
 RUN (\
 chmod a+x /omlish/scripts/* ;\

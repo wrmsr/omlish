@@ -219,23 +219,23 @@ def render_copy(op: Copy, ctx: RenderContext) -> str:
 def render_write(op: Write, ctx: RenderContext) -> str:
     out = io.StringIO()
 
-    out.write("RUN echo '\\\n")
-
     c = render_content(op.content, ctx)
-    s = sh_quote(c)[1:-1]
-    for l in s.splitlines(keepends=True):
-        # l = l.replace('$', '\\$')
-        if l.endswith('\n'):
-            out.write(l[:-1])
-            out.write('\\n\\\n')
-        else:
-            out.write(l)
-            out.write('\\\n')
 
-    last = f"' {'>>' if op.append else '>'} {op.path}"
+    eof = 'EOF'
+    ei = 0
+    while eof in c:
+        eof = f'EOF{ei}'
+        ei += 1
+
+    out.write(f"RUN cat {'>>' if op.append else '>'} {op.path} <<'{eof}'")
     if ctx.write_chmod is not None:
-        last += f' && chmod {ctx.write_chmod} {op.path}'
-    out.write(last)
+        out.write(f' && chmod {ctx.write_chmod} {op.path}')
+
+    out.write('\n')
+    out.write(c.strip())
+    out.write('\n')
+    out.write(eof)
+    out.write('\n')
 
     return out.getvalue()
 
