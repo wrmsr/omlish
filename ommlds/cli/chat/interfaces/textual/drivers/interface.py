@@ -247,11 +247,13 @@ class ChatDriverInterface(
                 # spec=msh.marshal(tce.spec),
             )
 
-            tr_uit = mc.render_json_ui_text(
+            tr_uit = mc.render_obj_json_ui_text(
                 tr_dct,
-                'pretty',
-                five=True,
-                multiline_strings=True,
+                mc.JsonUiTextRendering(
+                    'pretty',
+                    five=True,
+                    multiline_strings=True,
+                ),
             )
 
             tr_rt = mc.ui_text_to_rich_text(tr_uit)

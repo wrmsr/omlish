@@ -1,3 +1,7 @@
+"""
+TODO:
+ - diff?
+"""
 import abc
 import io
 import typing as ta
@@ -6,6 +10,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
+from omlish.formats import json
 
 
 CanUiText: ta.TypeAlias = ta.Union[
@@ -218,7 +223,7 @@ class StrUiText(UiText, lang.Final):
 UiText._BLANK = StrUiText('')  # noqa
 
 
-##
+#
 
 
 @dc.dataclass(frozen=True)
@@ -249,7 +254,7 @@ class ConcatUiText(UiText, lang.Final):
             t.write_str_to(fn)
 
 
-##
+#
 
 
 @dc.dataclass(frozen=True)
@@ -267,6 +272,20 @@ class StyleUiText(UiText, lang.Final):
 
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
         self.c.write_str_to(fn)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
+class JsonUiText(UiText, lang.Final):
+    v: ta.Any
+
+    #
+
+    def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
+        fn(json.dumps_compact(self.v))
 
 
 ##

@@ -775,7 +775,9 @@ with _lang.auto_proxy_init(
     ##
 
     from .ui.json import (  # noqa
-        render_json_ui_text,
+        JsonUiTextRendering,
+        render_obj_json_ui_text,
+        render_json_ui_texts,
     )
 
     from .ui.rich import (  # noqa
@@ -792,6 +794,8 @@ with _lang.auto_proxy_init(
         StrUiText,
         ConcatUiText,
         StyleUiText,
+
+        JsonUiText,
     )
 
     ##
