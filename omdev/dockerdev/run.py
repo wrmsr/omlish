@@ -1,29 +1,44 @@
 """
 ====
 
-./om dockerdev run -CG --user=0:0 --env=TARGET_UID=1000 --env=TARGET_GID=1000 --rm -it bash
+./om dockerdev run -CG \
+    --user=0:0 \
+    --env=EXTERNAL_UID=1000 \
+    --env=EXTERNAL_GID=1000 \
+    --env=INTERNAL_USER=omlish \
+    --rm -it bash
 
-if [ "$TARGET_UID" != "0" ] && [ "$TARGET_UID" != "$(id -u omlish)" ]; then
+====
+
+INTERNAL_UID=$(id -u "$INTERNAL_USER")
+
+if [ "$EXTERNAL_UID" != "$INTERNAL_UID" ]; then
   # 1. Evict any existing user squatting on our target UID
-  CONFLICT_USER=$(getent passwd "$TARGET_UID" | cut -d: -f1)
-  if [ -n "$CONFLICT_USER" ] && [ "$CONFLICT_USER" != "omlish" ]; then
+  CONFLICT_USER=$(getent passwd "$EXTERNAL_UID" | cut -d: -f1)
+  if [ -n "$CONFLICT_USER" ] && [ "$CONFLICT_USER" != "$INTERNAL_USER" ]; then
       userdel "$CONFLICT_USER"
   fi
 
   # 2. Ensure the target group exists
-  getent group "$TARGET_GID" >/dev/null 2>&1 || groupadd -g "$TARGET_GID" hostgroup
+  getent group "$EXTERNAL_GID" >/dev/null 2>&1 || groupadd -g "$EXTERNAL_GID" shift-uid
 
   # 3. DECOY: Temporarily point home dir away to bypass the automatic large chown
-  usermod -d /tmp omlish
+  INTERNAL_HOME=$(getent passwd "$INTERNAL_USER" | cut -d: -f6)
+  usermod -d /tmp "$INTERNAL_USER"
 
-  # 4. Shift omlish's primary UID and GID to match the host, keeping original group
-  usermod -u "$TARGET_UID" -g "$TARGET_GID" -aG 4317 omlish
+  # 4. Shift user's primary UID and GID to match the host, keeping original group
+  usermod -u "$EXTERNAL_UID" -g "$EXTERNAL_GID" -aG "$INTERNAL_UID" "$INTERNAL_USER"
 
-  # 5. RESTORE: Point the home directory back
-  usermod -d /omlish omlish
+  # 5. Point the home directory back
+  usermod -d "$INTERNAL_HOME" "$INTERNAL_USER"
 fi
 
-# TODO: unset TARGET_UID, TARGET_GID, dynamically get 4317/'omlish'
+unset EXTERNAL_UID
+unset EXTERNAL_GID
+unset INTERNAL_USER
+
+unset INTERNAL_UID
+unset INTERNAL_HOME
 
 exec gosu omlish bash  # "$@"
 """
@@ -36,6 +51,7 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish.os.paths import is_path_in_dir
 
 from ..home.paths import get_cache_dir
@@ -65,8 +81,15 @@ class RunArgs:
 
     x11: bool = False
 
+    no_default_labels: bool = False
+
+    shift_uid: tuple[int, int] | None = None
+
     unknown_args: ta.Sequence[str] | None = None
     extra_args: ta.Sequence[str] | None = None
+
+
+LABEL_PREFIX = 'omlish.dockerdev'
 
 
 def process_run_args(
@@ -112,9 +135,18 @@ def process_run_args(
     if not args.no_host_platform:
         run_args.extend([f'--env=DOCKER_HOST_PLATFORM={platform.system().lower()}'])
 
+    @lang.cached_function
+    def tmp_dir() -> str:
+        d = tempfile.mkdtemp()
+        run_args.extend([
+            f'--mount=type=bind,src={d},dst=/dockerdev,readonly',
+        ])
+        return d
+
+    entrypoint: str | None = None
+
     if args.autoexecs:
-        tmp_dir = tempfile.mkdtemp()
-        tmp_ep = os.path.join(tmp_dir, 'entrypoint.sh')
+        tmp_ep = os.path.join(tmp_dir(), 'autoexec.sh')
         with open(tmp_ep, 'w') as f:
             f.write('\n'.join([
                 '#!/bin/sh',
@@ -123,16 +155,38 @@ def process_run_args(
                 'exec "$@"',
             ]))
         os.chmod(tmp_ep, 0o755)  # noqa
+        entrypoint = '/dockerdev/autoexec.sh'
+
+    if args.shift_uid is not None:
+        su_uid, su_gid = args.shift_uid
+        su_src = lang.get_relative_resources('.resources', globals=globals())['shift-uid.sh'].read_text()
+        tmp_su_ep = os.path.join(tmp_dir(), 'shift-uid.sh')
+        with open(tmp_su_ep, 'w') as f:
+            f.write(su_src)
+        os.chmod(tmp_su_ep, 0o755)  # noqa
         run_args.extend([
-            f'--mount=type=bind,src={tmp_dir},dst=/dockerdev,readonly',
-            f'--entrypoint=/dockerdev/entrypoint.sh',
+            '--user=0:0',
+        ])
+        run_args.extend([
+            f'--env={k}={v}' for k, v in {
+                'SHIFTUID_EXTERNAL_UID': str(su_uid),
+                'SHIFTUID_EXTERNAL_GID': str(su_gid),
+                'SHIFTUID_INTERNAL_USER': check.non_empty_str(cfg.user),
+                'SHIFTUID_INTERNAL_ENTRYPOINT': entrypoint or '',
+            }.items()
+        ])
+        entrypoint = '/dockerdev/shift-uid.sh'
+
+    if entrypoint is not None:
+        run_args.extend([
+            f'--entrypoint={entrypoint}',
         ])
 
     if args.x11:
         sys_platform = getattr(sys, 'platform')  # shuts up mypy
         if sys_platform.startswith('linux'):
             run_args.extend([
-                f'--env=DISPLAY',
+                '--env=DISPLAY',
                 '--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw',
                 f'--volume={os.environ["HOME"]}/.Xauthority:/tmp/.Xauthority:ro',
                 '--env=XAUTHORITY=/tmp/.Xauthority',
@@ -143,6 +197,9 @@ def process_run_args(
             ])
         else:
             raise OSError(sys_platform)
+
+    if not args.no_default_labels:
+        run_args.append(f'--label={LABEL_PREFIX}')
 
     run_args.append(sha)
 

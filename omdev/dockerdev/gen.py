@@ -171,7 +171,7 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
     ]))
 
     ops.append(Section('scripts', [
-        Run(f'mkdir {home}/scripts ;'),
+        Run(f'mkdir {home}/scripts && chmod -R g=u {home}/scripts ;'),
         *[
             Write(f'{home}/scripts/{n}', r.read_text())
             for n, r in sorted(lang.get_relative_resources('resources.scripts', globals=globals()).items())

@@ -476,7 +476,7 @@ set expandtab\n\
 ## scripts
 
 RUN (\
-mkdir /omlish/scripts ;\
+mkdir /omlish/scripts && chmod -R g=u /omlish/scripts ;\
 )
 
 RUN echo '\

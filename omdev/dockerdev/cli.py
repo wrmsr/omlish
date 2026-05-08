@@ -94,6 +94,8 @@ class Cli(ap.Cli):
 
         ap.arg('-X', '--x11', action='store_true'),
 
+        ap.arg('--shift-uid'),
+
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
@@ -118,6 +120,8 @@ class Cli(ap.Cli):
                 autoexecs=self.args.autoexec,
 
                 x11=bool(self.args.x11),
+
+                shift_uid=tuple(map(int, su.split(':'))) if (su := self.args.shift_uid) is not None else None,  # type: ignore[arg-type]  # noqa
 
                 unknown_args=self.unknown_args,
                 extra_args=self.args.args,

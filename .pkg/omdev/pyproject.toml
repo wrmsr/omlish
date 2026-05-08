@@ -119,6 +119,7 @@ exclude = [
 ]
 'omdev.dockerdev' = [
     'config.toml',
+    'resources/*',
     'resources/.*',
     'resources/configs/.*',
     'resources/depsets/*',
