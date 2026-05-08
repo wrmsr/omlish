@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+import abc
+import argparse
 import asyncio
 import dataclasses as dc
 import json
+import os.path
 import sys
 import traceback
 import typing as ta
@@ -124,6 +127,104 @@ class PromptResponse:
 
 
 ##
+# IO Abstraction
+
+
+class AcpTransport(abc.ABC):
+    """Abstract transport layer for ACP server communication."""
+
+    @abc.abstractmethod
+    async def read_message(self) -> bytes | None:
+        """Read a single message. Returns None on EOF/close."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def write_message(self, data: bytes) -> None:
+        """Write a single message."""
+
+        raise NotImplementedError
+
+
+class AcpServer(abc.ABC):
+    @abc.abstractmethod
+    async def run_server(self, handler: ta.Callable[[AcpTransport], ta.Awaitable[None]]) -> None:
+        """Run the server and handle connections. For stdio, this just calls handler once."""
+
+        raise NotImplementedError
+
+
+class StdioAcp(AcpTransport, AcpServer):
+    """Transport using stdin/stdout for communication."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    async def read_message(self) -> bytes | None:
+        line = await asyncio.to_thread(sys.stdin.buffer.readline)
+        if not line:
+            return None
+        return line
+
+    async def write_message(self, data: bytes) -> None:
+        await asyncio.to_thread(sys.stdout.buffer.write, data)
+        await asyncio.to_thread(sys.stdout.buffer.flush)
+
+    async def run_server(self, handler: ta.Callable[[AcpTransport], ta.Awaitable[None]]) -> None:
+        await handler(self)
+
+
+class UnixSocketAcpServer(AcpServer):
+    """Transport using Unix domain sockets for communication."""
+
+    def __init__(self, socket_path: str) -> None:  # noqa
+        super().__init__()
+
+        self._socket_path = socket_path
+
+    class Transport(AcpTransport):
+        def __init__(
+                self,
+                reader: asyncio.StreamReader,
+                writer: asyncio.StreamWriter,
+        ) -> None:
+            super().__init__()
+
+            self._reader = reader
+            self._writer = writer
+
+        async def read_message(self) -> bytes | None:
+            line = await self._reader.readline()
+            if not line:
+                return None
+            return line
+
+        async def write_message(self, data: bytes) -> None:
+            if self._writer is None:
+                raise RuntimeError('No active connection')
+
+            self._writer.write(data)
+            await self._writer.drain()
+
+    async def run_server(self, handler: ta.Callable[[AcpTransport], ta.Awaitable[None]]) -> None:
+        if os.path.exists(self._socket_path):
+            os.unlink(self._socket_path)
+
+        async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+            try:
+                await handler(self.Transport(reader, writer))
+            finally:
+                writer.close()
+                await writer.wait_closed()
+
+        server = await asyncio.start_unix_server(handle_client, path=self._socket_path)
+        print(f'Unix socket ACP server listening on {self._socket_path}', file=sys.stderr)
+
+        async with server:
+            await server.serve_forever()
+
+
+##
 # JSON-RPC plumbing
 
 
@@ -170,16 +271,16 @@ def ensure_params(raw: ta.Any) -> JsonObject:
 
 
 class JsonRpcPeer:
-    def __init__(self) -> None:
+    def __init__(self, transport: AcpTransport) -> None:
         super().__init__()
 
+        self._transport = transport
         self._write_lock = asyncio.Lock()
 
     async def send(self, msg: JsonObject) -> None:
         data = json.dumps(msg, ensure_ascii=False, separators=(',', ':')).encode('utf-8') + b'\n'
         async with self._write_lock:
-            await asyncio.to_thread(sys.stdout.buffer.write, data)
-            await asyncio.to_thread(sys.stdout.buffer.flush)
+            await self._transport.write_message(data)
 
     async def send_result(self, request_id: RequestId, result: ta.Any) -> None:
         await self.send({
@@ -220,16 +321,17 @@ class JsonRpcPeer:
 # echo ACP agent
 
 
-class EchoAcpServer:
-    def __init__(self) -> None:
+class EchoAcpHandler:
+    def __init__(self, transport: AcpTransport) -> None:
         super().__init__()
 
-        self._peer = JsonRpcPeer()
+        self._transport = transport
+        self._peer = JsonRpcPeer(transport)
         self._sessions: set[str] = set()
 
     async def run(self) -> None:
         while True:
-            line = await asyncio.to_thread(sys.stdin.buffer.readline)
+            line = await self._transport.read_message()
             if not line:
                 return
 
@@ -382,7 +484,51 @@ class EchoAcpServer:
 
 
 async def main() -> None:
-    await EchoAcpServer().run()
+    parser = argparse.ArgumentParser(description='Zero-dependency echo ACP agent server')
+    subparsers = parser.add_subparsers()
+    parser.set_defaults(_cmd=None)
+
+    serve_parser = subparsers.add_parser('serve')
+    serve_parser.set_defaults(_cmd='serve')
+    serve_parser.add_argument(
+        '-t',
+        '--transport',
+        choices=['stdio', 'unix'],
+        default='stdio',
+        help='Transport type to use (default: stdio)',
+    )
+    serve_parser.add_argument(
+        '-s',
+        '--socket',
+        default=os.path.abspath(os.path.join(os.path.dirname(__file__), '.acp.sock')),
+        help='Socket path for Unix socket transport',
+    )
+
+    args = parser.parse_args()
+
+    match args._cmd:  # noqa
+        case 'serve':
+            server: AcpServer
+            match args.transport:
+                case 'stdio':
+                    server = StdioAcp()
+
+                case 'unix':
+                    server = UnixSocketAcpServer(args.socket)
+
+                case _:
+                    raise ValueError(f'Unknown transport: {args.transport}')
+
+            async def handler(t: AcpTransport) -> None:
+                await EchoAcpHandler(t).run()
+
+            await server.run_server(handler)
+
+        case None:
+            parser.print_help()
+
+        case _:
+            raise RuntimeError('invalid command specified')
 
 
 if __name__ == '__main__':
