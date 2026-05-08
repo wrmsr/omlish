@@ -345,9 +345,9 @@ async def a_main(argv: ta.Sequence[str] | None = None) -> int:
         default=os.path.abspath(os.path.join(os.path.dirname(__file__), '.acp.sock')),
     )
     parser.add_argument('--buffer-size', type=int, default=64 * 1024)
-    parser.add_argument('--connect-timeout', type=parse_timeout, default=10.0)
+    parser.add_argument('--connect-timeout', type=parse_timeout, default=5.0)
     parser.add_argument('--read-timeout', type=parse_timeout, default=None, help='Timeout for each read.')
-    parser.add_argument('--write-timeout', type=parse_timeout, default=30.0)
+    parser.add_argument('--write-timeout', type=parse_timeout, default=5.0)
     parser.add_argument('--shutdown-timeout', type=parse_timeout, default=5.0)
 
     ns = parser.parse_args(argv)

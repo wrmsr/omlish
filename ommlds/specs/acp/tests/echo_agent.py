@@ -348,6 +348,8 @@ class EchoAcpHandler:
             await self._peer.send_error(None, PARSE_ERROR, 'Parse error', str(e))
             return
 
+        print(json.dumps(msg, indent=2, separators=(', ', ': ')), file=sys.stderr)
+
         if not isinstance(msg, dict):
             await self._peer.send_error(None, INVALID_REQUEST, 'JSON-RPC message must be an object')
             return
