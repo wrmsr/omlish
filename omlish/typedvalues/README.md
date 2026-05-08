@@ -1,7 +1,7 @@
 # Typed Values
 
 A type-safe heterogeneous collection system for managing typed values with compile-time type checking and runtime
-validation.
+validation, intended as an alternative to stringly-typed `**kwargs` and giant config objects.
 
 ## Overview
 
@@ -13,8 +13,7 @@ patterns like type-based dependency injection, configuration management, and opt
 
 ### TypedValue
 
-The base abstract class for all typed values. Typed values are meant to be used as types-as-keys in collections, not as
-boolean conditions.
+The base abstract class for all typed values. Typed values are meant to be used as types-as-keys in collections.
 
 ```python
 from omlish import typedvalues as tv
@@ -23,7 +22,17 @@ class MyValue(tv.TypedValue):
     pass
 ```
 
-All `TypedValue` instances explicitly prevent boolean conversion to avoid accidental misuse:
+Their presence alone may be significant, but they usually have fields, and are frequently combined with `@dc.dataclass`:
+
+```python
+from omlish import dataclasses as dc
+
+@dc.dataclass(frozen=True)
+class MyStringValue(tv.TypedValue):
+    s: str
+```
+
+To prevent accidental misuse, they are not directly usable as boolean conditions:
 
 ```python
 if my_value:  # TypeError: Cannot convert MyValue to bool - use '.v' or 'is not None'
@@ -255,7 +264,7 @@ kwargs = consumer.pop_scalar_kwargs(
 model.generate(**kwargs)
 ```
 
-#### Convenience Function
+#### `consume` Convenience Function
 
 ```python
 from omlish import typedvalues as tv
@@ -350,8 +359,8 @@ def chat(message: str, *options: ChatOption):
 
 ## Performance
 
-The `_init_typed_values_collection()` function has an optional C extension implementation for improved performance when
-working with large collections. The extension is automatically used if available.
+The `_init_typed_values_collection()` function has an optional C++ extension implementation for improved performance
+when working with large collections. The extension is automatically used if available.
 
 ## Type Safety
 

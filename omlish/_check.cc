@@ -417,8 +417,8 @@ static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, 
             }
 
             if (
-                (self->mode == BINARY_CHECK_MODE_ISINSTANCE  && is_inst > 0) ||
-                (self->mode == BINARY_CHECK_MODE_NOT_ISINSTANCE  && is_inst == 0)
+                (self->mode == BINARY_CHECK_MODE_ISINSTANCE && is_inst > 0) ||
+                (self->mode == BINARY_CHECK_MODE_NOT_ISINSTANCE && is_inst == 0)
             ) {
                 return Py_NewRef(l);
             }
