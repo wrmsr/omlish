@@ -1,5 +1,5 @@
 # @omlish-generated
-# ruff: noqa: UP007
+# ruff: noqa: UP007 UP037 UP045
 import typing as ta
 
 from omlish import dataclasses as dc

@@ -1,6 +1,4 @@
-"""
-JSON Schema to Python dataclass code generator.
-"""
+"""JSON Schema to Python dataclass code generator."""
 import io
 import typing as ta
 
@@ -36,7 +34,7 @@ def _snake_name(json_name: str) -> str:
 
 
 def _ref_name(ref_str: str) -> str:
-    return ref_str.split('/')[-1]
+    return ref_str.split('/', maxsplit=1)[-1]
 
 
 def _tag_to_camel(tag: str) -> str:
@@ -152,7 +150,7 @@ class EmptyTypeDef(lang.Final):
     description: str | None = None
 
 
-TypeDef: ta.TypeAlias = ta.Union[
+TypeDef: ta.TypeAlias = ta.Union[  # noqa
     ObjectTypeDef,
     StringEnumTypeDef,
     DiscriminatedUnionTypeDef,
@@ -531,10 +529,12 @@ class JsonSchemaCodeGen:
             td = check.isinstance(self._type_defs[n], AllOfIntersectionTypeDef)
 
             for m in td.members:
-                if isinstance(m, TypeDef):
+                if isinstance(m, TypeDef):  # type: ignore[arg-type]
                     fields.extend(check.isinstance(m, ObjectTypeDef).fields)
 
                 elif isinstance(m, TypeRef):
+                    m = check.isinstance(m, RefTypeRef)  # FIXME
+
                     md = self._type_defs[m.name]
 
                     if isinstance(md, AllOfIntersectionTypeDef):
@@ -624,7 +624,7 @@ class JsonSchemaCodeGen:
 
         if tag_field is not None:
             py_name, value = tag_field
-            lines.append(f"    {py_name}: ta.Literal[{value!r}] = dc.xfield({value!r}, repr=False)")
+            lines.append(f'    {py_name}: ta.Literal[{value!r}] = dc.xfield({value!r}, repr=False)')
 
         for f in opt:
             lines.extend(self._gen_field_lines(f))
@@ -654,7 +654,7 @@ class JsonSchemaCodeGen:
 
     def _write_header(self, w: _Writer) -> None:
         w('# @omlish-generated')
-        w('# ruff: noqa: UP007')
+        w('# ruff: noqa: UP007 UP037 UP045')
         w('import typing as ta')
         w()
         w('from omlish import dataclasses as dc')
@@ -705,7 +705,7 @@ class JsonSchemaCodeGen:
         )
         if empties:
             w.sep()
-            for name, td in empties:
+            for name, _td in empties:
                 w()
                 w()
                 w('@dc.dataclass(frozen=True, kw_only=True)')
@@ -806,7 +806,7 @@ class JsonSchemaCodeGen:
                 w(f'            naming=msh.Naming.SNAKE,')
                 w(f'            strip_suffix=msh.AutoStripSuffix,')
                 w(f'        ),')
-                w(f"        msh.FieldTypeTagging({union_td.discriminator_field!r}),")
+                w(f'        msh.FieldTypeTagging({union_td.discriminator_field!r}),')
                 w(f'    ))')
                 if i < len(items) - 1:
                     w()
