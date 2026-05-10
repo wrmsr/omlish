@@ -46,7 +46,7 @@ psutil==7.2.2
 ## json
 
 #> ujson==5.10.0
-orjson==3.11.8  # @omlish-venv !14t !14dt !15t
+orjson==3.11.9  # @omlish-venv !14t !14dt !15t
 
 ## pickle
 

@@ -69,7 +69,7 @@ psycopg==3.3.4
 mysql-connector-python==9.7.0
 mysqlclient==2.2.8; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
-ujson==5.12.0  # https://github.com/ultrajson/ultrajson/issues/684
+ujson==5.12.1  # https://github.com/ultrajson/ultrajson/issues/684
 
 markupsafe==3.0.3
 
@@ -91,8 +91,8 @@ paramiko==4.0.0  # @omlish-venv !15t
 
 docutils==0.22.4
 
-markdown-it-py==4.0.0
-mdit-py-plugins==0.5.0
+markdown-it-py==4.2.0
+mdit-py-plugins==0.6.0
 
 pygments==2.20.0
 
@@ -145,7 +145,7 @@ antlr4-python3-runtime==4.13.2
 mlx==0.31.2; sys_platform == "darwin"  # @omlish-venv !14t !4dt !15 !15t
 mlx-lm==0.31.3; sys_platform == "darwin"  # @omlish-venv !14t !14dt !15 !15t
 
-apsw==3.53.0.0
+apsw==3.53.1.0
 
 rapidocr-onnxruntime==1.4.4  # @omlish-venv !14t !14dt !15 !15t
 # opencv-python==4.12.0.88  # @omlish-venv !14t !14dt  # FIXME: downgrades numpy

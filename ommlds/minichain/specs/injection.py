@@ -85,3 +85,51 @@ r"""
 
     return inj.as_elements(*lst)
 """  # noqa
+import typing as ta
+
+from omlish import check
+from omlish import inject as inj
+
+from .types import ResolvedBackendSpec
+
+
+##
+
+
+class InjectorBackendSpecInstantiator:
+    def __init__(
+            self,
+            injector: inj.AsyncInjector,
+    ) -> None:
+        super().__init__()
+
+        self._injector = injector
+
+    async def __call__(self, rbs: ResolvedBackendSpec, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        check.empty(kwargs)
+
+        async def rec(cur: ResolvedBackendSpec) -> ta.Any:
+            cur_args: list[ta.Any] = []
+
+            if (ch := cur.children) is None:
+                pass
+            elif isinstance(ch, tuple):
+                cur_args.append(tuple(rec(x) for x in ch))
+            else:
+                cur_args.append(rec(ch))
+
+            cur_args.extend(cur.configs or ())
+
+            kt = inj.build_kwargs_target(
+                cur.ctor,
+                non_strict=True,
+            )
+
+            kw = await self._injector.provide_kwargs(kt)
+
+            return cur.ctor(
+                *cur_args,
+                **kw,
+            )
+
+        return await rec(rbs)

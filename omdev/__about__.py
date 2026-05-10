@@ -34,8 +34,8 @@ class Project(ProjectBase):
         'doc': [
             'docutils ~= 0.22',
 
-            'markdown-it-py ~= 4.0',
-            'mdit-py-plugins ~= 0.5',
+            'markdown-it-py ~= 4.2',
+            'mdit-py-plugins ~= 0.6',
 
             'pygments ~= 2.20',
         ],

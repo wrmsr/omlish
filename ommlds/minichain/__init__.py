@@ -907,6 +907,11 @@ with _lang.auto_proxy_init(
         EnvKey,
     )
 
+    from .external import (  # noqa
+        ExternalServiceRequestEvent,
+        ExternalServiceResponseEvent,
+    )
+
     from .json import (  # noqa
         JsonSchema,
 

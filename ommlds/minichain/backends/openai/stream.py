@@ -16,6 +16,8 @@ from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.choices.stream.types import AiChoicesDeltas
 from ...chat.choices.stream.types import ChatChoicesStreamOption
 from ...configs import Config
+from ...events.types import EventCallback
+from ...external import ExternalServiceRequestEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
 from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ...resources import ResourcesOption
@@ -40,10 +42,12 @@ class OpenaiChatChoicesStreamService:
             self,
             *configs: Config,
             http_client: http.AsyncHttpClient | None = None,
+            on_event: EventCallback | None = None,
     ) -> None:
         super().__init__()
 
         self._http_client = http_client
+        self._on_event = on_event
 
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(OpenaiChatChoicesService.DEFAULT_MODEL_NAME)
@@ -98,6 +102,12 @@ class OpenaiChatChoicesStreamService:
         )
 
         raw_request = msh.marshal(rh.oai_request())
+
+        if self._on_event is not None:
+            await self._on_event(ExternalServiceRequestEvent(
+                service=self,
+                request=raw_request,
+            ))
 
         http_request = http.HttpClientRequest(
             self.URL,

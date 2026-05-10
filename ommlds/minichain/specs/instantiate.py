@@ -12,7 +12,11 @@ from .types import ResolvedBackendSpec
 ##
 
 
-async def instantiate_backend_spec(rbs: ResolvedBackendSpec, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+async def instantiate_backend_spec(
+        rbs: ResolvedBackendSpec,
+        *args: ta.Any,
+        **kwargs: ta.Any,
+) -> ta.Any:
     def rec(cur: ResolvedBackendSpec) -> ta.Any:
         cur_args: list[ta.Any] = []
 

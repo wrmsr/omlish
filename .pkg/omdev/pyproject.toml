@@ -35,8 +35,8 @@ all = [
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
     'docutils ~= 0.22',
-    'markdown-it-py ~= 4.0',
-    'mdit-py-plugins ~= 0.5',
+    'markdown-it-py ~= 4.2',
+    'mdit-py-plugins ~= 0.6',
     'pygments ~= 2.20',
     'mypy ~= 1.20',
     'gprof2dot ~= 2025.4',
@@ -61,8 +61,8 @@ c = [
 ]
 doc = [
     'docutils ~= 0.22',
-    'markdown-it-py ~= 4.0',
-    'mdit-py-plugins ~= 0.5',
+    'markdown-it-py ~= 4.2',
+    'mdit-py-plugins ~= 0.6',
     'pygments ~= 2.20',
 ]
 mypy = [
