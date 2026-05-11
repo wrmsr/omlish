@@ -108,6 +108,8 @@ class NodeLinkedList(BaseLinkedList[NodeLinkedListNodeT], lang.Abstract, ta.Gene
         @_node_next.setter
         def _node_next(self, node_next: ta.Self | None) -> None: ...
 
+    #
+
     _get_node_prev = staticmethod(operator.attrgetter('_node_prev'))  # type: ignore[assignment]
     _set_node_prev = staticmethod(lang.attrsetter('_node_prev'))  # type: ignore[assignment]
     _get_node_next = staticmethod(operator.attrgetter('_node_next'))  # type: ignore[assignment]
@@ -133,6 +135,8 @@ class OpenLinkedList(NodeLinkedList[T, 'OpenLinkedList.Node[T]'], ta.Generic[T])
         def node_next(self) -> OpenLinkedList.Node[T2] | None:
             return self._node_next
 
+    #
+
     @property
     def head_node(self) -> Node[T] | None:
         return self._head_node
@@ -141,6 +145,8 @@ class OpenLinkedList(NodeLinkedList[T, 'OpenLinkedList.Node[T]'], ta.Generic[T])
     def tail_node(self) -> Node[T] | None:
         return self._tail_node
 
+    #
+
     insert_node_between = NodeLinkedList._insert_node_between
     prepend_node = NodeLinkedList._prepend_node
     insert_node_before = NodeLinkedList._insert_node_before
@@ -148,3 +154,34 @@ class OpenLinkedList(NodeLinkedList[T, 'OpenLinkedList.Node[T]'], ta.Generic[T])
     append_node = NodeLinkedList._append_node
 
     unlink_node = NodeLinkedList._unlink_node
+
+    #
+
+    def insert_between(
+            self,
+            prev_node: Node[T] | None,
+            value: T,
+            next_node: Node[T] | None,
+    ) -> Node[T]:
+        self._insert_node_between(
+            prev_node,
+            node := self.Node(value),
+            next_node,
+        )
+        return node
+
+    def prepend(self, value: T) -> Node[T]:
+        self._prepend_node(node := self.Node(value))
+        return node
+
+    def insert_before(self, target: Node[T], value: T) -> Node[T]:
+        self._insert_node_before(target, node := self.Node(value))
+        return node
+
+    def insert_after(self, target: Node[T], value: T) -> Node[T]:
+        self._insert_node_after(target, node := self.Node(value))
+        return node
+
+    def append(self, value: T) -> Node[T]:
+        self._append_node(node := self.Node(value))
+        return node

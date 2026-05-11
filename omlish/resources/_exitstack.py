@@ -33,12 +33,13 @@
 #
 # 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 # License Agreement.
-import collections
 import contextlib
 import sys
+import threading
 import types
 import typing as ta
 
+from .. import collections as col
 from .. import lang
 
 
@@ -54,7 +55,8 @@ class _BaseExitStack:
     def __init__(self) -> None:
         super().__init__()
 
-        self._exit_callbacks: collections.deque[_BaseExitStack._Callback] = collections.deque()
+        self.__lock = threading.Lock()
+        self.__callbacks: col.OpenLinkedList[_BaseExitStack._Callback] = col.OpenLinkedList()
 
     #
 
@@ -62,8 +64,16 @@ class _BaseExitStack:
         fn: ta.Callable
         is_sync: bool
 
-    def _push_exit_callback(self, callback: ta.Callable, is_sync: bool = True) -> None:
-        self._exit_callbacks.append(self._Callback(callback, is_sync))
+    def _push_callback(self, callback: ta.Callable, is_sync: bool = True) -> None:
+        with self.__lock:
+            self.__callbacks.append(self._Callback(callback, is_sync))
+
+    def _pop_callback(self) -> _Callback | None:
+        with self.__lock:
+            if (node := self.__callbacks.tail_node) is None:
+                return None
+            self.__callbacks.unlink_node(node)
+            return node.value
 
     #
 
@@ -80,7 +90,7 @@ class _BaseExitStack:
 
         result = _enter(cm)
         _exit_wrapper = types.MethodType(_exit, cm)
-        self._push_exit_callback(_exit_wrapper, True)
+        self._push_callback(_exit_wrapper, True)
         return result
 
     #
@@ -131,8 +141,8 @@ class ExitStack(_BaseExitStack, contextlib.AbstractContextManager):
         # Callbacks are invoked in LIFO order to match the behavior of nested context managers
         suppressed_exc = False
         pending_raise = False
-        while self._exit_callbacks:
-            cb, is_sync = self._exit_callbacks.pop()
+        while (cb_ := self._pop_callback()) is not None:
+            cb, is_sync = cb_
 
             if not is_sync:
                 raise RuntimeError('Async callbacks are not supported in this context')
@@ -176,7 +186,7 @@ class AsyncExitStack(_BaseExitStack, contextlib.AbstractAsyncContextManager):
 
         result = await _enter(cm)
         _exit_wrapper = types.MethodType(_exit, cm)
-        self._push_exit_callback(_exit_wrapper, False)
+        self._push_callback(_exit_wrapper, False)
         return result
 
     #
@@ -201,8 +211,8 @@ class AsyncExitStack(_BaseExitStack, contextlib.AbstractAsyncContextManager):
         # Callbacks are invoked in LIFO order to match the behavior of nested context managers
         suppressed_exc = False
         pending_raise = False
-        while self._exit_callbacks:
-            cb, is_sync = self._exit_callbacks.pop()
+        while (cb_ := self._pop_callback()) is not None:
+            cb, is_sync = cb_
 
             try:
                 if exc is None:
