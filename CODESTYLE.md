@@ -148,6 +148,12 @@
   globals). Instead, prefer to define and call a module private function which returns the desired global value.
 - Always use relative imports even in python modules intended to be directly executed. All python invocations will
   always be done via `python -m`.
+- The codebase uses a handful of `# @omlish-...` magic comments in python source files, including:
+  - `@omlish-lite` - denotes a \[**lite**\] source file. When present in a package's `__init__.py`, it means all source
+    files in all packages and subpackages, recursively, are \[**lite**\].
+  - `@omlish-manifest` - triggers the automatic generation and manintenance of an entry in `.omlish-manifests.json`.
+  - `@omlish-generated` - written into source files that are the products of code generation - these are never to be
+    modified manually, and can generally be ignored (they tend to be huge).
 
 
 ### Classes
