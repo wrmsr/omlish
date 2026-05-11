@@ -252,6 +252,51 @@ def opt_coalesce(*vs: T | None) -> T | None:
 ##
 
 
+@ta.overload
+def attrsetter(a: str) -> ta.Callable[[ta.Any], None]:
+    ...
+
+
+@ta.overload
+def attrsetter(a: str, v: ta.Any) -> ta.Callable[[ta.Any, ta.Any], None]:
+    ...
+
+
+def attrsetter(a, v=_MISSING):
+    if v is not _MISSING:
+        def f0(o):
+            setattr(o, a, v)
+        return f0
+    else:
+        def f1(o, v):
+            setattr(o, a, v)
+        return f1
+
+
+@ta.overload
+def itemsetter(k: ta.Any) -> ta.Callable[[ta.Any], None]:
+    ...
+
+
+@ta.overload
+def itemsetter(k: ta.Any, v: ta.Any) -> ta.Callable[[ta.Any, ta.Any], None]:
+    ...
+
+
+def itemsetter(k, v=_MISSING):
+    if v is not _MISSING:
+        def f0(o):
+            o[k] = v
+        return f0
+    else:
+        def f1(o, v):
+            o[k] = v
+        return f1
+
+
+##
+
+
 def cond_kw(cond: ta.Callable[[T], bool], **kwargs: T) -> dict[str, T]:
     return {k: v for k, v in kwargs.items() if cond(v)}
 

@@ -304,6 +304,9 @@ with _auto_proxy_init(globals(), update_exports=True):
         coalesce,
         opt_coalesce,
 
+        attrsetter,
+        itemsetter,
+
         cond_kw,
         opt_kw,
         truthy_kw,

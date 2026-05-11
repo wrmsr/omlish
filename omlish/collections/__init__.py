@@ -92,6 +92,14 @@ with _lang.auto_proxy_init(globals()):
 
     from . import kv  # noqa
 
+    from .linkedlist import (  # noqa
+        BaseLinkedList,
+
+        NodeLinkedList,
+
+        OpenLinkedList,
+    )
+
     from .mappings import (  # noqa
         multikey_dict,
 
