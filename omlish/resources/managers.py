@@ -15,6 +15,7 @@ from .. import collections as col
 from .. import lang
 from ..logs import all as logs
 from ._exitstack import AsyncExitStack
+from ._exitstack import BaseExitStack
 from ._exitstack import ExitStack
 from .debug import _ResourcesDebug
 
@@ -66,6 +67,8 @@ class BaseResourceManager(
 
         if init_ref is not None:
             self.add_ref(init_ref)
+
+    _es: BaseExitStack
 
     @abc.abstractmethod
     def init(self) -> T:
@@ -198,6 +201,8 @@ class ResourceManager(
 
         self._es = ExitStack()
 
+    _es: ExitStack
+
     def init(self) -> None:
         self._es.__enter__()
 
@@ -313,10 +318,12 @@ class AsyncResourceManager(
             no_autoclose=no_autoclose,
         )
 
-        self._aes = AsyncExitStack()
+        self._es = AsyncExitStack()
+
+    _es: AsyncExitStack
 
     async def init(self) -> None:
-        await self._aes.__aenter__()
+        await self._es.__aenter__()
 
         self._init_debug()
 
@@ -374,12 +381,12 @@ class AsyncResourceManager(
     def enter_context(self, cm: ta.ContextManager[U]) -> U:
         check.state(not self._closed)
 
-        return self._aes.enter_context(cm)
+        return self._es.enter_context(cm)
 
     async def enter_async_context(self, cm: ta.AsyncContextManager[U]) -> U:
         check.state(not self._closed)
 
-        return await self._aes.enter_async_context(cm)
+        return await self._es.enter_async_context(cm)
 
     #
 
@@ -390,7 +397,7 @@ class AsyncResourceManager(
 
     async def aclose(self) -> None:
         try:
-            await self._aes.__aexit__(None, None, None)
+            await self._es.__aexit__(None, None, None)
         finally:
             self._closed = True
 

@@ -39,6 +39,7 @@ import threading
 import types
 import typing as ta
 
+from .. import check
 from .. import collections as col
 from .. import lang
 
@@ -49,35 +50,49 @@ T = ta.TypeVar('T')
 ##
 
 
-class _BaseExitStack:
+class BaseExitStack:
     """A base class for ExitStack and AsyncExitStack."""
 
     def __init__(self) -> None:
         super().__init__()
 
         self.__lock = threading.Lock()
-        self.__callbacks: col.OpenLinkedList[_BaseExitStack._Callback] = col.OpenLinkedList()
+        self.__cb_lst: col.OpenLinkedList[BaseExitStack._Callback] = col.OpenLinkedList()
+        self.__cb_dct: dict[ta.Any, col.OpenLinkedList.Node[BaseExitStack._Callback]] = {}
 
     #
 
     class _Callback(ta.NamedTuple):
         fn: ta.Callable
-        is_sync: bool
+        is_async: bool
 
-    def _push_callback(self, callback: ta.Callable, is_sync: bool = True) -> None:
+    def _push_callback(
+            self,
+            callback: ta.Callable,
+            *,
+            is_async: bool = False,
+    ) -> None:
         with self.__lock:
-            self.__callbacks.append(self._Callback(callback, is_sync))
+            self.__cb_lst.append(self._Callback(
+                callback,
+                is_async,
+            ))
 
     def _pop_callback(self) -> _Callback | None:
         with self.__lock:
-            if (node := self.__callbacks.tail_node) is None:
+            if (node := self.__cb_lst.tail_node) is None:
                 return None
-            self.__callbacks.unlink_node(node)
+
+            self.__cb_lst.unlink_node(node)
+
             return node.value
 
     #
 
-    def enter_context(self, cm: ta.ContextManager[T]) -> T:
+    def enter_context(
+            self,
+            cm: ta.ContextManager[T],
+    ) -> T:
         # We look up the special methods on the type to match the with statement.
         cls = type(cm)
         try:
@@ -90,7 +105,7 @@ class _BaseExitStack:
 
         result = _enter(cm)
         _exit_wrapper = types.MethodType(_exit, cm)
-        self._push_callback(_exit_wrapper, True)
+        self._push_callback(_exit_wrapper)
         return result
 
     #
@@ -120,7 +135,7 @@ class _BaseExitStack:
             raise
 
 
-class ExitStack(_BaseExitStack, contextlib.AbstractContextManager):
+class ExitStack(BaseExitStack, contextlib.AbstractContextManager):
     def __enter__(self) -> ta.Self:
         return self
 
@@ -141,11 +156,8 @@ class ExitStack(_BaseExitStack, contextlib.AbstractContextManager):
         # Callbacks are invoked in LIFO order to match the behavior of nested context managers
         suppressed_exc = False
         pending_raise = False
-        while (cb_ := self._pop_callback()) is not None:
-            cb, is_sync = cb_
-
-            if not is_sync:
-                raise RuntimeError('Async callbacks are not supported in this context')
+        while (cb := self._pop_callback()) is not None:
+            check.state(not cb.is_async)
 
             try:
                 if exc is None:
@@ -153,7 +165,7 @@ class ExitStack(_BaseExitStack, contextlib.AbstractContextManager):
                 else:
                     exc_details = type(exc), exc, exc.__traceback__
 
-                cb_suppress = cb(*exc_details)
+                cb_suppress = cb.fn(*exc_details)
 
                 if cb_suppress:
                     suppressed_exc = True
@@ -172,8 +184,11 @@ class ExitStack(_BaseExitStack, contextlib.AbstractContextManager):
         return received_exc and suppressed_exc
 
 
-class AsyncExitStack(_BaseExitStack, contextlib.AbstractAsyncContextManager):
-    async def enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
+class AsyncExitStack(BaseExitStack, contextlib.AbstractAsyncContextManager):
+    async def enter_async_context(
+            self,
+            cm: ta.AsyncContextManager[T],
+    ) -> T:
         cls = type(cm)
         try:
             _enter = cls.__aenter__
@@ -186,7 +201,7 @@ class AsyncExitStack(_BaseExitStack, contextlib.AbstractAsyncContextManager):
 
         result = await _enter(cm)
         _exit_wrapper = types.MethodType(_exit, cm)
-        self._push_callback(_exit_wrapper, False)
+        self._push_callback(_exit_wrapper, is_async=True)
         return result
 
     #
@@ -211,19 +226,17 @@ class AsyncExitStack(_BaseExitStack, contextlib.AbstractAsyncContextManager):
         # Callbacks are invoked in LIFO order to match the behavior of nested context managers
         suppressed_exc = False
         pending_raise = False
-        while (cb_ := self._pop_callback()) is not None:
-            cb, is_sync = cb_
-
+        while (cb := self._pop_callback()) is not None:
             try:
                 if exc is None:
                     exc_details: lang.OptExcInfo = None, None, None
                 else:
                     exc_details = type(exc), exc, exc.__traceback__
 
-                if is_sync:
-                    cb_suppress = cb(*exc_details)
+                if cb.is_async:
+                    cb_suppress = await cb.fn(*exc_details)
                 else:
-                    cb_suppress = await cb(*exc_details)
+                    cb_suppress = cb.fn(*exc_details)
 
                 if cb_suppress:
                     suppressed_exc = True
