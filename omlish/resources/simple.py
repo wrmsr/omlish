@@ -75,6 +75,9 @@ class BaseSimpleResource(_ResourcesDebug, lang.Abstract):
             )
 
 
+##
+
+
 class SimpleResource(BaseSimpleResource, lang.Abstract):
     @ta.final
     def __enter__(self) -> ta.Self:
@@ -114,6 +117,9 @@ class SimpleResource(BaseSimpleResource, lang.Abstract):
 
     def _close(self, reason: BaseException | None) -> None:
         pass
+
+
+##
 
 
 class AsyncSimpleResource(BaseSimpleResource, lang.Abstract):

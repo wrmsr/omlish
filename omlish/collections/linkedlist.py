@@ -124,6 +124,9 @@ class OpenLinkedList(NodeLinkedList[T, 'OpenLinkedList.Node[T]'], ta.Generic[T])
         def __init__(self, value: T2) -> None:
             self.value = value
 
+        def __repr__(self) -> str:
+            return f'{self.__class__.__qualname__}({self.value!r})'
+
         _node_prev: OpenLinkedList.Node[T2] | None = None
         _node_next: OpenLinkedList.Node[T2] | None = None
 

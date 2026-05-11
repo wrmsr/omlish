@@ -24,6 +24,8 @@ from .errors import (  # noqa
 
 from .simple import (  # noqa
     BaseSimpleResource,
+
     SimpleResource,
+
     AsyncSimpleResource,
 )

@@ -1,8 +1,5 @@
 """
 TODO:
- - managed injector interop
-  - expose ExitStack?
-   - nope
  - hierarchies
  - 'un_enter_context' or something - deregister
 """
@@ -111,9 +108,10 @@ class BaseResourceManager(
 
     #
 
-    @abc.abstractmethod
     def enter_context(self, cm: ta.ContextManager[U]) -> U:
-        raise NotImplementedError
+        check.state(not self._closed)
+
+        return self._es.enter_context(cm, key=lang.Identity(cm))
 
     #
 
@@ -259,13 +257,6 @@ class ResourceManager(
 
     #
 
-    def enter_context(self, cm: ta.ContextManager[U]) -> U:
-        check.state(not self._closed)
-
-        return self._es.enter_context(cm)
-
-    #
-
     def new_managed(self, v: U) -> ResourceManaged[U]:
         return ResourceManaged(v, self)  # noqa
 
@@ -378,15 +369,10 @@ class AsyncResourceManager(
 
     #
 
-    def enter_context(self, cm: ta.ContextManager[U]) -> U:
-        check.state(not self._closed)
-
-        return self._es.enter_context(cm)
-
     async def enter_async_context(self, cm: ta.AsyncContextManager[U]) -> U:
         check.state(not self._closed)
 
-        return await self._es.enter_async_context(cm)
+        return await self._es.enter_async_context(cm, key=lang.Identity(cm))
 
     #
 
