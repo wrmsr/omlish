@@ -1,4 +1,4 @@
 #!/bin/bash
-set -ex
+set -e
 
 npm i -g @openai/codex

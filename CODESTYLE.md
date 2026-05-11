@@ -1,6 +1,6 @@
 ### Environment
 
-- Target cpython 3.14 - use the modern language and library features it includes.
+- Target CPython 3.14 - use the modern language and library features it includes.
   - \[**lite**\] The exception is 'lite' code, which targets python 3.8.
   - **A module is declared as being lite by having a `# @omlish-lite` comment at the top of it, or at the top of any
     `__init__` module in its or any ancestor's package.**
@@ -345,6 +345,9 @@
 
 ### C Extensions
 
+- As with python code - but more importantly - **target only CPython 3.14+**. API's which have been removed or rendered
+  obsolete since then (like `Py_TRASHCAN_BEGIN`) should be avoided, and no version guard is necessary for anything added
+  in 3.14 or earlier.
 - C extensions use C11 and C++ extensions use C++20.
 - In general prefer to write native extensions in C++.
 - Use the C++ standard library liberally, but not 'excessively' lol. Write more 'C-style' code when interfacing with

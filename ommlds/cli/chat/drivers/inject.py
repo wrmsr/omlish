@@ -47,6 +47,11 @@ def bind_driver(
 
     #
 
+    els.extend([
+        inj.bind(mc.injection.InjectorBackendSpecInstantiator, singleton=True),
+        inj.bind(mc.BackendSpecInstantiator, to_key=mc.injection.InjectorBackendSpecInstantiator),
+    ])
+
     service_cls: ta.Any
     for service_cls in [
         mc.ChatChoicesService,
