@@ -101,9 +101,11 @@ static int FixedMapIter_clear(FixedMapIterObject* self) {
 }
 
 static void FixedMapIter_dealloc(FixedMapIterObject* self) {
+    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
     PyObject_GC_UnTrack(self);
     FixedMapIter_clear(self);
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    tp->tp_free((PyObject*)self);
+    Py_DECREF(tp); // Drop reference to the heap type!
 }
 
 static PyObject* FixedMapIter_iternext(FixedMapIterObject* self) {
@@ -183,9 +185,11 @@ static int FixedMapView_clear(FixedMapViewObject* self) {
 }
 
 static void FixedMapView_dealloc(FixedMapViewObject* self) {
+    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
     PyObject_GC_UnTrack(self);
     FixedMapView_clear(self);
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    tp->tp_free((PyObject*)self);
+    Py_DECREF(tp); // Drop reference to the heap type!
 }
 
 static Py_ssize_t FixedMapView_len(FixedMapViewObject* self) {
@@ -265,9 +269,11 @@ static int FixedMapKeys_clear(FixedMapKeysObject* self) {
 }
 
 static void FixedMapKeys_dealloc(FixedMapKeysObject* self) {
+    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
     PyObject_GC_UnTrack(self);
     FixedMapKeys_clear(self);
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    tp->tp_free((PyObject*)self);
+    Py_DECREF(tp); // Drop reference to the heap type!
 }
 
 static int FixedMapKeys_lookup_index(FixedMapKeysObject* self, PyObject* key, Py_ssize_t* out_idx) {
@@ -586,9 +592,11 @@ static int FixedMap_clear(FixedMapObject* self) {
 }
 
 static void FixedMap_dealloc(FixedMapObject* self) {
+    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
     PyObject_GC_UnTrack(self);
     FixedMap_clear(self);
-    Py_TYPE(self)->tp_free((PyObject*)self);
+    tp->tp_free((PyObject*)self);
+    Py_DECREF(tp); // Drop reference to the heap type!
 }
 
 static PyObject* FixedMap_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {

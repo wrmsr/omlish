@@ -50,9 +50,11 @@ static int MethodDispatchFunc_clear(MethodDispatchFunc *self)
 
 static void MethodDispatchFunc_dealloc(MethodDispatchFunc *self)
 {
+    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
     PyObject_GC_UnTrack(self);
     MethodDispatchFunc_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *)self);
+    tp->tp_free((PyObject *)self);
+    Py_DECREF(tp); // Drop reference to the heap type!
 }
 
 static PyObject * MethodDispatchFunc_call(MethodDispatchFunc *self, PyObject *args, PyObject *kwargs)

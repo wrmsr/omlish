@@ -372,6 +372,7 @@ static int map_clear(BaseMapObject *self)
 
 static void map_dealloc(BaseMapObject *self)
 {
+    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
     PyObject_GC_UnTrack(self);
 
     if (map_clear(self) < 0) {
@@ -398,7 +399,8 @@ static void map_dealloc(BaseMapObject *self)
         self->impl = nullptr;
     }
 
-    Py_TYPE(self)->tp_free((PyObject *)self);
+    tp->tp_free((PyObject *)self);
+    Py_DECREF(tp); // Drop reference to the heap type!
 }
 
 
@@ -1087,9 +1089,11 @@ static int map_iter_clear(MapIterObject *self)
 
 static void map_iter_dealloc(MapIterObject *self)
 {
+    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
     PyObject_GC_UnTrack(self);
     map_iter_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *)self);
+    tp->tp_free((PyObject *)self);
+    Py_DECREF(tp); // Drop reference to the heap type!
 }
 
 static PyObject *map_iter_self(PyObject *self)
