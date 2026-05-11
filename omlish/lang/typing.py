@@ -41,6 +41,15 @@ OptExcInfo: ta.TypeAlias = tuple[
 ##
 
 
+def opt_exc_info(exc_info: ExcInfo | OptExcInfo | None) -> OptExcInfo:
+    if exc_info is None:
+        return (None, None, None)
+    return exc_info
+
+
+##
+
+
 class static_check_isinstance(ta.Generic[T]):  # noqa
     def __init__(self, *o: T) -> None:
         pass

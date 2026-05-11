@@ -105,6 +105,26 @@ class BaseKeyedExitStack:
 
             return cb
 
+    def _unlink_keyed_callback(
+            self,
+            key: ta.Any,
+            *,
+            can_be_async: bool,
+    ) -> _Callback:
+        check.not_none(key)
+
+        with self.__lock:
+            node = self.__cb_dct[key]
+
+            cb = node.value
+
+            if not can_be_async:
+                check.state(not cb.is_async)
+
+            self.__cb_lst.unlink_node(node)
+
+            return cb
+
     #
 
     def enter_context(
@@ -158,6 +178,22 @@ class BaseKeyedExitStack:
             exc.__context__ = fixed_ctx  # noqa
             raise
 
+    #
+
+    def exit_keyed_context(
+            self,
+            key: ta.Any,
+            exc_info: lang.ExcInfo | None = None,
+    ) -> bool | None:
+        cb = self._unlink_keyed_callback(key, can_be_async=False)
+
+        args = lang.opt_exc_info(exc_info)
+
+        return cb.fn(*args)
+
+
+##
+
 
 class KeyedExitStack(BaseKeyedExitStack, contextlib.AbstractContextManager):
     def __enter__(self) -> ta.Self:
@@ -206,6 +242,9 @@ class KeyedExitStack(BaseKeyedExitStack, contextlib.AbstractContextManager):
             self._raise_pending_exception(exc)  # type: ignore[arg-type]
 
         return received_exc and suppressed_exc
+
+
+##
 
 
 class AsyncKeyedExitStack(BaseKeyedExitStack, contextlib.AbstractAsyncContextManager):
@@ -285,3 +324,19 @@ class AsyncKeyedExitStack(BaseKeyedExitStack, contextlib.AbstractAsyncContextMan
             self._raise_pending_exception(exc)  # type: ignore[arg-type]
 
         return received_exc and suppressed_exc
+
+    #
+
+    async def exit_keyed_async_context(
+            self,
+            key: ta.Any,
+            exc_info: lang.ExcInfo | None = None,
+    ) -> bool | None:
+        cb = self._unlink_keyed_callback(key, can_be_async=True)
+
+        args = lang.opt_exc_info(exc_info)
+
+        if cb.is_async:
+            return await cb.fn(*args)
+        else:
+            return cb.fn(*args)
