@@ -145,6 +145,8 @@ class Cli(ap.Cli):
     #
 
     @ap.cmd(
+        ap.arg('-j', '--json', action='store_true'),
+
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
     )
@@ -154,6 +156,7 @@ class Cli(ap.Cli):
             'ps',
             *(self.unknown_args or []),
             f'--filter=label={LABEL_PREFIX}',
+            *(['--format=json'] if self.args.json else []),
             *(self.args.args or []),
         ])
 
