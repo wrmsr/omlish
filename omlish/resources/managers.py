@@ -1,7 +1,6 @@
 """
 TODO:
  - hierarchies
- - 'un_enter_context' or something - deregister
 """
 import abc
 import contextlib
@@ -11,10 +10,10 @@ from .. import check
 from .. import collections as col
 from .. import lang
 from ..logs import all as logs
-from ._exitstack import AsyncKeyedExitStack
-from ._exitstack import BaseKeyedExitStack
-from ._exitstack import KeyedExitStack
 from .debug import _ResourcesDebug
+from .exitstack import AsyncKeyedExitStack
+from .exitstack import BaseKeyedExitStack
+from .exitstack import KeyedExitStack
 
 
 T = ta.TypeVar('T')
@@ -112,6 +111,15 @@ class BaseResourceManager(
         check.state(not self._closed)
 
         return self._es.enter_context(cm, key=lang.Identity(cm))
+
+    def exit_context(
+            self,
+            cm: ta.AsyncContextManager[U],
+            exc_info: lang.ExcInfo | None = None,
+    ) -> bool | None:
+        check.state(not self._closed)
+
+        return self._es.exit_keyed_context(lang.Identity(cm), exc_info)
 
     #
 
@@ -373,6 +381,15 @@ class AsyncResourceManager(
         check.state(not self._closed)
 
         return await self._es.enter_async_context(cm, key=lang.Identity(cm))
+
+    async def exit_async_context(
+            self,
+            cm: ta.AsyncContextManager[U],
+            exc_info: lang.ExcInfo | None = None,
+    ) -> bool | None:
+        check.state(not self._closed)
+
+        return await self._es.async_exit_keyed_context(lang.Identity(cm), exc_info)
 
     #
 

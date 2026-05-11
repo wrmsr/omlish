@@ -17,6 +17,14 @@ from .debug import (  # noqa
     set_resource_debug,
 )
 
+from .exitstack import (  # noqa
+    BaseKeyedExitStack,
+
+    KeyedExitStack,
+
+    AsyncKeyedExitStack,
+)
+
 from .errors import (  # noqa
     ResourceNotEnteredError,
     UnclosedResourceWarning,

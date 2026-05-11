@@ -327,7 +327,7 @@ class AsyncKeyedExitStack(BaseKeyedExitStack, contextlib.AbstractAsyncContextMan
 
     #
 
-    async def exit_keyed_async_context(
+    async def async_exit_keyed_context(
             self,
             key: ta.Any,
             exc_info: lang.ExcInfo | None = None,

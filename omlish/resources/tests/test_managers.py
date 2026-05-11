@@ -122,3 +122,33 @@ async def test_async_resources_not_given():
         assert rc.state == 'entered'
 
     assert rc.state == 'exited'
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_async_exit_keyed():
+    async with AsyncResourceManager.new() as resources:
+        async with (await a_make_arc(resources=resources)) as arc:
+            assert isinstance(arc, Arc)
+            assert arc.state == 'entered'
+
+        async with a_make_arc2(resources=resources) as arc2:
+            assert isinstance(arc, Arc)
+            assert arc2.state == 'entered'
+
+        async with (await a_make_rc(resources=resources)) as rc:
+            assert isinstance(rc, Rc)
+            assert rc.state == 'entered'
+
+        assert arc.state == 'entered'
+        assert arc2.state == 'entered'
+        assert rc.state == 'entered'
+
+        await resources.exit_async_context(arc2)
+
+        assert arc.state == 'entered'
+        assert arc2.state == 'exited'
+        assert rc.state == 'entered'  # type: ignore[unreachable]
+
+    assert arc.state == 'exited'  # type: ignore[unreachable]
+    assert arc2.state == 'exited'
+    assert rc.state == 'exited'
