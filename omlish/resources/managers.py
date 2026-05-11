@@ -14,9 +14,9 @@ from .. import check
 from .. import collections as col
 from .. import lang
 from ..logs import all as logs
-from ._exitstack import AsyncExitStack
-from ._exitstack import BaseExitStack
-from ._exitstack import ExitStack
+from ._exitstack import AsyncKeyedExitStack
+from ._exitstack import BaseKeyedExitStack
+from ._exitstack import KeyedExitStack
 from .debug import _ResourcesDebug
 
 
@@ -68,7 +68,7 @@ class BaseResourceManager(
         if init_ref is not None:
             self.add_ref(init_ref)
 
-    _es: BaseExitStack
+    _es: BaseKeyedExitStack
 
     @abc.abstractmethod
     def init(self) -> T:
@@ -199,9 +199,9 @@ class ResourceManager(
             no_autoclose=no_autoclose,
         )
 
-        self._es = ExitStack()
+        self._es = KeyedExitStack()
 
-    _es: ExitStack
+    _es: KeyedExitStack
 
     def init(self) -> None:
         self._es.__enter__()
@@ -318,9 +318,9 @@ class AsyncResourceManager(
             no_autoclose=no_autoclose,
         )
 
-        self._es = AsyncExitStack()
+        self._es = AsyncKeyedExitStack()
 
-    _es: AsyncExitStack
+    _es: AsyncKeyedExitStack
 
     async def init(self) -> None:
         await self._es.__aenter__()
