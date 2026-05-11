@@ -31,6 +31,7 @@ finally:
     subprocess.check_call(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL)
 """
 import os
+import subprocess
 import sys
 import tomllib
 
@@ -42,6 +43,7 @@ from omlish.argparse import all as ap
 from .build import build_image
 from .config import Config
 from .gen import gen_src
+from .run import LABEL_PREFIX
 from .run import RunArgs
 from .run import run_image
 
@@ -139,6 +141,23 @@ class Cli(ap.Cli):
                 extra_args=self.args.args,
             ),
         )
+
+    #
+
+    @ap.cmd(
+        ap.arg('args', nargs=ap.REMAINDER),
+        accepts_unknown=True,
+    )
+    def ps(self) -> None:
+        out = subprocess.check_output([
+            'docker',
+            'ps',
+            *(self.unknown_args or []),
+            f'--filter=label={LABEL_PREFIX}',
+            *(self.args.args or []),
+        ])
+
+        print(out.decode(), end='')
 
 
 def _main() -> None:
