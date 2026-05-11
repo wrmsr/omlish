@@ -485,7 +485,7 @@ mkdir /omlish/scripts && chmod -R g=u /omlish/scripts ;\
 
 RUN cat > /omlish/scripts/install-claude <<'EOF' && chmod 664 /omlish/scripts/install-claude
 #!/bin/bash
-set -ex
+set -e
 
 curl -fsSL 'https://claude.ai/install.sh' | bash
 EOF
@@ -493,7 +493,7 @@ EOF
 
 RUN cat > /omlish/scripts/install-codex <<'EOF' && chmod 664 /omlish/scripts/install-codex
 #!/bin/bash
-set -ex
+set -e
 
 npm i -g @openai/codex
 EOF

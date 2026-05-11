@@ -129,10 +129,10 @@ def build_kwargs_target(
         kws.append(Kwarg(
             p.name,
             k,
-            p.default is not inspect.Parameter.empty,
+            has_default=p.default is not inspect.Parameter.empty,
         ))
 
     return KwargsTarget(
         obj,
-        kws,
+        tuple(kws),
     )

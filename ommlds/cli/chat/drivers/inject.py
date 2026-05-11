@@ -60,13 +60,13 @@ def bind_driver(
         els.append(
             inj.bind(
                 mc.ServiceProvider[service_cls],  # noqa
-                to_fn=inj.target(
-                    spec=BackendSpecGetter,
-                    configs=BackendConfigs,
-                )(functools.partial(
+                to_fn=inj.build_kwargs_target(functools.partial(
                     mc.BackendSpecServiceProvider,
                     service_cls,
-                )),
+                )).override(
+                    spec=BackendSpecGetter,
+                    configs=BackendConfigs,
+                ),
                 singleton=True,
             ),
         )

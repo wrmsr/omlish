@@ -85,6 +85,7 @@ r"""
 
     return inj.as_elements(*lst)
 """  # noqa
+import functools
 import typing as ta
 
 from omlish import check
@@ -114,22 +115,27 @@ class InjectorBackendSpecInstantiator:
             if (ch := cur.children) is None:
                 pass
             elif isinstance(ch, tuple):
-                cur_args.append(tuple(rec(x) for x in ch))
+                ch_lst: list[ta.Any] = []
+                for x in ch:
+                    ch_lst.append(await rec(x))
+                cur_args.append(tuple(ch_lst))
             else:
-                cur_args.append(rec(ch))
+                cur_args.append(await rec(ch))
 
             cur_args.extend(cur.configs or ())
 
-            kt = inj.build_kwargs_target(
+            ctor = functools.partial(
                 cur.ctor,
+                *cur_args,
+            )
+
+            kt = inj.build_kwargs_target(
+                ctor,
                 non_strict=True,
             )
 
             kw = await self._injector.provide_kwargs(kt)
 
-            return cur.ctor(
-                *cur_args,
-                **kw,
-            )
+            return ctor(**kw)
 
         return await rec(rbs)

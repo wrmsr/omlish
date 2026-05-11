@@ -1,5 +1,7 @@
 import typing as ta
 
+from .. import check
+from .. import dataclasses as dc
 from .. import lang
 from .keys import Key
 from .keys import as_key
@@ -17,49 +19,60 @@ T = ta.TypeVar('T')
 ##
 
 
-class Kwarg(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
+class Kwarg(lang.Final):
     name: str
     key: Key
-    has_default: bool
+
+    _: dc.KW_ONLY
+
+    has_default: bool = False
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.key, Key)
+        check.non_empty_str(self.name)
 
     @classmethod
-    def of(
+    def seq_of(
             cls,
-            name: str,
-            key: Key,
-            *,
-            has_default: bool = False,
-    ) -> Kwarg:
-        return cls(
-            name,
-            key,
-            has_default,
-        )
+            *kws: Kwarg,
+            **kwargs: tuple[Key | ta.Any, bool] | Key | ta.Any,
+    ) -> ta.Sequence[Kwarg]:
+        lst: list[Kwarg] = list(kws)
+        for n, v in kwargs.items():
+            if isinstance(v, tuple):
+                kw_k, kw_hd = v
+                lst.append(Kwarg(n, as_key(kw_k), has_default=kw_hd))
+            else:
+                lst.append(Kwarg(n, as_key(v)))
+        return tuple(lst)
 
 
-class KwargsTarget(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True, terse_repr=True)
+class KwargsTarget(lang.Final):
     obj: ta.Any
-    kwargs: ta.Sequence[Kwarg]
+    kwargs: ta.Sequence[Kwarg] = dc.xfield(coerce=tuple)
+
+    def override(
+            self,
+            *kws: Kwarg,
+            **kwargs: tuple[Key | ta.Any, bool] | Key | ta.Any,
+    ) -> KwargsTarget:
+        new_kws: dict[str, Kwarg] = {kw.name: kw for kw in self.kwargs}
+        for kw in Kwarg.seq_of(*kws, **kwargs):
+            new_kws[kw.name] = kw
+        return KwargsTarget(self.obj, tuple(new_kws.values()))
 
     @classmethod
     def of(
             cls,
             obj: ta.Any,
             *kws: Kwarg,
-            **kwargs: tuple[Key, bool] | Key | ta.Any,
+            **kwargs: tuple[Key | ta.Any, bool] | Key | ta.Any,
     ) -> KwargsTarget:
-        kw_kwargs: list[Kwarg] = []
-        for n, v in kwargs.items():
-            if isinstance(v, tuple):
-                kw_k, kw_hd = v
-                kw_kwargs.append(Kwarg.of(n, kw_k, has_default=kw_hd))
-            else:
-                kw_kwargs.append(Kwarg.of(n, as_key(v)))
-
-        return cls(
-            obj,
-            (*kws, *kw_kwargs),
-        )
+        return cls(obj, Kwarg.seq_of(*kws, **kwargs))
 
 
 def tag(obj: T, **kwargs: ta.Any) -> T:
