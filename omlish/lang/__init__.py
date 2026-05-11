@@ -554,6 +554,8 @@ with _auto_proxy_init(globals(), update_exports=True):
 
     from .typing import (  # noqa
         BytesLike,
+        ExcInfo,
+        OptExcInfo,
 
         static_check_isinstance,
         static_check_issubclass,

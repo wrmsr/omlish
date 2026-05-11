@@ -2,6 +2,7 @@
 TODO:
  - managed injector interop
   - expose ExitStack?
+   - nope
  - hierarchies
  - 'un_enter_context' or something - deregister
 """
@@ -13,6 +14,8 @@ from .. import check
 from .. import collections as col
 from .. import lang
 from ..logs import all as logs
+from ._exitstack import AsyncExitStack
+from ._exitstack import ExitStack
 from .debug import _ResourcesDebug
 
 
@@ -193,7 +196,7 @@ class ResourceManager(
             no_autoclose=no_autoclose,
         )
 
-        self._es = contextlib.ExitStack()
+        self._es = ExitStack()
 
     def init(self) -> None:
         self._es.__enter__()
@@ -310,7 +313,7 @@ class AsyncResourceManager(
             no_autoclose=no_autoclose,
         )
 
-        self._aes = contextlib.AsyncExitStack()
+        self._aes = AsyncExitStack()
 
     async def init(self) -> None:
         await self._aes.__aenter__()

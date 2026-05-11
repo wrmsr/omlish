@@ -6,6 +6,7 @@ TODO:
  - typed_factory
 """
 import inspect
+import types
 import typing as ta
 
 from ..lite.wrappers import update_wrapper_no_annotations
@@ -23,6 +24,18 @@ P = ta.ParamSpec('P')
 
 # FIXME: remove? ducktyped by mypy (with memoryview)
 BytesLike: ta.TypeAlias = bytes | bytearray | memoryview
+
+ExcInfo: ta.TypeAlias = tuple[
+    type[BaseException],
+    BaseException,
+    types.TracebackType,
+]
+
+OptExcInfo: ta.TypeAlias = tuple[
+    type[BaseException] | None,
+    BaseException | None,
+    types.TracebackType | None,
+]
 
 
 ##
