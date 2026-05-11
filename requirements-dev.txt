@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.47.0
 
-uv>=0.11.12
+uv>=0.11.13
 
 pytest==9.0.3
 pytest-benchmark==5.2.3
@@ -20,14 +20,14 @@ ruff==0.15.12
 asyncpg-stubs==0.31.2
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
-types-docutils==0.22.3.20260408
-types-greenlet==3.5.0.20260428
-types-paramiko==4.0.0.20260408  # @omlish-venv !15t
-types-psutil==7.2.2.20260408
-types-pygments==2.20.0.20260408
-types-pyyaml==6.0.12.20260408
-types-regex==2026.4.4.20260408
-types-setuptools==82.0.0.20260408
+types-docutils==0.22.3.20260508
+types-greenlet==3.5.0.20260508
+types-paramiko==4.0.0.20260508  # @omlish-venv !15t
+types-psutil==7.2.2.20260508
+types-pygments==2.20.0.20260508
+types-pyyaml==6.0.12.20260510
+types-regex==2026.5.9.20260510
+types-setuptools==82.0.0.20260508
 types-ujson==5.10.0.20250822
 
 black==26.3.1
