@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
 #
@@ -65,33 +66,56 @@ class BaseExitStack:
     class _Callback(ta.NamedTuple):
         fn: ta.Callable
         is_async: bool
+        key: ta.Any
 
     def _push_callback(
             self,
             callback: ta.Callable,
             *,
             is_async: bool = False,
+            key: ta.Any | None = None,
     ) -> None:
+        cb = self._Callback(
+            callback,
+            is_async,
+            key,
+        )
+
         with self.__lock:
-            self.__cb_lst.append(self._Callback(
-                callback,
-                is_async,
-            ))
+            if key is not None:
+                check.not_in(key, self.__cb_dct)
+
+            node = self.__cb_lst.new_node(cb)
+
+            if key is not None:
+                self.__cb_dct[key] = node
+
+            self.__cb_lst.append_node(node)
 
     def _pop_callback(self) -> _Callback | None:
         with self.__lock:
             if (node := self.__cb_lst.tail_node) is None:
                 return None
 
+            cb = node.value
+
             self.__cb_lst.unlink_node(node)
 
-            return node.value
+            if cb.key is not None:
+                del self.__cb_dct[cb.key]
+
+            return cb
 
     #
+
+    class _NOT_SET(lang.Marker):  # noqa
+        pass
 
     def enter_context(
             self,
             cm: ta.ContextManager[T],
+            *,
+            key: ta.Any | None = _NOT_SET,
     ) -> T:
         # We look up the special methods on the type to match the with statement.
         cls = type(cm)
@@ -104,8 +128,12 @@ class BaseExitStack:
             ) from None
 
         result = _enter(cm)
-        _exit_wrapper = types.MethodType(_exit, cm)
-        self._push_callback(_exit_wrapper)
+
+        self._push_callback(
+            types.MethodType(_exit, cm),
+            key=lang.Identity(cm) if key is self._NOT_SET else key,
+        )
+
         return result
 
     #
@@ -188,7 +216,10 @@ class AsyncExitStack(BaseExitStack, contextlib.AbstractAsyncContextManager):
     async def enter_async_context(
             self,
             cm: ta.AsyncContextManager[T],
+            *,
+            key: ta.Any | None = BaseExitStack._NOT_SET,
     ) -> T:
+        # We look up the special methods on the type to match the with statement.
         cls = type(cm)
         try:
             _enter = cls.__aenter__
@@ -200,8 +231,13 @@ class AsyncExitStack(BaseExitStack, contextlib.AbstractAsyncContextManager):
             ) from None
 
         result = await _enter(cm)
-        _exit_wrapper = types.MethodType(_exit, cm)
-        self._push_callback(_exit_wrapper, is_async=True)
+
+        self._push_callback(
+            types.MethodType(_exit, cm),
+            is_async=True,
+            key=lang.Identity(cm) if key is self._NOT_SET else key,
+        )
+
         return result
 
     #

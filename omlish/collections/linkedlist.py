@@ -135,6 +135,9 @@ class OpenLinkedList(NodeLinkedList[T, 'OpenLinkedList.Node[T]'], ta.Generic[T])
         def node_next(self) -> OpenLinkedList.Node[T2] | None:
             return self._node_next
 
+    def new_node(self, value: T) -> Node[T]:
+        return self.Node(value)
+
     #
 
     @property
