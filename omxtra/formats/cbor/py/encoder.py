@@ -226,7 +226,7 @@ class CborEncoder:
     def fp(self, value: ta.IO[bytes]) -> None:
         try:
             if not callable(value.write):
-                raise ValueError('fp.write is not callable')
+                raise ValueError('fp.write is not callable')  # noqa
         except AttributeError:
             raise ValueError('fp object has no write method') from None
         else:
@@ -512,14 +512,14 @@ class CborEncoder:
 
         keyed_keys = ((self.encode_sortable_key(key), key, value) for key, value in value.items())
         self.encode_length(5, len(value) if not self.indefinite_containers else None)
-        for sortkey, realkey, value in sorted(keyed_keys):
+        for sortkey, realkey, keyvalue in sorted(keyed_keys):
             if self.string_referencing:
                 # String referencing requires that the order encoded is the same as the order emitted so string
                 # references are generated after an order is determined
                 self._encode_value(realkey)
             else:
                 self._fp_write(sortkey[1])
-            self._encode_value(value)
+            self._encode_value(keyvalue)
 
         if self.indefinite_containers:
             self.encode_break()
@@ -662,11 +662,11 @@ class CborEncoder:
         else:
             # Try each encoding in turn from longest to shortest
             encoded = struct.pack('>Bd', 0xFB, value)
-            for format, tag in [('>Bf', 0xFA), ('>Be', 0xF9)]:
+            for fmt, tag in [('>Bf', 0xFA), ('>Be', 0xF9)]:
                 try:
-                    new_encoded = struct.pack(format, tag, value)
+                    new_encoded = struct.pack(fmt, tag, value)
                     # Check if encoding as low-byte float loses precision
-                    if struct.unpack(format, new_encoded)[1] == value:
+                    if struct.unpack(fmt, new_encoded)[1] == value:
                         encoded = new_encoded
                     else:
                         break

@@ -77,7 +77,7 @@ def test_write():
 def test_encoders_load_type():
     with io.BytesIO() as stream:
         encoder = CborEncoder(stream)
-        encoder._encoders[(1, 2, 3)] = lambda self, value: None  # type: ignore
+        encoder._encoders[(1, 2, 3)] = lambda self, value: None  # type: ignore  # noqa
         with pytest.raises(ValueError) as exc:  # noqa
             encoder.encode(object())
         assert str(exc.value).endswith(
@@ -281,7 +281,7 @@ def test_simple_val_as_key():
             'c07819323031332d30332d32315432323a30343a30302b30323a3030',
         ),
         (
-            datetime.datetime(2013, 3, 21, 20, 4, 0),
+            datetime.datetime(2013, 3, 21, 20, 4, 0),  # noqa
             False,
             'c074323031332d30332d32315432303a30343a30305a',
         ),
@@ -342,7 +342,7 @@ def test_naive_datetime():
     """Test that naive datetimes are gracefully rejected when no timezone has been set."""
 
     with pytest.raises(CborEncodeError) as exc:
-        cbor_dumps(datetime.datetime(2013, 3, 21))
+        cbor_dumps(datetime.datetime(2013, 3, 21))  # noqa
     exc.match(
         r'naive datetime datetime.datetime\(2013, 3, 21, 0, 0\) encountered '
         r'and no default timezone has been set',
@@ -661,7 +661,7 @@ def test_canonical_set(frozen):
 )
 def test_encode_stringrefs_unchanged(value):
     expected = cbor_dumps(value)
-    if isinstance(value, list) or isinstance(value, dict):
+    if isinstance(value, (list, dict)):
         expected = b'\xd9\x01\x00' + expected
     assert cbor_dumps(value, string_referencing=True) == expected
 

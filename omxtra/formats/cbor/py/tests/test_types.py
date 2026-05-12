@@ -59,7 +59,7 @@ def test_tag_compare():
     tag4 = CborTag(2, 'baz')
     assert tag1 is not tag2
     assert tag1 == tag2
-    assert not (tag1 == tag3)
+    assert not (tag1 == tag3)  # noqa
     assert tag1 != tag3
     assert tag3 >= tag2
     assert tag3 > tag2
@@ -73,9 +73,9 @@ def test_tag_compare():
 
 def test_tag_compare_unimplemented():
     tag = CborTag(1, 'foo')
-    assert not tag == (1, 'foo')
+    assert not (tag == (1, 'foo'))  # noqa
     with pytest.raises(TypeError):
-        tag <= (1, 'foo')
+        tag <= (1, 'foo')  # noqa
 
 
 def test_tag_recursive_repr():
@@ -84,7 +84,7 @@ def test_tag_recursive_repr():
     assert repr(tag) == 'CBORTag(1, ...)'
     assert tag is tag.value
     assert tag == tag.value
-    assert not (tag != tag.value)
+    assert not (tag != tag.value)  # noqa
 
 
 def test_tag_recursive_hash():
@@ -109,7 +109,7 @@ def test_simple_value_equals():
     tag4 = CborSimpleValue(99)
     assert tag1 == tag2
     assert tag1 == 1
-    assert not tag2 == '21'
+    assert not (tag2 == '21')  # noqa
     assert tag1 != tag3
     assert tag1 != 21
     assert tag2 != '21'

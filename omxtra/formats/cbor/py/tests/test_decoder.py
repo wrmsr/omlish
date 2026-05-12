@@ -397,7 +397,7 @@ def test_streaming(payload, expected):
     ],
 )
 def test_bad_streaming_strings(payload):
-    with pytest.raises(CborDecodeError) as exc:
+    with pytest.raises(CborDecodeError) as exc:  # noqa
         cbor_loads(binascii.unhexlify(payload))
     # assert exc.match(r'non-(byte)?string found in indefinite length \1string')
 
@@ -786,7 +786,7 @@ def test_bad_shared_reference():
 
 
 def test_uninitialized_shared_reference():
-    with pytest.raises(CborDecodeError) as exc:
+    with pytest.raises(CborDecodeError) as exc:  # noqa
         cbor_loads(binascii.unhexlify('D81CA1D81D014161'))
     # assert str(exc.value).endswith('shared value 0 has not been initialized')
 
@@ -796,8 +796,8 @@ def test_immutable_shared_reference():
     # b = ((a, a), a)
     # data = dumps(set(b))
     decoded = cbor_loads(binascii.unhexlify('d90102d81c82d81c82d81c83010203d81d02d81d02'))
-    a = [item for item in decoded if len(item) == 3][0]
-    b = [item for item in decoded if len(item) == 2][0]
+    a = [item for item in decoded if len(item) == 3][0]  # noqa
+    b = [item for item in decoded if len(item) == 2][0]  # noqa
     assert decoded == {(a, a), a}
     assert b[0] is a
     assert b[1] is a

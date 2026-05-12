@@ -46,7 +46,8 @@ T = ta.TypeVar('T')
 
 
 _CBOR_TIMESTAMP_PAT = re.compile(
-    r'^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)' r'(?:\.(\d{1,6})\d*)?(?:Z|([+-])(\d\d):(\d\d))$',
+    r'^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)'
+    r'(?:\.(\d{1,6})\d*)?(?:Z|([+-])(\d\d):(\d\d))$',
 )
 
 _CBOR_INCREMENTAL_UTF8_DECODER = codecs.getincrementaldecoder('utf-8')
@@ -137,7 +138,7 @@ class CborDecoder:
     def fp(self, value: ta.IO[bytes]) -> None:
         try:
             if not callable(value.read):
-                raise ValueError('fp.read is not callable')
+                raise ValueError('fp.read is not callable')  # noqa
         except AttributeError:
             raise ValueError('fp object has no read method') from None
         else:
@@ -260,7 +261,8 @@ class CborDecoder:
                 self._share_index = old_index
 
             self._decode_depth -= 1
-            assert self._decode_depth >= 0
+            if self._decode_depth < 0:
+                raise ValueError('decode depth cannot be negative')
             if self._decode_depth == 0:
                 self._shareables.clear()
                 self._share_index = None
@@ -437,7 +439,7 @@ class CborDecoder:
             if not self._immutable:
                 self.set_shareable(items)
 
-            for index in range(length):
+            for _index in range(length):
                 items.append(self.decode(unshared=True))
 
         if self._immutable:
