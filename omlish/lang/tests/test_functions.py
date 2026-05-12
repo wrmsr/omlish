@@ -2,8 +2,10 @@ import typing as ta
 
 import pytest
 
+from ..functions import attrsetter
 from ..functions import coalesce
 from ..functions import finally_
+from ..functions import itemsetter
 from ..functions import opt_coalesce
 from ..functions import recurse
 from ..functions import strict_eq
@@ -164,3 +166,26 @@ def test_unnest_propagates_exceptions() -> None:
 
     with pytest.raises(ValueError, match='boom'):
         unnest(children, 3)
+
+
+def test_attrsetter():
+    class A:
+        pass
+
+    a = A()
+
+    attrsetter('abc')(a, 420)
+    assert a.abc == 420  # type: ignore[attr-defined]
+
+    attrsetter('ghi', 532)(a)
+    assert a.ghi == 532  # type: ignore[attr-defined]
+
+
+def test_itemsetter():
+    d: dict = {}
+
+    itemsetter('abc')(d, 420)
+    assert d['abc'] == 420
+
+    itemsetter('ghi', 532)(d)
+    assert d['ghi'] == 532
