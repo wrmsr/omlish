@@ -148,6 +148,17 @@ static PyObject * Setter_new(PyTypeObject *type, PyObject *args, PyObject *kwarg
     return nullptr;
 }
 
+static PyObject * Setter_repr(Setter *self)
+{
+    const char *name = (self->mode == SETTER_MODE_ATTR) ? "attrsetter" : "itemsetter";
+
+    if (self->value == nullptr) {
+        return PyUnicode_FromFormat("%s(%R)", name, self->key);
+    } else {
+        return PyUnicode_FromFormat("%s(%R, %R)", name, self->key, self->value);
+    }
+}
+
 static PyMemberDef Setter_members[] = {
     {"__vectorcalloffset__", T_PYSSIZET, offsetof(Setter, vectorcall), READONLY, ""},
     {nullptr}
@@ -160,6 +171,7 @@ static PyType_Slot Setter_slots[] = {
     {Py_tp_call, (void *) Setter_call},
     {Py_tp_new, (void *) Setter_new},
     {Py_tp_members, (void *) Setter_members},
+    {Py_tp_repr, (void *) Setter_repr},
     {Py_tp_doc, (void *) "Callable that sets an attribute or item"},
     {0, nullptr}
 };
