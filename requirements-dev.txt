@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.47.0
 
-uv>=0.11.13
+uv>=0.11.14
 
 pytest==9.0.3
 pytest-benchmark==5.2.3
@@ -87,7 +87,7 @@ pycparser==3.0
 pcpp==1.30
 
 # !! LGPL
-paramiko==4.0.0  # @omlish-venv !15t
+paramiko==5.0.0  # @omlish-venv !15t
 
 docutils==0.22.4
 
@@ -152,7 +152,7 @@ rapidocr-onnxruntime==1.4.4  # @omlish-venv !14t !14dt !15 !15t
 
 pillow==12.2.0
 
-accelerate==1.13.0  # @omlish-venv !15 !15t
+# accelerate==1.13.0  # @omlish-venv !15 !15t
 
 bitsandbytes==0.49.2  # @omlish-venv !15 !15t
 

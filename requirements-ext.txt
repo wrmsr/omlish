@@ -4,7 +4,7 @@
 # FIXME:
 # BERKELEYDB_DIR=$(brew --prefix "berkeley-db@4") .venv/bin/pip install bsddb3
 
-wrapt==2.1.2
+# wrapt==2.1.2
 
 
 ##
@@ -81,6 +81,6 @@ debugpy==1.8.20
 ##
 # jupyter
 
-jupyter==1.1.1
-jupyterlab==4.5.7
-notebook==7.5.6
+# jupyter==1.1.1
+# jupyterlab==4.5.7
+# notebook==7.5.6

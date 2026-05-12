@@ -684,11 +684,13 @@ def _main() -> None:
 
     #
 
+    show_latest = args.show_latest or (args.min_age_h is None)
+
     outdated_pkgs = [
         pkg
         for pkg in pkgs
-        if (li := pkg.latest_candidate) is not None
-        and li.version > pkg.dist.version
+        if (xi := pkg.latest_candidate if show_latest else pkg.suggested_candidate) is not None
+        and xi.version > pkg.dist.version
     ]
 
     outdated_pkgs.sort(key=lambda x: x.dist.raw_name)
@@ -706,7 +708,7 @@ def _main() -> None:
 
         print('\n'.join(render_package_listing_columns(*format_for_columns(
             outdated_pkgs,
-            show_latest=args.show_latest or (args.min_age_h is None),
+            show_latest=show_latest,
         ))))
 
 

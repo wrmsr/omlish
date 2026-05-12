@@ -130,8 +130,11 @@ class _FieldInfoBuilder:
         ##
         # ObjectOptions
 
-        if (oo_opts := (self.obj_opts.fields or {}).get(field.name)) is not None:
-            merged_opts = merged_opts.merge(oo_opts)
+        if oo_fields := self.obj_opts.fields:
+            if (oo_opts := oo_fields.get(field.name)) is None:
+                oo_opts = oo_fields.get(None)
+            if oo_opts is not None:
+                merged_opts = merged_opts.merge(oo_opts)
 
         ##
         # Done
