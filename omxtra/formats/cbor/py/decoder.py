@@ -31,7 +31,7 @@ import uuid
 
 from .types import CBOR_BREAK_MARKER
 from .types import CBOR_UNDEFINED
-from .types import CborDecodeEOF
+from .types import CborDecodeEOFError
 from .types import CborDecodeError
 from .types import CborDecodeValueError
 from .types import CborFrozenDict
@@ -139,7 +139,7 @@ class CborDecoder:
             if not callable(value.read):
                 raise ValueError('fp.read is not callable')
         except AttributeError:
-            raise ValueError('fp object has no read method')
+            raise ValueError('fp object has no read method') from None
         else:
             self._fp = value
             self._fp_read = value.read
@@ -222,7 +222,7 @@ class CborDecoder:
 
         data = self._fp_read(amount)
         if len(data) < amount:
-            raise CborDecodeEOF(
+            raise CborDecodeEOFError(
                 f'premature end of stream (expected to read {amount} bytes, got {len(data)} '
                 'instead)',
             )
@@ -615,7 +615,7 @@ class CborDecoder:
         try:
             value = self._stringref_namespace[index]
         except IndexError:
-            raise CborDecodeValueError(f'string reference {index} not found')
+            raise CborDecodeValueError(f'string reference {index} not found') from None
 
         return value
 
@@ -635,7 +635,7 @@ class CborDecoder:
         try:
             shared = self._shareables[value]
         except IndexError:
-            raise CborDecodeValueError(f'shared reference {value} not found')
+            raise CborDecodeValueError(f'shared reference {value} not found') from None
 
         if shared is None:
             raise CborDecodeValueError(f'shared value {value} has not been initialized')

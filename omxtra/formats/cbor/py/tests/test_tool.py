@@ -55,7 +55,7 @@ def test_stdin(monkeypatch, tmpdir):
     argv = ['-o', str(f)]
     inbuf = io.TextIOWrapper(io.BytesIO(binascii.unhexlify('02')))
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         m.setattr('sys.stdin', inbuf)
         tool.main()
         assert f.read() == '2\n'
@@ -66,7 +66,7 @@ def test_stdout(monkeypatch, tmpdir):
     inbuf = io.TextIOWrapper(io.BytesIO(binascii.unhexlify('02')))
     outbuf = io.BytesIO()
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         m.setattr('sys.stdin', inbuf)
         m.setattr('sys.stdout', outbuf)
         tool.main()
@@ -78,7 +78,7 @@ def test_readfrom(monkeypatch, tmpdir):
     f.write_binary(binascii.unhexlify('02'))
     argv = ['-o', str(outfile), str(f)]
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         tool.main()
         assert outfile.read() == '2\n'
 
@@ -88,7 +88,7 @@ def test_b64(monkeypatch, tmpdir):
     argv = ['-d', '-o', str(f)]
     inbuf = io.TextIOWrapper(io.BytesIO(b'oQID'))
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         m.setattr('sys.stdin', inbuf)
         tool.main()
         assert f.read() == '{"2": 3}\n'
@@ -99,7 +99,7 @@ def test_stream(monkeypatch, tmpdir):
     argv = ['--sequence', '-o', str(f)]
     inbuf = io.TextIOWrapper(io.BytesIO(binascii.unhexlify('0203')))
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         m.setattr('sys.stdin', inbuf)
         tool.main()
         assert f.read() == '2\n3\n'
@@ -110,7 +110,7 @@ def test_embed_bytes(monkeypatch, tmpdir):
     argv = ['-o', str(f)]
     inbuf = io.TextIOWrapper(io.BytesIO(binascii.unhexlify('42C2C2')))
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         m.setattr('sys.stdin', inbuf)
         tool.main()
         assert f.read() == '"\\\\xc2\\\\xc2"\n'
@@ -122,7 +122,7 @@ def test_dtypes_from_file(monkeypatch, tmpdir):
     outfile = tmpdir.join('outfile.json')
     argv = ['--sort-keys', '--pretty', '-d', '-o', str(outfile), str(infile)]
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         tool.main()
         assert outfile.read() == expected
 
@@ -133,7 +133,7 @@ def test_ignore_tag(monkeypatch, tmpdir):
     inbuf = io.TextIOWrapper(io.BytesIO(binascii.unhexlify('D917706548656C6C6F')))
     expected = '"Hello"\n'
     with monkeypatch.context() as m:
-        m.setattr('sys.argv', [''] + argv)
+        m.setattr('sys.argv', ['', *argv])
         m.setattr('sys.stdin', inbuf)
         tool.main()
         assert f.read() == expected

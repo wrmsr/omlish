@@ -200,7 +200,7 @@ class CborEncoder:
                         f"invalid deferred encoder type {type_or_tuple!r} (must be a "
                         "2-tuple of module name and type name, e.g. "
                         "('collections', 'defaultdict'))",
-                    )
+                    ) from None
 
                 imported_type = getattr(sys.modules.get(modname), typename, None)
                 if imported_type is not None:
@@ -228,7 +228,7 @@ class CborEncoder:
             if not callable(value.write):
                 raise ValueError('fp.write is not callable')
         except AttributeError:
-            raise ValueError('fp object has no write method')
+            raise ValueError('fp object has no write method') from None
         else:
             self._fp = value
             self._fp_write = value.write

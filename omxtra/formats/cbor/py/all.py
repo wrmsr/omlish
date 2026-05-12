@@ -22,7 +22,7 @@ from .types import (  # noqa
     CborEncodeValueError as EncodeValueError,
     CborDecodeError as DecodeError,
     CborDecodeValueError as DecodeValueError,
-    CborDecodeEOF as DecodeEOF,
+    CborDecodeEOFError as DecodeEOF,
 
     CborTag as Tag,
     CborSimpleValue as SimpleValue,

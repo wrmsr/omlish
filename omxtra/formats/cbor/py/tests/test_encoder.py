@@ -26,7 +26,7 @@ from ..types import CborTag
 
 
 def test_fp_attr():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa
         CborEncoder(None)  # type: ignore
 
     class A:
@@ -35,7 +35,7 @@ def test_fp_attr():
     foo = A()
     foo.write = None  # type: ignore
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa
         CborEncoder(foo)  # type: ignore
 
     with io.BytesIO() as stream:
@@ -49,7 +49,7 @@ def test_default_attr():
     with io.BytesIO() as stream:
         encoder = CborEncoder(stream)
         assert encoder.default is None
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa
             encoder.default = 1  # type: ignore
         with pytest.raises(AttributeError):
             del encoder.default
@@ -59,7 +59,7 @@ def test_timezone_attr():
     with io.BytesIO() as stream:
         encoder = CborEncoder(stream)
         assert encoder.timezone is None
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa
             encoder.timezone = 1  # type: ignore
         with pytest.raises(AttributeError):
             del encoder.timezone
@@ -78,7 +78,7 @@ def test_encoders_load_type():
     with io.BytesIO() as stream:
         encoder = CborEncoder(stream)
         encoder._encoders[(1, 2, 3)] = lambda self, value: None  # type: ignore
-        with pytest.raises(ValueError) as exc:
+        with pytest.raises(ValueError) as exc:  # noqa
             encoder.encode(object())
         assert str(exc.value).endswith(
             "invalid deferred encoder type (1, 2, 3) (must be a 2-tuple "

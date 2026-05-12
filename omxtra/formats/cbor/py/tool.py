@@ -224,9 +224,9 @@ def main() -> None:
                             ensure_ascii=False,
                         )
                         outfp.write('\n')
-                except (ValueError, EOFError) as e:  # pragma: no cover
-                    raise SystemExit(e)
+                except (ValueError, EOFError) as e:
+                    raise SystemExit(e) from None
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == '__main__':
     main()

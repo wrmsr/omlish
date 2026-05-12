@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP037 UP045
+# ruff: noqa: PYI034 UP006 UP007 UP037 UP045
 # The MIT License (MIT)
 #
 # Copyright (c) 2016 Alex Grönholm
@@ -53,7 +53,7 @@ class CborDecodeValueError(CborDecodeError, ValueError):
     """Raised when the CBOR stream being decoded contains an invalid value."""
 
 
-class CborDecodeEOF(CborDecodeError, EOFError):
+class CborDecodeEOFError(CborDecodeError, EOFError):
     """Raised when decoding unexpectedly reaches EOF."""
 
 
@@ -117,7 +117,7 @@ class CborTag:
                 del _CBOR_THREAD_LOCALS.running_hashes
 
 
-class CborSimpleValue(collections.namedtuple('CborSimpleValue', ['value'])):
+class CborSimpleValue(collections.namedtuple('CborSimpleValue', ['value'])):  # noqa
     """
     Represents a CBOR "simple value".
 

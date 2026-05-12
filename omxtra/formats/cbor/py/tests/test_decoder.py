@@ -22,7 +22,7 @@ from ..decoder import cbor_load
 from ..decoder import cbor_loads
 from ..encoder import cbor_dumps
 from ..types import CBOR_UNDEFINED
-from ..types import CborDecodeEOF
+from ..types import CborDecodeEOFError
 from ..types import CborDecodeError
 from ..types import CborDecodeValueError
 from ..types import CborFrozenDict
@@ -32,16 +32,18 @@ from .utils import will_overflow
 
 
 def test_fp_attr():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa
         CborDecoder(None)  # type: ignore
-    with pytest.raises(ValueError):
 
-        class A:
-            pass
+    class A:
+        pass
 
-        foo: ta.Any = A()
-        foo.read = None
+    foo: ta.Any = A()
+    foo.read = None
+
+    with pytest.raises(ValueError):  # noqa
         CborDecoder(foo)
+
     with io.BytesIO(b'foobar') as stream:
         decoder = CborDecoder(stream)
         assert decoder.fp is stream
@@ -51,7 +53,7 @@ def test_fp_attr():
 
 def test_tag_hook_attr():
     with io.BytesIO(b'foobar') as stream:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa
             CborDecoder(stream, tag_hook='foo')  # type: ignore
         decoder = CborDecoder(stream)
 
@@ -66,7 +68,7 @@ def test_tag_hook_attr():
 
 def test_object_hook_attr():
     with io.BytesIO(b'foobar') as stream:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa
             CborDecoder(stream, object_hook='foo')  # type: ignore
         decoder = CborDecoder(stream)
 
@@ -81,9 +83,9 @@ def test_object_hook_attr():
 
 def test_str_errors_attr():
     with io.BytesIO(b'foobar') as stream:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa
             CborDecoder(stream, str_errors=False)  # type: ignore
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa
             CborDecoder(stream, str_errors='foo')
         decoder = CborDecoder(stream)
         decoder.str_errors = 'replace'
@@ -195,8 +197,7 @@ def test_integer(payload, expected):
 def test_invalid_integer_subtype():
     with pytest.raises(CborDecodeError) as exc:
         cbor_loads(b'\x1c')
-        assert str(exc.value).endswith('unknown unsigned integer subtype 0x1c')
-        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+    assert str(exc.value).endswith('unknown unsigned integer subtype 0x1c')
 
 
 @pytest.mark.parametrize(
@@ -297,7 +298,7 @@ def test_string_invalid_utf8(payload: str) -> None:
 
 
 def test_string_oversized() -> None:
-    with pytest.raises(CborDecodeEOF, match='premature end of stream'):
+    with pytest.raises(CborDecodeEOFError, match='premature end of stream'):
         (cbor_loads(binascii.unhexlify('aeaeaeaeaeaeaeaeae0108c29843d90100d8249f0000aeaeffc26ca799')),)
 
 
@@ -1052,7 +1053,7 @@ def test_oversized_read(payload: bytes, tmp_path: pathlib.Path) -> None:
     dummy_path = tmp_path / 'testdata'
     dummy_path.write_bytes(payload)
     with dummy_path.open('rb') as f:
-        with pytest.raises(CborDecodeEOF, match='premature end of stream'):
+        with pytest.raises(CborDecodeEOFError, match='premature end of stream'):
             cbor_load(f)
 
 
@@ -1215,7 +1216,7 @@ def test_str_errors_error_alias():
 
 def test_str_errors_invalid_mode():
     payload = b'\x65hello'
-    with pytest.raises(ValueError, match="invalid str_errors value 'invalid'"):
+    with pytest.raises(ValueError, match="invalid str_errors value 'invalid'"):  # noqa
         cbor_loads(payload, str_errors='invalid')  # type: ignore
 
 
