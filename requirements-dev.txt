@@ -73,7 +73,7 @@ ujson==5.12.1  # https://github.com/ultrajson/ultrajson/issues/684
 
 markupsafe==3.0.3
 
-redis==7.4.0
+# redis==7.4.0
 
 asgiref==3.11.1
 uvicorn==0.46.0

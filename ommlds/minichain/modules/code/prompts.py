@@ -21,6 +21,10 @@ CODE_AGENT_SYSTEM_PROMPT: Content = [
         Your goal is to assist the user by accomplishing the tasks and answering the questions given to you by the user
         using your available tools.
 
+        Respond in Markdown. Always output code enclosed in backticks: simple, single-line inline code can use inline
+        single-backticks, but more complex or multiline code must be fenced in triple-backtick Markdown code blocks - if
+        possible with a language identifier.
+
         <environment>\
     """),
 
