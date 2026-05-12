@@ -90,7 +90,7 @@ class CborDecoder:
         str_errors: str = 'strict',
         *,
         max_depth: int = 400,
-    ):
+    ) -> None:
         """
         :param fp:
             the file to read from (any file-like object opened for reading in binary mode)
@@ -115,8 +115,8 @@ class CborDecoder:
         self.object_hook = object_hook
         self.str_errors = str_errors
         self._share_index: ta.Optional[int] = None
-        self._shareables: list[object] = []
-        self._stringref_namespace: ta.Optional[list[str | bytes]] = None
+        self._shareables: ta.List[object] = []
+        self._stringref_namespace: ta.Optional[ta.List[ta.Union[str, bytes]]] = None
         self._immutable = False
         self._max_depth = max_depth
         self._decode_depth = 0
@@ -197,7 +197,7 @@ class CborDecoder:
 
         return value
 
-    def _stringref_namespace_add(self, string: str | bytes, length: int) -> None:
+    def _stringref_namespace_add(self, string: ta.Union[str, bytes], length: int) -> None:
         if self._stringref_namespace is not None:
             next_index = len(self._stringref_namespace)
             if next_index < 24:
@@ -317,7 +317,7 @@ class CborDecoder:
         length = self._decode_length(subtype, allow_indefinite=True)
         if length is None:
             # Indefinite length
-            buf: list[bytes] = []
+            buf: ta.List[bytes] = []
             while True:
                 initial_byte = self.read(1)[0]
                 if initial_byte == 0xFF:
@@ -370,7 +370,7 @@ class CborDecoder:
             #
             # This precludes using the indefinite bytestring decoder above as that would happily ignore UTF-8 characters
             # split across chunks.
-            buf: list[str] = []
+            buf: ta.List[str] = []
             while True:
                 initial_byte = self.read(1)[0]
                 if initial_byte == 0xFF:
@@ -422,7 +422,7 @@ class CborDecoder:
         length = self._decode_length(subtype, allow_indefinite=True)
         if length is None:
             # Indefinite length
-            items: list[ta.Any] = []
+            items: ta.List[ta.Any] = []
             if not self._immutable:
                 self.set_shareable(items)
             while True:
@@ -608,7 +608,7 @@ class CborDecoder:
 
         return self.set_shareable(decimal.Decimal(sig) * (2 ** decimal.Decimal(exp)))
 
-    def decode_stringref(self) -> str | bytes:
+    def decode_stringref(self) -> ta.Union[str, bytes]:
         # Semantic tag 25
         if self._stringref_namespace is None:
             raise CborDecodeValueError('string reference outside of namespace')
@@ -715,7 +715,7 @@ class CborDecoder:
         else:
             return self.set_shareable(set(self.decode(immutable=True)))
 
-    def decode_ipaddress(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address | CborTag:
+    def decode_ipaddress(self) -> ta.Union[ipaddress.IPv4Address, ipaddress.IPv6Address, CborTag]:
         # Semantic tag 260
         buf = self.decode()
         if not isinstance(buf, bytes) or len(buf) not in (4, 6, 16):
@@ -728,7 +728,7 @@ class CborDecoder:
 
         raise CborDecodeValueError(f'invalid ipaddress value {buf!r}')
 
-    def decode_ipnetwork(self) -> ipaddress.IPv4Network | ipaddress.IPv6Network:
+    def decode_ipnetwork(self) -> ta.Union[ipaddress.IPv4Network, ipaddress.IPv6Network]:
         # Semantic tag 261
         net_map = self.decode()
         if isinstance(net_map, ta.Mapping) and len(net_map) == 1:
@@ -812,7 +812,7 @@ CBOR_SEMANTIC_DECODERS: ta.Dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
 
 
 def cbor_loads(
-    s: bytes | bytearray | memoryview,
+    s: ta.Union[bytes, bytearray, memoryview],
     tag_hook: ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]] = None,
     object_hook: ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]] = None,
     str_errors: ta.Literal['strict', 'error', 'replace'] = 'strict',

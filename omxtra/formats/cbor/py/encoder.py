@@ -142,7 +142,7 @@ class CborEncoder:
         date_as_datetime: bool = False,
         string_referencing: bool = False,
         indefinite_containers: bool = False,
-    ):
+    ) -> None:
         """
         :param fp:
             the file to write to (any file-like object opened for writing in binary mode)
@@ -184,7 +184,7 @@ class CborEncoder:
         self._shared_containers: ta.Dict[
             int, ta.Tuple[object, ta.Optional[int]],
         ] = {}  # indexes used for value sharing
-        self._string_references: ta.Dict[str | bytes, int] = {}  # indexes used for string references
+        self._string_references: ta.Dict[ta.Union[str, bytes], int] = {}  # indexes used for string references
         self._encode_depth = 0
         self._encoders = CBOR_DEFAULT_ENCODERS.copy()
         if canonical:
@@ -392,7 +392,7 @@ class CborEncoder:
                     'cyclic data structure detected but value sharing is disabled',
                 )
 
-    def _stringref(self, value: str | bytes) -> bool:
+    def _stringref(self, value: ta.Union[str, bytes]) -> bool:
         """
         Try to encode the string or bytestring as a reference.
 
@@ -587,7 +587,7 @@ class CborEncoder:
             with self.disable_value_sharing():
                 self.encode_semantic(CborTag(4, [dt.exponent, sig]))
 
-    def encode_stringref(self, value: str | bytes) -> None:
+    def encode_stringref(self, value: ta.Union[str, bytes]) -> None:
         # Semantic tag 25
         if not self._stringref(value):
             self._encode_value(value)
@@ -623,11 +623,11 @@ class CborEncoder:
         values = sorted((self.encode_sortable_key(key), key) for key in value)
         self.encode_semantic(CborTag(258, [key[1] for key in values]))
 
-    def encode_ipaddress(self, value: ipaddress.IPv4Address | ipaddress.IPv6Address) -> None:
+    def encode_ipaddress(self, value: ta.Union[ipaddress.IPv4Address, ipaddress.IPv6Address]) -> None:
         # Semantic tag 260
         self.encode_semantic(CborTag(260, value.packed))
 
-    def encode_ipnetwork(self, value: ipaddress.IPv4Network | ipaddress.IPv6Network) -> None:
+    def encode_ipnetwork(self, value: ta.Union[ipaddress.IPv4Network, ipaddress.IPv6Network]) -> None:
         # Semantic tag 261
         self.encode_semantic(CborTag(261, {value.network_address.packed: value.prefixlen}))
 
@@ -685,7 +685,7 @@ class CborEncoder:
         self._fp_write(b'\xf7')
 
 
-CBOR_DEFAULT_ENCODERS: ta.Dict[type | ta.Tuple[str, str], ta.Callable[[CborEncoder, ta.Any], None]] = {
+CBOR_DEFAULT_ENCODERS: ta.Dict[ta.Union[type | ta.Tuple[str, str]], ta.Callable[[CborEncoder, ta.Any], None]] = {
     bytes: CborEncoder.encode_bytestring,
     bytearray: CborEncoder.encode_bytearray,
     str: CborEncoder.encode_string,
@@ -719,7 +719,7 @@ CBOR_DEFAULT_ENCODERS: ta.Dict[type | ta.Tuple[str, str], ta.Callable[[CborEncod
 }
 
 
-CBOR_CANONICAL_ENCODERS: ta.Dict[type | ta.Tuple[str, str], ta.Callable[[CborEncoder, ta.Any], None]] = {
+CBOR_CANONICAL_ENCODERS: ta.Dict[ta.Union[type | ta.Tuple[str, str]], ta.Callable[[CborEncoder, ta.Any], None]] = {
     float: CborEncoder.encode_minimal_float,
     dict: CborEncoder.encode_canonical_map,
     collections.defaultdict: CborEncoder.encode_canonical_map,

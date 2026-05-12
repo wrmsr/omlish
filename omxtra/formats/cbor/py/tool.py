@@ -24,7 +24,7 @@ from .types import CborTag
 
 T = ta.TypeVar('T')
 
-JsonValue: ta.TypeAlias = 'str | float | bool | None | list[JsonValue] | dict[str, JsonValue]'
+JsonValue: ta.TypeAlias = str | float | bool | None | list['JsonValue'] | dict[str, 'JsonValue']
 
 
 ##
