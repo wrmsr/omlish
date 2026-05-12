@@ -135,9 +135,9 @@ class CborEncoder:
         self,
         fp: ta.IO[bytes],
         datetime_as_timestamp: bool = False,
-        timezone: datetime.tzinfo | None = None,
+        timezone: ta.Optional[datetime.tzinfo] = None,
         value_sharing: bool = False,
-        default: ta.Callable[[CborEncoder, ta.Any], ta.Any] | None = None,
+        default: ta.Optional[ta.Callable[[CborEncoder, ta.Any], ta.Any]] = None,
         canonical: bool = False,
         date_as_datetime: bool = False,
         string_referencing: bool = False,
@@ -182,7 +182,7 @@ class CborEncoder:
         self.default = default
         self._canonical = canonical
         self._shared_containers: ta.Dict[
-            int, ta.Tuple[object, int | None],
+            int, ta.Tuple[object, ta.Optional[int]],
         ] = {}  # indexes used for value sharing
         self._string_references: ta.Dict[str | bytes, int] = {}  # indexes used for string references
         self._encode_depth = 0
@@ -190,7 +190,7 @@ class CborEncoder:
         if canonical:
             self._encoders.update(CBOR_CANONICAL_ENCODERS)
 
-    def _find_encoder(self, obj_type: type) -> ta.Callable[[CborEncoder, ta.Any], None] | None:
+    def _find_encoder(self, obj_type: type) -> ta.Optional[ta.Callable[[CborEncoder, ta.Any], None]]:
         for type_or_tuple, enc in list(self._encoders.items()):
             if type(type_or_tuple) is tuple:
                 try:
@@ -234,22 +234,22 @@ class CborEncoder:
             self._fp_write = value.write
 
     @property
-    def timezone(self) -> datetime.tzinfo | None:
+    def timezone(self) -> ta.Optional[datetime.tzinfo]:
         return self._timezone
 
     @timezone.setter
-    def timezone(self, value: datetime.tzinfo | None) -> None:
+    def timezone(self, value: ta.Optional[datetime.tzinfo]) -> None:
         if value is None or isinstance(value, datetime.tzinfo):
             self._timezone = value
         else:
             raise ValueError('timezone must be None or a tzinfo instance')
 
     @property
-    def default(self) -> ta.Callable[[CborEncoder, ta.Any], ta.Any] | None:
+    def default(self) -> ta.Optional[ta.Callable[[CborEncoder, ta.Any], ta.Any]]:
         return self._default
 
     @default.setter
-    def default(self, value: ta.Callable[[CborEncoder, ta.Any], ta.Any] | None) -> None:
+    def default(self, value: ta.Optional[ta.Callable[[CborEncoder, ta.Any], ta.Any]]) -> None:
         if value is None or callable(value):
             self._default = value
         else:
@@ -422,7 +422,7 @@ class CborEncoder:
 
             return False
 
-    def encode_length(self, major_tag: int, length: int | None) -> None:
+    def encode_length(self, major_tag: int, length: ta.Optional[int]) -> None:
         major_tag <<= 5
         if length is None:  # Indefinite
             self._fp_write(struct.pack('>B', major_tag | 31))
@@ -736,9 +736,9 @@ CBOR_CANONICAL_ENCODERS: ta.Dict[type | ta.Tuple[str, str], ta.Callable[[CborEnc
 def cbor_dumps(
     obj: object,
     datetime_as_timestamp: bool = False,
-    timezone: datetime.tzinfo | None = None,
+    timezone: ta.Optional[datetime.tzinfo] = None,
     value_sharing: bool = False,
-    default: ta.Callable[[CborEncoder, ta.Any], None] | None = None,
+    default: ta.Optional[ta.Callable[[CborEncoder, ta.Any], None]] = None,
     canonical: bool = False,
     date_as_datetime: bool = False,
     string_referencing: bool = False,
@@ -794,9 +794,9 @@ def cbor_dump(
     obj: object,
     fp: ta.IO[bytes],
     datetime_as_timestamp: bool = False,
-    timezone: datetime.tzinfo | None = None,
+    timezone: ta.Optional[datetime.tzinfo] = None,
     value_sharing: bool = False,
-    default: ta.Callable[[CborEncoder, ta.Any], None] | None = None,
+    default: ta.Optional[ta.Callable[[CborEncoder, ta.Any], None]] = None,
     canonical: bool = False,
     date_as_datetime: bool = False,
     string_referencing: bool = False,

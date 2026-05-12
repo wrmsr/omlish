@@ -85,8 +85,8 @@ class CborDecoder:
     def __init__(
         self,
         fp: ta.IO[bytes],
-        tag_hook: ta.Callable[[CborDecoder, CborTag], ta.Any] | None = None,
-        object_hook: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None = None,
+        tag_hook: ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]] = None,
+        object_hook: ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]] = None,
         str_errors: str = 'strict',
         *,
         max_depth: int = 400,
@@ -114,9 +114,9 @@ class CborDecoder:
         self.tag_hook = tag_hook
         self.object_hook = object_hook
         self.str_errors = str_errors
-        self._share_index: int | None = None
+        self._share_index: ta.Optional[int] = None
         self._shareables: list[object] = []
-        self._stringref_namespace: list[str | bytes] | None = None
+        self._stringref_namespace: ta.Optional[list[str | bytes]] = None
         self._immutable = False
         self._max_depth = max_depth
         self._decode_depth = 0
@@ -146,22 +146,22 @@ class CborDecoder:
             self._fp_read = value.read
 
     @property
-    def tag_hook(self) -> ta.Callable[[CborDecoder, CborTag], ta.Any] | None:
+    def tag_hook(self) -> ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]]:
         return self._tag_hook
 
     @tag_hook.setter
-    def tag_hook(self, value: ta.Callable[[CborDecoder, CborTag], ta.Any] | None) -> None:
+    def tag_hook(self, value: ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]]) -> None:
         if value is None or callable(value):
             self._tag_hook = value
         else:
             raise ValueError('tag_hook must be None or a callable')
 
     @property
-    def object_hook(self) -> ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None:
+    def object_hook(self) -> ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]]:
         return self._object_hook
 
     @object_hook.setter
-    def object_hook(self, value: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None) -> None:
+    def object_hook(self, value: ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]]) -> None:
         if value is None or callable(value):
             self._object_hook = value
         else:
@@ -286,9 +286,9 @@ class CborDecoder:
     def _decode_length(self, subtype: int) -> int: ...
 
     @ta.overload
-    def _decode_length(self, subtype: int, allow_indefinite: ta.Literal[True]) -> int | None: ...
+    def _decode_length(self, subtype: int, allow_indefinite: ta.Literal[True]) -> ta.Optional[int]: ...
 
-    def _decode_length(self, subtype: int, allow_indefinite: bool = False) -> int | None:
+    def _decode_length(self, subtype: int, allow_indefinite: bool = False) -> ta.Optional[int]:
         if subtype < 24:
             return subtype
         elif subtype == 24:
@@ -708,7 +708,7 @@ class CborDecoder:
         self._stringref_namespace = old_namespace
         return value
 
-    def decode_set(self) -> set[ta.Any] | frozenset[ta.Any]:
+    def decode_set(self) -> ta.Union[ta.Set[ta.Any], ta.FrozenSet[ta.Any]]:
         # Semantic tag 258
         if self._immutable:
             return self.set_shareable(frozenset(self.decode(immutable=True)))
@@ -813,8 +813,8 @@ CBOR_SEMANTIC_DECODERS: ta.Dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
 
 def cbor_loads(
     s: bytes | bytearray | memoryview,
-    tag_hook: ta.Callable[[CborDecoder, CborTag], ta.Any] | None = None,
-    object_hook: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None = None,
+    tag_hook: ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]] = None,
+    object_hook: ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]] = None,
     str_errors: ta.Literal['strict', 'error', 'replace'] = 'strict',
     *,
     max_depth: int = 400,
@@ -854,8 +854,8 @@ def cbor_loads(
 
 def cbor_load(
     fp: ta.IO[bytes],
-    tag_hook: ta.Callable[[CborDecoder, CborTag], ta.Any] | None = None,
-    object_hook: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None = None,
+    tag_hook: ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]] = None,
+    object_hook: ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]] = None,
     str_errors: ta.Literal['strict', 'error', 'replace'] = 'strict',
     *,
     max_depth: int = 400,
