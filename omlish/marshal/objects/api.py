@@ -7,6 +7,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ... import metadata as md
 from ...lite.dataclasses import install_dataclass_filtered_repr
 from ..api.configs import Config
 from ..api.naming import Naming
@@ -183,7 +184,7 @@ class ObjectOptions(Config, lang.Final):
 
     field_defaults: FieldOptions = DEFAULT_FIELD_OPTIONS
 
-    fields: ta.Mapping[str, FieldOptions] | None = None
+    fields: ta.Mapping[str | None, FieldOptions] | None = None
 
     ##
     # Merging
@@ -203,7 +204,12 @@ class ObjectOptions(Config, lang.Final):
 
                 elif fld.name == 'fields':
                     fd = kw.get('fields') or {}
+                    if (nfo := fv.get(None)) is not None:
+                        for fn, fo in fd.items():
+                            fd[fn] = nfo.merge(fo)
                     for fn, fo in fv.items():
+                        if fn is None:
+                            continue
                         try:
                             xfo = fd[fn]
                         except KeyError:
@@ -231,3 +237,11 @@ def _object_options_fields() -> ta.Sequence[dc.Field]:
 
 
 DEFAULT_OBJECT_OPTIONS = ObjectOptions()
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class _ObjectOptionsMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
+    opts: ObjectOptions

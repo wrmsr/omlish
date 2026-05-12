@@ -13,7 +13,9 @@ from ...globals import unmarshal
 from ...standard.factories import StandardUnmarshalerFactory
 from ...trivial.nop import NOP_MARSHALER_UNMARSHALER
 from ..api import FieldOptions
+from ..api import ObjectOptions
 from ..api import ObjectSpecials
+from ..api import _ObjectOptionsMetadata
 from ..helpers import update_fields_options
 from ..helpers import update_object_options
 from ..infos import FieldInfo
@@ -250,3 +252,22 @@ def test_no_marshal():
     v = unmarshal(mv, CanMarshal)
     assert isinstance(v, CanMarshal)
     assert v.i == 420
+
+
+##
+
+
+def test_metadata_decorator():
+    @_ObjectOptionsMetadata(ObjectOptions(fields=dict(
+        foo=FieldOptions(name='bar'),
+    )))
+    @dc.dataclass(frozen=True)
+    class Thing:
+        foo: str
+
+    thing = Thing('huh')
+    mv = marshal(thing)
+    assert mv == {'bar': 'huh'}
+    v = unmarshal(mv, Thing)
+    assert isinstance(v, Thing)
+    assert v.foo == 'huh'

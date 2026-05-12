@@ -10,6 +10,7 @@ from ..api.types import UnmarshalerFactory
 from .api import DEFAULT_FIELD_OPTIONS
 from .api import FieldOptions
 from .api import ObjectOptions
+from .api import _ObjectOptionsMetadata
 
 
 T = ta.TypeVar('T')
@@ -105,7 +106,7 @@ def _update_object_options(
         **kwargs: ta.Any,
 ):
     def inner(cls):
-        return dc.append_class_metadata(cls, ObjectOptions(**kwargs))
+        return _ObjectOptionsMetadata(ObjectOptions(**kwargs))(cls)
 
     if cls is not None:
         inner(cls)

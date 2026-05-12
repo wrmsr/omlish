@@ -8,6 +8,7 @@ from ... import check
 from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
+from ... import metadata as md
 from ... import reflect as rfl
 from ...lite import marshal as lm
 from ..api.configs import Configs
@@ -24,6 +25,7 @@ from .api import DEFAULT_FIELD_OPTIONS
 from .api import DEFAULT_OBJECT_OPTIONS
 from .api import FieldOptions
 from .api import ObjectOptions
+from .api import _ObjectOptionsMetadata
 from .infos import FieldInfo
 from .infos import FieldInfos
 from .marshal import ObjectMarshaler
@@ -39,11 +41,14 @@ def get_dataclass_options(
 ) -> ObjectOptions:
     opts = DEFAULT_OBJECT_OPTIONS
 
-    if (md_opts := dc.reflect(ty).spec.metadata_by_type.get(ObjectOptions, [])):
-        opts = opts.merge(*md_opts)
+    if dc_md_opts := dc.reflect(ty).spec.metadata_by_type.get(ObjectOptions, []):
+        opts = opts.merge(*dc_md_opts)
 
     if cfgs is not None and (cfg_opts := cfgs.get(ty).get(ObjectOptions)):
         opts = opts.merge(*cfg_opts)
+
+    if md_opts := md.get_object_metadata(ty, type=_ObjectOptionsMetadata):
+        opts = opts.merge(*[o.opts for o in md_opts])
 
     return opts
 
