@@ -463,6 +463,7 @@ set -g status-fg black
 set -g history-limit 50000
 set -g update-environment "DISPLAY"
 set -sg default-terminal "xterm-256color"
+set -g extended-keys on
 EOF
 
 
