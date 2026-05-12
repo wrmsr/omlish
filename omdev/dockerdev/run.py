@@ -70,6 +70,7 @@ class RunArgs:
     mount_caches: bool = False
     mount_docker_sock: bool = False
     mount_git: bool = False
+    clone_mount_git: bool = False
 
     privileged: bool = False
 
@@ -127,10 +128,15 @@ def process_run_args(
             os.makedirs(cld, exist_ok=True)
             run_args.append(f'--mount=type=bind,src={cld},dst={cr}')
 
-    if args.mount_git:
+    autoexecs: list[str] = []
+
+    if args.mount_git or args.clone_mount_git:
         git_path = os.path.join(os.getcwd(), '.git')
         check.state(os.path.isdir(git_path))
         run_args.append(f'--mount=type=bind,src={git_path},dst=/git,ro')
+
+        if args.clone_mount_git:
+            autoexecs.append('git clone /git /work/git')
 
     if not args.no_host_platform:
         run_args.extend([f'--env=DOCKER_HOST_PLATFORM={platform.system().lower()}'])
@@ -145,13 +151,15 @@ def process_run_args(
 
     entrypoint: str | None = None
 
-    if args.autoexecs:
+    autoexecs.extend(args.autoexecs or [])
+
+    if autoexecs:
         tmp_ep = os.path.join(tmp_dir(), 'autoexec.sh')
         with open(tmp_ep, 'w') as f:
             f.write('\n'.join([
                 '#!/bin/sh',
                 'set -e',
-                *args.autoexecs,
+                *autoexecs,
                 'exec "$@"',
             ]))
         os.chmod(tmp_ep, 0o755)  # noqa

@@ -87,7 +87,8 @@ class Cli(ap.Cli):
         ap.arg('--mount', action='append'),
         ap.arg('-C', '--mount-caches', action='store_true'),
         ap.arg('-D', '--mount-docker-sock', action='store_true'),
-        ap.arg('-G', '--mount-git', action='store_true'),
+        ap.arg('--mount-git', action='store_true'),
+        ap.arg('-G', '--clone-mount-git', action='store_true'),
 
         ap.arg('-P', '--privileged', action='store_true'),
 
@@ -124,6 +125,7 @@ class Cli(ap.Cli):
                 mount_caches=bool(self.args.mount_caches),
                 mount_docker_sock=bool(self.args.mount_docker_sock),
                 mount_git=bool(self.args.mount_git),
+                clone_mount_git=bool(self.args.clone_mount_git),
 
                 privileged=bool(self.args.privileged),
 
