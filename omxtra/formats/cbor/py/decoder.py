@@ -86,7 +86,7 @@ class CborDecoder:
         self,
         fp: ta.IO[bytes],
         tag_hook: ta.Callable[[CborDecoder, CborTag], ta.Any] | None = None,
-        object_hook: ta.Callable[[CborDecoder, dict[ta.Any, ta.Any]], ta.Any] | None = None,
+        object_hook: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None = None,
         str_errors: str = 'strict',
         *,
         max_depth: int = 400,
@@ -157,11 +157,11 @@ class CborDecoder:
             raise ValueError('tag_hook must be None or a callable')
 
     @property
-    def object_hook(self) -> ta.Callable[[CborDecoder, dict[ta.Any, ta.Any]], ta.Any] | None:
+    def object_hook(self) -> ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None:
         return self._object_hook
 
     @object_hook.setter
-    def object_hook(self, value: ta.Callable[[CborDecoder, dict[ta.Any, ta.Any]], ta.Any] | None) -> None:
+    def object_hook(self, value: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None) -> None:
         if value is None or callable(value):
             self._object_hook = value
         else:
@@ -454,7 +454,7 @@ class CborDecoder:
         length = self._decode_length(subtype, allow_indefinite=True)
         if length is None:
             # Indefinite length
-            dictionary: dict[ta.Any, ta.Any] = {}
+            dictionary: ta.Dict[ta.Any, ta.Any] = {}
             self.set_shareable(dictionary)
             while True:
                 key = self.decode(immutable=True, unshared=True)
@@ -760,7 +760,7 @@ class CborDecoder:
         return self.set_shareable(ta.cast(float, struct.unpack('>d', self.read(8))[0]))
 
 
-CBOR_MAJOR_DECODERS: dict[int, ta.Callable[[CborDecoder, int], ta.Any]] = {
+CBOR_MAJOR_DECODERS: ta.Dict[int, ta.Callable[[CborDecoder, int], ta.Any]] = {
     0: CborDecoder.decode_uint,
     1: CborDecoder.decode_negint,
     2: CborDecoder.decode_bytestring,
@@ -771,7 +771,7 @@ CBOR_MAJOR_DECODERS: dict[int, ta.Callable[[CborDecoder, int], ta.Any]] = {
     7: CborDecoder.decode_special,
 }
 
-CBOR_SPECIAL_DECODERS: dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
+CBOR_SPECIAL_DECODERS: ta.Dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
     20: lambda self: False,
     21: lambda self: True,
     22: lambda self: None,
@@ -783,7 +783,7 @@ CBOR_SPECIAL_DECODERS: dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
     31: lambda self: CBOR_BREAK_MARKER,
 }
 
-CBOR_SEMANTIC_DECODERS: dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
+CBOR_SEMANTIC_DECODERS: ta.Dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
     0: CborDecoder.decode_datetime_string,
     1: CborDecoder.decode_epoch_datetime,
     2: CborDecoder.decode_positive_bignum,
@@ -814,7 +814,7 @@ CBOR_SEMANTIC_DECODERS: dict[int, ta.Callable[[CborDecoder], ta.Any]] = {
 def cbor_loads(
     s: bytes | bytearray | memoryview,
     tag_hook: ta.Callable[[CborDecoder, CborTag], ta.Any] | None = None,
-    object_hook: ta.Callable[[CborDecoder, dict[ta.Any, ta.Any]], ta.Any] | None = None,
+    object_hook: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None = None,
     str_errors: ta.Literal['strict', 'error', 'replace'] = 'strict',
     *,
     max_depth: int = 400,
@@ -855,7 +855,7 @@ def cbor_loads(
 def cbor_load(
     fp: ta.IO[bytes],
     tag_hook: ta.Callable[[CborDecoder, CborTag], ta.Any] | None = None,
-    object_hook: ta.Callable[[CborDecoder, dict[ta.Any, ta.Any]], ta.Any] | None = None,
+    object_hook: ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any] | None = None,
     str_errors: ta.Literal['strict', 'error', 'replace'] = 'strict',
     *,
     max_depth: int = 400,

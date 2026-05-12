@@ -1,4 +1,5 @@
 # ruff: noqa: PYI034 UP006 UP007 UP037 UP045
+# @omlish-lite
 # The MIT License (MIT)
 #
 # Copyright (c) 2016 Alex Grönholm
@@ -74,7 +75,7 @@ class CborTag:
 
     __slots__ = 'tag', 'value'
 
-    def __init__(self, tag: str | int, value: ta.Any) -> None:
+    def __init__(self, tag: ta.Union[str, int], value: ta.Any) -> None:
         if not isinstance(tag, int) or tag not in range(2**64):
             raise TypeError('CBORTag tags must be positive integers less than 2**64')
         self.tag = tag
@@ -197,9 +198,9 @@ class CborFrozenDict(ta.Mapping[KT, VT_co]):
     The arguments to ``FrozenDict`` are processed just like those to ``dict``.
     """
 
-    def __init__(self, *args: ta.Mapping[KT, VT_co] | ta.Iterable[tuple[KT, VT_co]]) -> None:
-        self._d: dict[KT, VT_co] = dict(*args)
-        self._hash: int | None = None
+    def __init__(self, *args: ta.Union[ta.Mapping[KT, VT_co], ta.Iterable[ta.Tuple[KT, VT_co]]]) -> None:
+        self._d: ta.Dict[KT, VT_co] = dict(*args)
+        self._hash: ta.Optional[int] = None
 
     def __iter__(self) -> ta.Iterator[KT]:
         return iter(self._d)
