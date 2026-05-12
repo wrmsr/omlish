@@ -17,7 +17,7 @@ from .invokers import ToolInvoker
 
 
 @dc.dataclass(frozen=True, eq=False)
-@msh.update_field_options(['target'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
+@msh.update_field_options('target', marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
 class ToolCatalogEntry(lang.Final):
     spec: ToolSpec
     target: ToolFn | ToolInvoker

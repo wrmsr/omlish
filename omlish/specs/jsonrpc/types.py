@@ -55,8 +55,8 @@ def check_not_not_specified(v: T | type[NotSpecified]) -> T:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options(['id'], omit_if=is_not_specified, default=lang.just(NotSpecified))
-@msh.update_field_options(['params'], omit_if=operator.not_)
+@msh.update_field_options('id', omit_if=is_not_specified, default=lang.just(NotSpecified))
+@msh.update_field_options('params', omit_if=operator.not_)
 class Request(lang.Final):
     id: Id | type[NotSpecified]
 
@@ -122,7 +122,7 @@ def result(id: Id, result: ta.Any) -> Response:  # noqa
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options(['data'], omit_if=is_not_specified)
+@msh.update_field_options('data', omit_if=is_not_specified)
 class Error(lang.Final):
     code: int
     message: str

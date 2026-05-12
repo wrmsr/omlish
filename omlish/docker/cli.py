@@ -24,7 +24,7 @@ from ..formats import json
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(field_naming=msh.Naming.CAMEL, unknown_field='x')
-@msh.update_field_options(['id'], name='ID')
+@msh.update_field_options('id', name='ID')
 class PsItem(lang.Final):
     command: str
     created_at: datetime.datetime

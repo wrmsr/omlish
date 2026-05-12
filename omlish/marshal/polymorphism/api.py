@@ -184,7 +184,7 @@ class Polymorphism:
         return self._bases
 
 
-#
+##
 
 
 def polymorphism_from_impls(
@@ -192,6 +192,7 @@ def polymorphism_from_impls(
         impl_tys: ta.Iterable[type],
         *,
         base_tys: ta.Mapping[type, ta.Iterable[type]] | None = None,
+
         naming: Naming | None = None,
         strip_suffix: bool | type[AutoStripSuffix] | str = False,
 ) -> Polymorphism:
@@ -243,6 +244,7 @@ def polymorphism_from_subclasses(
         ty: type,
         *,
         include_bases: bool = False,
+
         naming: Naming | None = None,
         strip_suffix: bool | type[AutoStripSuffix] | str = False,
 ) -> Polymorphism:
@@ -269,10 +271,13 @@ def polymorphism_from_subclasses(
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class OpenPolymorphismOptions(lang.Final):
+class PolymorphismOptions(lang.Final):
     type_tagging: TypeTagging = WrapperTypeTagging()
     naming: Naming | None = None
     strip_suffix: bool | type[AutoStripSuffix] | str = False
+
+
+##
 
 
 @dc.dataclass(frozen=True)

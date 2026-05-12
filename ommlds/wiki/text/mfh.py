@@ -38,7 +38,7 @@ Content: ta.TypeAlias = ta.Sequence[ContentNode]
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options(['body'], omit_if=operator.not_)
+@msh.update_field_options('body', omit_if=operator.not_)
 class Doc(Node):
     body: Content = ()
 

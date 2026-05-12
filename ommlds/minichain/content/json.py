@@ -15,6 +15,6 @@ from .standard import StandardContent
 
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(terse_repr=True)
-@msh.update_field_options(['v'], marshal_as=JsonValue, unmarshal_as=JsonValue)
+@msh.update_field_options('v', marshal_as=JsonValue, unmarshal_as=JsonValue)
 class JsonContent(StandardContent, lang.Final):
     v: JsonValue

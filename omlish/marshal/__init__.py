@@ -217,7 +217,7 @@ with _lang.auto_proxy_init(globals()):
         polymorphism_from_impls,
         polymorphism_from_subclasses,
 
-        OpenPolymorphismOptions,
+        PolymorphismOptions,
         OpenPolymorphismImpl,
     )
 

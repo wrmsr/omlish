@@ -11,8 +11,8 @@ from ...objects.dataclasses import DataclassUnmarshalerFactory
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..api import OpenPolymorphismImpl
-from ..api import OpenPolymorphismOptions
 from ..api import PolymorphismImplError
+from ..api import PolymorphismOptions
 from ..open import OpenPolymorphismMarshalerFactory
 from ..open import OpenPolymorphismUnmarshalerFactory
 
@@ -39,7 +39,7 @@ class BoolFoo(Foo):
 def test_open():
     msh = SimpleMarshaling(
         marshaler_factory=MultiMarshalerFactory(
-            OpenPolymorphismMarshalerFactory(Foo, opo := OpenPolymorphismOptions(
+            OpenPolymorphismMarshalerFactory(Foo, opo := PolymorphismOptions(
                 naming=Naming.SNAKE,
                 strip_suffix=True,
             )),

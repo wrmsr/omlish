@@ -1,4 +1,3 @@
-- omlish.metadata
 - streaming?
 - datatypes
   - redacted

@@ -150,8 +150,8 @@ class E2:
 
 
 @dc.dataclass()
-@update_field_options(['e1'], embed=True)
-@update_field_options(['e2'], embed=True, name='')
+@update_field_options('e1', embed=True)
+@update_field_options('e2', embed=True, name='')
 class E3:
     e0: E0
     e1: E1
@@ -240,7 +240,7 @@ class CannotMarshal:
 
 
 @dc.dataclass(frozen=True)
-@update_field_options(['cant'], no_marshal=True, no_unmarshal=True)
+@update_field_options('cant', no_marshal=True, no_unmarshal=True)
 class CanMarshal:
     i: int
     cant: CannotMarshal | None = None

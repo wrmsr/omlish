@@ -55,7 +55,7 @@ def _install_standard_marshaling() -> None:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options(['v'], marshal_as=JsonValue, unmarshal_as=JsonValue)
+@msh.update_field_options('v', marshal_as=JsonValue, unmarshal_as=JsonValue)
 class JsonContent:
     v: JsonValue
 

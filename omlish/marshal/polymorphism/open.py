@@ -25,7 +25,7 @@ from ..api.types import UnmarshalerFactory
 from ..api.values import Value
 from .api import Impls
 from .api import OpenPolymorphismImpl
-from .api import OpenPolymorphismOptions
+from .api import PolymorphismOptions
 from .api import polymorphism_from_impls
 from .marshal import make_polymorphism_marshaler
 from .unmarshal import make_polymorphism_unmarshaler
@@ -42,7 +42,7 @@ class _OpenPolymorphismBase(lang.Abstract, ta.Generic[HandlerContextT, HandlerT]
     def __init__(
             self,
             ty: type,
-            opts: OpenPolymorphismOptions = OpenPolymorphismOptions(),
+            opts: PolymorphismOptions = PolymorphismOptions(),
     ) -> None:
         super().__init__()
 
@@ -135,7 +135,7 @@ class OpenPolymorphismUnmarshaler(_OpenPolymorphismBase[UnmarshalContext, Unmars
 @dc.dataclass(frozen=True)
 class OpenPolymorphismMarshalerFactory(MarshalerFactory):
     ty: type
-    opts: OpenPolymorphismOptions = OpenPolymorphismOptions()
+    opts: PolymorphismOptions = PolymorphismOptions()
 
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if rty != self.ty:
@@ -146,7 +146,7 @@ class OpenPolymorphismMarshalerFactory(MarshalerFactory):
 @dc.dataclass(frozen=True)
 class OpenPolymorphismUnmarshalerFactory(UnmarshalerFactory):
     ty: type
-    opts: OpenPolymorphismOptions = OpenPolymorphismOptions()
+    opts: PolymorphismOptions = PolymorphismOptions()
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if rty != self.ty:

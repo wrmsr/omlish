@@ -37,7 +37,7 @@ EventCallbacks = ta.NewType('EventCallbacks', ta.Sequence[EventCallback])
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options(['error'], marshal_as=lang.OpaqueRepr | None, unmarshal_as=lang.OpaqueRepr | None)
+@msh.update_field_options('error', marshal_as=lang.OpaqueRepr | None, unmarshal_as=lang.OpaqueRepr | None)
 class ErrorEvent(Event, lang.Final):
     message: str | None = None
     error: BaseException | lang.OpaqueRepr | None = None
@@ -50,7 +50,7 @@ class ErrorEvent(Event, lang.Final):
 def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
     msh.install_standard_factories_to(
         cfgs,
-        msh.OpenPolymorphismMarshalerFactory(Event, opo := msh.OpenPolymorphismOptions(
+        msh.OpenPolymorphismMarshalerFactory(Event, opo := msh.PolymorphismOptions(
             naming=msh.Naming.SNAKE,
             strip_suffix=True,
         )),

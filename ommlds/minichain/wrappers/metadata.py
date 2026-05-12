@@ -18,7 +18,7 @@ if ta.TYPE_CHECKING:
 #     type='ResponseMetadata',
 # )
 @dc.dataclass(frozen=True)
-@msh.update_field_options(['retry_service'], no_marshal=True, no_unmarshal=True)
+@msh.update_field_options('retry_service', no_marshal=True, no_unmarshal=True)
 class RetryServiceResponseMetadata(ResponseMetadata):
     num_retries: int
 
