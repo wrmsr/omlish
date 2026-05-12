@@ -59,7 +59,7 @@ class OpenaiChatChoicesService:
 
         rh = OpenaiChatRequestHandler(
             request.v,
-            *tv.TypedValues(
+            *tv.collect(
                 *request.options,
                 override=True,
             ),

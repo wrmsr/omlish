@@ -108,7 +108,7 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
         messages = build_ol_request_messages(request.v)
 
         tools: list[pt.Tool] = []
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             t: Tool
             for t in oc.pop(Tool, []):
                 tools.append(build_ol_request_tool(t))
@@ -153,7 +153,7 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
         messages = build_ol_request_messages(request.v)
 
         tools: list[pt.Tool] = []
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             t: Tool
             for t in oc.pop(Tool, []):
                 tools.append(build_ol_request_tool(t))

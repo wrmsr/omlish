@@ -93,7 +93,7 @@ class GoogleChatChoicesStreamService:
         key = check.not_none(self._api_key).reveal()
 
         g_tools: list[pt.Tool] = []
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             t: Tool
             for t in oc.pop(Tool, []):
                 g_tools.append(pt.Tool(

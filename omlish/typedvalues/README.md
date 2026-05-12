@@ -57,8 +57,7 @@ class TextResponseFormat(ResponseFormat):
     pass
 ```
 
-In a `TypedValues` collection, you can have either a `JsonResponseFormat` or `TextResponseFormat`, but not both
-(unless override mode is enabled).
+In a `TypedValues` collection, you can have either a `JsonResponseFormat` or `TextResponseFormat`, but not both.
 
 ### ScalarTypedValue
 

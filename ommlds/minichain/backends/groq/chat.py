@@ -46,7 +46,7 @@ class GroqChatChoicesService:
 
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         tools: list[pt.ChatCompletionRequest.Tool] = []
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             t: Tool
             for t in oc.pop(Tool, []):
                 tools.append(build_gq_request_tool(t))

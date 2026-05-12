@@ -20,6 +20,7 @@
 - simple lite interop like inj - alt ObjMarshalerManager impl for Context
 - bidirectional dc field embedding (currently unmarshal only)
 - default options in config
+- xml
 
 See:
 - https://github.com/python-attrs/cattrs

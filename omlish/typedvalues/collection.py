@@ -190,7 +190,7 @@ class TypedValues(
         if len(nl) == len(self._tup):
             return self
 
-        return TypedValues(*self.without(*tys))
+        return TypedValues(*nl)
 
     def update(
             self,

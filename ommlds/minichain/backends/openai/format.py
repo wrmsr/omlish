@@ -119,7 +119,7 @@ def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoice
     return ChatChoicesResponse(
         build_mc_ai_choices(oai_resp),
 
-        tv.TypedValues(
+        tv.collect(
             *([TokenUsageOutput(TokenUsage(
                 input=tu.prompt_tokens,
                 output=tu.completion_tokens,
@@ -190,7 +190,7 @@ class OpenaiChatRequestHandler:
 
         tools_by_name: dict[str, ToolSpec] = {}
 
-        with tv.TypedValues(*self._options).consume() as oc:
+        with tv.consume(*self._options) as oc:
             kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
             for t in oc.pop(Tool, []):

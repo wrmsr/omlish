@@ -65,7 +65,7 @@ class AnthropicChatChoicesStreamService:
         messages, system = build_protocol_chat_messages(request.v)
 
         tools: list[pt.ToolSpec] = []
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             t: Tool
             for t in oc.pop(Tool, []):
                 tools.append(build_protocol_tool(t))

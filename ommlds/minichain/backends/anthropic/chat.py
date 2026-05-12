@@ -89,11 +89,11 @@ class AnthropicChatChoicesService:
         kwargs: dict = dict()
 
         tools: list[pt.ToolSpec] = []
-        with tv.TypedValues(
+        with tv.consume(
                 *self.DEFAULT_OPTIONS,
                 *request.options,
                 override=True,
-        ).consume() as oc:
+        ) as oc:
             kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
             t: Tool

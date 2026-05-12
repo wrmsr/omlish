@@ -19,7 +19,6 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import base64
 import dataclasses as dc
 import datetime
 import decimal
@@ -28,6 +27,8 @@ import typing as ta
 import uuid
 
 from .. import lang
+from ..formats.json.tags import JsonTag
+from ..formats.json.tags import JsonTagger as BaseJsonTagger
 from .dates import http_date
 from .dates import parse_date
 
@@ -69,93 +70,7 @@ def json_loads(s: str | bytes, **kwargs: ta.Any) -> ta.Any:
 ##
 
 
-class JsonTag:
-    key: str = ''
-
-    def __init__(self, tagger: JsonTagger) -> None:
-        super().__init__()
-
-        self.tagger = tagger
-
-    def check(self, value: ta.Any) -> bool:
-        raise NotImplementedError
-
-    def to_json(self, value: ta.Any) -> ta.Any:
-        raise NotImplementedError
-
-    def to_python(self, value: ta.Any) -> ta.Any:
-        raise NotImplementedError
-
-    def tag(self, value: ta.Any) -> dict[str, ta.Any]:
-        return {self.key: self.to_json(value)}
-
-
-class TagDict(JsonTag):
-    key = ' di'
-
-    def check(self, value: ta.Any) -> bool:
-        return (
-            isinstance(value, dict)
-            and len(value) == 1
-            and next(iter(value)) in self.tagger.tags
-        )
-
-    def to_json(self, value: ta.Any) -> ta.Any:
-        key = next(iter(value))
-        return {f'{key}__': self.tagger.tag(value[key])}
-
-    def to_python(self, value: ta.Any) -> ta.Any:
-        key = next(iter(value))
-        return {key[:-2]: value[key]}
-
-
-class PassDict(JsonTag):
-    def check(self, value: ta.Any) -> bool:
-        return isinstance(value, dict)
-
-    def to_json(self, value: ta.Any) -> ta.Any:
-        return {k: self.tagger.tag(v) for k, v in value.items()}
-
-    tag = to_json
-
-
-class TagTuple(JsonTag):
-    key = ' t'
-
-    def check(self, value: ta.Any) -> bool:
-        return isinstance(value, tuple)
-
-    def to_json(self, value: ta.Any) -> ta.Any:
-        return [self.tagger.tag(item) for item in value]
-
-    def to_python(self, value: ta.Any) -> ta.Any:
-        return tuple(value)
-
-
-class PassList(JsonTag):
-    def check(self, value: ta.Any) -> bool:
-        return isinstance(value, list)
-
-    def to_json(self, value: ta.Any) -> ta.Any:
-        return [self.tagger.tag(item) for item in value]
-
-    tag = to_json
-
-
-class TagBytes(JsonTag):
-    key = ' b'
-
-    def check(self, value: ta.Any) -> bool:
-        return isinstance(value, bytes)
-
-    def to_json(self, value: ta.Any) -> ta.Any:
-        return base64.b64encode(value).decode('ascii')
-
-    def to_python(self, value: ta.Any) -> ta.Any:
-        return base64.b64decode(value)
-
-
-class TagMarkup(JsonTag):
+class MarkupJsonTag(JsonTag):
     key = ' m'
 
     def check(self, value: ta.Any) -> bool:
@@ -168,7 +83,7 @@ class TagMarkup(JsonTag):
         return markupsafe.Markup(value)
 
 
-class TagUuid(JsonTag):
+class UuidJsonTag(JsonTag):
     key = ' u'
 
     def check(self, value: ta.Any) -> bool:
@@ -181,7 +96,7 @@ class TagUuid(JsonTag):
         return uuid.UUID(value)
 
 
-class TagDatetime(JsonTag):
+class DatetimeJsonTag(JsonTag):
     key = ' dt'
 
     def check(self, value: ta.Any) -> bool:
@@ -194,74 +109,13 @@ class TagDatetime(JsonTag):
         return parse_date(value)
 
 
-class JsonTagger:
-    default_tags: ta.ClassVar[ta.Sequence[type[JsonTag]]] = [
-        TagDict,
-        PassDict,
-        TagTuple,
-        PassList,
-        TagBytes,
-        *([TagMarkup] if lang.can_import('markupsafe') else []),
-        TagUuid,
-        TagDatetime,
+class JsonTagger(BaseJsonTagger):
+    DEFAULT_TAGS: ta.ClassVar[ta.Sequence[type[JsonTag]]] = [
+        *BaseJsonTagger.DEFAULT_TAGS,
+        *([MarkupJsonTag] if lang.can_import('markupsafe') else []),
+        UuidJsonTag,
+        DatetimeJsonTag,
     ]
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.tags: dict[str, JsonTag] = {}
-        self.order: list[JsonTag] = []
-
-        for cls in self.default_tags:
-            self.register(cls)
-
-    def register(
-            self,
-            tag_class: type[JsonTag],
-            force: bool = False,
-            index: int | None = None,
-    ) -> None:
-        tag = tag_class(self)
-        key = tag.key
-
-        if key:
-            if not force and key in self.tags:
-                raise KeyError(f"Tag '{key}' is already registered.")
-
-            self.tags[key] = tag
-
-        if index is None:
-            self.order.append(tag)
-        else:
-            self.order.insert(index, tag)
-
-    def tag(self, value: ta.Any) -> ta.Any:
-        for tag in self.order:
-            if tag.check(value):
-                return tag.tag(value)
-
-        return value
-
-    def untag(self, value: dict[str, ta.Any]) -> ta.Any:
-        if len(value) != 1:
-            return value
-
-        key = next(iter(value))
-
-        if key not in self.tags:
-            return value
-
-        return self.tags[key].to_python(value[key])
-
-    def untag_scan(self, value: ta.Any) -> ta.Any:
-        if isinstance(value, dict):
-            value = {k: self.untag_scan(v) for k, v in value.items()}
-            value = self.untag(value)
-
-        elif isinstance(value, list):
-            value = [self.untag_scan(item) for item in value]
-
-        return value
 
     def dumps(self, value: ta.Any) -> str:
         return json_dumps(self.tag(value), separators=(',', ':'))

@@ -34,7 +34,7 @@ def _tv_field_coercer(
             return seq
 
         else:
-            return tv.TypedValues(*[
+            return tv.collect(*[
                 check.isinstance(e, tvc)
                 for e in check.isinstance(seq, ta.Sequence)
             ])

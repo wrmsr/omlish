@@ -19,13 +19,10 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import uuid
-
-import markupsafe
 import pytest
 
-from ... import lang
-from ..json import JsonTagger
+from ..tags import JsonTag
+from ..tags import JsonTagger
 
 
 @pytest.mark.parametrize(
@@ -38,9 +35,9 @@ from ..json import JsonTagger
         (1, 2, 3),
         [(1, 2, 3)],
         b'\xff',
-        markupsafe.Markup('<html>'),
-        uuid.uuid4(),
-        lang.utcnow().replace(microsecond=0),
+        # markupsafe.Markup('<html>'),
+        # uuid.uuid4(),
+        # lang.utcnow().replace(microsecond=0),
     ],
 )
 def test_dump_load_unchanged(data):
@@ -50,3 +47,53 @@ def test_dump_load_unchanged(data):
     print(s.dumps(data))
     print()
     assert s.loads(s.dumps(data)) == data
+
+
+def test_duplicate_tag():
+    class TagDict2(JsonTag):
+        key = ' di'
+
+    s = JsonTagger()
+    with pytest.raises(KeyError):
+        s.register(TagDict2)
+    s.register(TagDict2, force=True, index=0)
+    assert isinstance(s.tags[' di'], TagDict2)
+    assert isinstance(s.order[0], TagDict2)
+
+
+def test_custom_tag():
+    class Foo:
+        def __init__(self, data):
+            self.data = data
+
+    class TagFoo(JsonTag):
+        key = ' f'
+
+        def check(self, value):
+            return isinstance(value, Foo)
+
+        def to_json(self, value):
+            return self.tagger.tag(value.data)
+
+        def to_python(self, value):
+            return Foo(value)
+
+    s = JsonTagger()
+    s.register(TagFoo)
+    assert s.loads(s.dumps(Foo('bar'))).data == 'bar'
+
+
+def test_tag_order():
+    class Tag1(JsonTag):
+        key = ' 1'
+
+    class Tag2(JsonTag):
+        key = ' 2'
+
+    s = JsonTagger()
+
+    s.register(Tag1, index=-1)
+    assert isinstance(s.order[-2], Tag1)
+
+    s.register(Tag2, index=None)
+    assert isinstance(s.order[-1], Tag2)

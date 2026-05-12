@@ -76,7 +76,7 @@ class LlamacppChatChoicesService:
 
         tools_by_name: dict[str, dict] = {}
 
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
             for t in oc.pop(Tool, []):

@@ -80,7 +80,7 @@ class CerebrasChatChoicesStreamService:
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         tools: list[pt.ChatCompletionRequest.Tool] = []
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             t: Tool
             for t in oc.pop(Tool, []):
                 tools.append(build_cer_request_tool(t))

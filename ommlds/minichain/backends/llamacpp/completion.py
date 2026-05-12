@@ -62,7 +62,7 @@ class LlamacppCompletionService:
             # stop=['\n'],
         )
 
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.consume(*request.options) as oc:
             kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
 
         lcu.install_logging_hook()
