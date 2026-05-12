@@ -135,6 +135,10 @@ dep-tree:
 dep-updates: venv
 	${PYTHON} -m omdev.py.tools.pipdepup
 
+.PHONY: dep-updates-latest
+dep-updates-latest: venv
+	${PYTHON} -m omdev.py.tools.pipdepup --show-latest
+
 .PHONY: dep-dry-run
 dep-dry-run: venv
 	${PYTHON} -m uv pip install --upgrade --dry-run -r requirements-ext.txt

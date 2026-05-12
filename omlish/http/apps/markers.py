@@ -27,7 +27,7 @@ def append_app_marker(obj: T, *markers: AppMarker) -> T:
 
 
 def get_app_markers(obj: ta.Any) -> ta.Sequence[AppMarker]:
-    return get_object_metadata(obj, type=AppMarker)
+    return get_object_metadata(obj, type=AppMarker, non_strict=True)
 
 
 ##

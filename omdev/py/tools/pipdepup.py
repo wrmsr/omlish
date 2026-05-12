@@ -511,7 +511,11 @@ def format_for_json(
 #
 
 
-def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], list[str]]:
+def format_for_columns(
+        pkgs: ta.Sequence[Package],
+        *,
+        show_latest: bool = False,
+) -> tuple[list[list[str]], list[str]]:
     """Convert the package data into something usable by output_package_listing_columns."""
 
     header = [
@@ -523,8 +527,10 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
         'Suggested',
         'Age',
 
-        'Latest',
-        'Age',
+        *([
+            'Latest',
+            'Age',
+        ] if show_latest else []),
     ]
 
     # def wheel_build_tag(dist: BaseDistribution) -> str | None:
@@ -545,9 +551,6 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
 
     rows = []
     for pkg in pkgs:
-        sc = check.not_none(pkg.suggested_candidate)
-        lc = check.not_none(pkg.latest_candidate)
-
         row = [
             pkg.dist.raw_name,
 
@@ -575,8 +578,12 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
             else:
                 row.append('')
 
+        sc = check.not_none(pkg.suggested_candidate)
         add_c(sc if sc.version != pkg.dist.version else None)
-        add_c(lc if sc is not lc else None)
+
+        if show_latest:
+            lc = check.not_none(pkg.latest_candidate)
+            add_c(lc if sc is not lc else None)
 
         # if has_build_tags:
         #     row.append(build_tags[i] or '')
@@ -632,6 +639,7 @@ def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--exclude', action='append', dest='excludes')
     parser.add_argument('--min-age-h', type=float, default=3 * 24)
+    parser.add_argument('--show-latest', action='store_true')
     parser.add_argument('-P', '--parallelism', type=int, default=3)
     parser.add_argument('--json', action='store_true')
     args = parser.parse_args()
@@ -696,7 +704,10 @@ def _main() -> None:
         #     lambda pkg: pkg.latest_candidate is pkg.suggested_candidate,
         # )
 
-        print('\n'.join(render_package_listing_columns(*format_for_columns(outdated_pkgs))))
+        print('\n'.join(render_package_listing_columns(*format_for_columns(
+            outdated_pkgs,
+            show_latest=args.show_latest or (args.min_age_h is None),
+        ))))
 
 
 if __name__ == '__main__':
