@@ -29,12 +29,13 @@ def test_fp_attr():
     with pytest.raises(ValueError):
         CborEncoder(None)  # type: ignore
 
-    with pytest.raises(ValueError):
-        class A:
-            pass
+    class A:
+        pass
 
-        foo = A()
-        foo.write = None  # type: ignore
+    foo = A()
+    foo.write = None  # type: ignore
+
+    with pytest.raises(ValueError):
         CborEncoder(foo)  # type: ignore
 
     with io.BytesIO() as stream:
@@ -79,11 +80,11 @@ def test_encoders_load_type():
         encoder._encoders[(1, 2, 3)] = lambda self, value: None  # type: ignore
         with pytest.raises(ValueError) as exc:
             encoder.encode(object())
-            assert str(exc.value).endswith(
-                "invalid deferred encoder type (1, 2, 3) (must be a 2-tuple "
-                "of module name and type name, e.g. ('collections', "
-                "'defaultdict'))",
-            )
+        assert str(exc.value).endswith(
+            "invalid deferred encoder type (1, 2, 3) (must be a 2-tuple "
+            "of module name and type name, e.g. ('collections', "
+            "'defaultdict'))",
+        )
 
 
 def test_encode_length():
@@ -342,11 +343,10 @@ def test_naive_datetime():
 
     with pytest.raises(CborEncodeError) as exc:
         cbor_dumps(datetime.datetime(2013, 3, 21))
-        exc.match(
-            'naive datetime datetime.datetime(2013, 3, 21) encountered '
-            'and no default timezone has been set',
-        )
-        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+    exc.match(
+        r'naive datetime datetime.datetime\(2013, 3, 21, 0, 0\) encountered '
+        r'and no default timezone has been set',
+    )
 
 
 @pytest.mark.parametrize(
@@ -465,8 +465,7 @@ def test_cyclic_array_nosharing():
     a.append(a)
     with pytest.raises(CborEncodeError) as exc:
         cbor_dumps(a)
-        exc.match('cyclic data structure detected but value sharing is disabled')
-        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+    exc.match('cyclic data structure detected but value sharing is disabled')
 
 
 def test_cyclic_map():
@@ -485,8 +484,7 @@ def test_cyclic_map_nosharing():
     a[0] = a
     with pytest.raises(CborEncodeError) as exc:
         cbor_dumps(a)
-        exc.match('cyclic data structure detected but value sharing is disabled')
-        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+    exc.match('cyclic data structure detected but value sharing is disabled')
 
 
 @pytest.mark.parametrize(
@@ -506,8 +504,7 @@ def test_not_cyclic_same_object(value_sharing, expected):
 def test_unsupported_type():
     with pytest.raises(CborEncodeError) as exc:
         cbor_dumps(lambda: None)
-        exc.match('cannot serialize type function')
-        assert isinstance(exc, TypeError)  # type: ignore[unreachable]
+    exc.match('cannot serialize type function')
 
 
 def test_default():
@@ -738,8 +735,8 @@ class TestEncoderReuse:
         # First encode: object is tracked in shared containers
         encoder.encode([shared_obj, shared_obj])
 
-        # Second encode on new fp: should produce valid standalone CBOR
-        # (not a sharedref pointing to stale first-encode data)
+        # Second encode on new fp: should produce valid standalone CBOR (not a sharedref pointing to stale first-encode
+        # data)
         encoder.fp = io.BytesIO()
         encoder.encode(shared_obj)
         second_output = encoder.fp.getvalue()
@@ -765,8 +762,8 @@ class TestEncoderReuse:
 
     def test_encoder_hook_does_not_reset_state(self):
         """
-        When a custom encoder hook calls encode(), the shared container
-        tracking should be preserved (not reset mid-operation).
+        When a custom encoder hook calls encode(), the shared container tracking should be preserved (not reset
+        mid-operation).
         """
 
         class Custom:
