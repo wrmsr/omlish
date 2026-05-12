@@ -92,7 +92,7 @@ class Notification(Message, lang.Abstract):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class WithMeta(lang.Abstract, lang.Sealed):
-    meta_: ta.Mapping[str, ta.Any] | None = dc.field(default=None) | msh.with_field_options(name='_meta')
+    meta_: ta.Mapping[str, ta.Any] | None = dc.field(default=None) | msh.dc_field_options(name='_meta')
 
 
 ##

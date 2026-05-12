@@ -21,7 +21,7 @@ T = ta.TypeVar('T')
 # underlying impl blindly forwards given kwargs to allow distinction between `None` and absent.
 
 
-def _with_field_options(
+def _dc_field_options(
         **kwargs: ta.Any,
 ) -> dc.field_modifier:
     @dc.field_modifier
@@ -33,7 +33,7 @@ def _with_field_options(
     return inner
 
 
-def with_field_options(
+def dc_field_options(
         name: str | None = None,
         alts: ta.Iterable[str] | None = None,
 
@@ -54,26 +54,33 @@ def with_field_options(
     raise NotImplementedError
 
 
-globals()['with_field_options'] = _with_field_options
+globals()['dc_field_options'] = _dc_field_options
 
 
 #
 
 
-def _update_fields_options(
-        fields: ta.Iterable[str] | None = None,
+def _update_field_options(
+        field: str | ta.Iterable[str] | None = None,
         **kwargs: ta.Any,
 ) -> ta.Callable[[type[T]], type[T]]:
-    def inner(a: str, f: dc.Field) -> dc.Field:
-        existing = f.metadata.get(FieldOptions, DEFAULT_FIELD_OPTIONS)
-        updated = dc.replace(existing, **kwargs)
-        return dc.set_field_metadata(f, {FieldOptions: updated})
+    fo = FieldOptions(**kwargs)
 
-    return dc.update_fields(inner, fields)
+    if field is None or isinstance(field, str):
+        fd: dict = {field: fo}
+    else:
+        fd = {f: fo for f in field}
+
+    oo = ObjectOptions(fields=fd)
+
+    def inner(cls):
+        return _ObjectOptionsMetadata(oo)(cls)
+
+    return inner
 
 
-def update_fields_options(
-        fields: ta.Iterable[str] | None = None,
+def update_field_options(
+        field: str | ta.Iterable[str] | None = None,
         *,
         name: str | None = None,
         alts: ta.Iterable[str] | None = None,
@@ -95,7 +102,7 @@ def update_fields_options(
     raise NotImplementedError
 
 
-globals()['update_fields_options'] = _update_fields_options
+globals()['update_field_options'] = _update_field_options
 
 
 #
@@ -105,8 +112,10 @@ def _update_object_options(
         cls: type | None = None,
         **kwargs: ta.Any,
 ):
+    oo = ObjectOptions(**kwargs)
+
     def inner(cls):
-        return _ObjectOptionsMetadata(ObjectOptions(**kwargs))(cls)
+        return _ObjectOptionsMetadata(oo)(cls)
 
     if cls is not None:
         inner(cls)

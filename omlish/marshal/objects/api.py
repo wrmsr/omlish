@@ -204,18 +204,24 @@ class ObjectOptions(Config, lang.Final):
 
                 elif fld.name == 'fields':
                     fd = kw.get('fields') or {}
+
                     if (nfo := fv.get(None)) is not None:
-                        for fn, fo in fd.items():
+                        for fn, fo in list(fd.items()):
                             fd[fn] = nfo.merge(fo)
+                    nfo = fd.get(None)
+
                     for fn, fo in fv.items():
                         if fn is None:
                             continue
                         try:
                             xfo = fd[fn]
                         except KeyError:
+                            if nfo is not None:
+                                fo = nfo.merge(fo)
                             fd[fn] = fo
                         else:
                             fd[fn] = xfo.merge(fo)
+
                     fv = fd
 
                 kw[fld.name] = fv

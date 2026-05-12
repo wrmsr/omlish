@@ -61,7 +61,7 @@ class CseSearchInfo(lang.Final):
 @msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
 class CseSearchResponse(lang.Final):
     kind: str | None = None
-    info: CseSearchInfo | None = dc.xfield(None) | msh.with_field_options(name='searchInformation')
+    info: CseSearchInfo | None = dc.xfield(None) | msh.dc_field_options(name='searchInformation')
     items: ta.Sequence[CseSearchResult] | None = None
 
     x: ta.Mapping[str, ta.Any] | None = dc.field(default=None, repr=False)

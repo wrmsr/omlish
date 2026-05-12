@@ -22,7 +22,7 @@ class ModelPath(tv.ScalarTypedValue[str], ModelSpecifier):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_options(['tag', 'path'], omit_if=lang.is_none)
+@msh.update_field_options(['tag', 'path'], omit_if=lang.is_none)
 class ModelRepo(ModelSpecifier):
     namespace: str
     repo: str

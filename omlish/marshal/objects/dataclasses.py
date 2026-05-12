@@ -47,7 +47,7 @@ def get_dataclass_options(
     if cfgs is not None and (cfg_opts := cfgs.get(ty).get(ObjectOptions)):
         opts = opts.merge(*cfg_opts)
 
-    if md_opts := md.get_object_metadata(ty, type=_ObjectOptionsMetadata):
+    if md_opts := md.get_object_metadata(ty, type=_ObjectOptionsMetadata, mro_merge=True):
         opts = opts.merge(*[o.opts for o in md_opts])
 
     return opts

@@ -23,7 +23,7 @@ def _set_class_marshal_options(cls):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-@msh.update_fields_options(
+@msh.update_field_options(
     ['data'],
     marshaler=msh.Base64MarshalerUnmarshaler(bytes),
     unmarshaler=msh.Base64MarshalerUnmarshaler(bytes),
@@ -121,7 +121,7 @@ class VideoMetadata(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_options(
+@msh.update_field_options(
     ['thought_signature'],
     marshaler=msh.OptionalMarshaler(msh.Base64MarshalerUnmarshaler(bytes)),
     unmarshaler=msh.OptionalUnmarshaler(msh.Base64MarshalerUnmarshaler(bytes)),
@@ -614,6 +614,8 @@ class GenerateContentResponse(lang.Final):
         cache_tokens_details: ta.Sequence[ModalityTokenCount] | None = None
         candidates_tokens_details: ta.Sequence[ModalityTokenCount] | None = None
         tool_use_prompt_tokens_details: ta.Sequence[ModalityTokenCount] | None = None
+
+        service_tier: str | None = None
 
     usage_metadata: UsageMetadata | None = None
 

@@ -143,8 +143,8 @@ class ObjectToolDtype(ToolDtype):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_options(['name', 'desc', 'type'], omit_if=lang.is_none)
-@msh.update_fields_options(['required'], omit_if=operator.not_)
+@msh.update_field_options(['name', 'desc', 'type'], omit_if=lang.is_none)
+@msh.update_field_options(['required'], omit_if=operator.not_)
 class ToolParam:
     name: str | None = None
 
@@ -161,8 +161,8 @@ class ToolParam:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_options(['name', 'desc', 'params', 'returns_desc', 'returns_type'], omit_if=lang.is_none)
-@msh.update_fields_options(['allow_additional_params'], omit_if=operator.not_)
+@msh.update_field_options(['name', 'desc', 'params', 'returns_desc', 'returns_type'], omit_if=lang.is_none)
+@msh.update_field_options(['allow_additional_params'], omit_if=operator.not_)
 class ToolSpec:
     name: str | None = None
 

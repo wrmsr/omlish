@@ -178,9 +178,9 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .objects.helpers import (  # noqa
-        update_fields_options,
+        update_field_options,
         update_object_options,
-        with_field_options,
+        dc_field_options,
     )
 
     from .objects.infos import (  # noqa

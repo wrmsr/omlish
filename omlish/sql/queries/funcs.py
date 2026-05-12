@@ -25,7 +25,7 @@ FuncArg: ta.TypeAlias = ta.Union[  # noqa
 
 class Func(Expr, lang.Final):
     name: Keyword | Name
-    args: ta.Sequence[FuncArg] = dc.xfield((), coerce=tuple, repr_fn=lang.truthy_repr) | msh.with_field_options(omit_if=operator.not_)  # noqa
+    args: ta.Sequence[FuncArg] = dc.xfield((), coerce=tuple, repr_fn=lang.truthy_repr) | msh.dc_field_options(omit_if=operator.not_)  # noqa
 
 
 CanFuncArg: ta.TypeAlias = FuncArg | CanExpr

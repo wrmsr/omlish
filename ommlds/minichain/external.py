@@ -11,14 +11,14 @@ from .events.types import Event
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_options(['service', 'request'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
+@msh.update_field_options(['service', 'request'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
 class ExternalServiceRequestEvent(Event, lang.Final):
     service: ta.Any | lang.OpaqueRepr
     request: ta.Any | lang.OpaqueRepr
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_options(['service', 'response'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
+@msh.update_field_options(['service', 'response'], marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
 class ExternalServiceResponseEvent(Event, lang.Final):
     service: ta.Any | lang.OpaqueRepr
     response: ta.Any | lang.OpaqueRepr

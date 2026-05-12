@@ -29,7 +29,7 @@ class AiStreamDeltaEvent(AiStreamEvent, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_options(['exception'], marshal_as=lang.OpaqueRepr | None, unmarshal_as=lang.OpaqueRepr | None)
+@msh.update_field_options(['exception'], marshal_as=lang.OpaqueRepr | None, unmarshal_as=lang.OpaqueRepr | None)
 class AiStreamEndEvent(AiStreamEvent, lang.Final):
     _: dc.KW_ONLY
 

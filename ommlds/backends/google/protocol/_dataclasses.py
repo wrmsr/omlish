@@ -2540,94 +2540,102 @@ def _process_dataclass__cc96a2e08535884451e8effac7a7ce67b34c4df8():
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('prompt_token_count', 'cached_content_token_count', 'candidates_token_count', 'tot"
         "al_token_count', 'thoughts_token_count', 'prompt_tokens_details', 'cache_tokens_details', 'candidates_tokens_d"
-        "etails', 'tool_use_prompt_tokens_details')), EqPlan(fields=('prompt_token_count', 'cached_content_token_count'"
-        ", 'candidates_token_count', 'total_token_count', 'thoughts_token_count', 'prompt_tokens_details', 'cache_token"
-        "s_details', 'candidates_tokens_details', 'tool_use_prompt_tokens_details')), FrozenPlan(fields=('prompt_token_"
-        "count', 'cached_content_token_count', 'candidates_token_count', 'total_token_count', 'thoughts_token_count', '"
-        "prompt_tokens_details', 'cache_tokens_details', 'candidates_tokens_details', 'tool_use_prompt_tokens_details')"
-        ", allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('prompt_token_count', 'cached_content_toke"
-        "n_count', 'candidates_token_count', 'total_token_count', 'thoughts_token_count', 'prompt_tokens_details', 'cac"
-        "he_tokens_details', 'candidates_tokens_details', 'tool_use_prompt_tokens_details'), cache=False), InitPlan(fie"
-        "lds=(InitPlan.Field(name='prompt_token_count', annotation=OpRef(name='init.fields.0.annotation'), default=OpRe"
-        "f(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
-        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cached_content_token_count', annotation="
-        "OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='candidates_token_count', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='in"
-        "it.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='total_token_count', annotation=OpRef(name='init.fi"
-        "elds.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='thought"
-        "s_token_count', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='prompt_tokens_details', annotation=OpRef(name='init.fields.5.annotation"
-        "'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=F"
-        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_tokens_details', a"
-        "nnotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='candidates_tokens_details', annotation=OpRef(name='init.fields.7.annotation'), default=O"
-        "pRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tool_use_prompt_tokens_details', anno"
-        "tation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), s"
-        "elf_param='self', std_params=(), kw_only_params=('prompt_token_count', 'cached_content_token_count', 'candidat"
-        "es_token_count', 'total_token_count', 'thoughts_token_count', 'prompt_tokens_details', 'cache_tokens_details',"
-        " 'candidates_tokens_details', 'tool_use_prompt_tokens_details'), frozen=True, slots=False, post_init_params=No"
-        "ne, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='prompt_token_count', kw_only=True, fn"
-        "=None), ReprPlan.Field(name='cached_content_token_count', kw_only=True, fn=None), ReprPlan.Field(name='candida"
-        "tes_token_count', kw_only=True, fn=None), ReprPlan.Field(name='total_token_count', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='thoughts_token_count', kw_only=True, fn=None), ReprPlan.Field(name='prompt_tokens_details', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='cache_tokens_details', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='candidates_tokens_details', kw_only=True, fn=None), ReprPlan.Field(name='tool_use_prompt_tokens_details', k"
-        "w_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "etails', 'tool_use_prompt_tokens_details', 'service_tier')), EqPlan(fields=('prompt_token_count', 'cached_cont"
+        "ent_token_count', 'candidates_token_count', 'total_token_count', 'thoughts_token_count', 'prompt_tokens_detail"
+        "s', 'cache_tokens_details', 'candidates_tokens_details', 'tool_use_prompt_tokens_details', 'service_tier')), F"
+        "rozenPlan(fields=('prompt_token_count', 'cached_content_token_count', 'candidates_token_count', 'total_token_c"
+        "ount', 'thoughts_token_count', 'prompt_tokens_details', 'cache_tokens_details', 'candidates_tokens_details', '"
+        "tool_use_prompt_tokens_details', 'service_tier'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fi"
+        "elds=('prompt_token_count', 'cached_content_token_count', 'candidates_token_count', 'total_token_count', 'thou"
+        "ghts_token_count', 'prompt_tokens_details', 'cache_tokens_details', 'candidates_tokens_details', 'tool_use_pro"
+        "mpt_tokens_details', 'service_tier'), cache=False), InitPlan(fields=(InitPlan.Field(name='prompt_token_count',"
+        " annotation=OpRef(name='init.fields.00.annotation'), default=OpRef(name='init.fields.00.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='cached_content_token_count', annotation=OpRef(name='init.fields.01.annotation'), def"
+        "ault=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='candidates_token_count', annot"
+        "ation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='total_token_count', annotation=OpRef(name='init.fields.03.annotation'), default=OpRef(name"
+        "='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='thoughts_token_count', annotation=OpRef(name="
+        "'init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='prompt_tokens_details', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields"
+        ".05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='cache_tokens_details', annotation=OpRef(name='init.fields."
+        "06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='candidates"
+        "_tokens_details', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='tool_use_prompt_tokens_details', annotation=OpRef(name='init.fields"
+        ".08.annotation'), default=OpRef(name='init.fields.08.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='service_t"
+        "ier', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None)), self_param='self', std_params=(), kw_only_params=('prompt_token_count', 'cached_content_token_count"
+        "', 'candidates_token_count', 'total_token_count', 'thoughts_token_count', 'prompt_tokens_details', 'cache_toke"
+        "ns_details', 'candidates_tokens_details', 'tool_use_prompt_tokens_details', 'service_tier'), frozen=True, slot"
+        "s=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='prompt_to"
+        "ken_count', kw_only=True, fn=None), ReprPlan.Field(name='cached_content_token_count', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='candidates_token_count', kw_only=True, fn=None), ReprPlan.Field(name='total_token_count',"
+        " kw_only=True, fn=None), ReprPlan.Field(name='thoughts_token_count', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='prompt_tokens_details', kw_only=True, fn=None), ReprPlan.Field(name='cache_tokens_details', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='candidates_tokens_details', kw_only=True, fn=None), ReprPlan.Field(name='tool_u"
+        "se_prompt_tokens_details', kw_only=True, fn=None), ReprPlan.Field(name='service_tier', kw_only=True, fn=None))"
+        ", id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='9f450f9f3c0ea6a63bda87184306d22eff4b59dc',
+    plan_repr_sha1='e1aee61d95d71f595ad27cf4527abb92d08e7e57',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__00__default',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__01__default',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__02__default',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__03__default',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
     ),
     cls_names=(
         ('ommlds.backends.google.protocol._marshal', 'GenerateContentResponse.UsageMetadata'),
     ),
 )
-def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
+def _process_dataclass__e1aee61d95d71f595ad27cf4527abb92d08e7e57():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__00__default,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__01__default,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__02__default,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__03__default,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2655,6 +2663,7 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
                 cache_tokens_details=self.cache_tokens_details,
                 candidates_tokens_details=self.candidates_tokens_details,
                 tool_use_prompt_tokens_details=self.tool_use_prompt_tokens_details,
+                service_tier=self.service_tier,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2676,7 +2685,8 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
                 self.prompt_tokens_details == other.prompt_tokens_details and
                 self.cache_tokens_details == other.cache_tokens_details and
                 self.candidates_tokens_details == other.candidates_tokens_details and
-                self.tool_use_prompt_tokens_details == other.tool_use_prompt_tokens_details
+                self.tool_use_prompt_tokens_details == other.tool_use_prompt_tokens_details and
+                self.service_tier == other.service_tier
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2694,6 +2704,7 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
             'cache_tokens_details',
             'candidates_tokens_details',
             'tool_use_prompt_tokens_details',
+            'service_tier',
         }
 
         def __setattr__(self, name, value):
@@ -2719,6 +2730,7 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
             'cache_tokens_details',
             'candidates_tokens_details',
             'tool_use_prompt_tokens_details',
+            'service_tier',
         }
 
         def __delattr__(self, name):
@@ -2745,6 +2757,7 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
                 self.cache_tokens_details,
                 self.candidates_tokens_details,
                 self.tool_use_prompt_tokens_details,
+                self.service_tier,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2753,15 +2766,16 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
         def __init__(
             self,
             *,
-            prompt_token_count: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            cached_content_token_count: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            candidates_token_count: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            total_token_count: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            thoughts_token_count: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            prompt_tokens_details: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            cache_tokens_details: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            candidates_tokens_details: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            tool_use_prompt_tokens_details: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
+            prompt_token_count: __dataclass__init__fields__00__annotation = __dataclass__init__fields__00__default,
+            cached_content_token_count: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
+            candidates_token_count: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
+            total_token_count: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
+            thoughts_token_count: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            prompt_tokens_details: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            cache_tokens_details: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            candidates_tokens_details: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            tool_use_prompt_tokens_details: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            service_tier: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'prompt_token_count', prompt_token_count)
             __dataclass__object_setattr(self, 'cached_content_token_count', cached_content_token_count)
@@ -2772,6 +2786,7 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
             __dataclass__object_setattr(self, 'cache_tokens_details', cache_tokens_details)
             __dataclass__object_setattr(self, 'candidates_tokens_details', candidates_tokens_details)
             __dataclass__object_setattr(self, 'tool_use_prompt_tokens_details', tool_use_prompt_tokens_details)
+            __dataclass__object_setattr(self, 'service_tier', service_tier)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2790,6 +2805,7 @@ def _process_dataclass__9f450f9f3c0ea6a63bda87184306d22eff4b59dc():
             parts.append(f"cache_tokens_details={self.cache_tokens_details!r}")
             parts.append(f"candidates_tokens_details={self.candidates_tokens_details!r}")
             parts.append(f"tool_use_prompt_tokens_details={self.tool_use_prompt_tokens_details!r}")
+            parts.append(f"service_tier={self.service_tier!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

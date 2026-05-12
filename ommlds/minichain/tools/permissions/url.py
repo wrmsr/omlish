@@ -46,7 +46,7 @@ class RegexUrlToolPermissionMatcher(ToolPermissionMatcher, lang.Final):
         default=None,
     ) | dc.with_extra_field_params(
         coerce=lambda v: tuple(sorted({check.non_empty_str(m).upper() for m in v})) if v is not None else None,
-    ) | msh.with_field_options(
+    ) | msh.dc_field_options(
         omit_if=lang.is_none,
         marshal_as=ta.Sequence[str] | None,
         unmarshal_as=ta.Sequence[str] | None,

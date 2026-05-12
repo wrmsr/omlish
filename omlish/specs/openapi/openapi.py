@@ -39,7 +39,7 @@ class OauthFlows:
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_options(['in_'], name='in')
+@msh.update_field_options(['in_'], name='in')
 class SecurityScheme:
     """https://swagger.io/specification/#security-scheme-object"""
 
@@ -88,7 +88,7 @@ class Schema:
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_options(['ref'], name='$ref')
+@msh.update_field_options(['ref'], name='$ref')
 class Reference:
     """https://swagger.io/specification/#reference-object"""
 
@@ -109,7 +109,7 @@ class Tag:
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_options(['common'], embed=True, name='')
+@msh.update_field_options(['common'], embed=True, name='')
 class Header:
     """https://swagger.io/specification/#header-object"""
 
@@ -222,8 +222,8 @@ class ParameterCommon:
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_options(['in_'], name='in')
-@msh.update_fields_options(['common'], embed=True, name='')
+@msh.update_field_options(['in_'], name='in')
+@msh.update_field_options(['common'], embed=True, name='')
 class Parameter:
     """https://swagger.io/specification/#parameter-object"""
 
@@ -272,7 +272,7 @@ class Operation:
 
 @dc.dataclass(frozen=True)
 @msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_options(['ref'], name='$ref')
+@msh.update_field_options(['ref'], name='$ref')
 class PathItem:
     """https://swagger.io/specification/#path-item-object"""
 

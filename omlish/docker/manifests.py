@@ -37,8 +37,8 @@ class MediaTypes(lang.Namespace):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
-@msh.update_fields_options(['os_version'], name='os.version')
-@msh.update_fields_options(['os_features'], name='os.features')
+@msh.update_field_options(['os_version'], name='os.version')
+@msh.update_field_options(['os_features'], name='os.features')
 class Platform(lang.Final):
     # The architecture field specifies the CPU architecture, for example amd64 or ppc64le.
     architecture: str

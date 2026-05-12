@@ -16,7 +16,7 @@ from ..api import FieldOptions
 from ..api import ObjectOptions
 from ..api import ObjectSpecials
 from ..api import _ObjectOptionsMetadata
-from ..helpers import update_fields_options
+from ..helpers import update_field_options
 from ..helpers import update_object_options
 from ..infos import FieldInfo
 from ..marshal import ObjectMarshaler
@@ -150,8 +150,8 @@ class E2:
 
 
 @dc.dataclass()
-@update_fields_options(['e1'], embed=True)
-@update_fields_options(['e2'], embed=True, name='')
+@update_field_options(['e1'], embed=True)
+@update_field_options(['e2'], embed=True, name='')
 class E3:
     e0: E0
     e1: E1
@@ -240,7 +240,7 @@ class CannotMarshal:
 
 
 @dc.dataclass(frozen=True)
-@update_fields_options(['cant'], no_marshal=True, no_unmarshal=True)
+@update_field_options(['cant'], no_marshal=True, no_unmarshal=True)
 class CanMarshal:
     i: int
     cant: CannotMarshal | None = None
@@ -261,6 +261,12 @@ def test_metadata_decorator():
     @_ObjectOptionsMetadata(ObjectOptions(fields=dict(
         foo=FieldOptions(name='bar'),
     )))
+    @_ObjectOptionsMetadata(ObjectOptions(fields=dict(
+        foo=FieldOptions(name='baz'),
+    )))
+    @_ObjectOptionsMetadata(ObjectOptions(fields={
+        None: FieldOptions(name='baz?'),
+    }))
     @dc.dataclass(frozen=True)
     class Thing:
         foo: str

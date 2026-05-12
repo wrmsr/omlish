@@ -100,7 +100,8 @@ _type = type
 def get_object_metadata(
         obj: ta.Any,
         *,
-        strict: bool = False,
+        non_strict: bool = False,
+        mro_merge: bool = False,
         type: ta.Type[ObjectMetadataT],  # noqa
 ) -> ta.Sequence[ObjectMetadataT]:
     ...
@@ -110,7 +111,8 @@ def get_object_metadata(
 def get_object_metadata(
         obj: ta.Any,
         *,
-        strict: bool = False,
+        non_strict: bool = False,
+        mro_merge: bool = False,
         type: ta.Type | tuple[ta.Type, ...] | None = None,  # noqa
 ) -> ta.Sequence[ta.Any]:
     ...
@@ -119,27 +121,35 @@ def get_object_metadata(
 def get_object_metadata(
         obj,
         *,
-        strict=False,
+        non_strict=False,
+        mro_merge=False,
         type=None,  # noqa
 ):
     try:
         tgt = _unwrap_object_metadata_target(obj)
     except ObjectMetadataTargetTypeError:
-        if not strict:
+        if non_strict:
             return ()
         raise
 
-    try:
-        dct = tgt.__dict__
-    except AttributeError:
-        return ()
+    def one(cur):
+        try:
+            dct = cur.__dict__
+        except AttributeError:
+            return ()
 
-    ret = dct.get(_OBJECT_METADATA_ATTR, ())
+        ret = dct.get(_OBJECT_METADATA_ATTR, ())
 
-    if type is not None:
-        ret = [o for o in ret if isinstance(o, type)]
+        if type is not None:
+            ret = [o for o in ret if isinstance(o, type)]
 
-    return ret
+        return ret
+
+    if mro_merge and isinstance(tgt, _type):
+        return [x for mro_tgt in tgt.__mro__[::-1] for x in one(mro_tgt)]
+
+    else:
+        return one(tgt)
 
 
 ##

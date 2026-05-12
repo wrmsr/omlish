@@ -48,7 +48,7 @@ class GlobFsToolPermissionMatcher(ToolPermissionMatcher, lang.Final):
         default=None,
     ) | dc.with_extra_field_params(
         coerce=lambda v: tuple(sorted({check.in_(m.lower(), FS_TOOL_PERMISSION_MODES) for m in v})) if v is not None else None,  # noqa
-    ) | msh.with_field_options(
+    ) | msh.dc_field_options(
         omit_if=lang.is_none,
         marshal_as=ta.Sequence[FsToolPermissionMode] | None,
         unmarshal_as=ta.Sequence[FsToolPermissionMode] | None,
