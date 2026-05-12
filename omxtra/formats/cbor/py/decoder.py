@@ -1,4 +1,5 @@
-# ruff: noqa: UP006 UP007 UP037 UP045
+# ruff: noqa: UP006 UP007 UP037 UP043 UP045
+# @omlish-lite
 # The MIT License (MIT)
 #
 # Copyright (c) 2016 Alex Grönholm
@@ -85,8 +86,8 @@ class CborDecoder:
     def __init__(
         self,
         fp: ta.IO[bytes],
-        tag_hook: ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]] = None,
-        object_hook: ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]] = None,
+        tag_hook: ta.Optional[ta.Callable[['CborDecoder', CborTag], ta.Any]] = None,
+        object_hook: ta.Optional[ta.Callable[['CborDecoder', ta.Dict[ta.Any, ta.Any]], ta.Any]] = None,
         str_errors: str = 'strict',
         *,
         max_depth: int = 400,
@@ -146,22 +147,22 @@ class CborDecoder:
             self._fp_read = value.read
 
     @property
-    def tag_hook(self) -> ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]]:
+    def tag_hook(self) -> ta.Optional[ta.Callable[['CborDecoder', CborTag], ta.Any]]:
         return self._tag_hook
 
     @tag_hook.setter
-    def tag_hook(self, value: ta.Optional[ta.Callable[[CborDecoder, CborTag], ta.Any]]) -> None:
+    def tag_hook(self, value: ta.Optional[ta.Callable[['CborDecoder', CborTag], ta.Any]]) -> None:
         if value is None or callable(value):
             self._tag_hook = value
         else:
             raise ValueError('tag_hook must be None or a callable')
 
     @property
-    def object_hook(self) -> ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]]:
+    def object_hook(self) -> ta.Optional[ta.Callable[['CborDecoder', ta.Dict[ta.Any, ta.Any]], ta.Any]]:
         return self._object_hook
 
     @object_hook.setter
-    def object_hook(self, value: ta.Optional[ta.Callable[[CborDecoder, ta.Dict[ta.Any, ta.Any]], ta.Any]]) -> None:
+    def object_hook(self, value: ta.Optional[ta.Callable[['CborDecoder', ta.Dict[ta.Any, ta.Any]], ta.Any]]) -> None:
         if value is None or callable(value):
             self._object_hook = value
         else:
@@ -672,7 +673,7 @@ class CborDecoder:
 
         return self.set_shareable(value)
 
-    def decode_regexp(self) -> re.Pattern[str]:
+    def decode_regexp(self) -> re.Pattern:
         # Semantic tag 35
         try:
             value = re.compile(self.decode())

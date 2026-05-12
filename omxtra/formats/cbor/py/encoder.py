@@ -1,4 +1,5 @@
-# ruff: noqa: UP006 UP007 UP037 UP045
+# ruff: noqa: UP006 UP007 UP037 UP043 UP045
+# @omlish-lite
 # The MIT License (MIT)
 #
 # Copyright (c) 2016 Alex Grönholm
@@ -45,8 +46,8 @@ from .types import CborUndefinedType
 
 
 def cbor_shareable_encoder(
-    func: ta.Callable[[CborEncoder, ta.Any], None],
-) -> ta.Callable[[CborEncoder, ta.Any], None]:
+    func: ta.Callable[['CborEncoder', ta.Any], None],
+) -> ta.Callable[['CborEncoder', ta.Any], None]:
     """
     Wrap the given encoder function to gracefully handle cyclic data structures.
 
@@ -59,15 +60,15 @@ def cbor_shareable_encoder(
     """
 
     @functools.wraps(func)
-    def wrapper(encoder: CborEncoder, value: ta.Any) -> None:
+    def wrapper(encoder: 'CborEncoder', value: ta.Any) -> None:
         encoder.encode_shared(func, value)
 
     return wrapper
 
 
 def cbor_container_encoder(
-    func: ta.Callable[[CborEncoder, ta.Any], ta.Any],
-) -> ta.Callable[[CborEncoder, ta.Any], ta.Any]:
+    func: ta.Callable[['CborEncoder', ta.Any], ta.Any],
+) -> ta.Callable[['CborEncoder', ta.Any], ta.Any]:
     """
     The given encoder is a container with child values. Handle cyclic or duplicate references to the value and strings
     within the value efficiently.
@@ -89,7 +90,7 @@ def cbor_container_encoder(
     """
 
     @functools.wraps(func)
-    def wrapper(encoder: CborEncoder, value: ta.Any) -> None:
+    def wrapper(encoder: 'CborEncoder', value: ta.Any) -> None:
         encoder.encode_container(func, value)
 
     return wrapper
@@ -137,7 +138,7 @@ class CborEncoder:
         datetime_as_timestamp: bool = False,
         timezone: ta.Optional[datetime.tzinfo] = None,
         value_sharing: bool = False,
-        default: ta.Optional[ta.Callable[[CborEncoder, ta.Any], ta.Any]] = None,
+        default: ta.Optional[ta.Callable[['CborEncoder', ta.Any], ta.Any]] = None,
         canonical: bool = False,
         date_as_datetime: bool = False,
         string_referencing: bool = False,
@@ -190,7 +191,7 @@ class CborEncoder:
         if canonical:
             self._encoders.update(CBOR_CANONICAL_ENCODERS)
 
-    def _find_encoder(self, obj_type: type) -> ta.Optional[ta.Callable[[CborEncoder, ta.Any], None]]:
+    def _find_encoder(self, obj_type: type) -> ta.Optional[ta.Callable[['CborEncoder', ta.Any], None]]:
         for type_or_tuple, enc in list(self._encoders.items()):
             if type(type_or_tuple) is tuple:
                 try:
@@ -245,11 +246,11 @@ class CborEncoder:
             raise ValueError('timezone must be None or a tzinfo instance')
 
     @property
-    def default(self) -> ta.Optional[ta.Callable[[CborEncoder, ta.Any], ta.Any]]:
+    def default(self) -> ta.Optional[ta.Callable[['CborEncoder', ta.Any], ta.Any]]:
         return self._default
 
     @default.setter
-    def default(self, value: ta.Optional[ta.Callable[[CborEncoder, ta.Any], ta.Any]]) -> None:
+    def default(self, value: ta.Optional[ta.Callable[['CborEncoder', ta.Any], ta.Any]]) -> None:
         if value is None or callable(value):
             self._default = value
         else:
@@ -260,7 +261,7 @@ class CborEncoder:
         return self._canonical
 
     @contextlib.contextmanager
-    def disable_value_sharing(self) -> ta.Generator[None]:
+    def disable_value_sharing(self) -> ta.Generator[None, None, None]:
         """Disable value sharing in the encoder for the duration of the context block."""
 
         old_value_sharing = self.value_sharing
@@ -269,7 +270,7 @@ class CborEncoder:
         self.value_sharing = old_value_sharing
 
     @contextlib.contextmanager
-    def disable_string_referencing(self) -> ta.Generator[None]:
+    def disable_string_referencing(self) -> ta.Generator[None, None, None]:
         """Disable tracking of string references for the duration of the context block."""
 
         old_string_referencing = self.string_referencing
@@ -278,7 +279,7 @@ class CborEncoder:
         self.string_referencing = old_string_referencing
 
     @contextlib.contextmanager
-    def disable_string_namespacing(self) -> ta.Generator[None]:
+    def disable_string_namespacing(self) -> ta.Generator[None, None, None]:
         """Disable generation of new string namespaces for the duration of the context block."""
 
         old_string_namespacing = self.string_namespacing
@@ -297,7 +298,7 @@ class CborEncoder:
         self._fp_write(data)
 
     @contextlib.contextmanager
-    def _encoding_context(self) -> ta.Generator[None]:
+    def _encoding_context(self) -> ta.Generator[None, None, None]:
         """
         Context manager for tracking encode depth and clearing shared state.
 
@@ -355,7 +356,7 @@ class CborEncoder:
             self.fp = old_fp
             return fp.getvalue()
 
-    def encode_container(self, encoder: ta.Callable[[CborEncoder, ta.Any], ta.Any], value: ta.Any) -> None:
+    def encode_container(self, encoder: ta.Callable[['CborEncoder', ta.Any], ta.Any], value: ta.Any) -> None:
         if self.string_namespacing:
             # Create a new string reference domain
             self.encode_length(6, 256)
@@ -363,7 +364,7 @@ class CborEncoder:
         with self.disable_string_namespacing():
             self.encode_shared(encoder, value)
 
-    def encode_shared(self, encoder: ta.Callable[[CborEncoder, ta.Any], ta.Any], value: ta.Any) -> None:
+    def encode_shared(self, encoder: ta.Callable[['CborEncoder', ta.Any], ta.Any], value: ta.Any) -> None:
         value_id = id(value)
         try:
             index = self._shared_containers[id(value)][1]
@@ -597,7 +598,7 @@ class CborEncoder:
         with self.disable_value_sharing():
             self.encode_semantic(CborTag(30, [value.numerator, value.denominator]))
 
-    def encode_regexp(self, value: re.Pattern[str]) -> None:
+    def encode_regexp(self, value: re.Pattern) -> None:
         # Semantic tag 35
         self.encode_semantic(CborTag(35, str(value.pattern)))
 
@@ -685,7 +686,7 @@ class CborEncoder:
         self._fp_write(b'\xf7')
 
 
-CBOR_DEFAULT_ENCODERS: ta.Dict[ta.Union[type | ta.Tuple[str, str]], ta.Callable[[CborEncoder, ta.Any], None]] = {
+CBOR_DEFAULT_ENCODERS: ta.Dict[ta.Union[type, ta.Tuple[str, str]], ta.Callable[[CborEncoder, ta.Any], None]] = {
     bytes: CborEncoder.encode_bytestring,
     bytearray: CborEncoder.encode_bytearray,
     str: CborEncoder.encode_string,
@@ -719,7 +720,7 @@ CBOR_DEFAULT_ENCODERS: ta.Dict[ta.Union[type | ta.Tuple[str, str]], ta.Callable[
 }
 
 
-CBOR_CANONICAL_ENCODERS: ta.Dict[ta.Union[type | ta.Tuple[str, str]], ta.Callable[[CborEncoder, ta.Any], None]] = {
+CBOR_CANONICAL_ENCODERS: ta.Dict[ta.Union[type, ta.Tuple[str, str]], ta.Callable[[CborEncoder, ta.Any], None]] = {
     float: CborEncoder.encode_minimal_float,
     dict: CborEncoder.encode_canonical_map,
     collections.defaultdict: CborEncoder.encode_canonical_map,
