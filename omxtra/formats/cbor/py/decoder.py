@@ -548,7 +548,7 @@ class CborDecoder:
                 minutes = int(offset_m) * sign
                 tz = datetime.timezone(datetime.timedelta(hours=hours, minutes=minutes))
             else:
-                tz = datetime.timezone.utc
+                tz = datetime.timezone.utc  # noqa
 
             return self.set_shareable(
                 datetime.datetime(
@@ -570,7 +570,7 @@ class CborDecoder:
         value = self.decode()
 
         try:
-            tmp = datetime.datetime.fromtimestamp(value, datetime.timezone.utc)
+            tmp = datetime.datetime.fromtimestamp(value, datetime.timezone.utc)  # noqa
         except (OverflowError, OSError, ValueError) as exc:
             raise CborDecodeValueError('error decoding datetime from epoch') from exc
 

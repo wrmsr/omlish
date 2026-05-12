@@ -1,3 +1,4 @@
+# ruff: noqa: UP017
 import binascii
 import datetime
 import decimal
