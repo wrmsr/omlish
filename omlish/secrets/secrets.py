@@ -131,6 +131,15 @@ class Secrets(lang.Abstract):
 ##
 
 
+class IterableSecrets(Secrets, lang.Abstract):
+    @abc.abstractmethod
+    def __iter__(self) -> ta.Iterator[str]:
+        raise NotImplementedError
+
+
+##
+
+
 class EmptySecrets(Secrets):
     def _get_raw(self, key: str) -> str:
         raise KeyError(key)
@@ -142,7 +151,7 @@ EMPTY_SECRETS = EmptySecrets()
 ##
 
 
-class MappingSecrets(Secrets):
+class MappingSecrets(IterableSecrets):
     def __init__(
             self,
             dct: ta.Mapping[str, str | Secret],
@@ -173,6 +182,9 @@ class MappingSecrets(Secrets):
                 return e
             else:
                 raise TypeError(e)
+
+    def __iter__(self) -> ta.Iterator[str]:
+        return iter(self._dct)
 
 
 ##

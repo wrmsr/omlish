@@ -44,6 +44,7 @@ exec gosu omlish bash  # "$@"
 """
 import os.path
 import platform
+import re
 import shutil
 import sys
 import tempfile
@@ -53,8 +54,10 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.os.paths import is_path_in_dir
+from omlish.secrets import all as sec
 
 from ..home.paths import get_cache_dir
+from ..home.secrets import load_secrets
 from .build import build_image
 from .config import Config
 
@@ -84,6 +87,9 @@ class RunArgs:
 
     no_default_labels: bool = False
 
+    # TODO: k=v? currently hardcodes env key as `sk.upper()`
+    inject_secrets_pats: ta.Sequence[str | re.Pattern[str]] | None = None
+
     shift_uid: tuple[int, int] | None = None
 
     unknown_args: ta.Sequence[str] | None = None
@@ -93,11 +99,21 @@ class RunArgs:
 LABEL_PREFIX = 'omlish.dockerdev'
 
 
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
+class ProcessedRunArgs:
+    args: list[str]
+
+    _: dc.KW_ONLY
+
+    env: dict[str, str | sec.Secret] | None = None
+
+
 def process_run_args(
         cfg: Config,
         args: RunArgs,
         sha: str,
-) -> list[str]:
+) -> ProcessedRunArgs:
     run_args: list[str] = []
 
     if args.unknown_args:
@@ -209,6 +225,20 @@ def process_run_args(
     if not args.no_default_labels:
         run_args.append(f'--label={LABEL_PREFIX}')
 
+    env: dict[str, str | sec.Secret] = {}
+
+    if isp_lst := args.inject_secrets_pats:
+        secrets = check.isinstance(load_secrets(), sec.IterableSecrets)
+
+        isp_pats: list[re.Pattern[str]] = [x if isinstance(x, re.Pattern) else re.compile(x) for x in isp_lst]
+
+        for sk in secrets:
+            if any(xp.fullmatch(sk) for xp in isp_pats):
+                ek = sk.upper()
+                env[ek] = secrets.get(sk)
+                run_args.append(f'--env={ek}')
+                break
+
     run_args.append(sha)
 
     if args.extra_args:
@@ -216,7 +246,10 @@ def process_run_args(
     else:
         run_args.append('bash')
 
-    return run_args
+    return ProcessedRunArgs(
+        run_args,
+        env=env or None,
+    )
 
 
 def run_image(
@@ -233,7 +266,7 @@ def run_image(
 
     #
 
-    run_args = process_run_args(
+    p_args = process_run_args(
         cfg,
         args,
         sha,
@@ -241,9 +274,16 @@ def run_image(
 
     #
 
-    os.execl(
+    os.execle(
         docker := check.not_none(shutil.which('docker')),
         docker,
         'run',
-        *run_args,
+        *p_args.args,
+        {
+            **os.environ,
+            **({
+                ek: ev.reveal() if isinstance(ev, sec.Secret) else ev
+                for ek, ev in p_args.env.items()
+            } if p_args.env else {}),
+        },
     )

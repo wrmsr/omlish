@@ -499,6 +499,14 @@ npm i -g @openai/codex
 EOF
 
 
+RUN cat > /omlish/scripts/install-pi <<'EOF' && chmod 664 /omlish/scripts/install-pi
+#!/bin/bash
+set -e
+
+curl -fsSL https://pi.dev/install.sh | sh
+EOF
+
+
 RUN cat > /omlish/scripts/run-dbus <<'EOF' && chmod 664 /omlish/scripts/run-dbus
 #!/bin/bash
 set -ex

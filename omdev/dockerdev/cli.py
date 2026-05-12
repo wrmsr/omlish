@@ -100,6 +100,8 @@ class Cli(ap.Cli):
 
         ap.arg('-X', '--x11', action='store_true'),
 
+        ap.arg('--inject-secrets', action='append'),
+
         ap.arg('--shift-uid'),
         ap.arg('-U', '--auto-shift-uid', action='store_true'),
 
@@ -136,6 +138,8 @@ class Cli(ap.Cli):
                 autoexecs=self.args.autoexec,
 
                 x11=bool(self.args.x11),
+
+                inject_secrets_pats=self.args.inject_secrets,
 
                 shift_uid=shift_uid,
 
