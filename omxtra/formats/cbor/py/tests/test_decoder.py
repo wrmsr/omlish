@@ -1,0 +1,1292 @@
+import binascii
+import datetime
+import decimal
+import email.message
+import fractions
+import io
+import ipaddress
+import math
+import pathlib
+import platform
+import re
+import struct
+import sys
+import typing as ta
+import uuid
+
+import pytest
+
+from ..decoder import CborDecoder
+from ..decoder import cbor_load
+from ..decoder import cbor_loads
+from ..encoder import cbor_dumps
+from ..types import CBOR_UNDEFINED
+from ..types import CborDecodeEOF
+from ..types import CborDecodeError
+from ..types import CborDecodeValueError
+from ..types import CborFrozenDict
+from ..types import CborSimpleValue
+from ..types import CborTag
+from .utils import will_overflow
+
+
+def test_fp_attr():
+    with pytest.raises(ValueError):
+        CborDecoder(None)  # type: ignore
+    with pytest.raises(ValueError):
+
+        class A:
+            pass
+
+        foo: ta.Any = A()
+        foo.read = None
+        CborDecoder(foo)
+    with io.BytesIO(b'foobar') as stream:
+        decoder = CborDecoder(stream)
+        assert decoder.fp is stream
+        with pytest.raises(AttributeError):
+            del decoder.fp
+
+
+def test_tag_hook_attr():
+    with io.BytesIO(b'foobar') as stream:
+        with pytest.raises(ValueError):
+            CborDecoder(stream, tag_hook='foo')  # type: ignore
+        decoder = CborDecoder(stream)
+
+        def tag_hook(decoder, tag):
+            return None
+
+        decoder.tag_hook = tag_hook
+        assert decoder.tag_hook is tag_hook
+        with pytest.raises(AttributeError):
+            del decoder.tag_hook
+
+
+def test_object_hook_attr():
+    with io.BytesIO(b'foobar') as stream:
+        with pytest.raises(ValueError):
+            CborDecoder(stream, object_hook='foo')  # type: ignore
+        decoder = CborDecoder(stream)
+
+        def object_hook(decoder, data):
+            return None
+
+        decoder.object_hook = object_hook
+        assert decoder.object_hook is object_hook
+        with pytest.raises(AttributeError):
+            del decoder.object_hook
+
+
+def test_str_errors_attr():
+    with io.BytesIO(b'foobar') as stream:
+        with pytest.raises(ValueError):
+            CborDecoder(stream, str_errors=False)  # type: ignore
+        with pytest.raises(ValueError):
+            CborDecoder(stream, str_errors='foo')
+        decoder = CborDecoder(stream)
+        decoder.str_errors = 'replace'
+        assert decoder.str_errors == 'replace'
+        with pytest.raises(AttributeError):
+            del decoder.str_errors
+
+
+def test_read():
+    with io.BytesIO(b'foobar') as stream:
+        decoder = CborDecoder(stream)
+        assert decoder.read(3) == b'foo'
+        assert decoder.read(3) == b'bar'
+        with pytest.raises(TypeError):
+            decoder.read('foo')  # type: ignore
+        with pytest.raises(CborDecodeError):
+            decoder.read(10)
+
+
+def test_decode_from_bytes():
+    with io.BytesIO(b'foobar') as stream:
+        decoder = CborDecoder(stream)
+        assert decoder.decode_from_bytes(b'\x01') == 1
+        with pytest.raises(TypeError):
+            decoder.decode_from_bytes('foo')  # type: ignore
+
+
+def test_immutable_attr():
+    with io.BytesIO(binascii.unhexlify('d917706548656c6c6f')) as stream:
+        decoder = CborDecoder(stream)
+        assert not decoder.immutable
+
+        def tag_hook(decoder, tag):
+            assert decoder.immutable
+            return tag.value
+
+        decoder.decode()
+
+
+def test_load():
+    with pytest.raises(TypeError):
+        cbor_load()  # type: ignore
+    with pytest.raises(TypeError):
+        cbor_loads()  # type: ignore
+    assert cbor_loads(s=b'\x01') == 1
+    with io.BytesIO(b'\x01') as stream:
+        assert cbor_load(fp=stream) == 1
+
+
+def test_stream_position_after_decode():
+    """Test that stream position is exactly at end of decoded CBOR value."""
+
+    # CBOR: integer 1 (1 byte: 0x01) followed by extra data
+    cbor_data = b'\x01'
+    extra_data = b'extra'
+    with io.BytesIO(cbor_data + extra_data) as stream:
+        decoder = CborDecoder(stream)
+        result = decoder.decode()
+        assert result == 1
+        # Stream position should be exactly at end of CBOR data
+        assert stream.tell() == len(cbor_data)
+        # Should be able to read the extra data
+        assert stream.read() == extra_data
+
+
+class TestMaximumDepth:
+    def test_default(self) -> None:
+        with pytest.raises(
+            CborDecodeError,
+            match='maximum container nesting depth \\(400\\) exceeded',
+        ):
+            cbor_loads(b'\x81' * 401 + b'\x80')
+
+    def test_explicit(self) -> None:
+        with pytest.raises(
+            CborDecodeError, match=r'maximum container nesting depth \(9\) exceeded',
+        ):
+            cbor_loads(b'\x81' * 10 + b'\x80', max_depth=9)
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('00', 0),
+        ('01', 1),
+        ('0a', 10),
+        ('17', 23),
+        ('1818', 24),
+        ('1819', 25),
+        ('1864', 100),
+        ('1903e8', 1000),
+        ('1a000f4240', 1000000),
+        ('1b000000e8d4a51000', 1000000000000),
+        ('1bffffffffffffffff', 18446744073709551615),
+        ('c249010000000000000000', 18446744073709551616),
+        ('3bffffffffffffffff', -18446744073709551616),
+        ('c349010000000000000000', -18446744073709551617),
+        ('20', -1),
+        ('29', -10),
+        ('3863', -100),
+        ('3903e7', -1000),
+    ],
+)
+def test_integer(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+def test_invalid_integer_subtype():
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(b'\x1c')
+        assert str(exc.value).endswith('unknown unsigned integer subtype 0x1c')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('f90000', 0.0),
+        ('f98000', -0.0),
+        ('f93c00', 1.0),
+        ('fb3ff199999999999a', 1.1),
+        ('f93e00', 1.5),
+        ('f97bff', 65504.0),
+        ('fa47c35000', 100000.0),
+        ('fa7f7fffff', 3.4028234663852886e38),
+        ('fb7e37e43c8800759c', 1.0e300),
+        ('f90001', 5.960464477539063e-8),
+        ('f90400', 0.00006103515625),
+        ('f9c400', -4.0),
+        ('fbc010666666666666', -4.1),
+        ('f97c00', float('inf')),
+        ('f9fc00', float('-inf')),
+        ('fa7f800000', float('inf')),
+        ('faff800000', float('-inf')),
+        ('fb7ff0000000000000', float('inf')),
+        ('fbfff0000000000000', float('-inf')),
+    ],
+)
+def test_float(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize('payload', ['f97e00', 'fa7fc00000', 'fb7ff8000000000000'])
+def test_float_nan(payload):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert math.isnan(decoded)
+
+
+@pytest.fixture(
+    params=[('f4', False), ('f5', True), ('f6', None), ('f7', 'undefined')],
+    ids=['false', 'true', 'null', 'undefined'],
+)
+def special_values(request):
+    payload, expected = request.param
+    if expected == 'undefined':
+        expected = CBOR_UNDEFINED
+    return payload, expected
+
+
+def test_special(special_values):
+    payload, expected = special_values
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded is expected
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        pytest.param('40', b'', id='blank'),
+        pytest.param('4401020304', b'\x01\x02\x03\x04', id='short'),
+        pytest.param('5a00011170' + '12' * 70000, b'\x12' * 70000, id='long'),
+    ],
+)
+def test_binary(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('60', ''),
+        ('6161', 'a'),
+        ('6449455446', 'IETF'),
+        ('62225c', '"\\'),
+        ('62c3bc', '\u00fc'),
+        ('63e6b0b4', '\u6c34'),
+        pytest.param('7a00010001' + '61' * 65535 + 'c3b6', 'a' * 65535 + 'ö', id='split_unicode'),
+    ],
+)
+def test_string(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize(
+    'payload',
+    [
+        pytest.param('6198', id='short'),
+        pytest.param('7a00010000' + '61' * 65535 + 'c3', id='long'),
+        pytest.param('7f6198ff', id='indefinite'),
+    ],
+)
+def test_string_invalid_utf8(payload: str) -> None:
+    with pytest.raises(CborDecodeValueError, match='error decoding unicode string') as exc:
+        cbor_loads(binascii.unhexlify(payload))
+
+    assert isinstance(exc.value.__cause__, UnicodeDecodeError)
+
+
+def test_string_oversized() -> None:
+    with pytest.raises(CborDecodeEOF, match='premature end of stream'):
+        (cbor_loads(binascii.unhexlify('aeaeaeaeaeaeaeaeae0108c29843d90100d8249f0000aeaeffc26ca799')),)
+
+
+def test_string_issue_264_multiple_chunks_utf8_boundary() -> None:
+    """Test for Issue #264: UTF-8 characters split across multiple 65536-byte chunk boundaries."""
+
+    import struct
+
+    # Construct: 65535 'a' + '€' (3 bytes) + 65533 'b' + '€' (3 bytes) + 100 'd'
+    # Total: 131174 bytes, which spans 3 chunks (65536 + 65536 + 102)
+    total_bytes = 65535 + 3 + 65533 + 3 + 100
+
+    payload = b'\x7a' + struct.pack('>I', total_bytes)  # major type 3, 4-byte length
+    payload += b'a' * 65535
+    payload += '€'.encode()  # U+20AC: E2 82 AC
+    payload += b'b' * 65533
+    payload += '€'.encode()
+    payload += b'd' * 100
+
+    expected = 'a' * 65535 + '€' + 'b' * 65533 + '€' + 'd' * 100
+
+    result = cbor_loads(payload)
+    assert result == expected
+    assert len(result) == 131170  # 65535 + 1 + 65533 + 1 + 100 characters
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('80', []),
+        ('83010203', [1, 2, 3]),
+        ('8301820203820405', [1, [2, 3], [4, 5]]),
+        (
+            '98190102030405060708090a0b0c0d0e0f101112131415161718181819',
+            list(range(1, 26)),
+        ),
+    ],
+)
+def test_array(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize('payload, expected', [('a0', {}), ('a201020304', {1: 2, 3: 4})])
+def test_map(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('a26161016162820203', {'a': 1, 'b': [2, 3]}),
+        ('826161a161626163', ['a', {'b': 'c'}]),
+        (
+            'a56161614161626142616361436164614461656145',
+            {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E'},
+        ),
+    ],
+)
+def test_mixed_array_map(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('5f42010243030405ff', b'\x01\x02\x03\x04\x05'),
+        ('7f657374726561646d696e67ff', 'streaming'),
+        ('9fff', []),
+        ('9f018202039f0405ffff', [1, [2, 3], [4, 5]]),
+        ('9f01820203820405ff', [1, [2, 3], [4, 5]]),
+        ('83018202039f0405ff', [1, [2, 3], [4, 5]]),
+        ('83019f0203ff820405', [1, [2, 3], [4, 5]]),
+        (
+            '9f0102030405060708090a0b0c0d0e0f101112131415161718181819ff',
+            list(range(1, 26)),
+        ),
+        ('bf61610161629f0203ffff', {'a': 1, 'b': [2, 3]}),
+        ('826161bf61626163ff', ['a', {'b': 'c'}]),
+        ('bf6346756ef563416d7421ff', {'Fun': True, 'Amt': -2}),
+        ('d901029f010203ff', {1, 2, 3}),
+    ],
+)
+def test_streaming(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize(
+    'payload',
+    [
+        '5f42010200',
+        '7f63737472a0',
+    ],
+)
+def test_bad_streaming_strings(payload):
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify(payload))
+        assert exc.match(r'non-(byte)?string found in indefinite length \1string')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+@pytest.fixture(
+    params=[
+        ('e0', 0),
+        ('e2', 2),
+        ('f3', 19),
+        ('f820', 32),
+    ],
+)
+def simple_value(request):
+    payload, expected = request.param
+    return payload, expected, CborSimpleValue(expected)
+
+
+def test_simple_value(simple_value):
+    payload, expected, wrapped = simple_value
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+    assert decoded == wrapped
+
+
+def test_simple_val_as_key():
+    decoded = cbor_loads(binascii.unhexlify('A1F86301'))
+    assert decoded == {CborSimpleValue(99): 1}
+
+
+#
+# Tests for extension tags
+#
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        (
+            'd903ec6a323031332d30332d3231',
+            datetime.date(2013, 3, 21),
+        ),
+        (
+            'd8641945e8',
+            datetime.date(2018, 12, 31),
+        ),
+    ],
+    ids=[
+        'date/string',
+        'date/timestamp',
+    ],
+)
+def test_date(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        (
+            'c074323031332d30332d32315432303a30343a30305a',
+            datetime.datetime(2013, 3, 21, 20, 4, 0, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            'c0781b323031332d30332d32315432303a30343a30302e3338303834315a',
+            datetime.datetime(2013, 3, 21, 20, 4, 0, 380841, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            'c07819323031332d30332d32315432323a30343a30302b30323a3030',
+            datetime.datetime(2013, 3, 21, 22, 4, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=2))),
+        ),
+        ('c11a514b67b0', datetime.datetime(2013, 3, 21, 20, 4, 0, tzinfo=datetime.timezone.utc)),
+        (
+            'c11a514b67b0',
+            datetime.datetime(2013, 3, 21, 22, 4, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=2))),
+        ),
+    ],
+    ids=[
+        'datetime/utc',
+        'datetime+micro/utc',
+        'datetime/eet',
+        'timestamp/utc',
+        'timestamp/eet',
+    ],
+)
+def test_datetime(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    assert decoded == expected
+
+
+def test_datetime_secfrac():
+    decoded = cbor_loads(b'\xc0\x78\x162018-08-02T07:00:59.1Z')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 100000, tzinfo=datetime.timezone.utc)
+    decoded = cbor_loads(b'\xc0\x78\x172018-08-02T07:00:59.01Z')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 10000, tzinfo=datetime.timezone.utc)
+    decoded = cbor_loads(b'\xc0\x78\x182018-08-02T07:00:59.001Z')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 1000, tzinfo=datetime.timezone.utc)
+    decoded = cbor_loads(b'\xc0\x78\x192018-08-02T07:00:59.0001Z')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 100, tzinfo=datetime.timezone.utc)
+    decoded = cbor_loads(b'\xc0\x78\x1a2018-08-02T07:00:59.00001Z')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 10, tzinfo=datetime.timezone.utc)
+    decoded = cbor_loads(b'\xc0\x78\x1b2018-08-02T07:00:59.000001Z')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 1, tzinfo=datetime.timezone.utc)
+    decoded = cbor_loads(b'\xc0\x78\x1c2018-08-02T07:00:59.0000001Z')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 0, tzinfo=datetime.timezone.utc)
+
+
+def test_datetime_secfrac_naive_float_to_int_cast():
+    # A secfrac that would have rounding errors if naively parsed as
+    # `int(float(secfrac) * 1000000)`.
+    decoded = cbor_loads(b'\xc0\x78\x202018-08-02T07:00:59.000251+00:00')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 251, tzinfo=datetime.timezone.utc)
+
+
+def test_datetime_secfrac_overflow():
+    decoded = cbor_loads(b'\xc0\x78\x2c2018-08-02T07:00:59.100500999999999999+00:00')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 100500, tzinfo=datetime.timezone.utc)
+    decoded = cbor_loads(b'\xc0\x78\x2c2018-08-02T07:00:59.999999999999999999+00:00')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, 999999, tzinfo=datetime.timezone.utc)
+
+
+def test_datetime_secfrac_requires_digit():
+    with pytest.raises(CborDecodeError) as excinfo:
+        cbor_loads(b'\xc0\x78\x1a2018-08-02T07:00:59.+00:00')
+    assert isinstance(excinfo.value, ValueError)
+    assert str(excinfo.value) == "invalid datetime string: '2018-08-02T07:00:59.+00:00'"
+
+    with pytest.raises(CborDecodeError) as excinfo:
+        cbor_loads(b'\xc0\x78\x152018-08-02T07:00:59.Z')
+    assert isinstance(excinfo.value, ValueError)
+    assert str(excinfo.value) == "invalid datetime string: '2018-08-02T07:00:59.Z'"
+
+
+def test_bad_datetime():
+    with pytest.raises(CborDecodeError) as excinfo:
+        cbor_loads(binascii.unhexlify('c06b303030302d3132332d3031'))
+    assert isinstance(excinfo.value, ValueError)
+    assert str(excinfo.value) == "invalid datetime string: '0000-123-01'"
+
+
+def test_datetime_overflow():
+    with pytest.raises(CborDecodeError) as excinfo:
+        cbor_loads(binascii.unhexlify('c11b9b9b9b0000000000'))
+
+    assert isinstance(excinfo.value.__cause__, OverflowError)
+
+
+def test_datetime_value_too_large():
+    with pytest.raises(CborDecodeError) as excinfo:
+        cbor_loads(binascii.unhexlify('c11b1616161616161616161616161616'))
+
+    assert excinfo.value.__cause__ is not None
+
+
+def test_datetime_date_out_of_range():
+    with pytest.raises(CborDecodeError) as excinfo:
+        cbor_loads(binascii.unhexlify('a6c11b00002401001b000000000000ff00'))
+
+    if platform.system() == 'Windows':
+        cause_exc_class: ta.Any = OSError
+    elif sys.maxsize == 2147483647:
+        cause_exc_class = OverflowError
+    else:
+        cause_exc_class = ValueError
+
+    assert isinstance(excinfo.value.__cause__, cause_exc_class)
+
+
+def test_datetime_timezone():
+    decoded = cbor_loads(b'\xc0\x78\x192018-08-02T07:00:59+00:30')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, tzinfo=datetime.timezone(datetime.timedelta(minutes=30)))
+    decoded = cbor_loads(b'\xc0\x78\x192018-08-02T07:00:59-00:30')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, tzinfo=datetime.timezone(datetime.timedelta(minutes=-30)))
+    decoded = cbor_loads(b'\xc0\x78\x192018-08-02T07:00:59+01:30')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, tzinfo=datetime.timezone(datetime.timedelta(minutes=90)))
+    decoded = cbor_loads(b'\xc0\x78\x192018-08-02T07:00:59-01:30')
+    assert decoded == datetime.datetime(2018, 8, 2, 7, 0, 59, tzinfo=datetime.timezone(datetime.timedelta(minutes=-90)))
+
+
+def test_positive_bignum():
+    # Example from RFC 8949 section 3.4.3.
+    decoded = cbor_loads(binascii.unhexlify('c249010000000000000000'))
+    assert decoded == 18446744073709551616
+
+
+def test_negative_bignum():
+    decoded = cbor_loads(binascii.unhexlify('c349010000000000000000'))
+    assert decoded == -18446744073709551617
+
+
+def test_fraction():
+    decoded = cbor_loads(binascii.unhexlify('c48221196ab3'))
+    assert decoded == decimal.Decimal('273.15')
+
+
+def test_decimal_precision():
+    decoded = cbor_loads(binascii.unhexlify('c482384dc252011f1fe37d0c70ff50456ba8b891997b07d6'))
+    assert decoded == decimal.Decimal('9.7703426561852468194804075821069770622934E-38')
+
+
+def test_bigfloat():
+    decoded = cbor_loads(binascii.unhexlify('c5822003'))
+    assert decoded == decimal.Decimal('1.5')
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('d9a7f882f90000f90000', 0.0j),
+        ('d9a7f882fb0000000000000000fb0000000000000000', 0.0j),
+        ('d9a7f882f98000f98000', -0.0j),
+        ('d9a7f882f90000f93c00', 1.0j),
+        ('d9a7f882fb0000000000000000fb3ff199999999999a', 1.1j),
+        ('d9a7f882f93e00f93e00', 1.5 + 1.5j),
+        ('d9a7f882f97bfff97bff', 65504.0 + 65504.0j),
+        ('d9a7f882fa47c35000fa47c35000', 100000.0 + 100000.0j),
+        ('d9a7f882f90000fb7e37e43c8800759c', 1.0e300j),
+        ('d9a7f882f90000f90001', 5.960464477539063e-8j),
+        ('d9a7f882f90000f90400', 0.00006103515625j),
+        ('d9a7f882f90000f9c400', -4.0j),
+        ('d9a7f882f90000fbc010666666666666', -4.1j),
+        ('d9a7f882f90000f97c00', complex(0.0, float('inf'))),
+        ('d9a7f882f97c00f90000', complex(float('inf'), 0.0)),
+        ('d9a7f882f90000f9fc00', complex(0.0, float('-inf'))),
+        ('d9a7f882f90000fa7f800000', complex(0.0, float('inf'))),
+        ('d9a7f882f90000faff800000', complex(0.0, float('-inf'))),
+        ('d9a7f882f97e00fb0000000000000000', complex(float('nan'), 0.0)),
+        ('d9a7f882fb0000000000000000f97e00', complex(0.0, float('nan'))),
+        ('d9a7f882f97e00f97e00', complex(float('nan'), float('nan'))),
+    ],
+)
+def test_complex(payload, expected):
+    decoded = cbor_loads(binascii.unhexlify(payload))
+    if math.isnan(expected.real):
+        assert math.isnan(decoded.real)
+    else:
+        assert expected.real == decoded.real
+
+    if math.isnan(expected.imag):
+        assert math.isnan(decoded.imag)
+    else:
+        assert expected.imag == decoded.imag
+
+
+def test_rational():
+    decoded = cbor_loads(binascii.unhexlify('d81e820205'))
+    assert decoded == fractions.Fraction(2, 5)
+
+
+def test_rational_invalid_iterable():
+    with pytest.raises(
+        CborDecodeValueError, match='error decoding rational: input value was not a tuple',
+    ):
+        cbor_loads(binascii.unhexlify('d81e01'))
+
+
+def test_rational_zero_denominator():
+    with pytest.raises(CborDecodeValueError, match='error decoding rational') as exc:
+        cbor_loads(binascii.unhexlify('d81e820100'))
+
+    assert isinstance(exc.value.__cause__, ZeroDivisionError)
+
+
+def test_regex():
+    decoded = cbor_loads(binascii.unhexlify('d8236d68656c6c6f2028776f726c6429'))
+    expr = re.compile('hello (world)')
+    assert decoded == expr
+
+
+def test_regex_unbalanced_parentheses():
+    with pytest.raises(
+        CborDecodeValueError, match='error decoding regular expression',
+    ) as exc:
+        cbor_loads(binascii.unhexlify('d8236c68656c6c6f2028776f726c64'))
+
+    assert isinstance(exc.value.__cause__, re.error)
+
+
+def test_mime():
+    decoded = cbor_loads(
+        binascii.unhexlify(
+            'd824787b436f6e74656e742d547970653a20746578742f706c61696e3b20636861727365743d2269736f'
+            '2d383835392d3135220a4d494d452d56657273696f6e3a20312e300a436f6e74656e742d5472616e7366'
+            '65722d456e636f64696e673a2071756f7465642d7072696e7461626c650a0a48656c6c6f203d41347572'
+            '6f',
+        ),
+    )
+    assert isinstance(decoded, email.message.Message)
+    assert decoded.get_payload() == 'Hello =A4uro'
+
+
+def test_mime_invalid_type():
+    with pytest.raises(CborDecodeValueError, match='error decoding MIME message') as exc:
+        cbor_loads(binascii.unhexlify('d82401'))
+
+    assert isinstance(exc.value.__cause__, TypeError)
+
+
+def test_uuid():
+    decoded = cbor_loads(binascii.unhexlify('d825505eaffac8b51e480581277fdcc7842faf'))
+    assert decoded == uuid.UUID(hex='5eaffac8b51e480581277fdcc7842faf')
+
+
+def test_uuid_invalid_length():
+    with pytest.raises(CborDecodeValueError, match='error decoding UUID value') as exc:
+        cbor_loads(binascii.unhexlify('d8254f5eaffac8b51e480581277fdcc7842f'))
+
+    assert isinstance(exc.value.__cause__, ValueError)
+
+
+def test_uuid_invalid_type():
+    with pytest.raises(CborDecodeValueError, match='error decoding UUID value') as exc:
+        cbor_loads(binascii.unhexlify('d82501'))
+
+    assert isinstance(exc.value.__cause__, TypeError)
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('d9010444c00a0a01', ipaddress.ip_address('192.10.10.1')),
+        (
+            'd901045020010db885a3000000008a2e03707334',
+            ipaddress.ip_address('2001:db8:85a3::8a2e:370:7334'),
+        ),
+        ('d9010446010203040506', (260, b'\x01\x02\x03\x04\x05\x06')),
+    ],
+    ids=[
+        'ipv4',
+        'ipv6',
+        'mac',
+    ],
+)
+def test_ipaddress(payload, expected):
+    if isinstance(expected, tuple):
+        expected = CborTag(*expected)
+    payload = binascii.unhexlify(payload)
+    assert cbor_loads(payload) == expected
+
+
+def test_bad_ipaddress():
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('d9010443c00a0a'))
+        assert str(exc.value).endswith('invalid ipaddress value {!r}'.format(b'\xc0\x0a\x0a'))
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('d9010401'))
+        assert str(exc.value).endswith('invalid ipaddress value 1')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('d90105a144c0a800641818', ipaddress.ip_network('192.168.0.100/24', False)),
+        (
+            'd90105a15020010db885a3000000008a2e000000001860',
+            ipaddress.ip_network('2001:db8:85a3:0:0:8a2e::/96', False),
+        ),
+    ],
+    ids=[
+        'ipv4',
+        'ipv6',
+    ],
+)
+def test_ipnetwork(payload, expected):
+    # XXX The following pytest.skip is only included to work-around a bug in
+    # pytest under python 3.3 (which prevents the decorator above from skipping
+    # correctly); remove when 3.3 support is dropped
+    payload = binascii.unhexlify(payload)
+    assert cbor_loads(payload) == expected
+
+
+def test_bad_ipnetwork():
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('d90105a244c0a80064181844c0a800001818'))
+        invalid_value: ta.Any = {b'\xc0\xa8\x00d': 24, b'\xc0\xa8\x00\x00': 24}
+        assert str(exc.value).endswith(f'invalid ipnetwork value {invalid_value!r}')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('d90105a144c0a80064420102'))
+        invalid_value = {b'\xc0\xa8\x00d': b'\x01\x02'}
+        assert str(exc.value).endswith(f'invalid ipnetwork value {invalid_value}')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+def test_bad_shared_reference():
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('d81d05'))
+        assert str(exc.value).endswith('shared reference 5 not found')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+def test_uninitialized_shared_reference():
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('D81CA1D81D014161'))
+        assert str(exc.value).endswith('shared value 0 has not been initialized')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+def test_immutable_shared_reference():
+    # a = (1, 2, 3)
+    # b = ((a, a), a)
+    # data = dumps(set(b))
+    decoded = cbor_loads(binascii.unhexlify('d90102d81c82d81c82d81c83010203d81d02d81d02'))
+    a = [item for item in decoded if len(item) == 3][0]
+    b = [item for item in decoded if len(item) == 2][0]
+    assert decoded == {(a, a), a}
+    assert b[0] is a
+    assert b[1] is a
+
+
+def test_cyclic_array():
+    decoded = cbor_loads(binascii.unhexlify('d81c81d81d00'))
+    assert decoded == [decoded]
+
+
+def test_cyclic_map():
+    decoded = cbor_loads(binascii.unhexlify('d81ca100d81d00'))
+    assert decoded == {0: decoded}
+
+
+def test_nested_shareable_in_array():
+    decoded = cbor_loads(binascii.unhexlify('82d81c82d81c61616162d81d00'))
+    assert decoded == [['a', 'b'], ['a', 'b']]
+    assert decoded[0] is decoded[1]
+
+
+def test_string_ref():
+    decoded = cbor_loads(binascii.unhexlify('d9010085656669727374d81900667365636f6e64d81900d81901'))
+    assert isinstance(decoded, list)
+    assert decoded[0] == 'first'
+    assert decoded[1] == 'first'
+    assert decoded[2] == 'second'
+    assert decoded[3] == 'first'
+    assert decoded[4] == 'second'
+
+
+def test_outside_string_ref_namespace():
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('85656669727374d81900667365636f6e64d81900d81901'))
+        assert str(exc.value).endswith('string reference outside of namespace')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+def test_invalid_string_ref():
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('d9010086656669727374d81900667365636f6e64d81900d81901d81903'))
+        assert str(exc.value).endswith('string reference 3 not found')
+        assert isinstance(exc, ValueError)  # type: ignore[unreachable]
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('d9d9f71903e8', 1000),
+        ('d9d9f7c249010000000000000000', 18446744073709551616),
+    ],
+    ids=['self_describe_cbor+int', 'self_describe_cbor+positive_bignum'],
+)
+def test_self_describe_cbor(payload, expected):
+    assert cbor_loads(binascii.unhexlify(payload)) == expected
+
+
+def test_unhandled_tag():
+    """
+    Test that a tag is simply ignored and its associated value returned if there is no special
+    handling available for it.
+    """
+
+    decoded = cbor_loads(binascii.unhexlify('d917706548656c6c6f'))
+    assert decoded == CborTag(6000, 'Hello')
+
+
+def test_premature_end_of_stream():
+    """Test that the decoder detects a situation where read() returned fewer than expected bytes."""
+
+    with pytest.raises(CborDecodeError) as exc:
+        cbor_loads(binascii.unhexlify('437879'))
+        exc.match(r'premature end of stream \(expected to read 3 bytes, got 2 instead\)')
+        assert isinstance(exc, EOFError)  # type: ignore[unreachable]
+
+
+def test_tag_hook():
+    def reverse(decoder, tag):
+        return tag.value[::-1]
+
+    decoded = cbor_loads(binascii.unhexlify('d917706548656c6c6f'), tag_hook=reverse)
+    assert decoded == 'olleH'
+
+
+def test_tag_hook_cyclic():
+    class DummyType:
+        def __init__(self, value):
+            self.value = value
+
+    def unmarshal_dummy(decoder, tag):
+        instance = DummyType.__new__(DummyType)
+        decoder.set_shareable(instance)
+        instance.value = decoder.decode_from_bytes(tag.value)
+        return instance
+
+    decoded = cbor_loads(binascii.unhexlify('D81CD90BB849D81CD90BB843D81D00'), tag_hook=unmarshal_dummy)
+    assert isinstance(decoded, DummyType)
+    assert decoded.value.value is decoded
+
+
+def test_object_hook():
+    class DummyType:
+        def __init__(self, state):
+            self.state = state
+
+    payload = binascii.unhexlify('A2616103616205')
+    decoded = cbor_loads(payload, object_hook=lambda decoder, value: DummyType(value))
+    assert isinstance(decoded, DummyType)
+    assert decoded.state == {'a': 3, 'b': 5}
+
+
+def test_object_hook_exception():
+    def object_hook(decoder, data):
+        raise RuntimeError('foo')
+
+    payload = binascii.unhexlify('A2616103616205')
+    with pytest.raises(RuntimeError, match='foo'):
+        cbor_loads(payload, object_hook=object_hook)
+
+
+def test_load_from_file(tmpdir):
+    path = tmpdir.join('testdata.cbor')
+    path.write_binary(b'\x82\x01\x0a')
+    with path.open('rb') as fp:
+        obj = cbor_load(fp)
+
+    assert obj == [1, 10]
+
+
+def test_nested_dict():
+    value = cbor_loads(binascii.unhexlify('A1D9177082010201'))
+    assert type(value) is dict
+    assert value == {CborTag(6000, (1, 2)): 1}
+
+
+def test_set():
+    payload = binascii.unhexlify('d9010283616361626161')
+    value = cbor_loads(payload)
+    assert type(value) is set
+    assert value == {'a', 'b', 'c'}
+
+
+@pytest.mark.parametrize(
+    'payload, expected',
+    [
+        ('a1a1616161626163', {CborFrozenDict({'a': 'b'}): 'c'}),
+        (
+            'A1A1A10101A1666E6573746564F5A1666E6573746564F4',
+            {CborFrozenDict({CborFrozenDict({1: 1}): CborFrozenDict({'nested': True})}): {'nested': False}},
+        ),
+        ('a182010203', {(1, 2): 3}),
+        ('a1d901028301020304', {frozenset({1, 2, 3}): 4}),
+        ('A17f657374726561646d696e67ff01', {'streaming': 1}),
+        ('d9010282d90102820102d90102820304', {frozenset({1, 2}), frozenset({3, 4})}),
+    ],
+)
+def test_immutable_keys(payload, expected):
+    value = cbor_loads(binascii.unhexlify(payload))
+    assert value == expected
+
+
+# Corrupted or invalid data checks
+
+
+def test_huge_truncated_array():
+    with pytest.raises(CborDecodeError):
+        cbor_loads(binascii.unhexlify('9b') + will_overflow())
+
+
+def test_huge_truncated_string():
+    huge_index = struct.pack('Q', sys.maxsize + 1)
+    with pytest.raises((CborDecodeError, MemoryError)):
+        cbor_loads(binascii.unhexlify('7b') + huge_index + binascii.unhexlify('70717273'))
+
+
+@pytest.mark.parametrize('dtype_prefix', ['7B', '5b'], ids=['string', 'bytes'])
+def test_huge_truncated_data(dtype_prefix):
+    with pytest.raises((CborDecodeError, MemoryError)):
+        cbor_loads(binascii.unhexlify(dtype_prefix) + will_overflow())
+
+
+@pytest.mark.parametrize('tag_dtype', ['7F7B', '5f5B'], ids=['string', 'bytes'])
+def test_huge_truncated_indefinite_data(tag_dtype):
+    huge_index = struct.pack('Q', sys.maxsize + 1)
+    with pytest.raises((CborDecodeError, MemoryError)):
+        cbor_loads(binascii.unhexlify(tag_dtype) + huge_index + binascii.unhexlify('70717273ff'))
+
+
+@pytest.mark.parametrize('data', ['7f61777f6177ffff', '5f41775f4177ffff'], ids=['string', 'bytes'])
+def test_embedded_indefinite_data(data):
+    with pytest.raises(CborDecodeValueError):
+        cbor_loads(binascii.unhexlify(data))
+
+
+@pytest.mark.parametrize('data', ['7f01ff', '5f01ff'], ids=['string', 'bytes'])
+def test_invalid_indefinite_data_item(data):
+    with pytest.raises(CborDecodeValueError):
+        cbor_loads(binascii.unhexlify(data))
+
+
+@pytest.mark.parametrize(
+    'data',
+    ['7f7bff0000000000000471717272ff', '5f5bff0000000000000471717272ff'],
+    ids=['string', 'bytes'],
+)
+def test_indefinite_overflow(data):
+    with pytest.raises(CborDecodeValueError):
+        cbor_loads(binascii.unhexlify(data))
+
+
+def test_invalid_cbor():
+    with pytest.raises(CborDecodeError):
+        cbor_loads(
+            binascii.unhexlify(
+                'c788370016b8965bdb2074bff82e5a20e09bec21f8406e86442b87ec3ff245b70a47624dc9cdc682'
+                '4b2a4c52e95ec9d6b0534b71c2b49e4bf9031500cee6869979c297bb5a8b381e98db714108415e5c'
+                '50db78974c271579b01633a3ef6271be5c225eb2',
+            ),
+        )
+
+
+@pytest.mark.parametrize(
+    'data, expected',
+    [('fc', '1c'), ('fd', '1d'), ('fe', '1e')],
+)
+def test_reserved_special_tags(data, expected):
+    with pytest.raises(CborDecodeValueError) as exc_info:
+        cbor_loads(binascii.unhexlify(data))
+    assert exc_info.value.args[0] == 'Undefined Reserved major type 7 subtype 0x' + expected
+
+
+@pytest.mark.parametrize(
+    'data, expected',
+    [('c400', '4'), ('c500', '5')],
+)
+def test_decimal_payload_unpacking(data, expected):
+    with pytest.raises(CborDecodeValueError) as exc_info:
+        cbor_loads(binascii.unhexlify(data))
+    assert exc_info.value.args[0] == f'Incorrect tag {expected} payload'
+
+
+@pytest.mark.parametrize(
+    'payload',
+    [
+        pytest.param(
+            binascii.unhexlify('41'),
+            id='bytestring',
+        ),
+        pytest.param(
+            binascii.unhexlify('61'),
+            id='unicode',
+        ),
+    ],
+)
+def test_oversized_read(payload: bytes, tmp_path: pathlib.Path) -> None:
+    with pytest.raises(CborDecodeEOF, match='premature end of stream'):
+        dummy_path = tmp_path / 'testdata'
+        dummy_path.write_bytes(payload)
+        with dummy_path.open('rb') as f:
+            cbor_load(f)
+
+
+class TestDecoderReuse:
+    """Tests for correct behavior when reusing CBORDecoder instances."""
+
+    def test_decoder_reuse_resets_shared_refs(self):
+        """
+        Shared references should be scoped to a single decode operation,
+        not persist across multiple decodes on the same decoder instance.
+        """
+
+        # Message with shareable tag (28)
+        msg1 = cbor_dumps(CborTag(28, 'first_value'))
+
+        # Message with sharedref tag (29) referencing index 0
+        msg2 = cbor_dumps(CborTag(29, 0))
+
+        # Reuse decoder across messages
+        decoder = CborDecoder(io.BytesIO(msg1))
+        result1 = decoder.decode()
+        assert result1 == 'first_value'
+
+        # Second decode should fail - sharedref(0) doesn't exist in this context
+        decoder.fp = io.BytesIO(msg2)
+        with pytest.raises(CborDecodeValueError, match='shared reference'):
+            decoder.decode()
+
+    def test_decode_from_bytes_resets_shared_refs(self):
+        """decode_from_bytes should also reset shared references between calls."""
+
+        msg1 = cbor_dumps(CborTag(28, 'value'))
+        msg2 = cbor_dumps(CborTag(29, 0))
+
+        decoder = CborDecoder(io.BytesIO(b''))
+        decoder.decode_from_bytes(msg1)
+
+        with pytest.raises(CborDecodeValueError, match='shared reference'):
+            decoder.decode_from_bytes(msg2)
+
+    def test_shared_refs_within_single_decode(self):
+        """
+        Shared references must work correctly within a single decode operation.
+
+        Note: This tests non-cyclic sibling references [shareable(x), sharedref(0)],
+        which is a different pattern from test_cyclic_array/test_cyclic_map that
+        test self-referencing structures like shareable([sharedref(0)]).
+        """
+
+        # [shareable("hello"), sharedref(0)] -> ["hello", "hello"]
+        data = binascii.unhexlify(
+            '82'  # array(2)
+            'd81c'  # tag(28) shareable
+            '65'  # text(5)
+            '68656c6c6f'  # "hello"
+            'd81d'  # tag(29) sharedref
+            '00',  # unsigned(0)
+        )
+
+        result = cbor_loads(data)
+        assert result == ['hello', 'hello']
+        assert result[0] is result[1]  # Same object reference
+
+
+def test_decode_from_bytes_in_hook_preserves_buffer():
+    """
+    Test that calling decode_from_bytes from a hook preserves stream buffer state.
+
+    This is a documented use case from docs/customizing.rst where hooks decode
+    embedded CBOR data. Before the fix, the stream's readahead buffer would be
+    corrupted, causing subsequent reads to fail or return wrong data.
+    """
+
+    def tag_hook(decoder, tag):
+        if tag.tag == 999:
+            # Decode embedded CBOR (documented pattern)
+            return decoder.decode_from_bytes(tag.value)
+        return tag
+
+    # Test data: array with [tag(999, embedded_cbor), "after_hook", "final"]
+    # embedded_cbor encodes: [1, 2, 3]
+    data = binascii.unhexlify(
+        '83'  # array(3)
+        'd903e7'  # tag(999)
+        '44'  # bytes(4)
+        '83010203'  # embedded: array [1, 2, 3]
+        '6a'  # text(10)
+        '61667465725f686f6f6b'  # "after_hook"
+        '65'  # text(5)
+        '66696e616c',  # "final"
+    )
+
+    # Decode from stream (not bytes) to use readahead buffer
+    stream = io.BytesIO(data)
+    decoder = CborDecoder(stream, tag_hook=tag_hook)
+    result = decoder.decode()
+
+    # Verify all values decoded correctly
+    assert result == [[1, 2, 3], 'after_hook', 'final']
+
+    # First element should be the decoded embedded CBOR
+    assert result[0] == [1, 2, 3]
+    # Second element should be "after_hook" (not corrupted)
+    assert result[1] == 'after_hook'
+    # Third element should be "final"
+    assert result[2] == 'final'
+
+
+def test_decode_from_bytes_deeply_nested_in_hook():
+    """
+    Test deeply nested decode_from_bytes calls preserve buffer state.
+
+    This tests tag(999, tag(888, tag(777, [1,2,3]))) where each tag value
+    is embedded CBOR that triggers the hook recursively.
+
+    Before the fix, even a single level would corrupt the buffer. With multiple
+    levels, the buffer would be completely corrupted, mixing data from different
+    io.BytesIO objects and the original stream.
+    """
+
+    def tag_hook(decoder, tag):
+        if tag.tag in [999, 888, 777]:
+            # Recursively decode embedded CBOR
+            return decoder.decode_from_bytes(tag.value)
+        return tag
+
+    # Test data: [tag(999, tag(888, tag(777, [1,2,3]))), "after", "final"]
+    # Each tag contains embedded CBOR
+    data = binascii.unhexlify(
+        '83'  # array(3)
+        'd903e7'  # tag(999)
+        '4c'  # bytes(12)
+        'd9037848d903094483010203'  # embedded: tag(888, tag(777, [1,2,3]))
+        '65'  # text(5)
+        '6166746572'  # "after"
+        '65'  # text(5)
+        '66696e616c',  # "final"
+    )
+
+    # Decode from stream to use readahead buffer
+    stream = io.BytesIO(data)
+    decoder = CborDecoder(stream, tag_hook=tag_hook)
+    result = decoder.decode()
+
+    # With the fix: all three levels of nesting work correctly
+    # Without the fix: buffer corruption at each level, test fails
+    assert result == [[1, 2, 3], 'after', 'final']
+    assert result[0] == [1, 2, 3]
+    assert result[1] == 'after'
+    assert result[2] == 'final'
+
+
+def test_str_errors_error_alias():
+    """'error' is not a valid Python string error handler, normalize to 'strict'."""
+
+    with io.BytesIO(b'\x65hello') as stream:
+        decoder = CborDecoder(stream, str_errors='error')
+        assert decoder.str_errors == 'strict'
+
+
+def test_str_errors_invalid_mode():
+    payload = b'\x65hello'
+    with pytest.raises(ValueError, match="invalid str_errors value 'invalid'"):
+        cbor_loads(payload, str_errors='invalid')  # type: ignore
+
+
+@pytest.mark.parametrize(
+    'mode, expected',
+    [
+        ('strict', None),  # Should raise exception
+        ('replace', 'hello\ufffdworld'),  # Should replace invalid byte with U+FFFD
+    ],
+    ids=['strict_mode', 'replace_mode'],
+)
+def test_str_errors_handling(mode, expected):
+    invalid_utf8 = b'\x6bhello\xffworld'  # \xFF is invalid UTF-8
+
+    if expected is None:
+        with pytest.raises(CborDecodeValueError, match='error decoding unicode string'):
+            cbor_loads(invalid_utf8, str_errors=mode)
+    else:
+        result = cbor_loads(invalid_utf8, str_errors=mode)
+        assert result == expected
+        assert len(result) == 11
+        assert result[5] == '\ufffd'
+
+
+@pytest.mark.parametrize(
+    'payload, mode, expected',
+    [
+        (b'\x66hello\xff', 'replace', 'hello\ufffd'),  # <=256 bytes: stack path
+        (
+            b'\x79\x01\x05' + b'a' * 260 + b'\xff',
+            'replace',
+            'a' * 260 + '\ufffd',
+        ),  # >256: heap path
+    ],
+    ids=['short_string', 'long_string'],
+)
+def test_str_errors_different_lengths(payload, mode, expected):
+    """Tests both stack (<=256 bytes) and heap (>256 bytes) allocation paths."""
+
+    result = cbor_loads(payload, str_errors=mode)
+    assert result == expected
+    assert result[-1] == '\ufffd'
+
+
+def test_str_errors_long_string_over_65536_bytes():
+    """Issue #255: str_errors not respected for strings >65536 bytes."""
+
+    # 65537 bytes: 65536 'a' + 1 invalid UTF-8 byte
+    payload = binascii.unhexlify('7a00010001' + '61' * 65536 + 'c3')
+    result = cbor_loads(payload, str_errors='replace')
+    assert len(result) == 65537
+    assert result[-1] == '\ufffd'
+
+
+def test_str_errors_long_string_invalid_middle():
+    """Test str_errors with invalid UTF-8 in the middle of a long string."""
+
+    # 65536 'a' + invalid byte + 65536 'b' = 131073 bytes
+    payload = binascii.unhexlify('7a00020001' + '61' * 65536 + 'c3' + '62' * 65536)
+    result = cbor_loads(payload, str_errors='replace')
+    assert len(result) == 131073
+    assert result[65536] == '\ufffd'
+    assert result[:65536] == 'a' * 65536
+    assert result[65537:] == 'b' * 65536
