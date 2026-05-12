@@ -164,7 +164,7 @@ class TestMaximumDepth:
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('00', 0),
         ('01', 1),
@@ -199,7 +199,7 @@ def test_invalid_integer_subtype():
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('f90000', 0.0),
         ('f98000', -0.0),
@@ -251,7 +251,7 @@ def test_special(special_values):
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         pytest.param('40', b'', id='blank'),
         pytest.param('4401020304', b'\x01\x02\x03\x04', id='short'),
@@ -264,7 +264,7 @@ def test_binary(payload, expected):
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('60', ''),
         ('6161', 'a'),
@@ -324,7 +324,7 @@ def test_string_issue_264_multiple_chunks_utf8_boundary() -> None:
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('80', []),
         ('83010203', [1, 2, 3]),
@@ -340,14 +340,14 @@ def test_array(payload, expected):
     assert decoded == expected
 
 
-@pytest.mark.parametrize('payload, expected', [('a0', {}), ('a201020304', {1: 2, 3: 4})])
+@pytest.mark.parametrize(('payload', 'expected'), [('a0', {}), ('a201020304', {1: 2, 3: 4})])
 def test_map(payload, expected):
     decoded = cbor_loads(binascii.unhexlify(payload))
     assert decoded == expected
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('a26161016162820203', {'a': 1, 'b': [2, 3]}),
         ('826161a161626163', ['a', {'b': 'c'}]),
@@ -363,7 +363,7 @@ def test_mixed_array_map(payload, expected):
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('5f42010243030405ff', b'\x01\x02\x03\x04\x05'),
         ('7f657374726561646d696e67ff', 'streaming'),
@@ -432,7 +432,7 @@ def test_simple_val_as_key():
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         (
             'd903ec6a323031332d30332d3231',
@@ -454,7 +454,7 @@ def test_date(payload, expected):
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         (
             'c074323031332d30332d32315432303a30343a30305a',
@@ -603,7 +603,7 @@ def test_bigfloat():
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('d9a7f882f90000f90000', 0.0j),
         ('d9a7f882fb0000000000000000fb0000000000000000', 0.0j),
@@ -715,7 +715,7 @@ def test_uuid_invalid_type():
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('d9010444c00a0a01', ipaddress.ip_address('192.10.10.1')),
         (
@@ -749,7 +749,7 @@ def test_bad_ipaddress():
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('d90105a144c0a800641818', ipaddress.ip_network('192.168.0.100/24', False)),
         (
@@ -850,7 +850,7 @@ def test_invalid_string_ref():
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('d9d9f71903e8', 1000),
         ('d9d9f7c249010000000000000000', 18446744073709551616),
@@ -947,7 +947,7 @@ def test_set():
 
 
 @pytest.mark.parametrize(
-    'payload, expected',
+    ('payload', 'expected'),
     [
         ('a1a1616161626163', {CborFrozenDict({'a': 'b'}): 'c'}),
         (
@@ -1026,7 +1026,7 @@ def test_invalid_cbor():
 
 
 @pytest.mark.parametrize(
-    'data, expected',
+    ('data', 'expected'),
     [('fc', '1c'), ('fd', '1d'), ('fe', '1e')],
 )
 def test_reserved_special_tags(data, expected):
@@ -1036,7 +1036,7 @@ def test_reserved_special_tags(data, expected):
 
 
 @pytest.mark.parametrize(
-    'data, expected',
+    ('data', 'expected'),
     [('c400', '4'), ('c500', '5')],
 )
 def test_decimal_payload_unpacking(data, expected):
@@ -1230,7 +1230,7 @@ def test_str_errors_invalid_mode():
 
 
 @pytest.mark.parametrize(
-    'mode, expected',
+    ('mode', 'expected'),
     [
         ('strict', None),  # Should raise exception
         ('replace', 'hello\ufffdworld'),  # Should replace invalid byte with U+FFFD
@@ -1251,7 +1251,7 @@ def test_str_errors_handling(mode, expected):
 
 
 @pytest.mark.parametrize(
-    'payload, mode, expected',
+    ('payload', 'mode', 'expected'),
     [
         (b'\x66hello\xff', 'replace', 'hello\ufffd'),  # <=256 bytes: stack path
         (

@@ -10,7 +10,7 @@ from ..decoder import cbor_loads
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         ((1, 2, 3), [1, 2, 3]),
         ({b'\x01\x02\x03': 'b'}, {'\x01\x02\x03': 'b'}),

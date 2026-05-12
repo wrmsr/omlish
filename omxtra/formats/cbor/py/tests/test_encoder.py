@@ -145,7 +145,7 @@ def test_dump():
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (0, '00'),
         (1, '01'),
@@ -172,7 +172,7 @@ def test_integer(value, expected):
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (1.1, 'fb3ff199999999999a'),
         (1.0e300, 'fb7e37e43c8800759c'),
@@ -188,7 +188,7 @@ def test_float(value, expected):
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (b'', '40'),
         (b'\x01\x02\x03\x04', '4401020304'),
@@ -205,7 +205,7 @@ def test_bytearray():
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         ('', '60'),
         ('a', '6161'),
@@ -261,7 +261,7 @@ def test_simple_val_as_key():
 
 
 @pytest.mark.parametrize(
-    'value, as_timestamp, expected',
+    ('value', 'as_timestamp', 'expected'),
     [
         (
             datetime.datetime(2013, 3, 21, 20, 4, 0, tzinfo=datetime.timezone.utc),
@@ -311,7 +311,7 @@ def test_datetime(value, as_timestamp, expected):
 
 
 @pytest.mark.parametrize(
-    'value, as_timestamp, expected',
+    ('value', 'as_timestamp', 'expected'),
     [
         (
             datetime.date(2013, 3, 21),
@@ -349,7 +349,7 @@ def test_naive_datetime():
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (decimal.Decimal('14.123'), 'c4822219372b'),
         (decimal.Decimal('-14.123'), 'C4822239372A'),
@@ -365,7 +365,7 @@ def test_decimal(value, expected):
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (3.1 + 2.1j, 'd9a7f882fb4008cccccccccccdfb4000cccccccccccd'),
         (1.0e300j, 'd9a7f882fb0000000000000000fb7e37e43c8800759c'),
@@ -406,7 +406,7 @@ def test_uuid():
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (ipaddress.ip_address('192.10.10.1'), 'd9010444c00a0a01'),
         (
@@ -425,7 +425,7 @@ def test_ipaddress(value, expected):
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (ipaddress.ip_network('192.168.0.100/24', False), 'd90105a144c0a800001818'),
         (
@@ -489,7 +489,7 @@ def test_cyclic_map_nosharing():
 
 
 @pytest.mark.parametrize(
-    'value_sharing, expected',
+    ('value_sharing', 'expected'),
     [(False, '828080'), (True, 'd81c82d81c80d81d01')],
     ids=['nosharing', 'sharing'],
 )
@@ -550,7 +550,7 @@ def test_dump_to_file(tmpdir):
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         ({}, 'a0'),
         (collections.OrderedDict([(b'a', b''), (b'b', b'')]), 'A2416140416240'),
@@ -578,7 +578,7 @@ def test_ordered_map(value, expected):
 
 
 @pytest.mark.parametrize(
-    'value, expected',
+    ('value', 'expected'),
     [
         (3.5, 'F94300'),
         (100000.0, 'FA47C35000'),
