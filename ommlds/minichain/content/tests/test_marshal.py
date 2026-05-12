@@ -1,5 +1,7 @@
 import uuid
 
+import pytest
+
 from omlish import dataclasses as dc
 from omlish import marshal as msh
 
@@ -11,6 +13,9 @@ from .._marshal import MarshalSingleRawContent
 from ..containers import ConcatContent
 from ..content import Content
 from ..json import JsonContent
+from ..marshal import DisableDynamicClassMarshaling
+from ..marshal import DynamicClassForbiddenMarshalError
+from ..marshal import EnableDynamicClassUnmarshaling
 from ..metadata import ContentUuid
 from ..raw import RawContent
 from ..raw import SingleRawContent
@@ -75,15 +80,19 @@ class FooPlaceholder(ContentPlaceholder):
 
 def test_placeholder():
     c = PlaceholderContent('foo')
+    with pytest.raises(DynamicClassForbiddenMarshalError):
+        msh.marshal(c, Content, DisableDynamicClassMarshaling())
     m = msh.marshal(c, Content)
     print(m)
-    c2 = msh.unmarshal(m, Content)
+    with pytest.raises(DynamicClassForbiddenMarshalError):
+        msh.unmarshal(m, Content)
+    c2 = msh.unmarshal(m, Content, EnableDynamicClassUnmarshaling())
     print(c2)
     assert c == c2
 
     c = PlaceholderContent(FooPlaceholder)
     m = msh.marshal(c, Content)
     print(m)
-    c2 = msh.unmarshal(m, Content)
+    c2 = msh.unmarshal(m, Content, EnableDynamicClassUnmarshaling())
     print(c2)
     assert c == c2

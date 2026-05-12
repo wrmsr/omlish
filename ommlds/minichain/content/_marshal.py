@@ -23,6 +23,9 @@ from .itemlist import ItemListContent
 from .json import JsonContent
 from .link import LinkContent
 from .markdown import MarkdownContent
+from .marshal import DisableDynamicClassMarshaling
+from .marshal import DynamicClassForbiddenMarshalError
+from .marshal import EnableDynamicClassUnmarshaling
 from .namespaces import NamespaceContent
 from .placeholders import ContentPlaceholder
 from .placeholders import PlaceholderContent
@@ -216,6 +219,8 @@ _NAMESPACE_FQCN_KEY = '$'
 
 class _NamespaceContentMarshaler(msh.Marshaler):
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        if DisableDynamicClassMarshaling in ctx.options:
+            raise DynamicClassForbiddenMarshalError
         nc = check.isinstance(o, NamespaceContent)
         fq = lang.get_cls_fqcn(nc.ns)
         return {_NAMESPACE_KEY: {_NAMESPACE_FQCN_KEY: fq}}
@@ -223,6 +228,8 @@ class _NamespaceContentMarshaler(msh.Marshaler):
 
 class _NamespaceContentUnmarshaler(msh.Unmarshaler):
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+        if EnableDynamicClassUnmarshaling not in ctx.options:
+            raise DynamicClassForbiddenMarshalError
         dct = check.isinstance(v, ta.Mapping)
         [(k, v)] = dct.items()
         check.equal(k, _NAMESPACE_KEY)
@@ -233,7 +240,7 @@ class _NamespaceContentUnmarshaler(msh.Unmarshaler):
         return NamespaceContent(cl)
 
 
-##
+#
 
 
 _PLACEHOLDER_KEY = '\\$PLACEHOLDER'
@@ -242,6 +249,8 @@ _PLACEHOLDER_FQCN_KEY = '$'
 
 class _PlaceholderContentMarshaler(msh.Marshaler):
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        if DisableDynamicClassMarshaling in ctx.options:
+            raise DynamicClassForbiddenMarshalError
         pc = check.isinstance(o, PlaceholderContent)
         if isinstance(pc.k, str):
             return {_PLACEHOLDER_KEY: pc.k}
@@ -254,6 +263,8 @@ class _PlaceholderContentMarshaler(msh.Marshaler):
 
 class _PlaceholderContentUnmarshaler(msh.Unmarshaler):
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+        if EnableDynamicClassUnmarshaling not in ctx.options:
+            raise DynamicClassForbiddenMarshalError
         dct = check.isinstance(v, ta.Mapping)
         [(k, v)] = dct.items()
         check.equal(k, _PLACEHOLDER_KEY)

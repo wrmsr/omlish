@@ -316,6 +316,13 @@ with _lang.auto_proxy_init(
         MarkdownContent,
     )
 
+    from .content.marshal import (  # noqa
+        DisableDynamicClassMarshaling,
+        EnableDynamicClassUnmarshaling,
+
+        DynamicClassForbiddenMarshalError,
+    )
+
     from .content.metadata import (  # noqa
         ContentMetadata,
         ContentMetadatas,
