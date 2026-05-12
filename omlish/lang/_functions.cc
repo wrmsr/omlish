@@ -58,11 +58,11 @@ static int Setter_clear(Setter *self)
 
 static void Setter_dealloc(Setter *self)
 {
-    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     Setter_clear(self);
     tp->tp_free((PyObject *)self);
-    Py_DECREF(tp); // Drop reference to the heap type!
+    Py_DECREF(tp);
 }
 
 static int Setter_do_set(Setter *self, PyObject *obj, PyObject *value)

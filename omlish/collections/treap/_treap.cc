@@ -59,11 +59,11 @@ static int TreapNode_clear(TreapNode *self)
 
 static void TreapNode_dealloc(TreapNode *self)
 {
-    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     TreapNode_clear(self);
     tp->tp_free((PyObject *)self);
-    Py_DECREF(tp); // Drop reference to the heap type!
+    Py_DECREF(tp);
 }
 
 static PyObject *TreapNode_repr(TreapNode *self) {
@@ -180,12 +180,12 @@ static int TreapIter_clear(TreapIter *self)
 
 static void TreapIter_dealloc(TreapIter *self)
 {
-    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     Py_XDECREF(self->root);
     PyMem_Free(self->stack);
     tp->tp_free((PyObject *)self);
-    Py_DECREF(tp); // Drop reference to the heap type!
+    Py_DECREF(tp);
 }
 
 static PyObject *TreapIter_next(TreapIter *self)

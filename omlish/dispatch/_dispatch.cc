@@ -57,11 +57,11 @@ static int StrongCache_clear(StrongCache *self)
 
 static void StrongCache_dealloc(StrongCache *self)
 {
-    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     StrongCache_clear(self);
     tp->tp_free((PyObject *)self);
-    Py_DECREF(tp); // Drop reference to the heap type!
+    Py_DECREF(tp);
 }
 
 static PyObject * StrongCache_dispatch(StrongCache *self, PyObject *cls)

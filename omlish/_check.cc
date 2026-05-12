@@ -146,11 +146,11 @@ static int BoundUnaryCheck_clear(BoundUnaryCheck *self)
 
 static void BoundUnaryCheck_dealloc(BoundUnaryCheck *self)
 {
-    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     BoundUnaryCheck_clear(self);
     tp->tp_free((PyObject *)self);
-    Py_DECREF(tp); // Drop reference to the heap type!
+    Py_DECREF(tp);
 }
 
 static PyObject * BoundUnaryCheck_execute(BoundUnaryCheck *self, PyObject *v, PyObject *msg)
@@ -339,11 +339,11 @@ static int BoundBinaryCheck_clear(BoundBinaryCheck *self)
 
 static void BoundBinaryCheck_dealloc(BoundBinaryCheck *self)
 {
-    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     BoundBinaryCheck_clear(self);
     tp->tp_free((PyObject *)self);
-    Py_DECREF(tp); // Drop reference to the heap type!
+    Py_DECREF(tp);
 }
 
 static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, PyObject *r, PyObject *msg)

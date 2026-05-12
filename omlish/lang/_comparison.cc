@@ -131,11 +131,11 @@ static int KeyCmp_clear(KeyCmp *self)
 
 static void KeyCmp_dealloc(KeyCmp *self)
 {
-    PyTypeObject *tp = Py_TYPE(self); // Grab reference before cleanup
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     KeyCmp_clear(self);
     tp->tp_free((PyObject *)self);
-    Py_DECREF(tp); // Drop reference to the heap type!
+    Py_DECREF(tp);
 }
 
 // Default vectorcall: inline rich compare on tuple keys
