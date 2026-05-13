@@ -148,8 +148,6 @@ with _lang.auto_proxy_init(globals()):
         LazyInit,
 
         ModuleImport,
-
-        Override,
     )
 
     from .factories.lazyinit import (  # noqa
@@ -160,11 +158,6 @@ with _lang.auto_proxy_init(globals()):
     from .factories.multi import (  # noqa
         MultiMarshalerFactory,
         MultiUnmarshalerFactory,
-    )
-
-    from .factories.override import (  # noqa
-        OverrideMarshalerFactory,
-        OverrideUnmarshalerFactory,
     )
 
     from .factories.typemap import (  # noqa
@@ -180,6 +173,11 @@ with _lang.auto_proxy_init(globals()):
     from .factories.recursive import (  # noqa
         RecursiveMarshalerFactory,
         RecursiveUnmarshalerFactory,
+    )
+
+    from .factories.vias import (  # noqa
+        ViaMarshalerFactory,
+        ViaUnmarshalerFactory,
     )
 
     from .objects.dataclasses import (  # noqa

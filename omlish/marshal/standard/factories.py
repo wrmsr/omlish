@@ -14,8 +14,6 @@ from ..factories.lazyinit import LazyInitRunningMarshalerFactory
 from ..factories.lazyinit import LazyInitRunningUnmarshalerFactory
 from ..factories.multi import MultiMarshalerFactory
 from ..factories.multi import MultiUnmarshalerFactory
-from ..factories.override import OverrideMarshalerFactory
-from ..factories.override import OverrideUnmarshalerFactory
 from ..factories.recursive import RecursiveMarshalerFactory
 from ..factories.recursive import RecursiveUnmarshalerFactory
 from ..factories.typecache import TypeCacheMarshalerFactory
@@ -91,7 +89,6 @@ class StandardMarshalerFactory(_StandardFactory[MarshalerFactory, StandardMarsha
             *self._last,
         )
 
-        fac = OverrideMarshalerFactory(fac)
         fac = RecursiveMarshalerFactory(fac)
         fac = TypeCacheMarshalerFactory(fac)
 
@@ -112,7 +109,6 @@ class StandardUnmarshalerFactory(_StandardFactory[UnmarshalerFactory, StandardUn
             *self._last,
         )
 
-        fac = OverrideUnmarshalerFactory(fac)
         fac = RecursiveUnmarshalerFactory(fac)
         fac = TypeCacheUnmarshalerFactory(fac)
 
