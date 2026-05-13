@@ -22,6 +22,16 @@ with _lang.auto_proxy_init(
 ):
     ##
 
+    from .backends.dummy.chat import (  # noqa
+        DummyChatChoicesResponse,
+        DummyChatChoicesService,
+
+        DummyChatChoicesStreamResponse,
+        DummyChatChoicesStreamService,
+    )
+
+    ##
+
     from .chat.choices.stream.adapters import (  # noqa
         ChatChoicesStreamServiceChatChoicesService,
     )

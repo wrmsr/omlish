@@ -179,7 +179,7 @@
     "module": ".minichain.backends.dummy.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/dummy/chat.py",
-    "line": 26,
+    "line": 34,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.dummy.chat",
@@ -194,7 +194,7 @@
     "module": ".minichain.backends.dummy.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/dummy/chat.py",
-    "line": 39,
+    "line": 69,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.dummy.chat",
@@ -209,7 +209,7 @@
     "module": ".minichain.backends.dummy.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/dummy/chat.py",
-    "line": 63,
+    "line": 114,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [

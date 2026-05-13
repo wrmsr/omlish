@@ -1786,6 +1786,8 @@ def _process_dataclass__236614658d6f97131f18c84f79eabfe1f3abcc04():
         ('ommlds.minichain.backends.anthropic.chat', 'ContentUuid'),
         ('ommlds.minichain.backends.anthropic.chat', 'ModelName'),
         ('ommlds.minichain.backends.anthropic.chat', 'ModelPath'),
+        ('ommlds.minichain.backends.dummy.chat', 'DummyChatChoicesResponse'),
+        ('ommlds.minichain.backends.dummy.chat', 'DummyChatChoicesStreamResponse'),
         ('ommlds.minichain.backends.mistral', 'MessageUuid'),
         ('ommlds.minichain.backends.mistral', 'ToolUseUuid'),
         ('ommlds.minichain.backends.mistral', 'TurnUuid'),
