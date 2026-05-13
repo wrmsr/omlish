@@ -13,6 +13,8 @@ from ... import lang
 from ... import typedvalues as tv
 
 
+T = ta.TypeVar('T')
+
 ConfigT = ta.TypeVar('ConfigT', bound='Config')
 
 
@@ -211,3 +213,11 @@ class ConfigRegistry(Configs):
             identity: bool | None = None,
     ) -> ConfigValues:
         return self._state.get(key, identity=identity)
+
+    #
+
+    def call_atomically(self, fn: ta.Callable[[ta.Self], T]) -> T:
+        """This API is intentionally obtuse to discourage external use of `_lock`."""
+
+        with self._lock:
+            return fn(self)

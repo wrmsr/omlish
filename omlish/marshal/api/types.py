@@ -12,6 +12,8 @@ from .contexts import MarshalFactoryContext
 from .contexts import UnmarshalContext
 from .contexts import UnmarshalFactoryContext
 from .options import _EMPTY_OPTIONS
+from .options import DefaultOptions
+from .options import IgnoreDefaultOptions
 from .options import Option
 from .options import Options
 from .values import Value
@@ -86,16 +88,32 @@ class Marshaling(lang.Abstract):
 
     ##
 
+    def _build_options(self, options: ta.Iterable[Option] | None = None) -> Options:
+        if not options:
+            return _EMPTY_OPTIONS
+
+        given = Options(*options)
+        if IgnoreDefaultOptions in given:
+            return given
+
+        if (defaults := self.get_config_registry().get().get(DefaultOptions)) is None:
+            return given
+
+        return defaults.v.update(
+            *given,
+            mode='override',
+        )
+
     def new_marshal_context(self, options: ta.Iterable[Option] | None = None) -> MarshalContext:
         return MarshalContext(
             marshal_factory_context=self.new_marshal_factory_context(),
-            options=Options(*options) if options else _EMPTY_OPTIONS,
+            options=self._build_options(options),
         )
 
     def new_unmarshal_context(self, options: ta.Iterable[Option] | None = None) -> UnmarshalContext:
         return UnmarshalContext(
             unmarshal_factory_context=self.new_unmarshal_factory_context(),
-            options=Options(*options) if options else _EMPTY_OPTIONS,
+            options=self._build_options(options),
         )
 
     #
