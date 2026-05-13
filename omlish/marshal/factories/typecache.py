@@ -17,31 +17,42 @@ from ..api.types import UnmarshalerFactory
 from ..api.configs import Config
 from ... import typedvalues as tv
 from ... import lang
+from ..api.configs import ConfigRegistry
+from ..api.configs import Configs
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
+FactoryContextT = ta.TypeVar('FactoryContextT', bound=MarshalFactoryContext | UnmarshalFactoryContext)
 
 
 ##
 
 
-class _TypeCacheFactory(ta.Generic[FactoryT]):
+class _TypeCacheFactory(ta.Generic[FactoryContextT, FactoryT]):
     def __init__(self, fac: FactoryT) -> None:
         super().__init__()
 
         self._fac = fac
 
-        self._dct: dict[rfl.Type, ta.Any | None] = {}
+    #
 
-@dc.dataclass(frozen=True, eq=False)
-class _StateMap(Config, tv.UniqueTypedValue, lang.Final):
-    dct: frozenset[LazyInit]
+    @dc.dataclass(frozen=True, eq=False)
+    class _StateMap(Config, tv.UniqueTypedValue, lang.Final):
+        dct: weakref.WeakKeyDictionary[_TypeCacheFactory, _TypeCacheFactory._State] = dc.field(default_factory=weakref.WeakKeyDictionary)  # noqa
 
+    @dc.dataclass(frozen=True, eq=False)
+    class _State(lang.Final):
+        dct: dict[rfl.Type, ta.Any | None] = dc.field(default_factory=dict)
 
-    class _State:
-        pass
+    def _get_state(self, cfgs: ConfigRegistry) -> _State:
+        try:
+            
 
-    def _make(self, cfgs, rty, dfl):
+    #
+
+    def _make(self, cfgs: Configs, rty: rfl.Type, dfl: ta.Callable[[FactoryContextT, rfl.Type], FactoryT]):
+        cr = check.isinstance(cfgs, ConfigRegistry)
+
         check.isinstance(rty, rfl.TYPES)
 
         try:
@@ -71,11 +82,11 @@ class _StateMap(Config, tv.UniqueTypedValue, lang.Final):
             return inner
 
 
-class TypeCacheMarshalerFactory(_TypeCacheFactory[MarshalerFactory], MarshalerFactory):
+class TypeCacheMarshalerFactory(_TypeCacheFactory[MarshalFactoryContext, MarshalerFactory], MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         return self._make(ctx.configs, rty, lambda: self._fac.make_marshaler(ctx, rty))
 
 
-class TypeCacheUnmarshalerFactory(_TypeCacheFactory[UnmarshalerFactory], UnmarshalerFactory):
+class TypeCacheUnmarshalerFactory(_TypeCacheFactory[UnmarshalFactoryContext, UnmarshalerFactory], UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         return self._make(ctx.configs, rty, lambda: self._fac.make_unmarshaler(ctx, rty))
