@@ -404,6 +404,19 @@ def double_check_setdefault(
 ##
 
 
+@ta.runtime_checkable
+class ExitStackLike(ta.Protocol):
+    def enter_context(self, cm: ta.ContextManager[T]) -> T: ...
+
+
+@ta.runtime_checkable
+class AsyncExitStackLike(ExitStackLike, ta.Protocol):
+    def enter_async_context(self, cm: ta.AsyncContextManager[T]) -> ta.Awaitable[T]: ...
+
+
+##
+
+
 def call_with_exit_stack(
         fn: ta.Callable[ta.Concatenate[contextlib.ExitStack, P], T],
         *args: P.args,

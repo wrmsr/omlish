@@ -219,6 +219,9 @@ with _auto_proxy_init(globals(), update_exports=True):
 
         double_check_setdefault,
 
+        ExitStackLike,
+        AsyncExitStackLike,
+
         call_with_exit_stack,
         call_with_async_exit_stack,
 

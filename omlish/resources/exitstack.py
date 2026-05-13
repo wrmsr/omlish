@@ -50,6 +50,7 @@ T = ta.TypeVar('T')
 ##
 
 
+@lang.static_check_issubclass[lang.ExitStackLike]()
 class BaseKeyedExitStack:
     """A base class for KeyedExitStack and AsyncKeyedExitStack."""
 
@@ -247,6 +248,7 @@ class KeyedExitStack(BaseKeyedExitStack, contextlib.AbstractContextManager):
 ##
 
 
+@lang.static_check_issubclass[lang.AsyncExitStackLike]()
 class AsyncKeyedExitStack(BaseKeyedExitStack, contextlib.AbstractAsyncContextManager):
     async def enter_async_context(
             self,
