@@ -3,7 +3,7 @@ import pytest
 
 from .... import marshal as msh
 from ....asyncs import anyio as aiu
-from ....formats import json
+from ....formats.json import all as json
 from ....specs import jsonrpc as jr
 from ..conns import JsonrpcConnection
 

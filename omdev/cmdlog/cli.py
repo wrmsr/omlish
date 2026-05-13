@@ -3,7 +3,7 @@ import os.path
 import subprocess
 import typing as ta
 
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from .cmdlog import CmdLog
 

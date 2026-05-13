@@ -12,7 +12,7 @@ import typing as ta
 
 from .. import iterators as it
 from .. import lang
-from ..formats import json
+from ..formats.json import all as json
 from ..logs import all as logs
 from ..os.sizes import PAGE_SIZE
 from .procstats import ProcStats

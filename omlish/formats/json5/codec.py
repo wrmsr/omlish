@@ -1,9 +1,9 @@
 import typing as ta
 
 from ... import lang
-from .. import json
 from ..codecs import make_object_lazy_loaded_codec
 from ..codecs import make_str_object_codec
+from ..json import all as json
 
 
 if ta.TYPE_CHECKING:

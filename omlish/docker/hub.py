@@ -4,7 +4,7 @@ import urllib.request
 
 from .. import check
 from .. import dataclasses as dc
-from ..formats import json
+from ..formats.json import all as json
 
 
 ##

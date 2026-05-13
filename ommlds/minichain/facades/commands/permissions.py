@@ -4,8 +4,8 @@ from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
-from omlish.formats import json
 from omlish.formats import json5
+from omlish.formats.json import all as json
 
 from ...tools.permissions.managers import ToolPermissionsManager
 from ...tools.permissions.types import ToolPermissionMatcher

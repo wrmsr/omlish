@@ -2,9 +2,9 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish.formats import json
 from omlish.formats import json5
-from omlish.formats.json import JsonRenderer
+from omlish.formats.json import all as json
+from omlish.formats.json.rendering import JsonRenderer
 
 from .text import CanUiText
 from .text import ConcatUiText

@@ -6,7 +6,7 @@ import anyio.to_thread
 
 from omlish import lang
 from omlish.asyncs import anyio as anu
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as hu
 from omlish.http import asgi
 from omlish.http.apps.routes import Route

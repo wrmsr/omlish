@@ -100,7 +100,7 @@ def test_backend_strings():
 """
 # from omlish import check
 # from omlish import marshal as msh
-# from omlish.formats import json5
+# from omlish.formats.json import all as json5
 #
 # from .types import BackendSpec
 # from .types import ModelBackendSpec

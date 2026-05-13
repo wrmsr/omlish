@@ -24,7 +24,7 @@ from omlish.argparse import all as ap
 from omlish.concurrent import all as conc
 from omlish.docker import all as dck
 from omlish.docker.ns1 import build_docker_ns1_run_cmd
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.formats.yaml import pyyaml
 from omlish.logs import all as logs
 

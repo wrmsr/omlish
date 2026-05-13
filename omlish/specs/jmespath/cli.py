@@ -3,7 +3,7 @@ import dataclasses as dc
 import sys
 import typing as ta
 
-from ...formats import json
+from ...formats.json import all as json
 from .ast import Node
 from .errors import ArityError
 from .errors import JmespathTypeError

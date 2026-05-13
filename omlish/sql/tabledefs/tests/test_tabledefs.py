@@ -1,5 +1,5 @@
 from .... import marshal as msh
-from ....formats import json
+from ....formats.json import all as json
 from ..dtypes import String
 from ..elements import Column
 from ..elements import CreatedAtUpdatedAt

@@ -10,7 +10,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 
 CanUiText: ta.TypeAlias = ta.Union[

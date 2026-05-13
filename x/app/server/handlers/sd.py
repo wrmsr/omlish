@@ -22,7 +22,7 @@ import anyio.to_thread
 import httpx
 
 from omlish import lang
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as hu
 from omlish.http import asgi
 from omlish.http.apps.routes import Route

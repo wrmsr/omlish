@@ -2,7 +2,7 @@ import abc
 import typing as ta
 
 from omlish import lang
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from ... import minichain as mc
 

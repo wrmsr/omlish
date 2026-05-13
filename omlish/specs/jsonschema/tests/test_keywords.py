@@ -8,7 +8,7 @@ https://json-schema.org/specification
 https://json-schema.org/draft/2020-12/json-schema-validation
 https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 """
-from ....formats import json
+from ....formats.json import all as json
 from ..keywords.parse import parse_keywords
 from ..keywords.rendering import render_keywords
 

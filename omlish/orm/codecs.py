@@ -7,7 +7,7 @@ from .. import lang
 from .. import marshal as msh
 from .. import reflect as rfl
 from .. import typedvalues as tv
-from ..formats import json
+from ..formats.json import all as json
 from .fields import Field
 from .fields import FieldOption
 

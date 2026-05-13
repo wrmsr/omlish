@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import check
 from omlish.argparse import all as ap
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from ..cli.types import CliModule
 

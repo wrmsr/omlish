@@ -20,7 +20,7 @@ import typing as ta
 import pytest
 
 from omlish import dataclasses as dc
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as hu
 from omlish.http import sse
 from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder

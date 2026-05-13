@@ -5,7 +5,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import marshal as msh
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from .types import Event
 

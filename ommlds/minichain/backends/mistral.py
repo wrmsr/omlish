@@ -3,7 +3,7 @@ import os
 import typing as ta
 
 from omlish import check
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as http
 
 from ..chat.choices.services import ChatChoicesRequest

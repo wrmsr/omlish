@@ -1,7 +1,7 @@
 import itertools
 
 from omlish import check
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from ....backends.groq import protocol as pt
 from ...chat.choices.services import ChatChoicesResponse

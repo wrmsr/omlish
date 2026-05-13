@@ -6,7 +6,7 @@ import typing as ta
 from omdev.home.secrets import load_secrets
 from omlish import lang
 from omlish.argparse import all as ap
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.secrets import all as sec
 
 from .cache import load_instance_types

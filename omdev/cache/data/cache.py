@@ -23,7 +23,7 @@ import urllib.request
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.logs import all as logs
 from omlish.os.files import touch
 

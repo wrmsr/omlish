@@ -7,7 +7,7 @@ import typing as ta
 from omdev.cache import data as dcache
 from omlish import lang
 from omlish.argparse import all as ap
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.specs import jsonschema as js
 
 

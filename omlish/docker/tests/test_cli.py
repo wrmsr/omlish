@@ -1,6 +1,6 @@
 from ... import marshal as msh
 from ...diag.pydevd import silence_subprocess_check
-from ...formats import json
+from ...formats.json import all as json
 from ...testing import pytest as ptu
 from .. import cli
 

@@ -1,5 +1,5 @@
 def test_marshal():
-    # from omlish.formats import json
+    # from omlish.formats.json import all as json
     # from omlish import marshal as msh
     #
     # msh.install_standard_factories(

@@ -9,7 +9,7 @@ import typing as ta
 
 from omlish import marshal as msh
 from omlish.argparse import all as ap
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from ..cli import CliModule
 from ..packaging import marshal as _  # noqa

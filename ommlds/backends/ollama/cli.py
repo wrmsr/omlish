@@ -1,7 +1,7 @@
 from omdev.cli import CliModule
 from omlish import check
 from omlish.argparse import all as ap
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as http
 from omlish.logs import all as logs
 

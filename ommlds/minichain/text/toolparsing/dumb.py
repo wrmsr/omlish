@@ -1,7 +1,7 @@
 import typing as ta
 
 from omlish import check
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from .base import ParsedToolExec
 from .base import ParsedToolExecs

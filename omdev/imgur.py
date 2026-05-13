@@ -28,7 +28,7 @@ import typing as ta
 
 from omlish import check
 from omlish import marshal as msh
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as hu
 from omlish.secrets.secrets import Secret
 

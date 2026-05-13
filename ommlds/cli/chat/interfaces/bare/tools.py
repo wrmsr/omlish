@@ -1,5 +1,5 @@
 from omlish import check
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.term.confirm import confirm_action
 
 from ..... import minichain as mc

@@ -4,7 +4,7 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import marshal as msh
-from ...formats import json
+from ...formats.json import all as json
 from .. import jsonschema as jsch
 
 

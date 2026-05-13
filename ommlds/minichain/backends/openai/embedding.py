@@ -1,6 +1,6 @@
 from omlish import check
 from omlish import typedvalues as tv
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as http
 
 from ...configs import Config

@@ -3,7 +3,7 @@ import typing as ta
 from omlish import cached
 from omlish import check
 from omlish import typedvalues as tv
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from ....backends.openai import protocol as pt
 from ...chat.choices.services import ChatChoicesResponse

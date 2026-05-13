@@ -2,7 +2,7 @@ import typing as ta
 
 from omlish import check
 from omlish import marshal as msh
-from omlish.formats import json
+from omlish.formats.json import all as json
 
 from ....backends.anthropic.protocol import types as pt
 from ...chat.messages import AiMessage

@@ -4,11 +4,11 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ..json import Scalar
 from ..json.literals import ESCAPE_MAP
 from ..json.literals import encode_string
 from ..json.rendering import JsonRenderer
 from ..json.rendering import JsonRendererOut
+from ..json.types import Scalar
 
 
 ##

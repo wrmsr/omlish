@@ -2,7 +2,7 @@ import os.path
 
 from omlish import check
 from omlish import marshal as msh
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import sse
 from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer

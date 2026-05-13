@@ -3,7 +3,7 @@ import sys
 import typing as ta
 
 from omlish.argparse import all as ap
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.logs.std.standard import configure_standard_logging
 from omlish.specs import jsonschema as js
 

@@ -1,7 +1,7 @@
 import dataclasses as dc
 
 from .... import lang
-from ....formats import json
+from ....formats.json import all as json
 from .. import runhack as rh
 
 

@@ -10,7 +10,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
-from omlish.formats import json as jf
+from omlish.formats.json import all as jf
 
 from .actions import Action
 from .consts import SERIALIZATION_VERSION

@@ -3,7 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import marshal as msh
 from omlish import typedvalues as tv
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder

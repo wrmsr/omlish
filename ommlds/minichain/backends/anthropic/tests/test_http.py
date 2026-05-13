@@ -2,7 +2,7 @@
 import pytest
 
 from omlish import lang
-from omlish.formats import json
+from omlish.formats.json import all as json
 from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
