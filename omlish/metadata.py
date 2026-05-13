@@ -8,6 +8,9 @@ TODO:
   - merge mro?
   - are these better left up to callers? too usecase-specific to favor either way?
  - cls_dct_fn?
+ - unique? too much? turns into just typedvalues?
+  - ... typedvalues?
+ - cache?
 """
 import threading
 import types

@@ -38,12 +38,12 @@ msh.register_global_module_import('._marshal', __package__)
 
 def _set_class_marshal_options(cls):
     msh.update_object_options(
-        cls,
         field_naming=msh.Naming.LOW_CAMEL,
         field_defaults=msh.FieldOptions(
             omit_if=lang.is_none,
         ),
-    )
+    )(cls)
+
     return cls
 
 

@@ -673,12 +673,12 @@ class JsonSchemaCodeGen:
         w()
         w('def _set_class_marshal_options(cls):')
         w('    msh.update_object_options(')
-        w('        cls,')
         w('        field_naming=msh.Naming.LOW_CAMEL,')
         w('        field_defaults=msh.FieldOptions(')
         w('            omit_if=lang.is_none,')
         w('        ),')
-        w('    )')
+        w('    )(cls)')
+        w()
         w('    return cls')
 
     def _write_discriminated_union_base_classes(self, w: _Writer) -> None:

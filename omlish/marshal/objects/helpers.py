@@ -41,6 +41,7 @@ def _dc_field_options(
 
 
 def dc_field_options(
+        *,
         name: str | None = None,
         alts: ta.Iterable[str] | None = None,
 
@@ -108,23 +109,17 @@ globals()['update_field_options'] = _update_field_options
 
 
 def _update_object_options(
-        cls: type | None = None,
         **kwargs: ta.Any,
-):
+) -> ta.Callable[[type[T]], type[T]]:
     oo = ObjectOptions(**kwargs)
 
     def inner(cls):
         return _ObjectOptionsMetadata(oo)(cls)
 
-    if cls is not None:
-        inner(cls)
-        return cls
-    else:
-        return inner
+    return inner
 
 
 def update_object_options(
-        cls: type | None = None,
         *,
         field_naming: Naming | None = None,
 
@@ -135,7 +130,7 @@ def update_object_options(
         source_field: str | None = None,
 
         field_defaults: FieldOptions = DEFAULT_FIELD_OPTIONS,
-):
+) -> ta.Callable[[type[T]], type[T]]:
     raise NotImplementedError
 
 

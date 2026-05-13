@@ -29,7 +29,6 @@ class MarshalVia(tv.UniqueTypedValue, Config, lang.Final):
 
     def __post_init__(self) -> None:
         check.not_none(self.o)
-        check.not_isinstance(self.o, (UnmarshalerFactory, Unmarshaler))
 
 
 @ta.final
@@ -39,7 +38,6 @@ class UnmarshalVia(tv.UniqueTypedValue, Config, lang.Final):
 
     def __post_init__(self) -> None:
         check.not_none(self.o)
-        check.not_isinstance(self.o, (MarshalerFactory, Marshaler))
 
 
 ##
