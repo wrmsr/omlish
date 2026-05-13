@@ -23,6 +23,19 @@ class Naming(Config, tv.UniqueTypedValue, enum.Enum):
     KEBAB = 'kebab'
     UP_KEBAB = 'up_kebab'
 
+    #
+
+    @staticmethod
+    def from_casing(casing: lang.StringCasing) -> Naming:
+        return _NAMING_BY_CASING[casing]
+
+    @property
+    def casing(self) -> lang.StringCasing:
+        return _CASING_BY_NAMING[self]
+
+
+##
+
 
 _CASING_BY_NAMING: ta.Mapping[Naming, lang.StringCasing] = {
     Naming.CAMEL: lang.CAMEL_CASE,
@@ -32,6 +45,12 @@ _CASING_BY_NAMING: ta.Mapping[Naming, lang.StringCasing] = {
     Naming.KEBAB: lang.KEBAB_CASE,
     Naming.UP_KEBAB: lang.UP_KEBAB_CASE,
 }
+
+
+_NAMING_BY_CASING: ta.Mapping[lang.StringCasing, Naming] = {v: k for k, v in _CASING_BY_NAMING.items()}
+
+
+##
 
 
 def translate_name(n: str, e: Naming) -> str:
