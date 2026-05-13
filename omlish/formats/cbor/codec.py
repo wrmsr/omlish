@@ -1,8 +1,8 @@
 import typing as ta
 
-from .. import lang
-from .codecs import make_bytes_object_codec
-from .codecs import make_object_lazy_loaded_codec
+from ... import lang
+from ..codecs import make_bytes_object_codec
+from ..codecs import make_object_lazy_loaded_codec
 
 
 if ta.TYPE_CHECKING:
