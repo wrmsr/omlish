@@ -1,3 +1,10 @@
+"""
+TODO:
+ - caches?
+  - generalized BaseContext cache?
+  - or at least config / metadata caches?
+   - auto-invalidated by ConfigRegistry.token
+"""
 import abc
 import dataclasses as dc
 import typing as ta

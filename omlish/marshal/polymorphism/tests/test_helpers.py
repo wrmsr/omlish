@@ -19,7 +19,7 @@ from ...objects.dataclasses import DataclassMarshalerFactory
 from ...objects.dataclasses import DataclassUnmarshalerFactory
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
-from ..helpers import set_polymorphic_from_subclasses
+from ..api import set_polymorphic_from_subclasses
 
 
 @set_polymorphic_from_subclasses()

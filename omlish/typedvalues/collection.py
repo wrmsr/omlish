@@ -219,6 +219,8 @@ class TypedValues(
                 override=mode == 'override',
             )
 
+        # This is an explicit API guarantee actively depended upon by usecases - no update must return the same
+        # instance.
         if lang.seqs_identical(self._tup, n._tup):
             return self
 

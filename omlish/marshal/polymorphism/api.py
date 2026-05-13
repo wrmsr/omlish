@@ -292,9 +292,10 @@ class OpenPolymorphismImpl(Config, lang.Final):
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class _PolymorphismMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
-    opts: PolymorphismOptions
+    mode: ta.Literal['subclasses'] = 'subclasses'
+    opts: PolymorphismOptions = PolymorphismOptions()
 
 
 def set_polymorphic_from_subclasses(
@@ -310,7 +311,10 @@ def set_polymorphic_from_subclasses(
     )
 
     def inner(cls):
-        _PolymorphismMetadata(opts)(cls)
+        _PolymorphismMetadata(
+            mode='subclasses',
+            opts=opts,
+        )(cls)
 
         return cls
 

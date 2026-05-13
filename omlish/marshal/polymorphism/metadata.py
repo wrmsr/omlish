@@ -20,6 +20,8 @@
 import threading
 import typing as ta
 
+from ... import check
+from ... import lang
 from ... import metadata as md
 from ... import reflect as rfl
 from ..api.contexts import MarshalFactoryContext
@@ -43,6 +45,9 @@ from .api import polymorphism_from_subclasses
 from .marshal import PolymorphismMarshalerFactory
 from .unmarshal import PolymorphismUnmarshalerFactory
 from .api import _PolymorphismMetadata
+from .api import Polymorphism
+from .api import Impls
+from ..api.configs import ConfigRegistry
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
@@ -68,11 +73,18 @@ class PolymorphismMetadataCache:
 
         self._lock = threading.Lock()
 
-        self._metadata_cache
+        # self._metadata_cache
 
-    def get_metadata(self, rty: rfl.Type) -> _PolymorphismMetadata | None:
-        try:
-            return
+    # def get_metadata(self, rty: rfl.Type) -> _PolymorphismMetadata | None:
+    #     try:
+    #         return
+
+    class Lookup(ta.NamedTuple):
+        poly: Polymorphism
+        opts: PolymorphismOptions
+
+    def lookup(self, cfgs: ConfigRegistry, rty: rfl.Type) -> Lookup | None:
+        raise NotImplementedError
 
 
 ##
@@ -90,8 +102,13 @@ class PolymorphismMetadataMarshalerFactory(
     MarshalerFactory,
 ):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        # if (pmd := _get_polymorphism_metadata(rty)):
-        raise NotImplementedError
+        if (lu := self._cache.lookup(check.isinstance(ctx.configs, ConfigRegistry), rty)) is None:
+            return None
+
+        return PolymorphismMarshalerFactory(
+            lu.poly,
+            lu.opts.type_tagging,
+        ).make_marshaler(ctx, rty)
 
 
 class PolymorphismMetadataUnmarshalerFactory(
@@ -99,7 +116,13 @@ class PolymorphismMetadataUnmarshalerFactory(
     UnmarshalerFactory,
 ):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        raise NotImplementedError
+        if (lu := self._cache.lookup(check.isinstance(ctx.configs, ConfigRegistry), rty)) is None:
+            return None
+
+        return PolymorphismUnmarshalerFactory(
+            lu.poly,
+            lu.opts.type_tagging,
+        ).make_unmarshaler(ctx, rty)
 
 
 ##
