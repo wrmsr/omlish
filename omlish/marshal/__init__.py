@@ -63,6 +63,7 @@ with _lang.auto_proxy_init(globals()):
 
         DefaultOptions,
         IgnoreDefaultOptions,
+        build_effective_options,
     )
 
     from .api.reflect import (  # noqa
