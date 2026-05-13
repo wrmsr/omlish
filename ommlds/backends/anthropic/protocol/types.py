@@ -11,11 +11,20 @@ from omlish import marshal as msh
 
 def _set_class_marshal_options(cls):
     msh.update_object_options(
-        cls,
         field_defaults=msh.FieldOptions(
             omit_if=lang.is_none,
         ),
-    )
+    )(cls)
+
+    return cls
+
+
+def _set_class_marshal_polymorphic(cls):
+    msh.set_polymorphic_from_subclasses(
+        type_tagging=msh.FieldTypeTagging('type'),
+        naming=msh.Naming.SNAKE,
+        strip_suffix=msh.AutoStripSuffix,
+    )(cls)
 
     return cls
 
@@ -23,7 +32,9 @@ def _set_class_marshal_options(cls):
 ##
 
 
+@_set_class_marshal_polymorphic
 class Content(lang.Abstract, lang.Sealed):
+    @_set_class_marshal_polymorphic
     class CacheControl(lang.Abstract, lang.Sealed):
         """https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching"""
 

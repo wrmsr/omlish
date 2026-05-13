@@ -76,6 +76,13 @@ class ConfigRegistry(Configs):
     def version(self) -> int:
         return self._state.version
 
+    class Token:
+        pass
+
+    @property
+    def token(self) -> object:
+        return self._state.token
+
     @property
     def debug(self) -> ta.Mapping[ta.Any, ta.Sequence[Config]]:
         return self._state.debug
@@ -97,6 +104,7 @@ class ConfigRegistry(Configs):
     class _State:
         dct: ta.Mapping[ta.Any, ConfigValues] = dc.field(default_factory=dict)
         version: int = 0
+        token: ConfigRegistry.Token = dc.field(default_factory=lambda: ConfigRegistry.Token())
 
         #
 
