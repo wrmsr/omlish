@@ -25,11 +25,13 @@ Wikicode: ta.TypeAlias = 'mfh.wikicode.Wikicode'
 
 
 @dc.dataclass(frozen=True)
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE)
 class Node(lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE)
 class ContentNode(Node, lang.Abstract):
     pass
 
@@ -114,21 +116,6 @@ class Heading(ContentNode):
 class Argument(ContentNode):
     name: Content = ()
     default: Content = ()
-
-
-##
-
-
-def _install_msh_poly(cls: type) -> None:
-    p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
-    msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(p),
-        msh.PolymorphismUnmarshalerFactory(p),
-    )
-
-
-_install_msh_poly(Node)
-_install_msh_poly(ContentNode)
 
 
 ##

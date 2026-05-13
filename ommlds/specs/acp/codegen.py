@@ -810,7 +810,7 @@ class JsonSchemaCodeGen:
                 w(f'        msh.polymorphism_from_subclasses(')
                 w(f'            {union_name},')
                 w(f'            naming=msh.Naming.SNAKE,')
-                w(f'            strip_suffix=msh.AutoStripSuffix,')
+                w(f'            strip_suffix=msh.AUTO_STRIP_SUFFIX,')
                 w(f'        ),')
                 w(f'        msh.FieldTypeTagging({union_td.discriminator_field!r}),')
                 w(f'    ))')

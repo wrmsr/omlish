@@ -13,9 +13,6 @@ from ..types import ChatOptions
 from .metadata import AiDeltaMetadatas
 
 
-msh.register_global_module_import('._marshal', __package__)
-
-
 ##
 
 
@@ -40,6 +37,7 @@ ChatStreamOutputs: ta.TypeAlias = ChatStreamOutput
 
 
 @dc.dataclass(frozen=True)
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE)
 class AiDelta(MetadataContainerDataclass[AiDeltaMetadatas], lang.Abstract, lang.Sealed):
     _metadata: ta.Sequence[AiDeltaMetadatas] = dc.field(default=(), kw_only=True, repr=False)
 

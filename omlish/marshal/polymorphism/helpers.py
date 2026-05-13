@@ -9,7 +9,7 @@ from ..api.vias import UnmarshalVia
 from ..api.vias import UnmarshalViaMetadata
 from ..factories.lazy import LazyMarshalerFactory
 from ..factories.lazy import LazyUnmarshalerFactory
-from .api import AutoStripSuffix
+from .api import AUTO_STRIP_SUFFIX
 from .api import PolymorphismOptions
 from .api import TypeTagging
 from .api import WrapperTypeTagging
@@ -31,7 +31,7 @@ def set_polymorphic_from_subclasses(
         *,
         type_tagging: TypeTagging = WrapperTypeTagging(),
         naming: Naming | None = None,
-        strip_suffix: bool | type[AutoStripSuffix] | str = False,
+        strip_suffix: bool | type[AUTO_STRIP_SUFFIX] | str = False,
 ) -> ta.Callable[[type[T]], type[T]]:
     opts = PolymorphismOptions(
         type_tagging=type_tagging,

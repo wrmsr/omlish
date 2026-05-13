@@ -234,7 +234,7 @@ with _lang.auto_proxy_init(globals()):
         PolymorphismTagError,
         PolymorphismImplError,
 
-        AutoStripSuffix,
+        AUTO_STRIP_SUFFIX,
 
         TypeTagging,
         WrapperTypeTagging,

@@ -16,7 +16,7 @@ def _install_standard_marshaling() -> None:
             msh.polymorphism_from_subclasses(
                 root_cls,
                 naming=msh.Naming.SNAKE,
-                strip_suffix=msh.AutoStripSuffix,
+                strip_suffix=msh.AUTO_STRIP_SUFFIX,
             ),
             msh.FieldTypeTagging(tag_field),
         ))

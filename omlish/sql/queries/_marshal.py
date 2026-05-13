@@ -80,7 +80,7 @@ def _install_standard_marshaling() -> None:
         Node,
         include_bases=True,
         naming=msh.Naming.SNAKE,
-        strip_suffix=msh.AutoStripSuffix,
+        strip_suffix=msh.AUTO_STRIP_SUFFIX,
     )
     msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(node_poly),

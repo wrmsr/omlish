@@ -14,7 +14,7 @@ from ..composite.wrapped import WrappedMarshaler
 from ..composite.wrapped import WrappedUnmarshaler
 from ..factories.method import MarshalerFactoryMethodClass
 from ..factories.method import UnmarshalerFactoryMethodClass
-from ..polymorphism.api import AutoStripSuffix
+from ..polymorphism.api import AUTO_STRIP_SUFFIX
 from ..polymorphism.api import Polymorphism
 from ..polymorphism.api import WrapperTypeTagging
 from ..polymorphism.api import polymorphism_from_subclasses
@@ -41,7 +41,7 @@ def _build_typed_value_poly(rty: rfl.Type) -> Polymorphism:
     return polymorphism_from_subclasses(
         ty,
         naming=Naming.SNAKE,
-        strip_suffix=AutoStripSuffix,
+        strip_suffix=AUTO_STRIP_SUFFIX,
     )
 
 

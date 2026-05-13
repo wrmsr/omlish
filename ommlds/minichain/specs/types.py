@@ -21,6 +21,7 @@ CanBackendSpec: ta.TypeAlias = ta.Union[
 
 
 @dc.dataclass(frozen=True)
+@msh.set_polymorphic_from_subclasses(strip_suffix=True, naming=msh.Naming.SNAKE)
 class BackendSpec(lang.Sealed):
     @ta.final
     @classmethod

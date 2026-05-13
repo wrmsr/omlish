@@ -1369,7 +1369,7 @@ def _install_marshaling() -> None:
         msh.polymorphism_from_subclasses(
             ContentBlock,
             naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AutoStripSuffix,
+            strip_suffix=msh.AUTO_STRIP_SUFFIX,
         ),
         msh.FieldTypeTagging('type'),
     ))
@@ -1378,7 +1378,7 @@ def _install_marshaling() -> None:
         msh.polymorphism_from_subclasses(
             RequestPermissionOutcome,
             naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AutoStripSuffix,
+            strip_suffix=msh.AUTO_STRIP_SUFFIX,
         ),
         msh.FieldTypeTagging('outcome'),
     ))
@@ -1387,7 +1387,7 @@ def _install_marshaling() -> None:
         msh.polymorphism_from_subclasses(
             SessionConfigOption,
             naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AutoStripSuffix,
+            strip_suffix=msh.AUTO_STRIP_SUFFIX,
         ),
         msh.FieldTypeTagging('type'),
     ))
@@ -1396,7 +1396,7 @@ def _install_marshaling() -> None:
         msh.polymorphism_from_subclasses(
             SessionUpdate,
             naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AutoStripSuffix,
+            strip_suffix=msh.AUTO_STRIP_SUFFIX,
         ),
         msh.FieldTypeTagging('sessionUpdate'),
     ))
@@ -1405,7 +1405,7 @@ def _install_marshaling() -> None:
         msh.polymorphism_from_subclasses(
             ToolCallContent,
             naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AutoStripSuffix,
+            strip_suffix=msh.AUTO_STRIP_SUFFIX,
         ),
         msh.FieldTypeTagging('type'),
     ))

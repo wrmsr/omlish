@@ -30,9 +30,6 @@ CursorClientRequestT = ta.TypeVar('CursorClientRequestT', bound='CursorClientReq
 CursorClientResultT = ta.TypeVar('CursorClientResultT', bound='CursorClientResult')
 
 
-msh.register_global_module_import('._marshal', __package__)
-
-
 ##
 
 
@@ -241,6 +238,11 @@ class ListToolsResult(CursorClientResult[ListToolsRequest], WithMeta):
 ##
 
 
+@msh.set_polymorphic_from_subclasses(
+    type_tagging=msh.FieldTypeTagging('type'),
+    naming=msh.Naming.SNAKE,
+    strip_suffix=msh.AUTO_STRIP_SUFFIX,
+)
 class ContentBlock(lang.Abstract):
     pass
 

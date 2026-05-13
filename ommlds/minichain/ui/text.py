@@ -48,6 +48,7 @@ UiTextStyle.DEFAULT = UiTextStyle()
 ##
 
 
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE, strip_suffix=True)
 @dc.dataclass(frozen=True)
 class UiText(lang.Abstract, lang.Sealed):
     _BLANK: ta.ClassVar[StrUiText]
@@ -286,13 +287,3 @@ class JsonUiText(UiText, lang.Final):
 
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
         fn(json.dumps_compact(self.v))
-
-
-##
-
-
-@msh.register_global_lazy_init
-def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
-    msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(UiText, naming=msh.Naming.SNAKE, strip_suffix=True),
-    ))

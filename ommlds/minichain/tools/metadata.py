@@ -12,6 +12,7 @@ from ..metadata import Metadata
 ##
 
 
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE)
 class ToolUseMetadata(Metadata, lang.Abstract, lang.Sealed):
     pass
 
@@ -29,26 +30,9 @@ class ToolUseUuid(tv.UniqueScalarTypedValue[uuid.UUID], ToolUseMetadata, lang.Fi
 ##
 
 
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE)
 class ToolUseResultMetadata(Metadata, lang.Abstract, lang.Sealed):
     pass
 
 
 ToolUseResultMetadatas: ta.TypeAlias = ToolUseResultMetadata | CommonMetadata
-
-
-##
-
-
-@msh.register_global_lazy_init
-def _setup_marshaling(cfgs: msh.ConfigRegistry) -> None:
-    for cls in [
-        ToolUseMetadata,
-        ToolUseResultMetadata,
-    ]:
-        msh.install_standard_factories_to(cfgs, *msh.standard_polymorphism_factories(
-            msh.polymorphism_from_subclasses(
-                cls,
-                naming=msh.Naming.SNAKE,
-            ),
-            msh.WrapperTypeTagging(),
-        ))

@@ -23,7 +23,7 @@ def _set_class_marshal_polymorphic(cls):
     msh.set_polymorphic_from_subclasses(
         type_tagging=msh.FieldTypeTagging('type'),
         naming=msh.Naming.SNAKE,
-        strip_suffix=msh.AutoStripSuffix,
+        strip_suffix=msh.AUTO_STRIP_SUFFIX,
     )(cls)
 
     return cls

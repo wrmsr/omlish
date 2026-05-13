@@ -40,7 +40,7 @@ class FieldTypeTagging(TypeTagging, lang.Final):
 ##
 
 
-class AutoStripSuffix(lang.Marker):
+class AUTO_STRIP_SUFFIX(lang.Marker):  # noqa
     pass
 
 
@@ -194,7 +194,7 @@ def polymorphism_from_impls(
         base_tys: ta.Mapping[type, ta.Iterable[type]] | None = None,
 
         naming: Naming | None = None,
-        strip_suffix: bool | type[AutoStripSuffix] | str = False,
+        strip_suffix: bool | type[AUTO_STRIP_SUFFIX] | str = False,
 ) -> Polymorphism:
     impl_tys = set(impl_tys)
 
@@ -209,7 +209,7 @@ def polymorphism_from_impls(
         ]
 
     ssx: str | None
-    if strip_suffix is AutoStripSuffix:
+    if strip_suffix is AUTO_STRIP_SUFFIX:
         strip_suffix = all(c.__name__.endswith(ty.__name__) for c in impl_tys)
     if isinstance(strip_suffix, bool):
         ssx = ty.__name__ if strip_suffix else None
@@ -246,7 +246,7 @@ def polymorphism_from_subclasses(
         include_bases: bool = False,
 
         naming: Naming | None = None,
-        strip_suffix: bool | type[AutoStripSuffix] | str = False,
+        strip_suffix: bool | type[AUTO_STRIP_SUFFIX] | str = False,
 ) -> Polymorphism:
     impl_tys: set[type]
     base_tys: dict[type, set[type]] | None
@@ -274,7 +274,7 @@ def polymorphism_from_subclasses(
 class PolymorphismOptions(lang.Final):
     type_tagging: TypeTagging = WrapperTypeTagging()
     naming: Naming | None = None
-    strip_suffix: bool | type[AutoStripSuffix] | str = False
+    strip_suffix: bool | type[AUTO_STRIP_SUFFIX] | str = False
 
 
 ##
