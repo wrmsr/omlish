@@ -63,6 +63,8 @@ with _lang.auto_proxy_init(globals()):
 
         DefaultOptions,
         IgnoreDefaultOptions,
+
+        update_default_options,
         build_effective_options,
     )
 
@@ -87,6 +89,8 @@ with _lang.auto_proxy_init(globals()):
 
     from .api.values import (  # noqa
         Value,
+
+        VALUE_TYPES,
     )
 
     from .composite.api import (  # noqa

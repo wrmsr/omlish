@@ -1,5 +1,6 @@
 """
 TODO:
+ - bytes Option
  - field-configurable coercion
 """
 import typing as ta
@@ -18,12 +19,13 @@ from ..factories.typemap import TypeMapUnmarshalerFactory
 
 
 PRIMITIVE_TYPES: tuple[type, ...] = (
+    type(None),
+
     bool,
     int,
     float,
     str,
     bytes,
-    type(None),
 )
 
 

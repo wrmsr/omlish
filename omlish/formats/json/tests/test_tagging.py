@@ -21,8 +21,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import pytest
 
-from ..tags import JsonTag
-from ..tags import JsonTagger
+from ..tagging import JsonTag
+from ..tagging import JsonTagger
 
 
 @pytest.mark.parametrize(

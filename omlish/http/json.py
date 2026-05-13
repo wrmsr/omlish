@@ -27,8 +27,8 @@ import typing as ta
 import uuid
 
 from .. import lang
-from ..formats.json.tags import JsonTag
-from ..formats.json.tags import JsonTagger as BaseJsonTagger
+from ..formats.json.tagging import JsonTag
+from ..formats.json.tagging import JsonTagger as BaseJsonTagger
 from .dates import http_date
 from .dates import parse_date
 

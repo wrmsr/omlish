@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
+from ... import lang
 from ... import typedvalues as tv
 from ..api.options import Option
 
@@ -9,13 +10,13 @@ from ..api.options import Option
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class DefaultIterableConstructors(Option, tv.UniqueTypedValue):
+class DefaultIterableConstructors(Option, tv.UniqueTypedValue, lang.Final):
     iterable: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
     sequence: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
     mutable_sequence: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class DefaultMappingConstructors(Option, tv.UniqueTypedValue):
+class DefaultMappingConstructors(Option, tv.UniqueTypedValue, lang.Final):
     mapping: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None
     mutable_mapping: ta.Callable[[ta.Iterable], ta.Any] | ta.Any | None = None

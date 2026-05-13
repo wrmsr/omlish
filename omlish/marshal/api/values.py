@@ -16,3 +16,20 @@ Value: ta.TypeAlias = ta.Union[  # noqa
 
     # ta.Any,
 ]
+
+
+##
+
+
+VALUE_TYPES: tuple[type, ...] = (
+    type(None),
+
+    bool,
+    int,
+    float,
+    str,
+    bytes,
+
+    list,
+    dict,
+)

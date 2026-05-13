@@ -36,6 +36,7 @@ class Base64MarshalerUnmarshaler(Marshaler, Unmarshaler, ta.Generic[T]):
 BASE64_TYPES = (
     bytes,
     bytearray,
+    memoryview,
 )
 
 BASE64_MARSHALER_FACTORY = TypeMapMarshalerFactory({
