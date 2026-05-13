@@ -1,3 +1,7 @@
+"""
+TODO:
+ - individual options?
+"""
 import dataclasses as dc
 import typing as ta
 

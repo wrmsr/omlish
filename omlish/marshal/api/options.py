@@ -6,6 +6,7 @@ TODO:
 """
 import typing as ta
 
+from ... import check
 from ... import lang
 from ... import typedvalues as tv
 from .configs import Config
@@ -33,7 +34,9 @@ _EMPTY_OPTIONS: Options = Options()
 
 
 class DefaultOptions(tv.UniqueScalarTypedValue[Options], Config, lang.Final):
-    pass
+    def __post_init__(self) -> None:
+        check.isinstance(self.v, tv.TypedValues)
+        check.not_in(IgnoreDefaultOptions, self.v)
 
 
 class IgnoreDefaultOptions(tv.UniqueTypedValue, Option, lang.Final):
@@ -49,11 +52,13 @@ def update_default_options(
         discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
         mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
 ) -> ConfigRegistry:
+    given = Options(*options)
+
     def inner(_: ConfigRegistry) -> None:
         if (defaults := configs.get().get(DefaultOptions)) is not None:
-            new = defaults.v.update(*options, discard=discard, mode=mode)
+            new = defaults.v.update(*given, discard=discard, mode=mode)
         else:
-            new = Options(*options)
+            new = Options(*given)
 
         configs.update(None, DefaultOptions(new), mode='override')
 
@@ -62,10 +67,11 @@ def update_default_options(
 
 
 def build_effective_options(configs: Configs, options: ta.Iterable[Option] | None = None) -> Options:
-    if not options:
-        return _EMPTY_OPTIONS
+    if options:
+        given = Options(*options)
+    else:
+        given = _EMPTY_OPTIONS
 
-    given = Options(*options)
     if IgnoreDefaultOptions in given:
         return given
 
