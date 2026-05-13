@@ -49,6 +49,10 @@ with _auto_proxy_init(globals(), update_exports=True):
         AmbiguousStringCasingError,
 
         StringCasing,
+        StaticStringCasing,
+
+        casing_converter,
+
         CamelCase,
         LowCamelCase,
         SnakeCase,

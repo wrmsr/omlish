@@ -1,3 +1,11 @@
+"""
+TODO:
+ - user friendlier inference - when 'no' casing (like `abc`)
+ - get_string_set_casing
+ - unify Static and non-static - non-static is valid for user usecases
+  - `def to` is not @classmethod lol
+  - maybe Casing is a protocol that non-instantiated StaticCasing fits?
+"""
 import abc
 import re
 import typing as ta
@@ -77,6 +85,15 @@ class StaticStringCasing(StringCasing, Abstract):
     @abc.abstractmethod
     def join(cls, *parts: str) -> str:
         raise NotImplementedError
+
+
+#
+
+
+def casing_converter(src: StringCasing, dst: StringCasing) -> ta.Callable[[str], str]:
+    def inner(s: str) -> str:
+        return dst.join(*src.split(s))
+    return inner
 
 
 ##
