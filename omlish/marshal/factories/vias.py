@@ -16,7 +16,7 @@ from ..api.vias import make_unmarshaler_via
 ##
 
 
-class ViaMarshalerFactory(MarshalerFactory):
+class ViaConfigMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if (via := ctx.configs.get(rty).get(MarshalVia)) is None:
             return None
@@ -24,7 +24,7 @@ class ViaMarshalerFactory(MarshalerFactory):
         return lambda: make_marshaler_via(ctx, rty, via)
 
 
-class ViaUnmarshalerFactory(UnmarshalerFactory):
+class ViaConfigUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if (via := ctx.configs.get(rty).get(UnmarshalVia)) is None:
             return None

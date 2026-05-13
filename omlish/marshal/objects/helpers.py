@@ -1,6 +1,11 @@
+# ruff: noqa: UP037
+"""
+This file is considered part of the marshal api, and must be diligent about not importing too much like the rest of the
+api modules. Specifically, it can't eagerly import `omlish.dataclasses` (even though `dc.set_field_metadata` itself
+tries to only lazily load heavy dataclass internals).
+"""
 import typing as ta
 
-from ... import dataclasses as dc
 from ... import lang
 from ..api.naming import Naming
 from ..api.vias import MarshalVia
@@ -9,6 +14,10 @@ from .api import DEFAULT_FIELD_OPTIONS
 from .api import FieldOptions
 from .api import ObjectOptions
 from .api import _ObjectOptionsMetadata
+
+
+with lang.auto_proxy_import(globals()):
+    from ... import dataclasses as dc
 
 
 T = ta.TypeVar('T')
@@ -21,7 +30,7 @@ T = ta.TypeVar('T')
 
 def _dc_field_options(
         **kwargs: ta.Any,
-) -> dc.field_modifier:
+) -> 'dc.field_modifier':
     @dc.field_modifier
     def inner(f: dc.Field) -> dc.Field:
         existing = f.metadata.get(FieldOptions, DEFAULT_FIELD_OPTIONS)
@@ -44,7 +53,7 @@ def dc_field_options(
 
         marshal_via: MarshalVia | None = None,
         unmarshal_via: UnmarshalVia | None = None,
-) -> dc.field_modifier:
+) -> 'dc.field_modifier':
     raise NotImplementedError
 
 

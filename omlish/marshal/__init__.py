@@ -150,6 +150,16 @@ with _lang.auto_proxy_init(globals()):
         ModuleImport,
     )
 
+    from .factories.filtered import (  # noqa
+        FilteredMarshalerFactory,
+        FilteredUnmarshalerFactory,
+    )
+
+    from .factories.lazy import (  # noqa
+        LazyMarshalerFactory,
+        LazyUnmarshalerFactory,
+    )
+
     from .factories.lazyinit import (  # noqa
         LazyInitRunningMarshalerFactory,
         LazyInitRunningUnmarshalerFactory,
@@ -176,8 +186,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .factories.vias import (  # noqa
-        ViaMarshalerFactory,
-        ViaUnmarshalerFactory,
+        ViaConfigMarshalerFactory,
+        ViaConfigUnmarshalerFactory,
     )
 
     from .objects.dataclasses import (  # noqa
