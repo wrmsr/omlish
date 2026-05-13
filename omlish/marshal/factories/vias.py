@@ -45,7 +45,7 @@ def _get_via_metadata(rty: rfl.Type, md_cls: type[T]) -> T | None:
     if not isinstance(rty, type):
         return None
 
-    if not (mds := md.get_object_metadata(rty, type=md_cls, mro_merge=True)):
+    if not (mds := md.get_object_metadata(rty, type=md_cls)):
         return None
 
     return mds[-1]

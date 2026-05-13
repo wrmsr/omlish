@@ -253,6 +253,10 @@ with _lang.auto_proxy_init(globals()):
         OpenPolymorphismImpl,
     )
 
+    from .polymorphism.helpers import (  # noqa
+        set_polymorphic_from_subclasses,
+    )
+
     from .polymorphism.marshal import (  # noqa
         PolymorphismMarshaler,
         PolymorphismMarshalerFactory,
