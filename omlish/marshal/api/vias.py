@@ -3,6 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ... import metadata as md
 from ... import reflect as rfl
 from ... import typedvalues as tv
 from .configs import Config
@@ -68,3 +69,16 @@ def make_unmarshaler_via(ctx: UnmarshalFactoryContext, rty: rfl.Type, via: Unmar
         return m()
 
     return ctx.make_unmarshaler(o)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class MarshalViaMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
+    via: MarshalVia
+
+
+@dc.dataclass(frozen=True)
+class UnmarshalViaMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
+    via: UnmarshalVia

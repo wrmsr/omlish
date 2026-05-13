@@ -23,6 +23,8 @@ from ..composite.unions.primitives import PrimitiveUnionMarshalerFactory
 from ..composite.unions.primitives import PrimitiveUnionUnmarshalerFactory
 from ..factories.vias import ViaConfigMarshalerFactory
 from ..factories.vias import ViaConfigUnmarshalerFactory
+from ..factories.vias import ViaMetadataMarshalerFactory
+from ..factories.vias import ViaMetadataUnmarshalerFactory
 from ..objects.dataclasses import DataclassMarshalerFactory
 from ..objects.dataclasses import DataclassUnmarshalerFactory
 from ..objects.namedtuples import NamedtupleMarshalerFactory
@@ -77,6 +79,7 @@ class DefaultStandardFactories(ta.NamedTuple):
 
 DEFAULT_STANDARD_FACTORIES: ta.Final = DefaultStandardFactories.of_pairs([
     (ViaConfigMarshalerFactory(),       ViaConfigUnmarshalerFactory()),
+    (ViaMetadataMarshalerFactory(),     ViaMetadataUnmarshalerFactory()),
     (OPAQUE_REPR_MARSHALER_FACTORY,     OPAQUE_REPR_UNMARSHALER_FACTORY),
     (PRIMITIVE_MARSHALER_FACTORY,       PRIMITIVE_UNMARSHALER_FACTORY),
     (NewtypeMarshalerFactory(),         NewtypeUnmarshalerFactory()),

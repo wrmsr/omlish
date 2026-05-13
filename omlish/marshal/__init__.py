@@ -99,6 +99,9 @@ with _lang.auto_proxy_init(globals()):
 
         make_marshaler_via,
         make_unmarshaler_via,
+
+        MarshalViaMetadata,
+        UnmarshalViaMetadata,
     )
 
     from .composite.api import (  # noqa
@@ -188,6 +191,9 @@ with _lang.auto_proxy_init(globals()):
     from .factories.vias import (  # noqa
         ViaConfigMarshalerFactory,
         ViaConfigUnmarshalerFactory,
+
+        ViaMetadataMarshalerFactory,
+        ViaMetadataUnmarshalerFactory,
     )
 
     from .objects.dataclasses import (  # noqa
