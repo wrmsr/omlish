@@ -8,6 +8,7 @@ import typing as ta
 
 from ... import lang
 from ... import typedvalues as tv
+from .configs import Config
 
 
 ##
@@ -24,3 +25,10 @@ Options: ta.TypeAlias = tv.TypedValues[Option]
 
 
 _EMPTY_OPTIONS: Options = Options()
+
+
+##
+
+
+class DefaultOptions(tv.UniqueScalarTypedValue[Options], Config, lang.Final):
+    pass
