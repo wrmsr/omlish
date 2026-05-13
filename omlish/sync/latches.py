@@ -14,8 +14,14 @@ class CountDownLatch:
         self._count = count
         self._cond = threading.Condition()
 
+    def get_count(self) -> int:
+        with self._cond:
+            return self._count
+
     def count_down(self) -> None:
         with self._cond:
+            if self._count < 1:
+                return
             self._count -= 1
             if self._count <= 0:
                 self._cond.notify_all()

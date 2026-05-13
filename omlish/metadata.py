@@ -55,6 +55,9 @@ class ObjectMetadataTargetTypeError(TypeError):
 
 
 def _unwrap_object_metadata_target(obj: ta.Any) -> ta.Any:
+    if isinstance(obj, type):
+        return obj
+
     tgt: ta.Any = obj
     tgt = lang.unwrap_func(tgt)
 
@@ -94,6 +97,27 @@ def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
 
     lst.extend(mds)
     return obj
+
+
+##
+
+
+def has_object_metadata(
+        obj: ta.Any,
+        *,
+        non_strict: bool = False,
+) -> bool:
+    try:
+        tgt = _unwrap_object_metadata_target(obj)
+    except ObjectMetadataTargetTypeError:
+        if non_strict:
+            return False
+        raise
+
+    return hasattr(tgt, _OBJECT_METADATA_ATTR)
+
+
+#
 
 
 _type = type
