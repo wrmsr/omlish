@@ -3,6 +3,7 @@ import re
 import typing as ta
 
 from ..lite.abstract import Abstract
+from .classes.restrict import Final
 
 
 ##
@@ -61,50 +62,78 @@ class StringCasing(Abstract):
 #
 
 
-class CamelCase(StringCasing):
+class StaticStringCasing(StringCasing, Abstract):
+    @classmethod
+    @abc.abstractmethod
+    def match(cls, s: str) -> bool:
+        raise NotImplementedError
+
+    @classmethod
+    @abc.abstractmethod
+    def split(cls, s: str) -> list[str]:
+        raise NotImplementedError
+
+    @classmethod
+    @abc.abstractmethod
+    def join(cls, *parts: str) -> str:
+        raise NotImplementedError
+
+
+##
+
+
+@ta.final
+class CamelCase(StaticStringCasing, Final):
     """FooBarBaz"""
 
     _PAT: ta.ClassVar[re.Pattern] = re.compile(r'[A-Z][a-z0-9]*(?:[A-Z][a-z0-9]*)*')
     _SPLIT_PAT: ta.ClassVar[re.Pattern] = re.compile(r'[A-Z][a-z0-9]*')
 
-    def match(self, s: str) -> bool:
-        return bool(self._PAT.fullmatch(s))
+    @classmethod
+    def match(cls, s: str) -> bool:
+        return bool(cls._PAT.fullmatch(s))
 
-    def split(self, s: str) -> list[str]:
-        if not self.match(s):
+    @classmethod
+    def split(cls, s: str) -> list[str]:
+        if not cls.match(s):
             raise ImproperStringCasingError(f'Not valid CamelCase: {s!r}')
-        return [m.group(0).lower() for m in self._SPLIT_PAT.finditer(s)]
+        return [m.group(0).lower() for m in cls._SPLIT_PAT.finditer(s)]
 
-    def join(self, *parts: str) -> str:
+    @classmethod
+    def join(cls, *parts: str) -> str:
         _check_all_lowercase(*parts)
         return ''.join(p.capitalize() for p in parts)
 
 
-class LowCamelCase(StringCasing):
+@ta.final
+class LowCamelCase(StaticStringCasing, Final):
     """fooBarBaz"""
 
     _MATCH_PAT: ta.ClassVar[re.Pattern] = re.compile(r'[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*')
     _FIRST_PAT: ta.ClassVar[re.Pattern] = re.compile(r'^[a-z0-9]+')
     _UPPER_PAT: ta.ClassVar[re.Pattern] = re.compile(r'[A-Z][a-z0-9]*')
 
-    def match(self, s: str) -> bool:
-        return bool(self._MATCH_PAT.fullmatch(s))
+    @classmethod
+    def match(cls, s: str) -> bool:
+        return bool(cls._MATCH_PAT.fullmatch(s))
 
-    def split(self, s: str) -> list[str]:
-        if not self.match(s):
+    @classmethod
+    def split(cls, s: str) -> list[str]:
+        if not cls.match(s):
             raise ImproperStringCasingError(f'Not valid lowCamelCase: {s!r}')
         parts: list[str] = []
-        m0 = self._FIRST_PAT.match(s)
+        m0 = cls._FIRST_PAT.match(s)
         if m0:
             parts.append(m0.group(0))
             start = m0.end()
         else:
             start = 0
-        for m in self._UPPER_PAT.finditer(s, pos=start):
+        for m in cls._UPPER_PAT.finditer(s, pos=start):
             parts.append(m.group(0))
         return [p.lower() for p in parts]
 
-    def join(self, *parts: str) -> str:
+    @classmethod
+    def join(cls, *parts: str) -> str:
         _check_all_lowercase(*parts)
         if not parts:
             return ''
@@ -115,7 +144,7 @@ class LowCamelCase(StringCasing):
 #
 
 
-class _SepStringCasing(StringCasing, Abstract):
+class _SepStringCasing(StaticStringCasing, Abstract):
     _SEP: ta.ClassVar[str]
     _UP: ta.ClassVar[bool] = False
     _EXAMPLE: ta.ClassVar[str]
@@ -128,33 +157,38 @@ class _SepStringCasing(StringCasing, Abstract):
         ch = 'A-Z' if cls._UP else 'a-z'
         cls._PAT = re.compile(rf'[{ch}0-9]+(?:{re.escape(cls._SEP)}[{ch}0-9]+)*')
 
-    def match(self, s: str) -> bool:
-        return bool(self._PAT.fullmatch(s))
+    @classmethod
+    def match(cls, s: str) -> bool:
+        return bool(cls._PAT.fullmatch(s))
 
-    def split(self, s: str) -> list[str]:
-        if not self.match(s):
-            raise ImproperStringCasingError(f'Not valid {self._EXAMPLE}: {s!r}')
-        if self._UP:
-            return [part.lower() for part in s.split(self._SEP)]
+    @classmethod
+    def split(cls, s: str) -> list[str]:
+        if not cls.match(s):
+            raise ImproperStringCasingError(f'Not valid {cls._EXAMPLE}: {s!r}')
+        if cls._UP:
+            return [part.lower() for part in s.split(cls._SEP)]
         else:
-            return s.split(self._SEP)
+            return s.split(cls._SEP)
 
-    def join(self, *parts: str) -> str:
+    @classmethod
+    def join(cls, *parts: str) -> str:
         _check_all_lowercase(*parts)
-        return self._SEP.join(p.upper() if self._UP else p for p in parts)
+        return cls._SEP.join(p.upper() if cls._UP else p for p in parts)
 
 
 #
 
 
-class SnakeCase(_SepStringCasing):
+@ta.final
+class SnakeCase(_SepStringCasing, Final):
     """foo_bar_baz"""
 
     _SEP = '_'
     _EXAMPLE = 'snake_case'
 
 
-class UpSnakeCase(_SepStringCasing):
+@ta.final
+class UpSnakeCase(_SepStringCasing, Final):
     """FOO_BAR_BAZ"""
 
     _SEP = '_'
@@ -165,14 +199,16 @@ class UpSnakeCase(_SepStringCasing):
 #
 
 
-class KebabCase(_SepStringCasing):
+@ta.final
+class KebabCase(_SepStringCasing, Final):
     """foo-bar-baz"""
 
     _SEP = '-'
     _EXAMPLE = 'kebab-case'
 
 
-class UpKebabCase(_SepStringCasing):
+@ta.final
+class UpKebabCase(_SepStringCasing, Final):
     """FOO-BAR-BAZ"""
 
     _SEP = '-'
