@@ -18,6 +18,7 @@ from .consts import SERIALIZATION_VERSION
 
 
 @dc.dataclass(frozen=True)
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE, strip_suffix=True)
 class Action(lang.Abstract, lang.Sealed):
     serialization_version: int = dc.field(default=SERIALIZATION_VERSION, kw_only=True)
 
@@ -33,15 +34,3 @@ def _non_empty_strs(v: ta.Sequence[str]) -> ta.Sequence[str]:
 class ExtractAction(Action, lang.Final):
     files: ta.Sequence[str] = dc.xfield(coerce=_non_empty_strs)
     keep_archive: bool = False
-
-
-##
-
-
-@lang.static_init
-def _install_standard_marshaling() -> None:
-    actions_poly = msh.polymorphism_from_subclasses(Action, naming=msh.Naming.SNAKE, strip_suffix=True)
-    msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(actions_poly),
-        msh.PolymorphismUnmarshalerFactory(actions_poly),
-    )

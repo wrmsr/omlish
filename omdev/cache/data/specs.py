@@ -20,6 +20,7 @@ from .consts import SERIALIZATION_VERSION
 
 
 @dc.dataclass(frozen=True)
+@msh.set_polymorphic_from_subclasses(naming=msh.Naming.SNAKE, strip_suffix=True)
 class Spec(lang.Abstract, lang.Sealed):
     serialization_version: int = dc.field(default=SERIALIZATION_VERSION, kw_only=True)
 
@@ -87,15 +88,3 @@ class GithubContentSpec(Spec):
     repo: str = dc.field(validate=_repo_str)  # type: ignore
     rev: str
     files: lang.SequenceNotStr[str]
-
-
-##
-
-
-@lang.static_init
-def _install_standard_marshaling() -> None:
-    specs_poly = msh.polymorphism_from_subclasses(Spec, naming=msh.Naming.SNAKE, strip_suffix=True)
-    msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(specs_poly),
-        msh.PolymorphismUnmarshalerFactory(specs_poly),
-    )
