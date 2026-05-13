@@ -87,12 +87,13 @@ class StreamMessage(Message, lang.Abstract):
 
         self._stream_content = io.StringIO()
 
-        await self._start_stream_content()
-
+        initial_content: str | None = None
         if (ics := self._initial_contents):
             for ic in ics:
                 self._stream_content.write(ic)
-                await self._append_stream_content(ic)
+            initial_content = self._stream_content.getvalue()
+
+        await self._start_stream_content(initial_content)
 
         del self._initial_contents
 
@@ -106,7 +107,7 @@ class StreamMessage(Message, lang.Abstract):
             raise RuntimeError(f'unexpected state: {self._state}')
 
     @abc.abstractmethod
-    async def _start_stream_content(self) -> None:
+    async def _start_stream_content(self, initial_content: str | None = None) -> None:
         raise NotImplementedError
 
     async def append_stream_content(self, content: str) -> None:
@@ -124,21 +125,21 @@ class StreamMessage(Message, lang.Abstract):
             raise RuntimeError(f'unexpected state: {self._state}')
 
     @abc.abstractmethod
-    async def _append_stream_content(self, c: str) -> None:
+    async def _append_stream_content(self, new_content: str) -> None:
         raise NotImplementedError
 
     async def _finalize_stream(self) -> None:
-        await self._finalize_stream_content()
-
         self._final_content = self._stream_content.getvalue()
         del self._stream_content
+
+        await self._finalize_stream_content(self._final_content)
 
         self._state = 'finalized'
 
         self.post_message(MessageFinalized(self))
 
     @abc.abstractmethod
-    async def _finalize_stream_content(self) -> None:
+    async def _finalize_stream_content(self, final_content: str) -> None:
         raise NotImplementedError
 
     async def finalize_stream(self) -> None:
@@ -158,12 +159,17 @@ class StreamMessage(Message, lang.Abstract):
 class MarkdownStreamMessage(StreamMessage, lang.Abstract):
     _stream: tx.MarkdownStream
 
-    async def _start_stream_content(self) -> None:
-        self._stream = tx.Markdown.get_stream(self.query_one(tx.Markdown))
+    async def _start_stream_content(self, initial_content: str | None = None) -> None:
+        self._stream = tx.Markdown.get_stream(md := self.query_one(tx.Markdown))
 
-    async def _append_stream_content(self, c: str) -> None:
-        await self._stream.write(c)
+        if initial_content is not None:
+            await md.update(initial_content)
 
-    async def _finalize_stream_content(self) -> None:
+    async def _append_stream_content(self, new_content: str) -> None:
+        await self._stream.write(new_content)
+
+    async def _finalize_stream_content(self, final_content: str) -> None:
         await self._stream.stop()
         del self._stream
+
+        await self.query_one(tx.Markdown).update(final_content)
