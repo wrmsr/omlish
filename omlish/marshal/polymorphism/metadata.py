@@ -107,6 +107,13 @@ class PolymorphismMetadataCache:
         ]):
             return None
 
+        if len(pmd_tups) != 1:
+            return None
+
+        [(pty, pmd)] = pmd_tups
+        if not all(issubclass(a, pty) for a in rty.args):  # type: ignore
+            return None
+
         raise NotImplementedError
 
     def lookup(self, rty: rfl.Type) -> Lookup | None:

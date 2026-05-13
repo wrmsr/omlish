@@ -92,7 +92,7 @@ paramiko==5.0.0  # @omlish-venv !15t
 docutils==0.22.4
 
 markdown-it-py==4.2.0
-mdit-py-plugins==0.6.0
+mdit-py-plugins==0.6.1
 
 pygments==2.20.0
 
@@ -105,8 +105,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 # must be kept in sync
-textual==8.2.5
-textual[syntax]==8.2.5  # @omlish-venv !14t !14dt !15t
+textual==8.2.6
+textual[syntax]==8.2.6  # @omlish-venv !14t !14dt !15t
 
 rich==15.0.0
 textual-dev==1.8.0
