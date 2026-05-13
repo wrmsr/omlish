@@ -1815,10 +1815,10 @@ def _process_dataclass__c94d23c43d187cd3725f98ba417a2d32b630defb():
         "s=False), HashPlan(action='add', fields=('v',), cache=False), InitPlan(fields=(InitPlan.Field(name='v', annota"
         "tion=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, fi"
         "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_params=('v"
-        "',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPl"
-        "an(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=True, default_fn=None)))"
+        "',), kw_only_params=(), frozen=True, slots=False, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan"
+        "(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='3576262424b3ef8ff20966fa3744e5dba9a2ae7d',
+    plan_repr_sha1='48067835f52b78bd969ff8be6da2b3c0f647d57e',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
     ),
@@ -1826,7 +1826,7 @@ def _process_dataclass__c94d23c43d187cd3725f98ba417a2d32b630defb():
         ('omlish.marshal.globals', 'DefaultOptions'),
     ),
 )
-def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
+def _process_dataclass__48067835f52b78bd969ff8be6da2b3c0f647d57e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1918,6 +1918,7 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
             v: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'v', v)
+            self.__post_init__()
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
