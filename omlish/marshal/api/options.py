@@ -32,3 +32,7 @@ _EMPTY_OPTIONS: Options = Options()
 
 class DefaultOptions(tv.UniqueScalarTypedValue[Options], Config, lang.Final):
     pass
+
+
+class IgnoreDefaultOptions(tv.UniqueTypedValue, Option, lang.Final):
+    pass
