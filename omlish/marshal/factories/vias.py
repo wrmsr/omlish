@@ -9,8 +9,8 @@ from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
 from ..api.vias import MarshalVia
-from ..api.vias import _MarshalViaMetadata
 from ..api.vias import UnmarshalVia
+from ..api.vias import _MarshalViaMetadata
 from ..api.vias import _UnmarshalViaMetadata
 from ..api.vias import make_marshaler_via
 from ..api.vias import make_unmarshaler_via
@@ -45,10 +45,7 @@ def _get_via_metadata(rty: rfl.Type, md_cls: type[T]) -> T | None:
     if not isinstance(rty, type):
         return None
 
-    if not (mds := md.get_object_metadata(rty, type=md_cls)):
-        return None
-
-    return mds[-1]
+    return md.get_single_object_metadata(rty, type=md_cls)
 
 
 class ViaMetadataMarshalerFactory(MarshalerFactory):

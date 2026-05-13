@@ -2,6 +2,10 @@
 These attempt to punch through *all* wrappers. The the usecases involve having things like bound methods, classmethods,
 functools.partial instances, and needing to get the metadata of the underlying thing the end-user wrote.
 
+Notably, there is no way to remove metadata once applied - this is intentional.
+
+====
+
 TODO:
  - re type targets:
   - unwrap instances of objects to their types?
@@ -159,24 +163,101 @@ def get_object_metadata(
             return ()
         raise
 
-    def one(cur):
+    if mro_merge and isinstance(tgt, _type):
+        tgt_lst: ta.Sequence[ta.Any] = tgt.__mro__[-2::-1]
+    else:
+        tgt_lst = (tgt,)
+
+    ret: list = []
+
+    for cur in tgt_lst:
         try:
             dct = cur.__dict__
         except AttributeError:
-            return ()
+            continue
 
-        ret = dct.get(_OBJECT_METADATA_ATTR, ())
+        try:
+            cur_mds = dct[_OBJECT_METADATA_ATTR]
+        except KeyError:
+            continue
+        if not cur_mds:
+            continue
 
         if type is not None:
-            ret = [o for o in ret if isinstance(o, type)]
+            for o in cur_mds:
+                if isinstance(o, type):
+                    ret.append(o)
+        else:
+            ret.extend(cur_mds)
 
-        return ret
+    return ret
+
+
+#
+
+
+@ta.overload
+def get_single_object_metadata(
+        obj: ta.Any,
+        *,
+        non_strict: bool = False,
+        mro_merge: bool = False,
+        type: ta.Type[ObjectMetadataT],  # noqa
+) -> ObjectMetadataT | None:
+    ...
+
+
+@ta.overload
+def get_single_object_metadata(
+        obj: ta.Any,
+        *,
+        non_strict: bool = False,
+        mro_merge: bool = False,
+        type: ta.Type | tuple[ta.Type, ...] | None = None,  # noqa
+) -> ta.Any | None:
+    ...
+
+
+def get_single_object_metadata(
+        obj,
+        *,
+        non_strict=False,
+        mro_merge=False,
+        type=None,  # noqa
+):
+    try:
+        tgt = _unwrap_object_metadata_target(obj)
+    except ObjectMetadataTargetTypeError:
+        if non_strict:
+            return ()
+        raise
 
     if mro_merge and isinstance(tgt, _type):
-        return [x for mro_tgt in tgt.__mro__[::-1] for x in one(mro_tgt)]
-
+        tgt_lst: ta.Sequence[ta.Any] = tgt.__mro__[:-1]
     else:
-        return one(tgt)
+        tgt_lst = (tgt,)
+
+    for cur in tgt_lst:
+        try:
+            dct = cur.__dict__
+        except AttributeError:
+            continue
+
+        try:
+            cur_mds = dct[_OBJECT_METADATA_ATTR]
+        except KeyError:
+            continue
+        if not cur_mds:
+            continue
+
+        if type is not None:
+            for o in reversed(cur_mds):
+                if isinstance(o, type):
+                    return o
+        else:
+            return cur_mds[-1]
+
+    return None
 
 
 ##

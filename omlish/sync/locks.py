@@ -1,4 +1,5 @@
 import threading
+import types
 import typing as ta
 
 
@@ -87,6 +88,6 @@ class StrictLock:
             self,
             exc_type: type[BaseException] | None,
             exc: BaseException | None,
-            tb: ta.Any,
+            tb: types.TracebackType | None,
     ) -> None:
         self.release()

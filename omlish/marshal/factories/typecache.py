@@ -1,20 +1,21 @@
-import typing as ta
+# ruff: noqa: SLF001
 import threading
+import typing as ta
 import weakref
 
 from ... import check
 from ... import dataclasses as dc
+from ... import lang
 from ... import reflect as rfl
+from ... import typedvalues as tv
+from ..api.configs import Config
+from ..api.configs import ConfigRegistry
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
-from ..api.configs import Config
-from ... import typedvalues as tv
-from ... import lang
-from ..api.configs import ConfigRegistry
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)

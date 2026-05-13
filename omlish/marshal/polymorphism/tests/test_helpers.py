@@ -13,13 +13,12 @@ from ...factories.recursive import RecursiveMarshalerFactory
 from ...factories.recursive import RecursiveUnmarshalerFactory
 from ...factories.typecache import TypeCacheMarshalerFactory
 from ...factories.typecache import TypeCacheUnmarshalerFactory
-from ...factories.vias import ViaMetadataMarshalerFactory
-from ...factories.vias import ViaMetadataUnmarshalerFactory
 from ...objects.dataclasses import DataclassMarshalerFactory
 from ...objects.dataclasses import DataclassUnmarshalerFactory
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..api import set_polymorphic_from_subclasses
+from ..metadata import make_polymorphism_metadata_factories
 
 
 @set_polymorphic_from_subclasses()
@@ -45,10 +44,12 @@ class PS2(PB):
 
 def test_polymorphism_helper():
     for _ in range(3):
+        pmf, puf = make_polymorphism_metadata_factories()
+
         mf: MarshalerFactory = TypeCacheMarshalerFactory(
             RecursiveMarshalerFactory(
                 MultiMarshalerFactory(
-                    ViaMetadataMarshalerFactory(),
+                    pmf,
                     DataclassMarshalerFactory(),
                     PRIMITIVE_MARSHALER_FACTORY,
                 ),
@@ -58,7 +59,7 @@ def test_polymorphism_helper():
         uf: UnmarshalerFactory = TypeCacheUnmarshalerFactory(
             RecursiveUnmarshalerFactory(
                 MultiUnmarshalerFactory(
-                    ViaMetadataUnmarshalerFactory(),
+                    puf,
                     DataclassUnmarshalerFactory(),
                     PRIMITIVE_UNMARSHALER_FACTORY,
                 ),

@@ -4,9 +4,9 @@ import time
 
 import pytest
 
-from ..locks import StrictLock
 from ..locks import AttemptedReentrantAcquireLockError
 from ..locks import AttemptedUnownedReleaseLockError
+from ..locks import StrictLock
 
 
 def test_initially_unlocked() -> None:
@@ -100,7 +100,7 @@ def test_release_from_non_owner_thread_raises() -> None:
     def worker() -> None:
         try:
             lock.release()
-        except BaseException as e:
+        except BaseException as e:  # noqa
             q.put(e)
         else:
             q.put(None)
@@ -206,7 +206,7 @@ def test_other_thread_can_acquire_after_release() -> None:
 def test_exception_inside_context_still_releases() -> None:
     lock = StrictLock()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa
         with lock:
             assert lock.locked()
             raise ValueError('boom')

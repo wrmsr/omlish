@@ -5,13 +5,14 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
+T_co = ta.TypeVar('T_co', covariant=True)
 
 
 ##
 
 
-class ThreadLoopFn(ta.Protocol[T]):
-    def __call__(self, thread_idx: int, cur_iter: int) -> T: ...
+class ThreadLoopFn(ta.Protocol[T_co]):
+    def __call__(self, thread_idx: int, cur_iter: int) -> T_co: ...
 
 
 class ThreadLoopBeforeFn(ta.Protocol):
@@ -36,7 +37,7 @@ def run_thread_loops(
     should_exit = threading.Event()
 
     cur_iter: int
-    results: list[T]
+    results: list
 
     def thread_main(thread_idx: int) -> None:
         while True:
@@ -59,8 +60,10 @@ def run_thread_loops(
     for thread in threads:
         thread.start()
 
+    not_set = object()
+
     for cur_iter in range(n_iters):
-        results = [None] * n_threads
+        results = [not_set] * n_threads
 
         if before_fn is not None:
             before_fn(cur_iter)
@@ -69,10 +72,14 @@ def run_thread_loops(
 
         end_barrier.wait()
 
+        if (not_set_idxs := [i for i, e in enumerate(results) if e is not_set]):
+            raise RuntimeError(f'Thread loop did not produce result for iteration {cur_iter} in threads {not_set_idxs}')
+
         if after_fn is not None:
             after_fn(cur_iter, results)
 
     should_exit.set()
+
     start_barrier.wait()
 
     for thread in threads:

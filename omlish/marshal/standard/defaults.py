@@ -29,6 +29,7 @@ from ..objects.dataclasses import DataclassMarshalerFactory
 from ..objects.dataclasses import DataclassUnmarshalerFactory
 from ..objects.namedtuples import NamedtupleMarshalerFactory
 from ..objects.namedtuples import NamedtupleUnmarshalerFactory
+from ..polymorphism.metadata import make_polymorphism_metadata_factories
 from ..singular.datetimes import DATETIME_MARSHALER_FACTORY
 from ..singular.datetimes import DATETIME_UNMARSHALER_FACTORY
 from ..singular.enums import EnumMarshalerFactory
@@ -51,7 +52,6 @@ from ..typedvalues.unions import TypedValueUnionMarshalerFactory
 from ..typedvalues.unions import TypedValueUnionUnmarshalerFactory
 from ..typedvalues.values import TypedValueMarshalerFactory
 from ..typedvalues.values import TypedValueUnmarshalerFactory
-from ..polymorphism.metadata import make_polymorphism_metadata_factories
 
 
 ##

@@ -1,27 +1,6 @@
-"""
-        lmf = LazyMarshalerFactory(lambda: _marshal.PolymorphismMarshalerFactory(
-            polymorphism_from_subclasses(
-                cls,
-                naming=opts.naming,
-                strip_suffix=opts.strip_suffix,
-            ),
-            opts.type_tagging,
-        ))
-
-        luf = LazyUnmarshalerFactory(lambda: _unmarshal.PolymorphismUnmarshalerFactory(
-            polymorphism_from_subclasses(
-                cls,
-                naming=opts.naming,
-                strip_suffix=opts.strip_suffix,
-            ),
-            opts.type_tagging,
-        ))
-"""
 import threading
 import typing as ta
 
-from ... import check
-from ... import lang
 from ... import metadata as md
 from ... import reflect as rfl
 from ..api.contexts import MarshalFactoryContext
@@ -30,24 +9,12 @@ from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
-from ..api.naming import Naming
-from ..api.vias import MarshalVia
-from ..api.vias import _MarshalViaMetadata
-from ..api.vias import UnmarshalVia
-from ..api.vias import _UnmarshalViaMetadata
-from ..factories.lazy import LazyMarshalerFactory
-from ..factories.lazy import LazyUnmarshalerFactory
-from .api import AUTO_STRIP_SUFFIX
+from .api import Polymorphism
 from .api import PolymorphismOptions
-from .api import TypeTagging
-from .api import WrapperTypeTagging
+from .api import _PolymorphismMetadata
 from .api import polymorphism_from_subclasses
 from .marshal import PolymorphismMarshalerFactory
 from .unmarshal import PolymorphismUnmarshalerFactory
-from .api import _PolymorphismMetadata
-from .api import Polymorphism
-from .api import Impls
-from ..api.configs import ConfigRegistry
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
@@ -73,18 +40,82 @@ class PolymorphismMetadataCache:
 
         self._lock = threading.Lock()
 
-        # self._metadata_cache
+        self._type_cache: dict[type, PolymorphismMetadataCache._TypeCacheEntry] = {}
 
-    # def get_metadata(self, rty: rfl.Type) -> _PolymorphismMetadata | None:
-    #     try:
-    #         return
+    class _TypeCacheEntry(ta.NamedTuple):
+        md: _PolymorphismMetadata
+        poly: Polymorphism
+
+    #
+
+    def _make_poly(self, ty: type, pmd: _PolymorphismMetadata) -> Polymorphism:
+        if pmd.mode == 'subclasses':
+            return polymorphism_from_subclasses(
+                ty,
+                naming=pmd.opts.naming,
+                strip_suffix=pmd.opts.strip_suffix,
+            )
+
+        else:
+            raise RuntimeError(f'Unsupported polymorphism mode: {pmd.mode}')
+
+    #
 
     class Lookup(ta.NamedTuple):
         poly: Polymorphism
         opts: PolymorphismOptions
 
-    def lookup(self, cfgs: ConfigRegistry, rty: rfl.Type) -> Lookup | None:
+    def _lookup_type(self, ty: type) -> Lookup | None:
+        try:
+            tce = self._type_cache[ty]
+        except KeyError:
+            pass
+        else:
+            return self.Lookup(tce.poly, tce.md.opts)
+
+        if not md.has_object_metadata(ty):
+            return None
+
+        if (pmd := md.get_single_object_metadata(ty, type=_PolymorphismMetadata)) is None:
+            return None
+
+        with self._lock:
+            try:
+                tce = self._type_cache[ty]
+            except KeyError:
+                pass
+            else:
+                return self.Lookup(tce.poly, tce.md.opts)
+
+            poly = self._make_poly(ty, pmd)
+
+            self._type_cache[ty] = self._TypeCacheEntry(pmd, poly)
+
+        return self.Lookup(poly, pmd.opts)
+
+    def _lookup_union(self, rty: rfl.Union) -> Lookup | None:
+        if not all(isinstance(a, type) for a in rty.args):
+            return None
+
+        if not (has_mds := [a for a in rty.args if md.has_object_metadata(a)]):  # noqa
+            return None
+
+        if not (pmd_tups := [  # noqa
+            (a, pmd)
+            for a in rty.args
+            if (pmd := md.get_single_object_metadata(a, type=_PolymorphismMetadata)) is not None
+        ]):
+            return None
+
         raise NotImplementedError
+
+    def lookup(self, rty: rfl.Type) -> Lookup | None:
+        if isinstance(rty, type):
+            return self._lookup_type(rty)
+        elif isinstance(rty, rfl.Union):
+            return self._lookup_union(rty)
+        else:
+            return None
 
 
 ##
@@ -102,7 +133,7 @@ class PolymorphismMetadataMarshalerFactory(
     MarshalerFactory,
 ):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if (lu := self._cache.lookup(check.isinstance(ctx.configs, ConfigRegistry), rty)) is None:
+        if (lu := self._cache.lookup(rty)) is None:
             return None
 
         return PolymorphismMarshalerFactory(
@@ -116,7 +147,7 @@ class PolymorphismMetadataUnmarshalerFactory(
     UnmarshalerFactory,
 ):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if (lu := self._cache.lookup(check.isinstance(ctx.configs, ConfigRegistry), rty)) is None:
+        if (lu := self._cache.lookup(rty)) is None:
             return None
 
         return PolymorphismUnmarshalerFactory(
