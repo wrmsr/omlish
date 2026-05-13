@@ -12,6 +12,7 @@ from .._marshal import MarshalRawContent
 from .._marshal import MarshalSingleRawContent
 from ..containers import ConcatContent
 from ..content import Content
+from ..itemlist import ItemListContent
 from ..json import JsonContent
 from ..marshal import DisableDynamicClassMarshaling
 from ..marshal import DynamicClassForbiddenMarshalError
@@ -39,6 +40,8 @@ def test_marshal():
     assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u), no_original=True), Content) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
     assert msh.marshal(JsonContent({'abc': 420}), Content) == {'json': {'v': {'abc': 420}}}
+
+    assert msh.marshal(ItemListContent(['hi', 'there']), Content) == {'item_list': {'l': ['hi', 'there'], 'style': '-'}}
 
 
 @dc.dataclass(frozen=True)

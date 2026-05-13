@@ -41,11 +41,11 @@ def _register(**kwargs):
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'AndExpression'),
-        ('omlish.specs.jmespath', 'OrExpression'),
-        ('omlish.specs.jmespath', 'Pipe'),
-        ('omlish.specs.jmespath', 'Projection'),
-        ('omlish.specs.jmespath', 'ValueProjection'),
+        ('omlish.specs.jmespath.ast', 'AndExpression'),
+        ('omlish.specs.jmespath.ast', 'OrExpression'),
+        ('omlish.specs.jmespath.ast', 'Pipe'),
+        ('omlish.specs.jmespath.ast', 'Projection'),
+        ('omlish.specs.jmespath.ast', 'ValueProjection'),
     ),
 )
 def _process_dataclass__683a8fba51ac0aaee8d49314879ce436e8ee2d3b():
@@ -196,7 +196,7 @@ def _process_dataclass__683a8fba51ac0aaee8d49314879ce436e8ee2d3b():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Arithmetic'),
+        ('omlish.specs.jmespath.ast', 'Arithmetic'),
     ),
 )
 def _process_dataclass__9ad32a9de77661d138040ae8b9ef479f313da67b():
@@ -352,7 +352,7 @@ def _process_dataclass__9ad32a9de77661d138040ae8b9ef479f313da67b():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'ArithmeticUnary'),
+        ('omlish.specs.jmespath.ast', 'ArithmeticUnary'),
     ),
 )
 def _process_dataclass__cdb3249bff15c580f8a8beab3e47937e31fe71a0():
@@ -498,7 +498,7 @@ def _process_dataclass__cdb3249bff15c580f8a8beab3e47937e31fe71a0():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Assign'),
+        ('omlish.specs.jmespath.ast', 'Assign'),
     ),
 )
 def _process_dataclass__fb46b9fb75089de970d1b8ccffb404d02368804a():
@@ -648,7 +648,7 @@ def _process_dataclass__fb46b9fb75089de970d1b8ccffb404d02368804a():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Comparator'),
+        ('omlish.specs.jmespath.ast', 'Comparator'),
     ),
 )
 def _process_dataclass__17f73a891c5ca759d782b4a50d841d4e19830e44():
@@ -795,11 +795,11 @@ def _process_dataclass__17f73a891c5ca759d782b4a50d841d4e19830e44():
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
     op_ref_idents=(),
     cls_names=(
-        ('omlish.specs.jmespath', 'CurrentNode'),
-        ('omlish.specs.jmespath', 'Identity'),
-        ('omlish.specs.jmespath', 'LeafNode'),
-        ('omlish.specs.jmespath', 'Node'),
-        ('omlish.specs.jmespath', 'RootNode'),
+        ('omlish.specs.jmespath.ast', 'CurrentNode'),
+        ('omlish.specs.jmespath.ast', 'Identity'),
+        ('omlish.specs.jmespath.ast', 'LeafNode'),
+        ('omlish.specs.jmespath.ast', 'Node'),
+        ('omlish.specs.jmespath.ast', 'RootNode'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -914,7 +914,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Expref'),
+        ('omlish.specs.jmespath.ast', 'Expref'),
     ),
 )
 def _process_dataclass__88b2bcfae28e19661d346bbf4c87a846e786b0ea():
@@ -1048,8 +1048,8 @@ def _process_dataclass__88b2bcfae28e19661d346bbf4c87a846e786b0ea():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Field'),
-        ('omlish.specs.jmespath', 'VariableRef'),
+        ('omlish.specs.jmespath.ast', 'Field'),
+        ('omlish.specs.jmespath.ast', 'VariableRef'),
     ),
 )
 def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
@@ -1191,7 +1191,7 @@ def _process_dataclass__a8c678a92ec79b6aa505feedefe70ee7fef92ccd():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'FilterProjection'),
+        ('omlish.specs.jmespath.ast', 'FilterProjection'),
     ),
 )
 def _process_dataclass__ee40fd21fce658ecb8d6c4a236c24880e69abc90():
@@ -1343,7 +1343,7 @@ def _process_dataclass__ee40fd21fce658ecb8d6c4a236c24880e69abc90():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Flatten'),
+        ('omlish.specs.jmespath.ast', 'Flatten'),
     ),
 )
 def _process_dataclass__04121723da73369a153101f1c1cd7d127fdcfad7():
@@ -1480,7 +1480,7 @@ def _process_dataclass__04121723da73369a153101f1c1cd7d127fdcfad7():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'FunctionExpression'),
+        ('omlish.specs.jmespath.ast', 'FunctionExpression'),
     ),
 )
 def _process_dataclass__46b21a57c7f935afb031452a3d30815129505ec6():
@@ -1623,7 +1623,7 @@ def _process_dataclass__46b21a57c7f935afb031452a3d30815129505ec6():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Index'),
+        ('omlish.specs.jmespath.ast', 'Index'),
     ),
 )
 def _process_dataclass__58d0143ed6bbec74538c3af1d493d5b4f36423f2():
@@ -1757,9 +1757,9 @@ def _process_dataclass__58d0143ed6bbec74538c3af1d493d5b4f36423f2():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'IndexExpression'),
-        ('omlish.specs.jmespath', 'MultiSelectDict'),
-        ('omlish.specs.jmespath', 'MultiSelectList'),
+        ('omlish.specs.jmespath.ast', 'IndexExpression'),
+        ('omlish.specs.jmespath.ast', 'MultiSelectDict'),
+        ('omlish.specs.jmespath.ast', 'MultiSelectList'),
     ),
 )
 def _process_dataclass__95a04b516e507c6ca7803679cc697feffd03c2fe():
@@ -1897,7 +1897,7 @@ def _process_dataclass__95a04b516e507c6ca7803679cc697feffd03c2fe():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'KeyValPair'),
+        ('omlish.specs.jmespath.ast', 'KeyValPair'),
     ),
 )
 def _process_dataclass__5c98f4baa29dbd0603b7dae82100421eaccc16c1():
@@ -2044,7 +2044,7 @@ def _process_dataclass__5c98f4baa29dbd0603b7dae82100421eaccc16c1():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'LetExpression'),
+        ('omlish.specs.jmespath.ast', 'LetExpression'),
     ),
 )
 def _process_dataclass__c8a250c76298910f7bf4f1d857d2754886ebd5c1():
@@ -2187,7 +2187,7 @@ def _process_dataclass__c8a250c76298910f7bf4f1d857d2754886ebd5c1():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Literal'),
+        ('omlish.specs.jmespath.ast', 'Literal'),
     ),
 )
 def _process_dataclass__84f3ffbf073b3ca8957fd80ce73aa63d4e81555d():
@@ -2321,7 +2321,7 @@ def _process_dataclass__84f3ffbf073b3ca8957fd80ce73aa63d4e81555d():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'NotExpression'),
+        ('omlish.specs.jmespath.ast', 'NotExpression'),
     ),
 )
 def _process_dataclass__40ccd63db7a447b608d0875571d487f96ef3af93():
@@ -2462,7 +2462,7 @@ def _process_dataclass__40ccd63db7a447b608d0875571d487f96ef3af93():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Slice'),
+        ('omlish.specs.jmespath.ast', 'Slice'),
     ),
 )
 def _process_dataclass__b32606cc73be16bf4f754945264efc4ebda65099():
@@ -2614,7 +2614,7 @@ def _process_dataclass__b32606cc73be16bf4f754945264efc4ebda65099():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'Subexpression'),
+        ('omlish.specs.jmespath.ast', 'Subexpression'),
     ),
 )
 def _process_dataclass__d958b10b4f15409b30504a103e6c94dfe8c47b9d():
@@ -2756,7 +2756,7 @@ def _process_dataclass__d958b10b4f15409b30504a103e6c94dfe8c47b9d():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jmespath', 'TernaryOperator'),
+        ('omlish.specs.jmespath.ast', 'TernaryOperator'),
     ),
 )
 def _process_dataclass__f81e930fc657b10385e84befd8ddeba424da3fc1():

@@ -44,7 +44,7 @@ def _register(**kwargs):
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('omlish.sql.api', 'AsQueryContext'),
+        ('omlish.sql.api.asquery', 'AsQueryContext'),
     ),
 )
 def _process_dataclass__5ae94c3ed2c354e407c4c2dafde59484b9d0ac88():
@@ -200,7 +200,7 @@ def _process_dataclass__5ae94c3ed2c354e407c4c2dafde59484b9d0ac88():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('omlish.sql.api', 'Column'),
+        ('omlish.sql.api.columns', 'Column'),
     ),
 )
 def _process_dataclass__6e6d18636070554815585022cec70aa6f15ef9a9():
@@ -362,7 +362,7 @@ def _process_dataclass__6e6d18636070554815585022cec70aa6f15ef9a9():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('omlish.sql.api', 'Query'),
+        ('omlish.sql.api.queries', 'Query'),
     ),
 )
 def _process_dataclass__0f274d2cea40d870bb1ddb08940cd936fbf23d04():
@@ -518,7 +518,7 @@ def _process_dataclass__0f274d2cea40d870bb1ddb08940cd936fbf23d04():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.sql.api', 'Row'),
+        ('omlish.sql.api.rows', 'Row'),
     ),
 )
 def _process_dataclass__afba95cc077e24ab1876f8a8bb8cea66aee709a9():

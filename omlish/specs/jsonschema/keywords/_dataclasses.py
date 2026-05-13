@@ -38,7 +38,7 @@ def _register(**kwargs):
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'AnyArrayKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'AnyArrayKeyword'),
     ),
 )
 def _process_dataclass__50dcd1e5d7bfbe0e8b2f047dd733608af258e4ce():
@@ -171,7 +171,7 @@ def _process_dataclass__50dcd1e5d7bfbe0e8b2f047dd733608af258e4ce():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'AnyKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'AnyKeyword'),
     ),
 )
 def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
@@ -304,7 +304,7 @@ def _process_dataclass__7514673b39883258db895b0031e644b486721b54():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'BooleanKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'BooleanKeyword'),
     ),
 )
 def _process_dataclass__b15f6985d2c25a626406472fe673abf39f19e546():
@@ -438,7 +438,7 @@ def _process_dataclass__b15f6985d2c25a626406472fe673abf39f19e546():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'BooleanOrKeywordsKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'BooleanOrKeywordsKeyword'),
     ),
 )
 def _process_dataclass__07af1f8e95f26d5a33fd9c0d2886faf347456c98():
@@ -574,7 +574,7 @@ def _process_dataclass__07af1f8e95f26d5a33fd9c0d2886faf347456c98():
         '__dataclass__init__init_fns__1',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'Keywords'),
+        ('omlish.specs.jsonschema.keywords.base', 'Keywords'),
     ),
 )
 def _process_dataclass__e41d7414f687c82fa6c9b4ae3b0f5e2a3665007d():
@@ -712,7 +712,7 @@ def _process_dataclass__e41d7414f687c82fa6c9b4ae3b0f5e2a3665007d():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'KeywordsArrayKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'KeywordsArrayKeyword'),
     ),
 )
 def _process_dataclass__789bffcf55273fd31a58a8ecefec3ed38f0b08eb():
@@ -846,7 +846,7 @@ def _process_dataclass__789bffcf55273fd31a58a8ecefec3ed38f0b08eb():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'KeywordsKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'KeywordsKeyword'),
     ),
 )
 def _process_dataclass__abd91f531aba634e9d4ea8af8e75ee8415d56f67():
@@ -979,7 +979,7 @@ def _process_dataclass__abd91f531aba634e9d4ea8af8e75ee8415d56f67():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'NumberKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'NumberKeyword'),
     ),
 )
 def _process_dataclass__9fd15f32de91b0c51104d30d936bf3e4e8934b29():
@@ -1112,7 +1112,7 @@ def _process_dataclass__9fd15f32de91b0c51104d30d936bf3e4e8934b29():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'StrKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'StrKeyword'),
     ),
 )
 def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
@@ -1246,7 +1246,7 @@ def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'StrOrStrArrayKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'StrOrStrArrayKeyword'),
     ),
 )
 def _process_dataclass__9aaf31707e8da065f2718cbdd31f87978933a451():
@@ -1379,7 +1379,7 @@ def _process_dataclass__9aaf31707e8da065f2718cbdd31f87978933a451():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'StrToKeywordsKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'StrToKeywordsKeyword'),
     ),
 )
 def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
@@ -1516,7 +1516,7 @@ def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omlish.specs.jsonschema.keywords', 'UnknownKeyword'),
+        ('omlish.specs.jsonschema.keywords.base', 'UnknownKeyword'),
     ),
 )
 def _process_dataclass__4decbb1861609d4246f4e255ea5fbbe291055fb1():
