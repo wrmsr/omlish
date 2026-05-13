@@ -86,8 +86,8 @@ def _install_standard_marshaling() -> None:
         msh.ObjectOptions(
             fields=dict(
                 marker=msh.FieldOptions(
-                    marshal_as=RequiresMarkerList | None,
-                    unmarshal_as=RequiresMarkerList | None,
+                    marshal_via=msh.MarshalVia(RequiresMarkerList | None),
+                    unmarshal_via=msh.UnmarshalVia(RequiresMarkerList | None),
                 ),
             ),
         ),

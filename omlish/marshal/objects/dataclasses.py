@@ -14,13 +14,14 @@ from ...lite import marshal as lm
 from ..api.configs import Configs
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
-from ..api.errors import UnhandledTypeError
 from ..api.naming import Naming
 from ..api.naming import translate_name
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
+from ..api.vias import make_marshaler_via
+from ..api.vias import make_unmarshaler_via
 from .api import DEFAULT_FIELD_OPTIONS
 from .api import DEFAULT_OBJECT_OPTIONS
 from .api import FieldOptions
@@ -268,16 +269,8 @@ class _DataclassMarshalerBuilder:
         )
 
     def _make_field_marshal_obj(self, fi: FieldInfo) -> Marshaler:
-        if (obj := fi.options.marshaler) is not None:
-            return obj
-
-        if (fac := fi.options.marshaler_factory) is not None:
-            if (m := fac.make_marshaler(self.ctx, fi.type)) is None:
-                raise UnhandledTypeError(fi.type)
-            return m()
-
-        if (as_ := fi.options.marshal_as) is not None:
-            return self.ctx.make_marshaler(as_)
+        if (via := fi.options.marshal_via) is not None:
+            return make_marshaler_via(self.ctx, fi.type, via)
 
         return self.ctx.make_marshaler(fi.type)
 
@@ -380,16 +373,8 @@ class _DataclassUnmarshalerBuilder:
         return ret
 
     def _make_field_unmarshal_obj(self, fi: FieldInfo) -> Unmarshaler:
-        if (obj := fi.options.unmarshaler) is not None:
-            return obj
-
-        if (fac := fi.options.unmarshaler_factory) is not None:
-            if (m := fac.make_unmarshaler(self.ctx, fi.type)) is None:
-                raise UnhandledTypeError(fi.type)
-            return m()
-
-        if (as_ := fi.options.unmarshal_as) is not None:
-            return self.ctx.make_unmarshaler(as_)
+        if (via := fi.options.unmarshal_via) is not None:
+            return make_unmarshaler_via(self.ctx, fi.type, via)
 
         return self.ctx.make_unmarshaler(fi.type)
 

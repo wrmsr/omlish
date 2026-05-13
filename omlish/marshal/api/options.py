@@ -4,6 +4,7 @@ TODO:
  - Options only apply to Factories?
   - MarshalFactoryOption, MarshalOption, UnmarshalFactoryOption, MarshalOption ?
 """
+import dataclasses as dc
 import typing as ta
 
 from ... import check
@@ -33,7 +34,10 @@ _EMPTY_OPTIONS: Options = Options()
 ##
 
 
-class DefaultOptions(tv.UniqueScalarTypedValue[Options], Config, lang.Final):
+@dc.dataclass(frozen=True)
+class DefaultOptions(tv.UniqueTypedValue, Config, lang.Final):
+    v: Options
+
     def __post_init__(self) -> None:
         check.isinstance(self.v, tv.TypedValues)
         check.not_in(IgnoreDefaultOptions, self.v)

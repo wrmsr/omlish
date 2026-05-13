@@ -12,7 +12,11 @@ from .types import DriverEvent
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options('action', marshal_as=lang.OpaqueRepr, unmarshal_as=lang.OpaqueRepr)
+@msh.update_field_options(
+    'action',
+    marshal_via=msh.MarshalVia(lang.OpaqueRepr),
+    unmarshal_via=msh.UnmarshalVia(lang.OpaqueRepr),
+)
 class ActionDriverEvent(DriverEvent, lang.Final):
     action: Action | lang.OpaqueRepr
 

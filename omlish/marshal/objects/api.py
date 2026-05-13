@@ -11,10 +11,8 @@ from ... import metadata as md
 from ...lite.dataclasses import install_dataclass_filtered_repr
 from ..api.configs import Config
 from ..api.naming import Naming
-from ..api.types import Marshaler
-from ..api.types import MarshalerFactory
-from ..api.types import Unmarshaler
-from ..api.types import UnmarshalerFactory
+from ..api.vias import MarshalVia
+from ..api.vias import UnmarshalVia
 
 
 T = ta.TypeVar('T')
@@ -26,7 +24,7 @@ T = ta.TypeVar('T')
 @ta.final
 @install_dataclass_filtered_repr('omit_falsey')
 @dc.dataclass(frozen=True, kw_only=True)
-class FieldOptions(Config, lang.Final):
+class FieldOptions(lang.Final):
     """
     Unified field options - all configuration for a single field's marshaling/unmarshaling.
 
@@ -55,15 +53,10 @@ class FieldOptions(Config, lang.Final):
     no_unmarshal: bool | None = None
 
     ##
-    # Custom handlers
+    # Custom marshaling
 
-    marshaler: Marshaler | None = None
-    marshaler_factory: MarshalerFactory | None = None
-    marshal_as: ta.Any | None = None
-
-    unmarshaler: Unmarshaler | None = None
-    unmarshaler_factory: UnmarshalerFactory | None = None
-    unmarshal_as: ta.Any | None = None
+    marshal_via: MarshalVia | None = None
+    unmarshal_via: UnmarshalVia | None = None
 
     ##
     # Validation
@@ -71,16 +64,8 @@ class FieldOptions(Config, lang.Final):
     def __post_init__(self) -> None:
         check.isinstance(self.default, (lang.Maybe, None))
 
-        check.isinstance(self.marshaler, (Marshaler, None))
-        check.isinstance(self.unmarshaler, (Unmarshaler, None))
-
-        for mutex_atts in [
-            ('marshaler', 'marshaler_factory', 'marshal_as'),
-            ('unmarshaler', 'unmarshaler_factory', 'unmarshal_as'),
-        ]:
-            set_atts = [a for a in mutex_atts if getattr(self, a) is not None]
-            if len(set_atts) > 1:
-                raise ValueError(f'Cannot set {set_atts} at the same time')
+        check.isinstance(self.marshal_via, (MarshalVia, None))
+        check.isinstance(self.unmarshal_via, (UnmarshalVia, None))
 
     ##
     # Merging

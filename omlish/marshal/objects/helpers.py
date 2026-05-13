@@ -3,10 +3,8 @@ import typing as ta
 from ... import dataclasses as dc
 from ... import lang
 from ..api.naming import Naming
-from ..api.types import Marshaler
-from ..api.types import MarshalerFactory
-from ..api.types import Unmarshaler
-from ..api.types import UnmarshalerFactory
+from ..api.vias import MarshalVia
+from ..api.vias import UnmarshalVia
 from .api import DEFAULT_FIELD_OPTIONS
 from .api import FieldOptions
 from .api import ObjectOptions
@@ -44,12 +42,8 @@ def dc_field_options(
         no_marshal: bool | None = None,
         no_unmarshal: bool | None = None,
 
-        marshaler: Marshaler | None = None,
-        marshaler_factory: MarshalerFactory | None = None,
-        marshal_as: ta.Any | None = None,
-        unmarshaler: Unmarshaler | None = None,
-        unmarshaler_factory: UnmarshalerFactory | None = None,
-        unmarshal_as: ta.Any | None = None,
+        marshal_via: MarshalVia | None = None,
+        unmarshal_via: UnmarshalVia | None = None,
 ) -> dc.field_modifier:
     raise NotImplementedError
 
@@ -92,12 +86,8 @@ def update_field_options(
         no_marshal: bool | None = None,
         no_unmarshal: bool | None = None,
 
-        marshaler: Marshaler | None = None,
-        marshaler_factory: MarshalerFactory | None = None,
-        marshal_as: ta.Any | None = None,
-        unmarshaler: Unmarshaler | None = None,
-        unmarshaler_factory: UnmarshalerFactory | None = None,
-        unmarshal_as: ta.Any | None = None,
+        marshal_via: MarshalVia | None = None,
+        unmarshal_via: UnmarshalVia | None = None,
 ) -> ta.Callable[[type[T]], type[T]]:
     raise NotImplementedError
 

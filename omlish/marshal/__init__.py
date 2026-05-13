@@ -93,6 +93,14 @@ with _lang.auto_proxy_init(globals()):
         VALUE_TYPES,
     )
 
+    from .api.vias import (  # noqa
+        MarshalVia,
+        UnmarshalVia,
+
+        make_marshaler_via,
+        make_unmarshaler_via,
+    )
+
     from .composite.api import (  # noqa
         DefaultIterableConstructors,
         DefaultMappingConstructors,
@@ -110,6 +118,7 @@ with _lang.auto_proxy_init(globals()):
 
     from .composite.unions.literals import (  # noqa
         LITERAL_UNION_TYPES,
+
         LiteralUnionMarshaler,
         LiteralUnionMarshalerFactory,
         LiteralUnionUnmarshaler,
@@ -252,9 +261,10 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .singular.base64 import (  # noqa
+        Base64MarshalerUnmarshaler,
+
         BASE64_MARSHALER_FACTORY,
         BASE64_UNMARSHALER_FACTORY,
-        Base64MarshalerUnmarshaler,
     )
 
     from .singular.primitives import (  # noqa
@@ -278,6 +288,19 @@ with _lang.auto_proxy_init(globals()):
         new_standard_unmarshaler_factory,
     )
 
+    from .trivial.any import (  # noqa
+        AnyMarshalerUnmarshaler,
+
+        ANY_MARSHALER_UNMARSHALER,
+        ANY_MARSHALER_FACTORY,
+        ANY_UNMARSHALER_FACTORY,
+    )
+
+    from .trivial.const import (  # noqa
+        ConstMarshaler,
+        ConstUnmarshaler,
+    )
+
     from .trivial.forbidden import (  # noqa
         ForbiddenMarshalerUnmarshaler,
 
@@ -287,8 +310,9 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .trivial.nop import (  # noqa
-        NOP_MARSHALER_UNMARSHALER,
         NopMarshalerUnmarshaler,
+
+        NOP_MARSHALER_UNMARSHALER,
     )
 
     from .typedvalues.collections import (  # noqa

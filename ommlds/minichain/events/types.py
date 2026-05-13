@@ -37,7 +37,11 @@ EventCallbacks = ta.NewType('EventCallbacks', ta.Sequence[EventCallback])
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options('error', marshal_as=lang.OpaqueRepr | None, unmarshal_as=lang.OpaqueRepr | None)
+@msh.update_field_options(
+    'error',
+    marshal_via=msh.MarshalVia(lang.OpaqueRepr | None),
+    unmarshal_via=msh.UnmarshalVia(lang.OpaqueRepr | None),
+)
 class ErrorEvent(Event, lang.Final):
     message: str | None = None
     error: BaseException | lang.OpaqueRepr | None = None

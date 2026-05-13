@@ -48,8 +48,8 @@ class RegexUrlToolPermissionMatcher(ToolPermissionMatcher, lang.Final):
         coerce=lambda v: tuple(sorted({check.non_empty_str(m).upper() for m in v})) if v is not None else None,
     ) | msh.dc_field_options(
         omit_if=lang.is_none,
-        marshal_as=ta.Sequence[str] | None,
-        unmarshal_as=ta.Sequence[str] | None,
+        marshal_via=msh.MarshalVia(ta.Sequence[str] | None),
+        unmarshal_via=msh.UnmarshalVia(ta.Sequence[str] | None),
     )
 
     @lang.cached_function

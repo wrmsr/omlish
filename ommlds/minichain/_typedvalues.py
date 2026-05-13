@@ -80,11 +80,11 @@ def _tv_field_metadata(
 
             omit_if=operator.not_,
 
-            marshaler_factory=msh.FuncMarshalerFactory(
+            marshal_via=msh.MarshalVia(msh.FuncMarshalerFactory(
                 lambda ctx, rty: _marshal._TypedValuesFieldMarshalerFactory(tvs_rty).make_marshaler(ctx, rty),  # noqa
-            ),
-            unmarshaler_factory=msh.FuncUnmarshalerFactory(
+            )),
+            unmarshal_via=msh.UnmarshalVia(msh.FuncUnmarshalerFactory(
                 lambda ctx, rty: _marshal._TypedValuesFieldUnmarshalerFactory(tvs_rty).make_unmarshaler(ctx, rty),  # noqa
-            ),
+            )),
         ),
     }
