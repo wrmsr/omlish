@@ -1,6 +1,12 @@
+"""
+FIXME:
+ - lol this caches effectively globally, no regard for which configs it gets
+"""
 import typing as ta
+import weakref
 
 from ... import check
+from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalFactoryContext
@@ -8,6 +14,9 @@ from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
+from ..api.configs import Config
+from ... import typedvalues as tv
+from ... import lang
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
@@ -23,6 +32,14 @@ class _TypeCacheFactory(ta.Generic[FactoryT]):
         self._fac = fac
 
         self._dct: dict[rfl.Type, ta.Any | None] = {}
+
+@dc.dataclass(frozen=True, eq=False)
+class _StateMap(Config, tv.UniqueTypedValue, lang.Final):
+    dct: frozenset[LazyInit]
+
+
+    class _State:
+        pass
 
     def _make(self, cfgs, rty, dfl):
         check.isinstance(rty, rfl.TYPES)

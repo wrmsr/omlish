@@ -75,10 +75,24 @@ def make_unmarshaler_via(ctx: UnmarshalFactoryContext, rty: rfl.Type, via: Unmar
 
 
 @dc.dataclass(frozen=True)
-class MarshalViaMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
+class _MarshalViaMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
     via: MarshalVia
 
 
 @dc.dataclass(frozen=True)
-class UnmarshalViaMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
+class _UnmarshalViaMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
     via: UnmarshalVia
+
+
+def set_marshal_via(o: MarshalerFactory | Marshaler | ta.Any) -> ta.Callable[[type[T]], type[T]]:
+    def inner(cls):
+        _MarshalViaMetadata(MarshalVia(o))(cls)
+        return cls
+    return inner
+
+
+def set_unmarshal_via(o: UnmarshalerFactory | Unmarshaler | ta.Any) -> ta.Callable[[type[T]], type[T]]:
+    def inner(cls):
+        _UnmarshalViaMetadata(UnmarshalVia(o))(cls)
+        return cls
+    return inner

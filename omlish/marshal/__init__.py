@@ -100,8 +100,8 @@ with _lang.auto_proxy_init(globals()):
         make_marshaler_via,
         make_unmarshaler_via,
 
-        MarshalViaMetadata,
-        UnmarshalViaMetadata,
+        set_marshal_via,
+        set_unmarshal_via,
     )
 
     from .composite.api import (  # noqa
@@ -251,9 +251,7 @@ with _lang.auto_proxy_init(globals()):
 
         PolymorphismOptions,
         OpenPolymorphismImpl,
-    )
 
-    from .polymorphism.helpers import (  # noqa
         set_polymorphic_from_subclasses,
     )
 
@@ -261,6 +259,15 @@ with _lang.auto_proxy_init(globals()):
         PolymorphismMarshaler,
         PolymorphismMarshalerFactory,
         make_polymorphism_marshaler,
+    )
+
+    from .polymorphism.metadata import (  # noqa
+        PolymorphismMetadataCache,
+
+        PolymorphismMetadataMarshalerFactory,
+        PolymorphismMetadataUnmarshalerFactory,
+
+        make_polymorphism_metadata_factories,
     )
 
     from .polymorphism.open import (  # noqa

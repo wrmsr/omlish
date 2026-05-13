@@ -3,11 +3,15 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ... import metadata as md
 from ... import reflect as rfl
 from ..api.configs import Config
 from ..api.errors import MarshalError
 from ..api.naming import Naming
 from ..api.naming import translate_name
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -283,3 +287,31 @@ class PolymorphismOptions(lang.Final):
 @dc.dataclass(frozen=True)
 class OpenPolymorphismImpl(Config, lang.Final):
     impl_ty: type
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class _PolymorphismMetadata(md.ClassDecoratorObjectMetadata, lang.Final):
+    opts: PolymorphismOptions
+
+
+def set_polymorphic_from_subclasses(
+        *,
+        type_tagging: TypeTagging = WrapperTypeTagging(),
+        naming: Naming | None = None,
+        strip_suffix: bool | type[AUTO_STRIP_SUFFIX] | str = False,
+) -> ta.Callable[[type[T]], type[T]]:
+    opts = PolymorphismOptions(
+        type_tagging=type_tagging,
+        naming=naming,
+        strip_suffix=strip_suffix,
+    )
+
+    def inner(cls):
+        _PolymorphismMetadata(opts)(cls)
+
+        return cls
+
+    return inner

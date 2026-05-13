@@ -9,9 +9,9 @@ from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
 from ..api.types import UnmarshalerFactory
 from ..api.vias import MarshalVia
-from ..api.vias import MarshalViaMetadata
+from ..api.vias import _MarshalViaMetadata
 from ..api.vias import UnmarshalVia
-from ..api.vias import UnmarshalViaMetadata
+from ..api.vias import _UnmarshalViaMetadata
 from ..api.vias import make_marshaler_via
 from ..api.vias import make_unmarshaler_via
 
@@ -53,7 +53,7 @@ def _get_via_metadata(rty: rfl.Type, md_cls: type[T]) -> T | None:
 
 class ViaMetadataMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if (vmd := _get_via_metadata(rty, MarshalViaMetadata)) is None:
+        if (vmd := _get_via_metadata(rty, _MarshalViaMetadata)) is None:
             return None
 
         return lambda: make_marshaler_via(ctx, rty, vmd.via)
@@ -61,7 +61,7 @@ class ViaMetadataMarshalerFactory(MarshalerFactory):
 
 class ViaMetadataUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if (vmd := _get_via_metadata(rty, UnmarshalViaMetadata)) is None:
+        if (vmd := _get_via_metadata(rty, _UnmarshalViaMetadata)) is None:
             return None
 
         return lambda: make_unmarshaler_via(ctx, rty, vmd.via)
