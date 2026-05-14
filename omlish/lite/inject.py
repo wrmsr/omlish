@@ -544,6 +544,7 @@ def build_injection_kwargs_target(
 
         # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
         ann = insp.type_hints.get(p.name, p.annotation)
+
         if (
                 not raw_optional and
                 is_optional_alias(ann)

@@ -1,3 +1,4 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import dataclasses as dc
 import typing as ta
@@ -95,6 +96,25 @@ class DcIncIntShower(Shower[int]):
 #
 
 
+class Frobber:
+    def frob(self) -> None:
+        print('frob')
+
+
+@contextual_wrap()
+def int_shower_with_frobber(
+        *,
+        int_shower: Shower[int] = contextual_param(),
+        frobber: ta.Optional[Frobber] = contextual_param(None),
+) -> None:
+    if frobber is not None:
+        frobber.frob()
+    int_shower.show(42)
+
+
+#
+
+
 class TestContextual(unittest.TestCase):
     def test_shower(self):
         with contextual_bind({Shower[int]: IntShower()}):
@@ -108,3 +128,8 @@ class TestContextual(unittest.TestCase):
 
                 with contextual_bind({Shower[int]: DcIncIntShower()}):
                     calls_int_shower(42)
+
+            int_shower_with_frobber()
+
+            with contextual_bind({Frobber: Frobber()}):
+                int_shower_with_frobber()

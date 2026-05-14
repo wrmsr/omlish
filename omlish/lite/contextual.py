@@ -7,10 +7,14 @@ import types
 import typing as ta
 
 from .injectinspect import injection_inspect
+from .reflect import get_optional_alias_arg
+from .reflect import is_optional_alias
 
 
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
+
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 ContextualParams = ta.Sequence['ContextualParam']  # ta.TypeAlias
 
@@ -102,7 +106,11 @@ class ContextualParam:
         return self._default
 
 
-def inspect_contextual_params(fn: ta.Any) -> ContextualParams:
+def inspect_contextual_params(
+        fn: ta.Any,
+        *,
+        raw_optional: bool = False,
+) -> ContextualParams:
     insp = injection_inspect(fn)
 
     lst: list[ContextualParam] = []
@@ -111,9 +119,18 @@ def inspect_contextual_params(fn: ta.Any) -> ContextualParams:
         if (pd := p.default) is inspect.Signature.empty or not isinstance(pd, _DeclaredContextualParam):
             continue
 
+        # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
+        ann = insp.type_hints.get(p.name, p.annotation)
+
+        if (
+                not raw_optional and
+                is_optional_alias(ann)
+        ):
+            ann = get_optional_alias_arg(ann)
+
         lst.append(ContextualParam(
             p.name,
-            insp.type_hints[p.name],
+            ann,
             default=pd._default,  # noqa
         ))
 
@@ -181,7 +198,7 @@ class ContextualWrapping(ta.Protocol):
     def __call__(self, ty: ta.Type[T]) -> ta.Type[T]: ...
 
     @ta.overload
-    def __call__(self, fn: ta.Callable[..., T]) -> ta.Callable[..., T]: ...
+    def __call__(self, fn: CallableT) -> CallableT: ...
 
     def __call__(self, obj): ...
 

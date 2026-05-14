@@ -36,7 +36,7 @@ def __omlish_amalg__():  # noqa
             dict(path='injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
-            dict(path='inject.py', sha1='61fe8f689af698b489e15694c567a1cb9e26422c'),
+            dict(path='inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
         ],
     )
 
@@ -1711,6 +1711,7 @@ def build_injection_kwargs_target(
 
         # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
         ann = insp.type_hints.get(p.name, p.annotation)
+
         if (
                 not raw_optional and
                 is_optional_alias(ann)

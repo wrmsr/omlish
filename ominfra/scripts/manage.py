@@ -133,7 +133,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/configs/nginx.py', sha1='98730055f70019525ef17a24fadfa7b1ca28804d'),
-            dict(path='../../omlish/lite/inject.py', sha1='61fe8f689af698b489e15694c567a1cb9e26422c'),
+            dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/subprocesses/run.py', sha1='1d2a78b18bcc601c8b28269d792cc38bbf25a078'),
@@ -10696,6 +10696,7 @@ def build_injection_kwargs_target(
 
         # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
         ann = insp.type_hints.get(p.name, p.annotation)
+
         if (
                 not raw_optional and
                 is_optional_alias(ann)
