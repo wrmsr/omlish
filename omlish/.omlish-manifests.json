@@ -12,6 +12,18 @@
     }
   },
   {
+    "module": ".diag.execstat",
+    "attr": "_CLI_MODULE",
+    "file": "omlish/diag/execstat.py",
+    "line": 161,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "execstat",
+        "module": "omlish.diag.execstat"
+      }
+    }
+  },
+  {
     "module": ".diag.procfs",
     "attr": "_CLI_MODULE",
     "file": "omlish/diag/procfs.py",

@@ -8,6 +8,7 @@ import collections
 import contextlib
 import dataclasses as dc
 import gc
+import json
 import os.path
 import signal
 import sys
@@ -29,6 +30,7 @@ with lang.auto_proxy_import(globals()):
     import memray
 
     from ..diag import debug as d_debug
+    from ..diag import execstat
     from ..diag import pycharm as d_pycharm
     from ..diag import replserver
     from ..diag import threads as d_threads
@@ -261,3 +263,35 @@ class MemrayBootstrap(ContextBootstrap['MemrayBootstrap.Config']):
 
         for ty, n in counts.most_common(30):
             print(f'{n:>8} {sizes[ty]:>12} {ty}', file=sys.stderr)
+
+
+##
+
+
+class ExecstatBootstrap(ContextBootstrap['ExecstatBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        dump: bool = False
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.dump:
+            yield
+
+        tracker = execstat.Tracker(
+            time=True,
+            rss=True,
+            modules=True,
+        )
+
+        tracker.start()
+
+        try:
+            yield
+
+        finally:
+            tracker.end()
+
+            report = tracker.report()
+
+            print(json.dumps(report, indent=2, separators=(', ', ': ')), file=sys.stderr)

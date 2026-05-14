@@ -159,8 +159,8 @@ class Tracker:
 
 
 # @omlish-manifest
-_CLI_MODULE = {'!.cli.types.CliModule': {
-    'name': 'py/execstat',
+_CLI_MODULE = {'!omdev.cli.types.CliModule': {
+    'name': 'execstat',
     'module': __name__,
 }}
 
