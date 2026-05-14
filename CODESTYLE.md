@@ -219,6 +219,8 @@
   `dict.pop`, `(width, height)`, etc.
 - Similarly, use positional-only parameters as called for, but significantly less 'by default' than keyword-only
   parameters.
+- Similar to golang, parameter defaults should be the 'zero-value' of the type - for example, instead of
+  `foo: bool = True`, prefer `no_foo: bool = False`.
 
 
 ### Dataclasses
