@@ -14,6 +14,7 @@ from ..elements import PrimaryKey
 from ..elements import UpdatedAtTrigger
 from ..tabledefs import TableDef
 from ..values import Now
+from .base import StatementRenderer
 
 
 ##
@@ -190,3 +191,16 @@ def render_sqlite_create_statements(
     stmts.extend(triggers)
 
     return stmts
+
+
+class SqliteStatementRenderer(StatementRenderer):
+    def render_create_statements(
+            self,
+            tbl: TableDef,
+            *,
+            if_not_exists: bool = False,
+    ) -> list[str]:
+        return render_sqlite_create_statements(
+            tbl,
+            if_not_exists=if_not_exists,
+        )

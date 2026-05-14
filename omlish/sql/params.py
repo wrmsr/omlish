@@ -201,8 +201,12 @@ class UnconsumedParamsError(Exception):
 
 
 def check_params_consumed(expected: ta.Iterable[K], actual: ta.Iterable[K]) -> None:
-    l = set(expected)
-    r = set(actual)
+    def to_set(o):
+        return set(range(len(expected))) if isinstance(expected, collections.abc.Sequence) else set(o)
+
+    l = to_set(expected)
+    r = to_set(actual)
+
     d = l ^ r
     if not d:
         return
@@ -210,6 +214,16 @@ def check_params_consumed(expected: ta.Iterable[K], actual: ta.Iterable[K]) -> N
 
 
 ##
+
+
+# @ta.overload
+# def substitute_params(
+#         params: ta.Sequence[int],
+#         values: ta.Sequence[V],
+#         *,
+#         strict: bool = False,
+# ) -> ta.Sequence[V]:
+#     ...
 
 
 @ta.overload

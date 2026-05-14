@@ -1,16 +1,13 @@
 import concurrent.futures as cf
-import contextlib
 import os.path
 import sqlite3
 import tempfile
-import typing as ta
 
 import pytest
 
 from ... import lang
 from ... import orm
 from ... import sql
-from ...asyncs.asyncio import all as au
 from ..registries import Registry
 from ..sql import SqlStore
 from ..stores import Store
@@ -130,8 +127,8 @@ async def test_async_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     registry = build_registry()
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
-        db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(db_path)))
-        adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToExecutor(exe))), db)
+        db = sql.api.DbapiDb(sql.api.ClosingDbapiConnector(sqlite3.connect, db_path))
+        adb = sql.api.SyncToAsyncDb(sql.api.AsyncioToExecutorSyncToAsyncRunner.factory(exe), db)
         store = SqlStore(registry, adb)
         await _test_orm(store, registry)
 
@@ -139,7 +136,7 @@ async def test_async_orm_sql():
 def test_sync_await_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     registry = build_registry()
-    db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(db_path)))
+    db = sql.api.DbapiDb(sql.api.ClosingDbapiConnector(sqlite3.connect, db_path))
     adb = sql.api.SyncToAsyncDb(sql.api.ImmediateSyncToAsyncRunner, db)
     store = SqlStore(registry, adb)
     lang.sync_await(_test_orm(store, registry))

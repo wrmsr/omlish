@@ -75,11 +75,23 @@ class FieldSqlType(tv.UniqueScalarTypedValue[sql.td.Dtype], FieldOption, lang.Fi
 
 
 class SqlStore(Store):
-    def __init__(self, registry: Registry, db: sql.AsyncDb | sql.AsyncConn) -> None:
+    def __init__(
+            self,
+            registry: Registry,
+            db: sql.AsyncDb | sql.AsyncConn,
+            *,
+            param_style: sql.ParamStyle = sql.ParamStyle.QMARK,
+            tabledef_renderer: sql.td.StatementRenderer | None = None,
+    ) -> None:
         super().__init__()
 
         self._registry = registry
         self._db = db
+
+        self._param_style = param_style
+        if tabledef_renderer is None:
+            tabledef_renderer = sql.td.SqliteStatementRenderer()
+        self._tabledef_renderer = tabledef_renderer
 
         self._mappers: ta.Mapping[Mapper, SqlStore._Mapper] = {m: self._Mapper(self, m) for m in registry.mappers}
 
@@ -248,7 +260,7 @@ class SqlStore(Store):
             for m in self._registry.mappers:
                 td = self._mapper_table_def(m)
 
-                for stmt in sql.td.render_sqlite_create_statements(
+                for stmt in self._tabledef_renderer.render_create_statements(
                         sql.td.lower_table_elements(td),
                         if_not_exists=True,
                 ):
@@ -348,7 +360,13 @@ class SqlStore(Store):
 
         #
 
-        def _build_insert_stmt(self, m: Mapper, *, auto_key: bool = False) -> str:
+        def _build_insert_stmt(
+                self,
+                m: Mapper,
+                pp: sql.ParamsPreparer,
+                *,
+                auto_key: bool = False,
+        ) -> str:
             return ' '.join([
                 'insert into',
                 m._store_name,
@@ -365,8 +383,8 @@ class SqlStore(Store):
                 ''.join([
                     '(',
                     ', '.join([
-                        '?'
-                        for _ in range(len(m._fields) - (1 if auto_key else 0) - len(m._auto_value_fields))
+                        pp.add(i)
+                        for i in range(len(m._fields) - (1 if auto_key else 0) - len(m._auto_value_fields))
                     ]),
                     ')',
                 ]),
@@ -378,7 +396,9 @@ class SqlStore(Store):
 
             sm = self._o._mappers[m]
 
-            stmt = self._build_insert_stmt(m, auto_key=True)
+            pp = sql.make_params_preparer(self._o._param_style)
+            stmt = self._build_insert_stmt(m, pp, auto_key=True)
+            px = pp.prepare()
 
             iak: dict[ta.Any, ta.Any] = {}
 
@@ -390,7 +410,8 @@ class SqlStore(Store):
                     for f in m._fields
                     if f is not m._key_field and f not in m._auto_value_fields
                 ]
-                vk = await sql.query_scalar(check.not_none(self._q), stmt, params)
+                qp = sql.params.substitute_params(px, params, strict=True)
+                vk = await sql.query_scalar(check.not_none(self._q), stmt, qp)
                 iak[ak] = sm.decode_key(vk)
 
             return iak
