@@ -37,6 +37,20 @@ def _generate_import(tmp_path, obj: ta.Mapping[str, ta.Any]):
     return mod
 
 
+def _assert_unsupported(
+        obj: ta.Mapping[str, ta.Any],
+        path: tuple[str | int, ...],
+        *,
+        allow_unknown: bool = False,
+) -> None:
+    kws = _parse(obj, allow_unknown=allow_unknown)
+
+    with pytest.raises(UnsupportedSchemaError) as ex:
+        JsonSchemaCodeGen(kws).gen_module()
+
+    assert ex.value.path == path
+
+
 def test_object_codegen_marshal_round_trip(tmp_path):
     mod = _generate_import(tmp_path, {
         '$defs': {
@@ -152,6 +166,201 @@ def test_object_const_field_codegen_marshal_round_trip(tmp_path):
         'type': 'audio',
         'data': 'abc',
     }, mod.AudioContent) == obj
+
+
+def test_nullable_and_primitive_union_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'ScalarHolder': {
+                'type': 'object',
+                'required': ['id', 'value'],
+                'properties': {
+                    'id': {'type': 'string'},
+                    'count': {'type': ['integer', 'null']},
+                    'value': {
+                        'anyOf': [
+                            {'type': 'string'},
+                            {'type': 'integer'},
+                            {'type': 'null'},
+                        ],
+                    },
+                },
+            },
+        },
+    })
+
+    obj = mod.ScalarHolder(id='one', value=42)
+    assert msh.marshal(obj, mod.ScalarHolder) == {
+        'id': 'one',
+        'value': 42,
+    }
+
+    assert msh.unmarshal({
+        'id': 'two',
+        'count': None,
+        'value': 'x',
+    }, mod.ScalarHolder) == mod.ScalarHolder(id='two', count=None, value='x')
+
+
+def test_arrays_maps_and_refs_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'Role': {
+                'enum': ['admin', 'user'],
+                'type': 'string',
+            },
+            'User': {
+                'type': 'object',
+                'required': ['name', 'role'],
+                'properties': {
+                    'name': {'type': 'string'},
+                    'role': {'$ref': '#/$defs/Role'},
+                },
+            },
+            'Directory': {
+                'type': 'object',
+                'required': ['users', 'scores'],
+                'properties': {
+                    'users': {
+                        'type': 'array',
+                        'items': {'$ref': '#/$defs/User'},
+                    },
+                    'labels': {
+                        'type': 'array',
+                        'items': {'type': 'string'},
+                    },
+                    'scores': {
+                        'type': 'object',
+                        'additionalProperties': {'type': 'integer'},
+                    },
+                },
+            },
+        },
+    })
+
+    obj = mod.Directory(
+        users=[mod.User(name='alice', role='admin')],
+        scores={'alice': 10},
+    )
+    assert msh.marshal(obj, mod.Directory) == {
+        'users': [
+            {
+                'name': 'alice',
+                'role': 'admin',
+            },
+        ],
+        'scores': {
+            'alice': 10,
+        },
+    }
+
+    assert msh.unmarshal({
+        'users': [
+            {
+                'name': 'bob',
+                'role': 'user',
+            },
+        ],
+        'labels': ['remote'],
+        'scores': {
+            'bob': 7,
+        },
+    }, mod.Directory) == mod.Directory(
+        users=(mod.User(name='bob', role='user'),),
+        labels=('remote',),
+        scores={'bob': 7},
+    )
+
+
+def test_all_of_object_flattening_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'BaseItem': {
+                'type': 'object',
+                'required': ['id'],
+                'properties': {
+                    'id': {'type': 'string'},
+                },
+            },
+            'NamedItem': {
+                'allOf': [
+                    {'$ref': '#/$defs/BaseItem'},
+                    {
+                        'type': 'object',
+                        'required': ['name'],
+                        'properties': {
+                            'name': {'type': 'string'},
+                        },
+                    },
+                ],
+            },
+        },
+    })
+
+    obj = mod.NamedItem(id='i1', name='Item')
+    assert msh.marshal(obj, mod.NamedItem) == {
+        'id': 'i1',
+        'name': 'Item',
+    }
+
+    assert msh.unmarshal({
+        'id': 'i2',
+        'name': 'Other',
+    }, mod.NamedItem) == mod.NamedItem(id='i2', name='Other')
+
+
+def test_top_level_const_one_of_enum_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'Status': {
+                'oneOf': [
+                    {'type': 'string', 'const': 'pending'},
+                    {'type': 'string', 'const': 'done'},
+                ],
+            },
+            'Task': {
+                'type': 'object',
+                'required': ['status'],
+                'properties': {
+                    'status': {'$ref': '#/$defs/Status'},
+                },
+            },
+        },
+    })
+
+    obj = mod.Task(status='pending')
+    assert msh.marshal(obj, mod.Task) == {
+        'status': 'pending',
+    }
+
+    assert msh.unmarshal({
+        'status': 'done',
+    }, mod.Task) == mod.Task(status='done')
+
+
+def test_snake_field_naming_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'SnakeRecord': {
+                'type': 'object',
+                'required': ['display_name'],
+                'properties': {
+                    'display_name': {'type': 'string'},
+                    'updated_at': {'type': 'string'},
+                },
+            },
+        },
+    })
+
+    obj = mod.SnakeRecord(display_name='Alice')
+    assert msh.marshal(obj, mod.SnakeRecord) == {
+        'display_name': 'Alice',
+    }
+
+    assert msh.unmarshal({
+        'display_name': 'Bob',
+        'updated_at': 'now',
+    }, mod.SnakeRecord) == mod.SnakeRecord(display_name='Bob', updated_at='now')
 
 
 def test_inline_object_codegen_marshal_round_trip(tmp_path):
@@ -272,7 +481,7 @@ def test_ref_alias_codegen_marshal_round_trip(tmp_path):
 
 
 def test_unsupported_keyword_explodes():
-    kws = _parse({
+    _assert_unsupported({
         '$defs': {
             'Thing': {
                 'type': 'object',
@@ -281,7 +490,65 @@ def test_unsupported_keyword_explodes():
                 },
             },
         },
-    }, allow_unknown=True)
+    }, ('$defs', 'Thing'), allow_unknown=True)
 
-    with pytest.raises(UnsupportedSchemaError):
-        JsonSchemaCodeGen(kws).gen_module()
+
+def test_unsupported_non_x_unknown_keyword_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'unknownKeyword': True,
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'), allow_unknown=True)
+
+
+def test_unsupported_plain_one_of_union_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'oneOf': [
+                    {'$ref': '#/$defs/Foo'},
+                    {'$ref': '#/$defs/Bar'},
+                ],
+            },
+            'Foo': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+            'Bar': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_array_inline_object_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'items': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'required': ['name'],
+                            'properties': {
+                                'name': {'type': 'string'},
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'items', 'items'))
