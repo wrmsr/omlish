@@ -109,6 +109,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
             dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
+            dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
@@ -166,7 +167,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../omlish/io/streams/utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
-            dict(path='../../omlish/lite/inject.py', sha1='8cfee01601e9b8d7a4689cb5ba38de8c2bdb4706'),
+            dict(path='../../omlish/lite/inject.py', sha1='61fe8f689af698b489e15694c567a1cb9e26422c'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/logs/utils.py', sha1='f19e8f456172673b7418f3413f4ccef00a4b251c'),
@@ -2454,6 +2455,96 @@ def dataclass_field_required(name: str) -> ta.Callable[[], ta.Any]:
     def inner() -> ta.NoReturn:
         raise DataclassFieldRequiredError(name)
     return inner
+
+
+########################################
+# ../../../omlish/lite/injectinspect.py
+
+
+##
+
+
+class InjectionInspection(ta.NamedTuple):
+    obj: ta.Any
+    unwrapped: ta.Any
+    target: ta.Any
+
+    signature: inspect.Signature
+    type_hints: ta.Mapping[str, ta.Any]
+    args_offset: int
+
+
+class InjectionInspectionError(Exception):
+    pass
+
+
+##
+
+
+_INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, InjectionInspection] = weakref.WeakKeyDictionary()
+
+
+def _do_injection_inspect(obj: ta.Any) -> InjectionInspection:
+    tgt = obj
+
+    # inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to
+    # eval str annotations *in addition to* getting the signature for parameter information.
+    uw = tgt
+    has_partial = False
+    while True:
+        if isinstance(uw, functools.partial):
+            uw = uw.func
+            has_partial = True
+        else:
+            if (uw2 := inspect.unwrap(uw)) is uw:
+                break
+            uw = uw2
+
+    has_args_offset = False
+
+    if isinstance(tgt, type) and tgt.__new__ is not object.__new__:
+        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
+        #  - https://bugs.python.org/issue40897
+        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
+        tgt = tgt.__init__  # type: ignore[misc]
+        has_args_offset = True
+
+    if tgt in (object.__init__, object.__new__):
+        # inspect strips self for types but not the underlying methods.
+        def dummy(self):
+            pass
+        tgt = dummy
+        has_args_offset = True
+
+    if has_partial and has_args_offset:
+        # TODO: unwrap partials masking parameters like modern python
+        raise InjectionInspectionError(
+            'Injector inspection does not currently support both an args offset and a functools.partial: '
+            f'{obj}',
+        )
+
+    return InjectionInspection(
+        obj,
+        uw,
+        tgt,
+
+        inspect.signature(tgt),
+        ta.get_type_hints(uw),
+        1 if has_args_offset else 0,
+    )
+
+
+def injection_inspect(obj: ta.Any) -> InjectionInspection:
+    try:
+        return _INJECTION_INSPECTION_CACHE[obj]
+    except TypeError:
+        return _do_injection_inspect(obj)
+    except KeyError:
+        pass
+
+    insp = _do_injection_inspect(obj)
+    _INJECTION_INSPECTION_CACHE[obj] = insp
+    return insp
 
 
 ########################################
@@ -14358,73 +14449,6 @@ def bind_injector_scope_seed(k: ta.Any, sc: ta.Type[InjectorScope]) -> InjectorB
 # inspection
 
 
-class _InjectionInspection(ta.NamedTuple):
-    signature: inspect.Signature
-    type_hints: ta.Mapping[str, ta.Any]
-    args_offset: int
-
-
-_INJECTION_INSPECTION_CACHE: ta.MutableMapping[ta.Any, _InjectionInspection] = weakref.WeakKeyDictionary()
-
-
-def _do_injection_inspect(obj: ta.Any) -> _InjectionInspection:
-    tgt = obj
-
-    # inspect.signature(eval_str=True) was added in 3.10 and we have to support 3.8, so we have to get_type_hints to
-    # eval str annotations *in addition to* getting the signature for parameter information.
-    uw = tgt
-    has_partial = False
-    while True:
-        if isinstance(uw, functools.partial):
-            uw = uw.func
-            has_partial = True
-        else:
-            if (uw2 := inspect.unwrap(uw)) is uw:
-                break
-            uw = uw2
-
-    has_args_offset = False
-
-    if isinstance(tgt, type) and tgt.__new__ is not object.__new__:
-        # Python 3.8's inspect.signature can't handle subclasses overriding __new__, always generating *args/**kwargs.
-        #  - https://bugs.python.org/issue40897
-        #  - https://github.com/python/cpython/commit/df7c62980d15acd3125dfbd81546dad359f7add7
-        tgt = tgt.__init__  # type: ignore[misc]
-        has_args_offset = True
-
-    if tgt in (object.__init__, object.__new__):
-        # inspect strips self for types but not the underlying methods.
-        def dummy(self):
-            pass
-        tgt = dummy
-        has_args_offset = True
-
-    if has_partial and has_args_offset:
-        # TODO: unwrap partials masking parameters like modern python
-        raise InjectorError(
-            'Injector inspection does not currently support both an args offset and a functools.partial: '
-            f'{obj}',
-        )
-
-    return _InjectionInspection(
-        inspect.signature(tgt),
-        ta.get_type_hints(uw),
-        1 if has_args_offset else 0,
-    )
-
-
-def _injection_inspect(obj: ta.Any) -> _InjectionInspection:
-    try:
-        return _INJECTION_INSPECTION_CACHE[obj]
-    except TypeError:
-        return _do_injection_inspect(obj)
-    except KeyError:
-        pass
-    insp = _do_injection_inspect(obj)
-    _INJECTION_INSPECTION_CACHE[obj] = insp
-    return insp
-
-
 class InjectionKwarg(ta.NamedTuple):
     name: str
     key: InjectorKey
@@ -14443,7 +14467,7 @@ def build_injection_kwargs_target(
         skip_kwargs: ta.Optional[ta.Iterable[str]] = None,
         raw_optional: bool = False,
 ) -> InjectionKwargsTarget:
-    insp = _injection_inspect(obj)
+    insp = injection_inspect(obj)
 
     params = list(insp.signature.parameters.values())
 
@@ -14723,7 +14747,7 @@ class InjectorBinder:
         elif cls._is_fn(obj) and not has_to:
             to_fn = obj
             if key is None:
-                insp = _injection_inspect(obj)
+                insp = injection_inspect(obj)
                 key_cls: ta.Any = check_valid_injector_key_cls(check.not_none(insp.type_hints.get('return')))
                 key = InjectorKey(key_cls)
         else:

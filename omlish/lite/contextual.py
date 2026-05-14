@@ -1,9 +1,12 @@
+# ruff: noqa: UP037
 # @omlish-lite
 import contextvars
 import functools
 import inspect
 import types
 import typing as ta
+
+from .injectinspect import injection_inspect
 
 
 T = ta.TypeVar('T')
@@ -91,18 +94,17 @@ class ContextualParam:
 
 
 def inspect_contextual_params(fn: ta.Any) -> ContextualParams:
-    sig = inspect.signature(fn)
-    th = ta.get_type_hints(fn)
+    insp = injection_inspect(fn)
 
     lst: list[ContextualParam] = []
 
-    for p in sig.parameters.values():
+    for p in insp.signature.parameters.values():
         if (pd := p.default) is inspect.Signature.empty or not isinstance(pd, _DeclaredContextualParam):
             continue
 
         lst.append(ContextualParam(
             p.name,
-            th[p.name],
+            insp.type_hints[p.name],
             default=pd._default,  # noqa
         ))
 
