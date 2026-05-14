@@ -230,6 +230,18 @@
     }
   },
   {
+    "module": ".py.execstat",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/py/execstat.py",
+    "line": 161,
+    "value": {
+      "!.cli.types.CliModule": {
+        "name": "py/execstat",
+        "module": "omdev.py.execstat"
+      }
+    }
+  },
+  {
     "module": ".py.findimports",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/findimports.py",
@@ -238,18 +250,6 @@
       "!.cli.types.CliModule": {
         "name": "py/findimports",
         "module": "omdev.py.findimports"
-      }
-    }
-  },
-  {
-    "module": ".py.scripts.execstat",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/py/scripts/execstat.py",
-    "line": 92,
-    "value": {
-      "!.cli.types.CliModule": {
-        "name": "py/execstat",
-        "module": "omdev.py.scripts.execstat"
       }
     }
   },
