@@ -2,12 +2,14 @@
 TODO:
  - https://github.com/webserver-llc/angie ?
 """
+import json
 import multiprocessing as mp
 import os.path
 import shutil
 import subprocess
 import sys
 import tempfile
+import typing as ta
 import urllib.request
 
 from omlish import check
@@ -17,30 +19,41 @@ from omlish import lang
 ##
 
 
-NGINX_VERSION = '1.29.8'
-NGINX_SRC_URL = f'https://nginx.org/download/nginx-{NGINX_VERSION}.tar.gz'
+def read_versions() -> ta.Mapping[str, str]:
+    return json.loads(lang.get_relative_resources(globals=globals())['versions.json'].read_text())
 
-NGINX_VTS_VERSION = '0.2.5'
-NGINX_VTS_SRC_URL = f'https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v{NGINX_VTS_VERSION}.tar.gz'
+
+##
+
+
+NGINX_SRC_URL_FMT = 'https://nginx.org/download/nginx-{version}.tar.gz'
+NGINX_VTS_SRC_URL_FMT = 'https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v{version}.tar.gz'
 
 
 def build_nginx() -> None:
+    versions = read_versions()
+
+    nginx_version = versions['nginx']
+    nginx_vts_version = versions['nginx_vts']
+
+    #
+
     build_dir = tempfile.mkdtemp('-omlish-nginx-build')
     print(f'{build_dir=}')
 
     #
 
-    nginx_src_file = urllib.request.urlretrieve(NGINX_SRC_URL)[0]  # noqa
+    nginx_src_file = urllib.request.urlretrieve(NGINX_SRC_URL_FMT.format(version=nginx_version))[0]  # noqa
     print(f'{nginx_src_file=}')
 
-    nginx_vts_src_file = urllib.request.urlretrieve(NGINX_VTS_SRC_URL)[0]  # noqa
+    nginx_vts_src_file = urllib.request.urlretrieve(NGINX_VTS_SRC_URL_FMT.format(version=nginx_vts_version))[0]  # noqa
     print(f'{nginx_vts_src_file=}')
 
     subprocess.check_call(['tar', 'xvzf', nginx_src_file, '-C', build_dir])
-    nginx_dir = os.path.join(build_dir, f'nginx-{NGINX_VERSION}')
+    nginx_dir = os.path.join(build_dir, f'nginx-{nginx_version}')
 
     subprocess.check_call(['tar', 'xvzf', nginx_vts_src_file, '-C', build_dir])
-    nginx_vts_dir = os.path.join(build_dir, f'nginx-module-vts-{NGINX_VTS_VERSION}')
+    nginx_vts_dir = os.path.join(build_dir, f'nginx-module-vts-{nginx_vts_version}')
 
     #
 

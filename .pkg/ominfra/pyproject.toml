@@ -79,4 +79,5 @@ exclude = [
 ]
 'ominfra.nginx' = [
     'patches/nginx/*',
+    'versions.json',
 ]
