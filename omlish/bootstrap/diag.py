@@ -1,8 +1,17 @@
 # ruff: noqa: UP007 UP045
+"""
+TODO:
+ - execstat equivs
+ - put memray junk in a omlish.diag module lol
+"""
+import collections
 import contextlib
 import dataclasses as dc
+import gc
+import os.path
 import signal
 import sys
+import tempfile
 import threading
 import typing as ta
 
@@ -16,6 +25,8 @@ from .base import SimpleBootstrap
 with lang.auto_proxy_import(globals()):
     import cProfile  # noqa
     import pstats
+
+    import memray
 
     from ..diag import debug as d_debug
     from ..diag import pycharm as d_pycharm
@@ -205,3 +216,48 @@ class DebugBootstrap(ContextBootstrap['DebugBootstrap.Config']):
 
         with d_debug.debugging_on_exception():
             yield
+
+
+##
+
+
+class MemrayBootstrap(ContextBootstrap['MemrayBootstrap.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(Bootstrap.Config):
+        dump: bool = False
+
+    @contextlib.contextmanager
+    def enter(self) -> ta.Iterator[None]:
+        if not self._config.dump:
+            yield
+
+        tmp_dir = tempfile.mkdtemp()
+        mr_fp = os.path.join(tmp_dir, 'memray.bin')
+
+        with memray.Tracker(
+            mr_fp,
+            trace_python_allocators=True,
+            track_object_lifetimes=True,
+        ) as tracker:
+            yield
+
+            for _ in range(3):
+                gc.collect()
+
+        survivors = tracker.get_surviving_objects()
+
+        def type_name(obj: ta.Any) -> str:  # noqa
+            ty = type(obj)  # noqa
+            return f'{ty.__module__}.{ty.__qualname__}'
+
+        counts = collections.Counter(type_name(o) for o in survivors)
+
+        sizes = collections.defaultdict[str, int](int)
+        for obj in survivors:
+            try:
+                sizes[type_name(obj)] += sys.getsizeof(obj)
+            except TypeError:
+                pass
+
+        for ty, n in counts.most_common(30):
+            print(f'{n:>8} {sizes[ty]:>12} {ty}', file=sys.stderr)
