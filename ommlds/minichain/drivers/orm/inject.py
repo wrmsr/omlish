@@ -37,7 +37,7 @@ async def _provide_sql_store(
     @contextlib.asynccontextmanager
     async def executor():
         with cf.ThreadPoolExecutor(max_workers=1) as exe:
-            yield au.ToThread(exe=exe)
+            yield au.ToExecutor(exe)
 
     def connect():
         if not file_path.startswith(':'):

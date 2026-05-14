@@ -4,7 +4,7 @@ from .rlock import (  # noqa
 )
 
 from .threads import (  # noqa
-    AsyncioToThread as ToThread,
+    AsyncioToExecutor as ToExecutor,
 )
 
 from .utils import (  # noqa

@@ -13,11 +13,11 @@ P = ta.ParamSpec('P')
 
 
 @ta.final
-class AsyncioToThread:
+class AsyncioToExecutor:
     def __init__(
             self,
-            loop: asyncio.AbstractEventLoop | None = None,
             exe: cf.Executor | None = None,
+            loop: asyncio.AbstractEventLoop | None = None,
     ) -> None:
         self._loop = loop
         self._exe = exe

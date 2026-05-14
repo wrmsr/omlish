@@ -32,7 +32,8 @@ from .asyncs import (  # noqa
     SyncToAsyncRunner,
     SyncToAsyncRunnerFactory,
 
-    SyncToAsyncImmediateRunner,
+    ImmediateSyncToAsyncRunner,
+    AsyncioToExecutorSyncToAsyncRunner,
 
     SyncToAsyncRows,
     SyncToAsyncTxn,

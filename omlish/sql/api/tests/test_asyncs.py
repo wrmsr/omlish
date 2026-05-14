@@ -18,8 +18,9 @@ from ...dbs import UrlDbLoc
 from ...queries import Q
 from ...tests.harness import HarnessDbs
 from .. import querierfuncs as qf
+from ..asyncs import AsyncioToExecutorSyncToAsyncRunner
+from ..asyncs import ImmediateSyncToAsyncRunner
 from ..asyncs import SyncToAsyncDb
-from ..asyncs import SyncToAsyncImmediateRunner
 from ..dbapi import DbapiDb
 from ..drivers.asyncpg import AsyncpgDb
 
@@ -28,7 +29,7 @@ from ..drivers.asyncpg import AsyncpgDb
 async def test_queries():
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
         db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
-        adb = SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
+        adb = SyncToAsyncDb(AsyncioToExecutorSyncToAsyncRunner.factory(exe), db)
 
         async with adb.connect() as conn:
             print(await qf.query_all(conn, Q.select([1])))
@@ -38,7 +39,7 @@ async def test_queries():
 
 def test_immediate_queries():
     db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
-    adb = SyncToAsyncDb(SyncToAsyncImmediateRunner, db)
+    adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
 
     async def inner():
         async with adb.connect() as conn:
@@ -64,7 +65,7 @@ async def test_pg8000(harness):
             port=p_u.port,
             password=p_u.password,
         )))
-        adb = SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
+        adb = SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToExecutor(exe))), db)
 
         async with adb.connect() as conn:
             print(await qf.query_all(conn, Q.select([1])))

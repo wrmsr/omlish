@@ -67,6 +67,6 @@ async def test_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
         db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(db_path)))
-        adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
+        adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToExecutor(exe))), db)
         store = orm.SqlStore(registry(), adb)
         await _test_timestamps(store)

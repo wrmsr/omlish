@@ -1,4 +1,6 @@
+# ruff: noqa: RUF013 UP037 UP045
 import contextlib
+import functools
 import typing as ta
 
 from ... import lang
@@ -14,6 +16,13 @@ from .core import Rows
 from .core import Txn
 from .queries import Queryable
 from .rows import Row
+
+
+with lang.auto_proxy_import(globals()):
+    import asyncio
+    import concurrent.futures as cf
+
+    from ...asyncs.asyncio import all as au
 
 
 T = ta.TypeVar('T')
@@ -33,7 +42,7 @@ SyncToAsyncRunnerFactory: ta.TypeAlias = ta.Callable[[], ta.AsyncContextManager[
 ##
 
 
-class SyncToAsyncImmediateRunner:
+class ImmediateSyncToAsyncRunner:
     async def __aenter__(self) -> ta.Self:
         return self
 
@@ -42,6 +51,34 @@ class SyncToAsyncImmediateRunner:
 
     async def __call__(self, fn: ta.Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
         return fn(*args, **kwargs)
+
+
+class AsyncioToExecutorSyncToAsyncRunner:
+    def __init__(
+            self,
+            exe: ta.Optional['cf.Executor'] = None,
+            loop: ta.Optional['asyncio.AbstractEventLoop'] = None,
+    ) -> None:
+        super().__init__()
+
+        self._te = au.ToExecutor(exe, loop)
+
+    @classmethod
+    def factory(
+            cls,
+            exe: ta.Optional['cf.Executor'] = None,
+            loop: ta.Optional['asyncio.AbstractEventLoop'] = None,
+    ) -> ta.Callable[[], AsyncioToExecutorSyncToAsyncRunner]:
+        return functools.partial(cls, exe, loop)
+
+    async def __aenter__(self) -> ta.Self:
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    async def __call__(self, fn: ta.Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
+        return await self._te(fn, *args, **kwargs)
 
 
 ##

@@ -1,17 +1,17 @@
+# import concurrent.futures as cf
 # import contextlib
 # import typing as ta
-# import concurrent.futures as cf
 # import urllib.parse
-# from ...asyncs.asyncio import all as au
 #
-# from ... import lang
 # from ... import check
-# from ...testing import pytest as ptu
+# from ... import lang
 # from ... import sql
+# from ...asyncs.asyncio import all as au
 # from ...sql.tests.harness import HarnessDbs
-# from .test_orm import _test_orm
+# from ...testing import pytest as ptu
 # from ..sql import SqlStore
 # from .models import build_registry
+# from .test_orm import _test_orm
 #
 #
 # ##
@@ -33,7 +33,7 @@
 #
 #     exe = exit_stack.enter_context(cf.ThreadPoolExecutor(max_workers=1))
 #
-#     adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
+#     adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToExecutor(exe))), db)
 #
 #     registry = build_registry()
 #     store = SqlStore(registry, adb)
