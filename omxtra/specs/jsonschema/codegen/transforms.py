@@ -82,11 +82,14 @@ class JsonSchemaIrTransformer:
             intersection_type_names.remove(n)
 
             fields: list[FieldDef] = []
+            nested_defs: list[ObjectTypeDef] = []
             td = check.isinstance(self._type_defs[n], AllOfIntersectionTypeDef)
 
             for m in td.members:
                 if isinstance(m, TYPE_DEF_TYPES):
-                    fields.extend(check.isinstance(m, ObjectTypeDef).fields)
+                    om = check.isinstance(m, ObjectTypeDef)
+                    fields.extend(om.fields)
+                    nested_defs.extend(om.nested_defs)
 
                 elif isinstance(m, TypeRef):
                     m = check.isinstance(m, RefTypeRef)
@@ -99,7 +102,9 @@ class JsonSchemaIrTransformer:
                     if isinstance(md, AllOfIntersectionTypeDef):
                         md = rec(m.name)
 
-                    fields.extend(check.isinstance(md, ObjectTypeDef).fields)
+                    om = check.isinstance(md, ObjectTypeDef)
+                    fields.extend(om.fields)
+                    nested_defs.extend(om.nested_defs)
 
                 else:
                     raise TypeError(m)
@@ -107,6 +112,7 @@ class JsonSchemaIrTransformer:
             otd = ObjectTypeDef(
                 name=td.name,
                 fields=tuple(fields),
+                nested_defs=tuple(nested_defs),
             )
 
             self._type_defs[n] = otd

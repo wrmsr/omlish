@@ -128,6 +128,149 @@ def test_discriminated_union_codegen_marshal_round_trip(tmp_path):
     assert obj2 == mod.DogPet(name='fido')
 
 
+def test_object_const_field_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'AudioContent': {
+                'type': 'object',
+                'required': ['type', 'data'],
+                'properties': {
+                    'type': {'type': 'string', 'const': 'audio'},
+                    'data': {'type': 'string'},
+                },
+            },
+        },
+    })
+
+    obj = mod.AudioContent(data='abc')
+    assert msh.marshal(obj, mod.AudioContent) == {
+        'type': 'audio',
+        'data': 'abc',
+    }
+
+    assert msh.unmarshal({
+        'type': 'audio',
+        'data': 'abc',
+    }, mod.AudioContent) == obj
+
+
+def test_inline_object_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'CallToolRequest': {
+                'type': 'object',
+                'required': ['method', 'params'],
+                'properties': {
+                    'method': {'type': 'string', 'const': 'tools/call'},
+                    'params': {
+                        'type': 'object',
+                        'required': ['name'],
+                        'properties': {
+                            'name': {'type': 'string'},
+                            'arguments': {
+                                'type': 'object',
+                                'additionalProperties': {},
+                            },
+                            'nestedValue': {
+                                'type': 'object',
+                                'required': ['leaf'],
+                                'properties': {
+                                    'leaf': {'type': 'integer'},
+                                },
+                            },
+                            'records': {
+                                'type': 'object',
+                                'additionalProperties': {
+                                    'type': 'object',
+                                    'required': ['id'],
+                                    'properties': {
+                                        'id': {'type': 'string'},
+                                    },
+                                },
+                            },
+                            'includeContext': {
+                                'type': 'string',
+                                'enum': ['allServers', 'none', 'thisServer'],
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    })
+
+    obj = mod.CallToolRequest(
+        params=mod.CallToolRequest.Params(
+            name='search',
+            arguments={'query': 'x'},
+            nested_value=mod.CallToolRequest.Params.NestedValue(leaf=420),
+            records={
+                'a': mod.CallToolRequest.Params.RecordsValue(id='one'),
+            },
+            include_context='thisServer',
+        ),
+    )
+
+    assert msh.marshal(obj, mod.CallToolRequest) == {
+        'method': 'tools/call',
+        'params': {
+            'name': 'search',
+            'arguments': {'query': 'x'},
+            'nestedValue': {
+                'leaf': 420,
+            },
+            'records': {
+                'a': {
+                    'id': 'one',
+                },
+            },
+            'includeContext': 'thisServer',
+        },
+    }
+
+    assert msh.unmarshal({
+        'method': 'tools/call',
+        'params': {
+            'name': 'search',
+            'arguments': {'query': 'x'},
+            'nestedValue': {
+                'leaf': 420,
+            },
+            'records': {
+                'a': {
+                    'id': 'one',
+                },
+            },
+            'includeContext': 'thisServer',
+        },
+    }, mod.CallToolRequest) == obj
+
+
+def test_ref_alias_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'Result': {
+                'type': 'object',
+                'properties': {
+                    '_meta': {'type': 'object', 'additionalProperties': True},
+                },
+            },
+            'EmptyResult': {
+                '$ref': '#/$defs/Result',
+            },
+        },
+    })
+
+    obj = mod.Result(meta={'trace': 1})
+    assert msh.marshal(obj, mod.EmptyResult) == {
+        '_meta': {'trace': 1},
+    }
+
+    assert msh.unmarshal({
+        '_meta': {'trace': 1},
+    }, mod.EmptyResult) == obj
+
+
 def test_unsupported_keyword_explodes():
     kws = _parse({
         '$defs': {

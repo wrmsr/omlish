@@ -62,24 +62,34 @@ class ModuleRenderer:
     def _render_type_ann(self, ref, *, quote_refs: bool = True) -> str:
         return self._types.render(ref, quote_refs=quote_refs)
 
-    def _gen_field_lines(self, field: FieldDef) -> list[str]:
+    @staticmethod
+    def _indent(level: int) -> str:
+        return '    ' * level
+
+    def _gen_field_lines(self, field: FieldDef, *, level: int = 1) -> list[str]:
+        ind = self._indent(level)
         ann = self._render_type_ann(field.type_ref)
+
+        if field.const is not MISSING:
+            return [
+                f'{ind}{field.python_name}: ta.Literal[{field.const!r}] = dc.xfield({field.const!r}, repr=False)',
+            ]
 
         if field.json_name == '_meta':
             return [
-                f'    {field.python_name}: {ann} = dc.field(',
-                f'        default=None,',
-                f"        metadata={{msh.FieldOptions: msh.FieldOptions(name='_meta')}},",
-                f'    )',
+                f'{ind}{field.python_name}: {ann} = dc.field(',
+                f'{ind}    default=None,',
+                f"{ind}    metadata={{msh.FieldOptions: msh.FieldOptions(name='_meta')}},",
+                f'{ind})',
             ]
 
         if field.default is MISSING:
-            return [f'    {field.python_name}: {ann}']
+            return [f'{ind}{field.python_name}: {ann}']
 
         if field.default is None:
-            return [f'    {field.python_name}: {ann} = None']
+            return [f'{ind}{field.python_name}: {ann} = None']
 
-        return [f'    {field.python_name}: {ann} = {field.default!r}']
+        return [f'{ind}{field.python_name}: {ann} = {field.default!r}']
 
     def _gen_class_lines(
             self,
@@ -87,38 +97,56 @@ class ModuleRenderer:
             fields: ta.Sequence[FieldDef],
             bases: str = 'lang.Final',
             *,
+            nested_defs: ta.Sequence[ObjectTypeDef] = (),
             tag_field: tuple[str, str] | None = None,
             field_naming: str | None = None,
+            level: int = 0,
     ) -> list[str]:
+        ind = self._indent(level)
+        body_ind = self._indent(level + 1)
         lines: list[str] = [
-            '@dc.dataclass(frozen=True, kw_only=True)',
+            f'{ind}@dc.dataclass(frozen=True, kw_only=True)',
         ]
         if field_naming is None or field_naming == 'LOW_CAMEL':
-            lines.append('@_set_class_marshal_options')
+            lines.append(f'{ind}@_set_class_marshal_options')
         else:
-            lines.append(f'@_set_class_marshal_options(field_naming=msh.Naming.{field_naming})')
-        lines.append(f'class {name}({bases}):')
+            lines.append(f'{ind}@_set_class_marshal_options(field_naming=msh.Naming.{field_naming})')
+        lines.append(f'{ind}class {name}({bases}):')
 
-        if not fields and tag_field is None:
-            lines.append('    pass')
+        if not nested_defs and not fields and tag_field is None:
+            lines.append(f'{body_ind}pass')
             return lines
 
-        req = [f for f in fields if f.default is MISSING]
-        opt = [f for f in fields if f.default is not MISSING and f.json_name != '_meta']
+        for i, nested_def in enumerate(nested_defs):
+            if i:
+                lines.append('')
+            lines.extend(self._gen_class_lines(
+                nested_def.name,
+                nested_def.fields,
+                nested_defs=nested_def.nested_defs,
+                field_naming=nested_def.field_naming,
+                level=level + 1,
+            ))
+
+        if nested_defs and (fields or tag_field is not None):
+            lines.append('')
+
+        req = [f for f in fields if f.default is MISSING and f.const is MISSING]
+        opt = [f for f in fields if (f.default is not MISSING or f.const is not MISSING) and f.json_name != '_meta']
         meta = [f for f in fields if f.json_name == '_meta']
 
         for f in req:
-            lines.extend(self._gen_field_lines(f))
+            lines.extend(self._gen_field_lines(f, level=level + 1))
 
         if tag_field is not None:
             py_name, value = tag_field
-            lines.append(f'    {py_name}: ta.Literal[{value!r}] = dc.xfield({value!r}, repr=False)')
+            lines.append(f'{body_ind}{py_name}: ta.Literal[{value!r}] = dc.xfield({value!r}, repr=False)')
 
         for f in opt:
-            lines.extend(self._gen_field_lines(f))
+            lines.extend(self._gen_field_lines(f, level=level + 1))
 
         for f in meta:
-            lines.extend(self._gen_field_lines(f))
+            lines.extend(self._gen_field_lines(f, level=level + 1))
 
         return lines
 
@@ -171,7 +199,12 @@ class ModuleRenderer:
             for name, td in objects:
                 w()
                 w()
-                w.lines(self._gen_class_lines(name, td.fields, field_naming=td.field_naming))
+                w.lines(self._gen_class_lines(
+                    name,
+                    td.fields,
+                    nested_defs=td.nested_defs,
+                    field_naming=td.field_naming,
+                ))
 
     def _write_empties(self, w: _Writer, module: ModuleDef) -> None:
         empties = sorted(

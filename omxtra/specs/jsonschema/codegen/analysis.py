@@ -16,6 +16,7 @@ from .ir import DiscriminatedUnionTypeDef
 from .ir import DiscriminatedUnionVariant
 from .ir import EmptyTypeDef
 from .ir import FieldDef
+from .ir import LiteralTypeRef
 from .ir import MapTypeRef
 from .ir import NullableTypeRef
 from .ir import ObjectTypeDef
@@ -127,6 +128,8 @@ class JsonSchemaAnalyzer:
             candidates.append('any_of')
         if not candidates and js.AllOf in by_type:
             candidates.append('all_of')
+        if not candidates and js.Ref in by_type:
+            candidates.append('ref_alias')
         if js.Type in by_type and not candidates:
             candidates.append('type_alias')
 
@@ -175,6 +178,10 @@ class JsonSchemaAnalyzer:
                 handled_types={js.Type, js.Items, js.AdditionalProperties},
                 path=path,
             )
+            return TypeAliasTypeDef(name=name, target=target)
+
+        if candidate == 'ref_alias':
+            target = self._resolve_field_type(kws, path)
             return TypeAliasTypeDef(name=name, target=target)
 
         if candidate == 'all_of':
@@ -249,7 +256,17 @@ class JsonSchemaAnalyzer:
             variants=variants,
         )
 
-    def _classify_object(self, name: str, kws: js.Keywords, path: SchemaPath) -> ObjectTypeDef:
+    def _classify_object(
+            self,
+            name: str,
+            kws: js.Keywords,
+            path: SchemaPath,
+            *,
+            qual_name: str | None = None,
+    ) -> ObjectTypeDef:
+        if qual_name is None:
+            qual_name = name
+
         props = kws.by_type[js.Properties]
         req_kw = kws.by_type.get(js.Required)
         required_names: ta.AbstractSet[str]
@@ -259,13 +276,18 @@ class JsonSchemaAnalyzer:
             required_names = frozenset()
 
         fields: list[FieldDef] = []
+        nested_defs: list[ObjectTypeDef] = []
         for json_name, field_kws in props.m.items():
-            fields.append(self._classify_field(
+            field, nested_def = self._classify_field(
                 json_name,
                 field_kws,
                 json_name in required_names,
                 (*path, 'properties', json_name),
-            ))
+                qual_name=qual_name,
+            )
+            fields.append(field)
+            if nested_def is not None:
+                nested_defs.append(nested_def)
 
         self._check_unhandled(
             kws,
@@ -277,6 +299,7 @@ class JsonSchemaAnalyzer:
         return ObjectTypeDef(
             name=name,
             fields=fields,
+            nested_defs=nested_defs,
             field_naming=naming.name if naming is not None else None,
         )
 
@@ -286,9 +309,48 @@ class JsonSchemaAnalyzer:
             kws: js.Keywords,
             required: bool,
             path: SchemaPath,
-    ) -> FieldDef:
+            *,
+            qual_name: str,
+    ) -> tuple[FieldDef, ObjectTypeDef | None]:
         python_name = python_field_name(json_name)
-        type_ref = self._resolve_field_type(kws, path)
+        nested_def: ObjectTypeDef | None = None
+        type_ref: TypeRef
+
+        addl_kw = kws.by_type.get(js.AdditionalProperties)
+        if (
+                addl_kw is not None and
+                isinstance(addl_kw.bk, js.Keywords) and
+                (addl_props := addl_kw.bk.by_type.get(js.Properties)) is not None and
+                addl_props.m
+        ):
+            nested_name = python_class_name(json_name) + 'Value'
+            nested_qual_name = f'{qual_name}.{nested_name}'
+            nested_def = self._classify_object(
+                nested_name,
+                addl_kw.bk,
+                (*path, 'additionalProperties'),
+                qual_name=nested_qual_name,
+            )
+            type_ref = MapTypeRef(value=RefTypeRef(nested_qual_name))
+            self._check_unhandled(
+                kws,
+                handled_types={js.Type, js.AdditionalProperties, js.Default},
+                path=path,
+            )
+
+        elif js.Properties in kws.by_type:
+            nested_name = python_class_name(json_name)
+            nested_qual_name = f'{qual_name}.{nested_name}'
+            nested_def = self._classify_object(nested_name, kws, path, qual_name=nested_qual_name)
+            type_ref = RefTypeRef(nested_qual_name)
+
+        else:
+            type_ref = self._resolve_field_type(kws, path)
+
+        const_kw = kws.by_type.get(js.Const)
+        const: ta.Any = MISSING
+        if const_kw is not None:
+            const = const_kw.v
 
         default: ta.Any = MISSING
         default_kw = kws.by_type.get(js.Default)
@@ -306,12 +368,16 @@ class JsonSchemaAnalyzer:
                 type_ref = NullableTypeRef(inner=type_ref)
             default = None
 
-        return FieldDef(
-            json_name=json_name,
-            python_name=python_name,
-            type_ref=type_ref,
-            required=required,
-            default=default,
+        return (
+            FieldDef(
+                json_name=json_name,
+                python_name=python_name,
+                type_ref=type_ref,
+                required=required,
+                default=default,
+                const=const,
+            ),
+            nested_def,
         )
 
     def _classify_any_of(self, name: str, any_of: js.AnyOf, path: SchemaPath) -> TypeDef:
@@ -384,6 +450,11 @@ class JsonSchemaAnalyzer:
             self._check_unhandled(kws, handled_types={js.Ref, js.Default}, path=path)
             return RefTypeRef(python_class_name(ref_name(ref_kw.s)))
 
+        enum_kw = by_type.get(js.Enum)
+        if enum_kw is not None:
+            self._check_unhandled(kws, handled_types={js.Type, js.Enum, js.Default}, path=path)
+            return LiteralTypeRef(tuple(enum_kw.vs))
+
         any_of = by_type.get(js.AnyOf)
         if any_of is not None:
             self._check_unhandled(kws, handled_types={js.AnyOf, js.Default}, path=path)
@@ -433,7 +504,7 @@ class JsonSchemaAnalyzer:
 
         self._check_unhandled(
             kws,
-            handled_types={js.Type, js.Items, js.AdditionalProperties, js.Default},
+            handled_types={js.Type, js.Items, js.AdditionalProperties, js.Default, js.Const, js.Properties},
             path=path,
         )
 
@@ -470,6 +541,10 @@ class JsonSchemaAnalyzer:
             return PrimitiveTypeRef(JSON_TYPE_MAP[type_str])
 
         if type_str == 'object':
+            props = kws.by_type.get(js.Properties)
+            if props is not None and props.m:
+                raise UnsupportedSchemaError(message='Unsupported inline object type', path=path)
+
             addl = kws.by_type.get(js.AdditionalProperties)
             if addl is not None and isinstance(addl.bk, js.Keywords):
                 return MapTypeRef(value=self._resolve_field_type(addl.bk, (*path, 'additionalProperties')))

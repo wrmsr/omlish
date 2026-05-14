@@ -18,6 +18,11 @@ class PrimitiveTypeRef(TypeRef, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class LiteralTypeRef(TypeRef, lang.Final):
+    values: ta.Sequence[ta.Any]
+
+
+@dc.dataclass(frozen=True)
 class RefTypeRef(TypeRef, lang.Final):
     name: str
 
@@ -60,12 +65,14 @@ class FieldDef(lang.Final):
     type_ref: TypeRef
     required: bool
     default: ta.Any = MISSING
+    const: ta.Any = MISSING
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ObjectTypeDef(lang.Final):
     name: str
     fields: ta.Sequence[FieldDef] = ()
+    nested_defs: ta.Sequence[ObjectTypeDef] = ()
     field_naming: str | None = None
 
 

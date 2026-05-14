@@ -1,5 +1,6 @@
 from .ir import AnyTypeRef
 from .ir import ArrayTypeRef
+from .ir import LiteralTypeRef
 from .ir import MapTypeRef
 from .ir import NullableTypeRef
 from .ir import PrimitiveTypeRef
@@ -15,6 +16,9 @@ class TypeAnnotationRenderer:
     def render(self, ref: TypeRef, *, quote_refs: bool = True) -> str:
         if isinstance(ref, PrimitiveTypeRef):
             return ref.python_type
+        if isinstance(ref, LiteralTypeRef):
+            vals = ', '.join(repr(v) for v in ref.values)
+            return f'ta.Literal[{vals}]'
         if isinstance(ref, RefTypeRef):
             return f"'{ref.name}'" if quote_refs else ref.name
         if isinstance(ref, ArrayTypeRef):
