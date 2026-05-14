@@ -59,8 +59,19 @@ def calls_int_shower(i: int) -> None:
 #
 
 
-# class MulIntShower(Shower[int]):
-#     def __init__(self):
+class MulIntShower(Shower[int]):
+    @cxl.wrap()
+    def __init__(
+            self,
+            n: int,
+            *,
+            wrapped: Shower[int] = cxl.param(),
+    ) -> None:
+        self._n = n
+        self._wrapped = wrapped
+
+    def show(self, v: int) -> None:
+        self._wrapped.show(v * self._n)
 
 
 #
@@ -72,3 +83,6 @@ def test_shower():
         uses_int_shower_and_logs(42)
 
         calls_int_shower(42)
+
+        with cxl.bind({Shower[int]: MulIntShower(2)}):
+            calls_int_shower(42)

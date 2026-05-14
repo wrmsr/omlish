@@ -1,4 +1,4 @@
-# ruff: noqa: UP037
+# ruff: noqa: UP006 UP007 UP037
 # @omlish-lite
 import contextvars
 import functools
@@ -10,6 +10,7 @@ from .injectinspect import injection_inspect
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 ContextualParams = ta.Sequence['ContextualParam']  # ta.TypeAlias
 
@@ -26,19 +27,22 @@ _CONTEXTUAL_BINDINGS: 'contextvars.ContextVar[ta.Mapping[ta.Any, ta.Any]]' = con
 ##
 
 
-class UnboundContextualParamError(RuntimeError):
+class UnboundContextualError(RuntimeError):
     pass
-
-
-class _UnboundContextualParam:
-    def __getattr__(self, name):
-        raise UnboundContextualParamError
 
 
 @ta.final
 class NO_CONTEXTUAL_DEFAULT:  # noqa
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
+
+
+##
+
+
+class _UnboundContextualParam:
+    def __getattr__(self, name):
+        raise UnboundContextualError
 
 
 @ta.final
@@ -78,7 +82,12 @@ class ContextualParam:
         self._default = default
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(name={self._name!r}, key={self._key!r}, default={self._default!r})'
+        return (
+            f'{self.__class__.__name__}('
+            f'name={self._name!r}, '
+            f'key={self._key!r}, '
+            f'default={self._default!r})'
+        )
 
     @property
     def name(self) -> str:
@@ -140,7 +149,7 @@ class _ContextualWrapper(ta.Generic[T]):
                     if (pd := p._default) is not NO_CONTEXTUAL_DEFAULT:  # noqa
                         kwargs[pn] = pd
                     else:
-                        raise UnboundContextualParamError(fn, p) from None
+                        raise UnboundContextualError(fn, p) from None
 
             return fn(*args, **kwargs)
 
@@ -196,3 +205,25 @@ class _ContextualBinder:
 
 def contextual_bind(bindings: ta.Mapping[ta.Any, ta.Any]) -> ta.ContextManager[None]:
     return _ContextualBinder(bindings)
+
+
+##
+
+
+@ta.overload
+def contextual_get(key: ta.Type[T], /) -> T:
+    ...
+
+
+@ta.overload
+def contextual_get(key: ta.Type[T], default: ta.Union[T, U], /) -> ta.Union[T, U]:
+    ...
+
+
+def contextual_get(key, default=NO_CONTEXTUAL_DEFAULT, /):
+    try:
+        return _CONTEXTUAL_BINDINGS.get()[key]
+    except KeyError:
+        if default is not NO_CONTEXTUAL_DEFAULT:
+            return default
+        raise UnboundContextualError(key) from None

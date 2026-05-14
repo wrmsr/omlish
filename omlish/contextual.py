@@ -5,8 +5,9 @@ import typing as ta
 from .lite.contextual import (  # noqa
     ContextualParams as Params,
 
-    UnboundContextualParamError as UnboundParamError,
+    UnboundContextualError as UnboundError,
     NO_CONTEXTUAL_DEFAULT as NO_DEFAULT,
+
     contextual_param as param,
 
     ContextualParam as Param,
