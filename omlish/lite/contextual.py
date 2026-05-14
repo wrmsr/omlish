@@ -2,20 +2,21 @@
 import contextvars
 import functools
 import inspect
+import types
 import typing as ta
 
 
 T = ta.TypeVar('T')
 
-ContextualParams: ta.TypeAlias = ta.Sequence['ContextualParam']
+ContextualParams = ta.Sequence['ContextualParam']  # ta.TypeAlias
 
 
 ##
 
 
-_CONTEXTUAL_BINDINGS: contextvars.ContextVar[ta.Mapping[ta.Any, ta.Any]] = contextvars.ContextVar(
+_CONTEXTUAL_BINDINGS: 'contextvars.ContextVar[ta.Mapping[ta.Any, ta.Any]]' = contextvars.ContextVar(
     'contextual._CONTEXTUAL_BINDINGS',
-    default={},
+    default=types.MappingProxyType({}),
 )
 
 
@@ -127,7 +128,7 @@ class _ContextualWrapper(ta.Generic[T]):
             bindings = _CONTEXTUAL_BINDINGS.get()
 
             p: ContextualParam
-            nonlocal _params
+            nonlocal _params  # noqa
             for p in _params():
                 if (pn := p._name) in kwargs:  # noqa
                     continue

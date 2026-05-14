@@ -2,9 +2,9 @@
 import typing as ta
 import unittest
 
-from ..contextual_lite import contextual_param
-from ..contextual_lite import contextual_bind
-from ..contextual_lite import contextual_wrap
+from ..contextual import contextual_bind
+from ..contextual import contextual_param
+from ..contextual import contextual_wrap
 
 
 T = ta.TypeVar('T')

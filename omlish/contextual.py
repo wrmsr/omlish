@@ -1,7 +1,8 @@
+# fmt: off
+# ruff: noqa: I001
 import typing as ta
 
-
-from .contextual_lite import (  # noqa
+from .lite.contextual import (  # noqa
     ContextualParams as Params,
 
     UnboundContextualParamError as UnboundParamError,
