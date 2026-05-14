@@ -176,11 +176,31 @@ class _ContextualWrapper(ta.Generic[T]):
         return self._wrapped
 
 
-def contextual_wrap() -> ta.Callable[[ta.Callable[..., T]], ta.Callable[..., T]]:
-    def inner(fn):
-        return _ContextualWrapper(fn).wrapped
+class ContextualWrapping(ta.Protocol):
+    @ta.overload
+    def __call__(self, ty: ta.Type[T]) -> ta.Type[T]: ...
 
-    return inner
+    @ta.overload
+    def __call__(self, fn: ta.Callable[..., T]) -> ta.Callable[..., T]: ...
+
+    def __call__(self, obj): ...
+
+
+def contextual_wrap() -> ContextualWrapping:
+    def inner(obj):
+        if isinstance(obj, type):
+            wr_init = _ContextualWrapper(getattr(obj, '__init__')).wrapped
+            setattr(obj, '__init__', wr_init)
+            wr_init.__qualname__ = f'{obj.__qualname__}.__init__'
+            return obj
+
+        elif callable(obj):
+            return _ContextualWrapper(obj).wrapped
+
+        else:
+            raise TypeError(f'Cannot wrap non-callable object: {obj!r}')
+
+    return inner  # noqa
 
 
 ##

@@ -26,5 +26,15 @@ P = ta.ParamSpec('P')
 ##
 
 
-def wrap() -> ta.Callable[[ta.Callable[P, T]], ta.Callable[P, T]]:
+class Wrapping(ta.Protocol):
+    @ta.overload
+    def __call__(self, ty: type[T]) -> type[T]: ...
+
+    @ta.overload
+    def __call__(self, fn: ta.Callable[P, T]) -> ta.Callable[P, T]: ...
+
+    def __call__(self, obj): ...
+
+
+def wrap() -> Wrapping:
     return _wrap()
