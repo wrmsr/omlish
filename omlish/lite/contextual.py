@@ -44,15 +44,48 @@ class NO_CONTEXTUAL_DEFAULT:  # noqa
 ##
 
 
-class _UnboundContextualParam:
-    def __getattr__(self, name):
-        raise UnboundContextualError
+def _raise_unbound_contextual_error(*args, **kwargs):
+    raise UnboundContextualError
 
 
 @ta.final
-class _DeclaredContextualParam:
+class _UnboundContextualParam:
     def __init__(self, default: ta.Any = NO_CONTEXTUAL_DEFAULT) -> None:
-        self._default = default
+        object.__setattr__(self, '__contextual_default__', default)
+
+    # These make a reasonable attempt to prevent misuse, but it does not attempt to cover all possible accesses (like
+    # something like `wrapt` would). In practice the raising paths will only be hit when a function using
+    # `contextual_param`'s is not wrapped in `@contextual_wrap()` - which is always a bug.
+
+    def __getattribute__(self, item):
+        # Needed by inspect
+        if item == '__class__':
+            return object.__getattribute__(self, item)
+
+        raise UnboundContextualError
+
+    __setattr__ = _raise_unbound_contextual_error
+    __delattr__ = _raise_unbound_contextual_error
+
+    __call__ = _raise_unbound_contextual_error
+    __bool__ = _raise_unbound_contextual_error
+
+    __hash__ = _raise_unbound_contextual_error
+    __eq__ = _raise_unbound_contextual_error
+    __ne__ = _raise_unbound_contextual_error
+
+    __lt__ = _raise_unbound_contextual_error
+    __le__ = _raise_unbound_contextual_error
+    __gt__ = _raise_unbound_contextual_error
+    __ge__ = _raise_unbound_contextual_error
+
+    __getstate__ = _raise_unbound_contextual_error
+    __reduce__ = _raise_unbound_contextual_error
+    __reduce_ex__ = _raise_unbound_contextual_error
+
+    __str__ = _raise_unbound_contextual_error
+    # __repr__ = _raise_unbound_contextual_error  # Needed by inspect
+    __format__ = _raise_unbound_contextual_error
 
 
 @ta.overload
@@ -66,7 +99,7 @@ def contextual_param(default: T, /) -> T:
 
 
 def contextual_param(default=NO_CONTEXTUAL_DEFAULT, /):
-    return _DeclaredContextualParam(default)
+    return _UnboundContextualParam(default)
 
 
 ##
@@ -116,7 +149,7 @@ def inspect_contextual_params(
     lst: list[ContextualParam] = []
 
     for p in insp.signature.parameters.values():
-        if (pd := p.default) is inspect.Signature.empty or not isinstance(pd, _DeclaredContextualParam):
+        if (pd := p.default) is inspect.Signature.empty or not isinstance(pd, _UnboundContextualParam):
             continue
 
         # 3.8 inspect.signature doesn't eval_str but typing.get_type_hints does, so prefer that.
@@ -131,7 +164,7 @@ def inspect_contextual_params(
         lst.append(ContextualParam(
             p.name,
             ann,
-            default=pd._default,  # noqa
+            default=object.__getattribute__(pd, '__contextual_default__'),
         ))
 
     return tuple(lst)

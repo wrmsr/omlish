@@ -6,6 +6,8 @@ import unittest
 
 from ...logs.base import Logger
 from ...logs.modules import get_module_logger
+from ..contextual import UnboundContextualError
+from ..contextual import _UnboundContextualParam
 from ..contextual import contextual_bind
 from ..contextual import contextual_param
 from ..contextual import contextual_wrap
@@ -116,7 +118,14 @@ def int_shower_with_frobber(
 
 
 class TestContextual(unittest.TestCase):
+    def test_unbound_thingy(self):
+        with self.assertRaises(UnboundContextualError):
+            _UnboundContextualParam()()
+
     def test_shower(self):
+        with self.assertRaises(UnboundContextualError):
+            uses_int_shower(42)
+
         with contextual_bind({Shower[int]: IntShower()}):
             uses_int_shower(42)
             uses_int_shower_and_logs(42)

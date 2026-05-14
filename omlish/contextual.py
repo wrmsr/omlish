@@ -16,6 +16,8 @@ from .lite.contextual import (  # noqa
     contextual_wrap as _wrap,
 
     contextual_bind as bind,
+
+    contextual_get as get,
 )
 
 
