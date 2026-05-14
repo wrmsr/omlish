@@ -1,15 +1,18 @@
-# ruff: noqa: SLF001
+# ruff: noqa: SLF001 UP037
 import abc
 import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
-from .. import marshal as msh
 from .. import reflect as rfl
 from .. import typedvalues as tv
 from ..formats.json import all as json
 from .fields import Field
 from .fields import FieldOption
+
+
+with lang.auto_proxy_import(globals()):
+    from .. import marshal as msh  # noqa
 
 
 if ta.TYPE_CHECKING:
@@ -111,8 +114,13 @@ class JsonCodec(Codec):
 
 @ta.final
 class MarshalCodec(Codec):
+    def __init__(self, *options: 'msh.Option') -> None:
+        super().__init__()
+
+        self._options = options
+
     def encode(self, obj: ta.Any, cs: CodecSubject) -> ta.Any:
-        return msh.marshal(obj, self.rty(cs))
+        return msh.marshal(obj, self.rty(cs), *self._options)
 
     def decode(self, val: ta.Any, cs: CodecSubject) -> ta.Any:
-        return msh.unmarshal(val, self.rty(cs))
+        return msh.unmarshal(val, self.rty(cs), *self._options)

@@ -11,6 +11,7 @@ from omlish import orm
 from omlish import sql
 
 from ...chat.messages import Message
+from ...content.marshal import DisableDynamicClassMarshaling
 
 
 ##
@@ -85,7 +86,12 @@ def storage_mappers() -> ta.Sequence[orm.Mapper]:
                 created_at=[orm.CreatedAt()],
                 updated_at=[orm.UpdatedAt()],
                 message=[
-                    orm.FieldCodec(orm.CompositeCodec(orm.MarshalCodec(), orm.JsonCodec())),
+                    orm.FieldCodec(orm.CompositeCodec(
+                        orm.MarshalCodec(
+                            DisableDynamicClassMarshaling(),
+                        ),
+                        orm.JsonCodec(),
+                    )),
                     orm.FieldSqlType(sql.td.String()),
                 ],
             ),
