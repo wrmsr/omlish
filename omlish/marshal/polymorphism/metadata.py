@@ -1,3 +1,13 @@
+"""
+TODO:
+ - metadata *is* permanent, but we still have a global, permanent, non-weak type keyed cache here.. move to
+   ConfigRegistry like typecache?
+  - same pattern as typecache, generalize?
+  - _TransientConfig, purgeable?
+  - or stop abusing ConfigRegistry for this?
+  - or a more formal generalized 'State' store?
+   - but where? currently ConfigRegistry is, nicely the only thing shared
+"""
 import threading
 import typing as ta
 

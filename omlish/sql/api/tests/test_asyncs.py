@@ -19,6 +19,7 @@ from ...queries import Q
 from ...tests.harness import HarnessDbs
 from .. import querierfuncs as qf
 from ..asyncs import SyncToAsyncDb
+from ..asyncs import SyncToAsyncImmediateRunner
 from ..dbapi import DbapiDb
 from ..drivers.asyncpg import AsyncpgDb
 
@@ -33,6 +34,19 @@ async def test_queries():
             print(await qf.query_all(conn, Q.select([1])))
 
         print(await qf.query_all(adb, Q.select([1])))
+
+
+def test_immediate_queries():
+    db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
+    adb = SyncToAsyncDb(SyncToAsyncImmediateRunner, db)
+
+    async def inner():
+        async with adb.connect() as conn:
+            print(await qf.query_all(conn, Q.select([1])))
+
+        print(await qf.query_all(adb, Q.select([1])))
+
+    lang.sync_await(inner())
 
 
 @pytest.mark.asyncs('asyncio')

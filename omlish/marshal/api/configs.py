@@ -66,7 +66,7 @@ class ConfigRegistry(Configs):
             lock = threading.RLock()
         self._lock = lock
 
-        self._state: ConfigRegistry._State = self._State()
+        self.__snapshot: ConfigRegistry._Snapshot = self._Snapshot()
 
         self._sealed = False
 
@@ -74,18 +74,18 @@ class ConfigRegistry(Configs):
 
     @property
     def version(self) -> int:
-        return self._state.version
+        return self.__snapshot.version
 
     class Token:
         pass
 
     @property
     def token(self) -> object:
-        return self._state.token
+        return self.__snapshot.token
 
     @property
     def debug(self) -> ta.Mapping[ta.Any, ta.Sequence[Config]]:
-        return self._state.debug
+        return self.__snapshot.debug
 
     #
 
@@ -95,13 +95,13 @@ class ConfigRegistry(Configs):
             lock: ta.Optional[threading.RLock] = None,  # noqa
     ) -> ta.Self:
         ret: ta.Any = type(self)(lock=lock)
-        ret._state = self._state  # noqa
+        ret.__snapshot = self.__snapshot  # noqa
         return ret
 
     #
 
     @dc.dataclass(frozen=True, kw_only=True)
-    class _State:
+    class _Snapshot:
         dct: ta.Mapping[ta.Any, ConfigValues] = dc.field(default_factory=dict)
         version: int = 0
         token: ConfigRegistry.Token = dc.field(default_factory=lambda: ConfigRegistry.Token())
@@ -121,7 +121,7 @@ class ConfigRegistry(Configs):
                 identity: bool = False,
                 discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
                 mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-        ) -> ConfigRegistry._State:
+        ) -> ConfigRegistry._Snapshot:
             if not items:
                 return self
 
@@ -139,7 +139,7 @@ class ConfigRegistry(Configs):
                 mode=mode,
             )
 
-            return ConfigRegistry._State(
+            return ConfigRegistry._Snapshot(
                 dct={**self.dct, key: nr},
                 version=self.version + 1,
             )
@@ -218,7 +218,7 @@ class ConfigRegistry(Configs):
             if self._sealed:
                 raise ConfigRegistrySealedError(self)
 
-            self._state = self._state.update(
+            self.__snapshot = self.__snapshot.update(
                 key,
                 *items,
                 identity=identity,
@@ -236,7 +236,7 @@ class ConfigRegistry(Configs):
             *,
             identity: bool | None = None,
     ) -> ConfigValues:
-        return self._state.get(key, identity=identity)
+        return self.__snapshot.get(key, identity=identity)
 
     #
 

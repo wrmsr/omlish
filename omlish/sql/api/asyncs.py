@@ -23,16 +23,34 @@ P = ta.ParamSpec('P')
 ##
 
 
-class Runner(ta.Protocol):
+class SyncToAsyncRunner(ta.Protocol):
     def __call__(self, fn: ta.Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> ta.Awaitable[T]: ...
 
 
+SyncToAsyncRunnerFactory: ta.TypeAlias = ta.Callable[[], ta.AsyncContextManager[SyncToAsyncRunner]]
+
+
+##
+
+
+class SyncToAsyncImmediateRunner:
+    async def __aenter__(self) -> ta.Self:
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    async def __call__(self, fn: ta.Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
+        return fn(*args, **kwargs)
+
+
+##
+
+
 @ta.final
-class _RunnerContextManager:
-    def __init__(self, runner: Runner, fn: ta.Callable, wrapper: ta.Any) -> None:
-        self._runner = runner
-        self._fn = fn
-        self._wrapper = wrapper
+class _SyncToAsyncRunnerContextManager:
+    def __init__(self, runner: SyncToAsyncRunner, fn: ta.Callable, wrapper: ta.Any) -> None:
+        self._runner, self._fn, self._wrapper = runner, fn, wrapper
 
     _cm: ta.Any
 
@@ -47,12 +65,12 @@ class _RunnerContextManager:
 ##
 
 
-class _RunnerStopIteration(lang.Marker):
+class _SyncToAsyncRunnerStopIteration(lang.Marker):
     pass
 
 
 class SyncToAsyncRows(AsyncRows):
-    def __init__(self, runner: Runner, rows: Rows) -> None:
+    def __init__(self, runner: SyncToAsyncRunner, rows: Rows) -> None:
         super().__init__()
 
         self._runner = runner
@@ -67,16 +85,16 @@ class SyncToAsyncRows(AsyncRows):
             try:
                 return self._rows.__next__()
             except StopIteration:
-                return _RunnerStopIteration
+                return _SyncToAsyncRunnerStopIteration
 
-        if (v := await self._runner(inner)) is _RunnerStopIteration:
+        if (v := await self._runner(inner)) is _SyncToAsyncRunnerStopIteration:
             raise StopAsyncIteration
 
         return v
 
 
 class SyncToAsyncTxn(AsyncTxn):
-    def __init__(self, runner: Runner, txn: Txn) -> None:
+    def __init__(self, runner: SyncToAsyncRunner, txn: Txn) -> None:
         super().__init__()
 
         self._runner = runner
@@ -93,11 +111,11 @@ class SyncToAsyncTxn(AsyncTxn):
         return await self._runner(self._txn.rollback)
 
     def query(self, query: Queryable) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
-        return _RunnerContextManager(self._runner, lambda: self._txn.query(query), SyncToAsyncRows)
+        return _SyncToAsyncRunnerContextManager(self._runner, lambda: self._txn.query(query), SyncToAsyncRows)
 
 
 class SyncToAsyncConn(AsyncConn):
-    def __init__(self, runner: Runner, conn: Conn) -> None:
+    def __init__(self, runner: SyncToAsyncRunner, conn: Conn) -> None:
         super().__init__()
 
         self._runner = runner
@@ -108,16 +126,16 @@ class SyncToAsyncConn(AsyncConn):
         return self._conn.adapter
 
     def begin(self) -> ta.AsyncContextManager[AsyncTxn]:
-        return _RunnerContextManager(self._runner, self._conn.begin, SyncToAsyncTxn)
+        return _SyncToAsyncRunnerContextManager(self._runner, self._conn.begin, SyncToAsyncTxn)
 
     def query(self, query: Queryable) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
-        return _RunnerContextManager(self._runner, lambda: self._conn.query(query), SyncToAsyncRows)
+        return _SyncToAsyncRunnerContextManager(self._runner, lambda: self._conn.query(query), SyncToAsyncRows)
 
 
 class SyncToAsyncDb(AsyncDb):
     def __init__(
             self,
-            runner_factory: ta.Callable[[], ta.AsyncContextManager[Runner]],
+            runner_factory: SyncToAsyncRunnerFactory,
             db: Db,
     ) -> None:
         super().__init__()
@@ -132,7 +150,7 @@ class SyncToAsyncDb(AsyncDb):
     async def _connect(self, aes: contextlib.AsyncExitStack) -> AsyncConn:
         runner = await aes.enter_async_context(self._runner_factory())
 
-        rcm = _RunnerContextManager(runner, self._db.connect, SyncToAsyncConn)
+        rcm = _SyncToAsyncRunnerContextManager(runner, self._db.connect, SyncToAsyncConn)
         return await aes.enter_async_context(rcm)
 
     def connect(self) -> ta.AsyncContextManager[AsyncConn]:

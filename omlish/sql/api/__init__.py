@@ -29,6 +29,11 @@ from .asquery import (  # noqa
 )
 
 from .asyncs import (  # noqa
+    SyncToAsyncRunner,
+    SyncToAsyncRunnerFactory,
+
+    SyncToAsyncImmediateRunner,
+
     SyncToAsyncRows,
     SyncToAsyncTxn,
     SyncToAsyncConn,

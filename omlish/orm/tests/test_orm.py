@@ -126,7 +126,7 @@ async def test_orm_in_memory():
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_orm_sql():
+async def test_async_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     registry = build_registry()
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
@@ -134,3 +134,12 @@ async def test_orm_sql():
         adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
         store = SqlStore(registry, adb)
         await _test_orm(store, registry)
+
+
+def test_sync_await_orm_sql():
+    db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
+    registry = build_registry()
+    db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(db_path)))
+    adb = sql.api.SyncToAsyncDb(sql.api.SyncToAsyncImmediateRunner, db)
+    store = SqlStore(registry, adb)
+    lang.sync_await(_test_orm(store, registry))
