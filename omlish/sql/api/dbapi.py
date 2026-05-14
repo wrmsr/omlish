@@ -1,4 +1,5 @@
 import contextlib
+import functools
 import typing as ta
 
 from ... import check
@@ -16,6 +17,34 @@ from .core import Txn
 from .queries import Query
 from .queries import Queryable
 from .rows import Row
+
+
+T = ta.TypeVar('T')
+P = ta.ParamSpec('P')
+
+
+DbapiConnector: ta.TypeAlias = ta.Callable[[], ta.ContextManager[dbapi_abc.DbapiConnection]]
+
+
+##
+
+
+class ClosingDbapiConnector(ta.Generic[P, T]):
+    def __init__(
+            self,
+            fn: ta.Callable[P, T],
+            *args: P.args,
+            **kwargs: P.kwargs,
+    ) -> None:
+        super().__init__()
+
+        if args or kwargs:
+            fn = functools.partial(fn, *args, **kwargs)
+
+        self._fn: ta.Any = fn
+
+    def __call__(self) -> ta.ContextManager[T]:
+        return contextlib.closing(self._fn())
 
 
 ##
@@ -168,7 +197,7 @@ class DbapiConn(Conn):
 class DbapiDb(Db):
     def __init__(
             self,
-            connector: ta.Callable[[], ta.ContextManager[dbapi_abc.DbapiConnection]],
+            connector: DbapiConnector,
             *,
             adapter: DbapiAdapter | None = None,
             param_style: ParamStyle | None = None,

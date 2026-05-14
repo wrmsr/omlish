@@ -21,6 +21,7 @@ from .. import querierfuncs as qf
 from ..asyncs import AsyncioToExecutorSyncToAsyncRunner
 from ..asyncs import ImmediateSyncToAsyncRunner
 from ..asyncs import SyncToAsyncDb
+from ..dbapi import ClosingDbapiConnector
 from ..dbapi import DbapiDb
 from ..drivers.asyncpg import AsyncpgDb
 
@@ -28,7 +29,7 @@ from ..drivers.asyncpg import AsyncpgDb
 @pytest.mark.asyncs('asyncio')
 async def test_queries():
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
-        db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
+        db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:'))
         adb = SyncToAsyncDb(AsyncioToExecutorSyncToAsyncRunner.factory(exe), db)
 
         async with adb.connect() as conn:
@@ -38,7 +39,7 @@ async def test_queries():
 
 
 def test_immediate_queries():
-    db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
+    db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:'))
     adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
 
     async def inner():
@@ -59,12 +60,13 @@ async def test_pg8000(harness):
     import pg8000
 
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
-        db = DbapiDb(lambda: contextlib.closing(pg8000.connect(
+        db = DbapiDb(ClosingDbapiConnector(
+            pg8000.connect,
             p_u.username,
             host=p_u.hostname,
             port=p_u.port,
             password=p_u.password,
-        )))
+        ))
         adb = SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToExecutor(exe))), db)
 
         async with adb.connect() as conn:

@@ -1,4 +1,3 @@
-import contextlib
 import sqlite3
 import urllib.parse
 
@@ -7,6 +6,7 @@ from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...tests.harness import HarnessDbs
 from .. import querierfuncs as qf
+from ..dbapi import ClosingDbapiConnector
 from ..dbapi import DbapiDb
 
 
@@ -14,7 +14,7 @@ from ..dbapi import DbapiDb
 
 
 def test_sqlite(exit_stack) -> None:
-    db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:', autocommit=True)))
+    db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:', autocommit=True))
     conn = exit_stack.enter_context(db.connect())
 
     for stmt in [
@@ -64,12 +64,13 @@ def test_pg8000(harness, exit_stack) -> None:
 
     import pg8000
 
-    db = DbapiDb(lambda: contextlib.closing(pg8000.connect(
+    db = DbapiDb(ClosingDbapiConnector(
+        pg8000.connect,
         p_u.username,
         host=p_u.hostname,
         port=p_u.port,
         password=p_u.password,
-    )))
+    ))
 
     conn = exit_stack.enter_context(db.connect())
 
@@ -90,7 +91,7 @@ def test_pg8000(harness, exit_stack) -> None:
 def test_queries():
     from ...queries import Q
 
-    db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
+    db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:'))
     with db.connect() as conn:
         print(qf.query_all(conn, Q.select([1])))
 

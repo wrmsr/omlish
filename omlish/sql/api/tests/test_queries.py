@@ -1,9 +1,9 @@
-import contextlib
 import sqlite3
 
 from ...params import ParamStyle
 from ...queries import Q
 from .. import querierfuncs as qf
+from ..dbapi import ClosingDbapiConnector
 from ..dbapi import DbapiDb
 
 
@@ -12,7 +12,7 @@ from ..dbapi import DbapiDb
 
 def test_sqlite(exit_stack) -> None:
     db = DbapiDb(
-        lambda: contextlib.closing(sqlite3.connect(':memory:', autocommit=True)),
+        ClosingDbapiConnector(sqlite3.connect, ':memory:', autocommit=True),
         param_style=ParamStyle.QMARK,
     )
     conn = exit_stack.enter_context(db.connect())

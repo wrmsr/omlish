@@ -65,6 +65,10 @@ from .core import (  # noqa
 )
 
 from .dbapi import (  # noqa
+    DbapiConnector,
+
+    ClosingDbapiConnector,
+
     DbapiRows,
     DbapiConn,
     DbapiDb,
