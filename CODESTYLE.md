@@ -35,8 +35,6 @@
   - Async backends: `trio`, `anyio`, `trio-asyncio`. Except in specific situations (such as under `textual`) async code
     is not assumed to be running under asyncio, and in general async code should use anyio.
     - **NOTE:** this is in flux.
-  - The 'hyper stack' for production web serving: `h11`, `h2`, `wsproto`. There are simpler internal http servers for
-    local and development use.
   - Unique, focused, irreproducible, core utility libraries: `executing` / `asttokens`, `greenlet`, `wrapt`.  In general
     'core' utility libraries are either avoided, replaced with an equivalent internal implementation, or in small cases
     (often for \[**lite**\] code) vendored (preserving licenses, copyrights, and attribution) such as in parts of
@@ -198,7 +196,9 @@
 - Do not use `abc.ABC` - in standard code use `lang.Abstract` and in lite code use `omlish.lite.abstract.Abstract`.
   - Rationale: `abc.ABCMeta` adds extreme overhead to `isinstance` / `issubclass` checks (6x) in order to support
     virtual base classes, which are almost never needed or desirable.
-- Abstract methods should always do nothing but `raise NotImplementedError` - but they *must* do that.
+- Abstract methods should always do nothing but `raise NotImplementedError` - but they *should* do that, *unless* it's
+  likely they will be involved in `super()` calls through multiple layers of inheritance (which should be fairly rare as
+  composition is preferred to inheritance).
 - Properties should be free of side-effects.
   - Rationale: Many utilities eagerly inspect properties at runtime, even private (underscore-prefixed) ones, so they
     cannot alter state.
@@ -210,6 +210,15 @@
       `ta.Mapping[int, str]`.
     - Return a defensive copy of the internal state. For example, a property returning an internal `list[int]` would
       return a copy of the internal list.
+
+
+### Functions
+
+- Use keyword-only parameters regularly - almost always, adjacent but semantically distinct parameters of the same type
+  should be keyword-only. The only exception to this is trivial and well-known patterns like `range`, `re.match`,
+  `dict.pop`, `(width, height)`, etc.
+- Similarly, use positional-only parameters as called for, but significantly less 'by default' than keyword-only
+  parameters.
 
 
 ### Dataclasses
@@ -360,7 +369,7 @@
   CPython.
 - C/C++ extensions should have `// @omlish-cext` as their first line, and will thereafter be automatically built and
   packaged by existing codebase machinery.
-- C/C++ extensions should be kept to a single, self-contained source file - do write new header files.
+- C/C++ extensions should be kept to a single, self-contained source file - do not write new header files.
 - C++ source files use the `.cc` extension, and C++ header files use the `.hh` extension.
 - Native extensions *must* use PEP-489 style multi-phase extension initialization (`PyModuleDef_Init`).
 - Modules should mark themselves `Py_MOD_GIL_NOT_USED` and `Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED` as applicable.

@@ -56,7 +56,7 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
     }
 
     Py_ssize_t size = PyTuple_Size(spec);
-    bool has_none = false;
+    Py_ssize_t num_none = 0;
 
     // Check for typing.Any and None
     for (Py_ssize_t i = 0; i < size; i++) {
@@ -77,33 +77,30 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
         }
 
         if (item == Py_None) {
-            has_none = true;
+            num_none++;
         }
     }
 
     // If None is in spec, filter it out and add NoneType
-    if (has_none) {
-        std::vector<PyObject*> filtered;
-        filtered.reserve(size);
-
-        for (Py_ssize_t i = 0; i < size; i++) {
-            PyObject *item = PyTuple_GetItem(spec, i);
-            if (item != Py_None) {
-                filtered.push_back(item);
-            }
-        }
-
-        filtered.push_back((PyObject *)state->nonetype);
-
-        PyObject *result = PyTuple_New(filtered.size());
+    if (num_none > 0) {
+        PyObject *result = PyTuple_New(size - num_none + 1);
         if (result == nullptr) {
             return nullptr;
         }
 
-        for (size_t i = 0; i < filtered.size(); i++) {
-            Py_INCREF(filtered[i]);
-            PyTuple_SET_ITEM(result, i, filtered[i]);
+        Py_ssize_t p = 0;
+        for (Py_ssize_t i = 0; i < size; i++) {
+            PyObject *item = PyTuple_GetItem(spec, i);
+            if (item != Py_None) {
+                Py_INCREF(item);
+                PyTuple_SET_ITEM(result, p++, item);
+            }
         }
+
+        PyObject *nonetype = (PyObject *)state->nonetype;
+        Py_INCREF(nonetype);
+        PyTuple_SET_ITEM(result, p++, nonetype);
+
         return result;
     }
 
