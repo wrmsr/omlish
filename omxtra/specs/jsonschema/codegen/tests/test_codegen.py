@@ -9,6 +9,7 @@ from omlish import check
 from omlish import marshal as msh
 from omlish.specs import jsonschema as js
 
+from ..errors import UnresolvedRefError
 from ..errors import UnsupportedSchemaError
 from ..generator import JsonSchemaCodeGen
 
@@ -353,6 +354,92 @@ def test_all_of_object_flattening_codegen_marshal_round_trip(tmp_path):
         'id': 'i2',
         'name': 'Other',
     }, mod.NamedItem) == mod.NamedItem(id='i2', name='Other')
+
+
+def test_all_of_multiple_refs_and_nested_defs_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'BaseItem': {
+                'type': 'object',
+                'required': ['id'],
+                'properties': {
+                    'id': {'type': 'string'},
+                },
+            },
+            'NamedItem': {
+                'allOf': [
+                    {'$ref': '#/$defs/BaseItem'},
+                    {
+                        'type': 'object',
+                        'required': ['name', 'details'],
+                        'properties': {
+                            'name': {'type': 'string'},
+                            'details': {
+                                'type': 'object',
+                                'required': ['enabled'],
+                                'properties': {
+                                    'enabled': {'type': 'boolean'},
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            'VersionedItem': {
+                'type': 'object',
+                'required': ['version'],
+                'properties': {
+                    'version': {'type': 'integer'},
+                },
+            },
+            'CompleteItem': {
+                'allOf': [
+                    {'$ref': '#/$defs/NamedItem'},
+                    {'$ref': '#/$defs/VersionedItem'},
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'tags': {
+                                'type': 'array',
+                                'items': {'type': 'string'},
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    })
+
+    obj = mod.CompleteItem(
+        id='i1',
+        name='Item',
+        details=mod.NamedItem.Details(enabled=True),
+        version=2,
+        tags=['a'],
+    )
+    assert msh.marshal(obj, mod.CompleteItem) == {
+        'id': 'i1',
+        'name': 'Item',
+        'details': {
+            'enabled': True,
+        },
+        'version': 2,
+        'tags': ['a'],
+    }
+
+    assert msh.unmarshal({
+        'id': 'i2',
+        'name': 'Other',
+        'details': {
+            'enabled': False,
+        },
+        'version': 3,
+    }, mod.CompleteItem) == mod.CompleteItem(
+        id='i2',
+        name='Other',
+        details=mod.NamedItem.Details(enabled=False),
+        version=3,
+    )
 
 
 def test_top_level_const_one_of_enum_codegen_marshal_round_trip(tmp_path):
@@ -769,3 +856,114 @@ def test_unsupported_empty_ref_explodes():
             },
         },
     }, ('$defs', 'Thing'))
+
+
+def test_unsupported_all_of_duplicate_json_field_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Base': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'string'},
+                },
+            },
+            'Thing': {
+                'allOf': [
+                    {'$ref': '#/$defs/Base'},
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'id': {'type': 'integer'},
+                        },
+                    },
+                ],
+            },
+        },
+    }, ())
+
+
+def test_unsupported_all_of_duplicate_python_field_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Base': {
+                'type': 'object',
+                'properties': {
+                    'fooBar': {'type': 'string'},
+                },
+            },
+            'Thing': {
+                'allOf': [
+                    {'$ref': '#/$defs/Base'},
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'foo_bar': {'type': 'string'},
+                        },
+                    },
+                ],
+            },
+        },
+    }, ())
+
+
+def test_unsupported_all_of_duplicate_nested_class_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Base': {
+                'type': 'object',
+                'properties': {
+                    'details': {
+                        'type': 'object',
+                        'properties': {
+                            'id': {'type': 'string'},
+                        },
+                    },
+                },
+            },
+            'Thing': {
+                'allOf': [
+                    {'$ref': '#/$defs/Base'},
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'details': {
+                                'type': 'object',
+                                'properties': {
+                                    'name': {'type': 'string'},
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    }, ())
+
+
+def test_unsupported_object_duplicate_python_field_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'fooBar': {'type': 'string'},
+                    'foo_bar': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unresolved_all_of_ref_explodes():
+    kws = _parse({
+        '$defs': {
+            'Thing': {
+                'allOf': [
+                    {'$ref': '#/$defs/Missing'},
+                ],
+            },
+        },
+    })
+
+    with pytest.raises(UnresolvedRefError):
+        JsonSchemaCodeGen(kws).gen_module()

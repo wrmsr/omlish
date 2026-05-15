@@ -301,6 +301,24 @@ class JsonSchemaAnalyzer:
             if nested_def is not None:
                 nested_defs.append(nested_def)
 
+        seen_python_names: set[str] = set()
+        for field in fields:
+            if field.python_name in seen_python_names:
+                raise UnsupportedSchemaError(
+                    message=f'Duplicate Python field name {field.python_name!r}',
+                    path=path,
+                )
+            seen_python_names.add(field.python_name)
+
+        seen_nested_names: set[str] = set()
+        for nested_def in nested_defs:
+            if nested_def.name in seen_nested_names:
+                raise UnsupportedSchemaError(
+                    message=f'Duplicate nested class name {nested_def.name!r}',
+                    path=path,
+                )
+            seen_nested_names.add(nested_def.name)
+
         self._check_unhandled(
             kws,
             handled_types={js.Type, js.Properties, js.Required, js.AdditionalProperties},
@@ -441,7 +459,7 @@ class JsonSchemaAnalyzer:
             m_path = (*path, 'allOf', i)
 
             if by_type.get(js.Properties) is not None:
-                members.append(self._classify_def('?', kws, m_path))
+                members.append(self._classify_object(name, kws, m_path, qual_name=name))
 
             elif by_type.get(js.Ref) is not None:
                 members.append(self._resolve_field_type(kws, m_path))

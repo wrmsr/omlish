@@ -3,6 +3,7 @@ import typing as ta
 from omlish import check
 
 from .errors import UnresolvedRefError
+from .errors import UnsupportedSchemaError
 from .ir import TYPE_DEF_TYPES
 from .ir import AllOfIntersectionTypeDef
 from .ir import DiscriminatedUnionTypeDef
@@ -78,6 +79,28 @@ class JsonSchemaIrTransformer:
         if not intersection_type_names:
             return
 
+        def check_unique_object_members(name: str, fields: list[FieldDef], nested_defs: list[ObjectTypeDef]) -> None:
+            seen_json_names: set[str] = set()
+            seen_python_names: set[str] = set()
+            for field in fields:
+                if field.json_name in seen_json_names:
+                    raise UnsupportedSchemaError(message=f'Duplicate allOf JSON field {field.json_name!r} in {name!r}')
+                seen_json_names.add(field.json_name)
+
+                if field.python_name in seen_python_names:
+                    raise UnsupportedSchemaError(
+                        message=f'Duplicate allOf Python field {field.python_name!r} in {name!r}',
+                    )
+                seen_python_names.add(field.python_name)
+
+            seen_nested_names: set[str] = set()
+            for nested_def in nested_defs:
+                if nested_def.name in seen_nested_names:
+                    raise UnsupportedSchemaError(
+                        message=f'Duplicate allOf nested class {nested_def.name!r} in {name!r}',
+                    )
+                seen_nested_names.add(nested_def.name)
+
         def rec(n: str) -> ObjectTypeDef:
             intersection_type_names.remove(n)
 
@@ -108,6 +131,8 @@ class JsonSchemaIrTransformer:
 
                 else:
                     raise TypeError(m)
+
+            check_unique_object_members(n, fields, nested_defs)
 
             otd = ObjectTypeDef(
                 name=td.name,
