@@ -30,7 +30,11 @@ def split_loose_words(s: str) -> list[str]:
 
 
 def ref_name(ref_str: str) -> str:
-    return ref_str.rsplit('/', maxsplit=1)[-1]
+    parts = ref_str.split('/')
+    if len(parts) != 3 or parts[0] != '#' or parts[1] not in ('$defs', 'definitions') or not parts[2]:
+        raise ValueError(ref_str)
+
+    return parts[2].replace('~1', '/').replace('~0', '~')
 
 
 def python_class_name(json_name: str) -> str:

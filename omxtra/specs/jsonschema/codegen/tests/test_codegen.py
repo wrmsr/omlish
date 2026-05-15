@@ -526,6 +526,68 @@ def test_ref_alias_codegen_marshal_round_trip(tmp_path):
     }, mod.EmptyResult) == obj
 
 
+def test_definitions_ref_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        'definitions': {
+            'Target': {
+                'type': 'object',
+                'required': ['name'],
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+            'Holder': {
+                'type': 'object',
+                'required': ['target'],
+                'properties': {
+                    'target': {'$ref': '#/definitions/Target'},
+                },
+            },
+        },
+    })
+
+    obj = mod.Holder(target=mod.Target(name='alice'))
+    assert msh.marshal(obj, mod.Holder) == {
+        'target': {
+            'name': 'alice',
+        },
+    }
+
+    assert msh.unmarshal({
+        'target': {
+            'name': 'bob',
+        },
+    }, mod.Holder) == mod.Holder(target=mod.Target(name='bob'))
+
+
+def test_json_pointer_escaped_ref_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'Foo/Bar': {
+                'type': 'object',
+                'required': ['name'],
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+            'Holder': {
+                'type': 'object',
+                'required': ['target'],
+                'properties': {
+                    'target': {'$ref': '#/$defs/Foo~1Bar'},
+                },
+            },
+        },
+    })
+
+    obj = mod.Holder(target=mod.FooBar(name='alice'))
+    assert msh.marshal(obj, mod.Holder) == {
+        'target': {
+            'name': 'alice',
+        },
+    }
+
+
 def test_unsupported_keyword_explodes():
     _assert_unsupported({
         '$defs': {
@@ -668,3 +730,42 @@ def test_unsupported_non_empty_unconstrained_schema_explodes():
             },
         },
     }, ('$defs', 'Thing', 'properties', 'payload'))
+
+
+def test_unsupported_external_ref_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                '$ref': 'https://example.com/schema.json#/$defs/Other',
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_nested_ref_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'name': {'$ref': '#/$defs/Other/properties/name'},
+                },
+            },
+            'Other': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'name'))
+
+
+def test_unsupported_empty_ref_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                '$ref': '#/$defs/',
+            },
+        },
+    }, ('$defs', 'Thing'))

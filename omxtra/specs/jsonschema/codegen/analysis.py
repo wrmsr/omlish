@@ -113,6 +113,12 @@ class JsonSchemaAnalyzer:
 
         raise UnsupportedSchemaError(message=message, path=path)
 
+    def _ref_name(self, ref_str: str, path: SchemaPath) -> str:
+        try:
+            return ref_name(ref_str)
+        except ValueError:
+            raise UnsupportedSchemaError(message=f'Unsupported JSON Schema ref {ref_str!r}', path=path) from None
+
     def _classify_def(self, name: str, kws: js.Keywords, path: SchemaPath) -> TypeDef:
         by_type = kws.by_type
         by_tag = kws.by_tag
@@ -232,7 +238,7 @@ class JsonSchemaAnalyzer:
                 ref_kw = all_of.kws[0].by_type.get(js.Ref)
                 if ref_kw is None:
                     raise UnsupportedSchemaError(message='Unsupported discriminator allOf variant', path=v_path)
-                ref_name_str = python_class_name(ref_name(ref_kw.s))
+                ref_name_str = python_class_name(self._ref_name(ref_kw.s, (*v_path, 'allOf', 0)))
 
             self._check_unhandled(
                 variant_kws,
@@ -453,12 +459,12 @@ class JsonSchemaAnalyzer:
             ref_kw = all_of.kws[0].by_type.get(js.Ref)
             if ref_kw is not None:
                 self._check_unhandled(kws, handled_types={js.AllOf, js.Default}, path=path)
-                return RefTypeRef(python_class_name(ref_name(ref_kw.s)))
+                return RefTypeRef(python_class_name(self._ref_name(ref_kw.s, (*path, 'allOf', 0))))
 
         ref_kw = by_type.get(js.Ref)
         if ref_kw is not None:
             self._check_unhandled(kws, handled_types={js.Ref, js.Default}, path=path)
-            return RefTypeRef(python_class_name(ref_name(ref_kw.s)))
+            return RefTypeRef(python_class_name(self._ref_name(ref_kw.s, path)))
 
         enum_kw = by_type.get(js.Enum)
         if enum_kw is not None:
