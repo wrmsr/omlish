@@ -43,6 +43,14 @@ JSON_TYPE_MAP: ta.Mapping[str, str] = {
     'boolean': 'bool',
 }
 
+LITERAL_VALUE_TYPES: tuple[type, ...] = (
+    str,
+    int,
+    float,
+    bool,
+    type(None),
+)
+
 
 class JsonSchemaAnalyzer:
     def __init__(
@@ -119,6 +127,28 @@ class JsonSchemaAnalyzer:
         except ValueError:
             raise UnsupportedSchemaError(message=f'Unsupported JSON Schema ref {ref_str!r}', path=path) from None
 
+    def _literal_value(self, value: ta.Any, path: SchemaPath) -> ta.Any:
+        if not isinstance(value, LITERAL_VALUE_TYPES):
+            raise UnsupportedSchemaError(message=f'Unsupported literal value {value!r}', path=path)
+        return value
+
+    def _literal_values(self, values: ta.Sequence[ta.Any], path: SchemaPath) -> tuple[ta.Any, ...]:
+        if not values:
+            raise UnsupportedSchemaError(message='Unsupported empty enum', path=path)
+
+        literals = tuple(self._literal_value(v, path) for v in values)
+        value_types = {type(v) for v in literals}
+        if len(value_types) > 1:
+            raise UnsupportedSchemaError(message='Unsupported mixed-type enum', path=path)
+
+        return literals
+
+    def _string_enum_values(self, values: ta.Sequence[ta.Any], path: SchemaPath) -> tuple[str, ...]:
+        literals = self._literal_values(values, path)
+        if not all(isinstance(v, str) for v in literals):
+            raise UnsupportedSchemaError(message='Unsupported non-string enum', path=path)
+        return literals
+
     def _classify_def(self, name: str, kws: js.Keywords, path: SchemaPath) -> TypeDef:
         by_type = kws.by_type
         by_tag = kws.by_tag
@@ -170,13 +200,18 @@ class JsonSchemaAnalyzer:
         if candidate == 'string_const_one_of':
             one_of_kw = check.isinstance(by_type[js.OneOf], js.OneOf)
             self._check_unhandled(kws, handled_types={js.OneOf}, path=path)
-            values = [check.isinstance(m[js.Const].v, str) for m in one_of_kw.kws]
+            values = [
+                *self._string_enum_values([
+                    m[js.Const].v
+                    for m in one_of_kw.kws
+                ], path),
+            ]
             return StringEnumTypeDef(name=name, values=values)
 
         if candidate == 'enum':
             enum_kw = check.isinstance(by_type[js.Enum], js.Enum)
             self._check_unhandled(kws, handled_types={js.Enum, js.Type}, path=path)
-            return StringEnumTypeDef(name=name, values=[check.isinstance(v, str) for v in enum_kw.vs])
+            return StringEnumTypeDef(name=name, values=self._string_enum_values(enum_kw.vs, path))
 
         if candidate == 'object':
             return self._classify_object(name, kws, path)
@@ -210,8 +245,15 @@ class JsonSchemaAnalyzer:
             disc_kw: js.UnknownKeyword,
             path: SchemaPath,
     ) -> DiscriminatedUnionTypeDef:
-        disc_value = check.isinstance(disc_kw.value, ta.Mapping)
-        prop_name = check.isinstance(disc_value['propertyName'], str)
+        if not isinstance(disc_kw.value, ta.Mapping):
+            raise UnsupportedSchemaError(message='Unsupported discriminator shape', path=path)
+
+        disc_value = disc_kw.value
+        prop_name_obj = disc_value.get('propertyName')
+        if not isinstance(prop_name_obj, str):
+            raise UnsupportedSchemaError(message='Unsupported discriminator propertyName', path=path)
+        prop_name = prop_name_obj
+
         one_of = kws.by_type[js.OneOf]
 
         variants: list[DiscriminatedUnionVariant] = []
@@ -253,8 +295,15 @@ class JsonSchemaAnalyzer:
                 path=(*v_path, 'properties', prop_name),
             )
 
+            tag_value = self._literal_value(const_kw.v, (*v_path, 'properties', prop_name))
+            if not isinstance(tag_value, str):
+                raise UnsupportedSchemaError(
+                    message=f'Discriminator property {prop_name!r} const must be string',
+                    path=(*v_path, 'properties', prop_name),
+                )
+
             variants.append(DiscriminatedUnionVariant(
-                tag_value=check.isinstance(const_kw.v, str),
+                tag_value=tag_value,
                 ref_name=ref_name_str,
             ))
 
@@ -410,7 +459,7 @@ class JsonSchemaAnalyzer:
         const_kw = kws.by_type.get(js.Const)
         const: ta.Any = MISSING
         if const_kw is not None:
-            const = const_kw.v
+            const = self._literal_value(const_kw.v, path)
 
         default: ta.Any = MISSING
         default_kw = kws.by_type.get(js.Default)
@@ -517,7 +566,7 @@ class JsonSchemaAnalyzer:
         enum_kw = by_type.get(js.Enum)
         if enum_kw is not None:
             self._check_unhandled(kws, handled_types={js.Type, js.Enum, js.Default}, path=path)
-            return LiteralTypeRef(tuple(enum_kw.vs))
+            return LiteralTypeRef(self._literal_values(enum_kw.vs, path))
 
         any_of = by_type.get(js.AnyOf)
         if any_of is not None:

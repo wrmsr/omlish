@@ -169,6 +169,35 @@ def test_object_const_field_codegen_marshal_round_trip(tmp_path):
     }, mod.AudioContent) == obj
 
 
+def test_scalar_const_and_field_enum_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'LiteralHolder': {
+                'type': 'object',
+                'required': ['enabled', 'version', 'mode'],
+                'properties': {
+                    'enabled': {'type': 'boolean', 'const': True},
+                    'version': {'type': 'integer', 'const': 2},
+                    'mode': {'type': 'string', 'enum': ['fast', 'slow']},
+                },
+            },
+        },
+    })
+
+    obj = mod.LiteralHolder(mode='fast')
+    assert msh.marshal(obj, mod.LiteralHolder) == {
+        'enabled': True,
+        'version': 2,
+        'mode': 'fast',
+    }
+
+    assert msh.unmarshal({
+        'enabled': True,
+        'version': 2,
+        'mode': 'slow',
+    }, mod.LiteralHolder) == mod.LiteralHolder(mode='slow')
+
+
 def test_nullable_and_primitive_union_codegen_marshal_round_trip(tmp_path):
     mod = _generate_import(tmp_path, {
         '$defs': {
@@ -882,6 +911,110 @@ def test_unsupported_non_empty_unconstrained_schema_explodes():
             },
         },
     }, ('$defs', 'Thing', 'properties', 'payload'))
+
+
+def test_unsupported_top_level_empty_enum_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'string',
+                'enum': [],
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_top_level_non_string_enum_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'integer',
+                'enum': [1, 2],
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_field_empty_enum_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'mode': {
+                        'type': 'string',
+                        'enum': [],
+                    },
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'mode'))
+
+
+def test_unsupported_field_mixed_enum_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'mode': {
+                        'enum': ['fast', 1],
+                    },
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'mode'))
+
+
+def test_unsupported_non_scalar_const_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'kind': {
+                        'const': {'type': 'x'},
+                    },
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'kind'))
+
+
+def test_unsupported_non_string_discriminator_const_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Cat': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+            'Pet': {
+                'discriminator': {'propertyName': 'type'},
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'type': {'type': 'integer', 'const': 1},
+                        },
+                        'allOf': [{'$ref': '#/$defs/Cat'}],
+                    },
+                ],
+            },
+        },
+    }, ('$defs', 'Pet', 'oneOf', 0, 'properties', 'type'))
+
+
+def test_unsupported_invalid_discriminator_shape_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Pet': {
+                'discriminator': 'type',
+                'oneOf': [],
+            },
+        },
+    }, ('$defs', 'Pet'))
 
 
 def test_unsupported_object_with_open_additional_properties_explodes():
