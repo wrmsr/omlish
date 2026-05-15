@@ -1,5 +1,8 @@
 # ruff: noqa: SLF001
 """
+TODO:
+ - fix params preparer crap lol
+
 ====
 
 return sql.api.query_opt_one(db, lang.static(lambda: Q.select(
@@ -82,6 +85,7 @@ class SqlStore(Store):
             *,
             param_style: sql.ParamStyle = sql.ParamStyle.QMARK,
             tabledef_renderer: sql.td.StatementRenderer | None = None,
+            tabledef_create_options: sql.td.StatementRenderer.CreateOptions | None = None,
     ) -> None:
         super().__init__()
 
@@ -92,6 +96,11 @@ class SqlStore(Store):
         if tabledef_renderer is None:
             tabledef_renderer = sql.td.SqliteStatementRenderer()
         self._tabledef_renderer = tabledef_renderer
+        if tabledef_create_options is None:
+            tabledef_create_options = sql.td.StatementRenderer.CreateOptions(
+                if_not_exists=True,
+            )
+        self._tabledef_create_options = tabledef_create_options
 
         self._mappers: ta.Mapping[Mapper, SqlStore._Mapper] = {m: self._Mapper(self, m) for m in registry.mappers}
 
@@ -262,7 +271,7 @@ class SqlStore(Store):
 
                 for stmt in self._tabledef_renderer.render_create_statements(
                         sql.td.lower_table_elements(td),
-                        if_not_exists=True,
+                        self._tabledef_create_options,
                 ):
                     await sql.api.exec(conn, stmt)
 
@@ -339,11 +348,15 @@ class SqlStore(Store):
 
             clauses: list[str] = []
             params: list[ta.Any] = []
+            pp = sql.make_params_preparer(self._o._param_style)
 
             for fk, fv in sm.encode(where).items():
                 check.not_in(fv.__class__, WRAPPER_TYPES)
-                clauses.append(f'{fk} = ?')
+                clauses.append(f'{fk} = {pp.add(len(params))}')
                 params.append(fv)
+
+            px = pp.prepare()
+            qp = sql.params.substitute_params(px, dict(enumerate(params)), strict=True)  # type: ignore
 
             stmt = ' '.join([
                 'select',
@@ -355,7 +368,7 @@ class SqlStore(Store):
 
             await self._o._maybe_create_schema()
 
-            async with sql.query(check.not_none(self._q), stmt, params) as rows:
+            async with sql.query(check.not_none(self._q), stmt, qp) as rows:
                 return [sm.decode(row.to_dict()) async for row in rows]
 
         #
@@ -410,7 +423,7 @@ class SqlStore(Store):
                     for f in m._fields
                     if f is not m._key_field and f not in m._auto_value_fields
                 ]
-                qp = sql.params.substitute_params(px, params, strict=True)
+                qp = sql.params.substitute_params(px, dict(enumerate(params)), strict=True)  # type: ignore
                 vk = await sql.query_scalar(check.not_none(self._q), stmt, qp)
                 iak[ak] = sm.decode_key(vk)
 
@@ -421,7 +434,9 @@ class SqlStore(Store):
 
             sm = self._o._mappers[m]
 
-            stmt = self._build_insert_stmt(m)
+            pp = sql.make_params_preparer(self._o._param_style)
+            stmt = self._build_insert_stmt(m, pp)
+            px = pp.prepare()
 
             for snap in snaps:
                 enc_snap = sm.encode(snap)
@@ -430,7 +445,8 @@ class SqlStore(Store):
                     for f in m._fields
                     if f not in m._auto_value_fields
                 ]
-                await sql.exec(check.not_none(self._q), stmt, params)
+                qp = sql.params.substitute_params(px, dict(enumerate(params)), strict=True)  # type: ignore
+                await sql.exec(check.not_none(self._q), stmt, qp)
 
         async def update(self, m: Mapper, diffs: ta.Sequence[tuple[ta.Any, Snap]]) -> None:
             await self._o._maybe_create_schema()
@@ -438,34 +454,49 @@ class SqlStore(Store):
             sm = self._o._mappers[m]
 
             for vk, ud_diff in diffs:
+                pp = sql.make_params_preparer(self._o._param_style)
+                params: list = []
+
+                def add_param(v):
+                    i = len(params)
+                    params.append(v)
+                    return pp.add(i)
+
                 check.not_in(m._key_field_store_name, ud_diff)
+                enc_ud_diff = sm.encode(ud_diff)
                 stmt = ' '.join([
                     'update',
                     m._store_name,
                     'set',
-                    ', '.join([f'{k} = ?' for k in ud_diff]),
+                    ', '.join([f'{k} = {add_param(v)}' for k, v in enc_ud_diff.items()]),
                     'where',
                     m._key_field_store_name,
-                    '= ?',
+                    '= ',
+                    add_param(sm.encode_key(vk)),
                 ])
-                params = [*sm.encode(ud_diff).values(), sm.encode_key(vk)]
-                await sql.exec(check.not_none(self._q), stmt, params)
+                px = pp.prepare()
+                qp = sql.params.substitute_params(px, dict(enumerate(params)), strict=True)  # type: ignore
+                await sql.exec(check.not_none(self._q), stmt, qp)
 
         async def delete(self, m: Mapper, keys: ta.Sequence[ta.Any]) -> None:
             await self._o._maybe_create_schema()
 
             sm = self._o._mappers[m]
 
+            pp = sql.make_params_preparer(self._o._param_style)
             stmt = ' '.join([
                 'delete from',
                 m._store_name,
                 'where',
                 m._key_field_store_name,
-                '= ?',
+                '= ',
+                pp.add(0),
             ])
+            px = pp.prepare()
 
             for k in keys:
-                await sql.exec(check.not_none(self._q), stmt, [sm.encode_key(k)])
+                qp = sql.params.substitute_params(px, {0: sm.encode_key(k)}, strict=True)  # type: ignore
+                await sql.exec(check.not_none(self._q), stmt, qp)
 
     #
 

@@ -44,12 +44,10 @@ from .rendering.base import (  # noqa
 )
 
 from .rendering.postgres import (  # noqa
-    render_postgres_create_statements,
     PostgresStatementRenderer,
 )
 
 from .rendering.sqlite import (  # noqa
-    render_sqlite_create_statements,
     SqliteStatementRenderer,
 )
 

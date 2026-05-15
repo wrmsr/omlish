@@ -216,16 +216,6 @@ def check_params_consumed(expected: ta.Iterable[K], actual: ta.Iterable[K]) -> N
 ##
 
 
-# @ta.overload
-# def substitute_params(
-#         params: ta.Sequence[int],
-#         values: ta.Sequence[V],
-#         *,
-#         strict: bool = False,
-# ) -> ta.Sequence[V]:
-#     ...
-
-
 @ta.overload
 def substitute_params(
         params: ta.Sequence[K],

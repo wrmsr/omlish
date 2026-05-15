@@ -14,7 +14,7 @@ from ...elements import Elements
 from ...elements import IdIntegerPrimaryKey
 from ...lower import lower_table_elements
 from ...tabledefs import TableDef
-from ..postgres import render_postgres_create_statements
+from ..postgres import PostgresStatementRenderer
 
 
 if ta.TYPE_CHECKING:
@@ -53,7 +53,7 @@ def test_render_create_table(harness):
 
         tbl = lower_table_elements(tbl)
 
-        stmts = render_postgres_create_statements(tbl)
+        stmts = PostgresStatementRenderer().render_create_statements(tbl)
 
         print('\n\n'.join(stmts))
 

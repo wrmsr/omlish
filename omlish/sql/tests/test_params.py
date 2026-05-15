@@ -1,6 +1,7 @@
 from ..params import LinearParamsPreparer
 from ..params import NamedParamsPreparer
 from ..params import NumericParamsPreparer
+from ..params import substitute_params
 
 
 def test_linear():
@@ -11,13 +12,27 @@ def test_linear():
     assert pp.add(2) == '?'
     assert pp.add('foo') == '?'
     assert pp.add('bar') == '?'
-    assert list(pp.prepare()) == [
+    assert list(px := pp.prepare()) == [
         1,
         'foo',
         1,
         2,
         'foo',
         'bar',
+    ]
+
+    assert substitute_params(px, {
+        1: 123,
+        'bar': 'bar!',
+        2: 456,
+        'foo': 'foo!',
+    }) == [
+        123,
+        'foo!',
+        123,
+        456,
+        'foo!',
+        'bar!',
     ]
 
 
@@ -45,9 +60,21 @@ def test_named():
     assert pp.add(2) == ':_1'
     assert pp.add('foo') == ':foo'
     assert pp.add('bar') == ':bar'
-    assert pp.prepare() == dict(
+    assert (px := pp.prepare()) == dict(
         _0=1,
         foo='foo',
         _1=2,
         bar='bar',
+    )
+
+    assert substitute_params(px, {
+        1: 123,
+        'bar': 'bar!',
+        2: 456,
+        'foo': 'foo!',
+    }) == dict(
+        _0=123,
+        foo='foo!',
+        _1=456,
+        bar='bar!',
     )

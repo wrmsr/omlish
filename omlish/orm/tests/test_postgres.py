@@ -34,7 +34,11 @@ def test_pg8000(harness, exit_stack) -> None:
     store = SqlStore(
         registry,
         adb,
+        param_style=sql.ParamStyle.FORMAT,
         tabledef_renderer=sql.td.PostgresStatementRenderer(),
+        tabledef_create_options=sql.td.StatementRenderer.CreateOptions(
+            drop_if_exists=True,
+        ),
     )
 
     lang.sync_await(_test_orm(store, registry))

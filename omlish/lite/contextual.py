@@ -1,5 +1,17 @@
 # ruff: noqa: UP006 UP007 UP037
 # @omlish-lite
+"""
+Obviously inspired by kotlin. This is intended to complement, not compete with, dependency injection: where DI replaces
+kwargs, this replaces globals. Or, in more 'coarse' terms: DI is for classes, this is for functions.
+
+Primary intended usecases:
+ - logging / metrics
+ - marshaling
+ - typeclass-y / capability things
+
+Possible additional usecases:
+ - 'current_user' and such - at least the dep is explicit (versus just referring to a global cvar)
+"""
 import contextvars
 import functools
 import inspect
