@@ -59,7 +59,7 @@ def _install_standard_marshaling() -> None:
         identity=True,
     )
 
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         _JsonValueMarshalerFactory(),
         _JsonValueUnmarshalerFactory(),
     )

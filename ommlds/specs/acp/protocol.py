@@ -1365,7 +1365,7 @@ SessionConfigSelectOptions: ta.TypeAlias = ta.Any
 
 @lang.static_init
 def _install_marshaling() -> None:
-    msh.install_standard_factories(*msh.standard_polymorphism_factories(
+    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
         msh.polymorphism_from_subclasses(
             ContentBlock,
             naming=msh.Naming.SNAKE,
@@ -1374,7 +1374,7 @@ def _install_marshaling() -> None:
         msh.FieldTypeTagging('type'),
     ))
 
-    msh.install_standard_factories(*msh.standard_polymorphism_factories(
+    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
         msh.polymorphism_from_subclasses(
             RequestPermissionOutcome,
             naming=msh.Naming.SNAKE,
@@ -1383,7 +1383,7 @@ def _install_marshaling() -> None:
         msh.FieldTypeTagging('outcome'),
     ))
 
-    msh.install_standard_factories(*msh.standard_polymorphism_factories(
+    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
         msh.polymorphism_from_subclasses(
             SessionConfigOption,
             naming=msh.Naming.SNAKE,
@@ -1392,7 +1392,7 @@ def _install_marshaling() -> None:
         msh.FieldTypeTagging('type'),
     ))
 
-    msh.install_standard_factories(*msh.standard_polymorphism_factories(
+    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
         msh.polymorphism_from_subclasses(
             SessionUpdate,
             naming=msh.Naming.SNAKE,
@@ -1401,7 +1401,7 @@ def _install_marshaling() -> None:
         msh.FieldTypeTagging('sessionUpdate'),
     ))
 
-    msh.install_standard_factories(*msh.standard_polymorphism_factories(
+    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
         msh.polymorphism_from_subclasses(
             ToolCallContent,
             naming=msh.Naming.SNAKE,

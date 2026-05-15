@@ -145,10 +145,10 @@ def register_global_module_import(
 ##
 
 
-def install_standard_factories(
+def install_global_standard_factories(
         *factories: MarshalerFactory | UnmarshalerFactory,
 ) -> None:
-    _si.install_standard_factories_to(
+    _si.install_standard_factories(
         global_config_registry(),
         *factories,
     )

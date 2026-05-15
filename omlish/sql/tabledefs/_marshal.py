@@ -10,7 +10,7 @@ from .values import SpecialValue
 
 def _install_poly(cls: type) -> None:
     p = msh.polymorphism_from_subclasses(cls, naming=msh.Naming.SNAKE)
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         msh.PolymorphismMarshalerFactory(p),
         msh.PolymorphismUnmarshalerFactory(p),
     )

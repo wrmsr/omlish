@@ -62,7 +62,7 @@ def _install_standard_marshaling() -> None:
         (BinaryOp, BinaryOps),
         (UnaryOp, UnaryOps),
     ]:
-        msh.install_standard_factories(
+        msh.install_global_standard_factories(
             msh.TypeMapMarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)}),
             msh.TypeMapUnmarshalerFactory({ty: OpMarshalerUnmarshaler(ty, ns)}),
         )
@@ -71,7 +71,7 @@ def _install_standard_marshaling() -> None:
         JoinKind,
         MultiKind,
     ]
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         msh.TypeMapMarshalerFactory({t: LowerEnumMarshaler(t) for t in ets}),
         msh.TypeMapUnmarshalerFactory({t: LowerEnumMarshaler(t) for t in ets}),
     )
@@ -82,7 +82,7 @@ def _install_standard_marshaling() -> None:
         naming=msh.Naming.SNAKE,
         strip_suffix=msh.AUTO_STRIP_SUFFIX,
     )
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         msh.PolymorphismMarshalerFactory(node_poly),
         msh.PolymorphismUnmarshalerFactory(node_poly),
     )

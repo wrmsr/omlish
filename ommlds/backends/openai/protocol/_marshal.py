@@ -16,7 +16,7 @@ def _install_standard_marshaling() -> None:
         (ChatCompletionMessage, 'role'),
         (ChatCompletionResponseFormat, 'type'),
     ]:
-        msh.install_standard_factories(*msh.standard_polymorphism_factories(
+        msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
             msh.polymorphism_from_subclasses(
                 root_cls,
                 naming=msh.Naming.SNAKE,

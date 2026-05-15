@@ -318,7 +318,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .standard.install import (  # noqa
-        install_standard_factories_to,
+        install_standard_factories,
     )
 
     from .trivial.any import (  # noqa
@@ -366,5 +366,5 @@ with _lang.auto_proxy_init(globals()):
         register_global_lazy_init,
         register_global_module_import,
 
-        install_standard_factories,
+        install_global_standard_factories,
     )

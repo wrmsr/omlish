@@ -66,12 +66,12 @@ def _install_standard_marshaling() -> None:
             msh.Impl(RequiresOp, 'op'),
         ],
     )
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         msh.PolymorphismMarshalerFactory(requires_node_poly),
         msh.PolymorphismUnmarshalerFactory(requires_node_poly),
     )
 
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         RequiresMarkerListMarshalerFactory(),
     )
 

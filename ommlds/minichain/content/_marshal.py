@@ -339,13 +339,13 @@ def _install_standard_marshaling() -> None:
         ],
     )
 
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         *msh.standard_polymorphism_factories(base_content_poly),
     )
 
     #
 
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         _ContentMarshalerFactory(),
         _ContentUnmarshalerFactory(),
     )
@@ -358,7 +358,7 @@ def _install_standard_marshaling() -> None:
 
     #
 
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         _SingleRawContentMarshalerFactory(),
         _SingleRawContentUnmarshalerFactory(),
     )
@@ -371,7 +371,7 @@ def _install_standard_marshaling() -> None:
 
     #
 
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         _RawContentMarshalerFactory(),
         _RawContentUnmarshalerFactory(),
     )
@@ -384,7 +384,7 @@ def _install_standard_marshaling() -> None:
 
     #
 
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         msh.TypeMapMarshalerFactory({
             ImageContent: _ImageContentMarshaler(),
             NamespaceContent: _NamespaceContentMarshaler(),

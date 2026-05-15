@@ -806,7 +806,7 @@ class JsonSchemaCodeGen:
             w('def _install_marshaling() -> None:')
             items = sorted(self._disc_unions.items())
             for i, (union_name, union_td) in enumerate(items):
-                w(f'    msh.install_standard_factories(*msh.standard_polymorphism_factories(')
+                w(f'    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(')
                 w(f'        msh.polymorphism_from_subclasses(')
                 w(f'            {union_name},')
                 w(f'            naming=msh.Naming.SNAKE,')

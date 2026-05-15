@@ -9,7 +9,7 @@ from .factories import StandardUnmarshalerFactories
 ##
 
 
-def install_standard_factories_to(
+def install_standard_factories(
         cfgs: ConfigRegistry,
         *factories: MarshalerFactory | UnmarshalerFactory,
 ) -> None:

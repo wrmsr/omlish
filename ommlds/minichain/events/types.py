@@ -52,7 +52,7 @@ class ErrorEvent(Event, lang.Final):
 
 @msh.register_global_lazy_init
 def _setup_marshal(cfgs: msh.ConfigRegistry) -> None:
-    msh.install_standard_factories_to(
+    msh.install_standard_factories(
         cfgs,
         msh.OpenPolymorphismMarshalerFactory(Event, opo := msh.PolymorphismOptions(
             naming=msh.Naming.SNAKE,

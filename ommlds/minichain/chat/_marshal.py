@@ -34,7 +34,7 @@ def _install_standard_marshaling() -> None:
             naming=msh.Naming.SNAKE,
             strip_suffix='Message',
         )
-        msh.install_standard_factories(
+        msh.install_global_standard_factories(
             msh.PolymorphismMarshalerFactory(cls_poly),
             msh.PolymorphismUnmarshalerFactory(cls_poly),
         )
@@ -43,7 +43,7 @@ def _install_standard_marshaling() -> None:
         ChatOption,
         MessageMetadata,
     ]:
-        msh.install_standard_factories(*msh.standard_polymorphism_factories(
+        msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
             msh.polymorphism_from_subclasses(
                 cls,
                 naming=msh.Naming.SNAKE,

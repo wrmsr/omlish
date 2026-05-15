@@ -55,7 +55,7 @@ def marshal_secret_field(f: dc.Field) -> dc.Field:
 
 @lang.static_init
 def _install_standard_marshaling() -> None:
-    msh.install_standard_factories(
+    msh.install_global_standard_factories(
         msh.ForbiddenTypeMarshalerFactory({Secret}),
         msh.ForbiddenTypeUnmarshalerFactory({Secret}),
 
