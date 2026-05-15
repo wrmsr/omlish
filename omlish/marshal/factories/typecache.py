@@ -47,11 +47,11 @@ class _TypeCacheFactory(ta.Generic[FactoryT, ImplT]):
 
     def _get_state(self, cfgs: ConfigRegistry) -> _State:
         try:
-            sm = cfgs.get(None)[_TypeCacheFactory._StateMap]
+            sm = cfgs.get()[_TypeCacheFactory._StateMap]
         except KeyError:
             with cfgs._lock:
                 try:
-                    sm = cfgs.get(None)[_TypeCacheFactory._StateMap]
+                    sm = cfgs.get()[_TypeCacheFactory._StateMap]
                 except KeyError:
                     cfgs.update(None, sm := _TypeCacheFactory._StateMap())
 
