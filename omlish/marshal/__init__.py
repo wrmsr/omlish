@@ -317,6 +317,10 @@ with _lang.auto_proxy_init(globals()):
         new_standard_unmarshaler_factory,
     )
 
+    from .standard.install import (  # noqa
+        install_standard_factories_to,
+    )
+
     from .trivial.any import (  # noqa
         AnyMarshalerUnmarshaler,
 
@@ -363,5 +367,4 @@ with _lang.auto_proxy_init(globals()):
         register_global_module_import,
 
         install_standard_factories,
-        install_standard_factories_to,
     )
