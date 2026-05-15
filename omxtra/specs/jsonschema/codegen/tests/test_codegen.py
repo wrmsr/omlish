@@ -272,6 +272,52 @@ def test_arrays_maps_and_refs_codegen_marshal_round_trip(tmp_path):
     )
 
 
+def test_explicit_open_any_shapes_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'OpenHolder': {
+                'type': 'object',
+                'required': ['payload', 'items', 'attrs'],
+                'properties': {
+                    'payload': {},
+                    'items': {'type': 'array'},
+                    'attrs': {
+                        'type': 'object',
+                        'additionalProperties': True,
+                    },
+                    'extra': {
+                        'type': 'object',
+                        'additionalProperties': {},
+                    },
+                },
+            },
+        },
+    })
+
+    obj = mod.OpenHolder(
+        payload={'kind': 'raw'},
+        items=[1, 'two'],
+        attrs={'enabled': True},
+    )
+    assert msh.marshal(obj, mod.OpenHolder) == {
+        'payload': {'kind': 'raw'},
+        'items': [1, 'two'],
+        'attrs': {'enabled': True},
+    }
+
+    assert msh.unmarshal({
+        'payload': ['raw'],
+        'items': [{'x': 1}],
+        'attrs': {'enabled': True},
+        'extra': {'nested': {'x': 1}},
+    }, mod.OpenHolder) == mod.OpenHolder(
+        payload=['raw'],
+        items=({'x': 1},),
+        attrs={'enabled': True},
+        extra={'nested': {'x': 1}},
+    )
+
+
 def test_all_of_object_flattening_codegen_marshal_round_trip(tmp_path):
     mod = _generate_import(tmp_path, {
         '$defs': {
@@ -552,3 +598,73 @@ def test_unsupported_array_inline_object_explodes():
             },
         },
     }, ('$defs', 'Thing', 'properties', 'items', 'items'))
+
+
+def test_unsupported_complex_field_any_of_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Foo': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+            'Bar': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'string'},
+                },
+            },
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'value': {
+                        'anyOf': [
+                            {'$ref': '#/$defs/Foo'},
+                            {'$ref': '#/$defs/Bar'},
+                        ],
+                    },
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'value'))
+
+
+def test_unsupported_complex_top_level_any_of_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Foo': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+            'Bar': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'string'},
+                },
+            },
+            'Thing': {
+                'anyOf': [
+                    {'$ref': '#/$defs/Foo'},
+                    {'$ref': '#/$defs/Bar'},
+                ],
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_non_empty_unconstrained_schema_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'payload': {
+                        'default': {},
+                    },
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'payload'))

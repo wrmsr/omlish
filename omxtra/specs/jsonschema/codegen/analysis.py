@@ -107,6 +107,12 @@ class JsonSchemaAnalyzer:
                 return False
         return True
 
+    def _any_fallback(self, message: str, path: SchemaPath) -> AnyTypeRef:
+        if self._config.allow_any_fallbacks:
+            return AnyTypeRef()
+
+        raise UnsupportedSchemaError(message=message, path=path)
+
     def _classify_def(self, name: str, kws: js.Keywords, path: SchemaPath) -> TypeDef:
         by_type = kws.by_type
         by_tag = kws.by_tag
@@ -404,6 +410,10 @@ class JsonSchemaAnalyzer:
         if len(members) == 1:
             return TypeAliasTypeDef(name=name, target=members[0])
 
+        if not all(isinstance(m, PrimitiveTypeRef) for m in members):
+            if not self._config.allow_any_fallbacks:
+                raise UnsupportedSchemaError(message='Unsupported complex anyOf union', path=path)
+
         return AnyOfUnionTypeDef(name=name, members=members)
 
     def _resolve_any_of_member_type(self, kws: js.Keywords, path: SchemaPath) -> TypeRef:
@@ -413,7 +423,7 @@ class JsonSchemaAnalyzer:
                 handled_types={js.Type, js.Properties, js.Required, js.AdditionalProperties, js.AllOf},
                 path=path,
             )
-            return AnyTypeRef()
+            return self._any_fallback('Unsupported object anyOf member', path)
 
         return self._resolve_field_type(kws, path)
 
@@ -471,7 +481,7 @@ class JsonSchemaAnalyzer:
             return AnyTypeRef()
 
         self._check_unhandled(kws, handled_types={js.Default}, path=path)
-        return AnyTypeRef()
+        return self._any_fallback('Unsupported unconstrained non-empty schema', path)
 
     def _resolve_any_of_type(self, any_of: js.AnyOf, path: SchemaPath) -> TypeRef:
         refs: list[TypeRef] = []
@@ -490,7 +500,7 @@ class JsonSchemaAnalyzer:
         elif len(refs) == 1:
             inner = refs[0]
         elif not all(isinstance(r, PrimitiveTypeRef) for r in refs):
-            inner = AnyTypeRef()
+            inner = self._any_fallback('Unsupported complex anyOf field union', path)
         else:
             inner = UnionTypeRef(members=refs)
 
