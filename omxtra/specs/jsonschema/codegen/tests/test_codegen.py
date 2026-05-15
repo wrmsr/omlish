@@ -273,6 +273,30 @@ def test_arrays_maps_and_refs_codegen_marshal_round_trip(tmp_path):
     )
 
 
+def test_object_additional_properties_false_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'ClosedObject': {
+                'type': 'object',
+                'additionalProperties': False,
+                'required': ['name'],
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    })
+
+    obj = mod.ClosedObject(name='alice')
+    assert msh.marshal(obj, mod.ClosedObject) == {
+        'name': 'alice',
+    }
+
+    assert msh.unmarshal({
+        'name': 'bob',
+    }, mod.ClosedObject) == mod.ClosedObject(name='bob')
+
+
 def test_array_inline_object_codegen_marshal_round_trip(tmp_path):
     mod = _generate_import(tmp_path, {
         '$defs': {
@@ -858,6 +882,53 @@ def test_unsupported_non_empty_unconstrained_schema_explodes():
             },
         },
     }, ('$defs', 'Thing', 'properties', 'payload'))
+
+
+def test_unsupported_object_with_open_additional_properties_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'additionalProperties': True,
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_object_with_typed_additional_properties_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'additionalProperties': {'type': 'string'},
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_object_with_inline_additional_properties_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'additionalProperties': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'string'},
+                    },
+                },
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'))
 
 
 def test_unsupported_external_ref_explodes():

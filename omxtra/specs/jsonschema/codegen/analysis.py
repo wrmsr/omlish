@@ -134,8 +134,10 @@ class JsonSchemaAnalyzer:
             candidates.append('string_const_one_of')
         if not candidates and js.Enum in by_type:
             candidates.append('enum')
-        if not candidates and js.Properties in by_type:
-            candidates.append('object')
+        if not candidates and (props_kw := by_type.get(js.Properties)) is not None:
+            addl_kw = by_type.get(js.AdditionalProperties)
+            if props_kw.m or addl_kw is None or addl_kw.bk is False:
+                candidates.append('object')
         if not candidates and js.AnyOf in by_type:
             candidates.append('any_of')
         if not candidates and js.AllOf in by_type:
@@ -280,6 +282,14 @@ class JsonSchemaAnalyzer:
             qual_name = name
 
         props = kws.by_type[js.Properties]
+        addl_kw = kws.by_type.get(js.AdditionalProperties)
+        if props.m and addl_kw is not None and addl_kw.bk is not False:
+            if not self._config.allow_any_fallbacks:
+                raise UnsupportedSchemaError(
+                    message='Unsupported additionalProperties with declared properties',
+                    path=path,
+                )
+
         req_kw = kws.by_type.get(js.Required)
         required_names: ta.AbstractSet[str]
         if req_kw is not None:
@@ -388,7 +398,7 @@ class JsonSchemaAnalyzer:
                 path=path,
             )
 
-        elif js.Properties in kws.by_type:
+        elif (props_kw := kws.by_type.get(js.Properties)) is not None and props_kw.m:
             nested_name = python_class_name(json_name)
             nested_qual_name = f'{qual_name}.{nested_name}'
             nested_defs.append(self._classify_object(nested_name, kws, path, qual_name=nested_qual_name))
