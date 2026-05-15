@@ -273,6 +273,69 @@ def test_arrays_maps_and_refs_codegen_marshal_round_trip(tmp_path):
     )
 
 
+def test_array_inline_object_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'Thread': {
+                'type': 'object',
+                'required': ['messages'],
+                'properties': {
+                    'messages': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'required': ['text', 'author'],
+                            'properties': {
+                                'text': {'type': 'string'},
+                                'author': {
+                                    'type': 'object',
+                                    'required': ['name'],
+                                    'properties': {
+                                        'name': {'type': 'string'},
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    })
+
+    obj = mod.Thread(messages=[
+        mod.Thread.MessagesItem(
+            text='hello',
+            author=mod.Thread.MessagesItem.Author(name='alice'),
+        ),
+    ])
+    assert msh.marshal(obj, mod.Thread) == {
+        'messages': [
+            {
+                'text': 'hello',
+                'author': {
+                    'name': 'alice',
+                },
+            },
+        ],
+    }
+
+    assert msh.unmarshal({
+        'messages': [
+            {
+                'text': 'hi',
+                'author': {
+                    'name': 'bob',
+                },
+            },
+        ],
+    }, mod.Thread) == mod.Thread(messages=(
+        mod.Thread.MessagesItem(
+            text='hi',
+            author=mod.Thread.MessagesItem.Author(name='bob'),
+        ),
+    ))
+
+
 def test_explicit_open_any_shapes_codegen_marshal_round_trip(tmp_path):
     mod = _generate_import(tmp_path, {
         '$defs': {
@@ -725,28 +788,6 @@ def test_unsupported_plain_one_of_union_explodes():
             },
         },
     }, ('$defs', 'Thing'))
-
-
-def test_unsupported_array_inline_object_explodes():
-    _assert_unsupported({
-        '$defs': {
-            'Thing': {
-                'type': 'object',
-                'properties': {
-                    'items': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'object',
-                            'required': ['name'],
-                            'properties': {
-                                'name': {'type': 'string'},
-                            },
-                        },
-                    },
-                },
-            },
-        },
-    }, ('$defs', 'Thing', 'properties', 'items', 'items'))
 
 
 def test_unsupported_complex_field_any_of_explodes():

@@ -290,7 +290,7 @@ class JsonSchemaAnalyzer:
         fields: list[FieldDef] = []
         nested_defs: list[ObjectTypeDef] = []
         for json_name, field_kws in props.m.items():
-            field, nested_def = self._classify_field(
+            field, field_nested_defs = self._classify_field(
                 json_name,
                 field_kws,
                 json_name in required_names,
@@ -298,8 +298,7 @@ class JsonSchemaAnalyzer:
                 qual_name=qual_name,
             )
             fields.append(field)
-            if nested_def is not None:
-                nested_defs.append(nested_def)
+            nested_defs.extend(field_nested_defs)
 
         seen_python_names: set[str] = set()
         for field in fields:
@@ -341,12 +340,13 @@ class JsonSchemaAnalyzer:
             path: SchemaPath,
             *,
             qual_name: str,
-    ) -> tuple[FieldDef, ObjectTypeDef | None]:
+    ) -> tuple[FieldDef, ta.Sequence[ObjectTypeDef]]:
         python_name = python_field_name(json_name)
-        nested_def: ObjectTypeDef | None = None
+        nested_defs: list[ObjectTypeDef] = []
         type_ref: TypeRef
 
         addl_kw = kws.by_type.get(js.AdditionalProperties)
+        items_kw = kws.by_type.get(js.Items)
         if (
                 addl_kw is not None and
                 isinstance(addl_kw.bk, js.Keywords) and
@@ -355,12 +355,12 @@ class JsonSchemaAnalyzer:
         ):
             nested_name = python_class_name(json_name) + 'Value'
             nested_qual_name = f'{qual_name}.{nested_name}'
-            nested_def = self._classify_object(
+            nested_defs.append(self._classify_object(
                 nested_name,
                 addl_kw.bk,
                 (*path, 'additionalProperties'),
                 qual_name=nested_qual_name,
-            )
+            ))
             type_ref = MapTypeRef(value=RefTypeRef(nested_qual_name))
             self._check_unhandled(
                 kws,
@@ -368,10 +368,30 @@ class JsonSchemaAnalyzer:
                 path=path,
             )
 
+        elif (
+                items_kw is not None and
+                (item_props := items_kw.kw.by_type.get(js.Properties)) is not None and
+                item_props.m
+        ):
+            nested_name = python_class_name(json_name) + 'Item'
+            nested_qual_name = f'{qual_name}.{nested_name}'
+            nested_defs.append(self._classify_object(
+                nested_name,
+                items_kw.kw,
+                (*path, 'items'),
+                qual_name=nested_qual_name,
+            ))
+            type_ref = ArrayTypeRef(item=RefTypeRef(nested_qual_name))
+            self._check_unhandled(
+                kws,
+                handled_types={js.Type, js.Items, js.Default},
+                path=path,
+            )
+
         elif js.Properties in kws.by_type:
             nested_name = python_class_name(json_name)
             nested_qual_name = f'{qual_name}.{nested_name}'
-            nested_def = self._classify_object(nested_name, kws, path, qual_name=nested_qual_name)
+            nested_defs.append(self._classify_object(nested_name, kws, path, qual_name=nested_qual_name))
             type_ref = RefTypeRef(nested_qual_name)
 
         else:
@@ -407,7 +427,7 @@ class JsonSchemaAnalyzer:
                 default=default,
                 const=const,
             ),
-            nested_def,
+            tuple(nested_defs),
         )
 
     def _classify_any_of(self, name: str, any_of: js.AnyOf, path: SchemaPath) -> TypeDef:
