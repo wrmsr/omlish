@@ -15,6 +15,7 @@ from ... import reflect as rfl
 from .configs import ConfigRegistry
 from .configs import Configs
 from .errors import UnhandledTypeError
+from .internalstate import InternalState
 from .options import _EMPTY_OPTIONS
 from .options import Options
 from .reflect import ReflectOverride
@@ -41,6 +42,11 @@ class BaseContext(lang.Abstract, lang.Sealed):
     def configs(self) -> Configs:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def internal_state(self) -> InternalState:
+        raise NotImplementedError
+
     def _reflect(self, o: ta.Any) -> rfl.Type:
         def override(o):
             if (ovr := self.configs.get(o).get(ReflectOverride)) is not None:
@@ -53,7 +59,8 @@ class BaseContext(lang.Abstract, lang.Sealed):
 # Regrettable, but we want to forbid non-factory contexts from having different configs than their factory context.
 
 del BaseContext.configs  # noqa
-BaseContext.__abstractmethods__ -= {'configs'}
+del BaseContext.internal_state  # noqa
+BaseContext.__abstractmethods__ -= {'configs', 'internal_state'}
 
 
 ##
@@ -69,8 +76,10 @@ class _PreReflectFactory(lang.Abstract):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class MarshalFactoryContext(BaseContext, lang.Final):
-    marshaler_factory: MarshalerFactory | None = None
     configs: Configs = dc.field(default_factory=ConfigRegistry)
+    internal_state: InternalState = dc.field(default_factory=InternalState)
+
+    marshaler_factory: MarshalerFactory | None = None
 
     def make_marshaler(self, o: ta.Any) -> Marshaler:
         fac = check.not_none(self.marshaler_factory)
@@ -88,8 +97,10 @@ class MarshalFactoryContext(BaseContext, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalFactoryContext(BaseContext, lang.Final):
-    unmarshaler_factory: UnmarshalerFactory | None = None
     configs: Configs = dc.field(default_factory=ConfigRegistry)
+    internal_state: InternalState = dc.field(default_factory=InternalState)
+
+    unmarshaler_factory: UnmarshalerFactory | None = None
 
     def make_unmarshaler(self, o: ta.Any) -> Unmarshaler:
         fac = check.not_none(self.unmarshaler_factory)
@@ -110,12 +121,17 @@ class UnmarshalFactoryContext(BaseContext, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class MarshalContext(BaseContext, lang.Final):
-    marshal_factory_context: MarshalFactoryContext
     options: Options = _EMPTY_OPTIONS
+
+    marshal_factory_context: MarshalFactoryContext
 
     @property
     def configs(self) -> Configs:
         return self.marshal_factory_context.configs
+
+    @property
+    def internal_state(self) -> InternalState:
+        return self.marshal_factory_context.internal_state
 
     def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> Value:
         return self.marshal_factory_context.make_marshaler(ty if ty is not None else type(obj)).marshal(self, obj)
@@ -123,12 +139,17 @@ class MarshalContext(BaseContext, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalContext(BaseContext, lang.Final):
-    unmarshal_factory_context: UnmarshalFactoryContext
     options: Options = _EMPTY_OPTIONS
+
+    unmarshal_factory_context: UnmarshalFactoryContext
 
     @property
     def configs(self) -> Configs:
         return self.unmarshal_factory_context.configs
+
+    @property
+    def internal_state(self) -> InternalState:
+        return self.unmarshal_factory_context.internal_state
 
     @ta.overload
     def unmarshal(self, v: Value, ty: type[T]) -> T:

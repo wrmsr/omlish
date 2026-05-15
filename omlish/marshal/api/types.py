@@ -11,6 +11,7 @@ from .contexts import MarshalContext
 from .contexts import MarshalFactoryContext
 from .contexts import UnmarshalContext
 from .contexts import UnmarshalFactoryContext
+from .internalstate import InternalState
 from .options import Option
 from .options import build_effective_options
 from .values import Value
@@ -59,6 +60,10 @@ class UnmarshalerFactory(lang.Abstract):
 class Marshaling(lang.Abstract):
     @abc.abstractmethod
     def get_config_registry(self) -> ConfigRegistry:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_internal_state(self) -> InternalState:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -137,11 +142,16 @@ class Marshaling(lang.Abstract):
 @dc.dataclass(frozen=True)
 class SimpleMarshaling(Marshaling):
     config_registry: ConfigRegistry = dc.field(default_factory=ConfigRegistry)
+    internal_state: InternalState = dc.field(default_factory=InternalState)
+
     marshaler_factory: MarshalerFactory | None = None
     unmarshaler_factory: UnmarshalerFactory | None = None
 
     def get_config_registry(self) -> ConfigRegistry:
         return self.config_registry
+
+    def get_internal_state(self) -> InternalState:
+        return self.internal_state
 
     def get_marshaler_factory(self) -> MarshalerFactory:
         return check.not_none(self.marshaler_factory)

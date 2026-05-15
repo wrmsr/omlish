@@ -4,6 +4,7 @@ import typing as ta
 from .. import lang
 from .api.configs import Config
 from .api.configs import ConfigRegistry
+from .api.internalstate import InternalState
 from .api.options import Option
 from .api.types import MarshalerFactory
 from .api.types import Marshaling
@@ -39,6 +40,11 @@ def global_config_registry() -> ConfigRegistry:
 
 
 @lang.cached_function(lock=_GLOBAL_LOCK)
+def global_internal_state() -> InternalState:
+    return InternalState()
+
+
+@lang.cached_function(lock=_GLOBAL_LOCK)
 def global_marshaler_factory() -> MarshalerFactory:
     return _sf.new_standard_marshaler_factory()
 
@@ -51,6 +57,9 @@ def global_unmarshaler_factory() -> UnmarshalerFactory:
 class _GlobalMarshaling(Marshaling, lang.Final):
     def get_config_registry(self) -> ConfigRegistry:
         return global_config_registry()
+
+    def get_internal_state(self) -> InternalState:
+        return global_internal_state()
 
     def get_marshaler_factory(self) -> MarshalerFactory:
         return global_marshaler_factory()

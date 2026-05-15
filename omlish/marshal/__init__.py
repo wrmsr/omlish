@@ -72,6 +72,10 @@ with _lang.auto_proxy_init(globals()):
         ReflectOverride,
     )
 
+    from .api.internalstate import (  # noqa
+        InternalState,
+    )
+
     from .api.types import (  # noqa
         Marshaler,
         Unmarshaler,
