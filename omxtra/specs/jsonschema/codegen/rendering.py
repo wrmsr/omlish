@@ -174,7 +174,6 @@ class ModuleRenderer:
         w('def _set_class_marshal_options(cls=None, *, field_naming=msh.Naming.LOW_CAMEL, ignore_unknown=False):')
         w('    def inner(c):')
         w('        msh.update_object_options(')
-        w('            c,')
         w('            field_naming=field_naming,')
         w('            ignore_unknown=ignore_unknown,')
         w('            field_defaults=msh.FieldOptions(')
