@@ -112,7 +112,7 @@ rich==15.0.0
 textual-dev==1.8.0
 textual-speedups==0.2.1  # @omlish-venv !15 !15t
 
-snowflake-connector-python[secure-local-storage]==4.4.0  # @omlish-venv !15t
+snowflake-connector-python[secure-local-storage]==4.5.0  # @omlish-venv !15t
 # snowflake-sqlalchemy==1.7.7
 
 trino==0.337.0  # @omlish-venv !14t !14dt !15t  # orjson
