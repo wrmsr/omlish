@@ -37,7 +37,7 @@ pipdeptree==2.35.2
 astpretty==3.0.0
 
 gprof2dot==2025.4.14
-guppy3==3.1.6  # @omlish-venv !14t !14dt !15 !15t
+guppy3==3.1.7  # @omlish-venv !14t !14dt !15 !15t
 objgraph==3.6.2
 memray==1.19.3
 

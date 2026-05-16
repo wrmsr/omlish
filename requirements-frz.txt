@@ -69,7 +69,7 @@ gprof2dot==2025.4.14
 greenlet==3.5.0
 grpcio==1.80.0
 grpcio-status==1.80.0
-guppy3==3.1.6
+guppy3==3.1.7
 h11==0.16.0
 h2==4.3.0
 hf-xet==1.5.0
