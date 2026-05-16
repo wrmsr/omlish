@@ -74,14 +74,14 @@ class GzipCompression(Compression, IncrementalCompression):
 
     mtime: float | None = None
 
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return gzip.compress(
             d,
             self.level,
             **lang.opt_kw(mtime=self.mtime),
         )
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return gzip.decompress(
             d,
         )

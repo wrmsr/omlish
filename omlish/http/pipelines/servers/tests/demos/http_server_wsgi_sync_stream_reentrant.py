@@ -15,6 +15,8 @@ from ......io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from ......io.pipelines.flow.stub import StubIoPipelineFlowService
 from ......io.pipelines.flow.types import IoPipelineFlow
 from ......io.pipelines.flow.types import IoPipelineFlowMessages
+from ......lite.bytes import BYTES_LIKE_TYPES
+from ......lite.bytes import BytesLike
 from ......lite.check import check
 from .....headers import HttpHeaders
 from ....requests import IoPipelineHttpRequestBodyData
@@ -54,7 +56,7 @@ class StreamWsgiInnerHandler(IoPipelineHandler):
             self._h = h
             self._ctx = ctx
 
-        def read(self, n: int = 0) -> bytes:
+        def read(self, n: int = 0) -> BytesLike:
             if (iq := self._h._inbound_queue) is not None:  # noqa
                 if len(iq) > 0:
                     msg = iq.popleft()
@@ -108,8 +110,8 @@ class StreamWsgiInnerHandler(IoPipelineHandler):
 
         #
 
-        body: bytes
-        if isinstance(ret, bytes):
+        body: BytesLike
+        if isinstance(ret, BYTES_LIKE_TYPES):
             body = ret
         elif isinstance(ret, list):
             body = b''.join(ret)

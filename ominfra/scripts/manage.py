@@ -75,7 +75,6 @@ def __omlish_amalg__():  # noqa
             dict(path='deploy/paths/types.py', sha1='4364179744afb2344f2b44d188e37f786c955970'),
             dict(path='deploy/types.py', sha1='41b2becf7a9d009e18235a8b49cfbe0419785190'),
             dict(path='../pyremote.py', sha1='24f04ab94a0243f8912053de2a2d3c270327cce1'),
-            dict(path='../../omlish/asyncs/asyncio/channels.py', sha1='36cec6ea48887baaf536ae6301ec6ebc70f9f19b'),
             dict(path='../../omlish/asyncs/asyncio/streams.py', sha1='78a498b78b51805d3b44ba7fe8c10c575389c6a9'),
             dict(path='../../omlish/configs/types.py', sha1='f7a5584cd6eccb77d18d729796072a162e9a8790'),
             dict(path='../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
@@ -84,6 +83,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/attrops.py', sha1='ab1b299f7525e1bc21ed843347ae0f4ed9b0dbe6'),
+            dict(path='../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
@@ -112,6 +112,7 @@ def __omlish_amalg__():  # noqa
             dict(path='targets/bestpython.py', sha1='75c16ab86397a8e81017f148a2ef711567b6ab27'),
             dict(path='targets/targets.py', sha1='d07f2d30c31bad89bd4a3b44bb6a5b6c95c05888'),
             dict(path='../../omlish/argparse/parsers.py', sha1='f874eb5c45e22156b2e9a762cfb68a2311b6d1f8'),
+            dict(path='../../omlish/asyncs/asyncio/channels.py', sha1='07975e0535f23334d1fe9e0597954ac7f2c3c79d'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
@@ -235,6 +236,10 @@ TomlPos = int  # ta.TypeAlias
 
 # ../../omlish/lite/abstract.py
 T = ta.TypeVar('T')
+
+# ../../omlish/lite/bytes.py
+Bytes = ta.Union[bytes, bytearray]  # ta.TypeAlias
+BytesLike = ta.Union[Bytes, memoryview]  # ta.TypeAlias
 
 # ../../omlish/lite/cached.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
@@ -1336,49 +1341,6 @@ class PyremoteBootstrapDriver:
                 await output.drain()
             else:
                 raise TypeError(go)
-
-
-########################################
-# ../../../omlish/asyncs/asyncio/channels.py
-
-
-##
-
-
-class AsyncioBytesChannelTransport(asyncio.Transport):
-    def __init__(self, reader: asyncio.StreamReader) -> None:
-        super().__init__()
-
-        self.reader = reader
-        self.closed: asyncio.Future = asyncio.Future()
-
-    # @ta.override
-    def write(self, data: bytes) -> None:
-        self.reader.feed_data(data)
-
-    # @ta.override
-    def close(self) -> None:
-        self.reader.feed_eof()
-        if not self.closed.done():
-            self.closed.set_result(True)
-
-    # @ta.override
-    def is_closing(self) -> bool:
-        return self.closed.done()
-
-
-def asyncio_create_bytes_channel(
-        loop: ta.Any = None,
-) -> ta.Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
-    if loop is None:
-        loop = asyncio.get_running_loop()
-
-    reader = asyncio.StreamReader()
-    protocol = asyncio.StreamReaderProtocol(reader)
-    transport = AsyncioBytesChannelTransport(reader)
-    writer = asyncio.StreamWriter(transport, protocol, reader, loop)
-
-    return reader, writer
 
 
 ########################################
@@ -3230,6 +3192,61 @@ attr_ops = AttrOps[ta.Any]
 
 def attr_repr(obj: ta.Any, *attrs: str, **kwargs: ta.Any) -> str:
     return AttrOps(*attrs, **kwargs).repr(obj)
+
+
+########################################
+# ../../../omlish/lite/bytes.py
+
+
+##
+
+
+BYTES_TYPES: ta.Tuple[ta.Union[ta.Type[bytes], ta.Type[bytearray]], ...] = (
+    bytes,
+    bytearray,
+)
+
+BYTES_LIKE_TYPES: ta.Tuple[ta.Union[ta.Type[bytes], ta.Type[bytearray], ta.Type[memoryview]], ...] = (
+    *BYTES_TYPES,
+    memoryview,
+)
+
+
+##
+
+
+def bytes_like_to_bytes(bl: BytesLike, /) -> Bytes:
+    if isinstance(bl, BYTES_TYPES):
+        return bl
+
+    return memoryview_to_bytes(bl)  # type: ignore[arg-type]
+
+
+def bytes_like_to_bytes_strict(bl: BytesLike, /) -> bytes:
+    if isinstance(bl, bytes):
+        return bl
+
+    if isinstance(bl, bytearray):
+        return bytes(bl)
+
+    return memoryview_to_bytes_strict(bl)
+
+
+#
+
+
+def memoryview_to_bytes(mv: memoryview, /) -> Bytes:
+    if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+        return obj  # type: ignore[return-value]
+
+    return mv.tobytes()
+
+
+def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
+    if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+        return obj  # type: ignore[return-value]
+
+    return mv.tobytes()
 
 
 ########################################
@@ -6725,6 +6742,49 @@ class ArgparseParserClass(Abstract):
     @classmethod
     def get_parser(cls) -> argparse.ArgumentParser:
         return cls._parser
+
+
+########################################
+# ../../../omlish/asyncs/asyncio/channels.py
+
+
+##
+
+
+class AsyncioBytesChannelTransport(asyncio.Transport):
+    def __init__(self, reader: asyncio.StreamReader) -> None:
+        super().__init__()
+
+        self.reader = reader
+        self.closed: asyncio.Future = asyncio.Future()
+
+    # @ta.override
+    def write(self, data: BytesLike) -> None:
+        self.reader.feed_data(data)
+
+    # @ta.override
+    def close(self) -> None:
+        self.reader.feed_eof()
+        if not self.closed.done():
+            self.closed.set_result(True)
+
+    # @ta.override
+    def is_closing(self) -> bool:
+        return self.closed.done()
+
+
+def asyncio_create_bytes_channel(
+        loop: ta.Any = None,
+) -> ta.Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    if loop is None:
+        loop = asyncio.get_running_loop()
+
+    reader = asyncio.StreamReader()
+    protocol = asyncio.StreamReaderProtocol(reader)
+    transport = AsyncioBytesChannelTransport(reader)
+    writer = asyncio.StreamWriter(transport, protocol, reader, loop)
+
+    return reader, writer
 
 
 ########################################

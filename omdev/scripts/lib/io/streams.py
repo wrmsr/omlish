@@ -23,19 +23,19 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
-            dict(path='../types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
+            dict(path='types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
-            dict(path='direct.py', sha1='f3a90045bd7c7bddc139eaa95d30db2ef24a78c6'),
-            dict(path='scanning.py', sha1='9c8d60b56cd9fcd2eaef550b4f1459a93c48dbe9'),
-            dict(path='adapters.py', sha1='8a7421c6712bcc64e8e2685f788a324957f7d878'),
-            dict(path='linear.py', sha1='94c28f36a07625a9ee97dff9229dc868e094bf06'),
-            dict(path='segmented.py', sha1='e66235499a23229359a863fcbe62e925a91a2e05'),
+            dict(path='reading.py', sha1='94ed2afc05aebc8108a5df168477d5273cd2acbf'),
+            dict(path='utils.py', sha1='78d0ae24ddf41770289501d31542387a75859239'),
+            dict(path='direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
+            dict(path='scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
+            dict(path='adapters.py', sha1='c6fbf2e18ff040be75df7db137f14d91b57c64b4'),
+            dict(path='linear.py', sha1='aa5ac37747d153479f4be3df9327b9c96a59381b'),
+            dict(path='segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -44,18 +44,19 @@ def __omlish_amalg__():  # noqa
 ########################################
 
 
-# ../types.py
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
-
 # ../../lite/abstract.py
 T = ta.TypeVar('T')
+
+# ../../lite/bytes.py
+Bytes = ta.Union[bytes, bytearray]  # ta.TypeAlias
+BytesLike = ta.Union[Bytes, memoryview]  # ta.TypeAlias
 
 # utils.py
 CanByteStreamBuffer = ta.Union[BytesLike, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # adapters.py
-BytesOrAwaitableBytes = ta.TypeVar('BytesOrAwaitableBytes', bound=ta.Union[bytes, ta.Awaitable[bytes]])
-BytesOrAwaitableBytes_co = ta.TypeVar('BytesOrAwaitableBytes_co', bound=ta.Union[bytes, ta.Awaitable[bytes]], covariant=True)  # noqa
+BytesOrAwaitableBytes = ta.TypeVar('BytesOrAwaitableBytes', bound=ta.Union[Bytes, ta.Awaitable[Bytes]])
+BytesOrAwaitableBytes_co = ta.TypeVar('BytesOrAwaitableBytes_co', bound=ta.Union[Bytes, ta.Awaitable[Bytes]], covariant=True)  # noqa
 BoolOrAwaitableBool = ta.TypeVar('BoolOrAwaitableBool', bound=ta.Union[bool, ta.Awaitable[bool]])
 BoolOrAwaitableBool_co = ta.TypeVar('BoolOrAwaitableBool_co', bound=ta.Union[bool, ta.Awaitable[bool]], covariant=True)
 
@@ -122,13 +123,6 @@ class OutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
 
 class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
     """commit() was called without a preceding reserve()."""
-
-
-########################################
-# ../../types.py
-
-
-##
 
 
 ########################################
@@ -279,6 +273,61 @@ class Abstract:
 
 
 ########################################
+# ../../../lite/bytes.py
+
+
+##
+
+
+BYTES_TYPES: ta.Tuple[ta.Union[ta.Type[bytes], ta.Type[bytearray]], ...] = (
+    bytes,
+    bytearray,
+)
+
+BYTES_LIKE_TYPES: ta.Tuple[ta.Union[ta.Type[bytes], ta.Type[bytearray], ta.Type[memoryview]], ...] = (
+    *BYTES_TYPES,
+    memoryview,
+)
+
+
+##
+
+
+def bytes_like_to_bytes(bl: BytesLike, /) -> Bytes:
+    if isinstance(bl, BYTES_TYPES):
+        return bl
+
+    return memoryview_to_bytes(bl)  # type: ignore[arg-type]
+
+
+def bytes_like_to_bytes_strict(bl: BytesLike, /) -> bytes:
+    if isinstance(bl, bytes):
+        return bl
+
+    if isinstance(bl, bytearray):
+        return bytes(bl)
+
+    return memoryview_to_bytes_strict(bl)
+
+
+#
+
+
+def memoryview_to_bytes(mv: memoryview, /) -> Bytes:
+    if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+        return obj  # type: ignore[return-value]
+
+    return mv.tobytes()
+
+
+def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
+    if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+        return obj  # type: ignore[return-value]
+
+    return mv.tobytes()
+
+
+########################################
 # ../../../lite/namespaces.py
 
 
@@ -371,7 +420,7 @@ class ByteStreamBufferView(ByteStreamBufferLike, Abstract):
     """
 
     @abc.abstractmethod
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         """
         Materialize this view as a contiguous `bytes` object (copying).
 
@@ -1039,7 +1088,7 @@ class ByteStreamBufferReader:
             raise NeedMoreDataByteStreamBufferError
         return self._buf.split_to(n)
 
-    def read_bytes(self, n: int, /) -> bytes:
+    def read_bytes(self, n: int, /) -> Bytes:
         """
         Consume exactly `n` bytes and return them as a contiguous `bytes` object (copy boundary).
 
@@ -1058,18 +1107,8 @@ class ByteStreamBufferReader:
 
 
 class ByteStreamBuffers(NamespaceClass):
-    _BYTES_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        bytes,
-        bytearray,
-    )
-
-    _BYTES_LIKE_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        *_BYTES_TYPES,
-        memoryview,
-    )
-
     _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        *_BYTES_LIKE_TYPES,
+        *BYTES_LIKE_TYPES,
         ByteStreamBufferLike,
     )
 
@@ -1111,7 +1150,7 @@ class ByteStreamBuffers(NamespaceClass):
             /, *,
             strict: ta.Literal[False] = False,
             or_none: ta.Literal[True],
-    ) -> ta.Union[bytes, bytearray, None]:
+    ) -> ta.Optional[Bytes]:
         ...
 
     @classmethod
@@ -1122,7 +1161,7 @@ class ByteStreamBuffers(NamespaceClass):
             /, *,
             strict: ta.Literal[False] = False,
             or_none: ta.Literal[False] = False,
-    ) -> ta.Union[bytes, bytearray]:
+    ) -> Bytes:
         ...
 
     @classmethod
@@ -1146,14 +1185,14 @@ class ByteStreamBuffers(NamespaceClass):
                 return bytes(obj)
 
             elif isinstance(obj, memoryview):
-                return cls.memoryview_to_bytes_strict(obj)
+                return memoryview_to_bytes_strict(obj)
 
         else:
-            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES):
+            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES):
                 return obj
 
             elif isinstance(obj, memoryview):
-                return cls.memoryview_to_bytes(obj)
+                return memoryview_to_bytes(obj)
 
         if isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
@@ -1221,22 +1260,6 @@ class ByteStreamBuffers(NamespaceClass):
             out.append(buf.split_to(len(buf)))
         return out
 
-    #
-
-    @classmethod
-    def memoryview_to_bytes(cls, mv: memoryview, /) -> ta.Union[bytes, bytearray]:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
-
-    @staticmethod
-    def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
-
 
 ########################################
 # ../direct.py
@@ -1273,7 +1296,7 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        self._b_ = b = ByteStreamBuffers.memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b = memoryview_to_bytes(self._mv_)  # noqa
         return b
 
 
@@ -1287,7 +1310,7 @@ class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBuffe
     def segments(self) -> ta.Sequence[memoryview]:
         return (self._mv(),) if len(self._data) else ()
 
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         if type(b := self._b()) is bytes:
             return b
         return bytes(b)
@@ -1618,7 +1641,7 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
     def read1(self, n: int = -1, /) -> BytesOrAwaitableBytes:
         raise NotImplementedError
 
-    def _inner_read(self, n: int) -> ta.Union[bytes, ta.Literal['fill']]:
+    def _inner_read(self, n: int) -> ta.Union[Bytes, ta.Literal['fill']]:
         buf = self._buf
         if (ln := len(buf)) >= n:
             return buf.split_to(n).tobytes()
@@ -1646,15 +1669,15 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
 #
 
 
-class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[bytes, bool]):
+class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[Bytes, bool]):
     @classmethod
     def wrap(
             cls,
-            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[bytes],
+            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[Bytes],
             buf: MutableByteStreamBuffer,
             *,
             policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
-    ) -> 'BaseByteStreamBufferBytesReaderAdapter[bytes, bool]':
+    ) -> 'BaseByteStreamBufferBytesReaderAdapter[Bytes, bool]':
         if not hasattr(obj, 'read1'):
             raise TypeError(obj)
 
@@ -1687,7 +1710,7 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
             fill=fill,
         )
 
-    def read1(self, n: int = -1, /) -> bytes:
+    def read1(self, n: int = -1, /) -> Bytes:
         if not n:
             return b''
 
@@ -1704,7 +1727,7 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
 
         return buf.split_to(min(n, ln) if n > 0 else ln).tobytes()
 
-    def read(self, n: int = -1, /) -> bytes:
+    def read(self, n: int = -1, /) -> Bytes:
         if n < 0:
             if (fill := self._fill) is not None:
                 while fill(-1, False):
@@ -1735,15 +1758,15 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
 #
 
 
-class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[bytes], ta.Awaitable[bool]]):  # noqa
+class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[Bytes], ta.Awaitable[bool]]):  # noqa
     @classmethod
     def wrap(
             cls,
-            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[ta.Awaitable[bytes]],
+            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[ta.Awaitable[Bytes]],
             buf: MutableByteStreamBuffer,
             *,
             policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
-    ) -> 'BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[bytes], ta.Awaitable[bool]]':
+    ) -> 'BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[Bytes], ta.Awaitable[bool]]':
         if not hasattr(obj, 'read1'):
             raise TypeError(obj)
 
@@ -1776,7 +1799,7 @@ class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAda
             fill=fill,
         )
 
-    async def read1(self, n: int = -1, /) -> bytes:
+    async def read1(self, n: int = -1, /) -> Bytes:
         if not n:
             return b''
 
@@ -1793,7 +1816,7 @@ class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAda
 
         return buf.split_to(min(n, ln) if n > 0 else ln).tobytes()
 
-    async def read(self, n: int = -1, /) -> bytes:
+    async def read(self, n: int = -1, /) -> Bytes:
         if n < 0:
             if (fill := self._fill) is not None:
                 while await fill(-1, False):
@@ -1853,8 +1876,8 @@ class ByteStreamBufferWriterAdapter:
             return total
 
         if isinstance(data, ByteStreamBufferView):
-            b = data.tobytes()
-            return ta.cast(int, f.write(b))
+            b2 = data.tobytes()
+            return ta.cast(int, f.write(b2))
 
         raise TypeError(data)
 
@@ -2093,7 +2116,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
         elif isinstance(data, bytearray):
             data = bytes(data)
 
@@ -2176,7 +2199,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 
         # Copy out the split prefix to keep the view stable even if the underlying buffer compacts.
-        b = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
+        b = memoryview_to_bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
         self._rpos += n
 
         # If we consumed everything, reset best-effort; otherwise allow compaction policy to handle later.
@@ -2341,12 +2364,12 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
     def segments(self) -> ta.Sequence[memoryview]:
         return self._segs
 
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         if not self._segs:
             return b''
         if len(self._segs) == 1:
-            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
-        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
+            return memoryview_to_bytes(self._segs[0])
+        return b''.join(memoryview_to_bytes(mv) for mv in self._segs)
 
 
 class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
@@ -2387,7 +2410,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     ) -> None:
         super().__init__()
 
-        self._segs: ta.List[ta.Union[bytes, bytearray]] = []
+        self._segs: ta.List[Bytes] = []
 
         self._max_size = None if max_size is None else int(max_size)
 
@@ -2511,7 +2534,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
                 raise RuntimeError('active not at tail')
-            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
+            self._segs[-1] = memoryview_to_bytes(memoryview(a)[:used])
 
         else:
             # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
@@ -2521,7 +2544,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
-                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
+                self._segs[-1] = memoryview_to_bytes(memoryview(a)[:used])
 
         self._active = None
         self._active_used = 0
@@ -2530,7 +2553,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
         # elif isinstance(data, bytearray):
         #     pass
         # else:
@@ -2569,7 +2592,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
 
         dl = len(data)
 
@@ -2583,7 +2606,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
                     raise OutstandingReserveByteStreamBufferError('outstanding reserve')
                 rl = self._active_readable_len()
                 if self._head_off < rl:
-                    self._segs[0] = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
+                    self._segs[0] = memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
                 else:
                     self._segs.pop(0)
                 self._active = None
@@ -2667,7 +2690,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._segs.append(b)
             self._len += n
         else:
-            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
+            bb = memoryview_to_bytes(memoryview(b)[:n])
             self._segs.append(bb)
             self._len += n
 
@@ -2771,7 +2794,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         out = bytearray(n)
         w = 0
 
-        new_segs: ta.List[ta.Union[bytes, bytearray]] = []
+        new_segs: ta.List[Bytes] = []
 
         seg_i = 0
         while w < n and seg_i < len(self._segs):
@@ -2816,7 +2839,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     def _seg_readable_slice(
             self,
             si: int,
-            s: ta.Union[bytes, bytearray],
+            s: Bytes,
             last_i: int,
     ) -> ta.Tuple[int, int]:
         """
@@ -2888,7 +2911,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         limit = end - m
 
-        tail = b''
+        tail: Bytes = b''
         tail_gstart = 0
 
         gpos = 0
@@ -2955,7 +2978,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         best = -1
 
         seg_ge = self._len
-        prev_s: ta.Optional[ta.Union[bytes, bytearray]] = None
+        prev_s: ta.Optional[Bytes] = None
         prev_off = 0
         prev_seg_len = 0
 

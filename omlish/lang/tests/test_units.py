@@ -10,7 +10,7 @@ from ..units import NS  # noqa: F401
 from ..units import TB  # noqa: F401
 from ..units import US  # noqa: F401
 from ..units import B  # noqa: F401
-from ..units import Bytes  # noqa: F401
+from ..units import BytesUnit  # noqa: F401
 from ..units import D  # noqa: F401
 from ..units import GiB  # noqa: F401
 from ..units import H  # noqa: F401
@@ -18,7 +18,7 @@ from ..units import KiB  # noqa: F401
 from ..units import M  # noqa: F401
 from ..units import MiB  # noqa: F401
 from ..units import S  # noqa: F401
-from ..units import Seconds  # noqa: F401
+from ..units import SecondsUnit  # noqa: F401
 from ..units import TiB  # noqa: F401
 
 
@@ -41,19 +41,19 @@ def test_bytes_constants() -> None:
 @pytest.mark.parametrize(
     ('val', 'expected'),
     [
-        (Bytes(0), '0 B'),
-        (Bytes(1), '1 B'),
-        (Bytes(999), '999 B'),
-        (Bytes(1000), '1 KB'),
-        (Bytes(1000 * 1000), '1 MB'),
-        (Bytes(1024), '1 KiB'),
-        (Bytes(16 * 1024), '16 KiB'),
-        (Bytes(-16 * 1024), '-16 KiB'),
-        (Bytes(2 * 1024**3), '2 GiB'),
-        (Bytes(3 * 1000**3), '3 GB'),
+        (BytesUnit(0), '0 B'),
+        (BytesUnit(1), '1 B'),
+        (BytesUnit(999), '999 B'),
+        (BytesUnit(1000), '1 KB'),
+        (BytesUnit(1000 * 1000), '1 MB'),
+        (BytesUnit(1024), '1 KiB'),
+        (BytesUnit(16 * 1024), '16 KiB'),
+        (BytesUnit(-16 * 1024), '-16 KiB'),
+        (BytesUnit(2 * 1024 ** 3), '2 GiB'),
+        (BytesUnit(3 * 1000 ** 3), '3 GB'),
     ],
 )
-def test_bytes_str_pretty(val: Bytes, expected: str) -> None:
+def test_bytes_str_pretty(val: BytesUnit, expected: str) -> None:
     assert str(val) == expected
 
 
@@ -71,8 +71,8 @@ def test_bytes_str_pretty(val: Bytes, expected: str) -> None:
     ],
 )
 def test_bytes_parse_basic(s: str, expected: int) -> None:
-    b = Bytes.parse(s)
-    assert isinstance(b, Bytes)
+    b = BytesUnit.parse(s)
+    assert isinstance(b, BytesUnit)
     assert int(b) == expected
 
 
@@ -93,7 +93,7 @@ def test_bytes_parse_basic(s: str, expected: int) -> None:
 )
 def test_bytes_parse_rejects_invalid(bad: str) -> None:
     with pytest.raises(ValueError):  # noqa
-        Bytes.parse(bad)
+        BytesUnit.parse(bad)
 
 
 @pytest.mark.parametrize(
@@ -113,36 +113,36 @@ def test_bytes_parse_rejects_invalid(bad: str) -> None:
     ],
 )
 def test_bytes_str_parse_roundtrip(n: int) -> None:
-    b = Bytes(n)
-    assert Bytes.parse(str(b)) == b
+    b = BytesUnit(n)
+    assert BytesUnit.parse(str(b)) == b
 
 
 def test_bytes_add_sub_with_bytes_and_exact_int() -> None:
-    assert isinstance(1 * KiB + 2 * KiB, Bytes)
+    assert isinstance(1 * KiB + 2 * KiB, BytesUnit)
     assert 1 * KiB + 2 * KiB == 3 * KiB
 
-    assert 1 * KiB + 5 == Bytes(1024 + 5)
-    assert 5 + 1 * KiB == Bytes(5 + 1024)
+    assert 1 * KiB + 5 == BytesUnit(1024 + 5)
+    assert 5 + 1 * KiB == BytesUnit(5 + 1024)
 
-    assert 1 * KiB - 24 == Bytes(1024 - 24)
-    assert 24 - 1 * KiB == Bytes(24 - 1024)
+    assert 1 * KiB - 24 == BytesUnit(1024 - 24)
+    assert 24 - 1 * KiB == BytesUnit(24 - 1024)
 
     assert (2 * KiB - 1 * KiB) == 1 * KiB
-    assert isinstance(2 * KiB - 1 * KiB, Bytes)
+    assert isinstance(2 * KiB - 1 * KiB, BytesUnit)
 
 
 @pytest.mark.parametrize('rhs', [True, False, 1.0, 1.5, object()])
 def test_bytes_add_rejects_non_exact_int_and_non_bytes(rhs: object) -> None:
     with pytest.raises(TypeError):
-        _ = Bytes(1) + rhs
+        _ = BytesUnit(1) + rhs
     with pytest.raises(TypeError):
-        _ = rhs + Bytes(1)
+        _ = rhs + BytesUnit(1)
 
 
 def test_bytes_mul_exact_int_only() -> None:
-    assert 3 * KiB == Bytes(3 * 1024)
-    assert KiB * 3 == Bytes(3 * 1024)
-    assert isinstance(3 * KiB, Bytes)
+    assert 3 * KiB == BytesUnit(3 * 1024)
+    assert KiB * 3 == BytesUnit(3 * 1024)
+    assert isinstance(3 * KiB, BytesUnit)
 
     with pytest.raises(TypeError):
         _ = KiB * 1.0
@@ -151,20 +151,20 @@ def test_bytes_mul_exact_int_only() -> None:
     with pytest.raises(TypeError):
         _ = KiB * True
     with pytest.raises(TypeError):
-        _ = KiB * Bytes(2)
+        _ = KiB * BytesUnit(2)
 
 
 def test_bytes_div_exact_int_only_and_exactness() -> None:
     assert (16 * KiB) / 2 == 8 * KiB
     assert (16 * KiB) // 2 == 8 * KiB
-    assert isinstance((16 * KiB) / 2, Bytes)
+    assert isinstance((16 * KiB) / 2, BytesUnit)
 
     with pytest.raises(ZeroDivisionError):
         _ = KiB / 0
 
     # non-exact division rejected
     with pytest.raises(ValueError):  # noqa
-        _ = Bytes(10) / 3
+        _ = BytesUnit(10) / 3
 
     # wrong rhs types rejected
     with pytest.raises(TypeError):
@@ -172,7 +172,7 @@ def test_bytes_div_exact_int_only_and_exactness() -> None:
     with pytest.raises(TypeError):
         _ = KiB / True
     with pytest.raises(TypeError):
-        _ = KiB / Bytes(2)
+        _ = KiB / BytesUnit(2)
 
 
 def test_bytes_pow_rejected() -> None:
@@ -196,21 +196,21 @@ def test_seconds_constants() -> None:
 @pytest.mark.parametrize(
     ('val', 'expected'),
     [
-        (Seconds(0.0), '0 s'),
-        (Seconds(1.0), '1 s'),
-        (Seconds(1.25), '1.25 s'),
-        (Seconds(0.001), '1 ms'),
-        (Seconds(0.000_001), '1 us'),
-        (Seconds(0.000_000_001), '1 ns'),
-        (Seconds(60.0), '1 m'),
-        (Seconds(120.0), '2 m'),
-        (Seconds(3600.0), '1 h'),
-        (Seconds(-3600.0), '-1 h'),
-        (Seconds(86400.0), '1 d'),
-        (Seconds(90.0), '1.5 m'),
+        (SecondsUnit(0.0), '0 s'),
+        (SecondsUnit(1.0), '1 s'),
+        (SecondsUnit(1.25), '1.25 s'),
+        (SecondsUnit(0.001), '1 ms'),
+        (SecondsUnit(0.000_001), '1 us'),
+        (SecondsUnit(0.000_000_001), '1 ns'),
+        (SecondsUnit(60.0), '1 m'),
+        (SecondsUnit(120.0), '2 m'),
+        (SecondsUnit(3600.0), '1 h'),
+        (SecondsUnit(-3600.0), '-1 h'),
+        (SecondsUnit(86400.0), '1 d'),
+        (SecondsUnit(90.0), '1.5 m'),
     ],
 )
-def test_seconds_str_pretty(val: Seconds, expected: str) -> None:
+def test_seconds_str_pretty(val: SecondsUnit, expected: str) -> None:
     assert str(val) == expected
 
 
@@ -233,8 +233,8 @@ def test_seconds_str_pretty(val: Seconds, expected: str) -> None:
     ],
 )
 def test_seconds_parse_basic(s: str, expected: float) -> None:
-    t = Seconds.parse(s)
-    assert isinstance(t, Seconds)
+    t = SecondsUnit.parse(s)
+    assert isinstance(t, SecondsUnit)
     assert float(t) == pytest.approx(expected)
 
 
@@ -257,7 +257,7 @@ def test_seconds_parse_basic(s: str, expected: float) -> None:
 )
 def test_seconds_parse_rejects_invalid(bad: str) -> None:
     with pytest.raises(ValueError):  # noqa
-        Seconds.parse(bad)
+        SecondsUnit.parse(bad)
 
 
 @pytest.mark.parametrize(
@@ -277,27 +277,27 @@ def test_seconds_parse_rejects_invalid(bad: str) -> None:
     ],
 )
 def test_seconds_str_parse_roundtrip_reasonable(x: float) -> None:
-    t = Seconds(x)
+    t = SecondsUnit(x)
     # We compare approximately because float formatting/parse may not be
     # bit-for-bit for arbitrary values, but should be stable for "normal" ones.
-    assert float(Seconds.parse(str(t))) == pytest.approx(float(t), rel=0, abs=1e-11)
+    assert float(SecondsUnit.parse(str(t))) == pytest.approx(float(t), rel=0, abs=1e-11)
 
 
 def test_seconds_add_sub_with_seconds_and_exact_number() -> None:
-    assert isinstance(1.5 * M + 30 * S, Seconds)
-    assert 1.5 * M + 30 * S == Seconds(120.0)
+    assert isinstance(1.5 * M + 30 * S, SecondsUnit)
+    assert 1.5 * M + 30 * S == SecondsUnit(120.0)
 
-    assert 5 * S + 2 == Seconds(7.0)
-    assert 2 + 5 * S == Seconds(7.0)
+    assert 5 * S + 2 == SecondsUnit(7.0)
+    assert 2 + 5 * S == SecondsUnit(7.0)
 
-    assert 5 * S + 2.5 == Seconds(7.5)
-    assert 2.5 + 5 * S == Seconds(7.5)
+    assert 5 * S + 2.5 == SecondsUnit(7.5)
+    assert 2.5 + 5 * S == SecondsUnit(7.5)
 
-    assert 10 * S - 2 == Seconds(8.0)
-    assert 2 - 10 * S == Seconds(-8.0)
+    assert 10 * S - 2 == SecondsUnit(8.0)
+    assert 2 - 10 * S == SecondsUnit(-8.0)
 
 
-@pytest.mark.parametrize('rhs', [True, False, object(), Bytes(1), '1'])
+@pytest.mark.parametrize('rhs', [True, False, object(), BytesUnit(1), '1'])
 def test_seconds_add_rejects_non_exact_number_and_non_seconds(rhs: object) -> None:
     with pytest.raises(TypeError):
         _ = S + rhs
@@ -306,11 +306,11 @@ def test_seconds_add_rejects_non_exact_number_and_non_seconds(rhs: object) -> No
 
 
 def test_seconds_mul_div_exact_number_only() -> None:
-    assert 2 * M == Seconds(120.0)
-    assert M * 2 == Seconds(120.0)
-    assert M * 2.5 == Seconds(150.0)
-    assert 2.5 * M == Seconds(150.0)
-    assert isinstance(2.5 * M, Seconds)
+    assert 2 * M == SecondsUnit(120.0)
+    assert M * 2 == SecondsUnit(120.0)
+    assert M * 2.5 == SecondsUnit(150.0)
+    assert 2.5 * M == SecondsUnit(150.0)
+    assert isinstance(2.5 * M, SecondsUnit)
 
     assert (2 * M) / 2 == M
     assert (2 * M) / 2.0 == M
@@ -338,8 +338,8 @@ def test_seconds_timedelta_roundtrip() -> None:
     assert isinstance(td, dt.timedelta)
     assert td == dt.timedelta(seconds=90)
 
-    t2 = Seconds.from_timedelta(td)
-    assert isinstance(t2, Seconds)
+    t2 = SecondsUnit.from_timedelta(td)
+    assert isinstance(t2, SecondsUnit)
     assert t2 == 90 * S
 
 
@@ -349,7 +349,7 @@ def test_seconds_timedelta_fractional() -> None:
     assert td == dt.timedelta(seconds=1.2345)
 
     # timedelta stores microsecond resolution; total_seconds reflects that.
-    t2 = Seconds.from_timedelta(td)
+    t2 = SecondsUnit.from_timedelta(td)
     assert float(t2) == pytest.approx(1.2345, rel=0, abs=1e-6)
 
 

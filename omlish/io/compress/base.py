@@ -10,11 +10,11 @@ from ..coro import BytesSteppedReaderCoro
 
 class Compression(lang.Abstract):
     @abc.abstractmethod
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         raise NotImplementedError
 
 

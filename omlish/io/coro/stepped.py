@@ -23,17 +23,17 @@ OT = ta.TypeVar('OT')
 SteppedCoro: ta.TypeAlias = ta.Generator[O | None, I | None, R]
 
 # Conventionally, these are sent and themselves yield an empty value to signify termination.
-BytesSteppedCoro: ta.TypeAlias = SteppedCoro[bytes, bytes, R]
+BytesSteppedCoro: ta.TypeAlias = SteppedCoro[lang.Bytes, lang.Bytes, R]
 StrSteppedCoro: ta.TypeAlias = SteppedCoro[str, str, R]
 
-BytesToStrSteppedCoro: ta.TypeAlias = SteppedCoro[str, bytes, R]
-StrToBytesSteppedCoro: ta.TypeAlias = SteppedCoro[bytes, str, R]
+BytesToStrSteppedCoro: ta.TypeAlias = SteppedCoro[str, lang.Bytes, R]
+StrToBytesSteppedCoro: ta.TypeAlias = SteppedCoro[lang.Bytes, str, R]
 
 
 # Stepped reader generators emit either an int or None to request input, or emit some other kind of output.
 SteppedReaderCoro: ta.TypeAlias = ta.Generator[int | None | O, I | None, R]
 
-BytesSteppedReaderCoro: ta.TypeAlias = SteppedReaderCoro[bytes, bytes, R]
+BytesSteppedReaderCoro: ta.TypeAlias = SteppedReaderCoro[lang.Bytes, lang.Bytes, R]
 StrSteppedReaderCoro: ta.TypeAlias = SteppedReaderCoro[str, str, R]
 
 
@@ -88,7 +88,7 @@ def flatmap_stepped_coro(
 ##
 
 
-def _join_bytes(l: ta.Sequence[bytes]) -> bytes:
+def _join_bytes(l: ta.Sequence[lang.Bytes]) -> lang.Bytes:
     if not l:
         return b''
     elif len(l) == 1:
@@ -126,7 +126,7 @@ def read_into_bytes_stepped_coro(
         f: ta.IO,
         *,
         read_size: int = DEFAULT_BUFFER_SIZE,
-) -> ta.Iterator[bytes]:
+) -> ta.Iterator[lang.Bytes]:
     yield from lang.genmap(  # type: ignore[misc]
         joined_bytes_stepped_coro(g),
         lang.readiter(f, read_size),
@@ -154,7 +154,7 @@ def buffer_bytes_stepped_reader_coro(
         *,
         buffer_chunk_size: int = 16 * 1024,
 ) -> BytesSteppedCoro:
-    i: bytes | None
+    i: lang.Bytes | None
     o = g.send(None)
     buf = SegmentedByteStreamBuffer(chunk_size=buffer_chunk_size)
     eof = False
@@ -164,7 +164,7 @@ def buffer_bytes_stepped_reader_coro(
             raise EOFError
 
         if not len(buf):
-            if (more := check.isinstance((yield None), bytes)):
+            if (more := check.isinstance((yield None), lang.BYTES_TYPES)):
                 buf.write(more)
             else:
                 eof = True
@@ -174,7 +174,7 @@ def buffer_bytes_stepped_reader_coro(
 
         elif isinstance(o, int):
             while len(buf) < o:
-                more = check.isinstance((yield None), bytes)
+                more = check.isinstance((yield None), lang.BYTES_TYPES)
                 if not more:
                     raise EOFError
                 buf.write(more)
@@ -187,7 +187,7 @@ def buffer_bytes_stepped_reader_coro(
         while True:
             o = g.send(i)
             i = None
-            if isinstance(o, bytes):
+            if isinstance(o, lang.BYTES_TYPES):
                 check.none((yield o))
                 if not o:
                     return
@@ -199,17 +199,17 @@ def buffer_bytes_stepped_reader_coro(
 
 
 @lang.autostart
-def iterable_bytes_stepped_coro(g: BytesSteppedCoro) -> ta.Generator[ta.Iterator[bytes], bytes]:
-    i: bytes | None = check.isinstance((yield None), bytes)  # type: ignore[misc]
+def iterable_bytes_stepped_coro(g: BytesSteppedCoro) -> ta.Generator[ta.Iterator[lang.Bytes], lang.Bytes]:
+    i: lang.Bytes | None = check.isinstance((yield None), lang.BYTES_TYPES)  # type: ignore[misc]
     eof = False
 
-    def f() -> ta.Iterator[bytes]:
+    def f() -> ta.Iterator[lang.Bytes]:
         nonlocal i
         while True:
             o = g.send(i)
             i = None
 
-            if isinstance(o, bytes):
+            if isinstance(o, lang.BYTES_TYPES):
                 yield o
                 if not o:
                     nonlocal eof

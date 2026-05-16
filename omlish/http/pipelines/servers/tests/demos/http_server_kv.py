@@ -10,6 +10,7 @@ from ......io.pipelines.core import IoPipelineHandlerContext
 from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 from ......io.pipelines.flow.stub import StubIoPipelineFlowService
 from ......io.streams.utils import ByteStreamBuffers
+from ......lite.bytes import Bytes
 from ......logs.modules import get_module_loggers
 from ......logs.std.standard import configure_standard_logging
 from ....requests import FullIoPipelineHttpRequest
@@ -68,6 +69,8 @@ class KvStoreHandler(IoPipelineHandler):
         ctx.feed_out(aw)
 
         #
+
+        b: Bytes
 
         if method == 'GET':
             if key not in self._items:

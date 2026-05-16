@@ -22,13 +22,13 @@ class ZstdCompression(Compression):
 
     # max_output_size: int = 0
 
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return zstd.compress(
             d,
             **(dict(level=self.level) if self.level is not None else {}),  # type: ignore[arg-type]
         )
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return zstd.decompress(
             d,
             # max_output_size=self.max_output_size,

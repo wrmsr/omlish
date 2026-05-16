@@ -2,7 +2,8 @@
 # @omlish-lite
 import typing as ta
 
-from ..types import BytesLike
+from ...lite.bytes import BytesLike
+from ...lite.bytes import memoryview_to_bytes
 from .base import BaseByteStreamBufferLike
 from .direct import _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 from .direct import DirectByteStreamBufferView
@@ -11,7 +12,6 @@ from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
-from .utils import ByteStreamBuffers
 
 
 ##
@@ -98,7 +98,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
         elif isinstance(data, bytearray):
             data = bytes(data)
 
@@ -181,7 +181,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 
         # Copy out the split prefix to keep the view stable even if the underlying buffer compacts.
-        b = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
+        b = memoryview_to_bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
         self._rpos += n
 
         # If we consumed everything, reset best-effort; otherwise allow compaction policy to handle later.

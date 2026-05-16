@@ -14,8 +14,9 @@ from ......io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from ......io.pipelines.flow.stub import StubIoPipelineFlowService
 from ......io.pipelines.flow.types import IoPipelineFlow
 from ......io.pipelines.flow.types import IoPipelineFlowMessages
-from ......io.types import BytesLike
 from ......lite.abstract import Abstract
+from ......lite.bytes import BYTES_LIKE_TYPES
+from ......lite.bytes import BytesLike
 from ......lite.check import check
 from ......logs.modules import get_module_logger
 from ......logs.std.standard import configure_standard_logging
@@ -192,7 +193,7 @@ class WsgiConnHandler:
 
             if isinstance(ret, list):
                 ret = b''.join(ret)
-            if isinstance(ret, bytes):
+            if isinstance(ret, BYTES_LIKE_TYPES):
                 self._send_response_full(head, ret)
             elif isinstance(ret, ta.Iterable):
                 self._send_response_stream(head, ret)
@@ -216,7 +217,7 @@ class WsgiConnHandler:
 
                 self._o = o
 
-            def read(self, n: int = 0) -> bytes:
+            def read(self, n: int = 0) -> BytesLike:
                 while (out := self._o._o._drv.next()) is not None:  # noqa
                     if isinstance(out, WsgiFeedbackHandler.Envelope):
                         out = out.msg

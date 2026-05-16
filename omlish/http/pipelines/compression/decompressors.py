@@ -10,8 +10,8 @@ from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.flow.types import IoPipelineFlow
 from ....io.pipelines.flow.types import IoPipelineFlowMessages
 from ....io.streams.utils import ByteStreamBuffers
-from ....io.types import BytesLike
 from ....lite.abstract import Abstract
+from ....lite.bytes import BytesLike
 from ..objects import IoPipelineHttpMessageBodyData
 from ..objects import IoPipelineHttpMessageEnd
 from ..objects import IoPipelineHttpMessageHead

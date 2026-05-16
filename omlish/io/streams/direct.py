@@ -3,11 +3,12 @@
 import typing as ta
 
 from ...lite.abstract import Abstract
-from ..types import BytesLike
+from ...lite.bytes import Bytes
+from ...lite.bytes import BytesLike
+from ...lite.bytes import memoryview_to_bytes
 from .base import BaseByteStreamBufferLike
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferView
-from .utils import ByteStreamBuffers
 
 
 ##
@@ -41,7 +42,7 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        self._b_ = b = ByteStreamBuffers.memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b = memoryview_to_bytes(self._mv_)  # noqa
         return b
 
 
@@ -55,7 +56,7 @@ class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBuffe
     def segments(self) -> ta.Sequence[memoryview]:
         return (self._mv(),) if len(self._data) else ()
 
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         if type(b := self._b()) is bytes:
             return b
         return bytes(b)

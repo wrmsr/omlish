@@ -44,6 +44,7 @@ import io
 import typing as ta
 import urllib.parse
 
+from omlish.lite.bytes import Bytes
 from omlish.lite.check import check
 
 from ..io import CoroHttpIo
@@ -151,7 +152,7 @@ class CoroHttpClientConnection:
         self._default_port = default_port
 
         self._connected = False
-        self._buffer: ta.List[bytes] = []
+        self._buffer: ta.List[Bytes] = []
         self._response: ta.Optional[CoroHttpClientResponse] = None
         self._state = self._State.IDLE
         self._method: ta.Optional[str] = None
@@ -159,7 +160,7 @@ class CoroHttpClientConnection:
         self._tunnel_host: ta.Optional[str] = None
         self._tunnel_port: ta.Optional[int] = None
         self._tunnel_headers: ta.Dict[str, str] = {}
-        self._raw_proxy_headers: ta.Optional[ta.Sequence[bytes]] = None
+        self._raw_proxy_headers: ta.Optional[ta.Sequence[Bytes]] = None
 
         (self._host, self._port) = self._get_hostport(host, port)
 
@@ -192,7 +193,7 @@ class CoroHttpClientConnection:
 
         return (host, port)
 
-    def _wrap_ipv6(self, ip: bytes) -> bytes:
+    def _wrap_ipv6(self, ip: Bytes) -> Bytes:
         if b':' in ip and ip[0] != b'['[0]:
             return b'[' + ip + b']'
         return ip
@@ -236,7 +237,7 @@ class CoroHttpClientConnection:
             encoded_host = self._tunnel_host.encode('idna').decode('ascii')
             self._tunnel_headers['Host'] = f'{encoded_host}:{self._tunnel_port:d}'
 
-    def _tunnel(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
+    def _tunnel(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], None]:
         connect = b'CONNECT %s:%d %s\r\n' % (
             self._wrap_ipv6(check.not_none(self._tunnel_host).encode('idna')),
             check.not_none(self._tunnel_port),
@@ -303,7 +304,7 @@ class CoroHttpClientConnection:
 
     #
 
-    def close(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
+    def close(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], None]:
         """Close the connection to the HTTP server."""
 
         self._state = self._State.IDLE
@@ -327,7 +328,7 @@ class CoroHttpClientConnection:
 
         return isinstance(stream, io.TextIOBase)
 
-    def send(self, data: ta.Any) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
+    def send(self, data: ta.Any) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], None]:
         """
         Send 'data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
         that supports a .read() method, or an iterable object.
@@ -359,7 +360,7 @@ class CoroHttpClientConnection:
         else:
             raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
 
-    def _output(self, s: bytes) -> None:
+    def _output(self, s: Bytes) -> None:
         """
         Add a line of output to the current request buffer.
 
@@ -368,7 +369,7 @@ class CoroHttpClientConnection:
 
         self._buffer.append(s)
 
-    def _read_readable(self, readable: ta.Union[ta.IO, ta.TextIO]) -> ta.Iterator[bytes]:
+    def _read_readable(self, readable: ta.Union[ta.IO, ta.TextIO]) -> ta.Iterator[Bytes]:
         while data := readable.read(self._block_size):
             if isinstance(data, str):
                 yield data.encode('iso-8859-1')
@@ -379,7 +380,7 @@ class CoroHttpClientConnection:
             self,
             message_body: ta.Optional[ta.Any] = None,
             encode_chunked: bool = False,
-    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], None]:
         """
         Send the currently buffered request and clear the buffer.
 
@@ -391,7 +392,7 @@ class CoroHttpClientConnection:
         del self._buffer[:]
         yield from self.send(msg)
 
-        chunks: ta.Iterable[bytes]
+        chunks: ta.Iterable[Bytes]
         if message_body is not None:
             # Create a consistent interface to message_body
             if hasattr(message_body, 'read'):
@@ -433,7 +434,7 @@ class CoroHttpClientConnection:
     #
 
     @staticmethod
-    def _strip_ipv6_iface(enc_name: bytes) -> bytes:
+    def _strip_ipv6_iface(enc_name: Bytes) -> Bytes:
         """Remove interface scope from IPv6 address."""
 
         enc_name, percent, _ = enc_name.partition(b'%')
@@ -559,13 +560,13 @@ class CoroHttpClientConnection:
             # For HTTP/1.0, the server will assume "not chunked"
             pass
 
-    def _encode_request(self, request: str) -> bytes:
+    def _encode_request(self, request: str) -> Bytes:
         # ASCII also helps prevent CVE-2019-9740.
         return request.encode('ascii')
 
     #
 
-    def put_header(self, header: ta.Union[str, bytes], *values: ta.Union[bytes, str, int]) -> None:
+    def put_header(self, header: ta.Union[str, Bytes], *values: ta.Union[Bytes, str, int]) -> None:
         """
         Send a request header line to the server.
 
@@ -603,7 +604,7 @@ class CoroHttpClientConnection:
             message_body: ta.Optional[ta.Any] = None,
             *,
             encode_chunked: bool = False,
-    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], None]:
         """
         Indicate that the last header line has been sent to the server.
 
@@ -628,7 +629,7 @@ class CoroHttpClientConnection:
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
             encode_chunked: bool = False,
-    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], None]:
         """Send a complete request to the server."""
 
         yield from self._send_request(method, url, body, dict(headers or {}), encode_chunked)
@@ -672,7 +673,7 @@ class CoroHttpClientConnection:
         return None
 
     @staticmethod
-    def _encode(data: str, name: str = 'data') -> bytes:
+    def _encode(data: str, name: str = 'data') -> Bytes:
         """Call data.encode("latin-1") but show a better error message."""
 
         try:
@@ -698,7 +699,7 @@ class CoroHttpClientConnection:
             body: ta.Optional[ta.Any],
             headers: ta.Mapping[str, str],
             encode_chunked: bool,
-    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], None]:
         # Honor explicitly requested Host: and Accept-Encoding: headers.
         header_names = frozenset(k.lower() for k in headers)
         skips = {}
@@ -745,7 +746,7 @@ class CoroHttpClientConnection:
     def _new_response(self) -> CoroHttpClientResponse:
         return CoroHttpClientResponse(check.not_none(self._method))
 
-    def get_response(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], CoroHttpClientResponse]:
+    def get_response(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[Bytes], CoroHttpClientResponse]:
         """
         Get the response from the server.
 

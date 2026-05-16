@@ -5,7 +5,8 @@ import io
 import typing as ta
 
 from ...lite.abstract import Abstract
-from ..types import BytesLike
+from ...lite.bytes import Bytes
+from ...lite.bytes import BytesLike
 from .direct import DirectByteStreamBufferView
 from .errors import NeedMoreDataByteStreamBufferError
 from .types import ByteStreamBuffer
@@ -14,8 +15,8 @@ from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 
 
-BytesOrAwaitableBytes = ta.TypeVar('BytesOrAwaitableBytes', bound=ta.Union[bytes, ta.Awaitable[bytes]])
-BytesOrAwaitableBytes_co = ta.TypeVar('BytesOrAwaitableBytes_co', bound=ta.Union[bytes, ta.Awaitable[bytes]], covariant=True)  # noqa
+BytesOrAwaitableBytes = ta.TypeVar('BytesOrAwaitableBytes', bound=ta.Union[Bytes, ta.Awaitable[Bytes]])
+BytesOrAwaitableBytes_co = ta.TypeVar('BytesOrAwaitableBytes_co', bound=ta.Union[Bytes, ta.Awaitable[Bytes]], covariant=True)  # noqa
 
 BoolOrAwaitableBool = ta.TypeVar('BoolOrAwaitableBool', bound=ta.Union[bool, ta.Awaitable[bool]])
 BoolOrAwaitableBool_co = ta.TypeVar('BoolOrAwaitableBool_co', bound=ta.Union[bool, ta.Awaitable[bool]], covariant=True)
@@ -116,7 +117,7 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
     def read1(self, n: int = -1, /) -> BytesOrAwaitableBytes:
         raise NotImplementedError
 
-    def _inner_read(self, n: int) -> ta.Union[bytes, ta.Literal['fill']]:
+    def _inner_read(self, n: int) -> ta.Union[Bytes, ta.Literal['fill']]:
         buf = self._buf
         if (ln := len(buf)) >= n:
             return buf.split_to(n).tobytes()
@@ -144,15 +145,15 @@ class BaseByteStreamBufferBytesReaderAdapter(Abstract, ta.Generic[BytesOrAwaitab
 #
 
 
-class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[bytes, bool]):
+class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[Bytes, bool]):
     @classmethod
     def wrap(
             cls,
-            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[bytes],
+            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[Bytes],
             buf: MutableByteStreamBuffer,
             *,
             policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
-    ) -> 'BaseByteStreamBufferBytesReaderAdapter[bytes, bool]':
+    ) -> 'BaseByteStreamBufferBytesReaderAdapter[Bytes, bool]':
         if not hasattr(obj, 'read1'):
             raise TypeError(obj)
 
@@ -185,7 +186,7 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
             fill=fill,
         )
 
-    def read1(self, n: int = -1, /) -> bytes:
+    def read1(self, n: int = -1, /) -> Bytes:
         if not n:
             return b''
 
@@ -202,7 +203,7 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
 
         return buf.split_to(min(n, ln) if n > 0 else ln).tobytes()
 
-    def read(self, n: int = -1, /) -> bytes:
+    def read(self, n: int = -1, /) -> Bytes:
         if n < 0:
             if (fill := self._fill) is not None:
                 while fill(-1, False):
@@ -233,15 +234,15 @@ class ByteStreamBufferBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[
 #
 
 
-class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[bytes], ta.Awaitable[bool]]):  # noqa
+class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[Bytes], ta.Awaitable[bool]]):  # noqa
     @classmethod
     def wrap(
             cls,
-            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[ta.Awaitable[bytes]],
+            obj: BaseByteStreamBufferBytesReaderAdapter.RawBytesReader[ta.Awaitable[Bytes]],
             buf: MutableByteStreamBuffer,
             *,
             policy: ta.Optional[BaseByteStreamBufferBytesReaderAdapterPolicy] = None,
-    ) -> 'BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[bytes], ta.Awaitable[bool]]':
+    ) -> 'BaseByteStreamBufferBytesReaderAdapter[ta.Awaitable[Bytes], ta.Awaitable[bool]]':
         if not hasattr(obj, 'read1'):
             raise TypeError(obj)
 
@@ -274,7 +275,7 @@ class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAda
             fill=fill,
         )
 
-    async def read1(self, n: int = -1, /) -> bytes:
+    async def read1(self, n: int = -1, /) -> Bytes:
         if not n:
             return b''
 
@@ -291,7 +292,7 @@ class ByteStreamBufferAsyncBytesReaderAdapter(BaseByteStreamBufferBytesReaderAda
 
         return buf.split_to(min(n, ln) if n > 0 else ln).tobytes()
 
-    async def read(self, n: int = -1, /) -> bytes:
+    async def read(self, n: int = -1, /) -> Bytes:
         if n < 0:
             if (fill := self._fill) is not None:
                 while await fill(-1, False):
@@ -351,8 +352,8 @@ class ByteStreamBufferWriterAdapter:
             return total
 
         if isinstance(data, ByteStreamBufferView):
-            b = data.tobytes()
-            return ta.cast(int, f.write(b))
+            b2 = data.tobytes()
+            return ta.cast(int, f.write(b2))
 
         raise TypeError(data)
 

@@ -6,8 +6,8 @@ from ...io.pipelines.core import IoPipelineHandler
 from ...io.pipelines.core import IoPipelineHandlerContext
 from ...io.pipelines.core import IoPipelineMessages
 from ...io.pipelines.flow.types import IoPipelineFlowMessages
-from ...io.types import BytesLike
 from ...lite.abstract import Abstract
+from ...lite.bytes import BytesLike
 from .objects import IoPipelineHttpMessageObjects
 
 

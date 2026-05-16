@@ -7,13 +7,14 @@ import logging
 import typing as ta
 
 from ...lite.abstract import Abstract
+from ...lite.bytes import Bytes
 from ...logs.protocols import LoggerLike
 from ...sockets.addresses import SocketAddress
 from ..parsing import ParsedHttpHeaders
 
 
 SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
-SimpleHttpHandlerResponseData = ta.Union[bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
+SimpleHttpHandlerResponseData = ta.Union[Bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 
 ##
@@ -25,7 +26,7 @@ class SimpleHttpHandlerRequest:
     method: str
     path: str
     headers: ParsedHttpHeaders
-    data: ta.Optional[bytes]
+    data: ta.Optional[Bytes]
 
 
 @dc.dataclass(frozen=True)
@@ -43,7 +44,7 @@ class SimpleHttpHandlerResponse:
 
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerResponseStreamedData:
-    iter: ta.Iterable[bytes]
+    iter: ta.Iterable[Bytes]
     length: ta.Optional[int] = None
 
     def close(self) -> None:
@@ -102,7 +103,7 @@ class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
 
 @dc.dataclass(frozen=True)
 class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
-    data: bytes
+    data: Bytes
 
     status: ta.Union[http.HTTPStatus, int] = 200
     content_type: ta.Optional[str] = 'application/octet-stream'

@@ -10,7 +10,9 @@ from ....io.pipelines.core import IoPipelineMessages
 from ....io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
 from ....io.readers import BytesReader
 from ....io.readers import BytesReaders
+from ....io.streams.types import Bytes
 from ....io.streams.utils import ByteStreamBuffers
+from ....lite.bytes import bytes_like_to_bytes
 from ....lite.check import check
 from ...clients.base import HttpClientContext
 from ...clients.base import HttpClientRequest
@@ -60,7 +62,7 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient['IoPipelineHttpC
 
             self._done = False
 
-        def read1(self, n: int = -1, /) -> bytes:
+        def read1(self, n: int = -1, /) -> Bytes:
             while True:
                 out = check.not_none(self._drv.next())
 
@@ -83,7 +85,7 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient['IoPipelineHttpC
                 else:
                     raise TypeError(out)  # noqa
 
-        def read(self, n: int = -1, /) -> bytes:
+        def read(self, n: int = -1, /) -> Bytes:
             buf = io.BytesIO()
 
             while b := self.read1(n):
@@ -154,7 +156,7 @@ class IoPipelineHttpClient(HttpClient, BaseIoPipelineHttpClient['IoPipelineHttpC
                 if isinstance(response, FullIoPipelineHttpResponse):
                     head = check.not_none(response).head
 
-                    response_reader = BytesReaders.of_bytes(response.body)
+                    response_reader = BytesReaders.of_bytes(bytes_like_to_bytes(response.body))
 
                     drv.close()
                     sock.close()

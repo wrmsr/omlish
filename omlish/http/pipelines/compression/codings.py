@@ -4,8 +4,8 @@ import abc
 import typing as ta
 import zlib
 
-from ....io.types import BytesLike
 from ....lite.abstract import Abstract
+from ....lite.bytes import BytesLike
 from ....lite.namespaces import NamespaceClass
 
 

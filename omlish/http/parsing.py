@@ -13,6 +13,7 @@ import io
 import re
 import typing as ta
 
+from ..lite.bytes import Bytes
 from .versions import HttpVersion
 from .versions import HttpVersions
 
@@ -287,8 +288,8 @@ class PreparedParsedHttpHeaders:
 
 @dc.dataclass(frozen=True)
 class RawParsedHttpHeader:
-    name: bytes
-    value: bytes
+    name: Bytes
+    value: Bytes
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.name!r}, {self.value!r})'
@@ -305,7 +306,7 @@ class ParsedHttpMessage:
     @dc.dataclass(frozen=True)
     class RequestLine:
         method: str
-        request_target: bytes
+        request_target: Bytes
         http_version: HttpVersion
 
     request_line: ta.Optional[RequestLine]
@@ -373,7 +374,7 @@ class HttpParser:
         RESPONSE = 'response'
         AUTO = 'auto'
 
-    def parse_message(self, data: bytes, mode: Mode = Mode.AUTO) -> ParsedHttpMessage:
+    def parse_message(self, data: Bytes, mode: Mode = Mode.AUTO) -> ParsedHttpMessage:
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f'Expected bytes, got {type(data).__name__}')
 
@@ -433,7 +434,7 @@ class HttpParser:
 
     def parse_trailers(
         self,
-        data: bytes,
+        data: Bytes,
     ) -> ParsedHttpTrailers:
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f'Expected bytes, got {type(data).__name__}')
@@ -481,7 +482,7 @@ class HttpParser:
 class _HttpParseContext:
     def __init__(
             self,
-            data: bytes,
+            data: Bytes,
             config: HttpParser.Config,
             mode: HttpParser.Mode,
     ) -> None:
@@ -652,7 +653,7 @@ class _HttpParseContext:
 
     # Kind detection
 
-    def detect_kind(self, start_line: bytes) -> ParsedHttpMessage.Kind:
+    def detect_kind(self, start_line: Bytes) -> ParsedHttpMessage.Kind:
         if self.mode == HttpParser.Mode.REQUEST:
             return ParsedHttpMessage.Kind.REQUEST
 
@@ -669,7 +670,7 @@ class _HttpParseContext:
 
     _REQUEST_TARGET_BYTES: ta.ClassVar[bytes] = bytes(set(_VCHAR_BYTES) | set(range(0x80, 0x100)))
 
-    def parse_request_line(self, line: bytes) -> ParsedHttpMessage.RequestLine:
+    def parse_request_line(self, line: Bytes) -> ParsedHttpMessage.RequestLine:
         """Parse ``method SP request-target SP HTTP-version``."""
 
         # Must have exactly two SP separators
@@ -786,7 +787,7 @@ class _HttpParseContext:
         set(_OBS_TEXT),
     )
 
-    def parse_status_line(self, line: bytes) -> ParsedHttpMessage.StatusLine:
+    def parse_status_line(self, line: Bytes) -> ParsedHttpMessage.StatusLine:
         """Parse ``HTTP-version SP status-code SP reason-phrase``."""
 
         # First SP separates version from status code
@@ -976,7 +977,7 @@ class _HttpParseContext:
         return headers
 
     @classmethod
-    def _strip_ows(cls, data: bytes) -> bytes:
+    def _strip_ows(cls, data: Bytes) -> Bytes:
         """Strip leading and trailing optional whitespace (SP / HTAB)."""
 
         return data.strip(b' \t')
@@ -992,7 +993,7 @@ class _HttpParseContext:
         (True, True):   bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))),  # noqa
     }
 
-    def _parse_one_header(self, line_data: bytes, line_start_offset: int) -> RawParsedHttpHeader:
+    def _parse_one_header(self, line_data: Bytes, line_start_offset: int) -> RawParsedHttpHeader:
         """Parse a single ``field-name: field-value`` line (already unfolded)."""
 
         colon_idx = line_data.find(b':')
@@ -1842,7 +1843,7 @@ class _HttpParseContext:
 
 
 def parse_http_message(
-        data: bytes,
+        data: Bytes,
         mode: HttpParser.Mode = HttpParser.Mode.AUTO,
         config: ta.Optional[HttpParser.Config] = None,
 ) -> ParsedHttpMessage:
@@ -1851,7 +1852,7 @@ def parse_http_message(
 
 
 def parse_http_trailers(
-        data: bytes,
+        data: Bytes,
         config: ta.Optional[HttpParser.Config] = None,
 ) -> ParsedHttpTrailers:
     parser = HttpParser(**(dict(config=config) if config is not None else {}))

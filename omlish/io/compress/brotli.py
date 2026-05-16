@@ -23,7 +23,7 @@ class BrotliCompression(Compression):
     lgwin: int | None = None
     lgblock: int | None = None
 
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return brotli.compress(
             d,
             **(dict(mode=self.mode) if self.mode is not None else {}),
@@ -32,7 +32,7 @@ class BrotliCompression(Compression):
             **(dict(lgblock=self.lgblock) if self.lgblock is not None else {}),
         )
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return brotli.decompress(
             d,
         )

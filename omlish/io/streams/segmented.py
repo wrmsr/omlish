@@ -2,7 +2,9 @@
 # @omlish-lite
 import typing as ta
 
-from ..types import BytesLike
+from ...lite.bytes import Bytes
+from ...lite.bytes import BytesLike
+from ...lite.bytes import memoryview_to_bytes
 from .base import BaseByteStreamBufferLike
 from .direct import _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 from .direct import DirectByteStreamBufferView
@@ -11,7 +13,6 @@ from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
-from .utils import ByteStreamBuffers
 
 
 T = ta.TypeVar('T')
@@ -61,12 +62,12 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
     def segments(self) -> ta.Sequence[memoryview]:
         return self._segs
 
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         if not self._segs:
             return b''
         if len(self._segs) == 1:
-            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
-        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
+            return memoryview_to_bytes(self._segs[0])
+        return b''.join(memoryview_to_bytes(mv) for mv in self._segs)
 
 
 class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
@@ -107,7 +108,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     ) -> None:
         super().__init__()
 
-        self._segs: ta.List[ta.Union[bytes, bytearray]] = []
+        self._segs: ta.List[Bytes] = []
 
         self._max_size = None if max_size is None else int(max_size)
 
@@ -231,7 +232,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
                 raise RuntimeError('active not at tail')
-            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
+            self._segs[-1] = memoryview_to_bytes(memoryview(a)[:used])
 
         else:
             # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
@@ -241,7 +242,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
-                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
+                self._segs[-1] = memoryview_to_bytes(memoryview(a)[:used])
 
         self._active = None
         self._active_used = 0
@@ -250,7 +251,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
         # elif isinstance(data, bytearray):
         #     pass
         # else:
@@ -289,7 +290,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
 
         dl = len(data)
 
@@ -303,7 +304,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
                     raise OutstandingReserveByteStreamBufferError('outstanding reserve')
                 rl = self._active_readable_len()
                 if self._head_off < rl:
-                    self._segs[0] = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
+                    self._segs[0] = memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
                 else:
                     self._segs.pop(0)
                 self._active = None
@@ -387,7 +388,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._segs.append(b)
             self._len += n
         else:
-            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
+            bb = memoryview_to_bytes(memoryview(b)[:n])
             self._segs.append(bb)
             self._len += n
 
@@ -491,7 +492,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         out = bytearray(n)
         w = 0
 
-        new_segs: ta.List[ta.Union[bytes, bytearray]] = []
+        new_segs: ta.List[Bytes] = []
 
         seg_i = 0
         while w < n and seg_i < len(self._segs):
@@ -536,7 +537,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     def _seg_readable_slice(
             self,
             si: int,
-            s: ta.Union[bytes, bytearray],
+            s: Bytes,
             last_i: int,
     ) -> ta.Tuple[int, int]:
         """
@@ -608,7 +609,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         limit = end - m
 
-        tail = b''
+        tail: Bytes = b''
         tail_gstart = 0
 
         gpos = 0
@@ -675,7 +676,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         best = -1
 
         seg_ge = self._len
-        prev_s: ta.Optional[ta.Union[bytes, bytearray]] = None
+        prev_s: ta.Optional[Bytes] = None
         prev_off = 0
         prev_seg_len = 0
 

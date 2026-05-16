@@ -81,5 +81,3 @@ to_bytes = ByteStreamBuffers.to_bytes
 bytes_len = ByteStreamBuffers.bytes_len
 iter_segments = ByteStreamBuffers.iter_segments
 split = ByteStreamBuffers.split
-memoryview_to_bytes = ByteStreamBuffers.memoryview_to_bytes
-memoryview_to_bytes_strict = ByteStreamBuffers.memoryview_to_bytes_strict

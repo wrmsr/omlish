@@ -75,7 +75,7 @@ class _BaseFixedMapTests:
         fm = new_fixed_map({'a': 10, 'b': 20})
 
         assert fm == {'a': 10, 'b': 20}
-        assert {'a': 10, 'b': 20} == fm  # type: ignore[unreachable]
+        assert {'a': 10, 'b': 20} == fm
         assert fm != {'a': 10, 'b': 21}
         assert fm != {'a': 10}
         assert fm != {'a': 10, 'b': 20, 'c': 30}

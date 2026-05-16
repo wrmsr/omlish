@@ -4,6 +4,7 @@ import dataclasses as dc
 import typing as ta
 import unittest
 
+from .....lite.bytes import Bytes
 from .....lite.check import check
 from ....streams.types import ByteStreamBuffer
 from ...core import IoPipeline
@@ -73,7 +74,7 @@ class MyFlow(IoPipelineFlow, IoPipelineService):
 
 @dc.dataclass()
 class DumbBytesMessage:
-    b: bytes
+    b: Bytes
 
 
 class ByteTripletsToMessageDecoder(BufferedBytesToMessageDecoderIoPipelineHandler):

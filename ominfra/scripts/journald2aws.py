@@ -62,9 +62,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
-            dict(path='../../../../omlish/io/types.py', sha1='16da767fb3119e0886e821a1ef5f1c79ac4111e6'),
             dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
+            dict(path='../../../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
             dict(path='../../../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
@@ -82,7 +82,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='2a565a74c25ce4dfc8526b092cfe72e66d73c427'),
             dict(path='../dataclasses.py', sha1='9d4c8d1aada04d5fe64899b85cbd1af0f5a1a972'),
             dict(path='../../../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
-            dict(path='../../../../omlish/io/streams/types.py', sha1='7145fd554b5065e18afeb23aa51f93f5b69777e7'),
+            dict(path='../../../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
@@ -91,21 +91,21 @@ def __omlish_amalg__():  # noqa
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='9fad1972d9d71412d81c1643261edcfbe02e9b71'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='78d0ae24ddf41770289501d31542387a75859239'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../../../../omlish/io/streams/direct.py', sha1='f3a90045bd7c7bddc139eaa95d30db2ef24a78c6'),
-            dict(path='../../../../omlish/io/streams/scanning.py', sha1='9c8d60b56cd9fcd2eaef550b4f1459a93c48dbe9'),
+            dict(path='../../../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
+            dict(path='../../../../omlish/io/streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='e66235499a23229359a863fcbe62e925a91a2e05'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cursor.py', sha1='00f1c62e16e4c85b20658eaf33c0bedf22c9e18f'),
-            dict(path='../../../journald/messages.py', sha1='aed1f6428eb68aef67c9ebd9703f29097d849424'),
+            dict(path='../../../journald/messages.py', sha1='4e338150bfb744545fe2e8e819af1576f39e4060'),
             dict(path='../../../threadworkers.py', sha1='1c03d1e5609bd44115be883c802e203c40e93a37'),
             dict(path='poster.py', sha1='275770a4e60ea5777053c9044e37d71397c3ed20'),
             dict(path='../../../journald/tailer.py', sha1='1c37a6bbde32e8556d26b94b439f14869731ac01'),
@@ -129,11 +129,12 @@ TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
 TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
 TomlPos = int  # ta.TypeAlias
 
-# ../../../../omlish/io/types.py
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
-
 # ../../../../omlish/lite/abstract.py
 T = ta.TypeVar('T')
+
+# ../../../../omlish/lite/bytes.py
+Bytes = ta.Union[bytes, bytearray]  # ta.TypeAlias
+BytesLike = ta.Union[Bytes, memoryview]  # ta.TypeAlias
 
 # ../../../../omlish/lite/cached.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
@@ -1339,13 +1340,6 @@ class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
 
 
 ########################################
-# ../../../../../omlish/io/types.py
-
-
-##
-
-
-########################################
 # ../../../../../omlish/lite/abstract.py
 
 
@@ -1634,6 +1628,61 @@ class SyncToAsyncContextManager(ta.Generic[T]):
 
 
 as_async_context_manager = SyncToAsyncContextManager
+
+
+########################################
+# ../../../../../omlish/lite/bytes.py
+
+
+##
+
+
+BYTES_TYPES: ta.Tuple[ta.Union[ta.Type[bytes], ta.Type[bytearray]], ...] = (
+    bytes,
+    bytearray,
+)
+
+BYTES_LIKE_TYPES: ta.Tuple[ta.Union[ta.Type[bytes], ta.Type[bytearray], ta.Type[memoryview]], ...] = (
+    *BYTES_TYPES,
+    memoryview,
+)
+
+
+##
+
+
+def bytes_like_to_bytes(bl: BytesLike, /) -> Bytes:
+    if isinstance(bl, BYTES_TYPES):
+        return bl
+
+    return memoryview_to_bytes(bl)  # type: ignore[arg-type]
+
+
+def bytes_like_to_bytes_strict(bl: BytesLike, /) -> bytes:
+    if isinstance(bl, bytes):
+        return bl
+
+    if isinstance(bl, bytearray):
+        return bytes(bl)
+
+    return memoryview_to_bytes_strict(bl)
+
+
+#
+
+
+def memoryview_to_bytes(mv: memoryview, /) -> Bytes:
+    if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+        return obj  # type: ignore[return-value]
+
+    return mv.tobytes()
+
+
+def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
+    if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+        return obj  # type: ignore[return-value]
+
+    return mv.tobytes()
 
 
 ########################################
@@ -3860,7 +3909,7 @@ class ByteStreamBufferView(ByteStreamBufferLike, Abstract):
     """
 
     @abc.abstractmethod
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         """
         Materialize this view as a contiguous `bytes` object (copying).
 
@@ -5980,18 +6029,8 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 
 
 class ByteStreamBuffers(NamespaceClass):
-    _BYTES_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        bytes,
-        bytearray,
-    )
-
-    _BYTES_LIKE_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        *_BYTES_TYPES,
-        memoryview,
-    )
-
     _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
-        *_BYTES_LIKE_TYPES,
+        *BYTES_LIKE_TYPES,
         ByteStreamBufferLike,
     )
 
@@ -6033,7 +6072,7 @@ class ByteStreamBuffers(NamespaceClass):
             /, *,
             strict: ta.Literal[False] = False,
             or_none: ta.Literal[True],
-    ) -> ta.Union[bytes, bytearray, None]:
+    ) -> ta.Optional[Bytes]:
         ...
 
     @classmethod
@@ -6044,7 +6083,7 @@ class ByteStreamBuffers(NamespaceClass):
             /, *,
             strict: ta.Literal[False] = False,
             or_none: ta.Literal[False] = False,
-    ) -> ta.Union[bytes, bytearray]:
+    ) -> Bytes:
         ...
 
     @classmethod
@@ -6068,14 +6107,14 @@ class ByteStreamBuffers(NamespaceClass):
                 return bytes(obj)
 
             elif isinstance(obj, memoryview):
-                return cls.memoryview_to_bytes_strict(obj)
+                return memoryview_to_bytes_strict(obj)
 
         else:
-            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES):
+            if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, BYTES_TYPES):
                 return obj
 
             elif isinstance(obj, memoryview):
-                return cls.memoryview_to_bytes(obj)
+                return memoryview_to_bytes(obj)
 
         if isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
@@ -6142,22 +6181,6 @@ class ByteStreamBuffers(NamespaceClass):
         if final and len(buf):
             out.append(buf.split_to(len(buf)))
         return out
-
-    #
-
-    @classmethod
-    def memoryview_to_bytes(cls, mv: memoryview, /) -> ta.Union[bytes, bytearray]:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, cls._BYTES_TYPES)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
-
-    @staticmethod
-    def memoryview_to_bytes_strict(mv: memoryview, /) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or isinstance(obj, bytes)) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
 
 
 ########################################
@@ -6510,7 +6533,7 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        self._b_ = b = ByteStreamBuffers.memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b = memoryview_to_bytes(self._mv_)  # noqa
         return b
 
 
@@ -6524,7 +6547,7 @@ class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBuffe
     def segments(self) -> ta.Sequence[memoryview]:
         return (self._mv(),) if len(self._data) else ()
 
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         if type(b := self._b()) is bytes:
             return b
         return bytes(b)
@@ -7804,12 +7827,12 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
     def segments(self) -> ta.Sequence[memoryview]:
         return self._segs
 
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         if not self._segs:
             return b''
         if len(self._segs) == 1:
-            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
-        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
+            return memoryview_to_bytes(self._segs[0])
+        return b''.join(memoryview_to_bytes(mv) for mv in self._segs)
 
 
 class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
@@ -7850,7 +7873,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     ) -> None:
         super().__init__()
 
-        self._segs: ta.List[ta.Union[bytes, bytearray]] = []
+        self._segs: ta.List[Bytes] = []
 
         self._max_size = None if max_size is None else int(max_size)
 
@@ -7974,7 +7997,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
                 raise RuntimeError('active not at tail')
-            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
+            self._segs[-1] = memoryview_to_bytes(memoryview(a)[:used])
 
         else:
             # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
@@ -7984,7 +8007,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
-                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
+                self._segs[-1] = memoryview_to_bytes(memoryview(a)[:used])
 
         self._active = None
         self._active_used = 0
@@ -7993,7 +8016,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
         # elif isinstance(data, bytearray):
         #     pass
         # else:
@@ -8032,7 +8055,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
+            data = memoryview_to_bytes(data)  # noqa
 
         dl = len(data)
 
@@ -8046,7 +8069,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
                     raise OutstandingReserveByteStreamBufferError('outstanding reserve')
                 rl = self._active_readable_len()
                 if self._head_off < rl:
-                    self._segs[0] = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
+                    self._segs[0] = memoryview_to_bytes(memoryview(self._active)[self._head_off:rl])
                 else:
                     self._segs.pop(0)
                 self._active = None
@@ -8130,7 +8153,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._segs.append(b)
             self._len += n
         else:
-            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
+            bb = memoryview_to_bytes(memoryview(b)[:n])
             self._segs.append(bb)
             self._len += n
 
@@ -8234,7 +8257,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         out = bytearray(n)
         w = 0
 
-        new_segs: ta.List[ta.Union[bytes, bytearray]] = []
+        new_segs: ta.List[Bytes] = []
 
         seg_i = 0
         while w < n and seg_i < len(self._segs):
@@ -8279,7 +8302,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     def _seg_readable_slice(
             self,
             si: int,
-            s: ta.Union[bytes, bytearray],
+            s: Bytes,
             last_i: int,
     ) -> ta.Tuple[int, int]:
         """
@@ -8351,7 +8374,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         limit = end - m
 
-        tail = b''
+        tail: Bytes = b''
         tail_gstart = 0
 
         gpos = 0
@@ -8418,7 +8441,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         best = -1
 
         seg_ge = self._len
-        prev_s: ta.Optional[ta.Union[bytes, bytearray]] = None
+        prev_s: ta.Optional[Bytes] = None
         prev_off = 0
         prev_seg_len = 0
 
@@ -8717,7 +8740,7 @@ log = get_module_logger(globals())  # noqa
 
 @dc.dataclass(frozen=True)
 class JournalctlMessage:
-    raw: bytes
+    raw: Bytes
     dct: ta.Optional[ta.Mapping[str, ta.Any]] = None
     cursor: ta.Optional[str] = None
     ts_us: ta.Optional[int] = None  # microseconds UTC
@@ -8757,7 +8780,7 @@ class JournalctlMessageBuilder:
         log.error('Invalid timestamp: %r', dct)
         return None
 
-    def _make_message(self, raw: bytes) -> JournalctlMessage:
+    def _make_message(self, raw: Bytes) -> JournalctlMessage:
         dct = None
         cursor = None
         ts = None
@@ -8778,7 +8801,7 @@ class JournalctlMessageBuilder:
             ts_us=ts,
         )
 
-    def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
+    def feed(self, data: Bytes) -> ta.Sequence[JournalctlMessage]:
         ret: ta.List[JournalctlMessage] = []
         self._buf.write(data)
         for line in ByteStreamBuffers.split(self._buf, b'\n', final=not data):

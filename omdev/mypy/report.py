@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 """
 TODO:
  - alt mode: --output=json, subprocess / tee
@@ -15,6 +16,7 @@ from .debug import run_mypy_main
 if ta.TYPE_CHECKING:
     import mypy.build
     import mypy.errors
+    import mypy.main
 
 
 ##
@@ -35,25 +37,31 @@ class JsonOutputError:
 
 
 def _report_build_result(
-        result: mypy.build.BuildResult,
+        result: mypy.main.BuildResultThunk,
 ) -> None:
+    if (rr := result._result) is None:
+        return
+
     errors: ta.Sequence[mypy.errors.ErrorInfo] = [
         e
-        for es in result.manager.errors.error_info_map.values()
+        for es in rr.manager.errors.error_info_map.values()
         for e in es
     ]
-    if errors:
-        count_by_code = collections.Counter(
-            e.code.code
-            for e in errors
-            if e.code is not None
-        )
 
-        print()
-        max_code_len = max(map(len, count_by_code))
-        for code, count in sorted(count_by_code.items(), key=lambda kv: -kv[1]):
-            print(f'{code.rjust(max_code_len)} : {count}')
-        print()
+    if not errors:
+        return
+
+    count_by_code = collections.Counter(
+        e.code.code
+        for e in errors
+        if e.code is not None
+    )
+
+    print()
+    max_code_len = max(map(len, count_by_code))
+    for code, count in sorted(count_by_code.items(), key=lambda kv: -kv[1]):
+        print(f'{code.rjust(max_code_len)} : {count}')
+    print()
 
 
 ##
@@ -70,7 +78,7 @@ def _main() -> None:
 
     def new_run_build(*args, **kwargs):
         ret = old_run_build(*args, **kwargs)
-        _report_build_result(ta.cast('mypy.build.BuildResult', ret[0]))
+        _report_build_result(ta.cast('mypy.main.BuildResultThunk', ret[0]))
         return ret
 
     mypy.main.run_build = new_run_build

@@ -22,8 +22,6 @@ U = ta.TypeVar('U')
 
 P = ta.ParamSpec('P')
 
-# FIXME: remove? ducktyped by mypy (with memoryview)
-BytesLike: ta.TypeAlias = bytes | bytearray | memoryview
 
 ExcInfo: ta.TypeAlias = tuple[
     type[BaseException],

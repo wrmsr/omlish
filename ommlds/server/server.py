@@ -43,7 +43,7 @@ class McServerHandlerSimple(SimpleHttpHandler_):
     llm: mc.ChatChoicesService
 
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        prompt = check.not_none(req.data).decode('utf-8')
+        prompt = check.not_none(req.data).decode('utf-8')  # type: ignore[attr-defined]
 
         log.info('Server got prompt: %s', prompt)
 

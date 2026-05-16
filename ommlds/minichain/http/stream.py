@@ -29,12 +29,12 @@ from ..types import Output
 class HttpStreamResponseError(Exception):
     response: http.BaseHttpClientResponse
 
-    data: bytes | None = None
+    data: lang.Bytes | None = None
     data_exception: Exception | None = None
 
     @classmethod
     async def from_response(cls, response: http.AsyncStreamHttpClientResponse) -> HttpStreamResponseError:
-        data: bytes | None = None
+        data: lang.Bytes | None = None
         data_exception: Exception | None = None
 
         try:
@@ -64,7 +64,7 @@ class HttpStreamResponseHandler(lang.Abstract):
 
 
 class BytesHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
-    def process_bytes(self, data: bytes) -> ta.Iterable:
+    def process_bytes(self, data: lang.Bytes) -> ta.Iterable:
         return ()
 
 
@@ -122,7 +122,7 @@ class BytesHttpStreamResponseBuilder:
 
 
 class LinesHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
-    def process_line(self, line: bytes) -> ta.Iterable:
+    def process_line(self, line: lang.Bytes) -> ta.Iterable:
         return ()
 
     def as_bytes(self) -> BytesHttpStreamResponseHandler:
@@ -142,7 +142,7 @@ class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
     def start(self) -> ta.Sequence[Output]:
         return self._handler.start()
 
-    def process_bytes(self, data: bytes) -> ta.Iterable:
+    def process_bytes(self, data: lang.Bytes) -> ta.Iterable:
         check.state(not self._seen_eof)
 
         self._buf.write(data)
@@ -183,7 +183,7 @@ class SseLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
     def start(self) -> ta.Sequence[Output]:
         return self._handler.start()
 
-    def process_line(self, line: bytes) -> ta.Iterable:
+    def process_line(self, line: lang.Bytes) -> ta.Iterable:
         for so in self._sd.process_line(line):
             yield from self._handler.process_sse(so)
 

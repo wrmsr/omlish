@@ -3,8 +3,8 @@
 import dataclasses as dc
 import typing as ta
 
-from ...io.types import BytesLike
 from ...lite.abstract import Abstract
+from ...lite.bytes import BytesLike
 from ...lite.check import check
 from ...lite.dataclasses import install_dataclass_kw_only_init
 from ..headers import CanHttpHeaders
@@ -165,7 +165,7 @@ class IoPipelineHttpRequestObjects(IoPipelineHttpMessageObjects):
 
         return IoPipelineHttpRequestHead(
             method=request.method,
-            target=check.not_none(request.request_target).decode('utf-8'),
+            target=check.not_none(request.request_target).decode('utf-8'),  # type: ignore[attr-defined]
             version=request.http_version,
             headers=HttpHeaders(parsed.headers.entries),
             parsed=parsed,

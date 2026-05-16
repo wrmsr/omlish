@@ -18,10 +18,10 @@ else:
 
 @dc.dataclass(frozen=True)
 class SnappyCompression(Compression):
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return snappy.compress(d)
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return snappy.decompress(d)
 
 

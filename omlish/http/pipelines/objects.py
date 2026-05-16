@@ -4,8 +4,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from ...io.types import BytesLike
 from ...lite.abstract import Abstract
+from ...lite.bytes import BytesLike
 from ...lite.check import check
 from ..headers import HttpHeaders
 from ..parsing import ParsedHttpMessage

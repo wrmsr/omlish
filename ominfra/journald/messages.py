@@ -7,6 +7,7 @@ import typing as ta
 from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.lite.bytes import Bytes
 from omlish.logs.modules import get_module_logger
 
 
@@ -18,7 +19,7 @@ log = get_module_logger(globals())  # noqa
 
 @dc.dataclass(frozen=True)
 class JournalctlMessage:
-    raw: bytes
+    raw: Bytes
     dct: ta.Optional[ta.Mapping[str, ta.Any]] = None
     cursor: ta.Optional[str] = None
     ts_us: ta.Optional[int] = None  # microseconds UTC
@@ -58,7 +59,7 @@ class JournalctlMessageBuilder:
         log.error('Invalid timestamp: %r', dct)
         return None
 
-    def _make_message(self, raw: bytes) -> JournalctlMessage:
+    def _make_message(self, raw: Bytes) -> JournalctlMessage:
         dct = None
         cursor = None
         ts = None
@@ -79,7 +80,7 @@ class JournalctlMessageBuilder:
             ts_us=ts,
         )
 
-    def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
+    def feed(self, data: Bytes) -> ta.Sequence[JournalctlMessage]:
         ret: ta.List[JournalctlMessage] = []
         self._buf.write(data)
         for line in ByteStreamBuffers.split(self._buf, b'\n', final=not data):

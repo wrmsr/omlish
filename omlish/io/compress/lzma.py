@@ -32,7 +32,7 @@ class LzmaCompression(Compression, IncrementalCompression):
 
     mem_limit: int | None = None
 
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return lzma.compress(
             d,
             format=self.format if self.format is not None else lzma.FORMAT_XZ,
@@ -41,7 +41,7 @@ class LzmaCompression(Compression, IncrementalCompression):
             filters=self.filters,  # type: ignore[arg-type]
         )
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return lzma.decompress(
             d,
             format=self.format if self.format is not None else lzma.FORMAT_AUTO,

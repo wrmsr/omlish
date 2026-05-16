@@ -21,16 +21,16 @@ class SseDecoderOutput(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class SseComment(SseDecoderOutput, lang.Final):
-    data: bytes
+    data: lang.Bytes
 
 
-SseEventId: ta.TypeAlias = bytes
+SseEventId: ta.TypeAlias = lang.Bytes
 
 
 @dc.dataclass(frozen=True)
 class SseEvent(SseDecoderOutput, lang.Final):
-    type: bytes
-    data: bytes
+    type: lang.Bytes
+    data: lang.Bytes
     last_id: SseEventId = dc.xfield(b'', repr_fn=lang.truthy_repr)
 
 
@@ -44,17 +44,17 @@ class SseDecoder:
         super().__init__()
 
         self._reset()
-        self._last_event_id = b''
+        self._last_event_id: lang.Bytes = b''
         self._reconnection_time: int | None = None
 
-    _event_type: bytes
-    _data: list[bytes]
+    _event_type: lang.Bytes
+    _data: list[lang.Bytes]
 
     def _reset(self) -> None:
         self._event_type = b'message'
         self._data = []
 
-    def _process_field(self, name: bytes, value: bytes) -> None:
+    def _process_field(self, name: lang.Bytes, value: lang.Bytes) -> None:
         if name == b'event':
             self._event_type = value
 
@@ -82,7 +82,7 @@ class SseDecoder:
 
         return e
 
-    def process_line(self, line: bytes) -> ta.Iterator[SseDecoderOutput]:
+    def process_line(self, line: lang.Bytes) -> ta.Iterator[SseDecoderOutput]:
         if b'\r' in line or b'\n' in line:
             raise ValueError(line)
 

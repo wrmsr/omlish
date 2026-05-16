@@ -11,6 +11,8 @@ from ....io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriver
 from ....io.readers import AsyncBytesReader
 from ....io.readers import AsyncBytesReaders
 from ....io.streams.utils import ByteStreamBuffers
+from ....lite.bytes import Bytes
+from ....lite.bytes import bytes_like_to_bytes
 from ....lite.check import check
 from ...clients.asyncs import AsyncHttpClient
 from ...clients.asyncs import AsyncStreamHttpClientResponse
@@ -56,7 +58,7 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
 
             self._drv = drv
 
-        async def read1(self, n: int = -1, /) -> bytes:
+        async def read1(self, n: int = -1, /) -> Bytes:
             while True:
                 out = check.not_none(await self._drv.next())
 
@@ -79,7 +81,7 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
                 else:
                     raise TypeError(out)  # noqa
 
-        async def read(self, n: int = -1, /) -> bytes:
+        async def read(self, n: int = -1, /) -> Bytes:
             buf = io.BytesIO()
 
             while b := await self.read1(n):
@@ -155,7 +157,7 @@ class AsyncioIoPipelineAsyncHttpClient(AsyncHttpClient, BaseIoPipelineHttpClient
                 if isinstance(response, FullIoPipelineHttpResponse):
                     head = check.not_none(response).head
 
-                    response_reader = AsyncBytesReaders.of_bytes(response.body)
+                    response_reader = AsyncBytesReaders.of_bytes(bytes_like_to_bytes(response.body))
 
                     await drv.close()
                     writer.close()

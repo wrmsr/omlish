@@ -30,7 +30,7 @@ class Lz4Compression(Compression, IncrementalCompression):
     store_size: bool = True
     auto_flush: bool = False
 
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return lz4_frame.compress(
             d,
             compression_level=self.level,
@@ -40,7 +40,7 @@ class Lz4Compression(Compression, IncrementalCompression):
             store_size=self.store_size,
         )
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return lz4_frame.decompress(
             d,
         )
@@ -57,7 +57,7 @@ class Lz4Compression(Compression, IncrementalCompression):
         ) as compressor:
             started = False
             while True:
-                i = check.isinstance((yield None), bytes)
+                i = check.isinstance((yield None), lang.BYTES_TYPES)
                 if not started:
                     yield compressor.begin()
                     started = True
@@ -74,7 +74,7 @@ class Lz4Compression(Compression, IncrementalCompression):
         # only yields None, accepting any number of bytes at a time.
         with lz4_frame.LZ4FrameDecompressor() as decompressor:
             while True:
-                i = check.isinstance((yield None), bytes)
+                i = check.isinstance((yield None), lang.BYTES_TYPES)
                 if not i:
                     yield b''
                     return

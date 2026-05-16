@@ -1,4 +1,5 @@
 # @omlish-lite
+from ...lite.bytes import Bytes
 from .errors import NeedMoreDataByteStreamBufferError
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferView
@@ -130,7 +131,7 @@ class ByteStreamBufferReader:
             raise NeedMoreDataByteStreamBufferError
         return self._buf.split_to(n)
 
-    def read_bytes(self, n: int, /) -> bytes:
+    def read_bytes(self, n: int, /) -> Bytes:
         """
         Consume exactly `n` bytes and return them as a contiguous `bytes` object (copy boundary).
 

@@ -86,7 +86,7 @@ class _LifecycleRegistrar(lang.Final):
                 if isinstance(mgr, AsyncLifecycleManager):
                     await mgr.add(lco, dep_lcos)
                 elif isinstance(mgr, LifecycleManager):
-                    mgr.add(lco, dep_lcos)
+                    mgr.add(check.isinstance(lco, Lifecycle), dep_lcos)
                 else:
                     raise TypeError(mgr)
 

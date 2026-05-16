@@ -4,8 +4,8 @@ import dataclasses as dc
 import http
 import typing as ta
 
-from ...io.types import BytesLike
 from ...lite.abstract import Abstract
+from ...lite.bytes import BytesLike
 from ...lite.check import check
 from ...lite.dataclasses import install_dataclass_kw_only_init
 from ..headers import HttpHeaders

@@ -4,7 +4,8 @@ import abc
 import typing as ta
 
 from ...lite.abstract import Abstract
-from ..types import BytesLike
+from ...lite.bytes import Bytes
+from ...lite.bytes import BytesLike
 
 
 ##
@@ -81,7 +82,7 @@ class ByteStreamBufferView(ByteStreamBufferLike, Abstract):
     """
 
     @abc.abstractmethod
-    def tobytes(self) -> bytes:
+    def tobytes(self) -> Bytes:
         """
         Materialize this view as a contiguous `bytes` object (copying).
 

@@ -2,6 +2,7 @@
 # @omlish-lite
 import dataclasses as dc
 
+from ...lite.bytes import Bytes
 from .asyncs import AsyncHttpClient
 from .asyncs import AsyncStreamHttpClientResponse
 from .base import HttpClientContext
@@ -23,10 +24,10 @@ class SyncAsyncHttpClient(AsyncHttpClient):
     class _StreamAdapter:
         ul: StreamHttpClientResponse
 
-        async def read1(self, n: int = -1, /) -> bytes:
+        async def read1(self, n: int = -1, /) -> Bytes:
             return self.ul.stream.read1(n)
 
-        async def read(self, n: int = -1, /) -> bytes:
+        async def read(self, n: int = -1, /) -> Bytes:
             return self.ul.stream.read(n)
 
         async def close(self) -> None:

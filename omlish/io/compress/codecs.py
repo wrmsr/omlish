@@ -2,6 +2,8 @@ import dataclasses as dc
 import typing as ta
 
 from ... import codecs
+from ... import lang
+from ... import reflect as rfl
 from ..coro import buffer_bytes_stepped_reader_coro
 from .base import Compression
 from .base import IncrementalCompression
@@ -11,13 +13,13 @@ from .base import IncrementalCompression
 
 
 @dc.dataclass(frozen=True)
-class CompressionEagerCodec(codecs.EagerCodec[bytes, bytes]):
+class CompressionEagerCodec(codecs.EagerCodec[lang.Bytes, lang.Bytes]):
     compression: Compression
 
-    def encode(self, i: bytes) -> bytes:
+    def encode(self, i: lang.Bytes) -> lang.Bytes:
         return self.compression.compress(i)
 
-    def decode(self, o: bytes) -> bytes:
+    def decode(self, o: lang.Bytes) -> lang.Bytes:
         return self.compression.decompress(o)
 
 
@@ -25,13 +27,13 @@ class CompressionEagerCodec(codecs.EagerCodec[bytes, bytes]):
 
 
 @dc.dataclass(frozen=True)
-class CompressionIncrementalCodec(codecs.IncrementalCodec[bytes, bytes]):
+class CompressionIncrementalCodec(codecs.IncrementalCodec[lang.Bytes, lang.Bytes]):
     compression: IncrementalCompression
 
-    def encode_incremental(self) -> ta.Generator[bytes | None, bytes]:
+    def encode_incremental(self) -> ta.Generator[lang.Bytes | None, lang.Bytes]:
         return self.compression.compress_incremental()
 
-    def decode_incremental(self) -> ta.Generator[bytes | None, bytes]:
+    def decode_incremental(self) -> ta.Generator[lang.Bytes | None, lang.Bytes]:
         return buffer_bytes_stepped_reader_coro(self.compression.decompress_incremental())
 
 
@@ -52,8 +54,8 @@ def make_compression_codec(
         name=name,
         aliases=aliases,
 
-        input=bytes,
-        output=bytes,
+        input=rfl.typeof(lang.Bytes),
+        output=rfl.typeof(lang.Bytes),
 
         new=lambda *args, **kwargs: CompressionEagerCodec(cls(*args, **kwargs)),
 

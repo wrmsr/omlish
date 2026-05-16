@@ -26,13 +26,13 @@ else:
 class Bz2Compression(Compression, IncrementalCompression):
     level: int = 9
 
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return bz2.compress(
             d,
             self.level,
         )
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return bz2.decompress(
             d,
         )

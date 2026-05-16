@@ -18,8 +18,8 @@ from ...io.streams.segmented import SegmentedByteStreamBuffer
 from ...io.streams.types import MutableByteStreamBuffer
 from ...io.streams.utils import ByteStreamBuffers
 from ...io.streams.utils import CanByteStreamBuffer
-from ...io.types import BytesLike
 from ...lite.abstract import Abstract
+from ...lite.bytes import BytesLike
 from .bodymodes import IoPipelineHttpBodyMode
 from .bodymodes import IoPipelineHttpBodyModeError
 from .objects import IoPipelineHttpMessageHead

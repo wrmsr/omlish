@@ -560,7 +560,6 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .typing import (  # noqa
-        BytesLike,
         ExcInfo,
         OptExcInfo,
 
@@ -580,7 +579,7 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .units import (  # noqa
-        Bytes,
+        BytesUnit,
 
         B,
 
@@ -594,7 +593,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         GiB,
         TiB,
 
-        Seconds,
+        SecondsUnit,
 
         S,
         MS,
@@ -642,6 +641,20 @@ with _auto_proxy_init(globals(), update_exports=True):
         attr_ops,
 
         attr_repr,
+    )
+
+    from ..lite.bytes import (  # noqa
+        Bytes,
+        BytesLike,
+
+        BYTES_TYPES,
+        BYTES_LIKE_TYPES,
+
+        bytes_like_to_bytes,
+        bytes_like_to_bytes_strict,
+
+        memoryview_to_bytes,
+        memoryview_to_bytes_strict,
     )
 
     from ..lite.contextmanagers import (  # noqa

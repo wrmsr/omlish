@@ -28,16 +28,16 @@ class ZlibCompression(Compression, IncrementalCompression):
 
     wbits: int | None = None
     strategy: int | None = None
-    zdict: bytes | None = None
+    zdict: lang.Bytes | None = None
 
-    def compress(self, d: bytes) -> bytes:
+    def compress(self, d: lang.Bytes) -> lang.Bytes:
         return zlib.compress(
             d,
             self.level,
             **(dict(wbits=self.wbits) if self.wbits is not None else {}),
         )
 
-    def decompress(self, d: bytes) -> bytes:
+    def decompress(self, d: lang.Bytes) -> lang.Bytes:
         return zlib.decompress(
             d,
             **(dict(wbits=self.wbits) if self.wbits is not None else {}),

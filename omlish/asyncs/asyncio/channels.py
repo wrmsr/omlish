@@ -3,6 +3,8 @@
 import asyncio
 import typing as ta
 
+from ...lite.bytes import BytesLike
+
 
 ##
 
@@ -15,7 +17,7 @@ class AsyncioBytesChannelTransport(asyncio.Transport):
         self.closed: asyncio.Future = asyncio.Future()
 
     # @ta.override
-    def write(self, data: bytes) -> None:
+    def write(self, data: BytesLike) -> None:
         self.reader.feed_data(data)
 
     # @ta.override

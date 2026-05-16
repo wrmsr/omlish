@@ -10,19 +10,20 @@ anyio==4.13.0
 apsw==3.53.1.0
 asgiref==3.11.1
 asn1crypto==1.5.1
+ast_serialize==0.4.0
 astpretty==3.0.0
 asttokens==3.0.1
 asyncpg==0.31.0
 asyncpg-stubs==0.31.2
 asyncssh==2.23.0
 attrs==26.1.0
-basedpyright==1.39.3
+basedpyright==1.39.4
 bcrypt==5.0.0
 bitsandbytes==0.49.2
 black==26.3.1
 blobfile==3.2.0
-boto3==1.43.8
-botocore==1.43.8
+boto3==1.43.9
+botocore==1.43.9
 botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.5.0
@@ -60,7 +61,7 @@ fsspec==2026.2.0
 gguf==0.19.0
 google-api-core==2.30.3
 google-api-python-client==2.196.0
-google-auth==2.52.0
+google-auth==2.53.0
 google-auth-httplib2==0.4.0
 google-cloud-compute==1.47.0
 googleapis-common-protos==1.75.0
@@ -88,7 +89,7 @@ ipython==9.13.0
 ipython_pygments_lexers==1.1.1
 jaraco.classes==3.4.0
 jaraco.context==6.1.2
-jaraco.functools==4.4.0
+jaraco.functools==4.5.0
 jedi==0.20.0
 Jinja2==3.1.6
 jmespath==1.1.0
@@ -120,7 +121,7 @@ msgpack==1.1.2
 multidict==6.7.1
 multiprocess==0.70.19
 mwparserfromhell==0.7.2
-mypy==1.20.2
+mypy==2.1.0
 mypy_extensions==1.1.0
 mysql-connector-python==9.7.0
 mysqlclient==2.2.8
@@ -128,7 +129,7 @@ networkx==3.6.1
 nh3==0.3.5
 nodeenv==1.10.0
 nodejs-wheel-binaries==24.15.0
-numpy==2.4.4
+numpy==2.4.5
 objgraph==3.6.2
 onnxruntime==1.26.0
 opencv-python==4.13.0.92
@@ -201,7 +202,7 @@ requests-toolbelt==1.0.0
 rfc3986==2.0.0
 rich==15.0.0
 ripgrep==15.0.0
-ruff==0.15.12
+ruff==0.15.13
 s3transfer==0.17.0
 safetensors==0.7.0
 scikit-image==0.26.0
@@ -229,7 +230,7 @@ textual-dev==1.8.0
 textual-serve==1.1.3
 textual-speedups==0.2.1
 threadpoolctl==3.6.0
-tifffile==2026.5.2
+tifffile==2026.5.15
 tiktoken==0.12.0
 tokenizers==0.22.2
 tomlkit==0.15.0
@@ -259,7 +260,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.25.1
 types-awscrt==0.31.3
-types-boto3==1.43.7
+types-boto3==1.43.9
 types-docutils==0.22.3.20260508
 types-greenlet==3.5.0.20260508
 types-paramiko==4.0.0.20260508
