@@ -106,6 +106,7 @@ class JsonSchemaIrTransformer:
 
             fields: list[FieldDef] = []
             nested_defs: list[ObjectTypeDef] = []
+            ignore_unknown = False
             td = check.isinstance(self._type_defs[n], AllOfIntersectionTypeDef)
 
             for m in td.members:
@@ -113,6 +114,7 @@ class JsonSchemaIrTransformer:
                     om = check.isinstance(m, ObjectTypeDef)
                     fields.extend(om.fields)
                     nested_defs.extend(om.nested_defs)
+                    ignore_unknown = ignore_unknown or om.ignore_unknown
 
                 elif isinstance(m, TypeRef):
                     m = check.isinstance(m, RefTypeRef)
@@ -128,6 +130,7 @@ class JsonSchemaIrTransformer:
                     om = check.isinstance(md, ObjectTypeDef)
                     fields.extend(om.fields)
                     nested_defs.extend(om.nested_defs)
+                    ignore_unknown = ignore_unknown or om.ignore_unknown
 
                 else:
                     raise TypeError(m)
@@ -138,6 +141,7 @@ class JsonSchemaIrTransformer:
                 name=td.name,
                 fields=tuple(fields),
                 nested_defs=tuple(nested_defs),
+                ignore_unknown=ignore_unknown,
             )
 
             self._type_defs[n] = otd

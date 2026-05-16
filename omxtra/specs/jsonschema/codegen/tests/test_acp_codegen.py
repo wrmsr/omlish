@@ -6,7 +6,6 @@ from omlish import check
 from omlish import marshal as msh
 from ommlds.specs.acp.spec import spec_json_schema
 
-from ..config import JsonSchemaCodeGenConfig
 from ..generator import JsonSchemaCodeGen
 
 
@@ -14,10 +13,7 @@ from ..generator import JsonSchemaCodeGen
 
 
 def test_acp_codegen_import_and_marshal(tmp_path):
-    src = JsonSchemaCodeGen(
-        spec_json_schema(),
-        config=JsonSchemaCodeGenConfig(allow_any_fallbacks=True),
-    ).gen_module()
+    src = JsonSchemaCodeGen(spec_json_schema()).gen_module()
     path = os.path.join(tmp_path, 'acp_protocol.py')
     with open(path, 'w') as f:
         f.write(src)

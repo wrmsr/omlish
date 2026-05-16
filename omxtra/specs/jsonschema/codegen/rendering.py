@@ -100,6 +100,7 @@ class ModuleRenderer:
             nested_defs: ta.Sequence[ObjectTypeDef] = (),
             tag_field: tuple[str, str] | None = None,
             field_naming: str | None = None,
+            ignore_unknown: bool = False,
             level: int = 0,
     ) -> list[str]:
         ind = self._indent(level)
@@ -107,10 +108,15 @@ class ModuleRenderer:
         lines: list[str] = [
             f'{ind}@dc.dataclass(frozen=True, kw_only=True)',
         ]
-        if field_naming is None or field_naming == 'LOW_CAMEL':
+        opts: list[str] = []
+        if field_naming is not None and field_naming != 'LOW_CAMEL':
+            opts.append(f'field_naming=msh.Naming.{field_naming}')
+        if ignore_unknown:
+            opts.append('ignore_unknown=True')
+        if not opts:
             lines.append(f'{ind}@_set_class_marshal_options')
         else:
-            lines.append(f'{ind}@_set_class_marshal_options(field_naming=msh.Naming.{field_naming})')
+            lines.append(f'{ind}@_set_class_marshal_options({", ".join(opts)})')
         lines.append(f'{ind}class {name}({bases}):')
 
         if not nested_defs and not fields and tag_field is None:
@@ -125,6 +131,7 @@ class ModuleRenderer:
                 nested_def.fields,
                 nested_defs=nested_def.nested_defs,
                 field_naming=nested_def.field_naming,
+                ignore_unknown=nested_def.ignore_unknown,
                 level=level + 1,
             ))
 
@@ -164,11 +171,12 @@ class ModuleRenderer:
         w('##')
         w()
         w()
-        w('def _set_class_marshal_options(cls=None, *, field_naming=msh.Naming.LOW_CAMEL):')
+        w('def _set_class_marshal_options(cls=None, *, field_naming=msh.Naming.LOW_CAMEL, ignore_unknown=False):')
         w('    def inner(c):')
         w('        msh.update_object_options(')
         w('            c,')
         w('            field_naming=field_naming,')
+        w('            ignore_unknown=ignore_unknown,')
         w('            field_defaults=msh.FieldOptions(')
         w('                omit_if=lang.is_none,')
         w('            ),')
@@ -205,6 +213,7 @@ class ModuleRenderer:
                     td.fields,
                     nested_defs=td.nested_defs,
                     field_naming=td.field_naming,
+                    ignore_unknown=td.ignore_unknown,
                 ))
 
     def _write_empties(self, w: _Writer, module: ModuleDef) -> None:
@@ -287,19 +296,19 @@ class ModuleRenderer:
             for name, td in unions:
                 w()
                 w()
-                all_primitive = all(isinstance(m, PrimitiveTypeRef) for m in td.members)
-                if not all_primitive:
+                if not all(isinstance(m, PrimitiveTypeRef) for m in td.members):
                     w(f'{name}: ta.TypeAlias = ta.Any')
+                    continue
+
+                parts = ', '.join(self._render_type_ann(m) for m in td.members)
+                line = f'{name}: ta.TypeAlias = ta.Union[{parts}]'
+                if len(line) <= 120:
+                    w(line)
                 else:
-                    parts = ', '.join(self._render_type_ann(m, quote_refs=False) for m in td.members)
-                    line = f'{name}: ta.TypeAlias = ta.Union[{parts}]'
-                    if len(line) <= 120:
-                        w(line)
-                    else:
-                        w(f'{name}: ta.TypeAlias = ta.Union[')
-                        for m in td.members:
-                            w(f'    {self._render_type_ann(m, quote_refs=False)},')
-                        w(']')
+                    w(f'{name}: ta.TypeAlias = ta.Union[')
+                    for m in td.members:
+                        w(f'    {self._render_type_ann(m)},')
+                    w(']')
 
     def _write_polymorphism_registration(self, w: _Writer, module: ModuleDef) -> None:
         if module.disc_unions:

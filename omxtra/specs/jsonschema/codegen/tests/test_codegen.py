@@ -26,6 +26,15 @@ def _parse(obj: ta.Mapping[str, ta.Any], *, allow_unknown: bool = False) -> js.K
 
 def _generate_import(tmp_path, obj: ta.Mapping[str, ta.Any]):
     src = JsonSchemaCodeGen(_parse(obj)).gen_module()
+    return _import_src(tmp_path, obj, src)
+
+
+def _generate_source_and_import(tmp_path, obj: ta.Mapping[str, ta.Any]):
+    src = JsonSchemaCodeGen(_parse(obj)).gen_module()
+    return src, _import_src(tmp_path, obj, src)
+
+
+def _import_src(tmp_path, obj: ta.Mapping[str, ta.Any], src: str):
     path = os.path.join(tmp_path, 'generated.py')
     with open(path, 'w') as f:
         f.write(src)
@@ -196,6 +205,46 @@ def test_scalar_const_and_field_enum_codegen_marshal_round_trip(tmp_path):
         'version': 2,
         'mode': 'slow',
     }, mod.LiteralHolder) == mod.LiteralHolder(mode='slow')
+
+
+def test_scalar_defaults_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'DefaultHolder': {
+                'type': 'object',
+                'required': ['name'],
+                'properties': {
+                    'name': {'type': 'string'},
+                    'enabled': {'type': 'boolean', 'default': True},
+                    'count': {'type': 'integer', 'default': 3},
+                    'label': {'type': 'string', 'default': 'x'},
+                    'empty': {'type': 'null', 'default': None},
+                },
+            },
+        },
+    })
+
+    obj = mod.DefaultHolder(name='alice')
+    assert msh.marshal(obj, mod.DefaultHolder) == {
+        'name': 'alice',
+        'enabled': True,
+        'count': 3,
+        'label': 'x',
+    }
+
+    assert msh.unmarshal({
+        'name': 'bob',
+        'enabled': False,
+        'count': 4,
+        'label': 'y',
+        'empty': None,
+    }, mod.DefaultHolder) == mod.DefaultHolder(
+        name='bob',
+        enabled=False,
+        count=4,
+        label='y',
+        empty=None,
+    )
 
 
 def test_nullable_and_primitive_union_codegen_marshal_round_trip(tmp_path):
@@ -433,6 +482,34 @@ def test_explicit_open_any_shapes_codegen_marshal_round_trip(tmp_path):
         attrs={'enabled': True},
         extra={'nested': {'x': 1}},
     )
+
+
+def test_metadata_only_field_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'Error': {
+                'type': 'object',
+                'required': ['message'],
+                'properties': {
+                    'message': {'type': 'string'},
+                    'data': {
+                        'description': 'arbitrary error data',
+                    },
+                },
+            },
+        },
+    })
+
+    obj = mod.Error(message='no', data={'details': [1]})
+    assert msh.marshal(obj, mod.Error) == {
+        'message': 'no',
+        'data': {'details': [1]},
+    }
+
+    assert msh.unmarshal({
+        'message': 'bad',
+        'data': {'reason': 'x'},
+    }, mod.Error) == mod.Error(message='bad', data={'reason': 'x'})
 
 
 def test_all_of_object_flattening_codegen_marshal_round_trip(tmp_path):
@@ -843,23 +920,26 @@ def test_unsupported_plain_one_of_union_explodes():
     }, ('$defs', 'Thing'))
 
 
-def test_unsupported_complex_field_any_of_explodes():
-    _assert_unsupported({
+def test_field_ref_any_of_codegen_imports_as_any_for_marshal_compatibility(tmp_path):
+    src, mod = _generate_source_and_import(tmp_path, {
         '$defs': {
             'Foo': {
                 'type': 'object',
+                'required': ['name'],
                 'properties': {
                     'name': {'type': 'string'},
                 },
             },
             'Bar': {
                 'type': 'object',
+                'required': ['id'],
                 'properties': {
                     'id': {'type': 'string'},
                 },
             },
             'Thing': {
                 'type': 'object',
+                'required': ['value'],
                 'properties': {
                     'value': {
                         'anyOf': [
@@ -870,20 +950,30 @@ def test_unsupported_complex_field_any_of_explodes():
                 },
             },
         },
-    }, ('$defs', 'Thing', 'properties', 'value'))
+    })
+
+    assert 'value: ta.Any' in src
+    obj = mod.Thing(value={'name': 'alice'})
+    assert msh.marshal(obj, mod.Thing) == {
+        'value': {
+            'name': 'alice',
+        },
+    }
 
 
-def test_unsupported_complex_top_level_any_of_explodes():
-    _assert_unsupported({
+def test_top_level_ref_any_of_codegen_imports_as_any_for_marshal_compatibility(tmp_path):
+    src, mod = _generate_source_and_import(tmp_path, {
         '$defs': {
             'Foo': {
                 'type': 'object',
+                'required': ['name'],
                 'properties': {
                     'name': {'type': 'string'},
                 },
             },
             'Bar': {
                 'type': 'object',
+                'required': ['id'],
                 'properties': {
                     'id': {'type': 'string'},
                 },
@@ -895,7 +985,97 @@ def test_unsupported_complex_top_level_any_of_explodes():
                 ],
             },
         },
-    }, ('$defs', 'Thing'))
+    })
+
+    assert 'Thing: ta.TypeAlias = ta.Any' in src
+    assert msh.marshal(mod.Foo(name='alice'), mod.Foo) == {
+        'name': 'alice',
+    }
+    assert msh.unmarshal({
+        'id': 'b1',
+    }, mod.Bar) == mod.Bar(id='b1')
+
+
+def test_top_level_inline_object_any_of_lifts_members(tmp_path):
+    src, mod = _generate_source_and_import(tmp_path, {
+        '$defs': {
+            'Response': {
+                'anyOf': [
+                    {
+                        'title': 'Result',
+                        'type': 'object',
+                        'required': ['id', 'result'],
+                        'properties': {
+                            'id': {'type': 'integer'},
+                            'result': {'type': 'string'},
+                        },
+                    },
+                    {
+                        'title': 'Error',
+                        'type': 'object',
+                        'required': ['id', 'error'],
+                        'properties': {
+                            'id': {'type': 'integer'},
+                            'error': {'type': 'string'},
+                        },
+                    },
+                ],
+            },
+        },
+    })
+
+    assert 'Response: ta.TypeAlias = ta.Any' in src
+    assert 'class ResponseResult(lang.Final):' in src
+    assert 'class ResponseError(lang.Final):' in src
+    result = mod.ResponseResult(id=1, result='ok')
+    assert msh.marshal(result, mod.ResponseResult) == {
+        'id': 1,
+        'result': 'ok',
+    }
+    assert msh.unmarshal({
+        'id': 2,
+        'error': 'no',
+    }, mod.ResponseError) == mod.ResponseError(id=2, error='no')
+
+
+def test_top_level_inline_all_of_any_of_lifts_members(tmp_path):
+    src, mod = _generate_source_and_import(tmp_path, {
+        '$defs': {
+            'HttpTransport': {
+                'type': 'object',
+                'required': ['url'],
+                'properties': {
+                    'url': {'type': 'string'},
+                },
+            },
+            'Server': {
+                'anyOf': [
+                    {
+                        'type': 'object',
+                        'required': ['type'],
+                        'properties': {
+                            'type': {'type': 'string', 'const': 'http'},
+                        },
+                        'allOf': [
+                            {'$ref': '#/$defs/HttpTransport'},
+                        ],
+                    },
+                ],
+            },
+        },
+    })
+
+    assert 'class HttpServer(lang.Final):' in src
+    obj = mod.HttpServer(url='https://example.com')
+    assert msh.marshal(obj, mod.Server) == {
+        'url': 'https://example.com',
+        'type': 'http',
+    }
+
+    assert msh.unmarshal({
+        'url': 'https://example.com',
+        'type': 'http',
+    }, mod.Server) == obj
 
 
 def test_unsupported_non_empty_unconstrained_schema_explodes():
@@ -911,6 +1091,77 @@ def test_unsupported_non_empty_unconstrained_schema_explodes():
             },
         },
     }, ('$defs', 'Thing', 'properties', 'payload'))
+
+
+def test_unsupported_required_missing_property_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'required': ['missing'],
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_unsupported_duplicate_required_property_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'required': ['name', 'name'],
+                'properties': {
+                    'name': {'type': 'string'},
+                },
+            },
+        },
+    }, ('$defs', 'Thing'))
+
+
+def test_non_scalar_default_is_ignored_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'payload': {
+                        'type': 'object',
+                        'default': {},
+                        'additionalProperties': True,
+                    },
+                },
+            },
+        },
+    })
+
+    obj = mod.Thing()
+    assert msh.marshal(obj, mod.Thing) == {}
+
+    assert msh.unmarshal({
+        'payload': {
+            'x': 1,
+        },
+    }, mod.Thing) == mod.Thing(payload={'x': 1})
+
+
+def test_unsupported_const_default_mismatch_explodes():
+    _assert_unsupported({
+        '$defs': {
+            'Thing': {
+                'type': 'object',
+                'properties': {
+                    'kind': {
+                        'type': 'string',
+                        'const': 'a',
+                        'default': 'b',
+                    },
+                },
+            },
+        },
+    }, ('$defs', 'Thing', 'properties', 'kind'))
 
 
 def test_unsupported_top_level_empty_enum_explodes():
@@ -1017,8 +1268,8 @@ def test_unsupported_invalid_discriminator_shape_explodes():
     }, ('$defs', 'Pet'))
 
 
-def test_unsupported_object_with_open_additional_properties_explodes():
-    _assert_unsupported({
+def test_object_with_open_additional_properties_codegen_marshal_round_trip(tmp_path):
+    mod = _generate_import(tmp_path, {
         '$defs': {
             'Thing': {
                 'type': 'object',
@@ -1028,7 +1279,17 @@ def test_unsupported_object_with_open_additional_properties_explodes():
                 },
             },
         },
-    }, ('$defs', 'Thing'))
+    })
+
+    obj = mod.Thing(name='alice')
+    assert msh.marshal(obj, mod.Thing) == {
+        'name': 'alice',
+    }
+
+    assert msh.unmarshal({
+        'name': 'bob',
+        'extra': 1,
+    }, mod.Thing) == mod.Thing(name='bob')
 
 
 def test_unsupported_object_with_typed_additional_properties_explodes():

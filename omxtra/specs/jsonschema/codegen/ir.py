@@ -74,6 +74,7 @@ class ObjectTypeDef(lang.Final):
     fields: ta.Sequence[FieldDef] = ()
     nested_defs: ta.Sequence[ObjectTypeDef] = ()
     field_naming: str | None = None
+    ignore_unknown: bool = False
 
 
 @dc.dataclass(frozen=True, kw_only=True)
