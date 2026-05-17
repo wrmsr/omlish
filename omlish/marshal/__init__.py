@@ -86,6 +86,8 @@ with _lang.auto_proxy_init(globals()):
         MarshalerFactory,
         UnmarshalerFactory,
 
+        AnyFactory,
+
         Marshaling,
 
         SimpleMarshaling,

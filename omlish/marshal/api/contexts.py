@@ -47,6 +47,16 @@ class BaseContext(lang.Abstract, lang.Sealed):
     def internal_state(self) -> InternalState:
         raise NotImplementedError
 
+    @property
+    def internal_state_by_config(self) -> InternalState.ByConfig:
+        try:
+            return self._internal_state_by_config  # type: ignore[attr-defined]
+        except AttributeError:
+            pass
+        ret = self.internal_state.by_config(check.isinstance(self.configs, ConfigRegistry))
+        object.__setattr__(self, '_internal_state_by_config', ret)
+        return ret
+
     def _reflect(self, o: ta.Any) -> rfl.Type:
         def override(o):
             if (ovr := self.configs.get(o).get(ReflectOverride)) is not None:

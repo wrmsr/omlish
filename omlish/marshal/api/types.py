@@ -54,6 +54,9 @@ class UnmarshalerFactory(lang.Abstract):
         raise NotImplementedError
 
 
+AnyFactory: ta.TypeAlias = MarshalerFactory | UnmarshalerFactory
+
+
 ##
 
 
@@ -79,12 +82,16 @@ class Marshaling(lang.Abstract):
     def new_marshal_factory_context(self) -> MarshalFactoryContext:
         return MarshalFactoryContext(
             configs=self.get_config_registry(),
+            internal_state=self.get_internal_state(),
+
             marshaler_factory=self.get_marshaler_factory(),
         )
 
     def new_unmarshal_factory_context(self) -> UnmarshalFactoryContext:
         return UnmarshalFactoryContext(
             configs=self.get_config_registry(),
+            internal_state=self.get_internal_state(),
+
             unmarshaler_factory=self.get_unmarshaler_factory(),
         )
 
@@ -93,12 +100,14 @@ class Marshaling(lang.Abstract):
     def new_marshal_context(self, options: ta.Iterable[Option] | None = None) -> MarshalContext:
         return MarshalContext(
             marshal_factory_context=self.new_marshal_factory_context(),
+
             options=build_effective_options(self.get_config_registry(), options),
         )
 
     def new_unmarshal_context(self, options: ta.Iterable[Option] | None = None) -> UnmarshalContext:
         return UnmarshalContext(
             unmarshal_factory_context=self.new_unmarshal_factory_context(),
+
             options=build_effective_options(self.get_config_registry(), options),
         )
 
@@ -152,6 +161,15 @@ class SimpleMarshaling(Marshaling):
 
     def get_internal_state(self) -> InternalState:
         return self.internal_state
+
+    def get_internal_state_by_config(self) -> InternalState.ByConfig:
+        try:
+            return self._internal_state_by_config  # type: ignore[attr-defined]
+        except AttributeError:
+            pass
+        ret = self.internal_state.by_config(self.config_registry)
+        object.__setattr__(self, '_internal_state_by_config', ret)
+        return ret
 
     def get_marshaler_factory(self) -> MarshalerFactory:
         return check.not_none(self.marshaler_factory)
