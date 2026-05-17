@@ -2,7 +2,6 @@ import threading
 import typing as ta
 
 from .. import lang
-from .api.configs import Config
 from .api.configs import ConfigRegistry
 from .api.internalstate import InternalState
 from .api.options import Option

@@ -357,8 +357,10 @@ with _lang.auto_proxy_init(globals()):
 
     from .globals import (  # noqa
         global_config_registry,
+        global_internal_state,
         global_marshaler_factory,
         global_unmarshaler_factory,
+
         global_marshaling,
 
         marshal,
