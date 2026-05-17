@@ -17,10 +17,8 @@ from .factories.api import ModuleImport
 
 if ta.TYPE_CHECKING:
     from .standard import factories as _sf
-    from .standard import install as _si
 else:
     _sf = lang.proxy_import('.standard.factories', __package__)
-    _si = lang.proxy_import('.standard.install', __package__)
 
 
 T = ta.TypeVar('T')
@@ -107,22 +105,6 @@ def unmarshal(v, ty, *options):
 ##
 
 
-def update_global_config(
-        key: ta.Any,
-        *items: Config,
-        identity: bool = False,
-        discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-        mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-) -> None:
-    global_config_registry().update(
-        key,
-        *items,
-        identity=identity,
-        discard=discard,
-        mode=mode,
-    )
-
-
 def register_global_lazy_init(
         fn: LazyInitFn,
 ) -> None:
@@ -139,16 +121,4 @@ def register_global_module_import(
     global_config_registry().update(
         None,
         LazyInit(ModuleImport(name, package)),
-    )
-
-
-##
-
-
-def install_global_standard_factories(
-        *factories: MarshalerFactory | UnmarshalerFactory,
-) -> None:
-    _si.install_standard_factories(
-        global_config_registry(),
-        *factories,
     )
