@@ -243,9 +243,11 @@ class _ResponseMetadataMarshalerUnmarshalerFactory(_MetadataMarshalerUnmarshaler
 ##
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
-    msh.install_global_standard_factories(
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories(
+        cfgs,
+
         _RequestResponseMarshalerFactory(),
         _RequestResponseUnmarshalerFactory(),
 

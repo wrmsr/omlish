@@ -1363,49 +1363,64 @@ SessionConfigSelectOptions: ta.TypeAlias = ta.Any
 ##
 
 
-@lang.static_init
-def _install_marshaling() -> None:
-    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(
-            ContentBlock,
-            naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AUTO_STRIP_SUFFIX,
+@msh.register_global_lazy_init
+def _install_marshaling(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories(
+        cfgs,
+        *msh.standard_polymorphism_factories(
+            msh.polymorphism_from_subclasses(
+                ContentBlock,
+                naming=msh.Naming.SNAKE,
+                strip_suffix=msh.AUTO_STRIP_SUFFIX,
+            ),
+            msh.FieldTypeTagging('type'),
         ),
-        msh.FieldTypeTagging('type'),
-    ))
+    )
 
-    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(
-            RequestPermissionOutcome,
-            naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AUTO_STRIP_SUFFIX,
+    msh.install_standard_factories(
+        cfgs,
+        *msh.standard_polymorphism_factories(
+            msh.polymorphism_from_subclasses(
+                RequestPermissionOutcome,
+                naming=msh.Naming.SNAKE,
+                strip_suffix=msh.AUTO_STRIP_SUFFIX,
+            ),
+            msh.FieldTypeTagging('outcome'),
         ),
-        msh.FieldTypeTagging('outcome'),
-    ))
+    )
 
-    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(
-            SessionConfigOption,
-            naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AUTO_STRIP_SUFFIX,
+    msh.install_standard_factories(
+        cfgs,
+        *msh.standard_polymorphism_factories(
+            msh.polymorphism_from_subclasses(
+                SessionConfigOption,
+                naming=msh.Naming.SNAKE,
+                strip_suffix=msh.AUTO_STRIP_SUFFIX,
+            ),
+            msh.FieldTypeTagging('type'),
         ),
-        msh.FieldTypeTagging('type'),
-    ))
+    )
 
-    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(
-            SessionUpdate,
-            naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AUTO_STRIP_SUFFIX,
+    msh.install_standard_factories(
+        cfgs,
+        *msh.standard_polymorphism_factories(
+            msh.polymorphism_from_subclasses(
+                SessionUpdate,
+                naming=msh.Naming.SNAKE,
+                strip_suffix=msh.AUTO_STRIP_SUFFIX,
+            ),
+            msh.FieldTypeTagging('sessionUpdate'),
         ),
-        msh.FieldTypeTagging('sessionUpdate'),
-    ))
+    )
 
-    msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-        msh.polymorphism_from_subclasses(
-            ToolCallContent,
-            naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AUTO_STRIP_SUFFIX,
+    msh.install_standard_factories(
+        cfgs,
+        *msh.standard_polymorphism_factories(
+            msh.polymorphism_from_subclasses(
+                ToolCallContent,
+                naming=msh.Naming.SNAKE,
+                strip_suffix=msh.AUTO_STRIP_SUFFIX,
+            ),
+            msh.FieldTypeTagging('type'),
         ),
-        msh.FieldTypeTagging('type'),
-    ))
+    )

@@ -1,4 +1,3 @@
-from omlish import lang
 from omlish import marshal as msh
 
 from .bash import BashToolPermissionMatcher  # noqa
@@ -13,13 +12,14 @@ from .url import UrlToolPermissionTarget  # noqa
 ##
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
     for cls in [
         ToolPermissionMatcher,
         ToolPermissionTarget,
     ]:
-        msh.install_global_standard_factories(
+        msh.install_standard_factories(
+            cfgs,
             *msh.standard_polymorphism_factories(
                 msh.polymorphism_from_subclasses(
                     cls,

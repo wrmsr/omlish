@@ -1,4 +1,3 @@
-from omlish import lang
 from omlish import marshal as msh
 
 from .chatcompletion.contentpart import ChatCompletionContentPart
@@ -9,18 +8,21 @@ from .chatcompletion.responseformat import ChatCompletionResponseFormat
 ##
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
     for root_cls, tag_field in [
         (ChatCompletionContentPart, 'type'),
         (ChatCompletionMessage, 'role'),
         (ChatCompletionResponseFormat, 'type'),
     ]:
-        msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-            msh.polymorphism_from_subclasses(
-                root_cls,
-                naming=msh.Naming.SNAKE,
-                strip_suffix=msh.AUTO_STRIP_SUFFIX,
+        msh.install_standard_factories(
+            cfgs,
+            *msh.standard_polymorphism_factories(
+                msh.polymorphism_from_subclasses(
+                    root_cls,
+                    naming=msh.Naming.SNAKE,
+                    strip_suffix=msh.AUTO_STRIP_SUFFIX,
+                ),
+                msh.FieldTypeTagging(tag_field),
             ),
-            msh.FieldTypeTagging(tag_field),
-        ))
+        )

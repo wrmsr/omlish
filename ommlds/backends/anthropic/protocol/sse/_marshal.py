@@ -1,4 +1,3 @@
-from omlish import lang
 from omlish import marshal as msh
 
 from .events import AnthropicSseDecoderEvents
@@ -7,17 +6,20 @@ from .events import AnthropicSseDecoderEvents
 ##
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
     for root_cls in [
         AnthropicSseDecoderEvents.Event,
         AnthropicSseDecoderEvents.ContentBlockStart.ContentBlock,
         AnthropicSseDecoderEvents.ContentBlockDelta.Delta,
     ]:
-        msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-            msh.polymorphism_from_subclasses(
-                root_cls,
-                naming=msh.Naming.SNAKE,
+        msh.install_standard_factories(
+            cfgs,
+            *msh.standard_polymorphism_factories(
+                msh.polymorphism_from_subclasses(
+                    root_cls,
+                    naming=msh.Naming.SNAKE,
+                ),
+                msh.FieldTypeTagging('type'),
             ),
-            msh.FieldTypeTagging('type'),
-        ))
+        )

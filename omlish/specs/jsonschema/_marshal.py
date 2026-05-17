@@ -1,7 +1,6 @@
 import typing as ta
 
 from ... import check
-from ... import lang
 from ... import marshal as msh
 from .keywords.base import Keywords
 from .keywords.parse import KeywordParser
@@ -21,9 +20,11 @@ class _KeywordsUnmarshaler(msh.Unmarshaler):
         return KeywordParser(allow_unknown=True).parse_keywords(check.isinstance(v, ta.Mapping))
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
-    msh.install_global_standard_factories(
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories(
+        cfgs,
+
         msh.TypeMapMarshalerFactory({Keywords: _KeywordsMarshaler()}),
         msh.TypeMapUnmarshalerFactory({Keywords: _KeywordsUnmarshaler()}),
     )

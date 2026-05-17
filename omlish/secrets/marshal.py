@@ -8,7 +8,6 @@ import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
-from .. import lang
 from .. import marshal as msh
 from .. import reflect as rfl
 from .secrets import Secret
@@ -53,9 +52,11 @@ def marshal_secret_field(f: dc.Field) -> dc.Field:
     })
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
-    msh.install_global_standard_factories(
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories(
+        cfgs,
+
         msh.ForbiddenTypeMarshalerFactory({Secret}),
         msh.ForbiddenTypeUnmarshalerFactory({Secret}),
 

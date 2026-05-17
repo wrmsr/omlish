@@ -6,7 +6,6 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
@@ -49,9 +48,10 @@ class _VectorUnmarshalerFactory(msh.UnmarshalerFactory):
 ##
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
-    msh.install_global_standard_factories(
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
+    msh.install_standard_factories(
+        cfgs,
         _VectorMarshalerFactory(),
         _VectorUnmarshalerFactory(),
     )

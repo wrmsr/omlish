@@ -4,7 +4,6 @@ TODO:
 """
 import typing as ta
 
-from omlish import lang
 from omlish import marshal as msh
 
 from .formats import ResponseFormat  # noqa
@@ -20,8 +19,8 @@ from .types import ChatOption
 ##
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
     cls: ta.Any
 
     for cls in [
@@ -34,7 +33,8 @@ def _install_standard_marshaling() -> None:
             naming=msh.Naming.SNAKE,
             strip_suffix='Message',
         )
-        msh.install_global_standard_factories(
+        msh.install_standard_factories(
+            cfgs,
             msh.PolymorphismMarshalerFactory(cls_poly),
             msh.PolymorphismUnmarshalerFactory(cls_poly),
         )
@@ -43,10 +43,13 @@ def _install_standard_marshaling() -> None:
         ChatOption,
         MessageMetadata,
     ]:
-        msh.install_global_standard_factories(*msh.standard_polymorphism_factories(
-            msh.polymorphism_from_subclasses(
-                cls,
-                naming=msh.Naming.SNAKE,
+        msh.install_standard_factories(
+            cfgs,
+            *msh.standard_polymorphism_factories(
+                msh.polymorphism_from_subclasses(
+                    cls,
+                    naming=msh.Naming.SNAKE,
+                ),
+                msh.WrapperTypeTagging(),
             ),
-            msh.WrapperTypeTagging(),
-        ))
+        )

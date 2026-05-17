@@ -295,8 +295,8 @@ class _ImageContentUnmarshaler(msh.Unmarshaler):
 ##
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
     base_content_poly = msh.Polymorphism(
         ContentBase,
         [
@@ -339,18 +339,20 @@ def _install_standard_marshaling() -> None:
         ],
     )
 
-    msh.install_global_standard_factories(
+    msh.install_standard_factories(
+        cfgs,
         *msh.standard_polymorphism_factories(base_content_poly),
     )
 
     #
 
-    msh.install_global_standard_factories(
+    msh.install_standard_factories(
+        cfgs,
         _ContentMarshalerFactory(),
         _ContentUnmarshalerFactory(),
     )
 
-    msh.update_global_config(
+    cfgs.update(
         Content,
         msh.ReflectOverride(MarshalContent),
         identity=True,
@@ -358,12 +360,13 @@ def _install_standard_marshaling() -> None:
 
     #
 
-    msh.install_global_standard_factories(
+    msh.install_standard_factories(
+        cfgs,
         _SingleRawContentMarshalerFactory(),
         _SingleRawContentUnmarshalerFactory(),
     )
 
-    msh.update_global_config(
+    cfgs.update(
         SingleRawContent,
         msh.ReflectOverride(MarshalSingleRawContent),
         identity=True,
@@ -371,12 +374,13 @@ def _install_standard_marshaling() -> None:
 
     #
 
-    msh.install_global_standard_factories(
+    msh.install_standard_factories(
+        cfgs,
         _RawContentMarshalerFactory(),
         _RawContentUnmarshalerFactory(),
     )
 
-    msh.update_global_config(
+    cfgs.update(
         RawContent,
         msh.ReflectOverride(MarshalRawContent),
         identity=True,
@@ -384,7 +388,8 @@ def _install_standard_marshaling() -> None:
 
     #
 
-    msh.install_global_standard_factories(
+    msh.install_standard_factories(
+        cfgs,
         msh.TypeMapMarshalerFactory({
             ImageContent: _ImageContentMarshaler(),
             NamespaceContent: _NamespaceContentMarshaler(),

@@ -40,15 +40,16 @@ class _JsonValueUnmarshalerFactory(msh.UnmarshalerFactory):
         return lambda: msh.NopMarshalerUnmarshaler()
 
 
-@lang.static_init
-def _install_standard_marshaling() -> None:
-    msh.update_global_config(
+@msh.register_global_lazy_init
+def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
+    cfgs.update(
         JsonValue,
         msh.ReflectOverride(MarshalJsonValue),
         identity=True,
     )
 
-    msh.install_global_standard_factories(
+    msh.install_standard_factories(
+        cfgs,
         _JsonValueMarshalerFactory(),
         _JsonValueUnmarshalerFactory(),
     )
