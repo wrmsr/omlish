@@ -26,6 +26,10 @@ InternalStateByConfigByFactoryEntryT = ta.TypeVar('InternalStateByConfigByFactor
 ##
 
 
+class _AnyInternalStateEntry(lang.Abstract):
+    pass
+
+
 @ta.final
 class InternalState:
     def __init__(self) -> None:
@@ -45,7 +49,7 @@ class InternalState:
 
     #
 
-    class Entry(lang.Abstract):
+    class Entry(_AnyInternalStateEntry, lang.Abstract):
         pass
 
     def get(
@@ -94,7 +98,7 @@ class InternalState:
 
         #
 
-        class Entry(lang.Abstract):
+        class Entry(_AnyInternalStateEntry, lang.Abstract):
             pass
 
         def get(
@@ -138,7 +142,7 @@ class InternalState:
 
             #
 
-            class Entry(lang.Abstract):
+            class Entry(_AnyInternalStateEntry, lang.Abstract):
                 pass
 
             def get(
