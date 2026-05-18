@@ -1,20 +1,38 @@
 import asyncio
 import inspect
 import io
-import json
-import pickle
+import os
 import time
 import typing as ta
 
-import aiohttp
-import msgpack  # type: ignore[import-untyped]
 from rich.console import Console
 from rich.segment import Segment
 from textual._log import LogGroup
 from textual._log import LogVerbosity
 from textual.constants import DEVTOOLS_PORT
 
-from omlish import check
+from omlish.http.headers import HttpHeaders
+from omlish.http.pipelines.clients.requests import IoPipelineHttpRequestEncoder
+from omlish.http.pipelines.clients.responses import IoPipelineHttpResponseDecoder
+from omlish.http.pipelines.requests import IoPipelineHttpRequestHead
+from omlish.http.pipelines.websockets.aggregators import IoPipelineWebsocketAggregator
+from omlish.http.pipelines.websockets.frames import IoPipelineWebsocketClientFrameDecoder
+from omlish.http.pipelines.websockets.frames import IoPipelineWebsocketClientFrameEncoder
+from omlish.http.pipelines.websockets.handshakes import IoPipelineWebsocketClientUpgradeHandler
+from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketClose
+from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketOpen
+from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketText
+from omlish.http.versions import HttpVersions
+from omlish.io.pipelines.core import IoPipeline
+from omlish.io.pipelines.core import IoPipelineHandler
+from omlish.io.pipelines.core import IoPipelineHandlerContext
+from omlish.io.pipelines.core import IoPipelineMessages
+from omlish.io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
+
+from .protocol import DevtoolsWebsocketSend
+from .protocol import decode_message
+from .protocol import encode_message
+from .protocol import encode_segments
 
 
 ##
@@ -67,6 +85,44 @@ class ClientShutdown:
     """Sentinel type sent to client queue(s) to indicate shutdown"""
 
 
+class DevtoolsClientWebsocketHandler(IoPipelineHandler):
+    def __init__(self, client: DevtoolsClient) -> None:
+        super().__init__()
+
+        self._client = client
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, DevtoolsWebsocketSend):
+            ctx.feed_out(msg.message)
+            return
+
+        if isinstance(msg, IoPipelineMessages.InitialInput):
+            ctx.feed_in(msg)
+            ctx.feed_out(IoPipelineHttpRequestHead(
+                method='GET',
+                target='/textual-devtools-websocket',
+                version=HttpVersions.HTTP_1_1,
+                headers=HttpHeaders([
+                    ('Host', 'localhost'),
+                ]),
+            ))
+            return
+
+        if isinstance(msg, IoPipelineWebsocketOpen):
+            self._client.on_open()
+            return
+
+        if isinstance(msg, IoPipelineWebsocketText):
+            self._client.on_message(msg)
+            return
+
+        if isinstance(msg, (IoPipelineWebsocketClose, IoPipelineMessages.FinalInput)):
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
+            return
+
+        ctx.feed_in(msg)
+
+
 class DevtoolsClient:
     """
     Client responsible for websocket communication with the devtools server. Communicates using a simple JSON protocol.
@@ -98,21 +154,25 @@ class DevtoolsClient:
             self,
             host: str = '127.0.0.1',
             port: int | None = None,
+            *,
+            socket_path: str | None = None,
     ) -> None:
         super().__init__()
 
         if port is None:
             port = DEVTOOLS_PORT
-        self.url: str = f'ws://{host}:{port}'
-        self.session: aiohttp.ClientSession | None = None
+        self.host = host
+        self.port = port
+        self.socket_path = socket_path or os.environ.get('TEXTUAL_DEVTOOLS_SOCKET_PATH')
         self.log_queue_task: asyncio.Task | None = None
-        self.update_console_task: asyncio.Task | None = None
         self.console: DevtoolsConsole = DevtoolsConsole(file=io.StringIO())
-        self.websocket: aiohttp.ClientWebSocketResponse | None = None
-        self.log_queue: asyncio.Queue[str | bytes | type[ClientShutdown]] | None = None
+        self.driver: LoopAsyncioStreamIoPipelineDriver | None = None
+        self.driver_task: asyncio.Task | None = None
+        self.log_queue: asyncio.Queue[dict[str, ta.Any] | type[ClientShutdown]] | None = None
         self.spillover: int = 0
         self.verbose: bool = False
         self._ready_event: asyncio.Event = asyncio.Event()
+        self._connected = False
 
     async def connect(self) -> None:
         """
@@ -122,32 +182,29 @@ class DevtoolsClient:
             DevtoolsConnectionError: If we're unable to establish a connection to the server for any reason.
         """
 
-        self.session = aiohttp.ClientSession()
         self.log_queue = asyncio.Queue(maxsize=LOG_QUEUE_MAXSIZE)
+        if self.socket_path is None:
+            raise DevtoolsConnectionError
+
         try:
-            self.websocket = await self.session.ws_connect(f'{self.url}/textual-devtools-websocket')
-        except (aiohttp.ClientConnectorError, aiohttp.ClientResponseError):
+            reader, writer = await asyncio.open_unix_connection(self.socket_path)
+        except OSError:
             raise DevtoolsConnectionError from None
 
         log_queue = self.log_queue
-        websocket = self.websocket
-
-        async def update_console() -> None:
-            """
-            Coroutine function scheduled as a Task, which listens on the websocket for updates from the server regarding
-            any changes in the server Console dimensions. When the client learns of this change, it will update its own
-            Console to ensure it renders at the correct width for server-side display.
-            """
-
-            async for message in check.not_none(self.websocket):
-                if message.type == aiohttp.WSMsgType.TEXT:
-                    message_json = json.loads(message.data)
-                    if message_json['type'] == 'server_info':
-                        payload = message_json['payload']
-                        self.console.width = payload['width']
-                        self.console.height = payload['height']
-                        self.verbose = payload.get('verbose', False)
-                        self._ready_event.set()
+        self.driver = LoopAsyncioStreamIoPipelineDriver(
+            IoPipeline.Spec([
+                IoPipelineHttpResponseDecoder(),
+                IoPipelineHttpRequestEncoder(),
+                IoPipelineWebsocketClientUpgradeHandler(host='localhost'),
+                IoPipelineWebsocketClientFrameDecoder(),
+                IoPipelineWebsocketClientFrameEncoder(),
+                IoPipelineWebsocketAggregator(),
+                DevtoolsClientWebsocketHandler(self),
+            ]),
+            reader,
+            writer,
+        )
 
         async def send_queued_logs() -> None:
             """
@@ -160,10 +217,8 @@ class DevtoolsClient:
                 if log is ClientShutdown:
                     log_queue.task_done()
                     break
-                if isinstance(log, str):
-                    await websocket.send_str(log)
-                else:
-                    await websocket.send_bytes(check.isinstance(log, bytes))
+                if self.driver is not None:
+                    self.driver.enqueue(DevtoolsWebsocketSend(encode_message(ta.cast(dict[str, ta.Any], log))))
                 log_queue.task_done()
 
         async def server_info_received() -> None:
@@ -174,8 +229,8 @@ class DevtoolsClient:
             except TimeoutError:
                 return
 
+        self.driver_task = asyncio.create_task(self.driver.run())
         self.log_queue_task = asyncio.create_task(send_queued_logs())
-        self.update_console_task = asyncio.create_task(update_console())
 
         await server_info_received()
 
@@ -196,12 +251,15 @@ class DevtoolsClient:
         console size.
         """
 
-        if self.websocket:
-            await self.websocket.close()
-        if self.update_console_task:
-            await self.update_console_task
-        if self.session:
-            await self.session.close()
+        if self.driver is not None:
+            try:
+                self.driver.enqueue(DevtoolsWebsocketSend(IoPipelineWebsocketClose()))
+                self.driver.enqueue(DevtoolsWebsocketSend(IoPipelineMessages.FinalOutput()))
+            except Exception:  # noqa
+                pass
+        if self.driver_task:
+            await self.driver_task
+        self._connected = False
 
     async def disconnect(self) -> None:
         """Disconnect from the devtools server by stopping tasks and closing connections."""
@@ -218,9 +276,7 @@ class DevtoolsClient:
             True if this host is connected to the server. False otherwise.
         """
 
-        if not self.session or not self.websocket:
-            return False
-        return not (self.session.closed or self.websocket.closed)
+        return self._connected
 
     def log(
         self,
@@ -237,9 +293,7 @@ class DevtoolsClient:
 
         segments = self.console.export_segments()
 
-        encoded_segments = self._encode_segments(segments)
-
-        message: bytes = check.not_none(msgpack.packb({
+        message: dict[str, ta.Any] = {
             'type': 'client_log',
             'payload': {
                 'group': group.value,
@@ -247,9 +301,9 @@ class DevtoolsClient:
                 'timestamp': int(time.time()),
                 'path': getattr(log.caller, 'filename', ''),
                 'line_number': getattr(log.caller, 'lineno', 0),
-                'segments': encoded_segments,
+                'segments': self._encode_segments(segments),
             },
-        }))
+        }
 
         try:
             if self.log_queue:
@@ -257,19 +311,19 @@ class DevtoolsClient:
                 if self.spillover > 0 and self.log_queue.qsize() < LOG_QUEUE_MAXSIZE:
                     # Tell the server how many messages we had to discard due to the log queue filling to capacity on
                     # the client.
-                    spillover_message = json.dumps({
+                    spillover_message = {
                         'type': 'client_spillover',
                         'payload': {
                             'spillover': self.spillover,
                         },
-                    })
+                    }
                     self.log_queue.put_nowait(spillover_message)
                     self.spillover = 0
         except asyncio.QueueFull:
             self.spillover += 1
 
     @classmethod
-    def _encode_segments(cls, segments: list[Segment]) -> bytes:
+    def _encode_segments(cls, segments: list[Segment]) -> str:
         """
         Pickle a list of Segments
 
@@ -280,5 +334,16 @@ class DevtoolsClient:
             The Segment list pickled with the latest protocol.
         """
 
-        pickled = pickle.dumps(segments, protocol=4)
-        return pickled
+        return encode_segments(segments)
+
+    def on_open(self) -> None:
+        self._connected = True
+
+    def on_message(self, message: IoPipelineWebsocketText) -> None:
+        message_json = decode_message(message)
+        if message_json['type'] == 'server_info':
+            payload = message_json['payload']
+            self.console.width = payload['width']
+            self.console.height = payload['height']
+            self.verbose = payload.get('verbose', False)
+            self._ready_event.set()

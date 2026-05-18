@@ -1,18 +1,24 @@
-"""Manages a running devtools instance"""
 import asyncio
 import json
-import pickle
 import time
 import typing as ta
 
-import msgpack  # type: ignore[import-untyped]
-from aiohttp import WSMsgType
-from aiohttp.web_request import Request
-from aiohttp.web_ws import WebSocketResponse
 from rich.console import Console
 from rich.markup import escape
 from textual._log import LogGroup
 
+from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketClose
+from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketOpen
+from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketText
+from omlish.io.pipelines.core import IoPipelineHandler
+from omlish.io.pipelines.core import IoPipelineHandlerContext
+from omlish.io.pipelines.core import IoPipelineMessages
+from omlish.io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
+
+from .protocol import DevtoolsWebsocketSend
+from .protocol import decode_message
+from .protocol import decode_segments
+from .protocol import encode_message
 from .renderables import DevConsoleHeader
 from .renderables import DevConsoleLog
 from .renderables import DevConsoleNotice
@@ -22,6 +28,32 @@ from .renderables import DevConsoleNotice
 
 
 QUEUEABLE_TYPES = {'client_log', 'client_spillover'}
+
+
+class DevtoolsServerWebsocketHandler(IoPipelineHandler):
+    def __init__(self, client: ClientHandler) -> None:
+        super().__init__()
+
+        self._client = client
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, DevtoolsWebsocketSend):
+            ctx.feed_out(msg.message)
+            return
+
+        if isinstance(msg, IoPipelineWebsocketOpen):
+            self._client.on_open()
+            return
+
+        if isinstance(msg, IoPipelineWebsocketText):
+            self._client.on_message(msg)
+            return
+
+        if isinstance(msg, (IoPipelineWebsocketClose, IoPipelineMessages.FinalInput)):
+            ctx.feed_out(IoPipelineMessages.FinalOutput())
+            return
+
+        ctx.feed_in(msg)
 
 
 class DevtoolsService:
@@ -36,6 +68,7 @@ class DevtoolsService:
         port: int | None = None,
         verbose: bool = False,
         exclude: list[str] | None = None,
+        console: Console | None = None,
     ) -> None:
         """
         Args:
@@ -52,7 +85,7 @@ class DevtoolsService:
         self.port = port
         self.verbose = verbose
         self.exclude = {name.upper() for name in exclude} if exclude else set()
-        self.console = Console()
+        self.console = Console() if console is None else console
         self.shutdown_event = asyncio.Event()
         self.clients: list[ClientHandler] = []
 
@@ -120,14 +153,20 @@ class DevtoolsService:
             },
         })
 
-    async def handle(self, request: Request) -> WebSocketResponse:
-        """Handles a single client connection"""
+    async def handle(
+            self,
+            reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+            pipeline_spec_factory: ta.Callable[[ClientHandler], ta.Any],
+    ) -> None:
+        """Handles a single client connection."""
 
-        client = ClientHandler(request, service=self)
-        self.clients.append(client)
-        websocket = await client.run()
-        self.clients.remove(client)
-        return websocket
+        client = ClientHandler(service=self)
+        try:
+            await client.run(reader, writer, pipeline_spec_factory(client))
+        finally:
+            if client in self.clients:
+                self.clients.remove(client)
 
     async def shutdown(self) -> None:
         """Stop server async tasks and clean up all client handlers"""
@@ -149,18 +188,17 @@ class ClientHandler:
     with that Textual app.
     """
 
-    def __init__(self, request: Request, service: DevtoolsService) -> None:
+    def __init__(self, service: DevtoolsService) -> None:
         """
         Args:
-            request: The aiohttp.Request associated with this client
             service: The parent DevtoolsService which is responsible for the handling of this client.
         """
 
         super().__init__()
 
-        self.request = request
         self.service = service
-        self.websocket = WebSocketResponse()
+        self.driver: LoopAsyncioStreamIoPipelineDriver | None = None
+        self.opened = False
 
     async def send_message(self, message: dict[str, object]) -> None:
         """
@@ -170,7 +208,8 @@ class ClientHandler:
             message: The dict which will be sent to the client.
         """
 
-        await self.outgoing_queue.put(message)
+        if self.driver is not None:
+            self.driver.enqueue(DevtoolsWebsocketSend(encode_message(message)))
 
     async def _consume_outgoing(self) -> None:
         """Consume messages from the outgoing (server -> client) Queue."""
@@ -181,9 +220,8 @@ class ClientHandler:
                 self.outgoing_queue.task_done()
                 break
 
-            message_type = message_json['type']
-            if message_type == 'server_info':
-                await self.websocket.send_json(message_json)
+            if self.driver is not None:
+                self.driver.enqueue(DevtoolsWebsocketSend(encode_message(message_json)))
 
             self.outgoing_queue.task_done()
 
@@ -206,8 +244,7 @@ class ClientHandler:
                 if LogGroup(payload.get('group', 0)).name in self.service.exclude:
                     continue
 
-                encoded_segments = payload['segments']
-                segments = pickle.loads(encoded_segments)  # noqa
+                segments = decode_segments(payload['segments'])
 
                 message_time = time.monotonic()
                 if (
@@ -240,77 +277,41 @@ class ClientHandler:
 
             self.incoming_queue.task_done()
 
-    incoming_queue: asyncio.Queue[dict | None]
-    outgoing_queue: asyncio.Queue[dict | None]
-    outgoing_messages_task: asyncio.Task
+    incoming_queue: asyncio.Queue[dict[str, ta.Any] | None]
+    outgoing_queue: asyncio.Queue[dict[str, ta.Any] | None]
     incoming_messages_task: asyncio.Task
 
-    async def run(self) -> WebSocketResponse:
+    async def run(
+            self,
+            reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+            pipeline_spec: ta.Any,
+    ) -> None:
         """
         Prepare the websocket and communication queues, and continuously read messages from the queues.
 
-        Returns:
-            The WebSocketResponse associated with this client.
         """
 
-        await self.websocket.prepare(self.request)
-
-        self.incoming_queue: asyncio.Queue[dict | None] = asyncio.Queue()
-        self.outgoing_queue: asyncio.Queue[dict | None] = asyncio.Queue()
-        self.outgoing_messages_task = asyncio.create_task(self._consume_outgoing())
+        self.incoming_queue = asyncio.Queue()
+        self.outgoing_queue = asyncio.Queue()
         self.incoming_messages_task = asyncio.create_task(self._consume_incoming())
 
-        if self.request.remote:
-            self.service.console.print(
-                DevConsoleNotice(f"Client '{escape(self.request.remote)}' connected"),
-            )
+        self.driver = LoopAsyncioStreamIoPipelineDriver(pipeline_spec, reader, writer)
 
         try:
-            await self.service.send_server_info(client_handler=self)
-
-            async for websocket_message in self.websocket:
-                if websocket_message.type in (WSMsgType.TEXT, WSMsgType.BINARY):
-                    message: dict[str, ta.Any]
-                    try:
-                        if isinstance(websocket_message.data, bytes):
-                            message = msgpack.unpackb(websocket_message.data)
-                        else:
-                            message = json.loads(websocket_message.data)
-                    except json.JSONDecodeError:
-                        self.service.console.print(escape(str(websocket_message.data)))
-                        continue
-
-                    message_type = message.get('type')
-                    if not message_type:
-                        continue
-                    if (
-                        message_type in QUEUEABLE_TYPES
-                        and not self.service.shutdown_event.is_set()
-                    ):
-                        await self.incoming_queue.put(message)
-
-                elif websocket_message.type == WSMsgType.ERROR:
-                    self.service.console.print(websocket_message.data)
-                    self.service.console.print(
-                        DevConsoleNotice('Websocket error occurred', level='error'),
-                    )
-                    break
+            await self.driver.run()
 
         except Exception as error:  # noqa
             self.service.console.print(DevConsoleNotice(str(error), level='error'))
 
         finally:
-            if self.request.remote:
+            if self.opened:
                 self.service.console.print(
                     '\n',
-                    DevConsoleNotice(
-                        f"Client '{escape(self.request.remote)}' disconnected",
-                    ),
+                    DevConsoleNotice('Client disconnected'),
                 )
 
             await self.close()
-
-        return self.websocket
 
     async def close(self) -> None:
         """
@@ -318,13 +319,52 @@ class ClientHandler:
         client.
         """
 
-        # Stop any writes to the websocket first
-        await self.outgoing_queue.put(None)
-        await asyncio.shield(self.outgoing_messages_task)
+        saw_final_output = True
+        if self.driver is not None:
+            try:
+                saw_final_output = self.driver.pipeline.saw_final_output
+            except AttributeError:
+                saw_final_output = False
 
-        # Now we can shut the socket down
-        await self.websocket.close()
+        if self.driver is not None and not saw_final_output:
+            try:
+                self.driver.enqueue(DevtoolsWebsocketSend(IoPipelineWebsocketClose()))
+                self.driver.enqueue(DevtoolsWebsocketSend(IoPipelineMessages.FinalOutput()))
+            except Exception:  # noqa
+                pass
 
-        # This task is independent of the websocket
-        await self.incoming_queue.put(None)
-        await asyncio.shield(self.incoming_messages_task)
+        if hasattr(self, 'incoming_queue'):
+            await self.incoming_queue.put(None)
+        if hasattr(self, 'incoming_messages_task'):
+            await asyncio.shield(self.incoming_messages_task)
+
+    def on_open(self) -> None:
+        self.opened = True
+        self.service.clients.append(self)
+        self.service.console.print(DevConsoleNotice('Client connected'))
+
+        if self.driver is not None:
+            self.driver.enqueue(DevtoolsWebsocketSend(encode_message({
+                'type': 'server_info',
+                'payload': {
+                    'width': self.service.console.width,
+                    'height': self.service.console.height,
+                    'verbose': self.service.verbose,
+                },
+            })))
+
+    def on_message(self, message: IoPipelineWebsocketText) -> None:
+        try:
+            message_json = decode_message(message)
+        except (TypeError, json.JSONDecodeError):
+            self.service.console.print(escape(message.text))
+            return
+
+        message_type = message_json.get('type')
+        if not message_type:
+            return
+        if (
+                message_type in QUEUEABLE_TYPES and
+                not self.service.shutdown_event.is_set()
+        ):
+            self.incoming_queue.put_nowait(message_json)

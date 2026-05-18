@@ -5,15 +5,21 @@ import hashlib
 import os
 import typing as ta
 
+from ....io.pipelines.core import IoPipeline
 from ....io.pipelines.core import IoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....lite.check import check
 from ....lite.namespaces import NamespaceClass
 from ...headers import HttpHeaders
+from ..clients.requests import IoPipelineHttpRequestEncoder
+from ..clients.responses import IoPipelineHttpResponseDecoder
 from ..requests import FullIoPipelineHttpRequest
+from ..requests import IoPipelineHttpRequestEnd
 from ..requests import IoPipelineHttpRequestHead
 from ..responses import FullIoPipelineHttpResponse
 from ..responses import IoPipelineHttpResponseHead
+from ..servers.requests import IoPipelineHttpRequestDecoder
+from ..servers.responses import IoPipelineHttpResponseEncoder
 from .objects import IoPipelineWebsocketOpen
 
 
@@ -49,6 +55,8 @@ class IoPipelineWebsocketServerUpgradeHandler(IoPipelineHandler):
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
         if self._upgraded:
+            if isinstance(msg, IoPipelineHttpRequestEnd):
+                return
             ctx.feed_in(msg)
             return
 
@@ -88,6 +96,7 @@ class IoPipelineWebsocketServerUpgradeHandler(IoPipelineHandler):
             ctx.feed_out(resp)
 
             self._upgraded = True
+            ctx.defer_no_context(lambda: self._remove_http_handlers(ctx))
             ctx.feed_in(IoPipelineWebsocketOpen(subprotocol=chosen_proto))
             return
 
@@ -109,6 +118,14 @@ class IoPipelineWebsocketServerUpgradeHandler(IoPipelineHandler):
         if headers.single.get('Sec-Websocket-Key') is None:
             return False
         return True
+
+    def _remove_http_handlers(self, ctx: IoPipelineHandlerContext) -> None:
+        for ty in (
+                IoPipeline.HandlerType(IoPipelineHttpRequestDecoder),
+                IoPipeline.HandlerType(IoPipelineHttpResponseEncoder),
+        ):
+            for ref in ctx.pipeline.find_handlers_of_type(ty):
+                ctx.pipeline.remove(ref)
 
 
 class IoPipelineWebsocketClientUpgradeHandler(IoPipelineHandler):
@@ -165,6 +182,7 @@ class IoPipelineWebsocketClientUpgradeHandler(IoPipelineHandler):
             chosen_proto = msg.headers.single.get('Sec-Websocket-Protocol')
 
             self._upgraded = True
+            ctx.defer_no_context(lambda: self._remove_http_handlers(ctx))
             ctx.feed_in(IoPipelineWebsocketOpen(subprotocol=chosen_proto))
             return
 
@@ -196,3 +214,11 @@ class IoPipelineWebsocketClientUpgradeHandler(IoPipelineHandler):
             parsed=head.parsed,
             version=head.version,
         )
+
+    def _remove_http_handlers(self, ctx: IoPipelineHandlerContext) -> None:
+        for ty in (
+                IoPipeline.HandlerType(IoPipelineHttpResponseDecoder),
+                IoPipeline.HandlerType(IoPipelineHttpRequestEncoder),
+        ):
+            for ref in ctx.pipeline.find_handlers_of_type(ty):
+                ctx.pipeline.remove(ref)
