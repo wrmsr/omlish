@@ -142,7 +142,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='4477d00145b207dd0397ecfbc8fef5ae8c641bb3'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
-            dict(path='../../omlish/io/fdio/handlers.py', sha1='abbdbab26f618d3a6d2b1961859d5138b774d157'),
+            dict(path='../../omlish/io/fdio/handlers.py', sha1='e54c78728659a0c15fec4b5647e5c8c349109e55'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/io/pipelines/core.py', sha1='8abb400abd5aad472954e4e01f31ab9b09cb2ef5'),
             dict(path='../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
@@ -7227,13 +7227,14 @@ class ServerSocketFdioHandler(SocketFdioHandler):
             sock_or_addr: ta.Union[socket.socket, SocketAddress],
             on_connect: ta.Callable[[socket.socket, SocketAddress], None],
     ) -> None:
+        # FIXME: io in ctor
         if isinstance(sock_or_addr, socket.socket):
             sock = sock_or_addr
             addr = sock.getsockname()
         else:
             addr = sock_or_addr
             if isinstance(sock_or_addr, str):
-                sock = socket.create_server(sock_or_addr, family=socket.AF_UNIX)
+                sock = self._create_unix_socket_server(sock_or_addr)
             else:
                 sock = socket.create_server(sock_or_addr)
 
@@ -7244,6 +7245,25 @@ class ServerSocketFdioHandler(SocketFdioHandler):
         self._on_connect = on_connect
 
         sock.listen(1)
+
+    @staticmethod
+    def _create_unix_socket_server(path: str) -> socket.socket:
+        try:
+            return socket.create_server(path, family=socket.AF_UNIX)
+
+        except OSError as e:
+            if e.errno == errno.EADDRINUSE:
+                try:
+                    st = os.stat(path)
+                except FileNotFoundError:
+                    pass
+
+                else:
+                    if stat.S_ISSOCK(st.st_mode):
+                        os.unlink(path)
+                        return socket.create_server(path, family=socket.AF_UNIX)
+
+            raise
 
     def readable(self) -> bool:
         return True

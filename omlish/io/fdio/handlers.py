@@ -1,6 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 import abc
+import errno
+import os
 import socket
+import stat
 import typing as ta
 
 from ...lite.abstract import Abstract
@@ -83,13 +86,14 @@ class ServerSocketFdioHandler(SocketFdioHandler):
             sock_or_addr: ta.Union[socket.socket, SocketAddress],
             on_connect: ta.Callable[[socket.socket, SocketAddress], None],
     ) -> None:
+        # FIXME: io in ctor
         if isinstance(sock_or_addr, socket.socket):
             sock = sock_or_addr
             addr = sock.getsockname()
         else:
             addr = sock_or_addr
             if isinstance(sock_or_addr, str):
-                sock = socket.create_server(sock_or_addr, family=socket.AF_UNIX)
+                sock = self._create_unix_socket_server(sock_or_addr)
             else:
                 sock = socket.create_server(sock_or_addr)
 
@@ -100,6 +104,25 @@ class ServerSocketFdioHandler(SocketFdioHandler):
         self._on_connect = on_connect
 
         sock.listen(1)
+
+    @staticmethod
+    def _create_unix_socket_server(path: str) -> socket.socket:
+        try:
+            return socket.create_server(path, family=socket.AF_UNIX)
+
+        except OSError as e:
+            if e.errno == errno.EADDRINUSE:
+                try:
+                    st = os.stat(path)
+                except FileNotFoundError:
+                    pass
+
+                else:
+                    if stat.S_ISSOCK(st.st_mode):
+                        os.unlink(path)
+                        return socket.create_server(path, family=socket.AF_UNIX)
+
+            raise
 
     def readable(self) -> bool:
         return True

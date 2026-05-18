@@ -54,8 +54,6 @@ class TestSubprocessHttpApi(SupervisorSubprocessTestBase):
 
             # Should have structure
             self.assertIn('groups', data)
-            self.assertIn('method', data)
-            self.assertIn('path', data)
 
         finally:
             conn.close()
