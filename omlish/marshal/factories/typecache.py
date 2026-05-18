@@ -31,7 +31,7 @@ class _TypeCacheFactory(ta.Generic[FactoryT, ImplT]):
     #
 
     @dc.dataclass(frozen=True, eq=False)
-    class _State(InternalState.ByConfig.ByFactory.Entry, lang.Final):
+    class _State(InternalState.ByConfig.ByHandler.Entry, lang.Final):
         dct: dict[rfl.Type, ta.Any | None] = dc.field(default_factory=dict)
 
         lock: threading.RLock = dc.field(default_factory=threading.RLock)
@@ -74,7 +74,7 @@ class _TypeCacheFactory(ta.Generic[FactoryT, ImplT]):
 class TypeCacheMarshalerFactory(_TypeCacheFactory[MarshalerFactory, Marshaler], MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         return self._make(
-            ctx.internal_state_by_config.by_factory(self).get(self._State),
+            ctx.internal_state_by_config.by_handler(self).get(self._State),
             rty,
             lambda: self._fac.make_marshaler(ctx, rty),
         )
@@ -83,7 +83,7 @@ class TypeCacheMarshalerFactory(_TypeCacheFactory[MarshalerFactory, Marshaler], 
 class TypeCacheUnmarshalerFactory(_TypeCacheFactory[UnmarshalerFactory, Unmarshaler], UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         return self._make(
-            ctx.internal_state_by_config.by_factory(self).get(self._State),
+            ctx.internal_state_by_config.by_handler(self).get(self._State),
             rty,
             lambda: self._fac.make_unmarshaler(ctx, rty),
         )

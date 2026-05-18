@@ -15,12 +15,12 @@ from .configs import ConfigRegistry
 
 
 if ta.TYPE_CHECKING:
-    from .types import FactoryHandler
+    from .types import Handler
 
 
 InternalStateEntryT = ta.TypeVar('InternalStateEntryT', bound='InternalState.Entry')
 InternalStateByConfigEntryT = ta.TypeVar('InternalStateByConfigEntryT', bound='InternalState.ByConfig.Entry')
-InternalStateByConfigByFactoryEntryT = ta.TypeVar('InternalStateByConfigByFactoryEntryT', bound='InternalState.ByConfig.ByFactory.Entry')  # noqa
+InternalStateByConfigByHandlerEntryT = ta.TypeVar('InternalStateByConfigByHandlerEntryT', bound='InternalState.ByConfig.ByHandler.Entry')  # noqa
 
 
 ##
@@ -91,9 +91,9 @@ class InternalState:
                 InternalState.ByConfig.Entry,
             ] = {}
 
-            self._by_factory: ta.MutableMapping[
-                FactoryHandler,
-                InternalState.ByConfig.ByFactory,
+            self._by_handler: ta.MutableMapping[
+                Handler,
+                InternalState.ByConfig.ByHandler,
             ] = weakref.WeakKeyDictionary()
 
         #
@@ -119,25 +119,25 @@ class InternalState:
 
         #
 
-        def by_factory(self, fac: FactoryHandler, /) -> ByFactory:
+        def by_handler(self, fac: Handler, /) -> ByHandler:
             try:
-                return self._by_factory[fac]
+                return self._by_handler[fac]
             except KeyError:
                 with self._o._lock:
                     try:
-                        return self._by_factory[fac]
+                        return self._by_handler[fac]
                     except KeyError:
-                        by_factory = self._by_factory[fac] = InternalState.ByConfig.ByFactory(_o=self)
-                        return by_factory
+                        by_handler = self._by_handler[fac] = InternalState.ByConfig.ByHandler(_o=self)
+                        return by_handler
 
         @ta.final
-        class ByFactory:
+        class ByHandler:
             def __init__(self, *, _o: InternalState.ByConfig) -> None:
                 self._o = _o
 
                 self._entries: dict[
-                    type[InternalState.ByConfig.ByFactory.Entry],
-                    InternalState.ByConfig.ByFactory.Entry,
+                    type[InternalState.ByConfig.ByHandler.Entry],
+                    InternalState.ByConfig.ByHandler.Entry,
                 ] = {}
 
             #
@@ -147,10 +147,10 @@ class InternalState:
 
             def get(
                     self,
-                    ty: type[InternalStateByConfigByFactoryEntryT],
-                    new: ta.Callable[[], InternalStateByConfigByFactoryEntryT] | None = None,
+                    ty: type[InternalStateByConfigByHandlerEntryT],
+                    new: ta.Callable[[], InternalStateByConfigByHandlerEntryT] | None = None,
                     /,
-            ) -> InternalStateByConfigByFactoryEntryT:
+            ) -> InternalStateByConfigByHandlerEntryT:
                 try:
                     return self._entries[ty]  # type: ignore[return-value]
                 except KeyError:
