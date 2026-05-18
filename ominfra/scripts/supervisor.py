@@ -199,7 +199,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
-            dict(path='processimpl.py', sha1='0668cfc3ab10999e0ec5a6a58f4beea8277399d8'),
+            dict(path='processimpl.py', sha1='8b42ac7067c65c867408a5364eef557256c877db'),
             dict(path='setupimpl.py', sha1='7ab3e7397090c1420cd967730c8aa072c1e68f8e'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
@@ -19782,33 +19782,35 @@ class ProcessImpl(Process):
 
         self._spawning = process_spawning_factory(self)
 
-        #
+        self._internal = ProcessImpl._InternalState()
 
-        self._dispatchers = Dispatchers([])
-        self._pipes = ProcessPipes()
+    @dc.dataclass()
+    class _InternalState:
+        dispatchers: Dispatchers = dc.field(default_factory=lambda: Dispatchers([]))
+        pipes: ProcessPipes = dc.field(default_factory=lambda: ProcessPipes())
 
-        self._state = ProcessState.STOPPED
-        self._pid = Pid(0)  # 0 when not running
+        state: ProcessState = ProcessState.STOPPED
+        pid: Pid = Pid(0)  # 0 when not running
 
-        self._last_start = 0.  # Last time the subprocess was started; 0 if never
-        self._last_stop = 0.  # Last time the subprocess was stopped; 0 if never
-        self._last_stop_report = 0.  # Last time "waiting for x to stop" logged, to throttle
-        self._delay = 0.  # If nonzero, delay starting or killing until this time
+        last_start: float = 0.  # Last time the subprocess was started; 0 if never
+        last_stop: float = 0.  # Last time the subprocess was stopped; 0 if never
+        last_stop_report: float = 0.  # Last time "waiting for x to stop" logged, to throttle
+        delay: float = 0.  # If nonzero, delay starting or killing until this time
 
-        self._administrative_stop = False  # true if process has been stopped by an admin
-        self._system_stop = False  # true if process has been stopped by the system
+        administrative_stop: bool = False  # true if process has been stopped by an admin
+        system_stop: bool = False  # true if process has been stopped by the system
 
-        self._killing = False  # true if we are trying to kill this process
+        killing: bool = False  # true if we are trying to kill this process
 
-        self._backoff = 0  # backoff counter (to start_retries)
+        backoff: int = 0  # backoff counter (to start_retries)
 
-        self._exitstatus: ta.Optional[Rc] = None  # status attached to dead process by finish()
-        self._spawn_err: ta.Optional[str] = None  # error message attached by _spawn() if any
+        exitstatus: ta.Optional[Rc] = None  # status attached to dead process by finish()
+        spawn_err: ta.Optional[str] = None  # error message attached by _spawn() if any
 
     #
 
     def __repr__(self) -> str:
-        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self._state.name}>'
+        return f'<Subprocess at {id(self)} with name {self._config.name} in state {self._internal.state.name}>'
 
     #
 
@@ -19826,17 +19828,17 @@ class ProcessImpl(Process):
 
     @property
     def pid(self) -> Pid:
-        return self._pid
+        return self._internal.pid
 
     #
 
     @property
     def state(self) -> ProcessState:
-        return self._state
+        return self._internal.state
 
     @property
     def backoff(self) -> int:
-        return self._backoff
+        return self._internal.backoff
 
     #
 
@@ -19852,13 +19854,13 @@ class ProcessImpl(Process):
             ProcessState.STOPPED,
         )
 
-        self._killing = False
-        self._spawn_err = None
-        self._exitstatus = None
-        self._system_stop = False
-        self._administrative_stop = False
+        self._internal.killing = False
+        self._internal.spawn_err = None
+        self._internal.exitstatus = None
+        self._internal.system_stop = False
+        self._internal.administrative_stop = False
 
-        self._last_start = time.time()
+        self._internal.last_start = time.time()
 
         self._change_state(ProcessState.STARTING)
 
@@ -19866,33 +19868,33 @@ class ProcessImpl(Process):
             sp = self._spawning.spawn()
         except ProcessSpawnError as err:
             log.exception('Spawn error')
-            self._spawn_err = err.args[0]
+            self._internal.spawn_err = err.args[0]
             self._check_in_state(ProcessState.STARTING)
             self._change_state(ProcessState.BACKOFF)
             return None
 
         log.info("Spawned: '%s' with pid %s", self.name, sp.pid)
 
-        self._pid = sp.pid
-        self._pipes = sp.pipes
-        self._dispatchers = sp.dispatchers
+        self._internal.pid = sp.pid
+        self._internal.pipes = sp.pipes
+        self._internal.dispatchers = sp.dispatchers
 
-        self._delay = time.time() + self.config.start_secs
+        self._internal.delay = time.time() + self.config.start_secs
 
         return sp.pid
 
     def get_dispatchers(self) -> Dispatchers:
-        return self._dispatchers
+        return self._internal.dispatchers
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
-        if not self.pid or self._killing:
+        if not self.pid or self._internal.killing:
             raise OSError(errno.EPIPE, 'Process already closed')
 
-        stdin_fd = self._pipes.stdin
+        stdin_fd = self._internal.pipes.stdin
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = check.isinstance(self._dispatchers[stdin_fd], ProcessInputDispatcher)
+        dispatcher = check.isinstance(self._internal.dispatchers[stdin_fd], ProcessInputDispatcher)
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 
@@ -19902,15 +19904,15 @@ class ProcessImpl(Process):
     #
 
     def _change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
-        old_state = self._state
+        old_state = self._internal.state
         if new_state is old_state:
             return False
 
-        self._state = new_state
+        self._internal.state = new_state
         if new_state == ProcessState.BACKOFF:
             now = time.time()
-            self._backoff += 1
-            self._delay = now + self._backoff
+            self._internal.backoff += 1
+            self._internal.delay = now + self._internal.backoff
 
         event_class = PROCESS_STATE_EVENT_MAP.get(new_state)
         if event_class is not None:
@@ -19920,10 +19922,10 @@ class ProcessImpl(Process):
         return True
 
     def _check_in_state(self, *states: ProcessState) -> None:
-        if self._state not in states:
+        if self._internal.state not in states:
             raise ProcessStateError(
                 f'Check failed for {self._config.name}: '
-                f'{self._state.name} not in {" ".join(s.name for s in states)}',
+                f'{self._internal.state.name} not in {" ".join(s.name for s in states)}',
             )
 
     #
@@ -19931,45 +19933,45 @@ class ProcessImpl(Process):
     def _check_and_adjust_for_system_clock_rollback(self, test_time: float) -> None:
         """Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time."""
 
-        if self._state == ProcessState.STARTING:
-            self._last_start = min(test_time, self._last_start)
-            if self._delay > 0 and test_time < (self._delay - self._config.start_secs):
-                self._delay = test_time + self._config.start_secs
+        if self._internal.state == ProcessState.STARTING:
+            self._internal.last_start = min(test_time, self._internal.last_start)
+            if self._internal.delay > 0 and test_time < (self._internal.delay - self._config.start_secs):
+                self._internal.delay = test_time + self._config.start_secs
 
-        elif self._state == ProcessState.RUNNING:
-            if test_time > self._last_start and test_time < (self._last_start + self._config.start_secs):
-                self._last_start = test_time - self._config.start_secs
+        elif self._internal.state == ProcessState.RUNNING:
+            if self._internal.last_start < test_time < (self._internal.last_start + self._config.start_secs):
+                self._internal.last_start = test_time - self._config.start_secs
 
-        elif self._state == ProcessState.STOPPING:
-            self._last_stop_report = min(test_time, self._last_stop_report)
-            if self._delay > 0 and test_time < (self._delay - self._config.stop_wait_secs):
-                self._delay = test_time + self._config.stop_wait_secs
+        elif self._internal.state == ProcessState.STOPPING:
+            self._internal.last_stop_report = min(test_time, self._internal.last_stop_report)
+            if self._internal.delay > 0 and test_time < (self._internal.delay - self._config.stop_wait_secs):
+                self._internal.delay = test_time + self._config.stop_wait_secs
 
-        elif self._state == ProcessState.BACKOFF:
-            if self._delay > 0 and test_time < (self._delay - self._backoff):
-                self._delay = test_time + self._backoff
+        elif self._internal.state == ProcessState.BACKOFF:
+            if self._internal.delay > 0 and test_time < (self._internal.delay - self._internal.backoff):
+                self._internal.delay = test_time + self._internal.backoff
 
     def stop(self) -> ta.Optional[str]:
-        self._administrative_stop = True
-        self._last_stop_report = 0
+        self._internal.administrative_stop = True
+        self._internal.last_stop_report = 0
         return self.kill(self._config.stop_signal)
 
     def stop_report(self) -> None:
         """Log a 'waiting for x to stop' message with throttling."""
 
-        if self._state == ProcessState.STOPPING:
+        if self._internal.state == ProcessState.STOPPING:
             now = time.time()
 
             self._check_and_adjust_for_system_clock_rollback(now)
 
-            if now > (self._last_stop_report + 2):  # every 2 seconds
+            if now > (self._internal.last_stop_report + 2):  # every 2 seconds
                 log.info('waiting for %s to stop', self.name)
-                self._last_stop_report = now
+                self._internal.last_stop_report = now
 
     def give_up(self) -> None:
-        self._delay = 0
-        self._backoff = 0
-        self._system_stop = True
+        self._internal.delay = 0
+        self._internal.backoff = 0
+        self._internal.system_stop = True
         self._check_in_state(ProcessState.BACKOFF)
         self._change_state(ProcessState.FATAL)
 
@@ -19987,7 +19989,7 @@ class ProcessImpl(Process):
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED. This is needed because
         # if start_retries is a large number and the process isn't starting successfully, the stop request would be
         # blocked for a long time waiting for the retries.
-        if self._state == ProcessState.BACKOFF:
+        if self._internal.state == ProcessState.BACKOFF:
             log.debug('Attempted to kill %s, which is in BACKOFF state.', self.name)
             self._change_state(ProcessState.STOPPED)
             return None
@@ -19999,7 +20001,7 @@ class ProcessImpl(Process):
             return fmt % args
 
         # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
-        if self._state == ProcessState.STOPPING:
+        if self._internal.state == ProcessState.STOPPING:
             kill_as_group = self._config.kill_as_group
         else:
             kill_as_group = self._config.stop_as_group
@@ -20011,8 +20013,8 @@ class ProcessImpl(Process):
         log.debug('killing %s (pid %s) %s with signal %s', self.name, self.pid, as_group, sig_name(sig))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
-        self._killing = True
-        self._delay = now + self._config.stop_wait_secs
+        self._internal.killing = True
+        self._internal.delay = now + self._config.stop_wait_secs
         # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stop_wait_secs
         self._check_in_state(ProcessState.RUNNING, ProcessState.STARTING, ProcessState.STOPPING)
         self._change_state(ProcessState.STOPPING)
@@ -20037,8 +20039,8 @@ class ProcessImpl(Process):
             fmt, args = 'unknown problem killing %s (%s):%s', (self.name, self.pid, tb)
             log.critical(fmt, *args)
             self._change_state(ProcessState.UNKNOWN)
-            self._killing = False
-            self._delay = 0
+            self._internal.killing = False
+            self._internal.delay = 0
             return fmt % args
 
         return None
@@ -20088,7 +20090,7 @@ class ProcessImpl(Process):
     def finish(self, sts: Rc) -> None:
         """The process was reaped and we need to report and manage its state."""
 
-        self._dispatchers.drain()
+        self._internal.dispatchers.drain()
 
         es, msg = decode_wait_status(sts)
 
@@ -20096,10 +20098,10 @@ class ProcessImpl(Process):
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
-        self._last_stop = now
+        self._internal.last_stop = now
 
-        if now > self._last_start:
-            too_quickly = now - self._last_start < self._config.start_secs
+        if now > self._internal.last_start:
+            too_quickly = now - self._internal.last_start < self._config.start_secs
         else:
             too_quickly = False
             log.warning(
@@ -20111,11 +20113,11 @@ class ProcessImpl(Process):
 
         exit_expected = es in self._config.exitcodes
 
-        if self._killing:
+        if self._internal.killing:
             # likely the result of a stop request implies STOPPING -> STOPPED
-            self._killing = False
-            self._delay = 0
-            self._exitstatus = Rc(es)
+            self._internal.killing = False
+            self._internal.delay = 0
+            self._internal.exitstatus = Rc(es)
 
             fmt, args = 'stopped: %s (%s)', (self.name, msg)
             self._check_in_state(ProcessState.STOPPING)
@@ -20127,8 +20129,8 @@ class ProcessImpl(Process):
 
         elif too_quickly:
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
-            self._exitstatus = None
-            self._spawn_err = 'Exited too quickly (process log may have details)'
+            self._internal.exitstatus = None
+            self._internal.spawn_err = 'Exited too quickly (process log may have details)'
             self._check_in_state(ProcessState.STARTING)
             self._change_state(ProcessState.BACKOFF)
             log.warning('exited: %s (%s)', self.name, msg + '; not expected')
@@ -20136,13 +20138,13 @@ class ProcessImpl(Process):
         else:
             # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
             # RUNNING -> EXITED normally but see next comment
-            self._delay = 0
+            self._internal.delay = 0
             self._backoff = 0
-            self._exitstatus = es
+            self._internal.exitstatus = es
 
             # if the process was STARTING but a system time change causes self.last_start to be in the future, the
             # normal STARTING->RUNNING transition can be subverted so we perform the transition here.
-            if self._state == ProcessState.STARTING:
+            if self._internal.state == ProcessState.STARTING:
                 self._change_state(ProcessState.RUNNING)
 
             self._check_in_state(ProcessState.RUNNING)
@@ -20153,18 +20155,18 @@ class ProcessImpl(Process):
                 log.info('exited: %s (%s)', self.name, msg + '; expected')
             else:
                 # unexpected exit code
-                self._spawn_err = f'Bad exit code {es}'
+                self._internal.spawn_err = f'Bad exit code {es}'
                 self._change_state(ProcessState.EXITED, expected=False)
                 log.warning('exited: %s (%s)', self.name, msg + '; not expected')
 
-        self._pid = Pid(0)
-        close_parent_pipes(self._pipes)
-        self._pipes = ProcessPipes()
-        self._dispatchers = Dispatchers([])
+        self._internal.pid = Pid(0)
+        close_parent_pipes(self._internal.pipes)
+        self._internal.pipes = ProcessPipes()
+        self._internal.dispatchers = Dispatchers([])
 
     def transition(self) -> None:
         now = time.time()
-        state = self._state
+        state = self._internal.state
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
@@ -20175,41 +20177,41 @@ class ProcessImpl(Process):
                     if self._config.auto_restart == 'unconditional':
                         # EXITED -> STARTING
                         self._spawn()
-                    elif self._exitstatus not in self._config.exitcodes:
+                    elif self._internal.exitstatus not in self._config.exitcodes:
                         # EXITED -> STARTING
                         self._spawn()
 
-            elif state == ProcessState.STOPPED and not self._last_start:
+            elif state == ProcessState.STOPPED and not self._internal.last_start:
                 if self._config.auto_start:
                     # STOPPED -> STARTING
                     self._spawn()
 
             elif state == ProcessState.BACKOFF:
-                if self._backoff <= self._config.start_retries:
-                    if now > self._delay:
+                if self._internal.backoff <= self._config.start_retries:
+                    if now > self._internal.delay:
                         # BACKOFF -> STARTING
                         self._spawn()
 
         if state == ProcessState.STARTING:
-            if now - self._last_start > self._config.start_secs:
+            if now - self._internal.last_start > self._config.start_secs:
                 # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
                 # proc.config.start_secs,
-                self._delay = 0
-                self._backoff = 0
+                self._internal.delay = 0
+                self._internal.backoff = 0
                 self._check_in_state(ProcessState.STARTING)
                 self._change_state(ProcessState.RUNNING)
                 msg = ('entered RUNNING state, process has stayed up for > than %s seconds (start_secs)' % self._config.start_secs)  # noqa
                 log.info('success: %s %s', self.name, msg)
 
         if state == ProcessState.BACKOFF:
-            if self._backoff > self._config.start_retries:
+            if self._internal.backoff > self._config.start_retries:
                 # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
                 msg = ('entered FATAL state, too many start retries too quickly')
                 log.info('gave up: %s %s', self.name, msg)
 
         elif state == ProcessState.STOPPING:
-            time_left = self._delay - now
+            time_left = self._internal.delay - now
             if time_left <= 0:
                 # kill processes which are taking too long to stop with a final sigkill. if this doesn't kill it, the
                 # process will be stuck in the STOPPING state forever.

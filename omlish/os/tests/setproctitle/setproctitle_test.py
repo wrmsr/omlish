@@ -101,9 +101,9 @@ def test_prctl():
         except Exception:  # noqa
             pass
         else:
-            linux_version = list(
-                map(int, re.search('[.0-9]+', name).group().split('.')[:3]),
-            )
+            m = re.search('[.0-9]+', name)
+            assert m is not None
+            linux_version = list(map(int, m.group().split('.')[:3]))
 
     if linux_version < [2, 6, 9]:
         pytest.skip('syscall not supported')

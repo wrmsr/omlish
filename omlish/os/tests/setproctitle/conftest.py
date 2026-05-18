@@ -80,7 +80,4 @@ def run_script(script=None, args=None, executable=None, env=None):
             print(err.decode('utf8', 'replace'), file=sys.stderr)
         pytest.fail('test script failed')
 
-    # Py3 subprocess generates bytes strings.
-    out = out.decode()
-
-    return out
+    return out.decode()
