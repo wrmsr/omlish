@@ -100,11 +100,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/os/deathsig.py', sha1='5d3f1a22132b7029d32e29b13c1cc20497c8f7a8'),
-            dict(path='../../omlish/os/environ.py', sha1='5e9ed4817af65683b496af49fef996630c3113b1'),
+            dict(path='../../omlish/os/environ.py', sha1='5555815824a7583faa32ed2e57a0d4609bd48b90'),
             dict(path='../../omlish/os/linux.py', sha1='3e104ec5cbb84879f58fccae2a23800437249f4b'),
             dict(path='../../omlish/os/paths.py', sha1='56c40b7c2aa84d1778d60ee4cda498f8c380cc8d'),
             dict(path='../../omlish/shlex.py', sha1='a69721913bcd4f4008600e390fb7822637c2a8ec'),
-            dict(path='../../omdev/home/paths.py', sha1='4006c1d740600ba6e07142cf990c3efeb290062e'),
+            dict(path='../../omdev/home/paths.py', sha1='09749e5e655305ab761858d78be30e949f1d57b5'),
             dict(path='../../omdev/packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
             dict(path='deploy/paths/specs.py', sha1='023167da1ad9fcf09d9d44963177175591a97377'),
             dict(path='remote/config.py', sha1='48f9367e9db4b23166657ff34eb644c9869d48a8'),
@@ -4972,7 +4972,7 @@ def set_process_deathsig(sig: int) -> bool:
 
 
 class EnvVar:
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, description: ta.Optional[str] = None) -> None:
         super().__init__()
 
         if not isinstance(name, str):
@@ -4980,10 +4980,15 @@ class EnvVar:
         if not name:
             raise NameError(name)
         self._name = name
+        self._description = description
 
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def description(self) -> ta.Optional[str]:
+        return self._description
 
     def __init_subclass__(cls, **kwargs):
         raise TypeError
@@ -5716,35 +5721,51 @@ class HomePaths:
     def home_dir(self) -> str:
         return self._home_dir
 
+    class DirKind(enum.Enum):
+        HOME = 'home'
+        CONFIG = 'config'
+        LOG = 'log'
+        RUN = 'run'
+        SHADOW = 'shadow'
+        STATE = 'state'
+
     config_subdir: ta.Final = 'config'
+    log_subdir: ta.Final = 'log'
+    run_subdir: ta.Final = 'run'
+    shadow_subdir: ta.Final = 'shadow'
+    state_subdir: ta.Final = 'state'
+
+    _SUBDIR_BY_KIND: ta.Final[ta.Mapping[DirKind, str]] = {
+        DirKind.HOME: '',
+        DirKind.CONFIG: config_subdir,
+        DirKind.LOG: log_subdir,
+        DirKind.RUN: run_subdir,
+        DirKind.SHADOW: shadow_subdir,
+        DirKind.STATE: state_subdir,
+    }
+
+    def get_dir(self, kind: 'DirKind') -> str:
+        return os.path.join(self._home_dir, self._SUBDIR_BY_KIND[kind])
 
     @property
     def config_dir(self) -> str:
-        return os.path.join(self._home_dir, self.config_subdir)
-
-    log_subdir: ta.Final = 'log'
+        return self.get_dir(HomePaths.DirKind.CONFIG)
 
     @property
     def log_dir(self) -> str:
-        return os.path.join(self._home_dir, self.log_subdir)
-
-    run_subdir: ta.Final = 'run'
+        return self.get_dir(HomePaths.DirKind.LOG)
 
     @property
     def run_dir(self) -> str:
-        return os.path.join(self._home_dir, self.run_subdir)
-
-    shadow_subdir: ta.Final = 'shadow'
+        return self.get_dir(HomePaths.DirKind.RUN)
 
     @property
     def shadow_dir(self) -> str:
-        return os.path.join(self._home_dir, self.shadow_subdir)
-
-    state_subdir: ta.Final = 'state'
+        return self.get_dir(HomePaths.DirKind.SHADOW)
 
     @property
     def state_dir(self) -> str:
-        return os.path.join(self._home_dir, self.state_subdir)
+        return self.get_dir(HomePaths.DirKind.STATE)
 
 
 def get_home_paths() -> HomePaths:
@@ -5754,7 +5775,7 @@ def get_home_paths() -> HomePaths:
 ##
 
 
-CACHE_DIR_ENV_VAR = 'OMLISH_CACHE'
+CACHE_DIR_ENV_VAR = EnvVar('OMLISH_CACHE')
 DEFAULT_CACHE_DIR = '~/.cache/omlish'
 
 

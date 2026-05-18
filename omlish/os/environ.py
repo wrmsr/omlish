@@ -9,7 +9,7 @@ import typing as ta
 
 
 class EnvVar:
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, description: ta.Optional[str] = None) -> None:
         super().__init__()
 
         if not isinstance(name, str):
@@ -17,10 +17,15 @@ class EnvVar:
         if not name:
             raise NameError(name)
         self._name = name
+        self._description = description
 
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def description(self) -> ta.Optional[str]:
+        return self._description
 
     def __init_subclass__(cls, **kwargs):
         raise TypeError
