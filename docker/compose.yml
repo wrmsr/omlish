@@ -13,7 +13,7 @@ services:
       - 'apparmor:unconfined'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - '..:/omlish'
+      - '..:/work'
     depends_on:
       - 'omlish-mysql'
       - 'omlish-postgres'
