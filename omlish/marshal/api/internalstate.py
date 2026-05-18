@@ -15,7 +15,7 @@ from .configs import ConfigRegistry
 
 
 if ta.TYPE_CHECKING:
-    from .types import AnyFactory
+    from .types import FactoryHandler
 
 
 InternalStateEntryT = ta.TypeVar('InternalStateEntryT', bound='InternalState.Entry')
@@ -92,7 +92,7 @@ class InternalState:
             ] = {}
 
             self._by_factory: ta.MutableMapping[
-                AnyFactory,
+                FactoryHandler,
                 InternalState.ByConfig.ByFactory,
             ] = weakref.WeakKeyDictionary()
 
@@ -119,7 +119,7 @@ class InternalState:
 
         #
 
-        def by_factory(self, fac: AnyFactory, /) -> ByFactory:
+        def by_factory(self, fac: FactoryHandler, /) -> ByFactory:
             try:
                 return self._by_factory[fac]
             except KeyError:

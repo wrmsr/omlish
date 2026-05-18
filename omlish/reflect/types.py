@@ -321,12 +321,31 @@ class _LateUnionArgs(list):
     pass
 
 
+def _merge_unions(args: ta.Iterable[Type]) -> frozenset[Type]:
+    out: set[Type] = set()
+    seen: set[Type] = set()
+    stk: list[Type] = list(args)
+    while stk:
+        cur = stk.pop()
+        if cur.__class__ is Union:
+            for nxt in cur.args:
+                if nxt not in seen:
+                    seen.add(nxt)
+                    stk.append(nxt)
+        else:
+            out.add(cur)
+    return frozenset(out)
+
+
 @ta.final
 class Union(TypeInfo):
     def __init__(self, args: frozenset[Type] | _LateUnionArgs) -> None:
         if isinstance(args, _LateUnionArgs):
             self._late_args = args
         else:
+            for a in args:
+                if a.__class__ is Union:
+                    raise TypeError(a)
             self._args = args
 
     @property
@@ -335,7 +354,7 @@ class Union(TypeInfo):
             return self._args
         except AttributeError:
             pass
-        args = self._args = frozenset(self._late_args)
+        args = self._args = _merge_unions(self._late_args)
         return args
 
     @reprlib.recursive_repr()
@@ -665,7 +684,7 @@ class Reflector:
                     return None
 
                 return Union(
-                    (_LateUnionArgs if self._allow_recursion and aliases else frozenset)
+                    (_LateUnionArgs if self._allow_recursion and aliases else _merge_unions)
                     ([rec(a) for a in ta.get_args(cur)]),
                 )
 

@@ -77,6 +77,10 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .api.types import (  # noqa
+        BoundHandler,
+        FactoryHandler,
+        Handler,
+
         Marshaler,
         Unmarshaler,
 
@@ -85,8 +89,6 @@ with _lang.auto_proxy_init(globals()):
 
         MarshalerFactory,
         UnmarshalerFactory,
-
-        AnyFactory,
 
         Marshaling,
 

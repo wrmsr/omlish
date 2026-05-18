@@ -20,6 +20,11 @@ from .values import Value
 T = ta.TypeVar('T')
 
 
+type BoundHandler = Marshaler | Unmarshaler
+type FactoryHandler = MarshalerFactory | UnmarshalerFactory
+type Handler = BoundHandler | FactoryHandler
+
+
 ##
 
 
@@ -52,9 +57,6 @@ class UnmarshalerFactory(lang.Abstract):
     @abc.abstractmethod
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         raise NotImplementedError
-
-
-AnyFactory: ta.TypeAlias = MarshalerFactory | UnmarshalerFactory
 
 
 ##

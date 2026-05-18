@@ -243,5 +243,33 @@ def test_new_aliases():
     print(rfl.Reflector(allow_recursion=True).typeof(RecurC))
 
 
+class TnumA:
+    pass
+
+
+class TnumB:
+    pass
+
+
+class TnumC:
+    pass
+
+
+class TnumD:
+    pass
+
+
+type TnumAB = TnumA | TnumB
+type TnumCD = TnumC | TnumD
+type Tnum = TnumAB | TnumCD
+
+
+def test_new_union_merging():
+    rty = rfl.typeof(Tnum)
+    print(rty)
+    assert isinstance(rty, rfl.Union)
+    assert set(rty.args) == {TnumA, TnumB, TnumC, TnumD}
+
+
 if __name__ == '__main__':
     run_all_tests(globals())
