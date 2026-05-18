@@ -88,7 +88,10 @@ class ServerSocketFdioHandler(SocketFdioHandler):
             addr = sock.getsockname()
         else:
             addr = sock_or_addr
-            sock = socket.create_server(sock_or_addr)
+            if isinstance(sock_or_addr, str):
+                sock = socket.create_server(sock_or_addr, family=socket.AF_UNIX)
+            else:
+                sock = socket.create_server(sock_or_addr)
 
         sock.setblocking(False)
 

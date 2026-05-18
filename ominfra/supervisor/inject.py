@@ -134,7 +134,14 @@ def bind_server(
 
     #
 
-    if config.http_port is not None:
+    if config.http_port is not None or config.http_socket_path is not None:
+        if config.http_port is not None:
+            http_server_address = HttpServer.Address(('localhost', config.http_port))
+        elif config.http_socket_path is not None:
+            http_server_address = HttpServer.Address(config.http_socket_path)
+        else:
+            raise RuntimeError
+
         def _provide_http_handler(s: SupervisorSimpleHttpHandler) -> HttpServer.Handler:
             return HttpServer.Handler(s)
 
@@ -142,9 +149,7 @@ def bind_server(
             inj.bind(HttpServer, singleton=True, eager=True),
             inj.bind(HasDispatchers, array=True, to_key=HttpServer),
 
-            inj.bind(HttpServer.Address(
-                ('localhost', config.http_port) if isinstance(config.http_port, int) else config.http_port,
-            )),
+            inj.bind(http_server_address),
 
             inj.bind(SupervisorSimpleHttpHandler, singleton=True),
             inj.bind(_provide_http_handler),

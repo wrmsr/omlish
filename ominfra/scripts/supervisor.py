@@ -142,7 +142,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='4477d00145b207dd0397ecfbc8fef5ae8c641bb3'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
-            dict(path='../../omlish/io/fdio/handlers.py', sha1='5a4303b50f3f48fdb8fbdcc625e52888c09227bf'),
+            dict(path='../../omlish/io/fdio/handlers.py', sha1='abbdbab26f618d3a6d2b1961859d5138b774d157'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/io/pipelines/core.py', sha1='8abb400abd5aad472954e4e01f31ab9b09cb2ef5'),
             dict(path='../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
@@ -154,7 +154,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='9968ed4673fcc2cabe75eb3aee90c40156dac5b9'),
+            dict(path='configs.py', sha1='b48111d8429fa6a43a003fa214b738c7c860d58e'),
             dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
@@ -209,7 +209,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='35aac87aea283a4f6603ec1924381eb4b3cea625'),
-            dict(path='inject.py', sha1='7c82795ee6e33d21ced509d324c79619a28b6a48'),
+            dict(path='inject.py', sha1='0ca51f71546c9de52255135a699a5b13c608d7f4'),
             dict(path='main.py', sha1='5c8aee376656d78008b6341fe12cae52065b8243'),
         ],
     )
@@ -7232,7 +7232,10 @@ class ServerSocketFdioHandler(SocketFdioHandler):
             addr = sock.getsockname()
         else:
             addr = sock_or_addr
-            sock = socket.create_server(sock_or_addr)
+            if isinstance(sock_or_addr, str):
+                sock = socket.create_server(sock_or_addr, family=socket.AF_UNIX)
+            else:
+                sock = socket.create_server(sock_or_addr)
 
         sock.setblocking(False)
 
@@ -11598,7 +11601,14 @@ class ServerConfig:
 
     #
 
-    http_port: ta.Union[int, str, None] = None
+    http_port: ta.Optional[int] = None
+    http_socket_path: ta.Optional[str] = None
+
+    #
+
+    def __post_init__(self) -> None:
+        if self.http_port is not None and self.http_socket_path is not None:
+            raise ValueError('cannot specify both http_port and http_socket_path')
 
     #
 
@@ -22372,7 +22382,14 @@ def bind_server(
 
     #
 
-    if config.http_port is not None:
+    if config.http_port is not None or config.http_socket_path is not None:
+        if config.http_port is not None:
+            http_server_address = HttpServer.Address(('localhost', config.http_port))
+        elif config.http_socket_path is not None:
+            http_server_address = HttpServer.Address(config.http_socket_path)
+        else:
+            raise RuntimeError
+
         def _provide_http_handler(s: SupervisorSimpleHttpHandler) -> HttpServer.Handler:
             return HttpServer.Handler(s)
 
@@ -22380,9 +22397,7 @@ def bind_server(
             inj.bind(HttpServer, singleton=True, eager=True),
             inj.bind(HasDispatchers, array=True, to_key=HttpServer),
 
-            inj.bind(HttpServer.Address(
-                ('localhost', config.http_port) if isinstance(config.http_port, int) else config.http_port,
-            )),
+            inj.bind(http_server_address),
 
             inj.bind(SupervisorSimpleHttpHandler, singleton=True),
             inj.bind(_provide_http_handler),

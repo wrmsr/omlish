@@ -1,3 +1,7 @@
+"""
+TODO:
+ - update to InternalState
+"""
 import abc
 import typing as ta
 

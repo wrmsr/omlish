@@ -240,7 +240,14 @@ class ServerConfig:
 
     #
 
-    http_port: ta.Union[int, str, None] = None
+    http_port: ta.Optional[int] = None
+    http_socket_path: ta.Optional[str] = None
+
+    #
+
+    def __post_init__(self) -> None:
+        if self.http_port is not None and self.http_socket_path is not None:
+            raise ValueError('cannot specify both http_port and http_socket_path')
 
     #
 
