@@ -39,6 +39,7 @@ class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
+        no_help=True,
     )
     def run(self) -> None:
         exe = sys.executable

@@ -111,7 +111,7 @@ def __omlish_amalg__():  # noqa
             dict(path='remote/payload.py', sha1='acacf4c2901b7708224af5d4414ecb823947297a'),
             dict(path='targets/bestpython.py', sha1='75c16ab86397a8e81017f148a2ef711567b6ab27'),
             dict(path='targets/targets.py', sha1='d07f2d30c31bad89bd4a3b44bb6a5b6c95c05888'),
-            dict(path='../../omlish/argparse/parsers.py', sha1='f874eb5c45e22156b2e9a762cfb68a2311b6d1f8'),
+            dict(path='../../omlish/argparse/parsers.py', sha1='51044d7b7d1b1ca27173be2d3c007d574827a188'),
             dict(path='../../omlish/asyncs/asyncio/channels.py', sha1='07975e0535f23334d1fe9e0597954ac7f2c3c79d'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
@@ -6567,18 +6567,21 @@ class ArgparseCmd:
     accepts_unknown: bool = False
     default: bool = False
 
+    no_help: bool = False
+
     def __post_init__(self) -> None:
         def check_name(s: str) -> None:
             check.isinstance(s, str)
             check.not_in('_', s)
             check.not_empty(s)
+
         check_name(self.name)
+        check.arg(callable(self.fn))
+        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
+
         check.not_isinstance(self.aliases, str)
         for a in self.aliases or []:
             check_name(a)
-
-        check.arg(callable(self.fn))
-        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
         check.isinstance(self.parent, (ArgparseCmd, type(None)))
         check.isinstance(self.accepts_unknown, bool)
 
@@ -6596,14 +6599,18 @@ class ArgparseCmd:
 def argparse_cmd(
         *args: ArgparseArg,
         name: ta.Optional[str] = None,
+
         aliases: ta.Optional[ta.Iterable[str]] = None,
         parent: ta.Optional[ArgparseCmd] = None,
         accepts_unknown: bool = False,
         default: bool = False,
+
+        no_help: bool = False,
 ) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
     for arg in args:
         check.isinstance(arg, ArgparseArg)
     check.isinstance(name, (str, type(None)))
+
     check.isinstance(parent, (ArgparseCmd, type(None)))
     check.not_isinstance(aliases, str)
     check.isinstance(default, bool)
@@ -6613,10 +6620,13 @@ def argparse_cmd(
             (name if name is not None else fn.__name__).replace('_', '-'),
             fn,
             args,
+
             aliases=tuple(aliases) if aliases is not None else None,
             parent=parent,
             accepts_unknown=accepts_unknown,
             default=default,
+
+            no_help=no_help,
         )
 
     return inner
@@ -6693,7 +6703,10 @@ def configure_argparse_parser_class_parser(
                 default_cmd = obj
 
             for cn in [obj.name, *(obj.aliases or [])]:
-                subparser = subparsers.add_parser(cn)
+                subparser = subparsers.add_parser(
+                    cn,
+                    **(dict(add_help=False) if obj.no_help else {}),  # type: ignore[arg-type]
+                )
 
                 for arg in (obj.args or []):
                     if (

@@ -58,18 +58,21 @@ class ArgparseCmd:
     accepts_unknown: bool = False
     default: bool = False
 
+    no_help: bool = False
+
     def __post_init__(self) -> None:
         def check_name(s: str) -> None:
             check.isinstance(s, str)
             check.not_in('_', s)
             check.not_empty(s)
+
         check_name(self.name)
+        check.arg(callable(self.fn))
+        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
+
         check.not_isinstance(self.aliases, str)
         for a in self.aliases or []:
             check_name(a)
-
-        check.arg(callable(self.fn))
-        check.arg(all(isinstance(a, ArgparseArg) for a in self.args))
         check.isinstance(self.parent, (ArgparseCmd, type(None)))
         check.isinstance(self.accepts_unknown, bool)
 
@@ -87,14 +90,18 @@ class ArgparseCmd:
 def argparse_cmd(
         *args: ArgparseArg,
         name: ta.Optional[str] = None,
+
         aliases: ta.Optional[ta.Iterable[str]] = None,
         parent: ta.Optional[ArgparseCmd] = None,
         accepts_unknown: bool = False,
         default: bool = False,
+
+        no_help: bool = False,
 ) -> ta.Any:  # ta.Callable[[ArgparseCmdFn], ArgparseCmd]:  # FIXME
     for arg in args:
         check.isinstance(arg, ArgparseArg)
     check.isinstance(name, (str, type(None)))
+
     check.isinstance(parent, (ArgparseCmd, type(None)))
     check.not_isinstance(aliases, str)
     check.isinstance(default, bool)
@@ -104,10 +111,13 @@ def argparse_cmd(
             (name if name is not None else fn.__name__).replace('_', '-'),
             fn,
             args,
+
             aliases=tuple(aliases) if aliases is not None else None,
             parent=parent,
             accepts_unknown=accepts_unknown,
             default=default,
+
+            no_help=no_help,
         )
 
     return inner
@@ -184,7 +194,10 @@ def configure_argparse_parser_class_parser(
                 default_cmd = obj
 
             for cn in [obj.name, *(obj.aliases or [])]:
-                subparser = subparsers.add_parser(cn)
+                subparser = subparsers.add_parser(
+                    cn,
+                    **(dict(add_help=False) if obj.no_help else {}),  # type: ignore[arg-type]
+                )
 
                 for arg in (obj.args or []):
                     if (
