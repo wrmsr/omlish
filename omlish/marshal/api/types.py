@@ -20,9 +20,9 @@ from .values import Value
 T = ta.TypeVar('T')
 
 
+type Handler = BoundHandler | FactoryHandler
 type BoundHandler = Marshaler | Unmarshaler
 type FactoryHandler = MarshalerFactory | UnmarshalerFactory
-type Handler = BoundHandler | FactoryHandler
 
 
 ##

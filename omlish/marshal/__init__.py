@@ -28,6 +28,10 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .api.contexts import (  # noqa
+        Context,
+        BoundContext,
+        FactoryContext,
+
         BaseContext,
 
         MarshalFactoryContext,
@@ -77,9 +81,9 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .api.types import (  # noqa
+        Handler,
         BoundHandler,
         FactoryHandler,
-        Handler,
 
         Marshaler,
         Unmarshaler,

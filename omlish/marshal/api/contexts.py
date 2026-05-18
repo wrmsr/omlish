@@ -32,6 +32,11 @@ if ta.TYPE_CHECKING:
 T = ta.TypeVar('T')
 
 
+type Context = BoundContext | FactoryContext
+type BoundContext = MarshalContext | UnmarshalContext
+type FactoryContext = MarshalFactoryContext | UnmarshalFactoryContext
+
+
 ##
 
 
