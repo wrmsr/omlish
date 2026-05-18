@@ -2,6 +2,7 @@ import asyncio
 import inspect
 import io
 import os
+import tempfile
 
 from rich.console import Console
 
@@ -57,4 +58,5 @@ async def _test_devtools_unix_websocket_roundtrip(socket_path: str) -> None:
 
 
 def test_devtools_unix_websocket_roundtrip(tmp_path) -> None:
-    asyncio.run(_test_devtools_unix_websocket_roundtrip(os.path.join(tmp_path, 'devtools.sock')))
+    socket_path = os.path.join(tempfile.mkdtemp(), 'devtools.sock')
+    asyncio.run(_test_devtools_unix_websocket_roundtrip(socket_path))

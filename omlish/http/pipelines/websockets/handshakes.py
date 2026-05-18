@@ -5,7 +5,6 @@ import hashlib
 import os
 import typing as ta
 
-from ....io.pipelines.core import IoPipeline
 from ....io.pipelines.core import IoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
 from ....lite.check import check
@@ -121,8 +120,8 @@ class IoPipelineWebsocketServerUpgradeHandler(IoPipelineHandler):
 
     def _remove_http_handlers(self, ctx: IoPipelineHandlerContext) -> None:
         for ty in (
-                IoPipeline.HandlerType(IoPipelineHttpRequestDecoder),
-                IoPipeline.HandlerType(IoPipelineHttpResponseEncoder),
+                IoPipelineHttpRequestDecoder,
+                IoPipelineHttpResponseEncoder,
         ):
             for ref in ctx.pipeline.find_handlers_of_type(ty):
                 ctx.pipeline.remove(ref)
@@ -217,8 +216,8 @@ class IoPipelineWebsocketClientUpgradeHandler(IoPipelineHandler):
 
     def _remove_http_handlers(self, ctx: IoPipelineHandlerContext) -> None:
         for ty in (
-                IoPipeline.HandlerType(IoPipelineHttpResponseDecoder),
-                IoPipeline.HandlerType(IoPipelineHttpRequestEncoder),
+                IoPipelineHttpResponseDecoder,
+                IoPipelineHttpRequestEncoder,
         ):
             for ref in ctx.pipeline.find_handlers_of_type(ty):
                 ctx.pipeline.remove(ref)

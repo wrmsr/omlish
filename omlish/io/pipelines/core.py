@@ -771,13 +771,13 @@ class IoPipelineServices:
         return item in self._lst
 
     @dc.dataclass(frozen=True)
-    class ServiceType(ta.Generic[T]):
+    class _ServiceType(ta.Generic[T]):
         """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
 
         ty: ta.Type[T]
 
-    def find_all(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
-        if isinstance(ty, self.ServiceType):
+    def find_all(self, ty: ta.Union[_ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
+        if isinstance(ty, self._ServiceType):
             ty = ty.ty
 
         try:
@@ -788,8 +788,8 @@ class IoPipelineServices:
         self._by_type_cache[ty] = ret = [svc for svc in self._lst if isinstance(svc, ty)]
         return ret
 
-    def find(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
-        if isinstance(ty, self.ServiceType):
+    def find(self, ty: ta.Union[_ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
+        if isinstance(ty, self._ServiceType):
             ty = ty.ty
 
         try:
@@ -800,7 +800,7 @@ class IoPipelineServices:
         self._single_by_type_cache[ty] = ret = check.opt_single(self.find_all(ty))
         return ret
 
-    def __getitem__(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> T:
+    def __getitem__(self, ty: ta.Union[_ServiceType[T], ta.Type[T]]) -> T:
         if (svc := self.find(ty)) is None:
             raise KeyError(ty)
         return svc
@@ -1786,24 +1786,24 @@ class IoPipeline:
         return self._caches().handlers_by_name()
 
     @dc.dataclass(frozen=True)
-    class HandlerType(ta.Generic[T]):
+    class _HandlerType(ta.Generic[T]):
         """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
 
         ty: ta.Type[T]
 
     def find_handlers_of_type(
             self,
-            ty: ta.Union[HandlerType[T], ta.Type[T]],
+            ty: ta.Union[_HandlerType[T], ta.Type[T]],
     ) -> ta.Sequence[IoPipelineHandlerRef[T]]:
-        if isinstance(ty, IoPipeline.HandlerType):
+        if isinstance(ty, IoPipeline._HandlerType):
             ty = ty.ty
         return self._caches().find_handlers_of_type(ty)
 
     def find_single_handler_of_type(
             self,
-            ty: ta.Union[HandlerType[T], ta.Type[T]],
+            ty: ta.Union[_HandlerType[T], ta.Type[T]],
     ) -> ta.Optional[IoPipelineHandlerRef[T]]:
-        if isinstance(ty, IoPipeline.HandlerType):
+        if isinstance(ty, IoPipeline._HandlerType):
             ty = ty.ty
         return self._caches().find_single_handler_of_type(ty)
 

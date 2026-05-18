@@ -29,19 +29,20 @@ class Foo:
 
 
 def test_marshal():
-    assert msh.marshal('hi', MarshalContent) == 'hi'
-    assert msh.marshal('hi', Content) == 'hi'
-    assert msh.marshal(Foo('hi')) == {'c': 'hi'}
+    for _ in range(2):
+        assert msh.marshal('hi', MarshalContent) == 'hi'
+        assert msh.marshal('hi', Content) == 'hi'
+        assert msh.marshal(Foo('hi')) == {'c': 'hi'}
 
-    assert msh.marshal(TextContent('hi'), Content) == {'text': {'s': 'hi'}}
-    assert msh.marshal(ConcatContent(['hi', [TextContent('bye')]]), Content) == {'concat': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
+        assert msh.marshal(TextContent('hi'), Content) == {'text': {'s': 'hi'}}
+        assert msh.marshal(ConcatContent(['hi', [TextContent('bye')]]), Content) == {'concat': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
 
-    u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u), no_original=True), Content) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
+        u = uuid.uuid4()
+        assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u), no_original=True), Content) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
-    assert msh.marshal(JsonContent({'abc': 420}), Content) == {'json': {'v': {'abc': 420}}}
+        assert msh.marshal(JsonContent({'abc': 420}), Content) == {'json': {'v': {'abc': 420}}}
 
-    assert msh.marshal(ItemListContent(['hi', 'there']), Content) == {'item_list': {'l': ['hi', 'there'], 'style': '-'}}
+        assert msh.marshal(ItemListContent(['hi', 'there']), Content) == {'item_list': {'l': ['hi', 'there'], 'style': '-'}}  # noqa
 
 
 @dc.dataclass(frozen=True)

@@ -135,7 +135,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='4477d00145b207dd0397ecfbc8fef5ae8c641bb3'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
-            dict(path='../../omlish/io/pipelines/core.py', sha1='8d6fd4e81969f9e6558aee3aea99f0a42d94ceee'),
+            dict(path='../../omlish/io/pipelines/core.py', sha1='8abb400abd5aad472954e4e01f31ab9b09cb2ef5'),
             dict(path='../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
@@ -7431,13 +7431,13 @@ class IoPipelineServices:
         return item in self._lst
 
     @dc.dataclass(frozen=True)
-    class ServiceType(ta.Generic[T]):
+    class _ServiceType(ta.Generic[T]):
         """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
 
         ty: ta.Type[T]
 
-    def find_all(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
-        if isinstance(ty, self.ServiceType):
+    def find_all(self, ty: ta.Union[_ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
+        if isinstance(ty, self._ServiceType):
             ty = ty.ty
 
         try:
@@ -7448,8 +7448,8 @@ class IoPipelineServices:
         self._by_type_cache[ty] = ret = [svc for svc in self._lst if isinstance(svc, ty)]
         return ret
 
-    def find(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
-        if isinstance(ty, self.ServiceType):
+    def find(self, ty: ta.Union[_ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
+        if isinstance(ty, self._ServiceType):
             ty = ty.ty
 
         try:
@@ -7460,7 +7460,7 @@ class IoPipelineServices:
         self._single_by_type_cache[ty] = ret = check.opt_single(self.find_all(ty))
         return ret
 
-    def __getitem__(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> T:
+    def __getitem__(self, ty: ta.Union[_ServiceType[T], ta.Type[T]]) -> T:
         if (svc := self.find(ty)) is None:
             raise KeyError(ty)
         return svc
@@ -8446,24 +8446,24 @@ class IoPipeline:
         return self._caches().handlers_by_name()
 
     @dc.dataclass(frozen=True)
-    class HandlerType(ta.Generic[T]):
+    class _HandlerType(ta.Generic[T]):
         """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
 
         ty: ta.Type[T]
 
     def find_handlers_of_type(
             self,
-            ty: ta.Union[HandlerType[T], ta.Type[T]],
+            ty: ta.Union[_HandlerType[T], ta.Type[T]],
     ) -> ta.Sequence[IoPipelineHandlerRef[T]]:
-        if isinstance(ty, IoPipeline.HandlerType):
+        if isinstance(ty, IoPipeline._HandlerType):
             ty = ty.ty
         return self._caches().find_handlers_of_type(ty)
 
     def find_single_handler_of_type(
             self,
-            ty: ta.Union[HandlerType[T], ta.Type[T]],
+            ty: ta.Union[_HandlerType[T], ta.Type[T]],
     ) -> ta.Optional[IoPipelineHandlerRef[T]]:
-        if isinstance(ty, IoPipeline.HandlerType):
+        if isinstance(ty, IoPipeline._HandlerType):
             ty = ty.ty
         return self._caches().find_single_handler_of_type(ty)
 
