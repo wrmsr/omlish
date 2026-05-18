@@ -31,7 +31,7 @@ class _AnyInternalStateEntry(lang.Abstract):
 
 
 @ta.final
-class InternalState:
+class InternalState(lang.Final):
     def __init__(self) -> None:
         super().__init__()
 
@@ -82,7 +82,7 @@ class InternalState:
                     return by_config
 
     @ta.final
-    class ByConfig:
+    class ByConfig(lang.Final):
         def __init__(self, *, _o: InternalState) -> None:
             self._o = _o
 
@@ -131,7 +131,7 @@ class InternalState:
                         return by_handler
 
         @ta.final
-        class ByHandler:
+        class ByHandler(lang.Final):
             def __init__(self, *, _o: InternalState.ByConfig) -> None:
                 self._o = _o
 

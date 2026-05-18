@@ -18,6 +18,7 @@ from ..api.contexts import MarshalContext
 from ..api.contexts import MarshalFactoryContext
 from ..api.contexts import UnmarshalContext
 from ..api.contexts import UnmarshalFactoryContext
+from ..api.internalstate import InternalState
 from ..api.types import Marshaler
 from ..api.types import MarshalerFactory
 from ..api.types import Unmarshaler
@@ -49,44 +50,43 @@ class _OpenPolymorphismBase(lang.Abstract, ta.Generic[HandlerContextT, HandlerT]
         self._ty = ty
         self._opts = opts
 
-        self._state: _OpenPolymorphismBase._State | None = None
-
-    class _State(ta.NamedTuple):
-        ics: ta.Any
+    class _StateTup(ta.NamedTuple):
+        config_impls: ta.Any
         impls: Impls
-        h: ta.Any
+        handler: ta.Any
+
+    @dc.dataclass()
+    class _State(InternalState.ByConfig.ByHandler.Entry):
+        tup: _OpenPolymorphismBase._StateTup | None = None
 
     def _get_handler(self, ctx: HandlerContextT) -> HandlerT:
         cr = check.isinstance(ctx.configs, ConfigRegistry)
 
-        st: ta.Any = self._state
-        ics: ta.Any = cr.get(self._ty).get(OpenPolymorphismImpl)
-        if st is not None and ics is not None and st.ics is ics:
-            return st.h
+        sbh: InternalState.ByConfig.ByHandler = ctx.internal_state_by_config.by_handler(self)  # type: ignore[arg-type]
+        stx = sbh.get(_OpenPolymorphismBase._State)
+        st = stx.tup
 
-        with cr._lock:  # noqa
-            st = self._state
-            ics = cr.get(self._ty).get(OpenPolymorphismImpl)
-            if st is not None and ics is not None and st.ics is ics:
-                return st.h
+        config_impls: ta.Any = cr.get(self._ty).get(OpenPolymorphismImpl)
+        if st is not None and config_impls is not None and st.config_impls is config_impls:
+            return st.handler
 
-            impls = polymorphism_from_impls(
-                self._ty,
-                [ic.impl_ty for ic in ics],
-                naming=self._opts.naming,
-                strip_suffix=self._opts.strip_suffix,
-            ).impls
+        impls = polymorphism_from_impls(
+            self._ty,
+            [ic.impl_ty for ic in config_impls],
+            naming=self._opts.naming,
+            strip_suffix=self._opts.strip_suffix,
+        ).impls
 
-            h = self._make_handler(ctx, impls)
+        h = self._make_handler(ctx, impls)
 
-            st = self._State(
-                ics,
-                impls,
-                h,
-            )
+        st = self._StateTup(
+            config_impls,
+            impls,
+            h,
+        )
 
-            self._state = st
-            return h
+        stx.tup = st
+        return h
 
     @abc.abstractmethod
     def _make_handler(

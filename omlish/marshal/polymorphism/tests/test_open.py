@@ -6,6 +6,8 @@ from ...api.naming import Naming
 from ...api.types import SimpleMarshaling
 from ...factories.multi import MultiMarshalerFactory
 from ...factories.multi import MultiUnmarshalerFactory
+from ...factories.typecache import TypeCacheMarshalerFactory
+from ...factories.typecache import TypeCacheUnmarshalerFactory
 from ...objects.dataclasses import DataclassMarshalerFactory
 from ...objects.dataclasses import DataclassUnmarshalerFactory
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
@@ -38,18 +40,22 @@ class BoolFoo(Foo):
 
 def test_open():
     msh = SimpleMarshaling(
-        marshaler_factory=MultiMarshalerFactory(
-            OpenPolymorphismMarshalerFactory(Foo, opo := PolymorphismOptions(
-                naming=Naming.SNAKE,
-                strip_suffix=True,
-            )),
-            DataclassMarshalerFactory(),
-            PRIMITIVE_MARSHALER_FACTORY,
+        marshaler_factory=TypeCacheMarshalerFactory(
+            MultiMarshalerFactory(
+                OpenPolymorphismMarshalerFactory(Foo, opo := PolymorphismOptions(
+                    naming=Naming.SNAKE,
+                    strip_suffix=True,
+                )),
+                DataclassMarshalerFactory(),
+                PRIMITIVE_MARSHALER_FACTORY,
+            ),
         ),
-        unmarshaler_factory=MultiUnmarshalerFactory(
-            OpenPolymorphismUnmarshalerFactory(Foo, opo),
-            DataclassUnmarshalerFactory(),
-            PRIMITIVE_UNMARSHALER_FACTORY,
+        unmarshaler_factory=TypeCacheUnmarshalerFactory(
+            MultiUnmarshalerFactory(
+                OpenPolymorphismUnmarshalerFactory(Foo, opo),
+                DataclassUnmarshalerFactory(),
+                PRIMITIVE_UNMARSHALER_FACTORY,
+            ),
         ),
     )
 
@@ -74,9 +80,10 @@ def test_open():
         OpenPolymorphismImpl(BoolFoo),
     )
 
-    assert (mv := msh.marshal(IntFoo(420), Foo)) == {'int': {'i': 420}}
-    assert msh.unmarshal(mv, Foo) == IntFoo(420)
-    assert (mv := msh.marshal(StrFoo('420'), Foo)) == {'str': {'s': '420'}}
-    assert msh.unmarshal(mv, Foo) == StrFoo('420')
-    assert (mv := msh.marshal(BoolFoo(True), Foo)) == {'bool': {'b': True}}
-    assert msh.unmarshal(mv, Foo) == BoolFoo(True)
+    for _ in range(3):
+        assert (mv := msh.marshal(IntFoo(420), Foo)) == {'int': {'i': 420}}
+        assert msh.unmarshal(mv, Foo) == IntFoo(420)
+        assert (mv := msh.marshal(StrFoo('420'), Foo)) == {'str': {'s': '420'}}
+        assert msh.unmarshal(mv, Foo) == StrFoo('420')
+        assert (mv := msh.marshal(BoolFoo(True), Foo)) == {'bool': {'b': True}}
+        assert msh.unmarshal(mv, Foo) == BoolFoo(True)
