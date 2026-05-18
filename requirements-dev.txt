@@ -20,14 +20,14 @@ ruff==0.15.13
 asyncpg-stubs==0.31.2
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
-types-docutils==0.22.3.20260508
-types-greenlet==3.5.0.20260508
-types-paramiko==4.0.0.20260508  # @omlish-venv !15t
-types-psutil==7.2.2.20260508
-types-pygments==2.20.0.20260508
-types-pyyaml==6.0.12.20260510
-types-regex==2026.5.9.20260510
-types-setuptools==82.0.0.20260508
+types-docutils==0.22.3.20260518
+types-greenlet==3.5.0.20260518
+types-paramiko==4.0.0.20260518  # @omlish-venv !15t
+types-psutil==7.2.2.20260518
+types-pygments==2.20.0.20260518
+types-pyyaml==6.0.12.20260518
+types-regex==2026.5.9.20260518
+types-setuptools==82.0.0.20260518
 types-ujson==5.10.0.20250822
 
 black==26.3.1
@@ -76,7 +76,7 @@ markupsafe==3.0.3
 # redis==7.4.0
 
 asgiref==3.11.1
-uvicorn==0.46.0
+uvicorn==0.47.0
 
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
@@ -102,7 +102,7 @@ wikitextparser==0.56.4  # !! GPL
 executing==2.2.1
 asttokens==3.0.1
 
-numpy>=1.26
+numpy==2.4.5
 
 # must be kept in sync
 textual==8.2.6
@@ -117,7 +117,7 @@ snowflake-connector-python[secure-local-storage]==4.5.0  # @omlish-venv !15t
 
 trino==0.337.0  # @omlish-venv !14t !14dt !15t  # orjson
 
-huggingface-hub==1.14.0  # @omlish-venv !15t
+huggingface-hub==1.15.0  # @omlish-venv !15t
 hf-xet==1.5.0  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..

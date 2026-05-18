@@ -42,7 +42,7 @@ class Project(ProjectBase):
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 1.14',
+            'huggingface-hub ~= 1.15',
             'datasets ~= 4.8',
         ],
 
@@ -51,7 +51,7 @@ class Project(ProjectBase):
         ],
 
         'numpy': [
-            'numpy >= 1.26',
+            'numpy >= 2.4',
         ],
 
         'ocr': [
