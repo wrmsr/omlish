@@ -157,4 +157,3 @@ URL_ROUTE_DEFAULT_CONVERTERS: ta.Mapping[str, ta.Callable[..., UrlRouteConverter
     'uuid': UrlRouteUuidConverter,
     'any': UrlRouteAnyConverter,
 }
-

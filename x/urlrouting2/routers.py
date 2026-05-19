@@ -142,45 +142,6 @@ class _UrlRouteNode:
 ##
 
 
-_URL_ROUTE_VARIABLE_RE = re.compile(
-    r"""
-    \{
-        (?P<name>[a-zA-Z_][a-zA-Z0-9_]*)
-        (?:
-            :
-            (?P<converter>[a-zA-Z_][a-zA-Z0-9_]*)
-            (?:
-                \(
-                    (?P<args>[^{}]*)
-                \)
-            )?
-        )?
-    \}
-    """,
-    re.VERBOSE,
-)
-
-
-_URL_ROUTE_ARG_RE = re.compile(
-    r"""
-    \s*
-    (?:(?P<name>[a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*)?
-    (?P<value>
-        True|False|None|
-        -?\d+\.\d+|
-        -?\d+|
-        "(?:[^"\\]|\\.)*"|
-        '(?:[^'\\]|\\.)*'|
-        [^,\s]+)
-    \s*(?:,|\Z)
-    """,
-    re.VERBOSE,
-)
-
-
-_URL_ROUTE_SENTINEL_METHOD = '__OMLISH_URL_ROUTER_METHOD_SENTINEL__'
-
-
 class _UrlRouteArgParseError(ValueError):
     pass
 
@@ -270,9 +231,11 @@ class UrlRouter:
 
         raise UrlRouteNotFoundError(original_path)
 
+    _URL_ROUTE_SENTINEL_METHOD: ta.ClassVar[str] = '__OMLISH_URL_ROUTER_METHOD_SENTINEL__'
+
     def allowed_methods(self, path: str) -> ta.AbstractSet[str]:
         try:
-            self.match(path, method=_URL_ROUTE_SENTINEL_METHOD)
+            self.match(path, method=self._URL_ROUTE_SENTINEL_METHOD)
         except UrlRouteMethodNotAllowedError as e:
             return e.allowed_methods
         except UrlRouteMatchError:
@@ -385,8 +348,24 @@ class UrlRouter:
             pass
         return s
 
-    @staticmethod
-    def _parse_converter_args(s: str) -> ta.Tuple[ta.Tuple[ta.Any, ...], dict[str, ta.Any]]:
+    _URL_ROUTE_ARG_RE: ta.ClassVar[re.Pattern] = re.compile(
+        r"""
+        \s*
+        (?:(?P<name>[a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*)?
+        (?P<value>
+            True|False|None|
+            -?\d+\.\d+|
+            -?\d+|
+            "(?:[^"\\]|\\.)*"|
+            '(?:[^'\\]|\\.)*'|
+            [^,\s]+)
+        \s*(?:,|\Z)
+        """,
+        re.VERBOSE,
+    )
+
+    @classmethod
+    def _parse_converter_args(cls, s: str) -> ta.Tuple[ta.Tuple[ta.Any, ...], dict[str, ta.Any]]:
         if not s:
             return (), {}
 
@@ -394,7 +373,7 @@ class UrlRouter:
         kwargs: dict[str, ta.Any] = {}
         pos = 0
         while pos < len(s):
-            m = _URL_ROUTE_ARG_RE.match(s, pos)
+            m = cls._URL_ROUTE_ARG_RE.match(s, pos)
             if m is None:
                 raise _UrlRouteArgParseError(s[pos:])
             value = UrlRouter._parse_arg_value(m.group('value'))
@@ -407,6 +386,24 @@ class UrlRouter:
                 kwargs[name] = value
             pos = m.end()
         return tuple(args), kwargs
+
+    _URL_ROUTE_VARIABLE_RE: ta.ClassVar[re.Pattern] = re.compile(
+        r"""
+        \{
+            (?P<name>[a-zA-Z_][a-zA-Z0-9_]*)
+            (?:
+                :
+                (?P<converter>[a-zA-Z_][a-zA-Z0-9_]*)
+                (?:
+                    \(
+                        (?P<args>[^{}]*)
+                    \)
+                )?
+            )?
+        \}
+        """,
+        re.VERBOSE,
+    )
 
     def _compile_segment(
             self,
@@ -421,7 +418,7 @@ class UrlRouter:
         weight = 0
         is_greedy = False
 
-        for m in _URL_ROUTE_VARIABLE_RE.finditer(segment):
+        for m in self._URL_ROUTE_VARIABLE_RE.finditer(segment):
             if m.start() > pos:
                 static = segment[pos:m.start()]
                 regex_parts.append(re.escape(static))
