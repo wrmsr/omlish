@@ -185,104 +185,6 @@ class _UrlRouteArgParseError(ValueError):
     pass
 
 
-def _parse_url_route_arg_value(s: str) -> ta.Any:
-    if s == 'True':
-        return True
-    if s == 'False':
-        return False
-    if s == 'None':
-        return None
-    if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
-        return bytes(s[1:-1], 'utf-8').decode('unicode_escape')
-    try:
-        return int(s)
-    except ValueError:
-        pass
-    try:
-        return float(s)
-    except ValueError:
-        pass
-    return s
-
-
-def _parse_url_route_converter_args(s: str) -> ta.Tuple[ta.Tuple[ta.Any, ...], dict[str, ta.Any]]:
-    if not s:
-        return (), {}
-
-    args: list[ta.Any] = []
-    kwargs: dict[str, ta.Any] = {}
-    pos = 0
-    while pos < len(s):
-        m = _URL_ROUTE_ARG_RE.match(s, pos)
-        if m is None:
-            raise _UrlRouteArgParseError(s[pos:])
-        value = _parse_url_route_arg_value(m.group('value'))
-        name = m.group('name')
-        if name is None:
-            if kwargs:
-                raise _UrlRouteArgParseError(s[pos:])
-            args.append(value)
-        else:
-            kwargs[name] = value
-        pos = m.end()
-    return tuple(args), kwargs
-
-
-def _normalize_url_route_method_set(
-        methods: ta.Optional[ta.AbstractSet[str]],
-        *,
-        add_head: bool,
-) -> ta.Optional[ta.AbstractSet[str]]:
-    if methods is None:
-        return None
-
-    ret = {m.upper() for m in methods}
-    if add_head and 'GET' in ret:
-        ret.add('HEAD')
-    return frozenset(ret)
-
-
-def _split_url_route_raw_path(path: str) -> list[str]:
-    if not path.startswith('/'):
-        raise ValueError(path)
-
-    if path == '/':
-        return []
-
-    return path[1:].split('/')
-
-
-def _unquote_url_route_part(s: str) -> str:
-    return urllib.parse.unquote(s, errors='strict')
-
-
-def _quote_url_route_static_part(s: str) -> str:
-    return urllib.parse.quote(s, safe="!$&'()*+,/:;=@")
-
-
-def _url_route_methods_overlap(
-        a: ta.Optional[ta.AbstractSet[str]],
-        b: ta.Optional[ta.AbstractSet[str]],
-) -> bool:
-    if a is None or b is None:
-        return True
-    return bool(a & b)
-
-
-def _url_route_query_encode(values: ta.Mapping[str, ta.Any]) -> str:
-    items = []
-    for k, v in values.items():
-        if v is None:
-            continue
-        if isinstance(v, (list, tuple)):
-            for e in v:
-                if e is not None:
-                    items.append((k, e))
-        else:
-            items.append((k, v))
-    return urllib.parse.urlencode(items, doseq=True, safe="!$'()*,/:;?@")
-
-
 ##
 
 
@@ -326,6 +228,14 @@ class UrlRouter:
         if route.endpoint is not None:
             self._routes_by_name_or_endpoint.setdefault(route.endpoint, []).append(compiled)
         self._insert(compiled)
+
+    @staticmethod
+    def _alternate_slash_path(path: str) -> ta.Optional[str]:
+        if path == '/':
+            return None
+        if path.endswith('/'):
+            return path[:-1] or '/'
+        return path + '/'
 
     def match(
             self,
@@ -392,6 +302,34 @@ class UrlRouter:
             raise build_error
         raise UrlRouteBuildError(name_or_endpoint)
 
+    @staticmethod
+    def _normalize_method_set(
+            methods: ta.Optional[ta.AbstractSet[str]],
+            *,
+            add_head: bool,
+    ) -> ta.Optional[ta.AbstractSet[str]]:
+        if methods is None:
+            return None
+
+        ret = {m.upper() for m in methods}
+        if add_head and 'GET' in ret:
+            ret.add('HEAD')
+        return frozenset(ret)
+
+    @staticmethod
+    def _split_raw_path(path: str) -> list[str]:
+        if not path.startswith('/'):
+            raise ValueError(path)
+
+        if path == '/':
+            return []
+
+        return path[1:].split('/')
+
+    @staticmethod
+    def _unquote_part(s: str) -> str:
+        return urllib.parse.unquote(s, errors='strict')
+
     def _compile_route(self, route: UrlRoute, order: int) -> _CompiledUrlRoute:
         if not route.pattern.startswith('/'):
             raise ValueError(route.pattern)
@@ -401,8 +339,8 @@ class UrlRouter:
         match_key = []
         variable_names: set[str] = set()
 
-        for raw_segment in _split_url_route_raw_path(route.pattern):
-            segment = _unquote_url_route_part(raw_segment)
+        for raw_segment in self._split_raw_path(route.pattern):
+            segment = self._unquote_part(raw_segment)
             pattern, segment_build_parts, segment_match_key, segment_variable_names = self._compile_segment(segment)
             duplicate_names = variable_names & segment_variable_names
             if duplicate_names:
@@ -421,11 +359,54 @@ class UrlRouter:
             route=route,
             parts=tuple(parts),
             build_parts=tuple(build_parts),
-            methods=_normalize_url_route_method_set(route.methods, add_head=self._config.add_head),
+            methods=self._normalize_method_set(route.methods, add_head=self._config.add_head),
             order=order,
             match_key=tuple(match_key),
             build_names=build_names,
         )
+
+    @staticmethod
+    def _parse_arg_value(s: str) -> ta.Any:
+        if s == 'True':
+            return True
+        if s == 'False':
+            return False
+        if s == 'None':
+            return None
+        if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
+            return bytes(s[1:-1], 'utf-8').decode('unicode_escape')
+        try:
+            return int(s)
+        except ValueError:
+            pass
+        try:
+            return float(s)
+        except ValueError:
+            pass
+        return s
+
+    @staticmethod
+    def _parse_converter_args(s: str) -> ta.Tuple[ta.Tuple[ta.Any, ...], dict[str, ta.Any]]:
+        if not s:
+            return (), {}
+
+        args: list[ta.Any] = []
+        kwargs: dict[str, ta.Any] = {}
+        pos = 0
+        while pos < len(s):
+            m = _URL_ROUTE_ARG_RE.match(s, pos)
+            if m is None:
+                raise _UrlRouteArgParseError(s[pos:])
+            value = UrlRouter._parse_arg_value(m.group('value'))
+            name = m.group('name')
+            if name is None:
+                if kwargs:
+                    raise _UrlRouteArgParseError(s[pos:])
+                args.append(value)
+            else:
+                kwargs[name] = value
+            pos = m.end()
+        return tuple(args), kwargs
 
     def _compile_segment(
             self,
@@ -458,7 +439,7 @@ class UrlRouter:
             if converter_factory is None:
                 raise KeyError(converter_name)
 
-            c_args, c_kwargs = _parse_url_route_converter_args(m.group('args') or '')
+            c_args, c_kwargs = self._parse_converter_args(m.group('args') or '')
             converter = converter_factory(*c_args, **c_kwargs)
             variable = _UrlRouteVariable(name, converter)
             variables.append(variable)
@@ -495,9 +476,18 @@ class UrlRouter:
             frozenset(variable_names),
         )
 
+    @staticmethod
+    def _methods_overlap(
+            a: ta.Optional[ta.AbstractSet[str]],
+            b: ta.Optional[ta.AbstractSet[str]],
+    ) -> bool:
+        if a is None or b is None:
+            return True
+        return bool(a & b)
+
     def _check_conflicts(self, compiled: _CompiledUrlRoute) -> None:
         for other in self._routes_by_match_key.get(compiled.match_key, ()):
-            if _url_route_methods_overlap(other.methods, compiled.methods):
+            if self._methods_overlap(other.methods, compiled.methods):
                 raise UrlRouteConflictError(compiled.route.pattern)
 
         if compiled.route.name is not None:
@@ -541,7 +531,7 @@ class UrlRouter:
             method: ta.Optional[str],
     ) -> UrlRouteMatch:
         method = method.upper() if method is not None else None
-        parts = _split_url_route_raw_path(path)
+        parts = self._split_raw_path(path)
         allowed_methods: set[str] = set()
         metadata = UrlRouteMatchMetadata(
             path=original_path,
@@ -582,7 +572,7 @@ class UrlRouter:
 
         if idx < len(parts):
             raw_part = parts[idx]
-            part = _unquote_url_route_part(raw_part)
+            part = self._unquote_part(raw_part)
 
             static_child = node.static.get(part)
             if static_child is not None:
@@ -615,7 +605,7 @@ class UrlRouter:
             raw_part: str,
             values: ta.Mapping[str, ta.Any],
     ) -> ta.Optional[dict[str, ta.Any]]:
-        decoded_part = _unquote_url_route_part(raw_part)
+        decoded_part = self._unquote_part(raw_part)
         candidate_parts = [raw_part]
         if decoded_part != raw_part:
             candidate_parts.append(decoded_part)
@@ -628,7 +618,7 @@ class UrlRouter:
             next_values = dict(values)
             for variable, s in zip(pattern.variables, m.groups()):
                 try:
-                    next_values[variable.name] = variable.converter.to_python(_unquote_url_route_part(s))
+                    next_values[variable.name] = variable.converter.to_python(self._unquote_part(s))
                 except ValueError:
                     break
             else:
@@ -666,6 +656,24 @@ class UrlRouter:
         route_values.update(values)
         return UrlRouteMatch(compiled.route, route_values, metadata)
 
+    @staticmethod
+    def _quote_static_part(s: str) -> str:
+        return urllib.parse.quote(s, safe="!$&'()*+,/:;=@")
+
+    @staticmethod
+    def _query_encode(values: ta.Mapping[str, ta.Any]) -> str:
+        items = []
+        for k, v in values.items():
+            if v is None:
+                continue
+            if isinstance(v, (list, tuple)):
+                for e in v:
+                    if e is not None:
+                        items.append((k, e))
+            else:
+                items.append((k, v))
+        return urllib.parse.urlencode(items, doseq=True, safe="!$'()*,/:;?@")
+
     def _try_build(
             self,
             compiled: _CompiledUrlRoute,
@@ -677,7 +685,7 @@ class UrlRouter:
         consumed_names = set()
         for part in compiled.build_parts:
             if isinstance(part, str):
-                parts.append(_quote_url_route_static_part(part))
+                parts.append(self._quote_static_part(part))
             else:
                 consumed_names.add(part.name)
                 if part.name not in values:
@@ -700,16 +708,8 @@ class UrlRouter:
         if unknown_values:
             if not append_unknown:
                 raise UrlRouteBuildError('unknown values: ' + ', '.join(sorted(unknown_values)))
-            query = _url_route_query_encode(unknown_values)
+            query = self._query_encode(unknown_values)
             if query:
                 parts.extend(['?', query])
 
         return ''.join(parts)
-
-    @staticmethod
-    def _alternate_slash_path(path: str) -> ta.Optional[str]:
-        if path == '/':
-            return None
-        if path.endswith('/'):
-            return path[:-1] or '/'
-        return path + '/'
