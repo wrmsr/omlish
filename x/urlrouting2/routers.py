@@ -99,70 +99,6 @@ class UrlRouter:
 
     #
 
-    def _try_build(
-            self,
-            compiled: _CompiledUrlRoute,
-            values: ta.Mapping[str, ta.Any],
-            *,
-            append_unknown: bool,
-    ) -> ta.Optional[str]:
-        parts = ['/']
-        consumed_names = set()
-        for part in compiled.build_parts:
-            if isinstance(part, str):
-                parts.append(UrlRoutingUtils.quote_static_part(part))
-            else:
-                consumed_names.add(part.name)
-                if part.name not in values:
-                    if compiled.route.defaults is not None and part.name in compiled.route.defaults:
-                        value = compiled.route.defaults[part.name]
-                    else:
-                        return None
-                else:
-                    value = values[part.name]
-                try:
-                    parts.append(part.converter.to_url(value))
-                except ValueError:
-                    return None
-
-        unknown_values = {
-            k: v
-            for k, v in values.items()
-            if k not in consumed_names and (compiled.route.defaults is None or k not in compiled.route.defaults)
-        }
-        if unknown_values:
-            if not append_unknown:
-                raise UrlRouteBuildError('unknown values: ' + ', '.join(sorted(unknown_values)))
-            query = UrlRoutingUtils.query_encode(unknown_values)
-            if query:
-                parts.extend(['?', query])
-
-        return ''.join(parts)
-
-    def build(
-            self,
-            name_or_endpoint: ta.Any,
-            values: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-            *,
-            append_unknown: bool = False,
-    ) -> str:
-        values = values or {}
-        build_error: ta.Optional[Exception] = None
-        for compiled in self._routes_by_name_or_endpoint.get(name_or_endpoint, ()):
-            try:
-                built = self._try_build(compiled, values, append_unknown=append_unknown)
-            except UrlRouteBuildError as e:
-                build_error = e
-            else:
-                if built is not None:
-                    return built
-
-        if build_error is not None:
-            raise build_error
-        raise UrlRouteBuildError(name_or_endpoint)
-
-    #
-
     def _check_conflicts(self, compiled: _CompiledUrlRoute) -> None:
         for other in self._routes_by_match_key.get(compiled.match_key, ()):
             if UrlRoutingUtils.methods_overlap(other.methods, compiled.methods):
@@ -326,6 +262,70 @@ class UrlRouter:
         if route.endpoint is not None:
             self._routes_by_name_or_endpoint.setdefault(route.endpoint, []).append(compiled)
         self._insert(compiled)
+
+    #
+
+    def _try_build(
+            self,
+            compiled: _CompiledUrlRoute,
+            values: ta.Mapping[str, ta.Any],
+            *,
+            append_unknown: bool,
+    ) -> ta.Optional[str]:
+        parts = ['/']
+        consumed_names = set()
+        for part in compiled.build_parts:
+            if isinstance(part, str):
+                parts.append(UrlRoutingUtils.quote_static_part(part))
+            else:
+                consumed_names.add(part.name)
+                if part.name not in values:
+                    if compiled.route.defaults is not None and part.name in compiled.route.defaults:
+                        value = compiled.route.defaults[part.name]
+                    else:
+                        return None
+                else:
+                    value = values[part.name]
+                try:
+                    parts.append(part.converter.to_url(value))
+                except ValueError:
+                    return None
+
+        unknown_values = {
+            k: v
+            for k, v in values.items()
+            if k not in consumed_names and (compiled.route.defaults is None or k not in compiled.route.defaults)
+        }
+        if unknown_values:
+            if not append_unknown:
+                raise UrlRouteBuildError('unknown values: ' + ', '.join(sorted(unknown_values)))
+            query = UrlRoutingUtils.query_encode(unknown_values)
+            if query:
+                parts.extend(['?', query])
+
+        return ''.join(parts)
+
+    def build(
+            self,
+            name_or_endpoint: ta.Any,
+            values: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+            *,
+            append_unknown: bool = False,
+    ) -> str:
+        values = values or {}
+        build_error: ta.Optional[Exception] = None
+        for compiled in self._routes_by_name_or_endpoint.get(name_or_endpoint, ()):
+            try:
+                built = self._try_build(compiled, values, append_unknown=append_unknown)
+            except UrlRouteBuildError as e:
+                build_error = e
+            else:
+                if built is not None:
+                    return built
+
+        if build_error is not None:
+            raise build_error
+        raise UrlRouteBuildError(name_or_endpoint)
 
     #
 
