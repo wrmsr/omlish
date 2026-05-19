@@ -16,20 +16,22 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         """Multiple processes starting at same time should all succeed."""
 
         # Create 10 processes that all auto-start
-        processes = {
-            f'concurrent{i}': {
+        processes = [
+            {
+                'name': f'concurrent{i}',
                 'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                 'auto_start': True,
             }
             for i in range(10)
-        }
+        ]
 
         config = self.make_config({
-            'groups': {
-                'concurrent': {
+            'groups': [
+                {
+                    'name': 'concurrent',
                     'processes': processes,
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)

@@ -45,7 +45,6 @@ from omlish.logs.std.standard import configure_standard_logging
 from omlish.os.journald import journald_logging_handler_factory
 
 from .configs import ServerConfig
-from .configs import prepare_server_config
 from .inject import bind_server
 from .spawningimpl import InheritedFds
 from .states import SupervisorState
@@ -94,7 +93,6 @@ def main(
         config = load_config_file_obj(
             os.path.expanduser(cf),
             ServerConfig,
-            prepare=prepare_server_config,
         )
 
         if args.no_daemon:

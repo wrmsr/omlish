@@ -5,8 +5,7 @@ import signal
 import tempfile
 import typing as ta
 
-from omlish.configs.processing.names import build_config_named_children
-from omlish.configs.types import ConfigMap
+from omlish.lite.check import check
 
 from .utils.fs import check_existing_dir
 from .utils.fs import check_path_with_existing_dir
@@ -158,6 +157,14 @@ class ProcessConfig:
     # protocol.
     redirect_stderr: bool = False
 
+    #
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+
+
+##
+
 
 @dc.dataclass(frozen=True)
 class ProcessGroupConfig:
@@ -165,7 +172,33 @@ class ProcessGroupConfig:
 
     priority: int = 999
 
+    #
+
     processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
+
+    @property
+    def processes_by_name(self) -> ta.Mapping[str, ProcessConfig]:
+        try:
+            return getattr(self, '_processes_by_name')
+        except AttributeError:
+            pass
+
+        dct: ta.Dict[str, ProcessConfig] = {}
+        for process in self.processes or []:
+            check.not_in(process.name, dct)
+            dct[process.name] = process
+        object.__setattr__(self, '_processes_by_name', dct)
+        return dct
+
+    #
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+
+        self.processes_by_name  # noqa
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -238,6 +271,20 @@ class ServerConfig:
     # TODO: implement - make sure to accept broken symlinks
     group_config_dirs: ta.Optional[ta.Sequence[str]] = None
 
+    @property
+    def groups_by_name(self) -> ta.Mapping[str, ProcessGroupConfig]:
+        try:
+            return getattr(self, '_groups_by_name')
+        except AttributeError:
+            pass
+
+        dct: ta.Dict[str, ProcessGroupConfig] = {}
+        for group in self.groups or []:
+            check.not_in(group.name, dct)
+            dct[group.name] = group
+        object.__setattr__(self, '_groups_by_name', dct)
+        return dct
+
     #
 
     http_port: ta.Optional[int] = None
@@ -248,6 +295,8 @@ class ServerConfig:
     def __post_init__(self) -> None:
         if self.http_port is not None and self.http_socket_path is not None:
             raise ValueError('cannot specify both http_port and http_socket_path')
+
+        self.groups_by_name  # noqa
 
     #
 
@@ -274,22 +323,6 @@ class ServerConfig:
             child_log_dir=child_log_dir or tempfile.gettempdir(),
             **kwargs,
         )
-
-
-##
-
-
-def prepare_process_group_config(dct: ConfigMap) -> ConfigMap:
-    out = dict(dct)
-    out['processes'] = build_config_named_children(out.get('processes'))
-    return out
-
-
-def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
-    out = dict(dct)
-    group_dcts = build_config_named_children(out.get('groups'))
-    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
-    return out
 
 
 ##
