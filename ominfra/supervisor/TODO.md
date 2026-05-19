@@ -19,6 +19,7 @@ main:
 - scheduler
 - systemd? less urgent now
 - serializable / diffable process cfg, process state
+- prctl / pgrp killer failsafe
 
 tests:
 
