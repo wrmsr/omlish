@@ -54,25 +54,29 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         """One process crashing shouldn't affect others."""
 
         config = self.make_config({
-            'groups': {
-                'mixed': {
-                    'processes': {
-                        'stable1': {
+            'groups': [
+                {
+                    'name': 'mixed',
+                    'processes': [
+                        {
+                            'name': 'stable1',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': True,
                         },
-                        'crasher': {
+                        {
+                            'name': 'crasher',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.rapid_crasher 1 1',
                             'auto_start': True,
                             'start_retries': 2,
                         },
-                        'stable2': {
+                        {
+                            'name': 'stable2',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': True,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -100,28 +104,32 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         """Reaping dead processes while new ones are spawning."""
 
         config = self.make_config({
-            'groups': {
-                'churn': {
-                    'processes': {
-                        'short1': {
+            'groups': [
+                {
+                    'name': 'churn',
+                    'processes': [
+                        {
+                            'name': 'short1',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.5',
                             'auto_start': True,
                             'start_secs': 0,
                             'auto_restart': False,
                         },
-                        'short2': {
+                        {
+                            'name': 'short2',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.8',
                             'auto_start': True,
                             'start_secs': 0,
                             'auto_restart': False,
                         },
-                        'long': {
+                        {
+                            'name': 'long',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
                             'auto_start': True,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -148,31 +156,36 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         """Different processes in different lifecycle stages simultaneously."""
 
         config = self.make_config({
-            'groups': {
-                'mixed': {
-                    'processes': {
-                        'quick_exit': {
+            'groups': [
+                {
+                    'name': 'mixed',
+                    'processes': [
+                        {
+                            'name': 'quick_exit',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 1.0',
                             'auto_start': True,
                             'start_secs': 0,
                             'auto_restart': False,
                         },
-                        'slow_start': {
+                        {
+                            'name': 'slow_start',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.slow_starter 2 5',
                             'auto_start': True,
                             'start_secs': 3,
                         },
-                        'stable': {
+                        {
+                            'name': 'stable',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': True,
                         },
-                        'no_auto_start': {
+                        {
+                            'name': 'no_auto_start',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': False,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -199,22 +212,24 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
     def test_concurrent_process_exits(self):
         """Multiple processes exiting at similar times."""
 
-        processes = {
-            f'exiter{i}': {
+        processes = [
+            {
+                'name': f'exiter{i}',
                 'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 {1.0 + i * 0.2}',
                 'auto_start': True,
                 'start_secs': 0,
                 'auto_restart': False,
             }
             for i in range(5)
-        }
+        ]
 
         config = self.make_config({
-            'groups': {
-                'exiters': {
+            'groups': [
+                {
+                    'name': 'exiters',
                     'processes': processes,
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -233,10 +248,12 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         """Supervisor handles high process churn correctly."""
 
         config = self.make_config({
-            'groups': {
-                'churn': {
-                    'processes': {
-                        'restarter': {
+            'groups': [
+                {
+                    'name': 'churn',
+                    'processes': [
+                        {
+                            'name': 'restarter',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 1 0.5',
                             'auto_start': True,
                             'auto_restart': 'unexpected',
@@ -244,13 +261,14 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
                             'start_secs': 0,
                             'start_retries': 20,  # Allow many retries
                         },
-                        'stable': {
+                        {
+                            'name': 'stable',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': True,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)

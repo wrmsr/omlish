@@ -15,17 +15,19 @@ class TestSubprocessSignals(SupervisorSubprocessTestBase):
         """Process should handle SIGTERM and stop gracefully."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'graceful': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'graceful',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 60',
                             'auto_start': True,
                             'stop_wait_secs': 5,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -47,17 +49,19 @@ class TestSubprocessSignals(SupervisorSubprocessTestBase):
         """Process ignoring SIGTERM should be killed with SIGKILL."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'stubborn': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'stubborn',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.signal_ignorer 1',
                             'auto_start': True,
                             'stop_wait_secs': 2,  # Short timeout before SIGKILL
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)

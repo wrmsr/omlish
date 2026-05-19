@@ -16,10 +16,12 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
         """auto_restart='unexpected' should restart on unexpected exit codes."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'crasher': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'crasher',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 1 1.5',
                             'auto_start': True,
                             'auto_restart': 'unexpected',
@@ -27,9 +29,9 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
                             'start_secs': 1,
                             'start_retries': 10,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -69,18 +71,20 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
         """auto_restart=False should not restart."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'no_restart': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'no_restart',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 1.5',
                             'auto_start': True,
                             'auto_restart': False,
                             'start_secs': 1,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -104,10 +108,12 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
         """Process exceeding start_retries should enter FATAL state."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'retry_limit': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'retry_limit',
                             # Exits too quickly every time
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 1 0.1',
                             'auto_start': True,
@@ -115,9 +121,9 @@ class TestSubprocessRestartPolicies(SupervisorSubprocessTestBase):
                             'start_secs': 2,  # Needs 2s but exits in 0.1s
                             'start_retries': 2,  # Only 2 retries
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)

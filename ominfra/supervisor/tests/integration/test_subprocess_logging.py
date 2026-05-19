@@ -19,17 +19,19 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
         """Process with stdout events_enabled should start and run."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'output': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'output',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.output_generator 5 0.5',
                             'auto_start': True,
                             'stdout': {'events_enabled': True},
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -42,19 +44,21 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
         """Process with stderr events_enabled should start and run."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'errout': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'errout',
                             'command': (
                                 f'{sys.executable} -m ominfra.supervisor.tests.programs.output_generator 5 0.5'
                             ),
                             'auto_start': True,
                             'stderr': {'events_enabled': True},
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -67,18 +71,20 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
         """Process with redirect_stderr=True should combine stderr into stdout."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'combined': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'combined',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.output_generator 5 0.3',
                             'auto_start': True,
                             'redirect_stderr': True,
                             'stdout': {'events_enabled': True},
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -91,18 +97,20 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
         """Process with events_enabled=False should still run."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'silent': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'silent',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.output_generator 5 0.5',
                             'auto_start': True,
                             'stdout': {'events_enabled': False},
                             'stderr': {'events_enabled': False},
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -118,10 +126,12 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
             self.skipTest('flakes in CI')
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'flood': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'flood',
                             # Generate 20 lines with 0.05s interval (avoids edge cases in output_generator)
                             'command': (
                                 f'{sys.executable} -m ominfra.supervisor.tests.programs.output_generator 20 0.05'
@@ -129,9 +139,9 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
                             'auto_start': True,
                             'stdout': {'events_enabled': True},
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -144,29 +154,33 @@ class TestSubprocessLogging(SupervisorSubprocessTestBase):
         """Multiple processes with different logging configs should coexist."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'with_events': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'with_events',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
                             'auto_start': True,
                             'stdout': {'events_enabled': True},
                             'stderr': {'events_enabled': True},
                         },
-                        'without_events': {
+                        {
+                            'name': 'without_events',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
                             'auto_start': True,
                             'stdout': {'events_enabled': False},
                             'stderr': {'events_enabled': False},
                         },
-                        'redirected': {
+                        {
+                            'name': 'redirected',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
                             'auto_start': True,
                             'redirect_stderr': True,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)

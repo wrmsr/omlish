@@ -20,17 +20,19 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """Process with auto_start=True should start and reach RUNNING state."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'runner': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'runner',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 30 1',
                             'auto_start': True,
                             'start_secs': 1,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -59,16 +61,18 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """Process with auto_start=False should remain STOPPED."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'manual': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'manual',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': False,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -86,19 +90,21 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """Process that exits with expected code should reach EXITED state."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'short_task': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'short_task',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 2',
                             'auto_start': True,
                             'start_secs': 1,
                             'auto_restart': False,
                             'exitcodes': [0],
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -116,24 +122,28 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """Multiple processes in same group should all start."""
 
         config = self.make_config({
-            'groups': {
-                'multi': {
-                    'processes': {
-                        'proc1': {
+            'groups': [
+                {
+                    'name': 'multi',
+                    'processes': [
+                        {
+                            'name': 'proc1',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 30',
                             'auto_start': True,
                         },
-                        'proc2': {
+                        {
+                            'name': 'proc2',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 30',
                             'auto_start': True,
                         },
-                        'proc3': {
+                        {
+                            'name': 'proc3',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 30',
                             'auto_start': True,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -155,24 +165,28 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """Multiple process groups should all start."""
 
         config = self.make_config({
-            'groups': {
-                'group1': {
-                    'processes': {
-                        'worker': {
+            'groups': [
+                {
+                    'name': 'group1',
+                    'processes': [
+                        {
+                            'name': 'worker',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 30',
                             'auto_start': True,
                         },
-                    },
+                    ],
                 },
-                'group2': {
-                    'processes': {
-                        'worker': {
+                {
+                    'name': 'group2',
+                    'processes': [
+                        {
+                            'name': 'worker',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 30',
                             'auto_start': True,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -189,16 +203,18 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """Sending SIGTERM to supervisor should trigger graceful shutdown."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'worker': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'worker',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 60',
                             'auto_start': True,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -227,18 +243,20 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """Process that exits before start_secs should enter BACKOFF."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'quick_exit': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'quick_exit',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.1',
                             'auto_start': True,
                             'start_secs': 2,  # Needs 2s, but exits in 0.1s
                             'start_retries': 3,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)
@@ -261,20 +279,23 @@ class TestSubprocessLifecycle(SupervisorSubprocessTestBase):
         """HTTP API should accurately reflect process states."""
 
         config = self.make_config({
-            'groups': {
-                'test': {
-                    'processes': {
-                        'runner': {
+            'groups': [
+                {
+                    'name': 'test',
+                    'processes': [
+                        {
+                            'name': 'runner',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': True,
                         },
-                        'stopped': {
+                        {
+                            'name': 'stopped',
                             'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                             'auto_start': False,
                         },
-                    },
+                    ],
                 },
-            },
+            ],
         })
 
         self.start_supervisor(config)

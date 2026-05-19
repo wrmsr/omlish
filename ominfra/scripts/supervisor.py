@@ -133,11 +133,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
+            dict(path='configs.py', sha1='5f0ed986cffd5d6569cce5746e2e0e388b05b982'),
             dict(path='events.py', sha1='f862c832689986f96d469949ec595d8ec7fb3201'),
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
-            dict(path='../../omlish/configs/processing/names.py', sha1='7a9e97a9e13571431e1eb54bae7ba36e65235804'),
             dict(path='../../omlish/formats/yaml/backends.py', sha1='26d9a63cb91008442dcb232dceb51adb909bae12'),
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='4477d00145b207dd0397ecfbc8fef5ae8c641bb3'),
@@ -154,8 +154,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='5f4f8efc33de1efaf59b99d01d166289b5abaa01'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
+            dict(path='types.py', sha1='2c63168e6d580757273f1f0b446dd183ca68c09d'),
             dict(path='utils/os.py', sha1='03ca902d60270ca0d5c0bf557f78d98d1832a938'),
             dict(path='utils/pipes.py', sha1='cee3f0e5b24829f3b3819e2c4e05d127366e20ba'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
@@ -172,7 +172,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
-            dict(path='types.py', sha1='2c63168e6d580757273f1f0b446dd183ca68c09d'),
+            dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
+            dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
+            dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
             dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='f263936305f7be5085c6a5f2782ae734bf221813'),  # noqa
@@ -185,15 +187,13 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
-            dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
-            dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
+            dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
+            dict(path='spawning.py', sha1='a5fa0e69b1d562ab4a73a0e9cd5f79756035fc60'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
             dict(path='../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
-            dict(path='spawning.py', sha1='a5fa0e69b1d562ab4a73a0e9cd5f79756035fc60'),
+            dict(path='spawningimpl.py', sha1='dc1433f23c41703ef40c460bdc900808d803b444'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='680f486f4a17e02746dbb8f05794fc39a978315d'),
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -202,7 +202,6 @@ def __omlish_amalg__():  # noqa
             dict(path='processimpl.py', sha1='ef8c335b4808357faf14ff9b41e7b48af0de91ad'),
             dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
-            dict(path='spawningimpl.py', sha1='dc1433f23c41703ef40c460bdc900808d803b444'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
             dict(path='supervisor.py', sha1='d3ccd2d82d4dd1c39ca302fbf6d05ef714d1c212'),
@@ -210,7 +209,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='21c22c2fd90532981dc2e622831261bad5f2246c'),
             dict(path='inject.py', sha1='0ca51f71546c9de52255135a699a5b13c608d7f4'),
-            dict(path='main.py', sha1='3a02407c0d895d92116846450f59cd566ae375e0'),
+            dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
     )
 
@@ -4251,6 +4250,335 @@ class SocketAndAddress(ta.NamedTuple):
 
 
 ########################################
+# ../configs.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ProcessConfig:
+    # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
+    # need to worry about setting this unless you change numprocs. The string expression is evaluated against a
+    # dictionary that includes group_name, host_node_name, process_num, program_name, and here (the directory of the
+    # supervisord config file).
+    name: str
+
+    # The command that will be run when this program is started. The command can be either absolute (e.g.
+    # /path/to/programname) or relative (e.g. programname). If it is relative, the supervisord's environment $PATH will
+    # be searched for the executable. Programs can accept arguments, e.g. /path/to/program foo bar. The command line can
+    # use double quotes to group arguments with spaces in them to pass to the program, e.g. /path/to/program/name -p
+    # "foo bar". Note that the value of command may include Python string expressions, e.g. /path/to/programname
+    # --port=80%(process_num)02d might expand to /path/to/programname --port=8000 at runtime. String expressions are
+    # evaluated against a dictionary containing the keys group_name, host_node_name, program_name, process_num,
+    # numprocs, here (the directory of the supervisord config file), and all supervisord's environment variables
+    # prefixed with ENV_. Controlled programs should themselves not be daemons, as supervisord assumes it is responsible
+    # for daemonizing its subprocesses
+    command: str
+
+    #
+
+    # Supervisor will start as many instances of this program as named by numprocs. Note that if numprocs > 1, the
+    # process_name expression must include %(process_num)s (or any other valid Python string expression that includes
+    # process_num) within it.
+    num_procs: int = 1
+
+    # An integer offset that is used to compute the number at which process_num starts.
+    num_procs_start: int = 0
+
+    #
+
+    # Instruct supervisord to use this UNIX user account as the account which runs the program. The user can only be
+    # switched if supervisord is run as the root user. If supervisord can't switch to the specified user, the program
+    # will not be started.
+    #
+    # Note: The user will be changed using setuid only. This does not start a login shell and does not change
+    # environment variables like USER or HOME
+    user: ta.Optional[str] = None
+    uid: ta.Optional[int] = None
+
+    # An octal number (e.g. 002, 022) representing the umask of the process.
+    umask: ta.Optional[int] = None
+
+    #
+
+    # A file path representing a directory to which supervisord should temporarily chdir before exec'ing the child.
+    directory: ta.Optional[str] = None
+
+    # A list of key/value pairs in the form KEY="val",KEY2="val2" that will be placed in the child process' environment.
+    # The environment string may contain Python string expressions that will be evaluated against a dictionary
+    # containing group_name, host_node_name, process_num, program_name, and here (the directory of the supervisord
+    # config file). Values containing non-alphanumeric characters should be quoted (e.g. KEY="val:123",KEY2="val,456").
+    # Otherwise, quoting the values is optional but recommended. Note that the subprocess will inherit the environment
+    # variables of the shell used to start "supervisord" except for the ones overridden here.
+    environment: ta.Optional[ta.Mapping[str, str]] = None
+
+    #
+
+    # The relative priority of the program in the start and shutdown ordering. Lower priorities indicate programs that
+    # start first and shut down last at startup and when aggregate commands are used in various clients (e.g. "start
+    # all"/"stop all"). Higher priorities indicate programs that start last and shut down first.
+    priority: int = 999
+
+    # If true, this program will start automatically when supervisord is started.
+    auto_start: bool = True
+
+    # Specifies if supervisord should automatically restart a process if it exits when it is in the RUNNING state. May
+    # be one of false, unexpected, or true. If false, the process will not be autorestarted. If unexpected, the process
+    # will be restarted when the program exits with an exit code that is not one of the exit codes associated with this
+    # process' configuration (see exitcodes). If true, the process will be unconditionally restarted when it exits,
+    # without regard to its exit code.
+    #
+    # Note: autorestart controls whether supervisord will autorestart a program if it exits after it has successfully
+    # started up (the process is in the RUNNING state). supervisord has a different restart mechanism for when the
+    # process is starting up (the process is in the STARTING state). Retries during process startup are controlled by
+    # startsecs and startretries.
+    auto_restart: str = 'unexpected'  # | 'unconditional'
+
+    # The total number of seconds which the program needs to stay running after a startup to consider the start
+    # successful (moving the process from the STARTING state to the RUNNING state). Set to 0 to indicate that the
+    # program needn't stay running for any particular amount of time.
+    #
+    # Note: Even if a process exits with an "expected" exit code (see exitcodes), the start will still be considered a
+    # failure if the process exits quicker than startsecs.
+    start_secs: int = 1
+
+    # The number of serial failure attempts that supervisord will allow when attempting to start the program before
+    # giving up and putting the process into an FATAL state.
+    #
+    # Note: After each failed restart, process will be put in BACKOFF state and each retry attempt will take
+    # increasingly more time.
+    start_retries: int = 3
+
+    # The signal used to kill the program when a stop is requested. This can be specified using the signal's name or its
+    # number. It is normally one of: TERM, HUP, INT, QUIT, KILL, USR1, or USR2.
+    stop_signal: int = signal.SIGTERM
+
+    # The number of seconds to wait for the OS to return a SIGCHLD to supervisord after the program has been sent a
+    # stopsignal. If this number of seconds elapses before supervisord receives a SIGCHLD from the process, supervisord
+    # will attempt to kill it with a final SIGKILL.
+    stop_wait_secs: int = 10
+
+    # If true, the flag causes supervisor to send the stop signal to the whole process group and implies killasgroup is
+    # true. This is useful for programs, such as Flask in debug mode, that do not propagate stop signals to their
+    # children, leaving them orphaned.
+    stop_as_group: bool = False
+
+    # If true, when resorting to send SIGKILL to the program to terminate it send it to its whole process group instead,
+    # taking care of its children as well, useful e.g with Python programs using multiprocessing.
+    kill_as_group: bool = False
+
+    # The list of "expected" exit codes for this program used with autorestart. If the autorestart parameter is set to
+    # unexpected, and the process exits in any other way than as a result of a supervisor stop request, supervisord will
+    # restart the process if it exits with an exit code that is not defined in this list.
+    #
+    # Note: In Supervisor versions prior to 4.0, the default was 0,2. In Supervisor 4.0, the default was changed to 0.
+    exitcodes: ta.Sequence[int] = (0,)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Log:
+        file: ta.Optional[str] = None
+        capture_max_bytes: ta.Optional[int] = None
+        events_enabled: bool = False
+        syslog: bool = False
+        backups: ta.Optional[int] = None
+        max_bytes: ta.Optional[int] = None
+
+    stdout: Log = Log()
+    stderr: Log = Log()
+
+    # If true, cause the process' stderr output to be sent back to supervisord on its stdout file descriptor (in UNIX
+    # shell terms, this is the equivalent of executing /the/program 2>&1).
+    #
+    # Note: Do not set redirect_stderr=true in an [eventlistener:x] section. Eventlisteners use stdout and stdin to
+    # communicate with supervisord. If stderr is redirected, output from stderr will interfere with the eventlistener
+    # protocol.
+    redirect_stderr: bool = False
+
+    #
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ProcessGroupConfig:
+    name: str
+
+    priority: int = 999
+
+    #
+
+    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
+
+    @property
+    def processes_by_name(self) -> ta.Mapping[str, ProcessConfig]:
+        try:
+            return getattr(self, '_processes_by_name')
+        except AttributeError:
+            pass
+
+        dct: ta.Dict[str, ProcessConfig] = {}
+        for process in self.processes or []:
+            check.not_in(process.name, dct)
+            dct[process.name] = process
+        object.__setattr__(self, '_processes_by_name', dct)
+        return dct
+
+    #
+
+    def __post_init__(self) -> None:
+        check.non_empty_str(self.name)
+
+        self.processes_by_name  # noqa
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ServerConfig:
+    # Instruct supervisord to switch users to this UNIX user account before doing any meaningful processing. The user
+    # can only be switched if supervisord is started as the root user.
+    user: ta.Optional[str] = None
+
+    # If true, supervisord will start in the foreground instead of daemonizing.
+    no_daemon: bool = False
+
+    # The umask of the supervisord process.
+    umask: int = 0o22
+
+    #
+
+    # When supervisord daemonizes, switch to this directory. This option can include the value %(here)s, which expands
+    # to the directory in which the supervisord configuration file was found.
+    directory: ta.Optional[str] = None
+
+    # The location in which supervisord keeps its pid file. This option can include the value %(here)s, which expands to
+    # the directory in which the supervisord configuration file was found.
+    pidfile: str = 'supervisord.pid'
+
+    # The identifier string for this supervisor process, used by the RPC interface.
+    identifier: str = 'supervisor'
+
+    # The minimum number of file descriptors that must be available before supervisord will start successfully.
+    min_fds: int = 1024
+    # The minimum number of process descriptors that must be available before supervisord will start successfully.
+    min_procs: int = 200
+
+    # Prevent supervisord from clearing any existing AUTO child log files at startup time. Useful for debugging
+    no_cleanup: bool = False
+
+    # Strip all ANSI escape sequences from child log files.
+    strip_ansi: bool = False
+
+    #
+
+    # The path to the activity log of the supervisord process. This option can include the value %(here)s, which expands
+    # to the directory in which the supervisord configuration file was found.
+    log_file: str = 'supervisord.log'
+
+    # The maximum number of bytes that may be consumed by the activity log file before it is rotated (suffix multipliers
+    # like "KB", "MB", and "GB" can be used in the value). Set this value to 0 to indicate an unlimited log size.
+    log_file_max_bytes: int = 50 * 1024 * 1024
+
+    # The number of backups to keep around resulting from activity log file rotation. If set to 0, no backups will be
+    # kept.
+    log_file_backups: int = 10
+
+    # The logging level, dictating what is written to the supervisord activity log. One of critical, error, warn, info,
+    # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
+    # output of its child processes and extended info about process state changes, which is useful for debugging a
+    # process which isn't starting properly.
+    log_level: int = logging.INFO
+
+    # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
+    # directory in which the supervisord configuration file was found.
+    child_log_dir: str = '/dev/null'
+
+    # If true and not daemonized, logs will not be directed to stdout.
+    silent: bool = False
+
+    #
+
+    groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
+
+    # TODO: implement - make sure to accept broken symlinks
+    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
+
+    @property
+    def groups_by_name(self) -> ta.Mapping[str, ProcessGroupConfig]:
+        try:
+            return getattr(self, '_groups_by_name')
+        except AttributeError:
+            pass
+
+        dct: ta.Dict[str, ProcessGroupConfig] = {}
+        for group in self.groups or []:
+            check.not_in(group.name, dct)
+            dct[group.name] = group
+        object.__setattr__(self, '_groups_by_name', dct)
+        return dct
+
+    #
+
+    http_port: ta.Optional[int] = None
+    http_socket_path: ta.Optional[str] = None
+
+    #
+
+    def __post_init__(self) -> None:
+        if self.http_port is not None and self.http_socket_path is not None:
+            raise ValueError('cannot specify both http_port and http_socket_path')
+
+        self.groups_by_name  # noqa
+
+    #
+
+    @classmethod
+    def new(
+            cls,
+            *,
+            umask: ta.Union[int, str] = 0o22,
+            directory: ta.Optional[str] = None,
+            log_file: str = 'supervisord.log',
+            log_file_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            log_level: ta.Union[int, str] = logging.INFO,
+            pidfile: str = 'supervisord.pid',
+            child_log_dir: ta.Optional[str] = None,
+            **kwargs: ta.Any,
+    ) -> 'ServerConfig':
+        return cls(
+            umask=parse_octal(umask),
+            directory=check_existing_dir(directory) if directory is not None else None,
+            log_file=check_path_with_existing_dir(log_file),
+            log_file_max_bytes=parse_bytes_size(log_file_max_bytes),
+            log_level=parse_logging_level(log_level),
+            pidfile=check_path_with_existing_dir(pidfile),
+            child_log_dir=child_log_dir or tempfile.gettempdir(),
+            **kwargs,
+        )
+
+
+##
+
+
+def parse_logging_level(value: ta.Union[str, int]) -> int:
+    if isinstance(value, int):
+        return value
+    s = str(value).lower()
+    level = logging.getLevelNamesMapping().get(s.upper())
+    if level is None:
+        raise ValueError(f'bad logging level name {value!r}')
+    return level
+
+
+########################################
 # ../events.py
 
 
@@ -4704,52 +5032,6 @@ def get_user(name: str) -> User:
         uid=(uid := name_to_uid(name)),
         gid=gid_for_uid(uid),
     )
-
-
-########################################
-# ../../../omlish/configs/processing/names.py
-"""usecase: supervisor process groups"""
-
-
-##
-
-
-def build_config_named_children(
-        o: ta.Union[
-            ta.Sequence[ConfigMap],
-            ta.Mapping[str, ConfigMap],
-            None,
-        ],
-        *,
-        name_key: str = 'name',
-) -> ta.Optional[ta.Sequence[ConfigMap]]:
-    if o is None:
-        return None
-
-    lst: ta.List[ConfigMap] = []
-    if isinstance(o, ta.Mapping):
-        for k, v in o.items():
-            check.isinstance(v, ta.Mapping)
-            if name_key in v:
-                n = v[name_key]
-                if k != n:
-                    raise KeyError(f'Given names do not match: {n} != {k}')
-                lst.append(v)
-            else:
-                lst.append({name_key: k, **v})
-
-    else:
-        check.not_isinstance(o, str)
-        lst.extend(o)
-
-    seen = set()
-    for d in lst:
-        n = d['name']
-        if n in d:
-            raise KeyError(f'Duplicate name: {n}')
-        seen.add(n)
-
-    return lst
 
 
 ########################################
@@ -11392,301 +11674,6 @@ def journald_logging_handler_factory(
 
 
 ########################################
-# ../configs.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ProcessConfig:
-    # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
-    # need to worry about setting this unless you change numprocs. The string expression is evaluated against a
-    # dictionary that includes group_name, host_node_name, process_num, program_name, and here (the directory of the
-    # supervisord config file).
-    name: str
-
-    # The command that will be run when this program is started. The command can be either absolute (e.g.
-    # /path/to/programname) or relative (e.g. programname). If it is relative, the supervisord's environment $PATH will
-    # be searched for the executable. Programs can accept arguments, e.g. /path/to/program foo bar. The command line can
-    # use double quotes to group arguments with spaces in them to pass to the program, e.g. /path/to/program/name -p
-    # "foo bar". Note that the value of command may include Python string expressions, e.g. /path/to/programname
-    # --port=80%(process_num)02d might expand to /path/to/programname --port=8000 at runtime. String expressions are
-    # evaluated against a dictionary containing the keys group_name, host_node_name, program_name, process_num,
-    # numprocs, here (the directory of the supervisord config file), and all supervisord's environment variables
-    # prefixed with ENV_. Controlled programs should themselves not be daemons, as supervisord assumes it is responsible
-    # for daemonizing its subprocesses
-    command: str
-
-    #
-
-    # Supervisor will start as many instances of this program as named by numprocs. Note that if numprocs > 1, the
-    # process_name expression must include %(process_num)s (or any other valid Python string expression that includes
-    # process_num) within it.
-    num_procs: int = 1
-
-    # An integer offset that is used to compute the number at which process_num starts.
-    num_procs_start: int = 0
-
-    #
-
-    # Instruct supervisord to use this UNIX user account as the account which runs the program. The user can only be
-    # switched if supervisord is run as the root user. If supervisord can't switch to the specified user, the program
-    # will not be started.
-    #
-    # Note: The user will be changed using setuid only. This does not start a login shell and does not change
-    # environment variables like USER or HOME
-    user: ta.Optional[str] = None
-    uid: ta.Optional[int] = None
-
-    # An octal number (e.g. 002, 022) representing the umask of the process.
-    umask: ta.Optional[int] = None
-
-    #
-
-    # A file path representing a directory to which supervisord should temporarily chdir before exec'ing the child.
-    directory: ta.Optional[str] = None
-
-    # A list of key/value pairs in the form KEY="val",KEY2="val2" that will be placed in the child process' environment.
-    # The environment string may contain Python string expressions that will be evaluated against a dictionary
-    # containing group_name, host_node_name, process_num, program_name, and here (the directory of the supervisord
-    # config file). Values containing non-alphanumeric characters should be quoted (e.g. KEY="val:123",KEY2="val,456").
-    # Otherwise, quoting the values is optional but recommended. Note that the subprocess will inherit the environment
-    # variables of the shell used to start "supervisord" except for the ones overridden here.
-    environment: ta.Optional[ta.Mapping[str, str]] = None
-
-    #
-
-    # The relative priority of the program in the start and shutdown ordering. Lower priorities indicate programs that
-    # start first and shut down last at startup and when aggregate commands are used in various clients (e.g. "start
-    # all"/"stop all"). Higher priorities indicate programs that start last and shut down first.
-    priority: int = 999
-
-    # If true, this program will start automatically when supervisord is started.
-    auto_start: bool = True
-
-    # Specifies if supervisord should automatically restart a process if it exits when it is in the RUNNING state. May
-    # be one of false, unexpected, or true. If false, the process will not be autorestarted. If unexpected, the process
-    # will be restarted when the program exits with an exit code that is not one of the exit codes associated with this
-    # process' configuration (see exitcodes). If true, the process will be unconditionally restarted when it exits,
-    # without regard to its exit code.
-    #
-    # Note: autorestart controls whether supervisord will autorestart a program if it exits after it has successfully
-    # started up (the process is in the RUNNING state). supervisord has a different restart mechanism for when the
-    # process is starting up (the process is in the STARTING state). Retries during process startup are controlled by
-    # startsecs and startretries.
-    auto_restart: str = 'unexpected'  # | 'unconditional'
-
-    # The total number of seconds which the program needs to stay running after a startup to consider the start
-    # successful (moving the process from the STARTING state to the RUNNING state). Set to 0 to indicate that the
-    # program needn't stay running for any particular amount of time.
-    #
-    # Note: Even if a process exits with an "expected" exit code (see exitcodes), the start will still be considered a
-    # failure if the process exits quicker than startsecs.
-    start_secs: int = 1
-
-    # The number of serial failure attempts that supervisord will allow when attempting to start the program before
-    # giving up and putting the process into an FATAL state.
-    #
-    # Note: After each failed restart, process will be put in BACKOFF state and each retry attempt will take
-    # increasingly more time.
-    start_retries: int = 3
-
-    # The signal used to kill the program when a stop is requested. This can be specified using the signal's name or its
-    # number. It is normally one of: TERM, HUP, INT, QUIT, KILL, USR1, or USR2.
-    stop_signal: int = signal.SIGTERM
-
-    # The number of seconds to wait for the OS to return a SIGCHLD to supervisord after the program has been sent a
-    # stopsignal. If this number of seconds elapses before supervisord receives a SIGCHLD from the process, supervisord
-    # will attempt to kill it with a final SIGKILL.
-    stop_wait_secs: int = 10
-
-    # If true, the flag causes supervisor to send the stop signal to the whole process group and implies killasgroup is
-    # true. This is useful for programs, such as Flask in debug mode, that do not propagate stop signals to their
-    # children, leaving them orphaned.
-    stop_as_group: bool = False
-
-    # If true, when resorting to send SIGKILL to the program to terminate it send it to its whole process group instead,
-    # taking care of its children as well, useful e.g with Python programs using multiprocessing.
-    kill_as_group: bool = False
-
-    # The list of "expected" exit codes for this program used with autorestart. If the autorestart parameter is set to
-    # unexpected, and the process exits in any other way than as a result of a supervisor stop request, supervisord will
-    # restart the process if it exits with an exit code that is not defined in this list.
-    #
-    # Note: In Supervisor versions prior to 4.0, the default was 0,2. In Supervisor 4.0, the default was changed to 0.
-    exitcodes: ta.Sequence[int] = (0,)
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Log:
-        file: ta.Optional[str] = None
-        capture_max_bytes: ta.Optional[int] = None
-        events_enabled: bool = False
-        syslog: bool = False
-        backups: ta.Optional[int] = None
-        max_bytes: ta.Optional[int] = None
-
-    stdout: Log = Log()
-    stderr: Log = Log()
-
-    # If true, cause the process' stderr output to be sent back to supervisord on its stdout file descriptor (in UNIX
-    # shell terms, this is the equivalent of executing /the/program 2>&1).
-    #
-    # Note: Do not set redirect_stderr=true in an [eventlistener:x] section. Eventlisteners use stdout and stdin to
-    # communicate with supervisord. If stderr is redirected, output from stderr will interfere with the eventlistener
-    # protocol.
-    redirect_stderr: bool = False
-
-
-@dc.dataclass(frozen=True)
-class ProcessGroupConfig:
-    name: str
-
-    priority: int = 999
-
-    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
-
-
-@dc.dataclass(frozen=True)
-class ServerConfig:
-    # Instruct supervisord to switch users to this UNIX user account before doing any meaningful processing. The user
-    # can only be switched if supervisord is started as the root user.
-    user: ta.Optional[str] = None
-
-    # If true, supervisord will start in the foreground instead of daemonizing.
-    no_daemon: bool = False
-
-    # The umask of the supervisord process.
-    umask: int = 0o22
-
-    #
-
-    # When supervisord daemonizes, switch to this directory. This option can include the value %(here)s, which expands
-    # to the directory in which the supervisord configuration file was found.
-    directory: ta.Optional[str] = None
-
-    # The location in which supervisord keeps its pid file. This option can include the value %(here)s, which expands to
-    # the directory in which the supervisord configuration file was found.
-    pidfile: str = 'supervisord.pid'
-
-    # The identifier string for this supervisor process, used by the RPC interface.
-    identifier: str = 'supervisor'
-
-    # The minimum number of file descriptors that must be available before supervisord will start successfully.
-    min_fds: int = 1024
-    # The minimum number of process descriptors that must be available before supervisord will start successfully.
-    min_procs: int = 200
-
-    # Prevent supervisord from clearing any existing AUTO child log files at startup time. Useful for debugging
-    no_cleanup: bool = False
-
-    # Strip all ANSI escape sequences from child log files.
-    strip_ansi: bool = False
-
-    #
-
-    # The path to the activity log of the supervisord process. This option can include the value %(here)s, which expands
-    # to the directory in which the supervisord configuration file was found.
-    log_file: str = 'supervisord.log'
-
-    # The maximum number of bytes that may be consumed by the activity log file before it is rotated (suffix multipliers
-    # like "KB", "MB", and "GB" can be used in the value). Set this value to 0 to indicate an unlimited log size.
-    log_file_max_bytes: int = 50 * 1024 * 1024
-
-    # The number of backups to keep around resulting from activity log file rotation. If set to 0, no backups will be
-    # kept.
-    log_file_backups: int = 10
-
-    # The logging level, dictating what is written to the supervisord activity log. One of critical, error, warn, info,
-    # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
-    # output of its child processes and extended info about process state changes, which is useful for debugging a
-    # process which isn't starting properly.
-    log_level: int = logging.INFO
-
-    # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
-    # directory in which the supervisord configuration file was found.
-    child_log_dir: str = '/dev/null'
-
-    # If true and not daemonized, logs will not be directed to stdout.
-    silent: bool = False
-
-    #
-
-    groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
-
-    # TODO: implement - make sure to accept broken symlinks
-    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
-
-    #
-
-    http_port: ta.Optional[int] = None
-    http_socket_path: ta.Optional[str] = None
-
-    #
-
-    def __post_init__(self) -> None:
-        if self.http_port is not None and self.http_socket_path is not None:
-            raise ValueError('cannot specify both http_port and http_socket_path')
-
-    #
-
-    @classmethod
-    def new(
-            cls,
-            *,
-            umask: ta.Union[int, str] = 0o22,
-            directory: ta.Optional[str] = None,
-            log_file: str = 'supervisord.log',
-            log_file_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
-            log_level: ta.Union[int, str] = logging.INFO,
-            pidfile: str = 'supervisord.pid',
-            child_log_dir: ta.Optional[str] = None,
-            **kwargs: ta.Any,
-    ) -> 'ServerConfig':
-        return cls(
-            umask=parse_octal(umask),
-            directory=check_existing_dir(directory) if directory is not None else None,
-            log_file=check_path_with_existing_dir(log_file),
-            log_file_max_bytes=parse_bytes_size(log_file_max_bytes),
-            log_level=parse_logging_level(log_level),
-            pidfile=check_path_with_existing_dir(pidfile),
-            child_log_dir=child_log_dir or tempfile.gettempdir(),
-            **kwargs,
-        )
-
-
-##
-
-
-def prepare_process_group_config(dct: ConfigMap) -> ConfigMap:
-    out = dict(dct)
-    out['processes'] = build_config_named_children(out.get('processes'))
-    return out
-
-
-def prepare_server_config(dct: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, ta.Any]:
-    out = dict(dct)
-    group_dcts = build_config_named_children(out.get('groups'))
-    out['groups'] = [prepare_process_group_config(group_dct) for group_dct in group_dcts or []]
-    return out
-
-
-##
-
-
-def parse_logging_level(value: ta.Union[str, int]) -> int:
-    if isinstance(value, int):
-        return value
-    s = str(value).lower()
-    level = logging.getLevelNamesMapping().get(s.upper())
-    if level is None:
-        raise ValueError(f'bad logging level name {value!r}')
-    return level
-
-
-########################################
 # ../setup.py
 
 
@@ -11720,6 +11707,191 @@ class SupervisorSetup(Abstract):
 
     @abc.abstractmethod
     def cleanup(self) -> None:
+        raise NotImplementedError
+
+
+########################################
+# ../types.py
+
+
+class ExitNow(Exception):  # noqa
+    pass
+
+
+ServerEpoch = ta.NewType('ServerEpoch', int)
+
+
+##
+
+
+@functools.total_ordering
+class ConfigPriorityOrdered(Abstract):
+    @property
+    @abc.abstractmethod
+    def config(self) -> ta.Any:
+        raise NotImplementedError
+
+    def __lt__(self, other):
+        return self.config.priority < other.config.priority
+
+    def __eq__(self, other):
+        return self.config.priority == other.config.priority
+
+    def __hash__(self):
+        raise TypeError
+
+
+##
+
+
+class SupervisorStateManager(Abstract):
+    @property
+    @abc.abstractmethod
+    def state(self) -> SupervisorState:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def set_state(self, state: SupervisorState) -> None:
+        raise NotImplementedError
+
+
+##
+
+
+class HasDispatchers(Abstract):
+    @abc.abstractmethod
+    def get_dispatchers(self) -> 'Dispatchers':
+        raise NotImplementedError
+
+
+class ProcessDispatcher(FdioHandler, Abstract):
+    @property
+    @abc.abstractmethod
+    def channel(self) -> ProcessOutputChannel:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def process(self) -> 'Process':
+        raise NotImplementedError
+
+
+class ProcessOutputDispatcher(ProcessDispatcher, Abstract):
+    @abc.abstractmethod
+    def remove_logs(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reopen_logs(self) -> None:
+        raise NotImplementedError
+
+
+class ProcessInputDispatcher(ProcessDispatcher, Abstract):
+    @abc.abstractmethod
+    def write(self, chars: ta.Union[bytes, str]) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def flush(self) -> None:
+        raise NotImplementedError
+
+
+##
+
+
+class Process(
+    ConfigPriorityOrdered,
+    HasDispatchers,
+    Abstract,
+):
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def config(self) -> ProcessConfig:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def group(self) -> 'ProcessGroup':
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def pid(self) -> Pid:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def finish(self, sts: Rc) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def stop(self) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def give_up(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def transition(self) -> None:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def state(self) -> ProcessState:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def backoff(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def after_setuid(self) -> None:
+        raise NotImplementedError
+
+
+##
+
+
+class ProcessGroup(
+    ConfigPriorityOrdered,
+    KeyedCollectionAccessors[str, Process],
+    Abstract,
+):
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def config(self) -> ProcessGroupConfig:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def by_name(self) -> ta.Mapping[str, Process]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def stop_all(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_unstopped_processes(self) -> ta.List[Process]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def before_remove(self) -> None:
         raise NotImplementedError
 
 
@@ -14755,188 +14927,138 @@ def configure_standard_logging(
 
 
 ########################################
-# ../types.py
+# ../dispatchers.py
 
 
-class ExitNow(Exception):  # noqa
+##
+
+
+class Dispatchers(KeyedCollection[Fd, FdioHandler]):
+    def _key(self, v: FdioHandler) -> Fd:
+        return Fd(v.fd())
+
+    #
+
+    def drain(self) -> None:
+        for d in self:
+            # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
+            # dispatcher (eg. call handle_listener_state_change for event listener processes)
+            if d.readable():
+                d.on_readable()
+            if d.writable():
+                d.on_writable()
+
+    #
+
+    def remove_logs(self) -> None:
+        for d in self:
+            if isinstance(d, ProcessOutputDispatcher):
+                d.remove_logs()
+
+    def reopen_logs(self) -> None:
+        for d in self:
+            if isinstance(d, ProcessOutputDispatcher):
+                d.reopen_logs()
+
+
+########################################
+# ../groupsimpl.py
+
+
+##
+
+
+class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
     pass
 
 
-ServerEpoch = ta.NewType('ServerEpoch', int)
+class ProcessGroupImpl(ProcessGroup):
+    def __init__(
+            self,
+            config: ProcessGroupConfig,
+            *,
+            process_factory: ProcessFactory,
+    ):
+        super().__init__()
 
+        self._config = config
+        self._process_factory = process_factory
 
-##
-
-
-@functools.total_ordering
-class ConfigPriorityOrdered(Abstract):
-    @property
-    @abc.abstractmethod
-    def config(self) -> ta.Any:
-        raise NotImplementedError
-
-    def __lt__(self, other):
-        return self.config.priority < other.config.priority
-
-    def __eq__(self, other):
-        return self.config.priority == other.config.priority
-
-    def __hash__(self):
-        raise TypeError
-
-
-##
-
-
-class SupervisorStateManager(Abstract):
-    @property
-    @abc.abstractmethod
-    def state(self) -> SupervisorState:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def set_state(self, state: SupervisorState) -> None:
-        raise NotImplementedError
-
-
-##
-
-
-class HasDispatchers(Abstract):
-    @abc.abstractmethod
-    def get_dispatchers(self) -> 'Dispatchers':
-        raise NotImplementedError
-
-
-class ProcessDispatcher(FdioHandler, Abstract):
-    @property
-    @abc.abstractmethod
-    def channel(self) -> ProcessOutputChannel:
-        raise NotImplementedError
+        by_name: ta.Dict[str, Process] = {}
+        for pconfig in self._config.processes or []:
+            p = check.isinstance(self._process_factory(pconfig, self), Process)
+            if p.name in by_name:
+                raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')
+            by_name[pconfig.name] = p
+        self._by_name = by_name
 
     @property
-    @abc.abstractmethod
-    def process(self) -> 'Process':
-        raise NotImplementedError
-
-
-class ProcessOutputDispatcher(ProcessDispatcher, Abstract):
-    @abc.abstractmethod
-    def remove_logs(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def reopen_logs(self) -> None:
-        raise NotImplementedError
-
-
-class ProcessInputDispatcher(ProcessDispatcher, Abstract):
-    @abc.abstractmethod
-    def write(self, chars: ta.Union[bytes, str]) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def flush(self) -> None:
-        raise NotImplementedError
-
-
-##
-
-
-class Process(
-    ConfigPriorityOrdered,
-    HasDispatchers,
-    Abstract,
-):
-    @property
-    @abc.abstractmethod
-    def name(self) -> str:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def config(self) -> ProcessConfig:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def group(self) -> 'ProcessGroup':
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def pid(self) -> Pid:
-        raise NotImplementedError
+    def _by_key(self) -> ta.Mapping[str, Process]:
+        return self._by_name
 
     #
 
-    @abc.abstractmethod
-    def finish(self, sts: Rc) -> None:
-        raise NotImplementedError
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
 
-    @abc.abstractmethod
-    def stop(self) -> ta.Optional[str]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def give_up(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def transition(self) -> None:
-        raise NotImplementedError
+    #
 
     @property
-    @abc.abstractmethod
-    def state(self) -> ProcessState:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def backoff(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def after_setuid(self) -> None:
-        raise NotImplementedError
-
-
-##
-
-
-class ProcessGroup(
-    ConfigPriorityOrdered,
-    KeyedCollectionAccessors[str, Process],
-    Abstract,
-):
-    @property
-    @abc.abstractmethod
     def name(self) -> str:
-        raise NotImplementedError
+        return self._config.name
 
     @property
-    @abc.abstractmethod
     def config(self) -> ProcessGroupConfig:
-        raise NotImplementedError
+        return self._config
 
     @property
-    @abc.abstractmethod
     def by_name(self) -> ta.Mapping[str, Process]:
-        raise NotImplementedError
+        return self._by_name
 
     #
 
-    @abc.abstractmethod
-    def stop_all(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def get_unstopped_processes(self) -> ta.List[Process]:
-        raise NotImplementedError
+        return [x for x in self if not x.state.stopped]
 
-    @abc.abstractmethod
+    def stop_all(self) -> None:
+        processes = list(self._by_name.values())
+        processes.sort()
+        processes.reverse()  # stop in desc priority order
+
+        for proc in processes:
+            state = proc.state
+            if state == ProcessState.RUNNING:
+                # RUNNING -> STOPPING
+                proc.stop()
+
+            elif state == ProcessState.STARTING:
+                # STARTING -> STOPPING
+                proc.stop()
+
+            elif state == ProcessState.BACKOFF:
+                # BACKOFF -> FATAL
+                proc.give_up()
+
     def before_remove(self) -> None:
-        raise NotImplementedError
+        pass
+
+
+########################################
+# ../process.py
+
+
+##
+
+
+class ProcessStateError(RuntimeError):
+    pass
+
+
+##
+
+
+class PidHistory(ta.Dict[Pid, Process]):
+    pass
 
 
 ########################################
@@ -17427,138 +17549,123 @@ class LogRecordLoggingContext(LoggingContext):
 
 
 ########################################
-# ../dispatchers.py
+# ../groups.py
 
 
 ##
 
 
-class Dispatchers(KeyedCollection[Fd, FdioHandler]):
-    def _key(self, v: FdioHandler) -> Fd:
-        return Fd(v.fd())
-
-    #
-
-    def drain(self) -> None:
-        for d in self:
-            # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
-            # dispatcher (eg. call handle_listener_state_change for event listener processes)
-            if d.readable():
-                d.on_readable()
-            if d.writable():
-                d.on_writable()
-
-    #
-
-    def remove_logs(self) -> None:
-        for d in self:
-            if isinstance(d, ProcessOutputDispatcher):
-                d.remove_logs()
-
-    def reopen_logs(self) -> None:
-        for d in self:
-            if isinstance(d, ProcessOutputDispatcher):
-                d.reopen_logs()
-
-
-########################################
-# ../groupsimpl.py
-
-
-##
-
-
-class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
-    pass
-
-
-class ProcessGroupImpl(ProcessGroup):
+class ProcessGroupManager(
+    KeyedCollectionAccessors[str, ProcessGroup],
+    HasDispatchers,
+):
     def __init__(
             self,
-            config: ProcessGroupConfig,
             *,
-            process_factory: ProcessFactory,
-    ):
+            event_callbacks: EventCallbacks,
+    ) -> None:
         super().__init__()
 
-        self._config = config
-        self._process_factory = process_factory
+        self._event_callbacks = event_callbacks
 
-        by_name: ta.Dict[str, Process] = {}
-        for pconfig in self._config.processes or []:
-            p = check.isinstance(self._process_factory(pconfig, self), Process)
-            if p.name in by_name:
-                raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')
-            by_name[pconfig.name] = p
-        self._by_name = by_name
+        self._by_name: ta.Dict[str, ProcessGroup] = {}
 
     @property
-    def _by_key(self) -> ta.Mapping[str, Process]:
+    def _by_key(self) -> ta.Mapping[str, ProcessGroup]:
         return self._by_name
 
     #
 
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} instance at {id(self)} named {self._config.name}>'
+    def all_processes(self) -> ta.Iterator[Process]:
+        for g in self:
+            yield from g
 
     #
 
-    @property
-    def name(self) -> str:
-        return self._config.name
-
-    @property
-    def config(self) -> ProcessGroupConfig:
-        return self._config
-
-    @property
-    def by_name(self) -> ta.Mapping[str, Process]:
-        return self._by_name
+    def get_dispatchers(self) -> Dispatchers:
+        return Dispatchers(
+            d
+            for g in self
+            for p in g
+            for d in p.get_dispatchers()
+        )
 
     #
 
-    def get_unstopped_processes(self) -> ta.List[Process]:
-        return [x for x in self if not x.state.stopped]
+    def add(self, group: ProcessGroup) -> None:
+        if (name := group.name) in self._by_name:
+            raise KeyError(f'Process group already exists: {name}')
 
-    def stop_all(self) -> None:
-        processes = list(self._by_name.values())
-        processes.sort()
-        processes.reverse()  # stop in desc priority order
+        self._by_name[name] = group
 
-        for proc in processes:
-            state = proc.state
-            if state == ProcessState.RUNNING:
-                # RUNNING -> STOPPING
-                proc.stop()
+        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
 
-            elif state == ProcessState.STARTING:
-                # STARTING -> STOPPING
-                proc.stop()
+    def remove(self, name: str) -> None:
+        group = self._by_name[name]
 
-            elif state == ProcessState.BACKOFF:
-                # BACKOFF -> FATAL
-                proc.give_up()
+        group.before_remove()
 
-    def before_remove(self) -> None:
-        pass
+        del self._by_name[name]
+
+        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
+
+    def clear(self) -> None:
+        # FIXME: events?
+        self._by_name.clear()
+
+    #
+
+    class Diff(ta.NamedTuple):
+        added: ta.List[ProcessGroupConfig]
+        changed: ta.List[ProcessGroupConfig]
+        removed: ta.List[ProcessGroupConfig]
+
+    def diff(self, new: ta.Sequence[ProcessGroupConfig]) -> Diff:
+        cur = [group.config for group in self]
+
+        cur_by_name = {cfg.name: cfg for cfg in cur}
+        new_by_name = {cfg.name: cfg for cfg in new}
+
+        added = [cand for cand in new if cand.name not in cur_by_name]
+        removed = [cand for cand in cur if cand.name not in new_by_name]
+        changed = [cand for cand in new if cand != cur_by_name.get(cand.name, cand)]
+
+        return ProcessGroupManager.Diff(
+            added,
+            changed,
+            removed,
+        )
 
 
 ########################################
-# ../process.py
+# ../spawning.py
 
 
 ##
 
 
-class ProcessStateError(RuntimeError):
+@dc.dataclass(frozen=True)
+class SpawnedProcess:
+    pid: Pid
+    pipes: ProcessPipes
+    dispatchers: Dispatchers
+
+
+class ProcessSpawnError(RuntimeError):
     pass
 
 
-##
+class ProcessSpawning:
+    @property
+    @abc.abstractmethod
+    def process(self) -> Process:
+        raise NotImplementedError
 
+    #
 
-class PidHistory(ta.Dict[Pid, Process]):
-    pass
+    @abc.abstractmethod
+    def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
+        raise NotImplementedError
 
 
 ########################################
@@ -18460,123 +18567,313 @@ class StdLogger(Logger):
 
 
 ########################################
-# ../groups.py
+# ../spawningimpl.py
 
 
-##
-
-
-class ProcessGroupManager(
-    KeyedCollectionAccessors[str, ProcessGroup],
-    HasDispatchers,
-):
-    def __init__(
-            self,
-            *,
-            event_callbacks: EventCallbacks,
-    ) -> None:
-        super().__init__()
-
-        self._event_callbacks = event_callbacks
-
-        self._by_name: ta.Dict[str, ProcessGroup] = {}
-
-    @property
-    def _by_key(self) -> ta.Mapping[str, ProcessGroup]:
-        return self._by_name
-
-    #
-
-    def all_processes(self) -> ta.Iterator[Process]:
-        for g in self:
-            yield from g
-
-    #
-
-    def get_dispatchers(self) -> Dispatchers:
-        return Dispatchers(
-            d
-            for g in self
-            for p in g
-            for d in p.get_dispatchers()
-        )
-
-    #
-
-    def add(self, group: ProcessGroup) -> None:
-        if (name := group.name) in self._by_name:
-            raise KeyError(f'Process group already exists: {name}')
-
-        self._by_name[name] = group
-
-        self._event_callbacks.notify(ProcessGroupAddedEvent(name))
-
-    def remove(self, name: str) -> None:
-        group = self._by_name[name]
-
-        group.before_remove()
-
-        del self._by_name[name]
-
-        self._event_callbacks.notify(ProcessGroupRemovedEvent(name))
-
-    def clear(self) -> None:
-        # FIXME: events?
-        self._by_name.clear()
-
-    #
-
-    class Diff(ta.NamedTuple):
-        added: ta.List[ProcessGroupConfig]
-        changed: ta.List[ProcessGroupConfig]
-        removed: ta.List[ProcessGroupConfig]
-
-    def diff(self, new: ta.Sequence[ProcessGroupConfig]) -> Diff:
-        cur = [group.config for group in self]
-
-        cur_by_name = {cfg.name: cfg for cfg in cur}
-        new_by_name = {cfg.name: cfg for cfg in new}
-
-        added = [cand for cand in new if cand.name not in cur_by_name]
-        removed = [cand for cand in cur if cand.name not in new_by_name]
-        changed = [cand for cand in new if cand != cur_by_name.get(cand.name, cand)]
-
-        return ProcessGroupManager.Diff(
-            added,
-            changed,
-            removed,
-        )
-
-
-########################################
-# ../spawning.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SpawnedProcess:
-    pid: Pid
-    pipes: ProcessPipes
-    dispatchers: Dispatchers
-
-
-class ProcessSpawnError(RuntimeError):
+class ProcessOutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, ProcessOutputDispatcher]):
     pass
 
 
-class ProcessSpawning:
-    @property
-    @abc.abstractmethod
-    def process(self) -> Process:
-        raise NotImplementedError
+class ProcessInputDispatcherFactory(Func3[Process, str, Fd, ProcessInputDispatcher]):
+    pass
+
+
+InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[Fd])
+
+
+##
+
+
+class ProcessSpawningImpl(ProcessSpawning):
+    def __init__(
+            self,
+            process: Process,
+            *,
+            server_config: ServerConfig,
+            pid_history: PidHistory,
+
+            output_dispatcher_factory: ProcessOutputDispatcherFactory,
+            input_dispatcher_factory: ProcessInputDispatcherFactory,
+
+            inherited_fds: ta.Optional[InheritedFds] = None,
+    ) -> None:
+        super().__init__()
+
+        self._process = process
+
+        self._server_config = server_config
+        self._pid_history = pid_history
+
+        self._output_dispatcher_factory = output_dispatcher_factory
+        self._input_dispatcher_factory = input_dispatcher_factory
+
+        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
 
     #
 
-    @abc.abstractmethod
+    @property
+    def process(self) -> Process:
+        return self._process
+
+    @property
+    def config(self) -> ProcessConfig:
+        return self._process.config
+
+    @property
+    def group(self) -> ProcessGroup:
+        return self._process.group
+
+    #
+
     def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
-        raise NotImplementedError
+        try:
+            exe, argv = self._get_execv_args()
+        except ProcessError as exc:
+            raise ProcessSpawnError(exc.args[0]) from exc
+
+        try:
+            pipes = make_process_pipes(not self.config.redirect_stderr)
+        except OSError as exc:
+            code = exc.args[0]
+            if code == errno.EMFILE:
+                # too many file descriptors open
+                msg = f"Too many open files to spawn '{self.process.name}'"
+            else:
+                msg = f"Unknown error making pipes for '{self.process.name}': {errno.errorcode.get(code, code)}"
+            raise ProcessSpawnError(msg) from exc
+
+        try:
+            dispatchers = self._make_dispatchers(pipes)
+        except Exception as exc:  # noqa
+            close_pipes(pipes)
+            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}': {exc}") from exc
+
+        try:
+            pid = Pid(os.fork())
+        except OSError as exc:
+            code = exc.args[0]
+            if code == errno.EAGAIN:
+                # process table full
+                msg = f"Too many processes in process table to spawn '{self.process.name}'"
+            else:
+                msg = f"Unknown error during fork for '{self.process.name}': {errno.errorcode.get(code, code)}"
+            err = ProcessSpawnError(msg)
+            close_pipes(pipes)
+            raise err from exc
+
+        if pid != 0:
+            sp = SpawnedProcess(
+                pid,
+                pipes,
+                dispatchers,
+            )
+            self._spawn_as_parent(sp)
+            return sp
+
+        else:
+            self._spawn_as_child(
+                exe,
+                argv,
+                pipes,
+            )
+            raise RuntimeError('Unreachable')  # noqa
+
+    def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
+        """
+        Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
+        ProcessError if not
+        """
+
+        try:
+            args = shlex.split(self.config.command)
+        except ValueError as e:
+            raise BadCommandError(f"Can't parse command {self.config.command!r}: {e}")  # noqa
+
+        if args:
+            program = args[0]
+        else:
+            raise BadCommandError('Command is empty')
+
+        if '/' in program:
+            exe = program
+            try:
+                st = os.stat(exe)
+            except OSError:
+                st = None
+
+        else:
+            path = get_path()
+            found = None
+            st = None
+            for dir in path:  # noqa
+                found = os.path.join(dir, program)
+                try:
+                    st = os.stat(found)
+                except OSError:
+                    pass
+                else:
+                    break
+
+            if st is None:
+                exe = program
+            else:
+                exe = found  # type: ignore
+
+        # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
+        # options method call here only to service unit tests
+        check_execv_args(exe, args, st)
+
+        return exe, args
+
+    def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
+        dispatchers: ta.List[FdioHandler] = []
+
+        if pipes.stdout is not None:
+            dispatchers.append(check.isinstance(self._output_dispatcher_factory(
+                self.process,
+                ProcessCommunicationStdoutEvent,
+                pipes.stdout,
+            ), ProcessOutputDispatcher))
+
+        if pipes.stderr is not None:
+            dispatchers.append(check.isinstance(self._output_dispatcher_factory(
+                self.process,
+                ProcessCommunicationStderrEvent,
+                pipes.stderr,
+            ), ProcessOutputDispatcher))
+
+        if pipes.stdin is not None:
+            dispatchers.append(check.isinstance(self._input_dispatcher_factory(
+                self.process,
+                'stdin',
+                pipes.stdin,
+            ), ProcessInputDispatcher))
+
+        return Dispatchers(dispatchers)
+
+    #
+
+    def _spawn_as_parent(self, sp: SpawnedProcess) -> None:
+        close_child_pipes(sp.pipes)
+
+        self._pid_history[sp.pid] = self.process
+
+    #
+
+    def _spawn_as_child(
+            self,
+            exe: str,
+            argv: ta.Sequence[str],
+            pipes: ProcessPipes,
+    ) -> ta.NoReturn:
+        try:
+            # Prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
+            # group for the child. This prevents, for instance, the case of child processes being sent a SIGINT when
+            # running supervisor in foreground mode and Ctrl-C in the terminal window running supervisord is pressed.
+            # Presumably it also prevents HUP, etc. received by supervisord from being sent to children.
+            os.setpgrp()
+
+            #
+
+            # After preparation sending to fd 2 will put this output in the stderr log.
+            self._prepare_child_fds(pipes)
+
+            #
+
+            setuid_msg = self._set_uid()
+            if setuid_msg:
+                uid = self.config.uid
+                msg = f"Couldn't setuid to {uid}: {setuid_msg}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+                raise RuntimeError(msg)
+
+            #
+
+            env = os.environ.copy()
+            env['SUPERVISOR_ENABLED'] = '1'
+            env['SUPERVISOR_PROCESS_NAME'] = self.process.name
+            if self.group:
+                env['SUPERVISOR_GROUP_NAME'] = self.group.name
+            if self.config.environment is not None:
+                env.update(self.config.environment)
+
+            #
+
+            cwd = self.config.directory
+            try:
+                if cwd is not None:
+                    os.chdir(os.path.expanduser(cwd))
+            except OSError as exc:
+                code = errno.errorcode.get(exc.args[0], exc.args[0])
+                msg = f"Couldn't chdir to {cwd}: {code}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+                raise RuntimeError(msg) from exc
+
+            #
+
+            try:
+                if self.config.umask is not None:
+                    os.umask(self.config.umask)
+                os.execve(exe, list(argv), env)
+
+            except OSError as exc:
+                code = errno.errorcode.get(exc.args[0], exc.args[0])
+                msg = f"Couldn't exec {argv[0]}: {code}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+
+            except Exception:  # noqa
+                (file, fun, line), t, v, tb = compact_traceback()
+                msg = f"Couldn't exec {exe}: {t}, {v}: file: {file} line: {line}\n"
+                os.write(2, as_bytes('supervisor: ' + msg))
+
+        finally:
+            os.write(2, as_bytes('supervisor: child process was not spawned\n'))
+            real_exit(Rc(127))  # exit process with code for spawn failure
+
+        raise RuntimeError('Unreachable')
+
+    def _prepare_child_fds(self, pipes: ProcessPipes) -> None:
+        os.dup2(check.not_none(pipes.child_stdin), 0)
+
+        os.dup2(check.not_none(pipes.child_stdout), 1)
+
+        if self.config.redirect_stderr:
+            os.dup2(check.not_none(pipes.child_stdout), 2)
+        else:
+            os.dup2(check.not_none(pipes.child_stderr), 2)
+
+        for i in range(3, self._server_config.min_fds):
+            if i in self._inherited_fds:
+                continue
+            close_fd(Fd(i))
+
+    def _set_uid(self) -> ta.Optional[str]:
+        if self.config.uid is None:
+            return None
+
+        msg = drop_privileges(self.config.uid)
+        return msg
+
+
+##
+
+
+def check_execv_args(
+        exe: str,
+        argv: ta.Sequence[str],
+        st: ta.Optional[os.stat_result],
+) -> None:
+    if st is None:
+        raise NotFoundError(f"Can't find command {exe!r}")
+
+    elif stat.S_ISDIR(st[stat.ST_MODE]):
+        raise NotExecutableError(f'Command at {exe!r} is a directory')
+
+    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
+        raise NotExecutableError(f'Command at {exe!r} is not executable')
+
+    elif not os.access(exe, os.X_OK):
+        raise NoPermissionError(f'No permission to run command {exe!r}')
 
 
 ########################################
@@ -20573,316 +20870,6 @@ class SignalHandler:
 
 
 ########################################
-# ../spawningimpl.py
-
-
-class ProcessOutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, ProcessOutputDispatcher]):
-    pass
-
-
-class ProcessInputDispatcherFactory(Func3[Process, str, Fd, ProcessInputDispatcher]):
-    pass
-
-
-InheritedFds = ta.NewType('InheritedFds', ta.FrozenSet[Fd])
-
-
-##
-
-
-class ProcessSpawningImpl(ProcessSpawning):
-    def __init__(
-            self,
-            process: Process,
-            *,
-            server_config: ServerConfig,
-            pid_history: PidHistory,
-
-            output_dispatcher_factory: ProcessOutputDispatcherFactory,
-            input_dispatcher_factory: ProcessInputDispatcherFactory,
-
-            inherited_fds: ta.Optional[InheritedFds] = None,
-    ) -> None:
-        super().__init__()
-
-        self._process = process
-
-        self._server_config = server_config
-        self._pid_history = pid_history
-
-        self._output_dispatcher_factory = output_dispatcher_factory
-        self._input_dispatcher_factory = input_dispatcher_factory
-
-        self._inherited_fds = InheritedFds(frozenset(inherited_fds or []))
-
-    #
-
-    @property
-    def process(self) -> Process:
-        return self._process
-
-    @property
-    def config(self) -> ProcessConfig:
-        return self._process.config
-
-    @property
-    def group(self) -> ProcessGroup:
-        return self._process.group
-
-    #
-
-    def spawn(self) -> SpawnedProcess:  # Raises[ProcessSpawnError]
-        try:
-            exe, argv = self._get_execv_args()
-        except ProcessError as exc:
-            raise ProcessSpawnError(exc.args[0]) from exc
-
-        try:
-            pipes = make_process_pipes(not self.config.redirect_stderr)
-        except OSError as exc:
-            code = exc.args[0]
-            if code == errno.EMFILE:
-                # too many file descriptors open
-                msg = f"Too many open files to spawn '{self.process.name}'"
-            else:
-                msg = f"Unknown error making pipes for '{self.process.name}': {errno.errorcode.get(code, code)}"
-            raise ProcessSpawnError(msg) from exc
-
-        try:
-            dispatchers = self._make_dispatchers(pipes)
-        except Exception as exc:  # noqa
-            close_pipes(pipes)
-            raise ProcessSpawnError(f"Unknown error making dispatchers for '{self.process.name}': {exc}") from exc
-
-        try:
-            pid = Pid(os.fork())
-        except OSError as exc:
-            code = exc.args[0]
-            if code == errno.EAGAIN:
-                # process table full
-                msg = f"Too many processes in process table to spawn '{self.process.name}'"
-            else:
-                msg = f"Unknown error during fork for '{self.process.name}': {errno.errorcode.get(code, code)}"
-            err = ProcessSpawnError(msg)
-            close_pipes(pipes)
-            raise err from exc
-
-        if pid != 0:
-            sp = SpawnedProcess(
-                pid,
-                pipes,
-                dispatchers,
-            )
-            self._spawn_as_parent(sp)
-            return sp
-
-        else:
-            self._spawn_as_child(
-                exe,
-                argv,
-                pipes,
-            )
-            raise RuntimeError('Unreachable')  # noqa
-
-    def _get_execv_args(self) -> ta.Tuple[str, ta.Sequence[str]]:
-        """
-        Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
-        ProcessError if not
-        """
-
-        try:
-            args = shlex.split(self.config.command)
-        except ValueError as e:
-            raise BadCommandError(f"Can't parse command {self.config.command!r}: {e}")  # noqa
-
-        if args:
-            program = args[0]
-        else:
-            raise BadCommandError('Command is empty')
-
-        if '/' in program:
-            exe = program
-            try:
-                st = os.stat(exe)
-            except OSError:
-                st = None
-
-        else:
-            path = get_path()
-            found = None
-            st = None
-            for dir in path:  # noqa
-                found = os.path.join(dir, program)
-                try:
-                    st = os.stat(found)
-                except OSError:
-                    pass
-                else:
-                    break
-
-            if st is None:
-                exe = program
-            else:
-                exe = found  # type: ignore
-
-        # check_execv_args will raise a ProcessError if the execv args are bogus, we break it out into a separate
-        # options method call here only to service unit tests
-        check_execv_args(exe, args, st)
-
-        return exe, args
-
-    def _make_dispatchers(self, pipes: ProcessPipes) -> Dispatchers:
-        dispatchers: ta.List[FdioHandler] = []
-
-        if pipes.stdout is not None:
-            dispatchers.append(check.isinstance(self._output_dispatcher_factory(
-                self.process,
-                ProcessCommunicationStdoutEvent,
-                pipes.stdout,
-            ), ProcessOutputDispatcher))
-
-        if pipes.stderr is not None:
-            dispatchers.append(check.isinstance(self._output_dispatcher_factory(
-                self.process,
-                ProcessCommunicationStderrEvent,
-                pipes.stderr,
-            ), ProcessOutputDispatcher))
-
-        if pipes.stdin is not None:
-            dispatchers.append(check.isinstance(self._input_dispatcher_factory(
-                self.process,
-                'stdin',
-                pipes.stdin,
-            ), ProcessInputDispatcher))
-
-        return Dispatchers(dispatchers)
-
-    #
-
-    def _spawn_as_parent(self, sp: SpawnedProcess) -> None:
-        close_child_pipes(sp.pipes)
-
-        self._pid_history[sp.pid] = self.process
-
-    #
-
-    def _spawn_as_child(
-            self,
-            exe: str,
-            argv: ta.Sequence[str],
-            pipes: ProcessPipes,
-    ) -> ta.NoReturn:
-        try:
-            # Prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
-            # group for the child. This prevents, for instance, the case of child processes being sent a SIGINT when
-            # running supervisor in foreground mode and Ctrl-C in the terminal window running supervisord is pressed.
-            # Presumably it also prevents HUP, etc. received by supervisord from being sent to children.
-            os.setpgrp()
-
-            #
-
-            # After preparation sending to fd 2 will put this output in the stderr log.
-            self._prepare_child_fds(pipes)
-
-            #
-
-            setuid_msg = self._set_uid()
-            if setuid_msg:
-                uid = self.config.uid
-                msg = f"Couldn't setuid to {uid}: {setuid_msg}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-                raise RuntimeError(msg)
-
-            #
-
-            env = os.environ.copy()
-            env['SUPERVISOR_ENABLED'] = '1'
-            env['SUPERVISOR_PROCESS_NAME'] = self.process.name
-            if self.group:
-                env['SUPERVISOR_GROUP_NAME'] = self.group.name
-            if self.config.environment is not None:
-                env.update(self.config.environment)
-
-            #
-
-            cwd = self.config.directory
-            try:
-                if cwd is not None:
-                    os.chdir(os.path.expanduser(cwd))
-            except OSError as exc:
-                code = errno.errorcode.get(exc.args[0], exc.args[0])
-                msg = f"Couldn't chdir to {cwd}: {code}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-                raise RuntimeError(msg) from exc
-
-            #
-
-            try:
-                if self.config.umask is not None:
-                    os.umask(self.config.umask)
-                os.execve(exe, list(argv), env)
-
-            except OSError as exc:
-                code = errno.errorcode.get(exc.args[0], exc.args[0])
-                msg = f"Couldn't exec {argv[0]}: {code}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-
-            except Exception:  # noqa
-                (file, fun, line), t, v, tb = compact_traceback()
-                msg = f"Couldn't exec {exe}: {t}, {v}: file: {file} line: {line}\n"
-                os.write(2, as_bytes('supervisor: ' + msg))
-
-        finally:
-            os.write(2, as_bytes('supervisor: child process was not spawned\n'))
-            real_exit(Rc(127))  # exit process with code for spawn failure
-
-        raise RuntimeError('Unreachable')
-
-    def _prepare_child_fds(self, pipes: ProcessPipes) -> None:
-        os.dup2(check.not_none(pipes.child_stdin), 0)
-
-        os.dup2(check.not_none(pipes.child_stdout), 1)
-
-        if self.config.redirect_stderr:
-            os.dup2(check.not_none(pipes.child_stdout), 2)
-        else:
-            os.dup2(check.not_none(pipes.child_stderr), 2)
-
-        for i in range(3, self._server_config.min_fds):
-            if i in self._inherited_fds:
-                continue
-            close_fd(Fd(i))
-
-    def _set_uid(self) -> ta.Optional[str]:
-        if self.config.uid is None:
-            return None
-
-        msg = drop_privileges(self.config.uid)
-        return msg
-
-
-##
-
-
-def check_execv_args(
-        exe: str,
-        argv: ta.Sequence[str],
-        st: ta.Optional[os.stat_result],
-) -> None:
-    if st is None:
-        raise NotFoundError(f"Can't find command {exe!r}")
-
-    elif stat.S_ISDIR(st[stat.ST_MODE]):
-        raise NotExecutableError(f'Command at {exe!r} is a directory')
-
-    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-        raise NotExecutableError(f'Command at {exe!r} is not executable')
-
-    elif not os.access(exe, os.X_OK):
-        raise NoPermissionError(f'No permission to run command {exe!r}')
-
-
-########################################
 # ../../../omlish/http/pipelines/decoders.py
 """
 TODO:
@@ -22478,7 +22465,6 @@ def main(
         config = load_config_file_obj(
             os.path.expanduser(cf),
             ServerConfig,
-            prepare=prepare_server_config,
         )
 
         if args.no_daemon:

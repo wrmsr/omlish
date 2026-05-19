@@ -10,7 +10,6 @@ from omlish.lite.runtime import is_debugger_attached
 from omlish.logs.std.standard import configure_standard_logging
 
 from ..configs import ServerConfig
-from ..configs import prepare_server_config
 from ..inject import bind_server
 from ..spawningimpl import InheritedFds
 from ..supervisor import Supervisor
@@ -31,7 +30,6 @@ class TestSupervisor(unittest.TestCase):
         config = load_config_file_obj(
             os.path.expanduser(config_file),
             ServerConfig,
-            prepare=prepare_server_config,
         )
 
         #

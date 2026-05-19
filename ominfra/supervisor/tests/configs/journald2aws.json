@@ -1,9 +1,11 @@
 {
   "no_daemon": true,
-  "groups": {
-    "journald2aws": {
-      "processes": {
-        "journald2aws": {
+  "groups": [
+    {
+      "name": "journald2aws",
+      "processes": [
+        {
+          "name": "journald2aws",
           "command": "python3 ominfra/scripts/journald2aws.py --config-file ~/.omlish/journald2aws.json --real",
           "directory": "~/src/omlish2",
           "stderr": {
@@ -11,7 +13,7 @@
             "max_bytes": 0
           }
         }
-      }
+      ]
     }
-  }
+  ]
 }
