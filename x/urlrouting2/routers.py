@@ -465,8 +465,10 @@ class UrlRouter:
             ctx.allowed_methods.update(compiled.methods)
             return None
 
-        route_values = dict(compiled.route.defaults or {})
-        route_values.update(values)
+        route_values = {
+            **(compiled.route.defaults or {}),
+            **values,
+        }
         return UrlRouteMatch(
             compiled.route,
             route_values,
