@@ -15,8 +15,6 @@ from .configs import ProcessConfig
 from .dispatchers import Dispatchers
 from .events import PROCESS_STATE_EVENT_MAP
 from .events import EventCallbacks
-from .pipes import ProcessPipes
-from .pipes import close_parent_pipes
 from .process import ProcessStateError
 from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
@@ -29,6 +27,8 @@ from .types import SupervisorStateManager
 from .utils.os import decode_wait_status
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
+from .utils.pipes import ProcessPipes
+from .utils.pipes import close_parent_pipes
 from .utils.signals import sig_name
 
 

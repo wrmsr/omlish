@@ -9,7 +9,6 @@ from omlish.lite.cached import cached_nullary
 from omlish.logs.modules import get_module_logger
 
 from .configs import ServerConfig
-from .privileges import drop_privileges
 from .setup import DaemonizeListeners
 from .setup import SupervisorSetup
 from .setup import SupervisorUser
@@ -17,6 +16,7 @@ from .types import ServerEpoch
 from .utils.fs import try_unlink
 from .utils.os import real_exit
 from .utils.ostypes import Rc
+from .utils.privileges import drop_privileges
 
 
 log = get_module_logger(globals())  # noqa

@@ -101,11 +101,11 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='errors.py', sha1='eed49133c64621fb5f081ba7f249e8c4c8745025'),
-            dict(path='privileges.py', sha1='abc782c02828c9778a396053fb062720d0c3d38e'),
             dict(path='states.py', sha1='7e80da5abde756a47bb01fff1967e35ee9f754e5'),
             dict(path='utils/diag.py', sha1='65f6491a57b3b8ff6dc166c4136c39e49e008c8d'),
             dict(path='utils/fs.py', sha1='f18fd3d60c863e05d91c8e4735b86629334f5181'),
             dict(path='utils/ostypes.py', sha1='81aa9dc830189ae7095c2b8c823e28ce4a808e8d'),
+            dict(path='utils/privileges.py', sha1='abc782c02828c9778a396053fb062720d0c3d38e'),
             dict(path='utils/signals.py', sha1='445bab01dcd0144194f330e55accee1277992626'),
             dict(path='utils/strings.py', sha1='c4ced4877e366a64b7d366353ab9e5691c587f38'),
             dict(path='../../omlish/configs/types.py', sha1='f7a5584cd6eccb77d18d729796072a162e9a8790'),
@@ -155,9 +155,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
             dict(path='configs.py', sha1='abd1355419d711606bfc74bbcca6cd79935704b7'),
-            dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
-            dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
+            dict(path='utils/os.py', sha1='03ca902d60270ca0d5c0bf557f78d98d1832a938'),
+            dict(path='utils/pipes.py', sha1='cee3f0e5b24829f3b3819e2c4e05d127366e20ba'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
@@ -193,16 +193,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
-            dict(path='spawning.py', sha1='9e65e562395ad04e3f3a314f946b7a4e58a601da'),
+            dict(path='spawning.py', sha1='a5fa0e69b1d562ab4a73a0e9cd5f79756035fc60'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='680f486f4a17e02746dbb8f05794fc39a978315d'),
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
-            dict(path='processimpl.py', sha1='c45389244ca6253e0bc5dec8aba244d3714954ff'),
-            dict(path='setupimpl.py', sha1='b0ab23a790fc97caf76bd99aba8489d4bc917357'),
+            dict(path='processimpl.py', sha1='cdf6d79109241804bc58f37bd8e4da027f5776c2'),
+            dict(path='setupimpl.py', sha1='736a15617752cae8ce42a3a713b93863ba8cbf14'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
-            dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
+            dict(path='spawningimpl.py', sha1='dc1433f23c41703ef40c460bdc900808d803b444'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
             dict(path='supervisor.py', sha1='d3ccd2d82d4dd1c39ca302fbf6d05ef714d1c212'),
@@ -335,74 +335,6 @@ class NoPermissionError(ProcessError):
     Indicates that the file cannot be executed because the supervisor process does not possess the appropriate UNIX
     filesystem permission to execute the file.
     """
-
-
-########################################
-# ../privileges.py
-
-
-##
-
-
-def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
-    """
-    Drop privileges to become the specified user, which may be a username or uid. Called for supervisord startup and
-    when spawning subprocesses. Returns None on success or a string error message if privileges could not be dropped.
-    """
-
-    if user is None:
-        return 'No user specified to setuid to!'
-
-    # get uid for user, which can be a number or username
-    try:
-        uid = int(user)
-    except ValueError:
-        try:
-            pwrec = pwd.getpwnam(user)  # type: ignore
-        except KeyError:
-            return f"Can't find username {user!r}"
-        uid = pwrec[2]
-    else:
-        try:
-            pwrec = pwd.getpwuid(uid)
-        except KeyError:
-            return f"Can't find uid {uid!r}"
-
-    current_uid = os.getuid()
-
-    if current_uid == uid:
-        # do nothing and return successfully if the uid is already the current one. this allows a supervisord running as
-        # an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in it.
-        return None
-
-    if current_uid != 0:
-        return "Can't drop privilege as nonroot user"
-
-    gid = pwrec[3]
-    if hasattr(os, 'setgroups'):
-        user = pwrec[0]
-        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
-
-        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
-        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
-        # python 2.7 - this will be safe though for all unix /python version combos)
-        groups.insert(0, gid)
-        try:
-            os.setgroups(groups)
-        except OSError:
-            return 'Could not set groups of effective user'
-
-    try:
-        os.setgid(gid)
-    except OSError:
-        return 'Could not set group id of effective user'
-
-    try:
-        os.setuid(uid)
-    except OSError:
-        return 'Could not set user id of effective user'
-
-    return None
 
 
 ########################################
@@ -570,6 +502,74 @@ Rc = ta.NewType('Rc', int)
 
 Uid = ta.NewType('Uid', int)
 Gid = ta.NewType('Gid', int)
+
+
+########################################
+# ../utils/privileges.py
+
+
+##
+
+
+def drop_privileges(user: ta.Union[int, str, None]) -> ta.Optional[str]:
+    """
+    Drop privileges to become the specified user, which may be a username or uid. Called for supervisord startup and
+    when spawning subprocesses. Returns None on success or a string error message if privileges could not be dropped.
+    """
+
+    if user is None:
+        return 'No user specified to setuid to!'
+
+    # get uid for user, which can be a number or username
+    try:
+        uid = int(user)
+    except ValueError:
+        try:
+            pwrec = pwd.getpwnam(user)  # type: ignore
+        except KeyError:
+            return f"Can't find username {user!r}"
+        uid = pwrec[2]
+    else:
+        try:
+            pwrec = pwd.getpwuid(uid)
+        except KeyError:
+            return f"Can't find uid {uid!r}"
+
+    current_uid = os.getuid()
+
+    if current_uid == uid:
+        # do nothing and return successfully if the uid is already the current one. this allows a supervisord running as
+        # an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in it.
+        return None
+
+    if current_uid != 0:
+        return "Can't drop privilege as nonroot user"
+
+    gid = pwrec[3]
+    if hasattr(os, 'setgroups'):
+        user = pwrec[0]
+        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
+
+        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
+        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
+        # python 2.7 - this will be safe though for all unix /python version combos)
+        groups.insert(0, gid)
+        try:
+            os.setgroups(groups)
+        except OSError:
+            return 'Could not set groups of effective user'
+
+    try:
+        os.setgid(gid)
+    except OSError:
+        return 'Could not set group id of effective user'
+
+    try:
+        os.setuid(uid)
+    except OSError:
+        return 'Could not set user id of effective user'
+
+    return None
 
 
 ########################################
@@ -11687,89 +11687,6 @@ def parse_logging_level(value: ta.Union[str, int]) -> int:
 
 
 ########################################
-# ../pipes.py
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ProcessPipes:
-    child_stdin: ta.Optional[Fd] = None
-    stdin: ta.Optional[Fd] = None
-
-    stdout: ta.Optional[Fd] = None
-    child_stdout: ta.Optional[Fd] = None
-
-    stderr: ta.Optional[Fd] = None
-    child_stderr: ta.Optional[Fd] = None
-
-    def child_fds(self) -> ta.List[Fd]:
-        return [fd for fd in [self.child_stdin, self.child_stdout, self.child_stderr] if fd is not None]
-
-    def parent_fds(self) -> ta.List[Fd]:
-        return [fd for fd in [self.stdin, self.stdout, self.stderr] if fd is not None]
-
-
-def make_process_pipes(stderr=True) -> ProcessPipes:
-    """
-    Create pipes for parent to child stdin/stdout/stderr communications. Open fd in non-blocking mode so we can read
-    them in the mainloop without blocking. If stderr is False, don't create a pipe for stderr.
-    """
-
-    pipes: ta.Dict[str, ta.Optional[Fd]] = {
-        'child_stdin': None,
-        'stdin': None,
-
-        'stdout': None,
-        'child_stdout': None,
-
-        'stderr': None,
-        'child_stderr': None,
-    }
-
-    try:
-        pipes['child_stdin'], pipes['stdin'] = make_pipe()
-        pipes['stdout'], pipes['child_stdout'] = make_pipe()
-
-        if stderr:
-            pipes['stderr'], pipes['child_stderr'] = make_pipe()
-
-        for fd in (
-                pipes['stdout'],
-                pipes['stderr'],
-                pipes['stdin'],
-        ):
-            if fd is not None:
-                flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
-                fcntl.fcntl(fd, fcntl.F_SETFL, flags)
-
-        return ProcessPipes(**pipes)
-
-    except OSError:
-        for fd in pipes.values():
-            if fd is not None:
-                close_fd(fd)
-
-        raise
-
-
-def close_pipes(pipes: ProcessPipes) -> None:
-    close_parent_pipes(pipes)
-    close_child_pipes(pipes)
-
-
-def close_parent_pipes(pipes: ProcessPipes) -> None:
-    for fd in pipes.parent_fds():
-        close_fd(fd)
-
-
-def close_child_pipes(pipes: ProcessPipes) -> None:
-    for fd in pipes.child_fds():
-        close_fd(fd)
-
-
-########################################
 # ../setup.py
 
 
@@ -11861,12 +11778,12 @@ def waitpid(
         *,
         log: ta.Optional[LoggerLike] = None,
 ) -> ta.Optional[WaitedPid]:
-    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
-    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
-    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
-    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
-    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-    # lying around.
+    # On older Python / platforms, waitpid() can be interrupted by SIGCHLD and fail with EINTR. This does not consume
+    # the child's wait status; a later reap pass will still be able to collect it. On Python 3.5+ os.waitpid() is
+    # normally retried automatically if the signal handler does not raise, but keeping EINTR handling is harmless and
+    # preserves compatibility with older runtimes.
+    # https://github.com/Supervisor/supervisor/commit/b94419fe9d259af9059941fedfdcee8e6f7a9c39
+    # https://github.com/Supervisor/supervisor/commit/a1725627615bb6ecb1592ef05d5cfd03f4e73058
     try:
         pid, sts = os.waitpid(-1, os.WNOHANG)
 
@@ -11885,6 +11802,89 @@ def waitpid(
 
     else:
         return WaitedPid(pid, sts)  # type: ignore
+
+
+########################################
+# ../utils/pipes.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ProcessPipes:
+    child_stdin: ta.Optional[Fd] = None
+    stdin: ta.Optional[Fd] = None
+
+    stdout: ta.Optional[Fd] = None
+    child_stdout: ta.Optional[Fd] = None
+
+    stderr: ta.Optional[Fd] = None
+    child_stderr: ta.Optional[Fd] = None
+
+    def child_fds(self) -> ta.List[Fd]:
+        return [fd for fd in [self.child_stdin, self.child_stdout, self.child_stderr] if fd is not None]
+
+    def parent_fds(self) -> ta.List[Fd]:
+        return [fd for fd in [self.stdin, self.stdout, self.stderr] if fd is not None]
+
+
+def make_process_pipes(stderr=True) -> ProcessPipes:
+    """
+    Create pipes for parent to child stdin/stdout/stderr communications. Open fd in non-blocking mode so we can read
+    them in the mainloop without blocking. If stderr is False, don't create a pipe for stderr.
+    """
+
+    pipes: ta.Dict[str, ta.Optional[Fd]] = {
+        'child_stdin': None,
+        'stdin': None,
+
+        'stdout': None,
+        'child_stdout': None,
+
+        'stderr': None,
+        'child_stderr': None,
+    }
+
+    try:
+        pipes['child_stdin'], pipes['stdin'] = make_pipe()
+        pipes['stdout'], pipes['child_stdout'] = make_pipe()
+
+        if stderr:
+            pipes['stderr'], pipes['child_stderr'] = make_pipe()
+
+        for fd in (
+                pipes['stdout'],
+                pipes['stderr'],
+                pipes['stdin'],
+        ):
+            if fd is not None:
+                flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
+                fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
+        return ProcessPipes(**pipes)
+
+    except OSError:
+        for fd in pipes.values():
+            if fd is not None:
+                close_fd(fd)
+
+        raise
+
+
+def close_pipes(pipes: ProcessPipes) -> None:
+    close_parent_pipes(pipes)
+    close_child_pipes(pipes)
+
+
+def close_parent_pipes(pipes: ProcessPipes) -> None:
+    for fd in pipes.parent_fds():
+        close_fd(fd)
+
+
+def close_child_pipes(pipes: ProcessPipes) -> None:
+    for fd in pipes.child_fds():
+        close_fd(fd)
 
 
 ########################################

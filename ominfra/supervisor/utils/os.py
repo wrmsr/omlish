@@ -61,12 +61,12 @@ def waitpid(
         *,
         log: ta.Optional[LoggerLike] = None,
 ) -> ta.Optional[WaitedPid]:
-    # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4. There is
-    # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
-    # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
-    # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
-    # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-    # lying around.
+    # On older Python / platforms, waitpid() can be interrupted by SIGCHLD and fail with EINTR. This does not consume
+    # the child's wait status; a later reap pass will still be able to collect it. On Python 3.5+ os.waitpid() is
+    # normally retried automatically if the signal handler does not raise, but keeping EINTR handling is harmless and
+    # preserves compatibility with older runtimes.
+    # https://github.com/Supervisor/supervisor/commit/b94419fe9d259af9059941fedfdcee8e6f7a9c39
+    # https://github.com/Supervisor/supervisor/commit/a1725627615bb6ecb1592ef05d5cfd03f4e73058
     try:
         pid, sts = os.waitpid(-1, os.WNOHANG)
 

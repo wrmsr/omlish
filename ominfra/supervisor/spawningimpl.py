@@ -20,11 +20,6 @@ from .errors import ProcessError
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
-from .pipes import ProcessPipes
-from .pipes import close_child_pipes
-from .pipes import close_pipes
-from .pipes import make_process_pipes
-from .privileges import drop_privileges
 from .process import PidHistory
 from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
@@ -40,6 +35,11 @@ from .utils.os import real_exit
 from .utils.ostypes import Fd
 from .utils.ostypes import Pid
 from .utils.ostypes import Rc
+from .utils.pipes import ProcessPipes
+from .utils.pipes import close_child_pipes
+from .utils.pipes import close_pipes
+from .utils.pipes import make_process_pipes
+from .utils.privileges import drop_privileges
 from .utils.strings import as_bytes
 
 

@@ -4,9 +4,9 @@ import fcntl
 import os
 import typing as ta
 
-from .utils.fds import close_fd
-from .utils.fds import make_pipe
-from .utils.ostypes import Fd
+from .fds import close_fd
+from .fds import make_pipe
+from .ostypes import Fd
 
 
 ##
