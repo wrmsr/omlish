@@ -18,6 +18,9 @@ class UrlRouteSlashStyle(enum.Enum):
     IGNORE = 'ignore'
 
 
+##
+
+
 class UrlRouteMatchError(Exception):
     pass
 
@@ -27,6 +30,10 @@ class UrlRouteBuildError(Exception):
 
 
 class UrlRouteConflictError(Exception):
+    pass
+
+
+class UrlRouteArgParseError(ValueError):
     pass
 
 
@@ -46,6 +53,9 @@ class UrlRouteMethodNotAllowedError(UrlRouteMatchError):
 class UrlRouteRedirectRequiredError(UrlRouteMatchError):
     path: str
     redirect_path: str
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -85,10 +95,3 @@ class UrlRouteMatch:
     @property
     def matched_path(self) -> str:
         return self.metadata.matched_path
-
-
-@dc.dataclass(frozen=True)
-class UrlRouterConfig:
-    slash_style: UrlRouteSlashStyle = UrlRouteSlashStyle.REDIRECT
-    merge_slashes: bool = False
-    add_head: bool = True

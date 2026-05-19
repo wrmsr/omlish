@@ -15,9 +15,9 @@ from .types import UrlRouteMatchError
 from .types import UrlRouteMatchMetadata
 from .types import UrlRouteMethodNotAllowedError
 from .types import UrlRouteNotFoundError
-from .types import UrlRouterConfig
 from .types import UrlRouteRedirectRequiredError
 from .types import UrlRouteSlashStyle
+from .utils import UrlRoutingUtils
 
 
 ##
@@ -63,19 +63,18 @@ class _UrlRouteNode:
 ##
 
 
-class _UrlRouteArgParseError(ValueError):
-    pass
-
-
-##
-
-
 class UrlRouter:
+    @dc.dataclass(frozen=True)
+    class Config:
+        slash_style: UrlRouteSlashStyle = UrlRouteSlashStyle.REDIRECT
+        merge_slashes: bool = False
+        add_head: bool = True
+
     def __init__(
             self,
             routes: ta.Iterable[UrlRoute] = (),
             *,
-            config: UrlRouterConfig = UrlRouterConfig(),
+            config: Config = Config(),
             converters: ta.Optional[ta.Mapping[str, ta.Callable[..., UrlRouteConverter]]] = None,
     ) -> None:
         super().__init__()
@@ -95,28 +94,10 @@ class UrlRouter:
             self.add(route)
 
     @property
-    def config(self) -> UrlRouterConfig:
+    def config(self) -> Config:
         return self._config
 
     #
-
-    @staticmethod
-    def _quote_static_part(s: str) -> str:
-        return urllib.parse.quote(s, safe="!$&'()*+,/:;=@")
-
-    @staticmethod
-    def _query_encode(values: ta.Mapping[str, ta.Any]) -> str:
-        items = []
-        for k, v in values.items():
-            if v is None:
-                continue
-            if isinstance(v, (list, tuple)):
-                for e in v:
-                    if e is not None:
-                        items.append((k, e))
-            else:
-                items.append((k, v))
-        return urllib.parse.urlencode(items, doseq=True, safe="!$'()*,/:;?@")
 
     def _try_build(
             self,
@@ -129,7 +110,7 @@ class UrlRouter:
         consumed_names = set()
         for part in compiled.build_parts:
             if isinstance(part, str):
-                parts.append(self._quote_static_part(part))
+                parts.append(UrlRoutingUtils.quote_static_part(part))
             else:
                 consumed_names.add(part.name)
                 if part.name not in values:
@@ -152,7 +133,7 @@ class UrlRouter:
         if unknown_values:
             if not append_unknown:
                 raise UrlRouteBuildError('unknown values: ' + ', '.join(sorted(unknown_values)))
-            query = self._query_encode(unknown_values)
+            query = UrlRoutingUtils.query_encode(unknown_values)
             if query:
                 parts.extend(['?', query])
 
@@ -182,161 +163,15 @@ class UrlRouter:
 
     #
 
-    def add(self, route: UrlRoute) -> None:
-        compiled = self._compile_route(route, len(self._routes))
-        self._check_conflicts(compiled)
+    def _check_conflicts(self, compiled: _CompiledUrlRoute) -> None:
+        for other in self._routes_by_match_key.get(compiled.match_key, ()):
+            if UrlRoutingUtils.methods_overlap(other.methods, compiled.methods):
+                raise UrlRouteConflictError(compiled.route.pattern)
 
-        self._routes.append(compiled)
-        self._routes_by_match_key.setdefault(compiled.match_key, []).append(compiled)
-        if route.name is not None:
-            self._routes_by_name_or_endpoint.setdefault(route.name, []).append(compiled)
-            self._route_build_names_by_name[route.name] = compiled.build_names
-        if route.endpoint is not None:
-            self._routes_by_name_or_endpoint.setdefault(route.endpoint, []).append(compiled)
-        self._insert(compiled)
-
-    @staticmethod
-    def _normalize_method_set(
-            methods: ta.Optional[ta.AbstractSet[str]],
-            *,
-            add_head: bool,
-    ) -> ta.Optional[ta.AbstractSet[str]]:
-        if methods is None:
-            return None
-
-        ret = {m.upper() for m in methods}
-        if add_head and 'GET' in ret:
-            ret.add('HEAD')
-        return frozenset(ret)
-
-    @staticmethod
-    def _split_raw_path(path: str) -> ta.List[str]:
-        if not path.startswith('/'):
-            raise ValueError(path)
-
-        if path == '/':
-            return []
-
-        return path[1:].split('/')
-
-    @staticmethod
-    def _unquote_part(s: str) -> str:
-        return urllib.parse.unquote(s, errors='strict')
-
-    def _compile_route(self, route: UrlRoute, order: int) -> _CompiledUrlRoute:
-        if not route.pattern.startswith('/'):
-            raise ValueError(route.pattern)
-
-        parts: ta.List[_UrlRoutePart] = []
-        build_parts: ta.List[_UrlRouteBuildPart] = []
-        match_key = []
-        variable_names: ta.Set[str] = set()
-
-        for raw_segment in self._split_raw_path(route.pattern):
-            segment = self._unquote_part(raw_segment)
-            compiled = self._compile_segment(segment)
-            duplicate_names = variable_names & compiled.segment_variable_names
-            if duplicate_names:
-                raise ValueError('duplicate route variables: ' + ', '.join(sorted(duplicate_names)))
-            variable_names.update(compiled.segment_variable_names)
-            parts.append(compiled.pattern)
-            build_parts.extend(compiled.segment_build_parts)
-            build_parts.append('/')
-            match_key.append(compiled.segment_match_key)
-
-        if build_parts:
-            build_parts.pop()
-
-        build_names = frozenset(p.name for p in build_parts if isinstance(p, _UrlRouteVariable))
-        return _CompiledUrlRoute(
-            route=route,
-            parts=tuple(parts),
-            build_parts=tuple(build_parts),
-            methods=self._normalize_method_set(route.methods, add_head=self._config.add_head),
-            order=order,
-            match_key=tuple(match_key),
-            build_names=build_names,
-        )
-
-    @staticmethod
-    def _parse_arg_value(s: str) -> ta.Any:
-        if s == 'True':
-            return True
-        if s == 'False':
-            return False
-        if s == 'None':
-            return None
-        if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
-            return bytes(s[1:-1], 'utf-8').decode('unicode_escape')
-        try:
-            return int(s)
-        except ValueError:
-            pass
-        try:
-            return float(s)
-        except ValueError:
-            pass
-        return s
-
-    _URL_ROUTE_ARG_RE: ta.ClassVar[re.Pattern] = re.compile(
-        r"""
-        \s*
-        (?:(?P<name>[a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*)?
-        (?P<value>
-            True|False|None|
-            -?\d+\.\d+|
-            -?\d+|
-            "(?:[^"\\]|\\.)*"|
-            '(?:[^'\\]|\\.)*'|
-            [^,\s]+)
-        \s*(?:,|\Z)
-        """,
-        re.VERBOSE,
-    )
-
-    @classmethod
-    def _parse_converter_args(cls, s: str) -> ta.Tuple[
-        ta.Tuple[ta.Any, ...],
-        ta.Dict[str, ta.Any],
-    ]:
-        if not s:
-            return (), {}
-
-        args: ta.List[ta.Any] = []
-        kwargs: ta.Dict[str, ta.Any] = {}
-        pos = 0
-        while pos < len(s):
-            m = cls._URL_ROUTE_ARG_RE.match(s, pos)
-            if m is None:
-                raise _UrlRouteArgParseError(s[pos:])
-            value = UrlRouter._parse_arg_value(m.group('value'))
-            name = m.group('name')
-            if name is None:
-                if kwargs:
-                    raise _UrlRouteArgParseError(s[pos:])
-                args.append(value)
-            else:
-                kwargs[name] = value
-            pos = m.end()
-        return tuple(args), kwargs
-
-    _URL_ROUTE_VARIABLE_RE: ta.ClassVar[re.Pattern] = re.compile(
-        r"""
-        \{
-            (?P<name>[a-zA-Z_][a-zA-Z0-9_]*)
-            (?:
-                :
-                (?P<converter>[a-zA-Z_][a-zA-Z0-9_]*)
-                (?:
-                    \(
-                        (?P<args>[^{}]*)
-                    \)
-                )?
-            )?
-        \}
-        """,
-        re.VERBOSE,
-    )
+        if compiled.route.name is not None:
+            existing_build_names = self._route_build_names_by_name.get(compiled.route.name)
+            if existing_build_names is not None and existing_build_names != compiled.build_names:
+                raise UrlRouteConflictError(compiled.route.name)
 
     class _CompiledSegment(ta.NamedTuple):
         pattern: _UrlRoutePart
@@ -357,7 +192,7 @@ class UrlRouter:
         weight = 0
         is_greedy = False
 
-        for m in self._URL_ROUTE_VARIABLE_RE.finditer(segment):
+        for m in UrlRoutingUtils.URL_ROUTE_VARIABLE_PAT.finditer(segment):
             if m.start() > pos:
                 static = segment[pos:m.start()]
                 regex_parts.append(re.escape(static))
@@ -375,7 +210,7 @@ class UrlRouter:
             if converter_factory is None:
                 raise KeyError(converter_name)
 
-            c_args, c_kwargs = self._parse_converter_args(m.group('args') or '')
+            c_args, c_kwargs = UrlRoutingUtils.parse_converter_args(m.group('args') or '')
             converter = converter_factory(*c_args, **c_kwargs)
             variable = _UrlRouteVariable(name, converter)
             variables.append(variable)
@@ -417,24 +252,40 @@ class UrlRouter:
             frozenset(variable_names),
         )
 
-    @staticmethod
-    def _methods_overlap(
-            a: ta.Optional[ta.AbstractSet[str]],
-            b: ta.Optional[ta.AbstractSet[str]],
-    ) -> bool:
-        if a is None or b is None:
-            return True
-        return bool(a & b)
+    def _compile_route(self, route: UrlRoute, order: int) -> _CompiledUrlRoute:
+        if not route.pattern.startswith('/'):
+            raise ValueError(route.pattern)
 
-    def _check_conflicts(self, compiled: _CompiledUrlRoute) -> None:
-        for other in self._routes_by_match_key.get(compiled.match_key, ()):
-            if self._methods_overlap(other.methods, compiled.methods):
-                raise UrlRouteConflictError(compiled.route.pattern)
+        parts: ta.List[_UrlRoutePart] = []
+        build_parts: ta.List[_UrlRouteBuildPart] = []
+        match_key = []
+        variable_names: ta.Set[str] = set()
 
-        if compiled.route.name is not None:
-            existing_build_names = self._route_build_names_by_name.get(compiled.route.name)
-            if existing_build_names is not None and existing_build_names != compiled.build_names:
-                raise UrlRouteConflictError(compiled.route.name)
+        for raw_segment in UrlRoutingUtils.split_raw_path(route.pattern):
+            segment = UrlRoutingUtils.unquote_part(raw_segment)
+            compiled = self._compile_segment(segment)
+            duplicate_names = variable_names & compiled.segment_variable_names
+            if duplicate_names:
+                raise ValueError('duplicate route variables: ' + ', '.join(sorted(duplicate_names)))
+            variable_names.update(compiled.segment_variable_names)
+            parts.append(compiled.pattern)
+            build_parts.extend(compiled.segment_build_parts)
+            build_parts.append('/')
+            match_key.append(compiled.segment_match_key)
+
+        if build_parts:
+            build_parts.pop()
+
+        build_names = frozenset(p.name for p in build_parts if isinstance(p, _UrlRouteVariable))
+        return _CompiledUrlRoute(
+            route=route,
+            parts=tuple(parts),
+            build_parts=tuple(build_parts),
+            methods=UrlRoutingUtils.normalize_method_set(route.methods, add_head=self._config.add_head),
+            order=order,
+            match_key=tuple(match_key),
+            build_names=build_names,
+        )
 
     def _insert(self, compiled: _CompiledUrlRoute) -> None:
         node = self._root
@@ -463,91 +314,20 @@ class UrlRouter:
         node.routes.append(compiled)
         node.routes.sort(key=lambda r: r.order)
 
+    def add(self, route: UrlRoute) -> None:
+        compiled = self._compile_route(route, len(self._routes))
+        self._check_conflicts(compiled)
+
+        self._routes.append(compiled)
+        self._routes_by_match_key.setdefault(compiled.match_key, []).append(compiled)
+        if route.name is not None:
+            self._routes_by_name_or_endpoint.setdefault(route.name, []).append(compiled)
+            self._route_build_names_by_name[route.name] = compiled.build_names
+        if route.endpoint is not None:
+            self._routes_by_name_or_endpoint.setdefault(route.endpoint, []).append(compiled)
+        self._insert(compiled)
+
     #
-
-    @staticmethod
-    def _alternate_slash_path(path: str) -> ta.Optional[str]:
-        if path == '/':
-            return None
-        if path.endswith('/'):
-            return path[:-1] or '/'
-        return path + '/'
-
-    def match(
-            self,
-            path: str,
-            *,
-            method: ta.Optional[str] = None,
-    ) -> UrlRouteMatch:
-        split = urllib.parse.urlsplit(path)
-        path = split.path or '/'
-        original_path = path
-
-        if self._config.merge_slashes:
-            path = re.sub('/{2,}', '/', path)
-
-        try:
-            return self._match(
-                path,
-                original_path=original_path,
-                query=split.query,
-                method=method,
-            )
-        except UrlRouteNotFoundError:
-            pass
-
-        alt_path = self._alternate_slash_path(path)
-        if alt_path is not None:
-            try:
-                match = self._match(
-                    alt_path,
-                    original_path=original_path,
-                    query=split.query,
-                    method=method,
-                )
-            except UrlRouteNotFoundError:
-                pass
-            else:
-                slash_style = match.route.slash_style or self._config.slash_style
-                if slash_style is UrlRouteSlashStyle.REDIRECT:
-                    raise UrlRouteRedirectRequiredError(original_path, alt_path)
-                if slash_style is UrlRouteSlashStyle.IGNORE:
-                    return match
-
-        raise UrlRouteNotFoundError(original_path)
-
-    def _match(
-            self,
-            path: str,
-            *,
-            original_path: str,
-            query: str,
-            method: ta.Optional[str],
-    ) -> UrlRouteMatch:
-        method = method.upper() if method is not None else None
-        parts = self._split_raw_path(path)
-        allowed_methods: ta.Set[str] = set()
-        metadata = UrlRouteMatchMetadata(
-            path=original_path,
-            matched_path=path,
-            query=query,
-        )
-
-        ret = self._match_node(
-            self._root,
-            parts,
-            0,
-            {},
-            method,
-            allowed_methods,
-            metadata,
-        )
-        if ret is not None:
-            return ret
-
-        if allowed_methods:
-            raise UrlRouteMethodNotAllowedError(path, method or '', frozenset(allowed_methods))
-        raise UrlRouteNotFoundError(path)
 
     def _match_node(
             self,
@@ -572,7 +352,7 @@ class UrlRouter:
 
         if idx < len(parts):
             raw_part = parts[idx]
-            part = self._unquote_part(raw_part)
+            part = UrlRoutingUtils.unquote_part(raw_part)
 
             static_child = node.static.get(part)
             if static_child is not None:
@@ -627,7 +407,7 @@ class UrlRouter:
             raw_part: str,
             values: ta.Mapping[str, ta.Any],
     ) -> ta.Optional[ta.Dict[str, ta.Any]]:
-        decoded_part = self._unquote_part(raw_part)
+        decoded_part = UrlRoutingUtils.unquote_part(raw_part)
         candidate_parts = [raw_part]
         if decoded_part != raw_part:
             candidate_parts.append(decoded_part)
@@ -640,7 +420,7 @@ class UrlRouter:
             next_values = dict(values)
             for variable, s in zip(pattern.variables, m.groups()):
                 try:
-                    next_values[variable.name] = variable.converter.to_python(self._unquote_part(s))
+                    next_values[variable.name] = variable.converter.to_python(UrlRoutingUtils.unquote_part(s))
                 except ValueError:
                     break
             else:
@@ -683,6 +463,82 @@ class UrlRouter:
         route_values = dict(compiled.route.defaults or {})
         route_values.update(values)
         return UrlRouteMatch(compiled.route, route_values, metadata)
+
+    def _match(
+            self,
+            path: str,
+            *,
+            original_path: str,
+            query: str,
+            method: ta.Optional[str],
+    ) -> UrlRouteMatch:
+        method = method.upper() if method is not None else None
+        parts = UrlRoutingUtils.split_raw_path(path)
+        allowed_methods: ta.Set[str] = set()
+        metadata = UrlRouteMatchMetadata(
+            path=original_path,
+            matched_path=path,
+            query=query,
+        )
+
+        ret = self._match_node(
+            self._root,
+            parts,
+            0,
+            {},
+            method,
+            allowed_methods,
+            metadata,
+        )
+        if ret is not None:
+            return ret
+
+        if allowed_methods:
+            raise UrlRouteMethodNotAllowedError(path, method or '', frozenset(allowed_methods))
+        raise UrlRouteNotFoundError(path)
+
+    def match(
+            self,
+            path: str,
+            *,
+            method: ta.Optional[str] = None,
+    ) -> UrlRouteMatch:
+        split = urllib.parse.urlsplit(path)
+        path = split.path or '/'
+        original_path = path
+
+        if self._config.merge_slashes:
+            path = re.sub('/{2,}', '/', path)
+
+        try:
+            return self._match(
+                path,
+                original_path=original_path,
+                query=split.query,
+                method=method,
+            )
+        except UrlRouteNotFoundError:
+            pass
+
+        alt_path = UrlRoutingUtils.alternate_slash_path(path)
+        if alt_path is not None:
+            try:
+                match = self._match(
+                    alt_path,
+                    original_path=original_path,
+                    query=split.query,
+                    method=method,
+                )
+            except UrlRouteNotFoundError:
+                pass
+            else:
+                slash_style = match.route.slash_style or self._config.slash_style
+                if slash_style is UrlRouteSlashStyle.REDIRECT:
+                    raise UrlRouteRedirectRequiredError(original_path, alt_path)
+                if slash_style is UrlRouteSlashStyle.IGNORE:
+                    return match
+
+        raise UrlRouteNotFoundError(original_path)
 
     #
 

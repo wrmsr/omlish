@@ -11,7 +11,6 @@ from ..types import UrlRouteBuildError
 from ..types import UrlRouteConflictError
 from ..types import UrlRouteMethodNotAllowedError
 from ..types import UrlRouteNotFoundError
-from ..types import UrlRouterConfig
 from ..types import UrlRouteRedirectRequiredError
 from ..types import UrlRouteSlashStyle
 
@@ -95,7 +94,7 @@ class UrlRouterTest(unittest.TestCase):
             [
                 UrlRoute('/users/', 'users'),
             ],
-            config=UrlRouterConfig(slash_style=UrlRouteSlashStyle.IGNORE),
+            config=UrlRouter.Config(slash_style=UrlRouteSlashStyle.IGNORE),
         )
 
         self.assertEqual(router.match('/users').endpoint, 'users')
@@ -105,7 +104,7 @@ class UrlRouterTest(unittest.TestCase):
             [
                 UrlRoute('/users/list', 'users'),
             ],
-            config=UrlRouterConfig(merge_slashes=True),
+            config=UrlRouter.Config(merge_slashes=True),
         )
 
         self.assertEqual(router.match('/users//list').endpoint, 'users')
@@ -222,7 +221,7 @@ class UrlRouterTest(unittest.TestCase):
             [
                 UrlRoute('/users/', 'users'),
             ],
-            config=UrlRouterConfig(slash_style=UrlRouteSlashStyle.STRICT),
+            config=UrlRouter.Config(slash_style=UrlRouteSlashStyle.STRICT),
         )
 
         self.assertEqual(router.match('/users/').endpoint, 'users')
