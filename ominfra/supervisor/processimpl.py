@@ -221,20 +221,32 @@ class ProcessImpl(Process):
 
         if self._internal.state == ProcessState.STARTING:
             self._internal.last_start = min(test_time, self._internal.last_start)
-            if self._internal.delay > 0 and test_time < (self._internal.delay - self._config.start_secs):
+            if (
+                    self._internal.delay > 0 and
+                    test_time < (self._internal.delay - self._config.start_secs)
+            ):
                 self._internal.delay = test_time + self._config.start_secs
 
         elif self._internal.state == ProcessState.RUNNING:
-            if self._internal.last_start < test_time < (self._internal.last_start + self._config.start_secs):
+            if (
+                    test_time > self._internal.last_start and  # noqa
+                    test_time < (self._internal.last_start + self._config.start_secs)
+            ):
                 self._internal.last_start = test_time - self._config.start_secs
 
         elif self._internal.state == ProcessState.STOPPING:
             self._internal.last_stop_report = min(test_time, self._internal.last_stop_report)
-            if self._internal.delay > 0 and test_time < (self._internal.delay - self._config.stop_wait_secs):
+            if (
+                    self._internal.delay > 0 and
+                    test_time < (self._internal.delay - self._config.stop_wait_secs)
+            ):
                 self._internal.delay = test_time + self._config.stop_wait_secs
 
         elif self._internal.state == ProcessState.BACKOFF:
-            if self._internal.delay > 0 and test_time < (self._internal.delay - self._internal.backoff):
+            if (
+                    self._internal.delay > 0 and
+                    test_time < (self._internal.delay - self._internal.backoff)
+            ):
                 self._internal.delay = test_time + self._internal.backoff
 
     def stop(self) -> ta.Optional[str]:
@@ -313,6 +325,7 @@ class ProcessImpl(Process):
         try:
             try:
                 os.kill(kpid, sig)
+
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', self.name, self.pid, str(exc))  # noqa
@@ -320,6 +333,7 @@ class ProcessImpl(Process):
                     # processing.
                     return None
                 raise
+
         except Exception:  # noqa
             tb = traceback.format_exc()
             fmt, args = 'unknown problem killing %s (%s):%s', (self.name, self.pid, tb)
@@ -352,6 +366,7 @@ class ProcessImpl(Process):
         try:
             try:
                 os.kill(self.pid, sig)
+
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug(
@@ -364,6 +379,7 @@ class ProcessImpl(Process):
                     # processing.
                     return None
                 raise
+
         except Exception:  # noqa
             tb = traceback.format_exc()
             fmt, args = 'unknown problem sending %s (pid %s) sig %s : %s', (self.name, self.pid, sig_name(sig), tb)

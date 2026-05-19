@@ -32,7 +32,7 @@ class ProcessConfig:
     group: str
 
     @cached_property
-    def joined_name(self) -> str:
+    def namespec(self) -> str:
         return f'{self.group}:{self.name}'
 
     # The command that will be run when this program is started. The command can be either absolute (e.g.
@@ -295,11 +295,11 @@ class ServerConfig:
         return dct
 
     @cached_property
-    def processes_by_joined_name(self) -> ta.Mapping[str, ProcessConfig]:
+    def processes_by_namespec(self) -> ta.Mapping[str, ProcessConfig]:
         dct: ta.Dict[str, ProcessConfig] = {}
         for process in self.processes or []:
-            check.not_in(process.joined_name, dct)
-            dct[process.joined_name] = process
+            check.not_in(process.namespec, dct)
+            dct[process.namespec] = process
         return dct
 
     #
@@ -313,7 +313,7 @@ class ServerConfig:
         self.groups_by_name  # noqa
 
         self.processes_by_name_by_group_name  # noqa
-        self.processes_by_joined_name  # noqa
+        self.processes_by_namespec  # noqa
 
         if self.http_port is not None and self.http_socket_path is not None:
             raise ValueError('cannot specify both http_port and http_socket_path')

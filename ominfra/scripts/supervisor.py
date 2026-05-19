@@ -133,7 +133,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
-            dict(path='configs.py', sha1='a4db1f6493f92ef158a94b9eb63143b9ed7602e3'),
+            dict(path='configs.py', sha1='67a95da063f1e3daffbcc26aa8dc6f42fe96f679'),
             dict(path='events.py', sha1='f862c832689986f96d469949ec595d8ec7fb3201'),
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
@@ -199,7 +199,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='9170bed2ebf43acd4467a691f85fd05e1974c116'),
             dict(path='io.py', sha1='11ef0e15c34f40ee19c571c1aea5ed6fb851ab63'),
-            dict(path='processimpl.py', sha1='015ff0aa33f674e62f13ce8236b6efdec721c3eb'),
+            dict(path='processimpl.py', sha1='e2765d785c4bc165424027a55fcd41c9a8139284'),
             dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
             dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
@@ -4269,7 +4269,7 @@ class ProcessConfig:
     group: str
 
     @cached_property
-    def joined_name(self) -> str:
+    def namespec(self) -> str:
         return f'{self.group}:{self.name}'
 
     # The command that will be run when this program is started. The command can be either absolute (e.g.
@@ -4532,11 +4532,11 @@ class ServerConfig:
         return dct
 
     @cached_property
-    def processes_by_joined_name(self) -> ta.Mapping[str, ProcessConfig]:
+    def processes_by_namespec(self) -> ta.Mapping[str, ProcessConfig]:
         dct: ta.Dict[str, ProcessConfig] = {}
         for process in self.processes or []:
-            check.not_in(process.joined_name, dct)
-            dct[process.joined_name] = process
+            check.not_in(process.namespec, dct)
+            dct[process.namespec] = process
         return dct
 
     #
@@ -4550,7 +4550,7 @@ class ServerConfig:
         self.groups_by_name  # noqa
 
         self.processes_by_name_by_group_name  # noqa
-        self.processes_by_joined_name  # noqa
+        self.processes_by_namespec  # noqa
 
         if self.http_port is not None and self.http_socket_path is not None:
             raise ValueError('cannot specify both http_port and http_socket_path')
@@ -20295,20 +20295,32 @@ class ProcessImpl(Process):
 
         if self._internal.state == ProcessState.STARTING:
             self._internal.last_start = min(test_time, self._internal.last_start)
-            if self._internal.delay > 0 and test_time < (self._internal.delay - self._config.start_secs):
+            if (
+                    self._internal.delay > 0 and
+                    test_time < (self._internal.delay - self._config.start_secs)
+            ):
                 self._internal.delay = test_time + self._config.start_secs
 
         elif self._internal.state == ProcessState.RUNNING:
-            if self._internal.last_start < test_time < (self._internal.last_start + self._config.start_secs):
+            if (
+                    test_time > self._internal.last_start and  # noqa
+                    test_time < (self._internal.last_start + self._config.start_secs)
+            ):
                 self._internal.last_start = test_time - self._config.start_secs
 
         elif self._internal.state == ProcessState.STOPPING:
             self._internal.last_stop_report = min(test_time, self._internal.last_stop_report)
-            if self._internal.delay > 0 and test_time < (self._internal.delay - self._config.stop_wait_secs):
+            if (
+                    self._internal.delay > 0 and
+                    test_time < (self._internal.delay - self._config.stop_wait_secs)
+            ):
                 self._internal.delay = test_time + self._config.stop_wait_secs
 
         elif self._internal.state == ProcessState.BACKOFF:
-            if self._internal.delay > 0 and test_time < (self._internal.delay - self._internal.backoff):
+            if (
+                    self._internal.delay > 0 and
+                    test_time < (self._internal.delay - self._internal.backoff)
+            ):
                 self._internal.delay = test_time + self._internal.backoff
 
     def stop(self) -> ta.Optional[str]:
@@ -20387,6 +20399,7 @@ class ProcessImpl(Process):
         try:
             try:
                 os.kill(kpid, sig)
+
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug('unable to signal %s (pid %s), it probably just exited on its own: %s', self.name, self.pid, str(exc))  # noqa
@@ -20394,6 +20407,7 @@ class ProcessImpl(Process):
                     # processing.
                     return None
                 raise
+
         except Exception:  # noqa
             tb = traceback.format_exc()
             fmt, args = 'unknown problem killing %s (%s):%s', (self.name, self.pid, tb)
@@ -20426,6 +20440,7 @@ class ProcessImpl(Process):
         try:
             try:
                 os.kill(self.pid, sig)
+
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     log.debug(
@@ -20438,6 +20453,7 @@ class ProcessImpl(Process):
                     # processing.
                     return None
                 raise
+
         except Exception:  # noqa
             tb = traceback.format_exc()
             fmt, args = 'unknown problem sending %s (pid %s) sig %s : %s', (self.name, self.pid, sig_name(sig), tb)
