@@ -154,7 +154,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='abd1355419d711606bfc74bbcca6cd79935704b7'),
+            dict(path='configs.py', sha1='5f4f8efc33de1efaf59b99d01d166289b5abaa01'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='03ca902d60270ca0d5c0bf557f78d98d1832a938'),
             dict(path='utils/pipes.py', sha1='cee3f0e5b24829f3b3819e2c4e05d127366e20ba'),
@@ -197,10 +197,10 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='680f486f4a17e02746dbb8f05794fc39a978315d'),
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
-            dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
-            dict(path='processimpl.py', sha1='cdf6d79109241804bc58f37bd8e4da027f5776c2'),
-            dict(path='setupimpl.py', sha1='736a15617752cae8ce42a3a713b93863ba8cbf14'),
+            dict(path='dispatchersimpl.py', sha1='9170bed2ebf43acd4467a691f85fd05e1974c116'),
+            dict(path='io.py', sha1='11ef0e15c34f40ee19c571c1aea5ed6fb851ab63'),
+            dict(path='processimpl.py', sha1='ef8c335b4808357faf14ff9b41e7b48af0de91ad'),
+            dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='dc1433f23c41703ef40c460bdc900808d803b444'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
@@ -11589,25 +11589,25 @@ class ServerConfig:
 
     # The path to the activity log of the supervisord process. This option can include the value %(here)s, which expands
     # to the directory in which the supervisord configuration file was found.
-    logfile: str = 'supervisord.log'
+    log_file: str = 'supervisord.log'
 
     # The maximum number of bytes that may be consumed by the activity log file before it is rotated (suffix multipliers
     # like "KB", "MB", and "GB" can be used in the value). Set this value to 0 to indicate an unlimited log size.
-    logfile_max_bytes: int = 50 * 1024 * 1024
+    log_file_max_bytes: int = 50 * 1024 * 1024
 
     # The number of backups to keep around resulting from activity log file rotation. If set to 0, no backups will be
     # kept.
-    logfile_backups: int = 10
+    log_file_backups: int = 10
 
     # The logging level, dictating what is written to the supervisord activity log. One of critical, error, warn, info,
     # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
     # output of its child processes and extended info about process state changes, which is useful for debugging a
     # process which isn't starting properly.
-    loglevel: int = logging.INFO
+    log_level: int = logging.INFO
 
     # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
     # directory in which the supervisord configuration file was found.
-    child_logdir: str = '/dev/null'
+    child_log_dir: str = '/dev/null'
 
     # If true and not daemonized, logs will not be directed to stdout.
     silent: bool = False
@@ -11638,21 +11638,21 @@ class ServerConfig:
             *,
             umask: ta.Union[int, str] = 0o22,
             directory: ta.Optional[str] = None,
-            logfile: str = 'supervisord.log',
-            logfile_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
-            loglevel: ta.Union[int, str] = logging.INFO,
+            log_file: str = 'supervisord.log',
+            log_file_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            log_level: ta.Union[int, str] = logging.INFO,
             pidfile: str = 'supervisord.pid',
-            child_logdir: ta.Optional[str] = None,
+            child_log_dir: ta.Optional[str] = None,
             **kwargs: ta.Any,
     ) -> 'ServerConfig':
         return cls(
             umask=parse_octal(umask),
             directory=check_existing_dir(directory) if directory is not None else None,
-            logfile=check_path_with_existing_dir(logfile),
-            logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
-            loglevel=parse_logging_level(loglevel),
+            log_file=check_path_with_existing_dir(log_file),
+            log_file_max_bytes=parse_bytes_size(log_file_max_bytes),
+            log_level=parse_logging_level(log_level),
             pidfile=check_path_with_existing_dir(pidfile),
-            child_logdir=child_logdir or tempfile.gettempdir(),
+            child_log_dir=child_log_dir or tempfile.gettempdir(),
             **kwargs,
         )
 
@@ -19455,7 +19455,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
 
         self._main_log_level = logging.DEBUG
 
-        self._log_to_main_log = self._server_config.loglevel <= self._main_log_level
+        self._log_to_main_log = self._server_config.log_level <= self._main_log_level
 
         self._stdout_events_enabled = self._process.config.stdout.events_enabled
         self._stderr_events_enabled = self._process.config.stderr.events_enabled
@@ -19473,18 +19473,18 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         config = self._process.config  # noqa
         channel = self._channel  # noqa
 
-        logfile = self._lc.file
+        log_file = self._lc.file
         max_bytes = self._lc.max_bytes  # noqa
         backups = self._lc.backups  # noqa
         to_syslog = self._lc.syslog
 
-        if logfile or to_syslog:
+        if log_file or to_syslog:
             self._normal_log = logging.getLogger(__name__)
 
-        # if logfile:
+        # if log_file:
         #     loggers.handle_file(
         #         self.normal_log,
-        #         filename=logfile,
+        #         filename=log_file,
         #         fmt='%(message)s',
         #         rotating=bool(max_bytes),  # optimization
         #         max_bytes=max_bytes,
@@ -19725,16 +19725,19 @@ class IoManager(HasDispatchers):
             fd = Fd(r)
             if fd in dispatchers:
                 dispatcher = dispatchers[fd]
+
                 try:
                     log.debug('read event caused by %r', dispatcher)
                     dispatcher.on_readable()
                     if not dispatcher.readable():
                         self._poller.unregister_readable(fd)
+
                 except ExitNow:
                     raise
                 except Exception as exc:  # noqa
                     log.exception('Error in dispatcher: %r', dispatcher)
                     dispatcher.on_error(exc)
+
             else:
                 # if the fd is not in combined map, we should unregister it. otherwise, it will be polled every time,
                 # which may cause 100% cpu usage
@@ -19748,16 +19751,19 @@ class IoManager(HasDispatchers):
             fd = Fd(w)
             if fd in dispatchers:
                 dispatcher = dispatchers[fd]
+
                 try:
                     log.debug('write event caused by %r', dispatcher)
                     dispatcher.on_writable()
                     if not dispatcher.writable():
                         self._poller.unregister_writable(fd)
+
                 except ExitNow:
                     raise
                 except Exception as exc:  # noqa
                     log.exception('Error in dispatcher: %r', dispatcher)
                     dispatcher.on_error(exc)
+
             else:
                 log.debug('unexpected write event from fd %r', fd)
                 try:
@@ -20240,14 +20246,14 @@ class ProcessImpl(Process):
                 self.kill(signal.SIGKILL)
 
     def after_setuid(self) -> None:
-        # temporary logfiles which are erased at start time
+        # temporary log_files which are erased at start time
         # get_autoname = self.context.get_auto_child_log_name  # noqa
         # sid = self.context.config.identifier  # noqa
         # name = self._config.name  # noqa
-        # if self.stdout_logfile is Automatic:
-        #     self.stdout_logfile = get_autoname(name, sid, 'stdout')
-        # if self.stderr_logfile is Automatic:
-        #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
+        # if self.stdout_log_file is Automatic:
+        #     self.stdout_log_file = get_autoname(name, sid, 'stdout')
+        # if self.stderr_log_file is Automatic:
+        #     self.stderr_log_file = get_autoname(name, sid, 'stderr')
         pass
 
 
@@ -20299,7 +20305,7 @@ class SupervisorSetupImpl(SupervisorSetup):
         # this sets the options.logger object delay logger instantiation until after setuid
         if not self._config.no_cleanup:
             # clean up old automatic logs
-            self._clear_auto_child_logdir()
+            self._clear_auto_child_log_dir()
 
         if not self._config.no_daemon and self.first:
             self._daemonize()
@@ -20426,22 +20432,22 @@ class SupervisorSetupImpl(SupervisorSetup):
 
     #
 
-    def _clear_auto_child_logdir(self) -> None:
+    def _clear_auto_child_log_dir(self) -> None:
         # must be called after realize()
-        child_logdir = self._config.child_logdir
-        if child_logdir == '/dev/null':
+        child_log_dir = self._config.child_log_dir
+        if child_log_dir == '/dev/null':
             return
 
         fnre = re.compile(rf'.+?---{self._config.identifier}-\S+\.log\.?\d{{0,4}}')
         try:
-            filenames = os.listdir(child_logdir)
+            filenames = os.listdir(child_log_dir)
         except OSError:
             log.warning('Could not clear child_log dir')
             return
 
         for filename in filenames:
             if fnre.match(filename):
-                pathname = os.path.join(child_logdir, filename)
+                pathname = os.path.join(child_log_dir, filename)
                 try:
                     os.remove(pathname)
                 except OSError:

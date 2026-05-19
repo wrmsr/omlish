@@ -63,7 +63,7 @@ class SupervisorSetupImpl(SupervisorSetup):
         # this sets the options.logger object delay logger instantiation until after setuid
         if not self._config.no_cleanup:
             # clean up old automatic logs
-            self._clear_auto_child_logdir()
+            self._clear_auto_child_log_dir()
 
         if not self._config.no_daemon and self.first:
             self._daemonize()
@@ -190,22 +190,22 @@ class SupervisorSetupImpl(SupervisorSetup):
 
     #
 
-    def _clear_auto_child_logdir(self) -> None:
+    def _clear_auto_child_log_dir(self) -> None:
         # must be called after realize()
-        child_logdir = self._config.child_logdir
-        if child_logdir == '/dev/null':
+        child_log_dir = self._config.child_log_dir
+        if child_log_dir == '/dev/null':
             return
 
         fnre = re.compile(rf'.+?---{self._config.identifier}-\S+\.log\.?\d{{0,4}}')
         try:
-            filenames = os.listdir(child_logdir)
+            filenames = os.listdir(child_log_dir)
         except OSError:
             log.warning('Could not clear child_log dir')
             return
 
         for filename in filenames:
             if fnre.match(filename):
-                pathname = os.path.join(child_logdir, filename)
+                pathname = os.path.join(child_log_dir, filename)
                 try:
                     os.remove(pathname)
                 except OSError:

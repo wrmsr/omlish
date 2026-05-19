@@ -502,12 +502,12 @@ class ProcessImpl(Process):
                 self.kill(signal.SIGKILL)
 
     def after_setuid(self) -> None:
-        # temporary logfiles which are erased at start time
+        # temporary log_files which are erased at start time
         # get_autoname = self.context.get_auto_child_log_name  # noqa
         # sid = self.context.config.identifier  # noqa
         # name = self._config.name  # noqa
-        # if self.stdout_logfile is Automatic:
-        #     self.stdout_logfile = get_autoname(name, sid, 'stdout')
-        # if self.stderr_logfile is Automatic:
-        #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
+        # if self.stdout_log_file is Automatic:
+        #     self.stdout_log_file = get_autoname(name, sid, 'stdout')
+        # if self.stderr_log_file is Automatic:
+        #     self.stderr_log_file = get_autoname(name, sid, 'stderr')
         pass

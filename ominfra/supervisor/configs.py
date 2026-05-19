@@ -208,25 +208,25 @@ class ServerConfig:
 
     # The path to the activity log of the supervisord process. This option can include the value %(here)s, which expands
     # to the directory in which the supervisord configuration file was found.
-    logfile: str = 'supervisord.log'
+    log_file: str = 'supervisord.log'
 
     # The maximum number of bytes that may be consumed by the activity log file before it is rotated (suffix multipliers
     # like "KB", "MB", and "GB" can be used in the value). Set this value to 0 to indicate an unlimited log size.
-    logfile_max_bytes: int = 50 * 1024 * 1024
+    log_file_max_bytes: int = 50 * 1024 * 1024
 
     # The number of backups to keep around resulting from activity log file rotation. If set to 0, no backups will be
     # kept.
-    logfile_backups: int = 10
+    log_file_backups: int = 10
 
     # The logging level, dictating what is written to the supervisord activity log. One of critical, error, warn, info,
     # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
     # output of its child processes and extended info about process state changes, which is useful for debugging a
     # process which isn't starting properly.
-    loglevel: int = logging.INFO
+    log_level: int = logging.INFO
 
     # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
     # directory in which the supervisord configuration file was found.
-    child_logdir: str = '/dev/null'
+    child_log_dir: str = '/dev/null'
 
     # If true and not daemonized, logs will not be directed to stdout.
     silent: bool = False
@@ -257,21 +257,21 @@ class ServerConfig:
             *,
             umask: ta.Union[int, str] = 0o22,
             directory: ta.Optional[str] = None,
-            logfile: str = 'supervisord.log',
-            logfile_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
-            loglevel: ta.Union[int, str] = logging.INFO,
+            log_file: str = 'supervisord.log',
+            log_file_max_bytes: ta.Union[int, str] = 50 * 1024 * 1024,
+            log_level: ta.Union[int, str] = logging.INFO,
             pidfile: str = 'supervisord.pid',
-            child_logdir: ta.Optional[str] = None,
+            child_log_dir: ta.Optional[str] = None,
             **kwargs: ta.Any,
     ) -> 'ServerConfig':
         return cls(
             umask=parse_octal(umask),
             directory=check_existing_dir(directory) if directory is not None else None,
-            logfile=check_path_with_existing_dir(logfile),
-            logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
-            loglevel=parse_logging_level(loglevel),
+            log_file=check_path_with_existing_dir(log_file),
+            log_file_max_bytes=parse_bytes_size(log_file_max_bytes),
+            log_level=parse_logging_level(log_level),
             pidfile=check_path_with_existing_dir(pidfile),
-            child_logdir=child_logdir or tempfile.gettempdir(),
+            child_log_dir=child_log_dir or tempfile.gettempdir(),
             **kwargs,
         )
 

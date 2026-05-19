@@ -108,7 +108,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
             'no_daemon': no_daemon,
             'silent': True,
             'no_cleanup': True,
-            'logfile': str(self.log_file),
+            'log_file': str(self.log_file),
             'pidfile': str(self.pid_file),
             'http_port': self.http_port,
             **config_dict,

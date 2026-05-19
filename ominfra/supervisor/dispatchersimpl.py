@@ -135,7 +135,7 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
 
         self._main_log_level = logging.DEBUG
 
-        self._log_to_main_log = self._server_config.loglevel <= self._main_log_level
+        self._log_to_main_log = self._server_config.log_level <= self._main_log_level
 
         self._stdout_events_enabled = self._process.config.stdout.events_enabled
         self._stderr_events_enabled = self._process.config.stderr.events_enabled
@@ -153,18 +153,18 @@ class ProcessOutputDispatcherImpl(BaseProcessDispatcherImpl, ProcessOutputDispat
         config = self._process.config  # noqa
         channel = self._channel  # noqa
 
-        logfile = self._lc.file
+        log_file = self._lc.file
         max_bytes = self._lc.max_bytes  # noqa
         backups = self._lc.backups  # noqa
         to_syslog = self._lc.syslog
 
-        if logfile or to_syslog:
+        if log_file or to_syslog:
             self._normal_log = logging.getLogger(__name__)
 
-        # if logfile:
+        # if log_file:
         #     loggers.handle_file(
         #         self.normal_log,
-        #         filename=logfile,
+        #         filename=log_file,
         #         fmt='%(message)s',
         #         rotating=bool(max_bytes),  # optimization
         #         max_bytes=max_bytes,
