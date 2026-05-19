@@ -104,7 +104,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/os/linux.py', sha1='3e104ec5cbb84879f58fccae2a23800437249f4b'),
             dict(path='../../omlish/os/paths.py', sha1='56c40b7c2aa84d1778d60ee4cda498f8c380cc8d'),
             dict(path='../../omlish/shlex.py', sha1='a69721913bcd4f4008600e390fb7822637c2a8ec'),
-            dict(path='../../omdev/home/paths.py', sha1='09749e5e655305ab761858d78be30e949f1d57b5'),
+            dict(path='../../omdev/home/paths.py', sha1='15298067ada3cde9843324744b0f6b9d2e175549'),
             dict(path='../../omdev/packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
             dict(path='deploy/paths/specs.py', sha1='023167da1ad9fcf09d9d44963177175591a97377'),
             dict(path='remote/config.py', sha1='48f9367e9db4b23166657ff34eb644c9869d48a8'),
@@ -5721,6 +5721,8 @@ class HomePaths:
     def home_dir(self) -> str:
         return self._home_dir
 
+    #
+
     class DirKind(enum.Enum):
         HOME = 'home'
         CONFIG = 'config'
@@ -5744,7 +5746,13 @@ class HomePaths:
         DirKind.STATE: state_subdir,
     }
 
-    def get_dir(self, kind: 'DirKind') -> str:
+    @classmethod
+    def get_subdir(cls, kind: DirKind) -> str:
+        return cls._SUBDIR_BY_KIND[kind]
+
+    #
+
+    def get_dir(self, kind: DirKind) -> str:
         return os.path.join(self._home_dir, self._SUBDIR_BY_KIND[kind])
 
     @property

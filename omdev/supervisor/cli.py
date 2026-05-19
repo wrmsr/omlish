@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 """
 TODO:
  - omlish.daemon?
@@ -5,12 +6,15 @@ TODO:
  - classic daemon cli - start/stop/status
  - STRICTLY USE AMALG SCRIPT ONLY
 """
-import os
+import os.path
 import sys
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish.argparse import all as ap
+
+from ..home.paths import get_home_paths
 
 
 ##
@@ -31,29 +35,71 @@ def script_path() -> ta.Any:
 ##
 
 
+@lang.cached_function
+def config_file_path() -> str:
+    return os.path.join(get_home_paths().config_dir, 'supervisor.toml')
+
+
+def init_config_file(config_path: str) -> None:
+    check.state(not os.path.exists(config_path))
+
+    hp = get_home_paths()
+
+    http_socket_path = os.path.join(hp.run_dir, 'supervisor', 'supervisor.sock')
+    os.makedirs(os.path.dirname(http_socket_path), exist_ok=True)
+
+    toml_src = '\n'.join([
+        f"http_socket_path = '{http_socket_path}'",
+        '',
+    ])
+
+    with open(config_path, 'w') as f:
+        f.write(toml_src)
+
+
+##
+
+
 class Cli(ap.Cli):
     @ap.cmd()
     def path(self) -> None:
         print(script_path())
 
     @ap.cmd(
+        ap.arg('config-file', nargs='?'),
+
+        ap.arg('--_dev', action='store_true'),
+
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
         no_help=True,
     )
     def run(self) -> None:
-        exe = sys.executable
-        fp = script_path()
+        if (cfp := self.args.config_file) is None:
+            cfp = config_file_path()
+            if not os.path.exists(cfp):
+                init_config_file(cfp)
 
-        os.execvp(
-            exe,
-            [
-                exe,
-                fp,
-                *self.unknown_args,
-                *(self.args.args or []),
-            ],
-        )
+        args = [
+            cfp,
+            *(['--no-daemon'] if self.args._dev else []),
+            *self.unknown_args,
+            *(self.args.args or []),
+        ]
+
+        if self.args._dev:
+            from ominfra.supervisor.main import main as dev_main  # noqa
+
+            dev_main(args)
+
+        else:
+            os.execvp(
+                exe := sys.executable,
+                [
+                    exe,
+                    script_path(),
+                ],
+            )
 
 
 def _main() -> None:

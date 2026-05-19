@@ -210,7 +210,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='21c22c2fd90532981dc2e622831261bad5f2246c'),
             dict(path='inject.py', sha1='0ca51f71546c9de52255135a699a5b13c608d7f4'),
-            dict(path='main.py', sha1='5c8aee376656d78008b6341fe12cae52065b8243'),
+            dict(path='main.py', sha1='b8da6e8885a03a6bbbeb82cc87f2946cf3c2bcfc'),
         ],
     )
 
@@ -22445,6 +22445,7 @@ def main(
 
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file', metavar='config-file')
+    parser.add_argument('--no-daemon', action='store_true')
     parser.add_argument('--no-journald', action='store_true')
     parser.add_argument('--inherit-initial-fds', action='store_true')
     args = parser.parse_args(argv)
@@ -22473,6 +22474,9 @@ def main(
             ServerConfig,
             prepare=prepare_server_config,
         )
+
+        if args.no_daemon:
+            config = dc.replace(config, nodaemon=True)
 
         with contextlib.ExitStack() as es:
             injector = inj.create_injector(bind_server(

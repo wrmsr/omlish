@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP037 UP045
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 """
 TODO:
@@ -37,6 +37,8 @@ class HomePaths:
     def home_dir(self) -> str:
         return self._home_dir
 
+    #
+
     class DirKind(enum.Enum):
         HOME = 'home'
         CONFIG = 'config'
@@ -60,7 +62,13 @@ class HomePaths:
         DirKind.STATE: state_subdir,
     }
 
-    def get_dir(self, kind: 'DirKind') -> str:
+    @classmethod
+    def get_subdir(cls, kind: DirKind) -> str:
+        return cls._SUBDIR_BY_KIND[kind]
+
+    #
+
+    def get_dir(self, kind: DirKind) -> str:
         return os.path.join(self._home_dir, self._SUBDIR_BY_KIND[kind])
 
     @property

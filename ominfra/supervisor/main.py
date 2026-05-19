@@ -33,6 +33,7 @@
 #   STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 #   EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import contextlib
+import dataclasses as dc
 import itertools
 import os.path
 import typing as ta
@@ -66,6 +67,7 @@ def main(
 
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file', metavar='config-file')
+    parser.add_argument('--no-daemon', action='store_true')
     parser.add_argument('--no-journald', action='store_true')
     parser.add_argument('--inherit-initial-fds', action='store_true')
     args = parser.parse_args(argv)
@@ -94,6 +96,9 @@ def main(
             ServerConfig,
             prepare=prepare_server_config,
         )
+
+        if args.no_daemon:
+            config = dc.replace(config, nodaemon=True)
 
         with contextlib.ExitStack() as es:
             injector = inj.create_injector(bind_server(
