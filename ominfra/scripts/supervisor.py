@@ -199,7 +199,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
-            dict(path='processimpl.py', sha1='8b42ac7067c65c867408a5364eef557256c877db'),
+            dict(path='processimpl.py', sha1='c45389244ca6253e0bc5dec8aba244d3714954ff'),
             dict(path='setupimpl.py', sha1='7ab3e7397090c1420cd967730c8aa072c1e68f8e'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
@@ -208,7 +208,7 @@ def __omlish_amalg__():  # noqa
             dict(path='supervisor.py', sha1='d3ccd2d82d4dd1c39ca302fbf6d05ef714d1c212'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
-            dict(path='http.py', sha1='35aac87aea283a4f6603ec1924381eb4b3cea625'),
+            dict(path='http.py', sha1='21c22c2fd90532981dc2e622831261bad5f2246c'),
             dict(path='inject.py', sha1='0ca51f71546c9de52255135a699a5b13c608d7f4'),
             dict(path='main.py', sha1='5c8aee376656d78008b6341fe12cae52065b8243'),
         ],
@@ -19802,11 +19802,12 @@ class ProcessImpl(Process):
 
         self._spawning = process_spawning_factory(self)
 
+        self._dispatchers = Dispatchers([])
+
         self._internal = ProcessImpl._InternalState()
 
     @dc.dataclass()
     class _InternalState:
-        dispatchers: Dispatchers = dc.field(default_factory=lambda: Dispatchers([]))
         pipes: ProcessPipes = dc.field(default_factory=lambda: ProcessPipes())
 
         state: ProcessState = ProcessState.STOPPED
@@ -19897,14 +19898,14 @@ class ProcessImpl(Process):
 
         self._internal.pid = sp.pid
         self._internal.pipes = sp.pipes
-        self._internal.dispatchers = sp.dispatchers
+        self._dispatchers = sp.dispatchers
 
         self._internal.delay = time.time() + self.config.start_secs
 
         return sp.pid
 
     def get_dispatchers(self) -> Dispatchers:
-        return self._internal.dispatchers
+        return self._dispatchers
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
         if not self.pid or self._internal.killing:
@@ -19914,7 +19915,7 @@ class ProcessImpl(Process):
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = check.isinstance(self._internal.dispatchers[stdin_fd], ProcessInputDispatcher)
+        dispatcher = check.isinstance(self._dispatchers[stdin_fd], ProcessInputDispatcher)
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 
@@ -20110,7 +20111,7 @@ class ProcessImpl(Process):
     def finish(self, sts: Rc) -> None:
         """The process was reaped and we need to report and manage its state."""
 
-        self._internal.dispatchers.drain()
+        self._dispatchers.drain()
 
         es, msg = decode_wait_status(sts)
 
@@ -20182,7 +20183,7 @@ class ProcessImpl(Process):
         self._internal.pid = Pid(0)
         close_parent_pipes(self._internal.pipes)
         self._internal.pipes = ProcessPipes()
-        self._internal.dispatchers = Dispatchers([])
+        self._dispatchers = Dispatchers([])
 
     def transition(self) -> None:
         now = time.time()
@@ -22285,15 +22286,13 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
 
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         dct = {
-            'method': req.method,
-            'path': req.path,
-            'data': len(req.data or b''),
             'groups': {
                 g.name: {
                     'processes': {
                         p.name: {
                             'pid': p.pid,
                             'state': p.state.name,
+                            **({'_internal': marshal_obj(getattr(p, '_internal'))} if req.path == '/_internal' else {}),
                         }
                         for p in g
                     },

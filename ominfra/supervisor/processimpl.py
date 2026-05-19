@@ -64,11 +64,12 @@ class ProcessImpl(Process):
 
         self._spawning = process_spawning_factory(self)
 
+        self._dispatchers = Dispatchers([])
+
         self._internal = ProcessImpl._InternalState()
 
     @dc.dataclass()
     class _InternalState:
-        dispatchers: Dispatchers = dc.field(default_factory=lambda: Dispatchers([]))
         pipes: ProcessPipes = dc.field(default_factory=lambda: ProcessPipes())
 
         state: ProcessState = ProcessState.STOPPED
@@ -159,14 +160,14 @@ class ProcessImpl(Process):
 
         self._internal.pid = sp.pid
         self._internal.pipes = sp.pipes
-        self._internal.dispatchers = sp.dispatchers
+        self._dispatchers = sp.dispatchers
 
         self._internal.delay = time.time() + self.config.start_secs
 
         return sp.pid
 
     def get_dispatchers(self) -> Dispatchers:
-        return self._internal.dispatchers
+        return self._dispatchers
 
     def write(self, chars: ta.Union[bytes, str]) -> None:
         if not self.pid or self._internal.killing:
@@ -176,7 +177,7 @@ class ProcessImpl(Process):
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = check.isinstance(self._internal.dispatchers[stdin_fd], ProcessInputDispatcher)
+        dispatcher = check.isinstance(self._dispatchers[stdin_fd], ProcessInputDispatcher)
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 
@@ -372,7 +373,7 @@ class ProcessImpl(Process):
     def finish(self, sts: Rc) -> None:
         """The process was reaped and we need to report and manage its state."""
 
-        self._internal.dispatchers.drain()
+        self._dispatchers.drain()
 
         es, msg = decode_wait_status(sts)
 
@@ -444,7 +445,7 @@ class ProcessImpl(Process):
         self._internal.pid = Pid(0)
         close_parent_pipes(self._internal.pipes)
         self._internal.pipes = ProcessPipes()
-        self._internal.dispatchers = Dispatchers([])
+        self._dispatchers = Dispatchers([])
 
     def transition(self) -> None:
         now = time.time()

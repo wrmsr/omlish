@@ -13,6 +13,7 @@ from omlish.io.fdio.handlers import ServerSocketFdioHandler
 from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 from omlish.lite.check import check
 from omlish.lite.json import JSON_PRETTY_KWARGS
+from omlish.lite.marshal import marshal_obj
 from omlish.sockets.addresses import SocketAddress
 
 from .dispatchers import Dispatchers
@@ -100,15 +101,13 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
 
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         dct = {
-            'method': req.method,
-            'path': req.path,
-            'data': len(req.data or b''),
             'groups': {
                 g.name: {
                     'processes': {
                         p.name: {
                             'pid': p.pid,
                             'state': p.state.name,
+                            **({'_internal': marshal_obj(getattr(p, '_internal'))} if req.path == '/_internal' else {}),
                         }
                         for p in g
                     },
