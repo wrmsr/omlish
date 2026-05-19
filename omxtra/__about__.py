@@ -8,9 +8,6 @@ class Project(ProjectBase):
     description = 'omxtra'
 
     dependencies = [
-        # FIXME: text.antlr.cli deps omdev.cache.data, yet this lib is 'under' omdev.
-        # f'omdev == {__version__}',
-
         f'omlish == {__version__}',
     ]
 
@@ -19,21 +16,10 @@ class Project(ProjectBase):
             f'omdev == {__version__}',
         ],
 
-        'server': [
-            'h11 ~= 0.16',
-            'h2 ~= 4.3',
-            'priority ~= 2.0',
-            'wsproto ~= 1.3',
-        ],
-
         'ssh': [
             'paramiko ~= 5.0',  # !! LGPL
 
             'asyncssh ~= 2.23',  # cffi
-        ],
-
-        'templates': [
-            'jinja2 ~= 3.1',
         ],
     }
 

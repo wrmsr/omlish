@@ -14,11 +14,11 @@ from omlish import lang
 from omlish.http import asgi
 from omlish.sockets.ports import get_available_port
 from omlish.testing import pytest as ptu
-from x.app.dbs import bind_dbs
-from x.app.secrets import bind_secrets
-from x.app.server.inject import bind_app
-from x.app.server.inject import bind_in_memory_user_store
 
+from ...app.dbs import bind_dbs
+from ...app.secrets import bind_secrets
+from ...app.server.inject import bind_app
+from ...app.server.inject import bind_in_memory_user_store
 from ..config import Config
 from ..default import serve
 from ..tests.utils import get_timeout_s

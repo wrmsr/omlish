@@ -1,6 +1,6 @@
 import importlib.resources
 
-from omlish import lang
+from ... import lang
 
 
 @lang.cached_function

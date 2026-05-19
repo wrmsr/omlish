@@ -159,6 +159,9 @@ exclude = [
 'omlish.cexts' = [
     'include/omlish/*',
 ]
+'omlish.http.resources' = [
+    '*',
+]
 'omlish.specs.jsonschema' = [
     'schemas/*',
     'schemas/draft202012/*',

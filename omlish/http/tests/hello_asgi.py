@@ -47,7 +47,7 @@ def _main() -> None:
 
         case 'omserv':
             import anyio
-            omxtra: ta.Any = __import__('omxtra.server')
+            omxtra: ta.Any = __import__('x.server')
             anyio.run(omxtra.server.serve, app, omxtra.server.Config())
 
         case _:

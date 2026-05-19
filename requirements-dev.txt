@@ -157,3 +157,8 @@ pillow==12.2.0
 bitsandbytes==0.49.2  # @omlish-venv !15 !15t
 
 regex==2026.5.9
+
+# x.server - TODO: delete
+
+h11==0.16.0
+wsproto==1.3.2
