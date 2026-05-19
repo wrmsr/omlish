@@ -1,83 +1,18 @@
 import dataclasses as dc
 import typing as ta
 
-from .... import lang
 from ....funcs.genmachine import GenMachine
 from .errors import JsonStreamError
-from .lexing import CONST_IDENT_VALUES
-from .lexing import SCALAR_VALUE_TYPES
-from .lexing import VALUE_TOKEN_KINDS
-from .lexing import Position
-from .lexing import ScalarValue
-from .lexing import Token
-
-
-##
-
-
-class BeginObject(lang.Marker):
-    pass
-
-
-class Key(ta.NamedTuple):
-    key: str
-
-
-class EndObject(lang.Marker):
-    pass
-
-
-class BeginArray(lang.Marker):
-    pass
-
-
-class EndArray(lang.Marker):
-    pass
-
-
-Event: ta.TypeAlias = ta.Union[  # noqa
-    type[BeginObject],
-    Key,
-    type[EndObject],
-
-    type[BeginArray],
-    type[EndArray],
-
-    ScalarValue,
-]
-
-
-class Events(lang.Namespace):
-    BeginObject = BeginObject
-    Key = Key
-    EndObject = EndObject
-
-    BeginArray = BeginArray
-    EndArray = EndArray
-
-
-##
-
-
-def yield_parser_events(obj: ta.Any) -> ta.Iterator[Event]:
-    if isinstance(obj, SCALAR_VALUE_TYPES):
-        yield obj  # type: ignore
-
-    elif isinstance(obj, ta.Mapping):
-        yield BeginObject
-        for k, v in obj.items():
-            yield Key(k)
-            yield from yield_parser_events(v)
-        yield EndObject
-
-    elif isinstance(obj, ta.Sequence):
-        yield BeginArray
-        for v in obj:
-            yield from yield_parser_events(v)
-        yield EndArray
-
-    else:
-        raise TypeError(obj)
+from .events import BeginArray
+from .events import BeginObject
+from .events import EndArray
+from .events import EndObject
+from .events import Event
+from .events import Key
+from .tokens import CONST_IDENT_VALUES
+from .tokens import VALUE_TOKEN_KINDS
+from .tokens import Position
+from .tokens import Token
 
 
 ##

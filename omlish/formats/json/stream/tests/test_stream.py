@@ -7,9 +7,9 @@ from ..... import check
 from ...tests.helpers import TEST_DOCS
 from ...tests.helpers import assert_json_eq
 from ..building import JsonValueBuilder
+from ..events import yield_events
 from ..lexing import JsonStreamLexer
 from ..parsing import JsonStreamParser
-from ..parsing import yield_parser_events
 from ..rendering import StreamJsonRenderer
 from ..utils import stream_parse_one_value
 
@@ -52,7 +52,7 @@ def test_parse():
 
         vs = []
         with JsonValueBuilder() as jvb:
-            for e in yield_parser_events(obj):
+            for e in yield_events(obj):
                 for v in jvb(e):
                     print(v)
                     vs.append(v)

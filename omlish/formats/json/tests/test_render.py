@@ -4,7 +4,7 @@ import pytest
 
 from .... import lang
 from ..rendering import JsonRenderer
-from ..stream.parsing import yield_parser_events
+from ..stream.events import yield_events
 from ..stream.rendering import StreamJsonRenderer
 from .helpers import TEST_DOCS
 
@@ -33,5 +33,5 @@ def test_render(
         assert l == r
 
         if not sort_keys:  # FIXME
-            l = StreamJsonRenderer.render_str(yield_parser_events(obj), **kw)
+            l = StreamJsonRenderer.render_str(yield_events(obj), **kw)
             assert l == r

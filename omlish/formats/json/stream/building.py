@@ -1,6 +1,5 @@
 import typing as ta
 
-from .lexing import SCALAR_VALUE_TYPES
 from .parsing import BeginArray
 from .parsing import BeginObject
 from .parsing import EndArray
@@ -8,6 +7,7 @@ from .parsing import EndObject
 from .parsing import Event
 from .parsing import JsonStreamObject
 from .parsing import Key
+from .tokens import SCALAR_VALUE_TYPES
 
 
 ##

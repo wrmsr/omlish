@@ -29,10 +29,10 @@ import typing as ta
 from .... import lang
 from .building import JsonValueBuilder
 from .errors import JsonStreamError
+from .events import Event
 from .lexing import JsonStreamLexer
-from .lexing import Token
-from .parsing import Event
 from .parsing import JsonStreamParser
+from .tokens import Token
 
 
 ##

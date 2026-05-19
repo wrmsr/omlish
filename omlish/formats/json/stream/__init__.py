@@ -19,8 +19,35 @@ from .errors import (  # noqa
     JsonStreamError,
 )
 
+from .events import (  # noqa
+    BeginObject,
+    Key,
+    EndObject,
+    BeginArray,
+    EndArray,
+
+    Event,
+    Events,
+
+    yield_events,
+)
 
 from .lexing import (  # noqa
+    JsonStreamLexError,
+    JsonStreamLexer,
+)
+
+from .parsing import (  # noqa
+    JsonStreamParseError,
+    JsonStreamObject,
+    JsonStreamParser,
+)
+
+from .rendering import (  # noqa
+    StreamJsonRenderer,
+)
+
+from .tokens import (  # noqa
     IdentTokenKind,
     ValueTokenKind,
     VALUE_TOKEN_KINDS,
@@ -38,29 +65,7 @@ from .lexing import (  # noqa
     CONTROL_TOKENS,
     CONST_IDENT_VALUES,
 
-    JsonStreamLexError,
-    JsonStreamLexer,
-)
-
-from .parsing import (  # noqa
-    BeginObject,
-    Key,
-    EndObject,
-    BeginArray,
-    EndArray,
-
-    Event,
-    Events,
-
-    yield_parser_events,
-
-    JsonStreamParseError,
-    JsonStreamObject,
-    JsonStreamParser,
-)
-
-from .rendering import (  # noqa
-    StreamJsonRenderer,
+    EXPANDED_SPACE_CHARS,
 )
 
 from .utils import (  # noqa
