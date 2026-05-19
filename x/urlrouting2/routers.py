@@ -1,102 +1,23 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
 import dataclasses as dc
-import enum
 import re
 import typing as ta
 import urllib.parse
 
 from .converters import URL_ROUTE_DEFAULT_CONVERTERS
 from .converters import UrlRouteConverter
-
-
-UrlRouteEndpoint = ta.Any  # ta.TypeAlias
-UrlRouteValues = ta.Mapping[str, ta.Any]  # ta.TypeAlias
-
-
-##
-
-
-class UrlRouteSlashStyle(enum.Enum):
-    STRICT = 'strict'
-    REDIRECT = 'redirect'
-    IGNORE = 'ignore'
-
-
-class UrlRouteMatchError(Exception):
-    pass
-
-
-class UrlRouteBuildError(Exception):
-    pass
-
-
-class UrlRouteConflictError(Exception):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class UrlRouteNotFoundError(UrlRouteMatchError):
-    path: str
-
-
-@dc.dataclass(frozen=True)
-class UrlRouteMethodNotAllowedError(UrlRouteMatchError):
-    path: str
-    method: str
-    allowed_methods: ta.AbstractSet[str]
-
-
-@dc.dataclass(frozen=True)
-class UrlRouteRedirectRequiredError(UrlRouteMatchError):
-    path: str
-    redirect_path: str
-
-
-@dc.dataclass(frozen=True)
-class UrlRoute:
-    pattern: str
-    endpoint: UrlRouteEndpoint = None
-
-    methods: ta.Optional[ta.AbstractSet[str]] = None
-    name: ta.Optional[str] = None
-    slash_style: ta.Optional[UrlRouteSlashStyle] = None
-
-    defaults: ta.Optional[ta.Mapping[str, ta.Any]] = None
-    data: ta.Optional[ta.Mapping[str, ta.Any]] = None
-
-
-@dc.dataclass(frozen=True)
-class UrlRouteMatchMetadata:
-    path: str
-    matched_path: str
-    query: str = ''
-
-
-@dc.dataclass(frozen=True)
-class UrlRouteMatch:
-    route: UrlRoute
-    values: UrlRouteValues
-    metadata: UrlRouteMatchMetadata
-
-    @property
-    def endpoint(self) -> UrlRouteEndpoint:
-        return self.route.endpoint
-
-    @property
-    def path(self) -> str:
-        return self.metadata.path
-
-    @property
-    def matched_path(self) -> str:
-        return self.metadata.matched_path
-
-
-@dc.dataclass(frozen=True)
-class UrlRouterConfig:
-    slash_style: UrlRouteSlashStyle = UrlRouteSlashStyle.REDIRECT
-    merge_slashes: bool = False
-    add_head: bool = True
+from .types import UrlRoute
+from .types import UrlRouteBuildError
+from .types import UrlRouteConflictError
+from .types import UrlRouteMatch
+from .types import UrlRouteMatchError
+from .types import UrlRouteMatchMetadata
+from .types import UrlRouteMethodNotAllowedError
+from .types import UrlRouteNotFoundError
+from .types import UrlRouterConfig
+from .types import UrlRouteRedirectRequiredError
+from .types import UrlRouteSlashStyle
 
 
 ##
@@ -134,9 +55,9 @@ class _CompiledUrlRoute:
 @dc.dataclass()
 class _UrlRouteNode:
     static: ta.MutableMapping[str, '_UrlRouteNode'] = dc.field(default_factory=dict)
-    dynamic: list[ta.Tuple[_UrlRouteSegmentPattern, '_UrlRouteNode']] = dc.field(default_factory=list)
-    greedy: list[ta.Tuple[_UrlRouteSegmentPattern, _CompiledUrlRoute]] = dc.field(default_factory=list)
-    routes: list[_CompiledUrlRoute] = dc.field(default_factory=list)
+    dynamic: ta.List[ta.Tuple[_UrlRouteSegmentPattern, '_UrlRouteNode']] = dc.field(default_factory=list)
+    greedy: ta.List[ta.Tuple[_UrlRouteSegmentPattern, _CompiledUrlRoute]] = dc.field(default_factory=list)
+    routes: ta.List[_CompiledUrlRoute] = dc.field(default_factory=list)
 
 
 ##
@@ -165,10 +86,10 @@ class UrlRouter:
             self._converters.update(converters)
 
         self._root = _UrlRouteNode()
-        self._routes: list[_CompiledUrlRoute] = []
-        self._routes_by_name_or_endpoint: dict[ta.Any, list[_CompiledUrlRoute]] = {}
-        self._routes_by_match_key: dict[ta.Tuple[ta.Any, ...], list[_CompiledUrlRoute]] = {}
-        self._route_build_names_by_name: dict[str, ta.AbstractSet[str]] = {}
+        self._routes: ta.List[_CompiledUrlRoute] = []
+        self._routes_by_name_or_endpoint: ta.Dict[ta.Any, ta.List[_CompiledUrlRoute]] = {}
+        self._routes_by_match_key: ta.Dict[ta.Tuple[ta.Any, ...], ta.List[_CompiledUrlRoute]] = {}
+        self._route_build_names_by_name: ta.Dict[str, ta.AbstractSet[str]] = {}
 
         for route in routes:
             self.add(route)
@@ -231,6 +152,11 @@ class UrlRouter:
 
         raise UrlRouteNotFoundError(original_path)
 
+    # Used by allowed_methods() to reuse the normal matcher as a path-only probe. The sentinel is intentionally not a
+    # real HTTP method: if the path matches method-constrained routes, each route rejects this method and contributes
+    # its allowed methods to UrlRouteMethodNotAllowedError. allowed_methods() catches that error and returns the
+    # accumulated method set.
+    # FIXME: delete this crap
     _URL_ROUTE_SENTINEL_METHOD: ta.ClassVar[str] = '__OMLISH_URL_ROUTER_METHOD_SENTINEL__'
 
     def allowed_methods(self, path: str) -> ta.AbstractSet[str]:
@@ -280,7 +206,7 @@ class UrlRouter:
         return frozenset(ret)
 
     @staticmethod
-    def _split_raw_path(path: str) -> list[str]:
+    def _split_raw_path(path: str) -> ta.List[str]:
         if not path.startswith('/'):
             raise ValueError(path)
 
@@ -297,10 +223,10 @@ class UrlRouter:
         if not route.pattern.startswith('/'):
             raise ValueError(route.pattern)
 
-        parts: list[_UrlRoutePart] = []
-        build_parts: list[_UrlRouteBuildPart] = []
+        parts: ta.List[_UrlRoutePart] = []
+        build_parts: ta.List[_UrlRouteBuildPart] = []
         match_key = []
-        variable_names: set[str] = set()
+        variable_names: ta.Set[str] = set()
 
         for raw_segment in self._split_raw_path(route.pattern):
             segment = self._unquote_part(raw_segment)
@@ -365,12 +291,12 @@ class UrlRouter:
     )
 
     @classmethod
-    def _parse_converter_args(cls, s: str) -> ta.Tuple[ta.Tuple[ta.Any, ...], dict[str, ta.Any]]:
+    def _parse_converter_args(cls, s: str) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
         if not s:
             return (), {}
 
-        args: list[ta.Any] = []
-        kwargs: dict[str, ta.Any] = {}
+        args: ta.List[ta.Any] = []
+        kwargs: ta.Dict[str, ta.Any] = {}
         pos = 0
         while pos < len(s):
             m = cls._URL_ROUTE_ARG_RE.match(s, pos)
@@ -412,9 +338,9 @@ class UrlRouter:
         pos = 0
         regex_parts = []
         variables = []
-        build_parts: list[_UrlRouteBuildPart] = []
-        match_key_parts: list[ta.Any] = []
-        variable_names: set[str] = set()
+        build_parts: ta.List[_UrlRouteBuildPart] = []
+        match_key_parts: ta.List[ta.Any] = []
+        variable_names: ta.Set[str] = set()
         weight = 0
         is_greedy = False
 
@@ -529,7 +455,7 @@ class UrlRouter:
     ) -> UrlRouteMatch:
         method = method.upper() if method is not None else None
         parts = self._split_raw_path(path)
-        allowed_methods: set[str] = set()
+        allowed_methods: ta.Set[str] = set()
         metadata = UrlRouteMatchMetadata(
             path=original_path,
             matched_path=path,
@@ -557,9 +483,9 @@ class UrlRouter:
             node: _UrlRouteNode,
             parts: ta.Sequence[str],
             idx: int,
-            values: dict[str, ta.Any],
+            values: ta.Dict[str, ta.Any],
             method: ta.Optional[str],
-            allowed_methods: set[str],
+            allowed_methods: ta.Set[str],
             metadata: UrlRouteMatchMetadata,
     ) -> ta.Optional[UrlRouteMatch]:
         if idx == len(parts):
@@ -601,7 +527,7 @@ class UrlRouter:
             pattern: _UrlRouteSegmentPattern,
             raw_part: str,
             values: ta.Mapping[str, ta.Any],
-    ) -> ta.Optional[dict[str, ta.Any]]:
+    ) -> ta.Optional[ta.Dict[str, ta.Any]]:
         decoded_part = self._unquote_part(raw_part)
         candidate_parts = [raw_part]
         if decoded_part != raw_part:
@@ -628,7 +554,7 @@ class UrlRouter:
             routes: ta.Iterable[_CompiledUrlRoute],
             values: ta.Mapping[str, ta.Any],
             method: ta.Optional[str],
-            allowed_methods: set[str],
+            allowed_methods: ta.Set[str],
             metadata: UrlRouteMatchMetadata,
     ) -> ta.Optional[UrlRouteMatch]:
         for compiled in routes:
@@ -642,7 +568,7 @@ class UrlRouter:
             compiled: _CompiledUrlRoute,
             values: ta.Mapping[str, ta.Any],
             method: ta.Optional[str],
-            allowed_methods: set[str],
+            allowed_methods: ta.Set[str],
             metadata: UrlRouteMatchMetadata,
     ) -> ta.Optional[UrlRouteMatch]:
         if method is not None and compiled.methods is not None and method not in compiled.methods:

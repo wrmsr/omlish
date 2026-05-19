@@ -305,6 +305,7 @@
 - Reserve inline comments for 'surprising' or dangerous things, such as invariants which must be maintained. A comment
   like `self._ensure_user_exists()  # ensure the user exists` is worthless, but a comment like
   `self._ensure_user_exists() # safe because we already hold the user lock` is valuable.
+- Use a single space to separate sentences, not two.
 
 
 ### Documentation

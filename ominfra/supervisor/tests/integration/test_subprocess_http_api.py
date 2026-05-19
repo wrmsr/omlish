@@ -16,16 +16,13 @@ class TestSubprocessHttpApi(SupervisorSubprocessTestBase):
         """HTTP server should start and be accessible."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'dummy',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'dummy',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
                 },
             ],
         })
@@ -64,21 +61,19 @@ class TestSubprocessHttpApi(SupervisorSubprocessTestBase):
         """HTTP API should show current process states."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'workers'}],
+            'processes': [
                 {
-                    'name': 'workers',
-                    'processes': [
-                        {
-                            'name': 'worker1',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                        {
-                            'name': 'worker2',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'worker1',
+                    'group': 'workers',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
+                },
+                {
+                    'name': 'worker2',
+                    'group': 'workers',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
                 },
             ],
         })
@@ -116,18 +111,15 @@ class TestSubprocessHttpApi(SupervisorSubprocessTestBase):
         """HTTP API should reflect real-time state changes."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'transient',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 2',
-                            'auto_start': True,
-                            'start_secs': 1,
-                            'auto_restart': False,
-                        },
-                    ],
+                    'name': 'transient',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 2',
+                    'auto_start': True,
+                    'start_secs': 1,
+                    'auto_restart': False,
                 },
             ],
         })
@@ -156,16 +148,13 @@ class TestSubprocessHttpApi(SupervisorSubprocessTestBase):
         """HTTP server should handle concurrent connections."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'stable',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'stable',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
                 },
             ],
         })
@@ -194,17 +183,14 @@ class TestSubprocessHttpApi(SupervisorSubprocessTestBase):
         """HTTP server should continue working even if processes crash."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'crasher',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.rapid_crasher 1 1',
-                            'auto_start': True,
-                            'start_retries': 2,
-                        },
-                    ],
+                    'name': 'crasher',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.rapid_crasher 1 1',
+                    'auto_start': True,
+                    'start_retries': 2,
                 },
             ],
         })

@@ -19,18 +19,15 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
 
         try:
             config = self.make_config({
-                'groups': [
+                'groups': [{'name': 'test'}],
+                'processes': [
                     {
-                        'name': 'test',
-                        'processes': [
-                            {
-                                'name': 'with_dir',
-                                # Use a longer-running process
-                                'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                                'auto_start': True,
-                                'directory': str(temp_dir),
-                            },
-                        ],
+                        'name': 'with_dir',
+                        'group': 'test',
+                        # Use a longer-running process
+                        'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                        'auto_start': True,
+                        'directory': str(temp_dir),
                     },
                 ],
             })
@@ -49,21 +46,18 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Process with custom environment variables."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'with_env',
-                            # Use a longer-running process
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                            'auto_start': True,
-                            'environment': {
-                                'CUSTOM_VAR': 'custom_value',
-                                'ANOTHER_VAR': 'another_value',
-                            },
-                        },
-                    ],
+                    'name': 'with_env',
+                    'group': 'test',
+                    # Use a longer-running process
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                    'auto_start': True,
+                    'environment': {
+                        'CUSTOM_VAR': 'custom_value',
+                        'ANOTHER_VAR': 'another_value',
+                    },
                 },
             ],
         })
@@ -78,18 +72,15 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Process that spawns children and exits (creates orphans)."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'orphan_maker',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.orphan_maker 3',
-                            'auto_start': True,
-                            'start_secs': 0,
-                            'auto_restart': False,
-                        },
-                    ],
+                    'name': 'orphan_maker',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.orphan_maker 3',
+                    'auto_start': True,
+                    'start_secs': 0,
+                    'auto_restart': False,
                 },
             ],
         })
@@ -113,18 +104,15 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Process with custom umask setting."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'umask_proc',
-                            # Use a longer-running process
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                            'auto_start': True,
-                            'umask': 0o027,
-                        },
-                    ],
+                    'name': 'umask_proc',
+                    'group': 'test',
+                    # Use a longer-running process
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                    'auto_start': True,
+                    'umask': 0o027,
                 },
             ],
         })
@@ -139,17 +127,14 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Command with quoted arguments and spaces."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'quoted',
-                            # Use a longer-running process
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'quoted',
+                    'group': 'test',
+                    # Use a longer-running process
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                    'auto_start': True,
                 },
             ],
         })
@@ -164,20 +149,17 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Process that exec's another program (replaces itself)."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'exec_chain',
-                            # This uses exec to replace the shell with Python
-                            'command': (
-                                f'/bin/sh -c '
-                                f'"exec {sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5"'
-                            ),
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'exec_chain',
+                    'group': 'test',
+                    # This uses exec to replace the shell with Python
+                    'command': (
+                        f'/bin/sh -c '
+                        f'"exec {sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5"'
+                    ),
+                    'auto_start': True,
                 },
             ],
         })
@@ -193,20 +175,17 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Process that closes all file descriptors including stdio."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'fd_closer',
-                            # Close stdio and run
-                            'command': (
-                                f'/bin/sh -c "exec 0</dev/null; exec 1>/dev/null; exec 2>/dev/null; '
-                                f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 3"'
-                            ),
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'fd_closer',
+                    'group': 'test',
+                    # Close stdio and run
+                    'command': (
+                        f'/bin/sh -c "exec 0</dev/null; exec 1>/dev/null; exec 2>/dev/null; '
+                        f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 3"'
+                    ),
+                    'auto_start': True,
                 },
             ],
         })
@@ -221,16 +200,13 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Process names with special characters (but valid)."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'name-with-dashes_and_underscores',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'name-with-dashes_and_underscores',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                    'auto_start': True,
                 },
             ],
         })
@@ -249,17 +225,14 @@ class TestSubprocessEdgeCases(SupervisorSubprocessTestBase):
         """Process with priority=0 should work."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'zero_priority',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                            'auto_start': True,
-                            'priority': 0,
-                        },
-                    ],
+                    'name': 'zero_priority',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                    'auto_start': True,
+                    'priority': 0,
                 },
             ],
         })

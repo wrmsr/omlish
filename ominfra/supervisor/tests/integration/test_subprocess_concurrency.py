@@ -58,24 +58,27 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
             'groups': [
                 {
                     'name': 'mixed',
-                    'processes': [
-                        {
-                            'name': 'stable1',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                        {
-                            'name': 'crasher',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.rapid_crasher 1 1',
-                            'auto_start': True,
-                            'start_retries': 2,
-                        },
-                        {
-                            'name': 'stable2',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                    ],
+                },
+            ],
+            'processes': [
+                {
+                    'name': 'stable1',
+                    'group': 'mixed',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
+                },
+                {
+                    'name': 'crasher',
+                    'group': 'mixed',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.rapid_crasher 1 1',
+                    'auto_start': True,
+                    'start_retries': 2,
+                },
+                {
+                    'name': 'stable2',
+                    'group': 'mixed',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
                 },
             ],
         })
@@ -108,27 +111,30 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
             'groups': [
                 {
                     'name': 'churn',
-                    'processes': [
-                        {
-                            'name': 'short1',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.5',
-                            'auto_start': True,
-                            'start_secs': 0,
-                            'auto_restart': False,
-                        },
-                        {
-                            'name': 'short2',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.8',
-                            'auto_start': True,
-                            'start_secs': 0,
-                            'auto_restart': False,
-                        },
-                        {
-                            'name': 'long',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                            'auto_start': True,
-                        },
-                    ],
+                },
+            ],
+            'processes': [
+                {
+                    'name': 'short1',
+                    'group': 'churn',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.5',
+                    'auto_start': True,
+                    'start_secs': 0,
+                    'auto_restart': False,
+                },
+                {
+                    'name': 'short2',
+                    'group': 'churn',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.8',
+                    'auto_start': True,
+                    'start_secs': 0,
+                    'auto_restart': False,
+                },
+                {
+                    'name': 'long',
+                    'group': 'churn',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                    'auto_start': True,
                 },
             ],
         })
@@ -160,31 +166,35 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
             'groups': [
                 {
                     'name': 'mixed',
-                    'processes': [
-                        {
-                            'name': 'quick_exit',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 1.0',
-                            'auto_start': True,
-                            'start_secs': 0,
-                            'auto_restart': False,
-                        },
-                        {
-                            'name': 'slow_start',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.slow_starter 2 5',
-                            'auto_start': True,
-                            'start_secs': 3,
-                        },
-                        {
-                            'name': 'stable',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                        {
-                            'name': 'no_auto_start',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': False,
-                        },
-                    ],
+                },
+            ],
+            'processes': [
+                {
+                    'name': 'quick_exit',
+                    'group': 'mixed',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 1.0',
+                    'auto_start': True,
+                    'start_secs': 0,
+                    'auto_restart': False,
+                },
+                {
+                    'name': 'slow_start',
+                    'group': 'mixed',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.slow_starter 2 5',
+                    'auto_start': True,
+                    'start_secs': 3,
+                },
+                {
+                    'name': 'stable',
+                    'group': 'mixed',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
+                },
+                {
+                    'name': 'no_auto_start',
+                    'group': 'mixed',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': False,
                 },
             ],
         })
@@ -216,6 +226,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         processes = [
             {
                 'name': f'exiter{i}',
+                'group': 'exiters',
                 'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 {1.0 + i * 0.2}',
                 'auto_start': True,
                 'start_secs': 0,
@@ -228,9 +239,9 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
             'groups': [
                 {
                     'name': 'exiters',
-                    'processes': processes,
                 },
             ],
+            'processes': processes,
         })
 
         self.start_supervisor(config)
@@ -252,22 +263,24 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
             'groups': [
                 {
                     'name': 'churn',
-                    'processes': [
-                        {
-                            'name': 'restarter',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 1 0.5',
-                            'auto_start': True,
-                            'auto_restart': 'unexpected',
-                            'exitcodes': [0],
-                            'start_secs': 0,
-                            'start_retries': 20,  # Allow many retries
-                        },
-                        {
-                            'name': 'stable',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                    ],
+                },
+            ],
+            'processes': [
+                {
+                    'name': 'restarter',
+                    'group': 'churn',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 1 0.5',
+                    'auto_start': True,
+                    'auto_restart': 'unexpected',
+                    'exitcodes': [0],
+                    'start_secs': 0,
+                    'start_retries': 20,  # Allow many retries
+                },
+                {
+                    'name': 'stable',
+                    'group': 'churn',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
                 },
             ],
         })

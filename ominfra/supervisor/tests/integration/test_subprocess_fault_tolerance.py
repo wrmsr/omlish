@@ -22,17 +22,14 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         """Process with nonexistent command should fail gracefully."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'bad_cmd',
-                            'command': '/this/does/not/exist/nowhere',
-                            'auto_start': True,
-                            'start_retries': 2,
-                        },
-                    ],
+                    'name': 'bad_cmd',
+                    'group': 'test',
+                    'command': '/this/does/not/exist/nowhere',
+                    'auto_start': True,
+                    'start_retries': 2,
                 },
             ],
         })
@@ -55,17 +52,14 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
             # Don't chmod +x
 
             config = self.make_config({
-                'groups': [
+                'groups': [{'name': 'test'}],
+                'processes': [
                     {
-                        'name': 'test',
-                        'processes': [
-                            {
-                                'name': 'not_exec',
-                                'command': str(not_exec),
-                                'auto_start': True,
-                                'start_retries': 1,
-                            },
-                        ],
+                        'name': 'not_exec',
+                        'group': 'test',
+                        'command': str(not_exec),
+                        'auto_start': True,
+                        'start_retries': 1,
                     },
                 ],
             })
@@ -86,19 +80,16 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         """Process that crashes immediately during startup should backoff."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'crash_on_start',
-                            # Exit with non-zero code immediately
-                            'command': f'{sys.executable} -c "import sys; sys.exit(139)"',
-                            'auto_start': True,
-                            'start_secs': 1,
-                            'start_retries': 2,
-                        },
-                    ],
+                    'name': 'crash_on_start',
+                    'group': 'test',
+                    # Exit with non-zero code immediately
+                    'command': f'{sys.executable} -c "import sys; sys.exit(139)"',
+                    'auto_start': True,
+                    'start_secs': 1,
+                    'start_retries': 2,
                 },
             ],
         })
@@ -113,18 +104,15 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         """Rapid repeated crashes should be handled with backoff."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'rapid',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.rapid_crasher 1 0.05',
-                            'auto_start': True,
-                            'start_secs': 1,
-                            'start_retries': 5,
-                        },
-                    ],
+                    'name': 'rapid',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.rapid_crasher 1 0.05',
+                    'auto_start': True,
+                    'start_secs': 1,
+                    'start_retries': 5,
                 },
             ],
         })
@@ -151,18 +139,15 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         """Supervisor should handle zombie processes (reap them quickly)."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'quick_exit',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.5',
-                            'auto_start': True,
-                            'auto_restart': False,
-                            'start_secs': 0,
-                        },
-                    ],
+                    'name': 'quick_exit',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.immediate_exit 0 0.5',
+                    'auto_start': True,
+                    'auto_restart': False,
+                    'start_secs': 0,
                 },
             ],
         })
@@ -187,6 +172,7 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         processes = [
             {
                 'name': f'worker{i}',
+                'group': 'workers',
                 'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                 'auto_start': True,
             }
@@ -194,12 +180,8 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         ]
 
         config = self.make_config({
-            'groups': [
-                {
-                    'name': 'workers',
-                    'processes': processes,
-                },
-            ],
+            'groups': [{'name': 'workers'}],
+            'processes': processes,
         })
 
         self.start_supervisor(config)
@@ -222,19 +204,16 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         """Handle process generating lots of output quickly."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'flood',
-                            # Generate 100 lines quickly
-                            'command': (
-                                f'{sys.executable} -m ominfra.supervisor.tests.programs.output_generator 100 0.01'
-                            ),
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'flood',
+                    'group': 'test',
+                    # Generate 100 lines quickly
+                    'command': (
+                        f'{sys.executable} -m ominfra.supervisor.tests.programs.output_generator 100 0.01'
+                    ),
+                    'auto_start': True,
                 },
             ],
         })
@@ -256,17 +235,14 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         """Handle empty command string gracefully."""
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'empty',
-                            'command': '',
-                            'auto_start': True,
-                            'start_retries': 1,
-                        },
-                    ],
+                    'name': 'empty',
+                    'group': 'test',
+                    'command': '',
+                    'auto_start': True,
+                    'start_retries': 1,
                 },
             ],
         })
@@ -286,16 +262,13 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         long_cmd = f'{sys.executable} -c "{long_python_code}"'
 
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'long_cmd',
-                            'command': long_cmd,
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'long_cmd',
+                    'group': 'test',
+                    'command': long_cmd,
+                    'auto_start': True,
                 },
             ],
         })
@@ -312,16 +285,13 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
         # We can't actually change the system clock in a test, but we can verify
         # normal operation works (the clock adjustment logic is internal)
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'runner',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'runner',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
+                    'auto_start': True,
                 },
             ],
         })
@@ -339,16 +309,13 @@ class TestSubprocessFaultTolerance(SupervisorSubprocessTestBase):
 
         # This verifies supervisor's FD handling doesn't crash under normal conditions
         config = self.make_config({
-            'groups': [
+            'groups': [{'name': 'test'}],
+            'processes': [
                 {
-                    'name': 'test',
-                    'processes': [
-                        {
-                            'name': 'normal',
-                            'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
-                            'auto_start': True,
-                        },
-                    ],
+                    'name': 'normal',
+                    'group': 'test',
+                    'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 5',
+                    'auto_start': True,
                 },
             ],
         })

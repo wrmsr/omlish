@@ -5,15 +5,15 @@ import unittest
 import uuid
 
 from ..converters import UrlRouteConverter
-from ..routers import UrlRoute
-from ..routers import UrlRouteBuildError
-from ..routers import UrlRouteConflictError
-from ..routers import UrlRouteMethodNotAllowedError
-from ..routers import UrlRouteNotFoundError
 from ..routers import UrlRouter
-from ..routers import UrlRouterConfig
-from ..routers import UrlRouteRedirectRequiredError
-from ..routers import UrlRouteSlashStyle
+from ..types import UrlRoute
+from ..types import UrlRouteBuildError
+from ..types import UrlRouteConflictError
+from ..types import UrlRouteMethodNotAllowedError
+from ..types import UrlRouteNotFoundError
+from ..types import UrlRouterConfig
+from ..types import UrlRouteRedirectRequiredError
+from ..types import UrlRouteSlashStyle
 
 
 class UrlRouterTest(unittest.TestCase):
@@ -236,6 +236,15 @@ class UrlRouterTest(unittest.TestCase):
 
         match = router.match('/users/42?q=x')
         self.assertEqual(match.values, {'user_id': 42})
+
+    def test_allowed_methods(self) -> None:
+        router = UrlRouter([
+            UrlRoute('/items', 'list', methods=frozenset(['GET'])),
+            UrlRoute('/items', 'create', methods=frozenset(['POST'])),
+        ])
+
+        self.assertEqual(router.allowed_methods('/items'), frozenset(['GET', 'HEAD', 'POST']))
+        self.assertEqual(router.allowed_methods('/missing'), frozenset())
 
 
 if __name__ == '__main__':
