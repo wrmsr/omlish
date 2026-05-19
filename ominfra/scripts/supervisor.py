@@ -173,7 +173,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
-            dict(path='groupimpl.py', sha1='eafe3b5504122782cd14bbc49f68d652c710a4a2'),
+            dict(path='groupimpl.py', sha1='9364a315db2e3011e7f00120764511e4c74406d6'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
@@ -193,18 +193,18 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='spawningimpl.py', sha1='dc1433f23c41703ef40c460bdc900808d803b444'),
+            dict(path='spawningimpl.py', sha1='c07035418dce23af624ef399e26e4776d56be258'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='680f486f4a17e02746dbb8f05794fc39a978315d'),
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='9170bed2ebf43acd4467a691f85fd05e1974c116'),
             dict(path='io.py', sha1='11ef0e15c34f40ee19c571c1aea5ed6fb851ab63'),
-            dict(path='processimpl.py', sha1='ef8c335b4808357faf14ff9b41e7b48af0de91ad'),
+            dict(path='processimpl.py', sha1='015ff0aa33f674e62f13ce8236b6efdec721c3eb'),
             dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
             dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
-            dict(path='supervisor.py', sha1='073ddbead1e770b6f1628296aa02ea6fa6a18f09'),
+            dict(path='supervisor.py', sha1='2213c9a45d2998e3bb4d8869b91b220bbbacd9d5'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='768e03f13e916ab7cace0d0f92e929d78d422d32'),
@@ -14968,7 +14968,11 @@ class Dispatchers(KeyedCollection[Fd, FdioHandler]):
 ##
 
 
-class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
+class ProcessFactory(Func2[
+    ProcessConfig,
+    ProcessGroup,
+    Process,
+]):
     pass
 
 
@@ -14976,12 +14980,14 @@ class ProcessGroupImpl(ProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
+            process_configs: ta.Sequence[ProcessConfig],
             *,
             process_factory: ProcessFactory,
     ) -> None:
         super().__init__()
 
         self._config = config
+        self._process_configs = process_configs
         self._process_factory = process_factory
 
         by_name: ta.Dict[str, Process] = {}
@@ -18570,11 +18576,21 @@ class StdLogger(Logger):
 # ../spawningimpl.py
 
 
-class ProcessOutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, ProcessOutputDispatcher]):
+class ProcessOutputDispatcherFactory(Func3[
+    Process,
+    ta.Type[ProcessCommunicationEvent],
+    Fd,
+    ProcessOutputDispatcher,
+]):
     pass
 
 
-class ProcessInputDispatcherFactory(Func3[Process, str, Fd, ProcessInputDispatcher]):
+class ProcessInputDispatcherFactory(Func3[
+    Process,
+    str,
+    Fd,
+    ProcessInputDispatcher,
+]):
     pass
 
 
@@ -20073,7 +20089,10 @@ class IoManager(HasDispatchers):
 # ../processimpl.py
 
 
-class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
+class ProcessSpawningFactory(Func1[
+    Process,
+    ProcessSpawning,
+]):
     pass
 
 
@@ -21812,7 +21831,11 @@ class SupervisorStateManagerImpl(SupervisorStateManager):
 ##
 
 
-class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
+class ProcessGroupFactory(Func2[
+    ProcessGroupConfig,
+    ta.Sequence[ProcessConfig],
+    ProcessGroup,
+]):
     pass
 
 
@@ -21861,7 +21884,10 @@ class Supervisor:
         if self._process_groups.get(config.name) is not None:
             return False
 
-        group = check.isinstance(self._process_group_factory(config), ProcessGroup)
+        group = check.isinstance(self._process_group_factory(
+            config,
+            config.processes or [],
+        ), ProcessGroup)
         for process in group:
             process.after_setuid()
 

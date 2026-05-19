@@ -4,9 +4,10 @@ import typing as ta
 
 from omlish.io.fdio.pollers import FdioPoller
 from omlish.lite.check import check
-from omlish.lite.typing import Func1
+from omlish.lite.typing import Func2
 from omlish.logs.modules import get_module_logger
 
+from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
 from .events import TICK_EVENTS
@@ -57,7 +58,11 @@ class SupervisorStateManagerImpl(SupervisorStateManager):
 ##
 
 
-class ProcessGroupFactory(Func1[ProcessGroupConfig, ProcessGroup]):
+class ProcessGroupFactory(Func2[
+    ProcessGroupConfig,
+    ta.Sequence[ProcessConfig],
+    ProcessGroup,
+]):
     pass
 
 
@@ -106,7 +111,10 @@ class Supervisor:
         if self._process_groups.get(config.name) is not None:
             return False
 
-        group = check.isinstance(self._process_group_factory(config), ProcessGroup)
+        group = check.isinstance(self._process_group_factory(
+            config,
+            config.processes or [],
+        ), ProcessGroup)
         for process in group:
             process.after_setuid()
 

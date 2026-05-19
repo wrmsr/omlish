@@ -14,7 +14,11 @@ from .types import ProcessGroup
 ##
 
 
-class ProcessFactory(Func2[ProcessConfig, ProcessGroup, Process]):
+class ProcessFactory(Func2[
+    ProcessConfig,
+    ProcessGroup,
+    Process,
+]):
     pass
 
 
@@ -22,12 +26,14 @@ class ProcessGroupImpl(ProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
+            process_configs: ta.Sequence[ProcessConfig],
             *,
             process_factory: ProcessFactory,
     ) -> None:
         super().__init__()
 
         self._config = config
+        self._process_configs = process_configs
         self._process_factory = process_factory
 
         by_name: ta.Dict[str, Process] = {}

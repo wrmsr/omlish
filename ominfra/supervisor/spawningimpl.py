@@ -43,11 +43,21 @@ from .utils.privileges import drop_privileges
 from .utils.strings import as_bytes
 
 
-class ProcessOutputDispatcherFactory(Func3[Process, ta.Type[ProcessCommunicationEvent], Fd, ProcessOutputDispatcher]):
+class ProcessOutputDispatcherFactory(Func3[
+    Process,
+    ta.Type[ProcessCommunicationEvent],
+    Fd,
+    ProcessOutputDispatcher,
+]):
     pass
 
 
-class ProcessInputDispatcherFactory(Func3[Process, str, Fd, ProcessInputDispatcher]):
+class ProcessInputDispatcherFactory(Func3[
+    Process,
+    str,
+    Fd,
+    ProcessInputDispatcher,
+]):
     pass
 
 

@@ -32,7 +32,10 @@ from .utils.pipes import close_parent_pipes
 from .utils.signals import sig_name
 
 
-class ProcessSpawningFactory(Func1[Process, ProcessSpawning]):
+class ProcessSpawningFactory(Func1[
+    Process,
+    ProcessSpawning,
+]):
     pass
 
 
