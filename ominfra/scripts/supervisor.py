@@ -154,7 +154,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='b48111d8429fa6a43a003fa214b738c7c860d58e'),
+            dict(path='configs.py', sha1='abd1355419d711606bfc74bbcca6cd79935704b7'),
             dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
@@ -200,7 +200,7 @@ def __omlish_amalg__():  # noqa
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='io.py', sha1='a12a9902ae1a3cd3db70de62974829edc9d1f935'),
             dict(path='processimpl.py', sha1='c45389244ca6253e0bc5dec8aba244d3714954ff'),
-            dict(path='setupimpl.py', sha1='7ab3e7397090c1420cd967730c8aa072c1e68f8e'),
+            dict(path='setupimpl.py', sha1='b0ab23a790fc97caf76bd99aba8489d4bc917357'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
@@ -210,7 +210,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='21c22c2fd90532981dc2e622831261bad5f2246c'),
             dict(path='inject.py', sha1='0ca51f71546c9de52255135a699a5b13c608d7f4'),
-            dict(path='main.py', sha1='b8da6e8885a03a6bbbeb82cc87f2946cf3c2bcfc'),
+            dict(path='main.py', sha1='3a02407c0d895d92116846450f59cd566ae375e0'),
         ],
     )
 
@@ -11556,7 +11556,7 @@ class ServerConfig:
     user: ta.Optional[str] = None
 
     # If true, supervisord will start in the foreground instead of daemonizing.
-    nodaemon: bool = False
+    no_daemon: bool = False
 
     # The umask of the supervisord process.
     umask: int = 0o22
@@ -11580,7 +11580,7 @@ class ServerConfig:
     min_procs: int = 200
 
     # Prevent supervisord from clearing any existing AUTO child log files at startup time. Useful for debugging
-    nocleanup: bool = False
+    no_cleanup: bool = False
 
     # Strip all ANSI escape sequences from child log files.
     strip_ansi: bool = False
@@ -20297,11 +20297,11 @@ class SupervisorSetupImpl(SupervisorSetup):
             self._set_rlimits_or_exit()
 
         # this sets the options.logger object delay logger instantiation until after setuid
-        if not self._config.nocleanup:
+        if not self._config.no_cleanup:
             # clean up old automatic logs
             self._clear_auto_child_logdir()
 
-        if not self._config.nodaemon and self.first:
+        if not self._config.no_daemon and self.first:
             self._daemonize()
 
         # writing pid file needs to come *after* daemonizing or pid will be wrong
@@ -22476,7 +22476,7 @@ def main(
         )
 
         if args.no_daemon:
-            config = dc.replace(config, nodaemon=True)
+            config = dc.replace(config, no_daemon=True)
 
         with contextlib.ExitStack() as es:
             injector = inj.create_injector(bind_server(

@@ -1,4 +1,4 @@
-nodaemon = true
+no_daemon = true
 http_socket_path = '/tmp/supervisor-dev.sock'
 
 [groups.default.processes.ls]

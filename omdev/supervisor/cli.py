@@ -36,24 +36,30 @@ def script_path() -> ta.Any:
 
 
 @lang.cached_function
-def config_file_path() -> str:
-    return os.path.join(get_home_paths().config_dir, 'supervisor.toml')
+def home_config_file_path() -> str:
+    return os.path.join(get_home_paths().config_dir, 'supervisor', 'supervisor.toml')
 
 
-def init_config_file(config_path: str) -> None:
-    check.state(not os.path.exists(config_path))
+def init_home() -> None:
+    check.state(not os.path.exists(home_config_file_path()))
 
     hp = get_home_paths()
 
-    http_socket_path = os.path.join(hp.run_dir, 'supervisor', 'supervisor.sock')
-    os.makedirs(os.path.dirname(http_socket_path), exist_ok=True)
+    run_dir = os.path.join(hp.run_dir, 'supervisor')
+    os.makedirs(run_dir, exist_ok=True)
+
+    pidfile = os.path.join(run_dir, 'supervisor.pid')
+    http_socket_path = os.path.join(run_dir, 'supervisor.sock')
 
     toml_src = '\n'.join([
+        f"pidfile = '{pidfile}'",
         f"http_socket_path = '{http_socket_path}'",
         '',
     ])
 
-    with open(config_path, 'w') as f:
+    cfp = home_config_file_path()
+    os.makedirs(os.path.dirname(cfp), exist_ok=True)
+    with open(home_config_file_path(), 'w') as f:
         f.write(toml_src)
 
 
@@ -69,6 +75,7 @@ class Cli(ap.Cli):
         ap.arg('config-file', nargs='?'),
 
         ap.arg('--_dev', action='store_true'),
+        ap.arg('--_reinit_home', action='store_true'),
 
         ap.arg('args', nargs=ap.REMAINDER),
         accepts_unknown=True,
@@ -76,9 +83,11 @@ class Cli(ap.Cli):
     )
     def run(self) -> None:
         if (cfp := self.args.config_file) is None:
-            cfp = config_file_path()
+            cfp = home_config_file_path()
+            if self.args._reinit_home and os.path.exists(cfp):
+                os.remove(cfp)
             if not os.path.exists(cfp):
-                init_config_file(cfp)
+                init_home()
 
         args = [
             cfp,

@@ -175,7 +175,7 @@ class ServerConfig:
     user: ta.Optional[str] = None
 
     # If true, supervisord will start in the foreground instead of daemonizing.
-    nodaemon: bool = False
+    no_daemon: bool = False
 
     # The umask of the supervisord process.
     umask: int = 0o22
@@ -199,7 +199,7 @@ class ServerConfig:
     min_procs: int = 200
 
     # Prevent supervisord from clearing any existing AUTO child log files at startup time. Useful for debugging
-    nocleanup: bool = False
+    no_cleanup: bool = False
 
     # Strip all ANSI escape sequences from child log files.
     strip_ansi: bool = False

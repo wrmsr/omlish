@@ -61,11 +61,11 @@ class SupervisorSetupImpl(SupervisorSetup):
             self._set_rlimits_or_exit()
 
         # this sets the options.logger object delay logger instantiation until after setuid
-        if not self._config.nocleanup:
+        if not self._config.no_cleanup:
             # clean up old automatic logs
             self._clear_auto_child_logdir()
 
-        if not self._config.nodaemon and self.first:
+        if not self._config.no_daemon and self.first:
             self._daemonize()
 
         # writing pid file needs to come *after* daemonizing or pid will be wrong

@@ -1,4 +1,4 @@
-nodaemon = true
+no_daemon = true
 
 [groups.default.processes.ls]
 command = 'ls -al'

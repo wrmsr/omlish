@@ -1,4 +1,4 @@
-nodaemon = true
+no_daemon = true
 http_port = 5051
 
 [groups.default.processes.ls]

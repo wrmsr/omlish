@@ -95,7 +95,7 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
             self,
             config_dict: ta.Mapping[str, ta.Any],
             *,
-            nodaemon: bool = True,
+            no_daemon: bool = True,
             **kwargs: ta.Any,
     ) -> ta.Dict[str, ta.Any]:
         """
@@ -105,9 +105,9 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
         """
 
         return {
-            'nodaemon': nodaemon,
+            'no_daemon': no_daemon,
             'silent': True,
-            'nocleanup': True,
+            'no_cleanup': True,
             'logfile': str(self.log_file),
             'pidfile': str(self.pid_file),
             'http_port': self.http_port,

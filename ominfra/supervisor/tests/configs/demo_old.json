@@ -1,5 +1,5 @@
 {
-  "nodaemon": true,
+  "no_daemon": true,
   "groups": [
     {
       "name": "default",

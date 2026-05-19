@@ -98,7 +98,7 @@ def main(
         )
 
         if args.no_daemon:
-            config = dc.replace(config, nodaemon=True)
+            config = dc.replace(config, no_daemon=True)
 
         with contextlib.ExitStack() as es:
             injector = inj.create_injector(bind_server(
