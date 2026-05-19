@@ -5,6 +5,8 @@ import re
 import typing as ta
 import urllib.parse
 
+from omlish.lite.check import check
+
 from .converters import URL_ROUTE_DEFAULT_CONVERTERS
 from .converters import UrlRouteConverter
 from .types import UrlRoute
@@ -332,8 +334,10 @@ class UrlRouter:
     @dc.dataclass(frozen=True)
     class _MatchContext:
         method: ta.Optional[str]
-        allowed_methods: ta.Set[str]
         metadata: UrlRouteMatchMetadata
+
+        on_match: ta.Callable[[UrlRouteMatch], bool]  # returns True to continue matching (go-style)
+        on_leaf: ta.Optional[ta.Callable[[_CompiledUrlRoute], None]]
 
     def _match_node(
             self,
@@ -342,15 +346,14 @@ class UrlRouter:
             parts: ta.Sequence[str],
             idx: int,
             values: ta.Dict[str, ta.Any],
-    ) -> ta.Optional[UrlRouteMatch]:
+    ) -> bool:  # returns True to continue matching
         if idx == len(parts):
-            route_match = self._match_routes(
+            if not self._match_routes(
                 ctx,
                 node.routes,
                 values,
-            )
-            if route_match is not None:
-                return route_match
+            ):
+                return False
 
         if idx < len(parts):
             raw_part = parts[idx]
@@ -358,15 +361,14 @@ class UrlRouter:
 
             static_child = node.static.get(part)
             if static_child is not None:
-                route_match = self._match_node(
+                if not self._match_node(
                     ctx,
                     static_child,
                     parts,
                     idx + 1,
                     values,
-                )
-                if route_match is not None:
-                    return route_match
+                ):
+                    return False
 
             for pattern, child in node.dynamic:
                 next_values = self._match_pattern(
@@ -377,15 +379,14 @@ class UrlRouter:
                 )
                 if next_values is None:
                     continue
-                route_match = self._match_node(
+                if not self._match_node(
                     ctx,
                     child,
                     parts,
                     idx + 1,
                     next_values,
-                )
-                if route_match is not None:
-                    return route_match
+                ):
+                    return False
 
             for pattern, compiled in node.greedy:
                 remaining = '/'.join(parts[idx:])
@@ -397,15 +398,14 @@ class UrlRouter:
                 )
                 if next_values is None:
                     continue
-                route_match = self._match_compiled_route(
+                if not self._match_compiled_route(
                     ctx,
                     compiled,
                     next_values,
-                )
-                if route_match is not None:
-                    return route_match
+                ):
+                    return False
 
-        return None
+        return True
 
     def _match_pattern(
             self,
@@ -440,40 +440,41 @@ class UrlRouter:
             ctx: _MatchContext,
             routes: ta.Iterable[_CompiledUrlRoute],
             values: ta.Mapping[str, ta.Any],
-    ) -> ta.Optional[UrlRouteMatch]:
-        for compiled in routes:
-            route_match = self._match_compiled_route(
+    ) -> bool:  # returns True to continue matching
+        for compiled in routes:  # noqa
+            if not self._match_compiled_route(
                 ctx,
                 compiled,
                 values,
-            )
-            if route_match is not None:
-                return route_match
-        return None
+            ):
+                return False
+        return True
 
     def _match_compiled_route(
             self,
             ctx: _MatchContext,
             compiled: _CompiledUrlRoute,
             values: ta.Mapping[str, ta.Any],
-    ) -> ta.Optional[UrlRouteMatch]:
+    ) -> bool:  # returns True to continue matching
+        if ctx.on_leaf is not None:
+            ctx.on_leaf(compiled)
+
         if (
                 ctx.method is not None and
                 compiled.methods is not None and
                 ctx.method not in compiled.methods
         ):
-            ctx.allowed_methods.update(compiled.methods)
-            return None
+            return True
 
         route_values = {
             **(compiled.route.defaults or {}),
             **values,
         }
-        return UrlRouteMatch(
+        return ctx.on_match(UrlRouteMatch(
             compiled.route,
             route_values,
             ctx.metadata,
-        )
+        ))
 
     def _match(
             self,
@@ -485,26 +486,39 @@ class UrlRouter:
     ) -> UrlRouteMatch:
         method = method.upper() if method is not None else None
         parts = UrlRoutingUtils.split_raw_path(path)
-        allowed_methods: ta.Set[str] = set()
         metadata = UrlRouteMatchMetadata(
             path=original_path,
             matched_path=path,
             query=query,
         )
 
-        ret = self._match_node(
+        matched: ta.Optional[UrlRouteMatch] = None
+
+        def on_match(on_matched: UrlRouteMatch) -> bool:
+            nonlocal matched
+            matched = on_matched
+            return False  # do not continue
+
+        allowed_methods: ta.Set[str] = set()
+
+        def on_leaf(compiled: _CompiledUrlRoute) -> None:
+            if compiled.methods:
+                allowed_methods.update(compiled.methods)
+
+        if not self._match_node(
             self._MatchContext(
                 method,
-                allowed_methods,
                 metadata,
+                on_match,
+                on_leaf,
             ),
             self._root,
             parts,
             0,
             {},
-        )
-        if ret is not None:
-            return ret
+        ):
+            return check.not_none(matched)
+        check.none(matched)
 
         if allowed_methods:
             raise UrlRouteMethodNotAllowedError(path, method or '', frozenset(allowed_methods))
