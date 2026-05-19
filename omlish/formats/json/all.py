@@ -1,10 +1,4 @@
 # ruff: noqa: I001
-"""
-TODO:
- - delimited.py / jsonl
-  - + record separators ala https://en.wikipedia.org/wiki/JSON_streaming
- - hashing.py
-"""
 from ... import lang as _lang
 
 

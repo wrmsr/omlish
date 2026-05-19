@@ -1,0 +1,7 @@
+- delimited.py / jsonl
+  -  + record separators ala https://en.wikipedia.org/wiki/JSON_streaming
+- hashing.py
+- comparison / normalization
+- lite-ify stream
+- options/config dataclasses for stream/render
+- speed up literals.py lol
