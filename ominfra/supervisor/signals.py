@@ -3,7 +3,7 @@ import signal
 
 from omlish.logs.modules import get_module_logger
 
-from .groups import ProcessGroupManager
+from .group import ProcessGroupManager
 from .states import SupervisorState
 from .types import ProcessOutputDispatcher
 from .types import SupervisorStateManager

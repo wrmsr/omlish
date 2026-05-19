@@ -13,8 +13,8 @@ from .events import TICK_EVENTS
 from .events import EventCallbacks
 from .events import SupervisorRunningEvent
 from .events import SupervisorStoppingEvent
-from .groups import ProcessGroup
-from .groups import ProcessGroupManager
+from .group import ProcessGroup
+from .group import ProcessGroupManager
 from .io import IoManager
 from .process import PidHistory
 from .setup import SupervisorSetup

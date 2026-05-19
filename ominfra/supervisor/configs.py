@@ -112,7 +112,7 @@ class ProcessConfig:
 
     # The signal used to kill the program when a stop is requested. This can be specified using the signal's name or its
     # number. It is normally one of: TERM, HUP, INT, QUIT, KILL, USR1, or USR2.
-    stop_signal: int = signal.SIGTERM
+    stop_signal: int = signal.SIGTERM  # TODO: | str
 
     # The number of seconds to wait for the OS to return a SIGCHLD to supervisord after the program has been sent a
     # stopsignal. If this number of seconds elapses before supervisord receives a SIGCHLD from the process, supervisord
@@ -255,7 +255,7 @@ class ServerConfig:
     # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
     # output of its child processes and extended info about process state changes, which is useful for debugging a
     # process which isn't starting properly.
-    log_level: int = logging.INFO
+    log_level: int = logging.INFO  # TODO: | str
 
     # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
     # directory in which the supervisord configuration file was found.

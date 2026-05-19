@@ -17,7 +17,7 @@ from omlish.lite.marshal import marshal_obj
 from omlish.sockets.addresses import SocketAddress
 
 from .dispatchers import Dispatchers
-from .groups import ProcessGroupManager
+from .group import ProcessGroupManager
 from .types import HasDispatchers
 
 

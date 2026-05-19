@@ -15,9 +15,9 @@ from .configs import ServerConfig
 from .dispatchersimpl import ProcessInputDispatcherImpl
 from .dispatchersimpl import ProcessOutputDispatcherImpl
 from .events import EventCallbacks
-from .groups import ProcessGroupManager
-from .groupsimpl import ProcessFactory
-from .groupsimpl import ProcessGroupImpl
+from .group import ProcessGroupManager
+from .groupimpl import ProcessFactory
+from .groupimpl import ProcessGroupImpl
 from .http import HttpServer
 from .http import SupervisorSimpleHttpHandler
 from .io import HasDispatchersList

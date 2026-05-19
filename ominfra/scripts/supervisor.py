@@ -133,7 +133,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
-            dict(path='configs.py', sha1='5f0ed986cffd5d6569cce5746e2e0e388b05b982'),
+            dict(path='configs.py', sha1='97f301ed06355fed7099b6b10136ced584ea0c29'),
             dict(path='events.py', sha1='f862c832689986f96d469949ec595d8ec7fb3201'),
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
@@ -173,7 +173,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
-            dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
+            dict(path='groupimpl.py', sha1='eafe3b5504122782cd14bbc49f68d652c710a4a2'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
@@ -187,7 +187,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
+            dict(path='group.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='a5fa0e69b1d562ab4a73a0e9cd5f79756035fc60'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
             dict(path='../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
@@ -201,14 +201,14 @@ def __omlish_amalg__():  # noqa
             dict(path='io.py', sha1='11ef0e15c34f40ee19c571c1aea5ed6fb851ab63'),
             dict(path='processimpl.py', sha1='ef8c335b4808357faf14ff9b41e7b48af0de91ad'),
             dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
-            dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
+            dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
-            dict(path='supervisor.py', sha1='d3ccd2d82d4dd1c39ca302fbf6d05ef714d1c212'),
+            dict(path='supervisor.py', sha1='073ddbead1e770b6f1628296aa02ea6fa6a18f09'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
-            dict(path='http.py', sha1='21c22c2fd90532981dc2e622831261bad5f2246c'),
-            dict(path='inject.py', sha1='0ca51f71546c9de52255135a699a5b13c608d7f4'),
+            dict(path='http.py', sha1='768e03f13e916ab7cace0d0f92e929d78d422d32'),
+            dict(path='inject.py', sha1='b98d687c79b64e17cfeac3e47b316fb38f6afaa0'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
     )
@@ -4352,7 +4352,7 @@ class ProcessConfig:
 
     # The signal used to kill the program when a stop is requested. This can be specified using the signal's name or its
     # number. It is normally one of: TERM, HUP, INT, QUIT, KILL, USR1, or USR2.
-    stop_signal: int = signal.SIGTERM
+    stop_signal: int = signal.SIGTERM  # TODO: | str
 
     # The number of seconds to wait for the OS to return a SIGCHLD to supervisord after the program has been sent a
     # stopsignal. If this number of seconds elapses before supervisord receives a SIGCHLD from the process, supervisord
@@ -4495,7 +4495,7 @@ class ServerConfig:
     # debug, trace, or blather. Note that at log level debug, the supervisord log file will record the stderr/stdout
     # output of its child processes and extended info about process state changes, which is useful for debugging a
     # process which isn't starting properly.
-    log_level: int = logging.INFO
+    log_level: int = logging.INFO  # TODO: | str
 
     # The directory used for AUTO child log files. This option can include the value %(here)s, which expands to the
     # directory in which the supervisord configuration file was found.
@@ -14962,7 +14962,7 @@ class Dispatchers(KeyedCollection[Fd, FdioHandler]):
 
 
 ########################################
-# ../groupsimpl.py
+# ../groupimpl.py
 
 
 ##
@@ -14978,7 +14978,7 @@ class ProcessGroupImpl(ProcessGroup):
             config: ProcessGroupConfig,
             *,
             process_factory: ProcessFactory,
-    ):
+    ) -> None:
         super().__init__()
 
         self._config = config
@@ -17549,7 +17549,7 @@ class LogRecordLoggingContext(LoggingContext):
 
 
 ########################################
-# ../groups.py
+# ../group.py
 
 
 ##

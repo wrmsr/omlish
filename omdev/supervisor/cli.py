@@ -5,6 +5,7 @@ TODO:
   - add subprocess backend? is that 'too weak' to justify the daemon subsystem?
  - classic daemon cli - start/stop/status
  - STRICTLY USE AMALG SCRIPT ONLY
+ - tomlwriter
 """
 import os.path
 import sys

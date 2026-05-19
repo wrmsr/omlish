@@ -24,7 +24,7 @@ class ProcessGroupImpl(ProcessGroup):
             config: ProcessGroupConfig,
             *,
             process_factory: ProcessFactory,
-    ):
+    ) -> None:
         super().__init__()
 
         self._config = config
