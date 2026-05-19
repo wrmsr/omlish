@@ -329,23 +329,25 @@ class UrlRouter:
 
     #
 
+    @dc.dataclass(frozen=True)
+    class _MatchContext:
+        method: ta.Optional[str]
+        allowed_methods: ta.Set[str]
+        metadata: UrlRouteMatchMetadata
+
     def _match_node(
             self,
+            ctx: _MatchContext,
             node: _UrlRouteNode,
             parts: ta.Sequence[str],
             idx: int,
             values: ta.Dict[str, ta.Any],
-            method: ta.Optional[str],
-            allowed_methods: ta.Set[str],
-            metadata: UrlRouteMatchMetadata,
     ) -> ta.Optional[UrlRouteMatch]:
         if idx == len(parts):
             route_match = self._match_routes(
+                ctx,
                 node.routes,
                 values,
-                method,
-                allowed_methods,
-                metadata,
             )
             if route_match is not None:
                 return route_match
@@ -357,44 +359,48 @@ class UrlRouter:
             static_child = node.static.get(part)
             if static_child is not None:
                 route_match = self._match_node(
+                    ctx,
                     static_child,
                     parts,
                     idx + 1,
                     values,
-                    method,
-                    allowed_methods,
-                    metadata,
                 )
                 if route_match is not None:
                     return route_match
 
             for pattern, child in node.dynamic:
-                next_values = self._match_pattern(pattern, raw_part, values)
+                next_values = self._match_pattern(
+                    ctx,
+                    pattern,
+                    raw_part,
+                    values,
+                )
                 if next_values is None:
                     continue
                 route_match = self._match_node(
+                    ctx,
                     child,
                     parts,
                     idx + 1,
                     next_values,
-                    method,
-                    allowed_methods,
-                    metadata,
                 )
                 if route_match is not None:
                     return route_match
 
             for pattern, compiled in node.greedy:
                 remaining = '/'.join(parts[idx:])
-                next_values = self._match_pattern(pattern, remaining, values)
+                next_values = self._match_pattern(
+                    ctx,
+                    pattern,
+                    remaining,
+                    values,
+                )
                 if next_values is None:
                     continue
                 route_match = self._match_compiled_route(
+                    ctx,
                     compiled,
                     next_values,
-                    method,
-                    allowed_methods,
-                    metadata,
                 )
                 if route_match is not None:
                     return route_match
@@ -403,6 +409,7 @@ class UrlRouter:
 
     def _match_pattern(
             self,
+            ctx: _MatchContext,
             pattern: _UrlRouteSegmentPattern,
             raw_part: str,
             values: ta.Mapping[str, ta.Any],
@@ -430,19 +437,15 @@ class UrlRouter:
 
     def _match_routes(
             self,
+            ctx: _MatchContext,
             routes: ta.Iterable[_CompiledUrlRoute],
             values: ta.Mapping[str, ta.Any],
-            method: ta.Optional[str],
-            allowed_methods: ta.Set[str],
-            metadata: UrlRouteMatchMetadata,
     ) -> ta.Optional[UrlRouteMatch]:
         for compiled in routes:
             route_match = self._match_compiled_route(
+                ctx,
                 compiled,
                 values,
-                method,
-                allowed_methods,
-                metadata,
             )
             if route_match is not None:
                 return route_match
@@ -450,19 +453,25 @@ class UrlRouter:
 
     def _match_compiled_route(
             self,
+            ctx: _MatchContext,
             compiled: _CompiledUrlRoute,
             values: ta.Mapping[str, ta.Any],
-            method: ta.Optional[str],
-            allowed_methods: ta.Set[str],
-            metadata: UrlRouteMatchMetadata,
     ) -> ta.Optional[UrlRouteMatch]:
-        if method is not None and compiled.methods is not None and method not in compiled.methods:
-            allowed_methods.update(compiled.methods)
+        if (
+                ctx.method is not None and
+                compiled.methods is not None and
+                ctx.method not in compiled.methods
+        ):
+            ctx.allowed_methods.update(compiled.methods)
             return None
 
         route_values = dict(compiled.route.defaults or {})
         route_values.update(values)
-        return UrlRouteMatch(compiled.route, route_values, metadata)
+        return UrlRouteMatch(
+            compiled.route,
+            route_values,
+            ctx.metadata,
+        )
 
     def _match(
             self,
@@ -482,13 +491,15 @@ class UrlRouter:
         )
 
         ret = self._match_node(
+            self._MatchContext(
+                method,
+                allowed_methods,
+                metadata,
+            ),
             self._root,
             parts,
             0,
             {},
-            method,
-            allowed_methods,
-            metadata,
         )
         if ret is not None:
             return ret
