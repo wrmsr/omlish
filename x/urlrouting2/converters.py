@@ -22,7 +22,21 @@ class UrlRouteConverter:
 
 
 class UrlRouteStringConverter(UrlRouteConverter):
-    pass
+    def __init__(
+            self,
+            min: int = 1,  # noqa
+            max: ta.Optional[int] = None,  # noqa
+            length: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        if length is not None:
+            self.regex = r'[^/]{' + str(int(length)) + '}'
+        elif max is not None:
+            self.regex = r'[^/]{' + str(int(min)) + ',' + str(int(max)) + '}'
+        elif min != 1:
+            self.regex = r'[^/]{' + str(int(min)) + ',}'
+
 
 
 class UrlRoutePathConverter(UrlRouteConverter):
@@ -35,22 +49,68 @@ class UrlRouteIntegerConverter(UrlRouteConverter):
     regex = r'\d+'
     weight = 50
 
+    def __init__(
+            self,
+            min: ta.Optional[int] = None,  # noqa
+            max: ta.Optional[int] = None,  # noqa
+            signed: bool = False,
+    ) -> None:
+        super().__init__()
+
+        if signed:
+            self.regex = r'-?' + self.regex
+        self._min = min
+        self._max = max
+
     def to_python(self, s: str) -> int:
-        return int(s)
+        v = int(s)
+        if self._min is not None and v < self._min:
+            raise ValueError(s)
+        if self._max is not None and v > self._max:
+            raise ValueError(s)
+        return v
 
     def to_url(self, v: ta.Any) -> str:
-        return str(int(v))
+        i = int(v)
+        if self._min is not None and i < self._min:
+            raise ValueError(v)
+        if self._max is not None and i > self._max:
+            raise ValueError(v)
+        return str(i)
 
 
 class UrlRouteFloatConverter(UrlRouteConverter):
     regex = r'\d+(?:\.\d+)?'
     weight = 60
 
+    def __init__(
+            self,
+            min: ta.Optional[float] = None,  # noqa
+            max: ta.Optional[float] = None,  # noqa
+            signed: bool = False,
+    ) -> None:
+        super().__init__()
+
+        if signed:
+            self.regex = r'-?' + self.regex
+        self._min = min
+        self._max = max
+
     def to_python(self, s: str) -> float:
-        return float(s)
+        v = float(s)
+        if self._min is not None and v < self._min:
+            raise ValueError(s)
+        if self._max is not None and v > self._max:
+            raise ValueError(s)
+        return v
 
     def to_url(self, v: ta.Any) -> str:
-        return str(float(v))
+        f = float(v)
+        if self._min is not None and f < self._min:
+            raise ValueError(v)
+        if self._max is not None and f > self._max:
+            raise ValueError(v)
+        return str(f)
 
 
 class UrlRouteUuidConverter(UrlRouteConverter):
@@ -70,7 +130,7 @@ class UrlRouteUuidConverter(UrlRouteConverter):
 class UrlRouteAnyConverter(UrlRouteConverter):
     weight = 30
 
-    def __init__(self, items: ta.Iterable[str]) -> None:
+    def __init__(self, *items: str) -> None:
         super().__init__()
 
         self._items = frozenset(items)

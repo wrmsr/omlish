@@ -10,7 +10,10 @@ from .converters import (  # noqa
 )
 from .routers import (  # noqa
     UrlRoute,
+    UrlRouteBuildError,
+    UrlRouteConflictError,
     UrlRouteMatch,
+    UrlRouteMatchMetadata,
     UrlRouteMatchError,
     UrlRouteMethodNotAllowedError,
     UrlRouteNotFoundError,

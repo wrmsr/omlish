@@ -6,6 +6,8 @@ import uuid
 
 from ..converters import UrlRouteConverter
 from ..routers import UrlRoute
+from ..routers import UrlRouteBuildError
+from ..routers import UrlRouteConflictError
 from ..routers import UrlRouteMethodNotAllowedError
 from ..routers import UrlRouteNotFoundError
 from ..routers import UrlRouter
@@ -144,6 +146,88 @@ class UrlRouterTest(unittest.TestCase):
 
         self.assertEqual(router.match('/colors/ff').values, {'value': 255})
         self.assertEqual(router.build('color', {'value': 255}), '/colors/ff')
+
+
+    def test_match_metadata(self) -> None:
+        router = UrlRouter([
+            UrlRoute('/users/{user_id:int}', 'user'),
+        ])
+
+        match = router.match('/users/42?q=x')
+        self.assertEqual(match.path, '/users/42')
+        self.assertEqual(match.matched_path, '/users/42')
+        self.assertEqual(match.metadata.query, 'q=x')
+
+    def test_percent_decoding(self) -> None:
+        router = UrlRouter([
+            UrlRoute('/files/{name}', 'file'),
+            UrlRoute('/static/a b', 'space'),
+        ])
+
+        self.assertEqual(router.match('/files/a%20b').values, {'name': 'a b'})
+        self.assertEqual(router.match('/files/a%2Fb').values, {'name': 'a/b'})
+        self.assertEqual(router.match('/static/a%20b').endpoint, 'space')
+
+    def test_converter_args(self) -> None:
+        router = UrlRouter([
+            UrlRoute('/pages/{page:int(min=1,max=3)}', 'page', name='page'),
+            UrlRoute('/langs/{lang:string(length=2)}', 'lang'),
+            UrlRoute('/colors/{color:any(red,"dark blue")}', 'color'),
+        ])
+
+        self.assertEqual(router.match('/pages/2').values, {'page': 2})
+        self.assertEqual(router.match('/langs/en').values, {'lang': 'en'})
+        self.assertEqual(router.match('/colors/dark%20blue').values, {'color': 'dark blue'})
+
+        with self.assertRaises(UrlRouteNotFoundError):
+            router.match('/pages/4')
+        with self.assertRaises(UrlRouteNotFoundError):
+            router.match('/langs/eng')
+        with self.assertRaises(UrlRouteBuildError):
+            router.build('page', {'page': 4})
+
+    def test_build_unknown_values(self) -> None:
+        router = UrlRouter([
+            UrlRoute('/users/{user_id:int}', 'user', name='user'),
+        ])
+
+        with self.assertRaises(UrlRouteBuildError):
+            router.build('user', {'user_id': 42, 'q': 'x'})
+
+        self.assertEqual(
+            router.build('user', {'user_id': 42, 'q': 'x', 'tag': ['a', 'b']}, append_unknown=True),
+            '/users/42?q=x&tag=a&tag=b',
+        )
+
+    def test_route_conflicts(self) -> None:
+        with self.assertRaises(UrlRouteConflictError):
+            UrlRouter([
+                UrlRoute('/users/{user_id}', 'user'),
+                UrlRoute('/users/{name}', 'user2'),
+            ])
+
+        UrlRouter([
+            UrlRoute('/items', 'list', methods=frozenset(['GET'])),
+            UrlRoute('/items', 'create', methods=frozenset(['POST'])),
+        ])
+
+        with self.assertRaises(UrlRouteConflictError):
+            UrlRouter([
+                UrlRoute('/users/{user_id}', 'user', name='user'),
+                UrlRoute('/users/{user_id}/posts/{post_id}', 'post', name='user'),
+            ])
+
+    def test_strict_slashes(self) -> None:
+        router = UrlRouter(
+            [
+                UrlRoute('/users/', 'users'),
+            ],
+            config=UrlRouterConfig(slash_style=UrlRouteSlashStyle.STRICT),
+        )
+
+        self.assertEqual(router.match('/users/').endpoint, 'users')
+        with self.assertRaises(UrlRouteNotFoundError):
+            router.match('/users')
 
     def test_query_is_ignored(self) -> None:
         router = UrlRouter([
