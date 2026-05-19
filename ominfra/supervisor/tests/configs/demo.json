@@ -2,27 +2,29 @@
   "no_daemon": true,
   "groups": [
     {
-      "name": "default",
-      "processes": [
-        {
-          "name": "sleep",
-          "command": "sleep 600",
-          "stdout": {
-            "file": "/dev/fd/1",
-            "max_bytes": 0
-          },
-          "redirect_stderr": true
-        },
-        {
-          "name": "ls",
-          "command": "ls -al",
-          "stdout": {
-            "file": "/dev/fd/1",
-            "max_bytes": 0
-          },
-          "redirect_stderr": true
-        }
-      ]
+      "name": "default"
+    }
+  ],
+  "processes": [
+    {
+      "name": "sleep",
+      "group": "default",
+      "command": "sleep 600",
+      "stdout": {
+        "file": "/dev/fd/1",
+        "max_bytes": 0
+      },
+      "redirect_stderr": true
+    },
+    {
+      "name": "ls",
+      "group": "default",
+      "command": "ls -al",
+      "stdout": {
+        "file": "/dev/fd/1",
+        "max_bytes": 0
+      },
+      "redirect_stderr": true
     }
   ]
 }

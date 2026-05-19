@@ -133,7 +133,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
-            dict(path='configs.py', sha1='97f301ed06355fed7099b6b10136ced584ea0c29'),
+            dict(path='configs.py', sha1='a4db1f6493f92ef158a94b9eb63143b9ed7602e3'),
             dict(path='events.py', sha1='f862c832689986f96d469949ec595d8ec7fb3201'),
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
@@ -173,7 +173,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
-            dict(path='groupimpl.py', sha1='9364a315db2e3011e7f00120764511e4c74406d6'),
+            dict(path='groupimpl.py', sha1='3c436973c383d1cf3d891c609e944f453c439636'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
@@ -204,7 +204,7 @@ def __omlish_amalg__():  # noqa
             dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
-            dict(path='supervisor.py', sha1='2213c9a45d2998e3bb4d8869b91b220bbbacd9d5'),
+            dict(path='supervisor.py', sha1='3869c915af8357d1129a59c7e625e7bed9e49e24'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='768e03f13e916ab7cace0d0f92e929d78d422d32'),
@@ -4256,6 +4256,8 @@ class SocketAndAddress(ta.NamedTuple):
 ##
 
 
+@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class ProcessConfig:
     # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
@@ -4263,6 +4265,12 @@ class ProcessConfig:
     # dictionary that includes group_name, host_node_name, process_num, program_name, and here (the directory of the
     # supervisord config file).
     name: str
+
+    group: str
+
+    @cached_property
+    def joined_name(self) -> str:
+        return f'{self.group}:{self.name}'
 
     # The command that will be run when this program is started. The command can be either absolute (e.g.
     # /path/to/programname) or relative (e.g. programname). If it is relative, the supervisord's environment $PATH will
@@ -4401,11 +4409,14 @@ class ProcessConfig:
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+        check.non_empty_str(self.group)
 
 
 ##
 
 
+@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class ProcessGroupConfig:
     name: str
@@ -4414,33 +4425,15 @@ class ProcessGroupConfig:
 
     #
 
-    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
-
-    @property
-    def processes_by_name(self) -> ta.Mapping[str, ProcessConfig]:
-        try:
-            return getattr(self, '_processes_by_name')
-        except AttributeError:
-            pass
-
-        dct: ta.Dict[str, ProcessConfig] = {}
-        for process in self.processes or []:
-            check.not_in(process.name, dct)
-            dct[process.name] = process
-        object.__setattr__(self, '_processes_by_name', dct)
-        return dct
-
-    #
-
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
-
-        self.processes_by_name  # noqa
 
 
 ##
 
 
+@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class ServerConfig:
     # Instruct supervisord to switch users to this UNIX user account before doing any meaningful processing. The user
@@ -4508,35 +4501,59 @@ class ServerConfig:
 
     groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
 
-    # TODO: implement - make sure to accept broken symlinks
-    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
-
-    @property
+    @cached_property
     def groups_by_name(self) -> ta.Mapping[str, ProcessGroupConfig]:
-        try:
-            return getattr(self, '_groups_by_name')
-        except AttributeError:
-            pass
-
         dct: ta.Dict[str, ProcessGroupConfig] = {}
         for group in self.groups or []:
             check.not_in(group.name, dct)
             dct[group.name] = group
-        object.__setattr__(self, '_groups_by_name', dct)
+        return dct
+
+    # TODO: implement - make sure to accept broken symlinks
+    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
+
+    #
+
+    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
+
+    @cached_property
+    def processes_by_name_by_group_name(self) -> ta.Mapping[str, ta.Mapping[str, ProcessConfig]]:
+        groups_by_name = self.groups_by_name
+
+        dct: ta.Dict[str, ta.Dict[str, ProcessConfig]] = {}
+        for process in self.processes or []:
+            check.in_(process.group, groups_by_name)
+            try:
+                dct2 = dct[process.group]
+            except KeyError:
+                dct2 = dct[process.group] = {}
+            check.not_in(process.name, dct2)
+            dct2[process.name] = process
+        return dct
+
+    @cached_property
+    def processes_by_joined_name(self) -> ta.Mapping[str, ProcessConfig]:
+        dct: ta.Dict[str, ProcessConfig] = {}
+        for process in self.processes or []:
+            check.not_in(process.joined_name, dct)
+            dct[process.joined_name] = process
         return dct
 
     #
 
-    http_port: ta.Optional[int] = None
+    http_port: ta.Optional[int] = None  # TODO: http_bind: int | tuple[str, int] | str | None
     http_socket_path: ta.Optional[str] = None
 
     #
 
     def __post_init__(self) -> None:
+        self.groups_by_name  # noqa
+
+        self.processes_by_name_by_group_name  # noqa
+        self.processes_by_joined_name  # noqa
+
         if self.http_port is not None and self.http_socket_path is not None:
             raise ValueError('cannot specify both http_port and http_socket_path')
-
-        self.groups_by_name  # noqa
 
     #
 
@@ -14980,18 +14997,18 @@ class ProcessGroupImpl(ProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
-            process_configs: ta.Sequence[ProcessConfig],
+            process_configs: ta.Optional[ta.Sequence[ProcessConfig]],
             *,
             process_factory: ProcessFactory,
     ) -> None:
         super().__init__()
 
         self._config = config
-        self._process_configs = process_configs
+        self._process_configs = process_configs or []
         self._process_factory = process_factory
 
         by_name: ta.Dict[str, Process] = {}
-        for pconfig in self._config.processes or []:
+        for pconfig in self._process_configs:
             p = check.isinstance(self._process_factory(pconfig, self), Process)
             if p.name in by_name:
                 raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')
@@ -21833,7 +21850,7 @@ class SupervisorStateManagerImpl(SupervisorStateManager):
 
 class ProcessGroupFactory(Func2[
     ProcessGroupConfig,
-    ta.Sequence[ProcessConfig],
+    ta.Optional[ta.Sequence[ProcessConfig]],
     ProcessGroup,
 ]):
     pass
@@ -21880,13 +21897,17 @@ class Supervisor:
 
     #
 
-    def add_process_group(self, config: ProcessGroupConfig) -> bool:
+    def add_process_group(
+            self,
+            config: ProcessGroupConfig,
+            process_configs: ta.Optional[ta.Sequence[ProcessConfig]],
+    ) -> bool:
         if self._process_groups.get(config.name) is not None:
             return False
 
         group = check.isinstance(self._process_group_factory(
             config,
-            config.processes or [],
+            process_configs,
         ), ProcessGroup)
         for process in group:
             process.after_setuid()
@@ -21945,7 +21966,10 @@ class Supervisor:
 
         try:
             for config in self._config.groups or []:
-                self.add_process_group(config)
+                self.add_process_group(
+                    config,
+                    list(self._config.processes_by_name_by_group_name.get(config.name, {}).values()),
+                )
 
             self._signal_handler.set_signals()
 

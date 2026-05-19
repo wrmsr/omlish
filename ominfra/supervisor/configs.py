@@ -5,7 +5,10 @@ import signal
 import tempfile
 import typing as ta
 
+from omlish.lite.cached import cached_property
 from omlish.lite.check import check
+from omlish.lite.dataclasses import install_dataclass_filtered_repr
+from omlish.lite.dataclasses import install_dataclass_kw_only_init
 
 from .utils.fs import check_existing_dir
 from .utils.fs import check_path_with_existing_dir
@@ -16,6 +19,8 @@ from .utils.strings import parse_octal
 ##
 
 
+@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class ProcessConfig:
     # A Python string expression that is used to compose the supervisor process name for this process. You usually don't
@@ -23,6 +28,12 @@ class ProcessConfig:
     # dictionary that includes group_name, host_node_name, process_num, program_name, and here (the directory of the
     # supervisord config file).
     name: str
+
+    group: str
+
+    @cached_property
+    def joined_name(self) -> str:
+        return f'{self.group}:{self.name}'
 
     # The command that will be run when this program is started. The command can be either absolute (e.g.
     # /path/to/programname) or relative (e.g. programname). If it is relative, the supervisord's environment $PATH will
@@ -161,11 +172,14 @@ class ProcessConfig:
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+        check.non_empty_str(self.group)
 
 
 ##
 
 
+@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class ProcessGroupConfig:
     name: str
@@ -174,33 +188,15 @@ class ProcessGroupConfig:
 
     #
 
-    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
-
-    @property
-    def processes_by_name(self) -> ta.Mapping[str, ProcessConfig]:
-        try:
-            return getattr(self, '_processes_by_name')
-        except AttributeError:
-            pass
-
-        dct: ta.Dict[str, ProcessConfig] = {}
-        for process in self.processes or []:
-            check.not_in(process.name, dct)
-            dct[process.name] = process
-        object.__setattr__(self, '_processes_by_name', dct)
-        return dct
-
-    #
-
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
-
-        self.processes_by_name  # noqa
 
 
 ##
 
 
+@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class ServerConfig:
     # Instruct supervisord to switch users to this UNIX user account before doing any meaningful processing. The user
@@ -268,35 +264,59 @@ class ServerConfig:
 
     groups: ta.Optional[ta.Sequence[ProcessGroupConfig]] = None
 
-    # TODO: implement - make sure to accept broken symlinks
-    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
-
-    @property
+    @cached_property
     def groups_by_name(self) -> ta.Mapping[str, ProcessGroupConfig]:
-        try:
-            return getattr(self, '_groups_by_name')
-        except AttributeError:
-            pass
-
         dct: ta.Dict[str, ProcessGroupConfig] = {}
         for group in self.groups or []:
             check.not_in(group.name, dct)
             dct[group.name] = group
-        object.__setattr__(self, '_groups_by_name', dct)
+        return dct
+
+    # TODO: implement - make sure to accept broken symlinks
+    group_config_dirs: ta.Optional[ta.Sequence[str]] = None
+
+    #
+
+    processes: ta.Optional[ta.Sequence[ProcessConfig]] = None
+
+    @cached_property
+    def processes_by_name_by_group_name(self) -> ta.Mapping[str, ta.Mapping[str, ProcessConfig]]:
+        groups_by_name = self.groups_by_name
+
+        dct: ta.Dict[str, ta.Dict[str, ProcessConfig]] = {}
+        for process in self.processes or []:
+            check.in_(process.group, groups_by_name)
+            try:
+                dct2 = dct[process.group]
+            except KeyError:
+                dct2 = dct[process.group] = {}
+            check.not_in(process.name, dct2)
+            dct2[process.name] = process
+        return dct
+
+    @cached_property
+    def processes_by_joined_name(self) -> ta.Mapping[str, ProcessConfig]:
+        dct: ta.Dict[str, ProcessConfig] = {}
+        for process in self.processes or []:
+            check.not_in(process.joined_name, dct)
+            dct[process.joined_name] = process
         return dct
 
     #
 
-    http_port: ta.Optional[int] = None
+    http_port: ta.Optional[int] = None  # TODO: http_bind: int | tuple[str, int] | str | None
     http_socket_path: ta.Optional[str] = None
 
     #
 
     def __post_init__(self) -> None:
+        self.groups_by_name  # noqa
+
+        self.processes_by_name_by_group_name  # noqa
+        self.processes_by_joined_name  # noqa
+
         if self.http_port is not None and self.http_socket_path is not None:
             raise ValueError('cannot specify both http_port and http_socket_path')
-
-        self.groups_by_name  # noqa
 
     #
 

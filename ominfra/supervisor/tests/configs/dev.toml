@@ -4,25 +4,29 @@ http_socket_path = '/tmp/supervisor-dev.sock'
 [[groups]]
 name = 'default'
 
-[[groups.processes]]
+[[processes]]
 name = 'ls'
+group = 'default'
 command = 'ls -al'
 stdout = {file = '/dev/fd/1', max_bytes = 0}
 redirect_stderr = true
 
-[[groups.processes]]
+[[processes]]
 name = 'sleep'
+group = 'default'
 command = 'sleep 600'
 stdout = {file = '/dev/fd/1', max_bytes = 0}
 redirect_stderr = true
 
-[[groups.processes]]
+[[processes]]
 name = 'sleepx'
+group = 'default'
 command = 'sleep 789'
 stdout = {file = '/dev/fd/1', max_bytes = 0}
 redirect_stderr = true
 
-[[groups.processes]]
+[[processes]]
 name = 'counter'
+group = 'default'
 command = "python3 -c \"exec('\\n'.join(['import time, itertools', 'it = itertools.count()', 'def fn():', '  time.sleep(1)', '  print(next(it))', 'while True:', '  fn()']))\""
 stdout = {file = '/dev/fd/1', max_bytes = 0}

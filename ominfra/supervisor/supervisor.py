@@ -60,7 +60,7 @@ class SupervisorStateManagerImpl(SupervisorStateManager):
 
 class ProcessGroupFactory(Func2[
     ProcessGroupConfig,
-    ta.Sequence[ProcessConfig],
+    ta.Optional[ta.Sequence[ProcessConfig]],
     ProcessGroup,
 ]):
     pass
@@ -107,13 +107,17 @@ class Supervisor:
 
     #
 
-    def add_process_group(self, config: ProcessGroupConfig) -> bool:
+    def add_process_group(
+            self,
+            config: ProcessGroupConfig,
+            process_configs: ta.Optional[ta.Sequence[ProcessConfig]],
+    ) -> bool:
         if self._process_groups.get(config.name) is not None:
             return False
 
         group = check.isinstance(self._process_group_factory(
             config,
-            config.processes or [],
+            process_configs,
         ), ProcessGroup)
         for process in group:
             process.after_setuid()
@@ -172,7 +176,10 @@ class Supervisor:
 
         try:
             for config in self._config.groups or []:
-                self.add_process_group(config)
+                self.add_process_group(
+                    config,
+                    list(self._config.processes_by_name_by_group_name.get(config.name, {}).values()),
+                )
 
             self._signal_handler.set_signals()
 

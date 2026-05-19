@@ -1,4 +1,6 @@
-# ruff: noqa: PT009
+# ruff: noqa: PT009 UP006
+import dataclasses as dc
+import typing as ta
 import unittest
 
 from .. import cached
@@ -45,6 +47,24 @@ class TestCached(unittest.TestCase):
         self.assertEqual(c0.f(), 'c0')
         self.assertEqual(c1.f(), 'c1')
         self.assertEqual(c, 2)
+
+    def test_cached_property_frozen_dc(self):
+        @dc.dataclass(frozen=True)
+        class Foo:
+            x: int = 100
+            c: ta.List[int] = dc.field(default_factory=lambda: [0])
+
+            @cached.cached_property
+            def y(self):
+                self.c[0] += 1
+                return self.x + 1
+
+        foo = Foo()
+        assert foo.x == 100
+        assert foo.c == [0]
+        for _ in range(2):
+            assert foo.y == 101
+            assert foo.c == [1]
 
 
 class TestCachedAsync(unittest.IsolatedAsyncioTestCase):

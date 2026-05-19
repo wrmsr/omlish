@@ -2,18 +2,19 @@
   "no_daemon": true,
   "groups": [
     {
+      "name": "journald2aws"
+    }
+  ],
+  "processes": [
+    {
       "name": "journald2aws",
-      "processes": [
-        {
-          "name": "journald2aws",
-          "command": "python3 ominfra/scripts/journald2aws.py --config-file ~/.omlish/journald2aws.json --real",
-          "directory": "~/src/omlish2",
-          "stderr": {
-            "file": "/dev/fd/1",
-            "max_bytes": 0
-          }
-        }
-      ]
+      "group": "journald2aws",
+      "command": "python3 ominfra/scripts/journald2aws.py --config-file ~/.omlish/journald2aws.json --real",
+      "directory": "~/src/omlish2",
+      "stderr": {
+        "file": "/dev/fd/1",
+        "max_bytes": 0
+      }
     }
   ]
 }

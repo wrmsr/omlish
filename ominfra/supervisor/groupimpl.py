@@ -26,18 +26,18 @@ class ProcessGroupImpl(ProcessGroup):
     def __init__(
             self,
             config: ProcessGroupConfig,
-            process_configs: ta.Sequence[ProcessConfig],
+            process_configs: ta.Optional[ta.Sequence[ProcessConfig]],
             *,
             process_factory: ProcessFactory,
     ) -> None:
         super().__init__()
 
         self._config = config
-        self._process_configs = process_configs
+        self._process_configs = process_configs or []
         self._process_factory = process_factory
 
         by_name: ta.Dict[str, Process] = {}
-        for pconfig in self._config.processes or []:
+        for pconfig in self._process_configs:
             p = check.isinstance(self._process_factory(pconfig, self), Process)
             if p.name in by_name:
                 raise KeyError(f'name {p.name} of process {p} already registered by {by_name[p.name]}')

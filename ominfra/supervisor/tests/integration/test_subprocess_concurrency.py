@@ -19,6 +19,7 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
         processes = [
             {
                 'name': f'concurrent{i}',
+                'group': 'concurrent',
                 'command': f'{sys.executable} -m ominfra.supervisor.tests.programs.long_runner 10',
                 'auto_start': True,
             }
@@ -29,9 +30,9 @@ class TestSubprocessConcurrency(SupervisorSubprocessTestBase):
             'groups': [
                 {
                     'name': 'concurrent',
-                    'processes': processes,
                 },
             ],
+            'processes': processes,
         })
 
         self.start_supervisor(config)
