@@ -374,4 +374,3 @@ class UrlRouterTest(unittest.TestCase):
             router.build('search', {'q': 'coffee', 'near': 'SoMa'}, append_unknown=True),
             '/search?q=coffee&near=SoMa',
         )
-

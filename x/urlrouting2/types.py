@@ -4,6 +4,8 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish.lite.dataclasses import install_dataclass_filtered_repr
+
 
 UrlRouteEndpoint = ta.Any  # ta.TypeAlias
 UrlRouteValues = ta.Mapping[str, ta.Any]  # ta.TypeAlias
@@ -58,6 +60,7 @@ class UrlRouteRedirectRequiredError(UrlRouteMatchError):
 ##
 
 
+@install_dataclass_filtered_repr('omit_none')
 @dc.dataclass(frozen=True)
 class UrlRoute:
     pattern: str

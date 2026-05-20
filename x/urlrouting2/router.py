@@ -6,6 +6,7 @@ import typing as ta
 import urllib.parse
 
 from omlish.lite.check import check
+from omlish.lite.dataclasses import install_dataclass_filtered_repr
 
 from .converters import URL_ROUTE_DEFAULT_CONVERTERS
 from .converters import UrlRouteConverter
@@ -54,6 +55,7 @@ class _CompiledUrlRoute:
     build_names: ta.AbstractSet[str]
 
 
+@install_dataclass_filtered_repr('omit_falsey')
 @dc.dataclass()
 class _UrlRouteNode:
     static: ta.MutableMapping[str, '_UrlRouteNode'] = dc.field(default_factory=dict)
