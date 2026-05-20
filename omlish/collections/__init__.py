@@ -174,11 +174,6 @@ with _lang.auto_proxy_init(globals()):
         Trie,
     )
 
-    from .typemaps import (  # noqa
-        TypeMap,
-        DynamicTypeMap,
-    )
-
     from .unmodifiable import (  # noqa
         Unmodifiable,
         UnmodifiableMapping,
@@ -196,4 +191,11 @@ with _lang.auto_proxy_init(globals()):
         multi_map_by,
         partition,
         unique,
+    )
+
+    #
+
+    from ..lite.typemaps import (  # noqa
+        TypeMap,
+        DynamicTypeMap,
     )

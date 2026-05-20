@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP007 UP037 UP045
+# @omlish-lite
 import typing as ta
 import weakref
 
@@ -14,7 +16,7 @@ class TypeMap(ta.Generic[T]):
         super().__init__()
 
         self._items = list(items)
-        dct: dict[type, ta.Any] = {}
+        dct: ta.Dict[type, ta.Any] = {}
         for item in items:
             if (ty := type(item)) in dct:
                 raise ValueError(ty)
@@ -22,7 +24,7 @@ class TypeMap(ta.Generic[T]):
         self._dct = dct
 
     @classmethod
-    def of(cls, items: ta.Iterable[T]) -> TypeMap[T]:
+    def of(cls, items: ta.Iterable[T]) -> 'TypeMap[T]':
         if isinstance(items, TypeMap):
             return items
         return cls(items)
@@ -37,18 +39,18 @@ class TypeMap(ta.Generic[T]):
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._items)
 
-    def __contains__(self, ty: type[T]) -> bool:
+    def __contains__(self, ty: ta.Type[T]) -> bool:
         return ty in self._items
 
-    def get(self, ty: type[T]) -> T | None:
+    def get(self, ty: ta.Type[T]) -> ta.Optional[T]:
         return self._dct.get(ty)
 
-    def __getitem__(self, ty: type[T]) -> T:
+    def __getitem__(self, ty: ta.Type[T]) -> T:
         return self._dct[ty]
 
-    _any_dct: dict[type | tuple[type, ...], tuple[T, ...]]
+    _any_dct: ta.Dict[ta.Union[type, ta.Tuple[type, ...]], ta.Tuple[T, ...]]
 
-    def get_any(self, cls: type | tuple[type, ...]) -> ta.Sequence[T]:
+    def get_any(self, cls: ta.Union[type, ta.Tuple[type, ...]]) -> ta.Sequence[T]:
         try:
             any_dct = self._any_dct
         except AttributeError:
@@ -88,7 +90,7 @@ class DynamicTypeMap(ta.Generic[V]):
     def __iter__(self) -> ta.Iterator[V]:
         return iter(self._items)
 
-    def __getitem__(self, ty: type[T]) -> ta.Sequence[T]:
+    def __getitem__(self, ty: ta.Type[T]) -> ta.Sequence[T]:
         try:
             return self._cache[ty]
         except KeyError:
