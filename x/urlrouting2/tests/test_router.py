@@ -245,6 +245,133 @@ class UrlRouterTest(unittest.TestCase):
         self.assertEqual(router.allowed_methods('/items'), frozenset(['GET', 'HEAD', 'POST']))
         self.assertEqual(router.allowed_methods('/missing'), frozenset())
 
+    def test_mini_yelp_webapp_routes(self) -> None:
+        photo_id = uuid.UUID('2b5b0911-fdcf-4dd2-921b-28ace88db8a0')
+        router = UrlRouter([
+            UrlRoute('/', 'home', methods=frozenset(['GET']), name='home'),
+            UrlRoute('/search', 'search', methods=frozenset(['GET']), name='search'),
 
-if __name__ == '__main__':
-    unittest.main()
+            UrlRoute('/businesses', 'business_list', methods=frozenset(['GET']), name='business_list'),
+            UrlRoute('/businesses', 'business_create', methods=frozenset(['POST'])),
+            UrlRoute('/businesses/new', 'business_new', methods=frozenset(['GET'])),
+            UrlRoute('/businesses/{business_id:int}', 'business_detail', methods=frozenset(['GET']), name='business'),
+            UrlRoute('/businesses/{business_id:int}', 'business_update', methods=frozenset(['PATCH'])),
+            UrlRoute('/businesses/{business_id:int}/edit', 'business_edit', methods=frozenset(['GET'])),
+            UrlRoute('/businesses/{business_id:int}/photos', 'business_photos', methods=frozenset(['GET'])),
+            UrlRoute('/businesses/{business_id:int}/photos', 'business_photo_create', methods=frozenset(['POST'])),
+            UrlRoute(
+                '/businesses/{business_id:int}/photos/{photo_id:uuid}',
+                'business_photo',
+                methods=frozenset(['GET']),
+                name='business_photo',
+            ),
+            UrlRoute(
+                '/businesses/{business_id:int}/reviews',
+                'business_reviews',
+                methods=frozenset(['GET']),
+                name='business_reviews',
+            ),
+            UrlRoute('/businesses/{business_id:int}/reviews', 'business_review_create', methods=frozenset(['POST'])),
+            UrlRoute(
+                '/businesses/{business_id:int}/reviews/{review_id:int}',
+                'business_review',
+                methods=frozenset(['GET']),
+                name='business_review',
+            ),
+            UrlRoute(
+                '/businesses/{business_id:int}/reviews/{review_id:int}',
+                'business_review_delete',
+                methods=frozenset(['DELETE']),
+            ),
+            UrlRoute(
+                '/businesses/{business_id:int}/menu/{path:path}',
+                'business_menu_file',
+                methods=frozenset(['GET']),
+                name='business_menu_file',
+            ),
+
+            UrlRoute('/users', 'user_list', methods=frozenset(['GET']), name='user_list'),
+            UrlRoute('/users/me', 'current_user', methods=frozenset(['GET']), name='current_user'),
+            UrlRoute('/users/{user_id:int}', 'user_profile', methods=frozenset(['GET']), name='user'),
+            UrlRoute('/users/{user_id:int}/reviews', 'user_reviews', methods=frozenset(['GET']), name='user_reviews'),
+            UrlRoute('/users/{user_id:int}/followers', 'user_followers', methods=frozenset(['GET'])),
+
+            UrlRoute(
+                '/categories/{category:any(restaurants,bars,cafes)}',
+                'category',
+                methods=frozenset(['GET']),
+                name='category',
+            ),
+            UrlRoute(
+                '/admin/reports/{year:int(min=2020,max=2030)}/{month:int(min=1,max=12)}',
+                'admin_report',
+                methods=frozenset(['GET']),
+                name='admin_report',
+            ),
+        ])
+
+        self.assertEqual(router.match('/', method='GET').endpoint, 'home')
+        self.assertEqual(router.match('/businesses', method='GET').endpoint, 'business_list')
+        self.assertEqual(router.match('/businesses', method='POST').endpoint, 'business_create')
+        self.assertEqual(router.match('/businesses/new', method='GET').endpoint, 'business_new')
+
+        business_match = router.match('/businesses/42?ref=nearby', method='GET')
+        self.assertEqual(business_match.endpoint, 'business_detail')
+        self.assertEqual(business_match.values, {'business_id': 42})
+        self.assertEqual(business_match.metadata.query, 'ref=nearby')
+
+        self.assertEqual(router.match('/businesses/42', method='PATCH').endpoint, 'business_update')
+        self.assertEqual(router.match('/businesses/42/photos', method='POST').endpoint, 'business_photo_create')
+        self.assertEqual(
+            router.match('/businesses/42/photos/2b5b0911-fdcf-4dd2-921b-28ace88db8a0', method='GET').values,
+            {'business_id': 42, 'photo_id': photo_id},
+        )
+        self.assertEqual(
+            router.match('/businesses/42/reviews/7', method='DELETE').endpoint,
+            'business_review_delete',
+        )
+        self.assertEqual(
+            router.match('/businesses/42/menu/dinner/spring%20specials.pdf', method='GET').values,
+            {'business_id': 42, 'path': 'dinner/spring specials.pdf'},
+        )
+
+        self.assertEqual(router.match('/users/me', method='GET').endpoint, 'current_user')
+        self.assertEqual(router.match('/users/10', method='GET').values, {'user_id': 10})
+        self.assertEqual(router.match('/users/10/reviews', method='HEAD').endpoint, 'user_reviews')
+        self.assertEqual(router.match('/categories/bars', method='GET').values, {'category': 'bars'})
+        self.assertEqual(router.match('/admin/reports/2026/5', method='GET').values, {'year': 2026, 'month': 5})
+
+        self.assertEqual(router.allowed_methods('/businesses'), frozenset(['GET', 'HEAD', 'POST']))
+        self.assertEqual(router.allowed_methods('/businesses/42'), frozenset(['GET', 'HEAD', 'PATCH']))
+        self.assertEqual(router.allowed_methods('/businesses/42/reviews/7'), frozenset(['DELETE', 'GET', 'HEAD']))
+
+        with self.assertRaises(UrlRouteMethodNotAllowedError):
+            router.match('/businesses/42/reviews', method='PATCH')
+        with self.assertRaises(UrlRouteNotFoundError):
+            router.match('/categories/hotels', method='GET')
+        with self.assertRaises(UrlRouteNotFoundError):
+            router.match('/admin/reports/2019/1', method='GET')
+        with self.assertRaises(UrlRouteNotFoundError):
+            router.match('/admin/reports/2026/13', method='GET')
+
+        self.assertEqual(router.build('business', {'business_id': 42}), '/businesses/42')
+        self.assertEqual(
+            router.build('business_photo', {'business_id': 42, 'photo_id': photo_id}),
+            '/businesses/42/photos/2b5b0911-fdcf-4dd2-921b-28ace88db8a0',
+        )
+        self.assertEqual(
+            router.build('business_review', {'business_id': 42, 'review_id': 7}),
+            '/businesses/42/reviews/7',
+        )
+        self.assertEqual(
+            router.build('business_menu_file', {'business_id': 42, 'path': 'dinner/spring specials.pdf'}),
+            '/businesses/42/menu/dinner/spring%20specials.pdf',
+        )
+        self.assertEqual(router.build('user', {'user_id': 10}), '/users/10')
+        self.assertEqual(router.build('category', {'category': 'cafes'}), '/categories/cafes')
+        self.assertEqual(router.build('admin_report', {'year': 2026, 'month': 5}), '/admin/reports/2026/5')
+        self.assertEqual(
+            router.build('search', {'q': 'coffee', 'near': 'SoMa'}, append_unknown=True),
+            '/search?q=coffee&near=SoMa',
+        )
+
