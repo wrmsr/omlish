@@ -2,6 +2,8 @@ import functools
 import json
 import typing as ta
 
+from .io import FnWriter
+
 
 JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
@@ -48,7 +50,7 @@ JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
 
 def json_dump(
         obj: ta.Any,
-        fp: ta.IO[str],
+        fp: ta.Any,
         *,
         style: JsonStyle = None,
         **kwargs: ta.Any,
@@ -56,6 +58,27 @@ def json_dump(
     json.dump(
         obj,
         fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dump_encode(
+        obj: ta.Any,
+        fp: ta.Any,
+        encoding: str = 'utf-8',
+        *,
+        errors: str = 'strict',
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    def write(s: str) -> int:
+        fp.write(s.encode(encoding, errors))
+        return len(s)
+
+    json.dump(
+        obj,
+        FnWriter(write),
         **JSON_KWARGS_BY_STYLE[style],
         **kwargs,
     )

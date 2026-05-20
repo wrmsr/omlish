@@ -116,8 +116,12 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
         self._pid_map = pid_map
 
         self._router = UrlRouter([
-            UrlRoute('/', self._handle_index, methods={'GET'}),
+            UrlRoute('/group/{name}', self._handle_group, methods={'GET'}),
+
             UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
+            UrlRoute('/process/{namespec_or_pid}/stop', self._handle_process_stop, methods={'POST'}),
+
+            UrlRoute('/', self._handle_index, methods={'GET'}),
         ])
 
         handler: SimpleHttpHandler = UrlRoutingSimpleHttpHandler(self._router)
@@ -161,34 +165,58 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             req: ta.Optional[SimpleHttpHandlerRequest] = None,
             *,
             config: ta.Optional[bool] = None,
+            processes: ta.Optional[bool] = None,
     ) -> dict:
         if req is not None:
             if config is None and 'config' in req.parsed.qs:
                 config = True
+            if processes is None and 'processes' in req.parsed.qs:
+                processes = True
 
         return {
             'name': group.name,
 
             **({'config': marshal_obj(group.config)} if config else {}),
+
+            **({'processes': {
+                p.name: self._process_to_json(p, req)
+                for p in group
+            }} if processes else {}),
         }
 
     #
 
-    def _handle_process(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+    def _handle_group(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         match = req.context[UrlRouteMatch]
 
-        process: ta.Optional[Process] = None
-        namespec_or_pid = match.values['namespec_or_pid']
+        if (group := self._groups.get(match.values['name'])) is None:
+            return SimpleHttpHandlerResponses.not_found()
+
+        return SimpleHttpHandlerResponses.json(
+            self._group_to_json(group, req),
+            style='pretty',
+        )
+
+    #
+
+    def _lookup_process(self, namespec_or_pid: str) -> ta.Optional[Process]:
         try:
             pid = int(namespec_or_pid)
         except ValueError:
-            namespec = namespec_or_pid
-            gn, pn = namespec.split(':')
-            if (group := self._groups.get(gn)) is not None:
-                process = group.get(pn)
+            pass
         else:
-            process = self._pid_map.get(Pid(pid))
-        if process is None:
+            return self._pid_map.get(Pid(pid))
+
+        gn, pn = namespec_or_pid.split(':')
+        if (group := self._groups.get(gn)) is None:
+            return None
+
+        return group.get(pn)
+
+    def _handle_process(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        match = req.context[UrlRouteMatch]
+
+        if (process := self._lookup_process(match.values['namespec_or_pid'])) is None:
             return SimpleHttpHandlerResponses.not_found()
 
         return SimpleHttpHandlerResponses.json(
@@ -196,22 +224,30 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             style='pretty',
         )
 
+    def _handle_process_stop(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        match = req.context[UrlRouteMatch]
+
+        if (process := self._lookup_process(match.values['namespec_or_pid'])) is None:
+            return SimpleHttpHandlerResponses.not_found()
+
+        msg = process.stop()
+
+        return SimpleHttpHandlerResponses.text(msg or '')
+
+    #
+
     def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         return SimpleHttpHandlerResponses.json(
             {
                 'groups': {
-                    g.name: {
-                        **self._group_to_json(g, req),
-                        'processes': {
-                            p.name: self._process_to_json(p, req)
-                            for p in g
-                        },
-                    }
+                    g.name: self._group_to_json(g, req, processes=True)
                     for g in self._groups
                 },
             },
             style='pretty',
         )
+
+    #
 
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         return self._handler(req)

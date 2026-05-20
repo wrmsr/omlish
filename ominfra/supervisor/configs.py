@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 import dataclasses as dc
 import logging
+import re
 import signal
 import tempfile
 import typing as ta
@@ -171,11 +172,8 @@ class ProcessConfig:
     #
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
-        check.state(self.name.isidentifier())
-
-        check.non_empty_str(self.group)
-        check.state(self.group.isidentifier())
+        check.state(is_valid_name(self.name))
+        check.state(is_valid_name(self.group))
 
 
 ##
@@ -192,8 +190,7 @@ class ProcessGroupConfig:
     #
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
-        check.state(self.name.isidentifier())
+        check.state(is_valid_name(self.name))
 
 
 ##
@@ -350,6 +347,13 @@ class ServerConfig:
 
 
 ##
+
+
+VALID_NAME_PAT = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*$')
+
+
+def is_valid_name(s: str) -> bool:
+    return bool(VALID_NAME_PAT.match(check.non_empty_str(s)))
 
 
 def parse_logging_level(value: ta.Union[str, int]) -> int:

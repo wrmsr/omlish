@@ -153,6 +153,14 @@ class Process(
         raise NotImplementedError
 
     @abc.abstractmethod
+    def kill(self, sig: int) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def signal(self, sig: int) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def transition(self) -> None:
         raise NotImplementedError
 

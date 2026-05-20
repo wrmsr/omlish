@@ -124,7 +124,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
-            dict(path='../../omlish/lite/json.py', sha1='3c3feab40d760d51e1643f55acf9f30d840c4476'),
+            dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
             dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -136,7 +136,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
-            dict(path='configs.py', sha1='d550469608d957f78153a7ba8b2fb2f64371afe6'),
+            dict(path='configs.py', sha1='a638368f7d2bd60fae475a0c438be8bc3c4693d0'),
             dict(path='events.py', sha1='f862c832689986f96d469949ec595d8ec7fb3201'),
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
@@ -150,16 +150,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/io/pipelines/core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
             dict(path='../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
+            dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
-            dict(path='types.py', sha1='4e725e28704d59b1bc8844802869cc57926423e4'),
+            dict(path='types.py', sha1='1de0d3dcaefc919051ff4426920fcda176b1c2f0'),
             dict(path='utils/os.py', sha1='03ca902d60270ca0d5c0bf557f78d98d1832a938'),
             dict(path='utils/pipes.py', sha1='cee3f0e5b24829f3b3819e2c4e05d127366e20ba'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
@@ -176,7 +176,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/streams/utils.py', sha1='78d0ae24ddf41770289501d31542387a75859239'),
             dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
-            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
+            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupimpl.py', sha1='3c436973c383d1cf3d891c609e944f453c439636'),
             dict(path='process.py', sha1='d4463a1a71d13c8fcd1996867f4bfcfaeb98b2de'),
@@ -187,7 +187,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/requests.py', sha1='a0115429e52527073df8638f692aeca95803d3a7'),
             dict(path='../../omlish/http/pipelines/responses.py', sha1='49c0a85b1fb7571dc52e0362f2b9eb68a2a4ee34'),
             dict(path='../../omlish/http/simple/handlers.py', sha1='f15e127ac962f4577e06adfdb3c05a19fa896e89'),
-            dict(path='../../omlish/http/simple/responses.py', sha1='05230e78d09a0917a0366e7f1b26b3aee17863ab'),
+            dict(path='../../omlish/http/simple/responses.py', sha1='d5023be2859d9fb7b9d2b53f6777a9198c2b4b4c'),
             dict(path='../../omlish/http/urlrouting/router.py', sha1='f09ef44fedbb3ebdd22fb78c2d330585f2a74e7e'),
             dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
             dict(path='../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
@@ -195,6 +195,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
+            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='group.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='a5fa0e69b1d562ab4a73a0e9cd5f79756035fc60'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
@@ -212,11 +213,11 @@ def __omlish_amalg__():  # noqa
             dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
             dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
-            dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='11c766b36b763fdce729d8f52d8e9d4ed939b2f6'),
+            dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='8e9b35910a72b65fddea10dde235c8dd3515505b'),
             dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
-            dict(path='http.py', sha1='927a71fc574abc5d85749e2998104795fb742e36'),
+            dict(path='http.py', sha1='a7a60b88953252f6dc08ddf4cd445881cad5c80c'),
             dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
@@ -258,9 +259,6 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
-# ../../omlish/lite/json.py
-JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
-
 # ../../omlish/lite/typemaps.py
 V = ta.TypeVar('V')
 
@@ -295,6 +293,9 @@ IoPipelineHandlerFn = ta.Callable[['IoPipelineHandlerContext', F], T]  # ta.Type
 IoPipelineHandlerT = ta.TypeVar('IoPipelineHandlerT', bound='IoPipelineHandler')
 ShareableIoPipelineHandlerT = ta.TypeVar('ShareableIoPipelineHandlerT', bound='ShareableIoPipelineHandler')  # noqa
 IoPipelineMetadataT = ta.TypeVar('IoPipelineMetadataT', bound='IoPipelineMetadata')
+
+# ../../omlish/lite/json.py
+JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
 # ../../omlish/lite/maybes.py
 U = ta.TypeVar('U')
@@ -3727,75 +3728,18 @@ def injection_inspect(obj: ta.Any) -> InjectionInspection:
 
 
 ########################################
-# ../../../omlish/lite/json.py
+# ../../../omlish/lite/io.py
 
 
 ##
 
 
-JSON_PRETTY_INDENT = 2
+class FnWriter:
+    def __init__(self, fn):
+        self._fn = fn
 
-JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=JSON_PRETTY_INDENT,
-)
-
-json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
-json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
-
-
-##
-
-
-JSON_COMPACT_SEPARATORS = (',', ':')
-
-JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=None,
-    separators=JSON_COMPACT_SEPARATORS,
-)
-
-json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
-json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
-
-
-##
-
-
-JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
-    'pretty': JSON_PRETTY_KWARGS,
-    'compact': JSON_COMPACT_KWARGS,
-    None: {},
-}
-
-
-##
-
-
-def json_dump(
-        obj: ta.Any,
-        fp: ta.IO[str],
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> None:
-    json.dump(
-        obj,
-        fp,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-def json_dumps(
-        obj: ta.Any,
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> str:
-    return json.dumps(
-        obj,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
+    def write(self, *args, **kwargs):
+        return self._fn(*args, **kwargs)
 
 
 ########################################
@@ -4792,11 +4736,8 @@ class ProcessConfig:
     #
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
-        check.state(self.name.isidentifier())
-
-        check.non_empty_str(self.group)
-        check.state(self.group.isidentifier())
+        check.state(is_valid_name(self.name))
+        check.state(is_valid_name(self.group))
 
 
 ##
@@ -4813,8 +4754,7 @@ class ProcessGroupConfig:
     #
 
     def __post_init__(self) -> None:
-        check.non_empty_str(self.name)
-        check.state(self.name.isidentifier())
+        check.state(is_valid_name(self.name))
 
 
 ##
@@ -4971,6 +4911,13 @@ class ServerConfig:
 
 
 ##
+
+
+VALID_NAME_PAT = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*$')
+
+
+def is_valid_name(s: str) -> bool:
+    return bool(VALID_NAME_PAT.match(check.non_empty_str(s)))
 
 
 def parse_logging_level(value: ta.Union[str, int]) -> int:
@@ -10381,6 +10328,99 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 
 
 ########################################
+# ../../../omlish/lite/json.py
+
+
+##
+
+
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dump_encode(
+        obj: ta.Any,
+        fp: ta.Any,
+        encoding: str = 'utf-8',
+        *,
+        errors: str = 'strict',
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    def write(s: str) -> int:
+        fp.write(s.encode(encoding, errors))
+        return len(s)
+
+    json.dump(
+        obj,
+        FnWriter(write),
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+########################################
 # ../../../omlish/lite/marshal.py
 """
 TODO:
@@ -11958,63 +11998,6 @@ class LoggerLike(ta.Protocol):
 
 
 ########################################
-# ../../../omlish/logs/std/json.py
-"""
-TODO:
- - translate json keys
-"""
-
-
-##
-
-
-class JsonLoggingFormatter(logging.Formatter):
-    KEYS: ta.Mapping[str, bool] = {
-        'name': False,
-        'msg': False,
-        'args': False,
-        'levelname': False,
-        'levelno': False,
-        'pathname': False,
-        'filename': False,
-        'module': False,
-        'exc_info': True,
-        'exc_text': True,
-        'stack_info': True,
-        'lineno': False,
-        'funcName': False,
-        'created': False,
-        'msecs': False,
-        'relativeCreated': False,
-        'thread': False,
-        'threadName': False,
-        'processName': False,
-        'process': False,
-    }
-
-    def __init__(
-            self,
-            *args: ta.Any,
-            json_dumps: ta.Optional[ta.Callable[[ta.Any], str]] = None,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-
-        if json_dumps is None:
-            json_dumps = json_dumps_compact
-        self._json_dumps = json_dumps
-
-    def format(self, record: logging.LogRecord) -> str:
-        dct = {
-            k: v
-            for k, o in self.KEYS.items()
-            for v in [getattr(record, k)]
-            if not (o and v is None)
-        }
-        return self._json_dumps(dct)
-
-
-########################################
 # ../../../omlish/os/journald.py
 
 
@@ -12339,6 +12322,14 @@ class Process(
 
     @abc.abstractmethod
     def give_up(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def kill(self, sig: int) -> ta.Optional[str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def signal(self, sig: int) -> ta.Optional[str]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -15426,129 +15417,60 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/std/standard.py
+# ../../../omlish/logs/std/json.py
 """
 TODO:
- - structured
- - prefixed
- - debug
- - optional noisy? noisy will never be lite - some kinda configure_standard callback mechanism?
+ - translate json keys
 """
 
 
 ##
 
 
-STANDARD_LOG_FORMAT_PARTS = [
-    ('asctime', '%(asctime)-15s'),
-    ('process', 'pid=%(process)s'),
-    ('thread', 'tid=%(thread)x'),
-    ('levelname', '%(levelname)s'),
-    ('name', '%(name)s'),
-    ('separator', '::'),
-    ('message', '%(message)s'),
-]
+class JsonLoggingFormatter(logging.Formatter):
+    KEYS: ta.Mapping[str, bool] = {
+        'name': False,
+        'msg': False,
+        'args': False,
+        'levelname': False,
+        'levelno': False,
+        'pathname': False,
+        'filename': False,
+        'module': False,
+        'exc_info': True,
+        'exc_text': True,
+        'stack_info': True,
+        'lineno': False,
+        'funcName': False,
+        'created': False,
+        'msecs': False,
+        'relativeCreated': False,
+        'thread': False,
+        'threadName': False,
+        'processName': False,
+        'process': False,
+    }
 
+    def __init__(
+            self,
+            *args: ta.Any,
+            json_dumps: ta.Optional[ta.Callable[[ta.Any], str]] = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
 
-class StandardLoggingFormatter(logging.Formatter):
-    @staticmethod
-    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
-        return ' '.join(v for k, v in parts)
+        if json_dumps is None:
+            json_dumps = json_dumps_compact
+        self._json_dumps = json_dumps
 
-    converter = datetime.datetime.fromtimestamp  # type: ignore
-
-    def formatTime(self, record, datefmt=None):
-        ct = self.converter(record.created)
-        if datefmt:
-            return ct.strftime(datefmt)  # noqa
-        else:
-            t = ct.strftime('%Y-%m-%d %H:%M:%S')
-            return '%s.%03d' % (t, record.msecs)  # noqa
-
-
-##
-
-
-class StandardConfiguredLoggingHandler(ProxyLoggingHandler):
-    def __init_subclass__(cls, **kwargs):
-        raise TypeError('This class serves only as a marker and should not be subclassed.')
-
-
-##
-
-
-@contextlib.contextmanager
-def _locking_logging_module_lock() -> ta.Iterator[None]:
-    if hasattr(logging, '_acquireLock'):
-        logging._acquireLock()  # noqa
-        try:
-            yield
-        finally:
-            logging._releaseLock()  # type: ignore  # noqa
-
-    elif hasattr(logging, '_lock'):
-        # https://github.com/python/cpython/commit/74723e11109a320e628898817ab449b3dad9ee96
-        with logging._lock:  # noqa
-            yield
-
-    else:
-        raise Exception("Can't find lock in logging module")
-
-
-def configure_standard_logging(
-        level: ta.Union[int, str] = logging.INFO,
-        *,
-        target: ta.Optional[logging.Logger] = None,
-
-        force: bool = False,
-
-        handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
-
-        formatter: ta.Optional[logging.Formatter] = None,  # noqa
-        json: bool = False,
-) -> ta.Optional[StandardConfiguredLoggingHandler]:
-    with _locking_logging_module_lock():
-        if target is None:
-            target = logging.root
-
-        #
-
-        if not force:
-            if any(isinstance(h, StandardConfiguredLoggingHandler) for h in list(target.handlers)):
-                return None
-
-        #
-
-        if handler_factory is not None:
-            handler = handler_factory()
-        else:
-            handler = logging.StreamHandler()
-
-        #
-
-        if formatter is None:
-            if json:
-                formatter = JsonLoggingFormatter()
-            else:
-                formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))  # noqa
-        handler.setFormatter(formatter)
-
-        #
-
-        handler.addFilter(TidLoggingFilter())
-
-        #
-
-        target.addHandler(handler)
-
-        #
-
-        if level is not None:
-            target.setLevel(level.upper() if isinstance(level, str) else level)
-
-        #
-
-        return StandardConfiguredLoggingHandler(handler)
+    def format(self, record: logging.LogRecord) -> str:
+        dct = {
+            k: v
+            for k, o in self.KEYS.items()
+            for v in [getattr(record, k)]
+            if not (o and v is None)
+        }
+        return self._json_dumps(dct)
 
 
 ########################################
@@ -16911,6 +16833,25 @@ class SimpleHttpHandlerResponses(NamespaceClass):
         )
 
     @classmethod
+    def text(
+            cls,
+            msg: str,
+            *,
+            status: ta.Union[HttpStatus, int] = 200,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            **kwargs: ta.Any,
+    ) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
+            status=status,
+            data=msg.encode('utf-8'),
+            headers={
+                'Content-Type': 'text/plain; charset=utf-8',
+                **(headers or {}),
+            },
+            **kwargs,
+        )
+
+    @classmethod
     def json(
             cls,
             obj: ta.Any,
@@ -16920,9 +16861,13 @@ class SimpleHttpHandlerResponses(NamespaceClass):
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             **kwargs: ta.Any,
     ) -> SimpleHttpHandlerResponse:
+        out = io.BytesIO()
+        json_dump_encode(obj, out, style=style)
+        out.write(b'\n')
+
         return SimpleHttpHandlerResponse(
             status=status,
-            data=json_dumps(obj, style=style).encode('utf-8') + b'\n',
+            data=out.getvalue(),
             headers={
                 'Content-Type': 'application/json',
                 **(headers or {}),
@@ -18875,6 +18820,132 @@ class LogRecordLoggingContext(LoggingContext):
 
     def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
+
+
+########################################
+# ../../../omlish/logs/std/standard.py
+"""
+TODO:
+ - structured
+ - prefixed
+ - debug
+ - optional noisy? noisy will never be lite - some kinda configure_standard callback mechanism?
+"""
+
+
+##
+
+
+STANDARD_LOG_FORMAT_PARTS = [
+    ('asctime', '%(asctime)-15s'),
+    ('process', 'pid=%(process)s'),
+    ('thread', 'tid=%(thread)x'),
+    ('levelname', '%(levelname)s'),
+    ('name', '%(name)s'),
+    ('separator', '::'),
+    ('message', '%(message)s'),
+]
+
+
+class StandardLoggingFormatter(logging.Formatter):
+    @staticmethod
+    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
+        return ' '.join(v for k, v in parts)
+
+    converter = datetime.datetime.fromtimestamp  # type: ignore
+
+    def formatTime(self, record, datefmt=None):
+        ct = self.converter(record.created)
+        if datefmt:
+            return ct.strftime(datefmt)  # noqa
+        else:
+            t = ct.strftime('%Y-%m-%d %H:%M:%S')
+            return '%s.%03d' % (t, record.msecs)  # noqa
+
+
+##
+
+
+class StandardConfiguredLoggingHandler(ProxyLoggingHandler):
+    def __init_subclass__(cls, **kwargs):
+        raise TypeError('This class serves only as a marker and should not be subclassed.')
+
+
+##
+
+
+@contextlib.contextmanager
+def _locking_logging_module_lock() -> ta.Iterator[None]:
+    if hasattr(logging, '_acquireLock'):
+        logging._acquireLock()  # noqa
+        try:
+            yield
+        finally:
+            logging._releaseLock()  # type: ignore  # noqa
+
+    elif hasattr(logging, '_lock'):
+        # https://github.com/python/cpython/commit/74723e11109a320e628898817ab449b3dad9ee96
+        with logging._lock:  # noqa
+            yield
+
+    else:
+        raise Exception("Can't find lock in logging module")
+
+
+def configure_standard_logging(
+        level: ta.Union[int, str] = logging.INFO,
+        *,
+        target: ta.Optional[logging.Logger] = None,
+
+        force: bool = False,
+
+        handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
+
+        formatter: ta.Optional[logging.Formatter] = None,  # noqa
+        json: bool = False,
+) -> ta.Optional[StandardConfiguredLoggingHandler]:
+    with _locking_logging_module_lock():
+        if target is None:
+            target = logging.root
+
+        #
+
+        if not force:
+            if any(isinstance(h, StandardConfiguredLoggingHandler) for h in list(target.handlers)):
+                return None
+
+        #
+
+        if handler_factory is not None:
+            handler = handler_factory()
+        else:
+            handler = logging.StreamHandler()
+
+        #
+
+        if formatter is None:
+            if json:
+                formatter = JsonLoggingFormatter()
+            else:
+                formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))  # noqa
+        handler.setFormatter(formatter)
+
+        #
+
+        handler.addFilter(TidLoggingFilter())
+
+        #
+
+        target.addHandler(handler)
+
+        #
+
+        if level is not None:
+            target.setLevel(level.upper() if isinstance(level, str) else level)
+
+        #
+
+        return StandardConfiguredLoggingHandler(handler)
 
 
 ########################################
@@ -22899,9 +22970,6 @@ class IoPipelineHttpObjectDecoder(
 ########################################
 # ../../../omlish/io/pipelines/drivers/fdio.py
 """
-FIXME:
- - need to flush write_q before actually finalizing close lol
-
 TODO:
  - can implement sched w/ settimeout
  - sanity / upper bound read/write timeouts
@@ -23794,8 +23862,12 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
         self._pid_map = pid_map
 
         self._router = UrlRouter([
-            UrlRoute('/', self._handle_index, methods={'GET'}),
+            UrlRoute('/group/{name}', self._handle_group, methods={'GET'}),
+
             UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
+            UrlRoute('/process/{namespec_or_pid}/stop', self._handle_process_stop, methods={'POST'}),
+
+            UrlRoute('/', self._handle_index, methods={'GET'}),
         ])
 
         handler: SimpleHttpHandler = UrlRoutingSimpleHttpHandler(self._router)
@@ -23839,34 +23911,58 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             req: ta.Optional[SimpleHttpHandlerRequest] = None,
             *,
             config: ta.Optional[bool] = None,
+            processes: ta.Optional[bool] = None,
     ) -> dict:
         if req is not None:
             if config is None and 'config' in req.parsed.qs:
                 config = True
+            if processes is None and 'processes' in req.parsed.qs:
+                processes = True
 
         return {
             'name': group.name,
 
             **({'config': marshal_obj(group.config)} if config else {}),
+
+            **({'processes': {
+                p.name: self._process_to_json(p, req)
+                for p in group
+            }} if processes else {}),
         }
 
     #
 
-    def _handle_process(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+    def _handle_group(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         match = req.context[UrlRouteMatch]
 
-        process: ta.Optional[Process] = None
-        namespec_or_pid = match.values['namespec_or_pid']
+        if (group := self._groups.get(match.values['name'])) is None:
+            return SimpleHttpHandlerResponses.not_found()
+
+        return SimpleHttpHandlerResponses.json(
+            self._group_to_json(group, req),
+            style='pretty',
+        )
+
+    #
+
+    def _lookup_process(self, namespec_or_pid: str) -> ta.Optional[Process]:
         try:
             pid = int(namespec_or_pid)
         except ValueError:
-            namespec = namespec_or_pid
-            gn, pn = namespec.split(':')
-            if (group := self._groups.get(gn)) is not None:
-                process = group.get(pn)
+            pass
         else:
-            process = self._pid_map.get(Pid(pid))
-        if process is None:
+            return self._pid_map.get(Pid(pid))
+
+        gn, pn = namespec_or_pid.split(':')
+        if (group := self._groups.get(gn)) is None:
+            return None
+
+        return group.get(pn)
+
+    def _handle_process(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        match = req.context[UrlRouteMatch]
+
+        if (process := self._lookup_process(match.values['namespec_or_pid'])) is None:
             return SimpleHttpHandlerResponses.not_found()
 
         return SimpleHttpHandlerResponses.json(
@@ -23874,22 +23970,30 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             style='pretty',
         )
 
+    def _handle_process_stop(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        match = req.context[UrlRouteMatch]
+
+        if (process := self._lookup_process(match.values['namespec_or_pid'])) is None:
+            return SimpleHttpHandlerResponses.not_found()
+
+        msg = process.stop()
+
+        return SimpleHttpHandlerResponses.text(msg or '')
+
+    #
+
     def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         return SimpleHttpHandlerResponses.json(
             {
                 'groups': {
-                    g.name: {
-                        **self._group_to_json(g, req),
-                        'processes': {
-                            p.name: self._process_to_json(p, req)
-                            for p in g
-                        },
-                    }
+                    g.name: self._group_to_json(g, req, processes=True)
                     for g in self._groups
                 },
             },
             style='pretty',
         )
+
+    #
 
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         return self._handler(req)

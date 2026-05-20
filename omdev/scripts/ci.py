@@ -110,7 +110,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
             dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
-            dict(path='../../omlish/lite/json.py', sha1='3c3feab40d760d51e1643f55acf9f30d840c4476'),
+            dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
             dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -138,6 +138,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
             dict(path='../../omlish/io/pipelines/core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
             dict(path='../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
+            dict(path='../../omlish/lite/json.py', sha1='01124e62093ebd4078602f16df0ec04cb724a612'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -145,7 +146,6 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/temp.py', sha1='fba3470ac095a6c3f893156cc4437bda1b8796cb'),
             dict(path='../../omlish/sockets/bind.py', sha1='a3446580db20f208cc99c7685fbd0181701166c8'),
             dict(path='../../omlish/sockets/handlers/types.py', sha1='3eba55a4d5c1ca303958020f8e278ffd366661f9'),
@@ -170,7 +170,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/streams/utils.py', sha1='78d0ae24ddf41770289501d31542387a75859239'),
             dict(path='../../omlish/lite/inject.py', sha1='172296edc98b32e51fdaa44ccc0a05b56e94f3ba'),
             dict(path='../../omlish/logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
-            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
+            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/logs/utils.py', sha1='f19e8f456172673b7418f3413f4ccef00a4b251c'),
             dict(path='../../omlish/sockets/handlers/server.py', sha1='f25c27a4a53c6d004a200daf0d35369bf94218c1'),
             dict(path='../../omlish/sockets/handlers/simple.py', sha1='78e1a4c419c8f82d10577f19654a3d8ce28d757f'),
@@ -196,6 +196,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
+            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
             dict(path='../../omlish/subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
             dict(path='docker/cacheserved/manifests.py', sha1='80a65d08319d152f0bc6f893351e23368b3de93b'),
@@ -278,9 +279,6 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 
-# ../../omlish/lite/json.py
-JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
-
 # ../../omlish/lite/typemaps.py
 V = ta.TypeVar('V')
 
@@ -314,6 +312,9 @@ IoPipelineHandlerFn = ta.Callable[['IoPipelineHandlerContext', F], T]  # ta.Type
 IoPipelineHandlerT = ta.TypeVar('IoPipelineHandlerT', bound='IoPipelineHandler')
 ShareableIoPipelineHandlerT = ta.TypeVar('ShareableIoPipelineHandlerT', bound='ShareableIoPipelineHandler')  # noqa
 IoPipelineMetadataT = ta.TypeVar('IoPipelineMetadataT', bound='IoPipelineMetadata')
+
+# ../../omlish/lite/json.py
+JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
 # ../../omlish/lite/maybes.py
 U = ta.TypeVar('U')
@@ -2615,75 +2616,18 @@ def injection_inspect(obj: ta.Any) -> InjectionInspection:
 
 
 ########################################
-# ../../../omlish/lite/json.py
+# ../../../omlish/lite/io.py
 
 
 ##
 
 
-JSON_PRETTY_INDENT = 2
+class FnWriter:
+    def __init__(self, fn):
+        self._fn = fn
 
-JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=JSON_PRETTY_INDENT,
-)
-
-json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
-json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
-
-
-##
-
-
-JSON_COMPACT_SEPARATORS = (',', ':')
-
-JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=None,
-    separators=JSON_COMPACT_SEPARATORS,
-)
-
-json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
-json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
-
-
-##
-
-
-JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
-    'pretty': JSON_PRETTY_KWARGS,
-    'compact': JSON_COMPACT_KWARGS,
-    None: {},
-}
-
-
-##
-
-
-def json_dump(
-        obj: ta.Any,
-        fp: ta.IO[str],
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> None:
-    json.dump(
-        obj,
-        fp,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
-
-
-def json_dumps(
-        obj: ta.Any,
-        *,
-        style: JsonStyle = None,
-        **kwargs: ta.Any,
-) -> str:
-    return json.dumps(
-        obj,
-        **JSON_KWARGS_BY_STYLE[style],
-        **kwargs,
-    )
+    def write(self, *args, **kwargs):
+        return self._fn(*args, **kwargs)
 
 
 ########################################
@@ -9019,6 +8963,99 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 
 
 ########################################
+# ../../../omlish/lite/json.py
+
+
+##
+
+
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., None] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dump_encode(
+        obj: ta.Any,
+        fp: ta.Any,
+        encoding: str = 'utf-8',
+        *,
+        errors: str = 'strict',
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    def write(s: str) -> int:
+        fp.write(s.encode(encoding, errors))
+        return len(s)
+
+    json.dump(
+        obj,
+        FnWriter(write),
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+########################################
 # ../../../omlish/lite/marshal.py
 """
 TODO:
@@ -10815,63 +10852,6 @@ class LoggerLike(ta.Protocol):
     def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
 
     def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
-
-
-########################################
-# ../../../omlish/logs/std/json.py
-"""
-TODO:
- - translate json keys
-"""
-
-
-##
-
-
-class JsonLoggingFormatter(logging.Formatter):
-    KEYS: ta.Mapping[str, bool] = {
-        'name': False,
-        'msg': False,
-        'args': False,
-        'levelname': False,
-        'levelno': False,
-        'pathname': False,
-        'filename': False,
-        'module': False,
-        'exc_info': True,
-        'exc_text': True,
-        'stack_info': True,
-        'lineno': False,
-        'funcName': False,
-        'created': False,
-        'msecs': False,
-        'relativeCreated': False,
-        'thread': False,
-        'threadName': False,
-        'processName': False,
-        'process': False,
-    }
-
-    def __init__(
-            self,
-            *args: ta.Any,
-            json_dumps: ta.Optional[ta.Callable[[ta.Any], str]] = None,
-            **kwargs: ta.Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-
-        if json_dumps is None:
-            json_dumps = json_dumps_compact
-        self._json_dumps = json_dumps
-
-    def format(self, record: logging.LogRecord) -> str:
-        dct = {
-            k: v
-            for k, o in self.KEYS.items()
-            for v in [getattr(record, k)]
-            if not (o and v is None)
-        }
-        return self._json_dumps(dct)
 
 
 ########################################
@@ -15356,129 +15336,60 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/std/standard.py
+# ../../../omlish/logs/std/json.py
 """
 TODO:
- - structured
- - prefixed
- - debug
- - optional noisy? noisy will never be lite - some kinda configure_standard callback mechanism?
+ - translate json keys
 """
 
 
 ##
 
 
-STANDARD_LOG_FORMAT_PARTS = [
-    ('asctime', '%(asctime)-15s'),
-    ('process', 'pid=%(process)s'),
-    ('thread', 'tid=%(thread)x'),
-    ('levelname', '%(levelname)s'),
-    ('name', '%(name)s'),
-    ('separator', '::'),
-    ('message', '%(message)s'),
-]
+class JsonLoggingFormatter(logging.Formatter):
+    KEYS: ta.Mapping[str, bool] = {
+        'name': False,
+        'msg': False,
+        'args': False,
+        'levelname': False,
+        'levelno': False,
+        'pathname': False,
+        'filename': False,
+        'module': False,
+        'exc_info': True,
+        'exc_text': True,
+        'stack_info': True,
+        'lineno': False,
+        'funcName': False,
+        'created': False,
+        'msecs': False,
+        'relativeCreated': False,
+        'thread': False,
+        'threadName': False,
+        'processName': False,
+        'process': False,
+    }
 
+    def __init__(
+            self,
+            *args: ta.Any,
+            json_dumps: ta.Optional[ta.Callable[[ta.Any], str]] = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
 
-class StandardLoggingFormatter(logging.Formatter):
-    @staticmethod
-    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
-        return ' '.join(v for k, v in parts)
+        if json_dumps is None:
+            json_dumps = json_dumps_compact
+        self._json_dumps = json_dumps
 
-    converter = datetime.datetime.fromtimestamp  # type: ignore
-
-    def formatTime(self, record, datefmt=None):
-        ct = self.converter(record.created)
-        if datefmt:
-            return ct.strftime(datefmt)  # noqa
-        else:
-            t = ct.strftime('%Y-%m-%d %H:%M:%S')
-            return '%s.%03d' % (t, record.msecs)  # noqa
-
-
-##
-
-
-class StandardConfiguredLoggingHandler(ProxyLoggingHandler):
-    def __init_subclass__(cls, **kwargs):
-        raise TypeError('This class serves only as a marker and should not be subclassed.')
-
-
-##
-
-
-@contextlib.contextmanager
-def _locking_logging_module_lock() -> ta.Iterator[None]:
-    if hasattr(logging, '_acquireLock'):
-        logging._acquireLock()  # noqa
-        try:
-            yield
-        finally:
-            logging._releaseLock()  # type: ignore  # noqa
-
-    elif hasattr(logging, '_lock'):
-        # https://github.com/python/cpython/commit/74723e11109a320e628898817ab449b3dad9ee96
-        with logging._lock:  # noqa
-            yield
-
-    else:
-        raise Exception("Can't find lock in logging module")
-
-
-def configure_standard_logging(
-        level: ta.Union[int, str] = logging.INFO,
-        *,
-        target: ta.Optional[logging.Logger] = None,
-
-        force: bool = False,
-
-        handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
-
-        formatter: ta.Optional[logging.Formatter] = None,  # noqa
-        json: bool = False,
-) -> ta.Optional[StandardConfiguredLoggingHandler]:
-    with _locking_logging_module_lock():
-        if target is None:
-            target = logging.root
-
-        #
-
-        if not force:
-            if any(isinstance(h, StandardConfiguredLoggingHandler) for h in list(target.handlers)):
-                return None
-
-        #
-
-        if handler_factory is not None:
-            handler = handler_factory()
-        else:
-            handler = logging.StreamHandler()
-
-        #
-
-        if formatter is None:
-            if json:
-                formatter = JsonLoggingFormatter()
-            else:
-                formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))  # noqa
-        handler.setFormatter(formatter)
-
-        #
-
-        handler.addFilter(TidLoggingFilter())
-
-        #
-
-        target.addHandler(handler)
-
-        #
-
-        if level is not None:
-            target.setLevel(level.upper() if isinstance(level, str) else level)
-
-        #
-
-        return StandardConfiguredLoggingHandler(handler)
+    def format(self, record: logging.LogRecord) -> str:
+        dct = {
+            k: v
+            for k, o in self.KEYS.items()
+            for v in [getattr(record, k)]
+            if not (o and v is None)
+        }
+        return self._json_dumps(dct)
 
 
 ########################################
@@ -23478,6 +23389,132 @@ class LogRecordLoggingContext(LoggingContext):
 
     def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
+
+
+########################################
+# ../../../omlish/logs/std/standard.py
+"""
+TODO:
+ - structured
+ - prefixed
+ - debug
+ - optional noisy? noisy will never be lite - some kinda configure_standard callback mechanism?
+"""
+
+
+##
+
+
+STANDARD_LOG_FORMAT_PARTS = [
+    ('asctime', '%(asctime)-15s'),
+    ('process', 'pid=%(process)s'),
+    ('thread', 'tid=%(thread)x'),
+    ('levelname', '%(levelname)s'),
+    ('name', '%(name)s'),
+    ('separator', '::'),
+    ('message', '%(message)s'),
+]
+
+
+class StandardLoggingFormatter(logging.Formatter):
+    @staticmethod
+    def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
+        return ' '.join(v for k, v in parts)
+
+    converter = datetime.datetime.fromtimestamp  # type: ignore
+
+    def formatTime(self, record, datefmt=None):
+        ct = self.converter(record.created)
+        if datefmt:
+            return ct.strftime(datefmt)  # noqa
+        else:
+            t = ct.strftime('%Y-%m-%d %H:%M:%S')
+            return '%s.%03d' % (t, record.msecs)  # noqa
+
+
+##
+
+
+class StandardConfiguredLoggingHandler(ProxyLoggingHandler):
+    def __init_subclass__(cls, **kwargs):
+        raise TypeError('This class serves only as a marker and should not be subclassed.')
+
+
+##
+
+
+@contextlib.contextmanager
+def _locking_logging_module_lock() -> ta.Iterator[None]:
+    if hasattr(logging, '_acquireLock'):
+        logging._acquireLock()  # noqa
+        try:
+            yield
+        finally:
+            logging._releaseLock()  # type: ignore  # noqa
+
+    elif hasattr(logging, '_lock'):
+        # https://github.com/python/cpython/commit/74723e11109a320e628898817ab449b3dad9ee96
+        with logging._lock:  # noqa
+            yield
+
+    else:
+        raise Exception("Can't find lock in logging module")
+
+
+def configure_standard_logging(
+        level: ta.Union[int, str] = logging.INFO,
+        *,
+        target: ta.Optional[logging.Logger] = None,
+
+        force: bool = False,
+
+        handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
+
+        formatter: ta.Optional[logging.Formatter] = None,  # noqa
+        json: bool = False,
+) -> ta.Optional[StandardConfiguredLoggingHandler]:
+    with _locking_logging_module_lock():
+        if target is None:
+            target = logging.root
+
+        #
+
+        if not force:
+            if any(isinstance(h, StandardConfiguredLoggingHandler) for h in list(target.handlers)):
+                return None
+
+        #
+
+        if handler_factory is not None:
+            handler = handler_factory()
+        else:
+            handler = logging.StreamHandler()
+
+        #
+
+        if formatter is None:
+            if json:
+                formatter = JsonLoggingFormatter()
+            else:
+                formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))  # noqa
+        handler.setFormatter(formatter)
+
+        #
+
+        handler.addFilter(TidLoggingFilter())
+
+        #
+
+        target.addHandler(handler)
+
+        #
+
+        if level is not None:
+            target.setLevel(level.upper() if isinstance(level, str) else level)
+
+        #
+
+        return StandardConfiguredLoggingHandler(handler)
 
 
 ########################################
