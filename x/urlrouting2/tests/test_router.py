@@ -245,6 +245,49 @@ class UrlRouterTest(unittest.TestCase):
         self.assertEqual(router.allowed_methods('/items'), frozenset(['GET', 'HEAD', 'POST']))
         self.assertEqual(router.allowed_methods('/missing'), frozenset())
 
+    def test_build_string_escapes_slash(self) -> None:
+        router = UrlRouter([UrlRoute('/files/{name}', 'file', name='f')])
+
+        built = router.build('f', {'name': 'a/b'})
+        self.assertEqual(built, '/files/a%2Fb')
+
+        match = router.match(built)
+        self.assertEqual(match.values, {'name': 'a/b'})
+
+    def test_build_int_unsigned_rejects_negative(self) -> None:
+        router = UrlRouter([UrlRoute('/items/{n:int}', 'item', name='it')])
+
+        with self.assertRaises(UrlRouteBuildError):
+            router.build('it', {'n': -5})
+
+        signed_router = UrlRouter([UrlRoute('/items/{n:int(signed=True)}', 'item', name='it')])
+        self.assertEqual(signed_router.build('it', {'n': -5}), '/items/-5')
+
+    def test_build_float_unsigned_rejects_negative(self) -> None:
+        router = UrlRouter([UrlRoute('/x/{v:float}', 'x', name='x')])
+
+        with self.assertRaises(UrlRouteBuildError):
+            router.build('x', {'v': -1.5})
+
+        signed_router = UrlRouter([UrlRoute('/x/{v:float(signed=True)}', 'x', name='x')])
+        self.assertEqual(signed_router.build('x', {'v': -1.5}), '/x/-1.5')
+
+    def test_build_defaults_mismatched_user_value(self) -> None:
+        router = UrlRouter([UrlRoute('/x/{a}', 'e', name='n', defaults={'unused': 'default_val'})])
+
+        # User-provided value matches default - silently consumed.
+        self.assertEqual(router.build('n', {'a': 'foo', 'unused': 'default_val'}), '/x/foo')
+
+        # User-provided value differs from default - raises without append_unknown.
+        with self.assertRaises(UrlRouteBuildError):
+            router.build('n', {'a': 'foo', 'unused': 'OTHER'})
+
+        # With append_unknown, the mismatched value lands in the query string.
+        self.assertEqual(
+            router.build('n', {'a': 'foo', 'unused': 'OTHER'}, append_unknown=True),
+            '/x/foo?unused=OTHER',
+        )
+
     def test_mini_yelp_webapp_routes(self) -> None:
         photo_id = uuid.UUID('2b5b0911-fdcf-4dd2-921b-28ace88db8a0')
         router = UrlRouter([

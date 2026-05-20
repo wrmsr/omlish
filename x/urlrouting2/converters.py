@@ -37,6 +37,9 @@ class UrlRouteStringConverter(UrlRouteConverter):
         elif min != 1:
             self.regex = r'[^/]{' + str(int(min)) + ',}'
 
+    def to_url(self, v: ta.Any) -> str:
+        return urllib.parse.quote(str(v), safe="!$&'()*+,:;=@")
+
 
 
 class UrlRoutePathConverter(UrlRouteConverter):
@@ -61,6 +64,7 @@ class UrlRouteIntegerConverter(UrlRouteConverter):
             self.regex = r'-?' + self.regex
         self._min = min
         self._max = max
+        self._signed = signed
 
     def to_python(self, s: str) -> int:
         v = int(s)
@@ -72,6 +76,8 @@ class UrlRouteIntegerConverter(UrlRouteConverter):
 
     def to_url(self, v: ta.Any) -> str:
         i = int(v)
+        if not self._signed and i < 0:
+            raise ValueError(v)
         if self._min is not None and i < self._min:
             raise ValueError(v)
         if self._max is not None and i > self._max:
@@ -95,6 +101,7 @@ class UrlRouteFloatConverter(UrlRouteConverter):
             self.regex = r'-?' + self.regex
         self._min = min
         self._max = max
+        self._signed = signed
 
     def to_python(self, s: str) -> float:
         v = float(s)
@@ -106,6 +113,8 @@ class UrlRouteFloatConverter(UrlRouteConverter):
 
     def to_url(self, v: ta.Any) -> str:
         f = float(v)
+        if not self._signed and f < 0:
+            raise ValueError(v)
         if self._min is not None and f < self._min:
             raise ValueError(v)
         if self._max is not None and f > self._max:
