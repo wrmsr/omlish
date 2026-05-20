@@ -55,7 +55,6 @@ class ModuleRenderer:
         self._write_type_aliases(w, module)
         self._write_string_enum_type_aliases(w, module)
         self._write_any_of_union_type_aliases(w, module)
-        self._write_polymorphism_registration(w, module)
 
         return out.getvalue()
 
@@ -191,8 +190,14 @@ class ModuleRenderer:
         if module.disc_unions:
             w.sep()
             for name in sorted(module.disc_unions):
+                union_td = module.disc_unions[name]
                 w()
                 w()
+                w(f'@msh.set_polymorphic_from_subclasses(')
+                w(f'    type_tagging=msh.FieldTypeTagging({union_td.discriminator_field!r}),')
+                w(f'    naming=msh.Naming.SNAKE,')
+                w(f'    strip_suffix=msh.AUTO_STRIP_SUFFIX,')
+                w(f')')
                 w(f'class {name}(lang.Abstract, lang.Sealed):')
                 w('    pass')
 
@@ -308,23 +313,3 @@ class ModuleRenderer:
                     for m in td.members:
                         w(f'    {self._render_type_ann(m)},')
                     w(']')
-
-    def _write_polymorphism_registration(self, w: _Writer, module: ModuleDef) -> None:
-        if module.disc_unions:
-            w.sep()
-            w()
-            w()
-            w('@msh.register_global_lazy_init')
-            w('def _install_marshaling(cfgs: msh.ConfigRegistry) -> None:')
-            items = sorted(module.disc_unions.items())
-            for i, (union_name, union_td) in enumerate(items):
-                w(f'    msh.install_standard_factories(cfgs, *msh.standard_polymorphism_factories(')
-                w(f'        msh.polymorphism_from_subclasses(')
-                w(f'            {union_name},')
-                w(f'            naming=msh.Naming.SNAKE,')
-                w(f'            strip_suffix=msh.AUTO_STRIP_SUFFIX,')
-                w(f'        ),')
-                w(f'        msh.FieldTypeTagging({union_td.discriminator_field!r}),')
-                w(f'    ))')
-                if i < len(items) - 1:
-                    w()
