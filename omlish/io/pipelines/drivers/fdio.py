@@ -1,9 +1,6 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
 """
-FIXME:
- - need to flush write_q before actually finalizing close lol
-
 TODO:
  - can implement sched w/ settimeout
  - sanity / upper bound read/write timeouts
@@ -12,6 +9,7 @@ TODO:
 """
 import collections
 import dataclasses as dc
+import enum
 import socket
 import typing as ta
 
@@ -68,7 +66,7 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
         self._write_q: collections.deque[BytesLike] = collections.deque()
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}'
+        return f'{type(self).__name__}@{id(self):x}<{self._state.name}>'
 
     @property
     def config(self) -> Config:
@@ -77,6 +75,32 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
     @property
     def pipeline(self) -> IoPipeline:
         return self._pipeline
+
+    #
+
+    class State(enum.Enum):
+        NEW = 'new'
+
+        RUNNING = 'running'
+        DRAINING = 'draining'
+
+        CLOSED = 'closed'
+        FAILED = 'failed'
+
+    ACTIVE_STATES: ta.ClassVar[ta.Tuple[State, ...]] = (
+        State.RUNNING,
+        State.DRAINING,
+    )
+
+    _state: State = State.NEW
+
+    @property
+    def state(self) -> State:
+        return self._state
+
+    @property
+    def is_active(self) -> bool:
+        return self._state in self.ACTIVE_STATES
 
     #
 
@@ -96,13 +120,24 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
         except AttributeError:
             pass
 
-        self._pipeline = pipeline = self._make_pipeline()
+        check.state(self._state is self.State.NEW)
 
-        self._flow = flow = pipeline.services.find(IoPipelineFlow)
-        if flow is None:
-            self._want_read = True
+        try:
+            self._pipeline = pipeline = self._make_pipeline()
 
-        return pipeline
+            self._flow = flow = pipeline.services.find(IoPipelineFlow)
+            if flow is None:
+                self._want_read = True
+
+            check.state(pipeline.is_ready)
+
+            self._state = self.state.RUNNING
+
+            return pipeline
+
+        except BaseException:
+            self._state = self.State.FAILED
+            raise
 
     def _make_pipeline(self) -> IoPipeline:
         return IoPipeline(dc.replace(
@@ -114,20 +149,31 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
             ],
         ))
 
-    @property
-    def is_running(self) -> bool:
-        if (pipeline := self._opt_pipeline()) is None:
-            return False
-        return pipeline.is_ready
-
     #
 
     def close(self) -> None:
+        if self._state is self.State.CLOSED:
+            return
+
+        if self._state is self.State.NEW:
+            self._state = self.State.CLOSED
+            return
+
+        check.state(self._state in self.ACTIVE_STATES)
+
         try:
-            if (pipeline := self._opt_pipeline()) is not None:
-                pipeline.destroy()
-        finally:
-            super().close()
+            try:
+                if (pipeline := self._opt_pipeline()) is not None:
+                    pipeline.destroy()
+
+            finally:
+                super().close()
+
+                self._state = self.State.CLOSED
+
+        except BaseException:  # noqa
+            self._state = self.State.FAILED
+            raise
 
     #
 
@@ -157,28 +203,52 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
 
     #
 
+    def _try_flush_write_q(self) -> None:
+        while self._write_q:
+            b = self._write_q.popleft()
+            p = 0
+            while True:
+                pb = b[p:] if p else b
+                try:
+                    sr = check.not_none(self._sock).send(pb)
+                except ConnectionResetError:
+                    self.close()
+                    return
+                except BlockingIOError:
+                    self._write_q.appendleft(pb)
+                    return
+                p += sr
+                if p >= len(b):
+                    break
+
+    def _do_write_or_q(self, bls: ta.Iterable[BytesLike]) -> None:
+        queuing = False
+        for bl in bls:
+            if queuing:
+                self._write_q.append(bl)
+                continue
+            p = 0
+            while True:
+                pbl = bl[p:] if p else bl
+                try:
+                    sr = check.not_none(self._sock).send(pbl)
+                except BlockingIOError:
+                    queuing = True
+                    self._write_q.append(pbl)
+                    break
+                p += sr
+                if p >= len(bl):
+                    break
+
+    #
+
     def _handle_output(self, msg: ta.Any) -> ta.Literal['handled', 'unhandled', 'stop']:
         if ByteStreamBuffers.can_bytes(msg):
-            queuing = False
-            for mv in ByteStreamBuffers.iter_segments(msg):
-                if queuing:
-                    self._write_q.append(mv)
-                    continue
-                p = 0
-                while True:
-                    pmv = mv[p:] if p else mv
-                    try:
-                        sr = check.not_none(self._sock).send(pmv)
-                    except BlockingIOError:
-                        queuing = True
-                        self._write_q.append(pmv)
-                        break
-                    p += sr
-                    if p >= len(mv):
-                        break
+            self._do_write_or_q(ByteStreamBuffers.iter_segments(msg))
             return 'handled'
 
         elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
+            # FIXME: 'block' until write_q empty
             # self._sock.flush()
             return 'handled'
 
@@ -268,7 +338,12 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
                     return None
 
             elif out == 'stop':
-                break
+                if self._write_q:
+                    self._state = self.State.DRAINING
+                else:
+                    self.close()
+
+                return None
 
             elif out is None:
                 if raise_on_stall:
@@ -280,8 +355,7 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
             else:
                 raise RuntimeError(f'Unknown output: {out!r}')
 
-        pipeline.destroy()
-        return None
+        raise RuntimeError('unreachable')  # noqa
 
     def loop_until_done(self) -> None:
         try:
@@ -298,34 +372,20 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
     ##
 
     def readable(self) -> bool:
-        return self._want_read
+        return self._state is self.State.RUNNING and self._want_read
 
     def writable(self) -> bool:
-        return bool(self._write_q)
+        return self.is_active and bool(self._write_q)
 
     #
 
     def on_readable(self) -> None:
         check.none(self.next())
 
-    def _try_flush_write_q(self) -> None:
-        while self._write_q:
-            b = self._write_q.popleft()
-            p = 0
-            while True:
-                pb = b[p:] if p else b
-                try:
-                    sr = check.not_none(self._sock).send(pb)
-                except ConnectionResetError:
-                    self.close()
-                    return
-                except BlockingIOError:
-                    self._write_q.appendleft(pb)
-                    return
-                p += sr
-                if p >= len(b):
-                    break
-
     def on_writable(self) -> None:
         check.not_empty(self._write_q)
+
         self._try_flush_write_q()
+
+        if self._state is self.State.DRAINING and not self._write_q:
+            self.close()

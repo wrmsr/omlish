@@ -212,11 +212,11 @@ def __omlish_amalg__():  # noqa
             dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
             dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
-            dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='a824c07e9a4c2c65fa85f52bd8cdcc536fc6b36f'),
+            dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='11c766b36b763fdce729d8f52d8e9d4ed939b2f6'),
             dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
-            dict(path='http.py', sha1='c75f73538401f38207c5c9babfbb560109ed544b'),
+            dict(path='http.py', sha1='927a71fc574abc5d85749e2998104795fb742e36'),
             dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
@@ -22950,7 +22950,7 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
         self._write_q: collections.deque[BytesLike] = collections.deque()
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}'
+        return f'{type(self).__name__}@{id(self):x}<{self._state.name}>'
 
     @property
     def config(self) -> Config:
@@ -22959,6 +22959,32 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
     @property
     def pipeline(self) -> IoPipeline:
         return self._pipeline
+
+    #
+
+    class State(enum.Enum):
+        NEW = 'new'
+
+        RUNNING = 'running'
+        DRAINING = 'draining'
+
+        CLOSED = 'closed'
+        FAILED = 'failed'
+
+    ACTIVE_STATES: ta.ClassVar[ta.Tuple[State, ...]] = (
+        State.RUNNING,
+        State.DRAINING,
+    )
+
+    _state: State = State.NEW
+
+    @property
+    def state(self) -> State:
+        return self._state
+
+    @property
+    def is_active(self) -> bool:
+        return self._state in self.ACTIVE_STATES
 
     #
 
@@ -22978,13 +23004,24 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
         except AttributeError:
             pass
 
-        self._pipeline = pipeline = self._make_pipeline()
+        check.state(self._state is self.State.NEW)
 
-        self._flow = flow = pipeline.services.find(IoPipelineFlow)
-        if flow is None:
-            self._want_read = True
+        try:
+            self._pipeline = pipeline = self._make_pipeline()
 
-        return pipeline
+            self._flow = flow = pipeline.services.find(IoPipelineFlow)
+            if flow is None:
+                self._want_read = True
+
+            check.state(pipeline.is_ready)
+
+            self._state = self.state.RUNNING
+
+            return pipeline
+
+        except BaseException:
+            self._state = self.State.FAILED
+            raise
 
     def _make_pipeline(self) -> IoPipeline:
         return IoPipeline(dc.replace(
@@ -22996,20 +23033,31 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
             ],
         ))
 
-    @property
-    def is_running(self) -> bool:
-        if (pipeline := self._opt_pipeline()) is None:
-            return False
-        return pipeline.is_ready
-
     #
 
     def close(self) -> None:
+        if self._state is self.State.CLOSED:
+            return
+
+        if self._state is self.State.NEW:
+            self._state = self.State.CLOSED
+            return
+
+        check.state(self._state in self.ACTIVE_STATES)
+
         try:
-            if (pipeline := self._opt_pipeline()) is not None:
-                pipeline.destroy()
-        finally:
-            super().close()
+            try:
+                if (pipeline := self._opt_pipeline()) is not None:
+                    pipeline.destroy()
+
+            finally:
+                super().close()
+
+                self._state = self.State.CLOSED
+
+        except BaseException:  # noqa
+            self._state = self.State.FAILED
+            raise
 
     #
 
@@ -23039,28 +23087,52 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
 
     #
 
+    def _try_flush_write_q(self) -> None:
+        while self._write_q:
+            b = self._write_q.popleft()
+            p = 0
+            while True:
+                pb = b[p:] if p else b
+                try:
+                    sr = check.not_none(self._sock).send(pb)
+                except ConnectionResetError:
+                    self.close()
+                    return
+                except BlockingIOError:
+                    self._write_q.appendleft(pb)
+                    return
+                p += sr
+                if p >= len(b):
+                    break
+
+    def _do_write_or_q(self, bls: ta.Iterable[BytesLike]) -> None:
+        queuing = False
+        for bl in bls:
+            if queuing:
+                self._write_q.append(bl)
+                continue
+            p = 0
+            while True:
+                pbl = bl[p:] if p else bl
+                try:
+                    sr = check.not_none(self._sock).send(pbl)
+                except BlockingIOError:
+                    queuing = True
+                    self._write_q.append(pbl)
+                    break
+                p += sr
+                if p >= len(bl):
+                    break
+
+    #
+
     def _handle_output(self, msg: ta.Any) -> ta.Literal['handled', 'unhandled', 'stop']:
         if ByteStreamBuffers.can_bytes(msg):
-            queuing = False
-            for mv in ByteStreamBuffers.iter_segments(msg):
-                if queuing:
-                    self._write_q.append(mv)
-                    continue
-                p = 0
-                while True:
-                    pmv = mv[p:] if p else mv
-                    try:
-                        sr = check.not_none(self._sock).send(pmv)
-                    except BlockingIOError:
-                        queuing = True
-                        self._write_q.append(pmv)
-                        break
-                    p += sr
-                    if p >= len(mv):
-                        break
+            self._do_write_or_q(ByteStreamBuffers.iter_segments(msg))
             return 'handled'
 
         elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
+            # FIXME: 'block' until write_q empty
             # self._sock.flush()
             return 'handled'
 
@@ -23150,7 +23222,12 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
                     return None
 
             elif out == 'stop':
-                break
+                if self._write_q:
+                    self._state = self.State.DRAINING
+                else:
+                    self.close()
+
+                return None
 
             elif out is None:
                 if raise_on_stall:
@@ -23162,8 +23239,7 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
             else:
                 raise RuntimeError(f'Unknown output: {out!r}')
 
-        pipeline.destroy()
-        return None
+        raise RuntimeError('unreachable')  # noqa
 
     def loop_until_done(self) -> None:
         try:
@@ -23180,37 +23256,23 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
     ##
 
     def readable(self) -> bool:
-        return self._want_read
+        return self._state is self.State.RUNNING and self._want_read
 
     def writable(self) -> bool:
-        return bool(self._write_q)
+        return self.is_active and bool(self._write_q)
 
     #
 
     def on_readable(self) -> None:
         check.none(self.next())
 
-    def _try_flush_write_q(self) -> None:
-        while self._write_q:
-            b = self._write_q.popleft()
-            p = 0
-            while True:
-                pb = b[p:] if p else b
-                try:
-                    sr = check.not_none(self._sock).send(pb)
-                except ConnectionResetError:
-                    self.close()
-                    return
-                except BlockingIOError:
-                    self._write_q.appendleft(pb)
-                    return
-                p += sr
-                if p >= len(b):
-                    break
-
     def on_writable(self) -> None:
         check.not_empty(self._write_q)
+
         self._try_flush_write_q()
+
+        if self._state is self.State.DRAINING and not self._write_q:
+            self.close()
 
 
 ########################################
@@ -23704,7 +23766,7 @@ class HttpServer(HasDispatchers):
 
             check.none(conn.next())
 
-            if conn.is_running:
+            if conn.is_active:
                 self._conns.append(conn)
 
             else:

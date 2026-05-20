@@ -78,7 +78,7 @@ def _main() -> None:
 
             check.none(conn.next())
 
-            if conn.is_running:
+            if conn.is_active:
                 man.register(conn)
 
             else:

@@ -88,7 +88,7 @@ class HttpServer(HasDispatchers):
 
             check.none(conn.next())
 
-            if conn.is_running:
+            if conn.is_active:
                 self._conns.append(conn)
 
             else:
