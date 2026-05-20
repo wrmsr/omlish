@@ -146,7 +146,6 @@ class UrlRouterTest(unittest.TestCase):
         self.assertEqual(router.match('/colors/ff').values, {'value': 255})
         self.assertEqual(router.build('color', {'value': 255}), '/colors/ff')
 
-
     def test_match_metadata(self) -> None:
         router = UrlRouter([
             UrlRoute('/users/{user_id:int}', 'user'),

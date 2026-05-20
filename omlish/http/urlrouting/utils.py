@@ -4,8 +4,7 @@ import re
 import typing as ta
 import urllib.parse
 
-from omlish.lite.namespaces import NamespaceClass
-
+from ...lite.namespaces import NamespaceClass
 from .types import UrlRouteArgParseError
 
 

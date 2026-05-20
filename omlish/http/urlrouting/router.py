@@ -5,9 +5,8 @@ import re
 import typing as ta
 import urllib.parse
 
-from omlish.lite.check import check
-from omlish.lite.dataclasses import install_dataclass_filtered_repr
-
+from ...lite.check import check
+from ...lite.dataclasses import install_dataclass_filtered_repr
 from .converters import URL_ROUTE_DEFAULT_CONVERTERS
 from .converters import UrlRouteConverter
 from .types import UrlRoute

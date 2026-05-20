@@ -4,7 +4,7 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from omlish.lite.dataclasses import install_dataclass_filtered_repr
+from ...lite.dataclasses import install_dataclass_filtered_repr
 
 
 UrlRouteEndpoint = ta.Any  # ta.TypeAlias

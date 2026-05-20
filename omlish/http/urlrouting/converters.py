@@ -41,7 +41,6 @@ class UrlRouteStringConverter(UrlRouteConverter):
         return urllib.parse.quote(str(v), safe="!$&'()*+,:;=@")
 
 
-
 class UrlRoutePathConverter(UrlRouteConverter):
     regex = r'.+'
     weight = 200
