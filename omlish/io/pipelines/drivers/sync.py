@@ -226,7 +226,7 @@ class SyncSocketIoPipelineDriver:
         if ByteStreamBuffers.can_bytes(msg):
             for mv in ByteStreamBuffers.iter_segments(msg):
                 # self._sock.settimeout(None)
-                self._sock.send(mv)
+                self._sock.sendall(mv)
             return 'handled'
 
         elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
