@@ -5,7 +5,7 @@ import unittest
 import uuid
 
 from ..converters import UrlRouteConverter
-from ..routers import UrlRouter
+from ..router import UrlRouter
 from ..types import UrlRoute
 from ..types import UrlRouteBuildError
 from ..types import UrlRouteConflictError

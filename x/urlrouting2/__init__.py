@@ -12,7 +12,7 @@ from .converters import (  # noqa
     UrlRouteUuidConverter,
 )
 
-from .routers import (  # noqa
+from .router import (  # noqa
     UrlRouter,
 )
 
