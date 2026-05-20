@@ -129,7 +129,7 @@ class EasingApp(App[None]):
             try:
                 new_duration = float(event.value)
             except ValueError:
-                 pass
+                pass
             else:
                 self.duration = new_duration
 

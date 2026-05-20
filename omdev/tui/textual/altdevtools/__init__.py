@@ -1,6 +1,8 @@
 """
 The Textual developer tools and previews.
 
+https://github.com/Textualize/textual-dev/tree/e563f96f32d582b7cf22622a401f537c40349adc
+
 ====
 
 help='Enable development mode.'

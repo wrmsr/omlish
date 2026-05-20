@@ -135,3 +135,6 @@ exclude = [
 'omdev.tui.apps.jtree' = [
     'styles/*.tcss',
 ]
+'omdev.tui.textual.altdevtools.previews' = [
+    '*.tcss',
+]

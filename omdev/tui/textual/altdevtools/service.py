@@ -287,10 +287,7 @@ class ClientHandler:
             writer: asyncio.StreamWriter,
             pipeline_spec: ta.Any,
     ) -> None:
-        """
-        Prepare the websocket and communication queues, and continuously read messages from the queues.
-
-        """
+        """Prepare the websocket and communication queues, and continuously read messages from the queues."""
 
         self.incoming_queue = asyncio.Queue()
         self.outgoing_queue = asyncio.Queue()

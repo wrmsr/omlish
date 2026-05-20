@@ -27,7 +27,7 @@ def _section(title: str, values: dict[str, str]) -> None:
     print(f'## {title}')
     print()
     print(f"| {'Name':{max_name}} | {'Value':{max_value}} |")
-    print(f"|-{'-' * max_name}-|-{'-'*max_value}-|")
+    print(f"|-{'-' * max_name}-|-{'-' * max_value}-|")
     for name, value in values.items():
         print(f'| {name:{max_name}} | {value:{max_value}} |')
     print()
@@ -129,7 +129,8 @@ def _guess_term() -> str:
 
 
 def _env(var_name: str) -> str:
-    """Get a representation of an environment variable.
+    """
+    Get a representation of an environment variable.
 
     Args:
         var_name: The name of the variable to get.

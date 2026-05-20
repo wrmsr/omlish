@@ -6,11 +6,11 @@ import tempfile
 
 from rich.console import Console
 
-from x.tui.textual_dev.client import DevtoolsClient
-from x.tui.textual_dev.client import DevtoolsLog
-from x.tui.textual_dev.server import DEFAULT_SIZE_CHANGE_POLL_DELAY_SECONDS
-from x.tui.textual_dev.server import make_devtools_pipeline_spec
-from x.tui.textual_dev.service import DevtoolsService
+from ..client import DevtoolsClient
+from ..client import DevtoolsLog
+from ..server import DEFAULT_SIZE_CHANGE_POLL_DELAY_SECONDS
+from ..server import make_devtools_pipeline_spec
+from ..service import DevtoolsService
 
 
 async def _test_devtools_unix_websocket_roundtrip(socket_path: str) -> None:
