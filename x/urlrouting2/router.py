@@ -298,10 +298,11 @@ class UrlRouter:
         unknown_values = {
             k: v
             for k, v in values.items()
-            if k not in consumed_names and (
-                compiled.route.defaults is None
-                or k not in compiled.route.defaults
-                or compiled.route.defaults[k] != v
+            if k not in consumed_names
+            and (
+                compiled.route.defaults is None or
+                k not in compiled.route.defaults or
+                compiled.route.defaults[k] != v
             )
         }
         if unknown_values:
