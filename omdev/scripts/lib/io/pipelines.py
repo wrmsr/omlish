@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='core.py', sha1='8abb400abd5aad472954e4e01f31ab9b09cb2ef5'),
+            dict(path='core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
             dict(path='../streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='../../logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='../../logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
@@ -3027,7 +3027,7 @@ class IoPipeline:
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def outbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+        def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'outbound', msg)  # noqa
 
@@ -3040,7 +3040,7 @@ class IoPipeline:
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def inbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+        def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'inbound', msg)  # noqa
 

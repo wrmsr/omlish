@@ -144,7 +144,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e54c78728659a0c15fec4b5647e5c8c349109e55'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
-            dict(path='../../omlish/io/pipelines/core.py', sha1='8abb400abd5aad472954e4e01f31ab9b09cb2ef5'),
+            dict(path='../../omlish/io/pipelines/core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
             dict(path='../../omlish/io/streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
             dict(path='../../omlish/lite/marshal.py', sha1='66bc88d705df274e9fa1168d2aab20c7e3935cf6'),
             dict(path='../../omlish/lite/maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
@@ -9435,7 +9435,7 @@ class IoPipeline:
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def outbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+        def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'outbound', msg)  # noqa
 
@@ -9448,7 +9448,7 @@ class IoPipeline:
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def inbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+        def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'inbound', msg)  # noqa
 

@@ -1676,7 +1676,7 @@ class IoPipeline:
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def outbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+        def outbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'outbound', msg)  # noqa
 
@@ -1689,7 +1689,7 @@ class IoPipeline:
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
 
-        def inbound(self, ctx: 'IoPipelineHandlerContext', msg: ta.Any) -> None:
+        def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
             if isinstance(msg, IoPipelineMessages.MustPropagate):
                 ctx._pipeline._propagation.remove_must(ctx, 'inbound', msg)  # noqa
 
