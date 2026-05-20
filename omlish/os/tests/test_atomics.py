@@ -90,6 +90,24 @@ class TestAtomics(unittest.TestCase):
 
             swap.abort()
 
+    def test_write_file_helper(self):
+        with tempfile.TemporaryDirectory() as td:
+            dst_path = os.path.join(td, 'dst')
+            with open(dst_path, 'w') as f:
+                f.write('foo')
+
+            swap = TempDirAtomicPathSwapping(
+                temp_dir=td,
+            ).write_file(
+                dst_path,
+                'bar',
+            )
+
+            self.assertEqual(swap.state, 'committed')
+            self.assertFalse(os.path.exists(swap.tmp_path))
+            with open(dst_path) as f:
+                self.assertEqual(f.read(), 'bar')
+
 
 if __name__ == '__main__':
     unittest.main()

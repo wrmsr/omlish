@@ -122,7 +122,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='../../omlish/os/atomics.py', sha1='e4f617b52492e124717b4737da997b0f1c61f132'),
+            dict(path='../../omlish/os/atomics.py', sha1='3e4e42378e18c9444bfe8f1e57eb235171ac53d9'),
             dict(path='../../omlish/text/indent.py', sha1='cc23647bdcd8d26c8afe9e36a0aefb32da58cbb8'),
             dict(path='../../omdev/interp/types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
             dict(path='commands/base.py', sha1='d76c14d18d685af4a572f01a552ddef1bbfc9378'),
@@ -8936,9 +8936,30 @@ class AtomicPathSwapping(Abstract):
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
             skip_root_dir_check: bool = False,
-            **kwargs: ta.Any,
+
+            auto_commit: bool = False,
     ) -> AtomicPathSwap:
         raise NotImplementedError
+
+    #
+
+    def write_file(
+            self,
+            dst_path: str,
+            content: ta.Union[str, BytesLike],
+            *,
+            make_dirs: bool = False,
+    ) -> AtomicPathSwap:
+        with self.begin_atomic_path_swap(
+                'file',
+                dst_path,
+                make_dirs=make_dirs,
+                auto_commit=True,
+        ) as swap:
+            with open(swap.tmp_path, 'w' if isinstance(content, str) else 'wb') as f:
+                f.write(content)
+
+        return swap
 
 
 ##
@@ -8950,7 +8971,8 @@ class OsReplaceAtomicPathSwap(AtomicPathSwap):
             kind: AtomicPathSwapKind,
             dst_path: str,
             tmp_path: str,
-            **kwargs: ta.Any,
+            *,
+            auto_commit: bool = False,
     ) -> None:
         if kind == 'dir':
             check.state(os.path.isdir(tmp_path))
@@ -8962,7 +8984,7 @@ class OsReplaceAtomicPathSwap(AtomicPathSwap):
         super().__init__(
             kind,
             dst_path,
-            **kwargs,
+            auto_commit=auto_commit,
         )
 
         self._tmp_path = tmp_path
@@ -9008,7 +9030,8 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
             skip_root_dir_check: bool = False,
-            **kwargs: ta.Any,
+
+            auto_commit: bool = False,
     ) -> AtomicPathSwap:
         dst_path = os.path.abspath(dst_path)
         if (
@@ -9036,7 +9059,7 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
             kind,
             dst_path,
             tmp_path,
-            **kwargs,
+            auto_commit=auto_commit,
         )
 
 

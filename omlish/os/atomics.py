@@ -8,6 +8,7 @@ import typing as ta
 
 from ..lite.abstract import Abstract
 from ..lite.attrops import attr_repr
+from ..lite.bytes import BytesLike
 from ..lite.check import check
 
 
@@ -117,9 +118,30 @@ class AtomicPathSwapping(Abstract):
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
             skip_root_dir_check: bool = False,
-            **kwargs: ta.Any,
+
+            auto_commit: bool = False,
     ) -> AtomicPathSwap:
         raise NotImplementedError
+
+    #
+
+    def write_file(
+            self,
+            dst_path: str,
+            content: ta.Union[str, BytesLike],
+            *,
+            make_dirs: bool = False,
+    ) -> AtomicPathSwap:
+        with self.begin_atomic_path_swap(
+                'file',
+                dst_path,
+                make_dirs=make_dirs,
+                auto_commit=True,
+        ) as swap:
+            with open(swap.tmp_path, 'w' if isinstance(content, str) else 'wb') as f:
+                f.write(content)
+
+        return swap
 
 
 ##
@@ -131,7 +153,8 @@ class OsReplaceAtomicPathSwap(AtomicPathSwap):
             kind: AtomicPathSwapKind,
             dst_path: str,
             tmp_path: str,
-            **kwargs: ta.Any,
+            *,
+            auto_commit: bool = False,
     ) -> None:
         if kind == 'dir':
             check.state(os.path.isdir(tmp_path))
@@ -143,7 +166,7 @@ class OsReplaceAtomicPathSwap(AtomicPathSwap):
         super().__init__(
             kind,
             dst_path,
-            **kwargs,
+            auto_commit=auto_commit,
         )
 
         self._tmp_path = tmp_path
@@ -189,7 +212,8 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
             name_hint: ta.Optional[str] = None,
             make_dirs: bool = False,
             skip_root_dir_check: bool = False,
-            **kwargs: ta.Any,
+
+            auto_commit: bool = False,
     ) -> AtomicPathSwap:
         dst_path = os.path.abspath(dst_path)
         if (
@@ -217,5 +241,5 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
             kind,
             dst_path,
             tmp_path,
-            **kwargs,
+            auto_commit=auto_commit,
         )
