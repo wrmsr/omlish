@@ -37,19 +37,19 @@ class UrlRouteArgParseError(ValueError):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class UrlRouteNotFoundError(UrlRouteMatchError):
     path: str
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class UrlRouteMethodNotAllowedError(UrlRouteMatchError):
     path: str
     method: str
     allowed_methods: ta.AbstractSet[str]
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class UrlRouteRedirectRequiredError(UrlRouteMatchError):
     path: str
     redirect_path: str
