@@ -221,7 +221,7 @@ def __omlish_amalg__():  # noqa
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
             dict(path='utils.py', sha1='b7b7b439b1077771f2bd7c7c74ed422ea2663014'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
-            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='e1df6c8479bd5ad3ef1c5d6cd292d9e2c42e3cbc'),
+            dict(path='../../omlish/io/pipelines/drivers/sync.py', sha1='005f8130f95ea097f19144fc1df898fffefbaa79'),
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
             dict(path='docker/cache.py', sha1='1c30c907c44e7cc12cd985ccb88b1f6b65558899'),
@@ -31347,7 +31347,9 @@ class SyncSocketIoPipelineDriver:
                     return None
 
             elif out == 'stop':
-                break
+                pipeline.destroy()
+
+                return None
 
             elif out is None:
                 if raise_on_stall:
@@ -31359,8 +31361,7 @@ class SyncSocketIoPipelineDriver:
             else:
                 raise RuntimeError(f'Unknown output: {out!r}')
 
-        pipeline.destroy()
-        return None
+        raise RuntimeError('unreachable')  # noqa
 
     def loop_until_done(self) -> None:
         try:

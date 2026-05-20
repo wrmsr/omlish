@@ -316,7 +316,9 @@ class SyncSocketIoPipelineDriver:
                     return None
 
             elif out == 'stop':
-                break
+                pipeline.destroy()
+
+                return None
 
             elif out is None:
                 if raise_on_stall:
@@ -328,8 +330,7 @@ class SyncSocketIoPipelineDriver:
             else:
                 raise RuntimeError(f'Unknown output: {out!r}')
 
-        pipeline.destroy()
-        return None
+        raise RuntimeError('unreachable')  # noqa
 
     def loop_until_done(self) -> None:
         try:
