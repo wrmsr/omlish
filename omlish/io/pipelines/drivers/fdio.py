@@ -1,9 +1,14 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
 """
+FIXME:
+ - need to flush write_q before actually finalizing close lol
+
 TODO:
  - can implement sched w/ settimeout
  - sanity / upper bound read/write timeouts
+ - sendall? blocks prob
+ - self._sock.shutdown(socket.SHUT_WR) ?
 """
 import collections
 import dataclasses as dc
@@ -154,11 +159,23 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
 
     def _handle_output(self, msg: ta.Any) -> ta.Literal['handled', 'unhandled', 'stop']:
         if ByteStreamBuffers.can_bytes(msg):
+            queuing = False
             for mv in ByteStreamBuffers.iter_segments(msg):
-                try:
-                    check.not_none(self._sock).send(mv)
-                except BlockingIOError:
+                if queuing:
                     self._write_q.append(mv)
+                    continue
+                p = 0
+                while True:
+                    pmv = mv[p:] if p else mv
+                    try:
+                        sr = check.not_none(self._sock).send(pmv)
+                    except BlockingIOError:
+                        queuing = True
+                        self._write_q.append(pmv)
+                        break
+                    p += sr
+                    if p >= len(mv):
+                        break
             return 'handled'
 
         elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
@@ -291,14 +308,24 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
     def on_readable(self) -> None:
         check.none(self.next())
 
-    def on_writable(self) -> None:
-        check.not_empty(self._write_q)
+    def _try_flush_write_q(self) -> None:
         while self._write_q:
             b = self._write_q.popleft()
-            try:
-                check.not_none(self._sock).send(b)
-            except ConnectionResetError:
-                self.close()
-                break
-            except BlockingIOError:
-                break
+            p = 0
+            while True:
+                pb = b[p:] if p else b
+                try:
+                    sr = check.not_none(self._sock).send(pb)
+                except ConnectionResetError:
+                    self.close()
+                    return
+                except BlockingIOError:
+                    self._write_q.appendleft(pb)
+                    return
+                p += sr
+                if p >= len(b):
+                    break
+
+    def on_writable(self) -> None:
+        check.not_empty(self._write_q)
+        self._try_flush_write_q()

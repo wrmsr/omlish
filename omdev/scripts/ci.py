@@ -160,7 +160,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='e9744c171d982ea8b4a6ace5f937926d51d5ec30'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
-            dict(path='../../omlish/http/simple/types.py', sha1='b3f71d44301f9a951d6190cdb3798dd0b39e131b'),
+            dict(path='../../omlish/http/simple/types.py', sha1='8e31b8c442603b396523884ff554d3df6e7f4c1a'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
             dict(path='../../omlish/io/pipelines/flow/types.py', sha1='ac9a91d0a8115443984a75a63ffac51a7acef580'),
@@ -13414,6 +13414,27 @@ class SimpleHttpHandlerRequest:
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerRequest':
         return dc.replace(self, context=self.context.update(items, override=override))
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Parsed:
+        url: urllib.parse.SplitResult
+
+        @classmethod
+        def of(cls, path: str) -> 'SimpleHttpHandlerRequest.Parsed':
+            return cls(urllib.parse.urlsplit(path))
+
+        @cached_property
+        def qs(self) -> ta.Mapping[str, ta.Sequence[str]]:
+            return urllib.parse.parse_qs(
+                self.url.query,
+                keep_blank_values=True,
+            )
+
+    @cached_property
+    def parsed(self) -> Parsed:
+        return self.Parsed.of(self.path)
 
 
 @install_dataclass_filtered_repr('omit_none')

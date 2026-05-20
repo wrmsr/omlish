@@ -120,6 +120,11 @@ class Process(
 
     @property
     @abc.abstractmethod
+    def namespec(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
     def config(self) -> ProcessConfig:
         raise NotImplementedError
 

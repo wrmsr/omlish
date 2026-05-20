@@ -3,9 +3,11 @@
 import abc
 import dataclasses as dc
 import typing as ta
+import urllib.parse
 
 from ...lite.abstract import Abstract
 from ...lite.bytes import Bytes
+from ...lite.cached import cached_property
 from ...lite.dataclasses import install_dataclass_filtered_repr
 from ...lite.dataclasses import install_dataclass_kw_only_init
 from ...lite.typemaps import TypeMap
@@ -37,6 +39,27 @@ class SimpleHttpHandlerRequest:
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerRequest':
         return dc.replace(self, context=self.context.update(items, override=override))
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Parsed:
+        url: urllib.parse.SplitResult
+
+        @classmethod
+        def of(cls, path: str) -> 'SimpleHttpHandlerRequest.Parsed':
+            return cls(urllib.parse.urlsplit(path))
+
+        @cached_property
+        def qs(self) -> ta.Mapping[str, ta.Sequence[str]]:
+            return urllib.parse.parse_qs(
+                self.url.query,
+                keep_blank_values=True,
+            )
+
+    @cached_property
+    def parsed(self) -> Parsed:
+        return self.Parsed.of(self.path)
 
 
 @install_dataclass_filtered_repr('omit_none')

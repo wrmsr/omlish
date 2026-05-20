@@ -136,7 +136,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/sockets/addresses.py', sha1='b961963a639f3440380edc380b24d1c6d89da92f'),
-            dict(path='configs.py', sha1='67a95da063f1e3daffbcc26aa8dc6f42fe96f679'),
+            dict(path='configs.py', sha1='d550469608d957f78153a7ba8b2fb2f64371afe6'),
             dict(path='events.py', sha1='f862c832689986f96d469949ec595d8ec7fb3201'),
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
@@ -159,13 +159,13 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
-            dict(path='types.py', sha1='2c63168e6d580757273f1f0b446dd183ca68c09d'),
+            dict(path='types.py', sha1='4e725e28704d59b1bc8844802869cc57926423e4'),
             dict(path='utils/os.py', sha1='03ca902d60270ca0d5c0bf557f78d98d1832a938'),
             dict(path='utils/pipes.py', sha1='cee3f0e5b24829f3b3819e2c4e05d127366e20ba'),
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
-            dict(path='../../omlish/http/simple/types.py', sha1='b3f71d44301f9a951d6190cdb3798dd0b39e131b'),
+            dict(path='../../omlish/http/simple/types.py', sha1='8e31b8c442603b396523884ff554d3df6e7f4c1a'),
             dict(path='../../omlish/http/urlrouting/utils.py', sha1='74f7f4fd387a88c90f7714f1dbd6223191a2f13c'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='b0ab07fba560a877ef394e843ac49dfb10a243b0'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
@@ -186,7 +186,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/encoders.py', sha1='fdcc3953e2a7f9ba4c1fddba9c365da113c77b45'),
             dict(path='../../omlish/http/pipelines/requests.py', sha1='a0115429e52527073df8638f692aeca95803d3a7'),
             dict(path='../../omlish/http/pipelines/responses.py', sha1='49c0a85b1fb7571dc52e0362f2b9eb68a2a4ee34'),
-            dict(path='../../omlish/http/simple/responses.py', sha1='8e31521d5380b779149a5d10d6d94f1ea5b4a2a5'),
+            dict(path='../../omlish/http/simple/handlers.py', sha1='f15e127ac962f4577e06adfdb3c05a19fa896e89'),
+            dict(path='../../omlish/http/simple/responses.py', sha1='05230e78d09a0917a0366e7f1b26b3aee17863ab'),
             dict(path='../../omlish/http/urlrouting/router.py', sha1='f09ef44fedbb3ebdd22fb78c2d330585f2a74e7e'),
             dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
             dict(path='../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
@@ -207,15 +208,15 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='dispatchersimpl.py', sha1='9170bed2ebf43acd4467a691f85fd05e1974c116'),
             dict(path='io.py', sha1='11ef0e15c34f40ee19c571c1aea5ed6fb851ab63'),
-            dict(path='processimpl.py', sha1='e2765d785c4bc165424027a55fcd41c9a8139284'),
+            dict(path='processimpl.py', sha1='56359442f805a92870bda792e97d0de64f49b03e'),
             dict(path='setupimpl.py', sha1='e91d282ca3e5a5c187fe97a36d77ed2af75a8b1e'),
             dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
-            dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
+            dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='a824c07e9a4c2c65fa85f52bd8cdcc536fc6b36f'),
             dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
-            dict(path='http.py', sha1='a19d98990e46334dd6fea244ca3697f7e8d12e61'),
+            dict(path='http.py', sha1='c75f73538401f38207c5c9babfbb560109ed544b'),
             dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
@@ -4792,7 +4793,10 @@ class ProcessConfig:
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+        check.state(self.name.isidentifier())
+
         check.non_empty_str(self.group)
+        check.state(self.group.isidentifier())
 
 
 ##
@@ -4810,6 +4814,7 @@ class ProcessGroupConfig:
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+        check.state(self.name.isidentifier())
 
 
 ##
@@ -12304,6 +12309,11 @@ class Process(
 
     @property
     @abc.abstractmethod
+    def namespec(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
     def config(self) -> ProcessConfig:
         raise NotImplementedError
 
@@ -13215,6 +13225,27 @@ class SimpleHttpHandlerRequest:
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerRequest':
         return dc.replace(self, context=self.context.update(items, override=override))
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Parsed:
+        url: urllib.parse.SplitResult
+
+        @classmethod
+        def of(cls, path: str) -> 'SimpleHttpHandlerRequest.Parsed':
+            return cls(urllib.parse.urlsplit(path))
+
+        @cached_property
+        def qs(self) -> ta.Mapping[str, ta.Sequence[str]]:
+            return urllib.parse.parse_qs(
+                self.url.query,
+                keep_blank_values=True,
+            )
+
+    @cached_property
+    def parsed(self) -> Parsed:
+        return self.Parsed.of(self.path)
 
 
 @install_dataclass_filtered_repr('omit_none')
@@ -16778,6 +16809,90 @@ class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
 
 
 ########################################
+# ../../../omlish/http/simple/handlers.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class LoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
+    log: LoggerLike
+    level: int = logging.DEBUG
+
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        self.log.log(self.level, '%r', req)
+        resp = self.handler(req)
+        self.log.log(self.level, '%r', resp)
+        return resp
+
+
+@dc.dataclass(frozen=True)
+class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
+    handler: SimpleHttpHandler
+    log: LoggerLike
+    message: ta.Union[str, ta.Callable[[SimpleHttpHandlerRequest, BaseException], str]] = 'Error in http handler'
+
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        try:
+            return self.handler(req)
+        except Exception as e:  # noqa
+            if callable(msg := self.message):
+                msg = msg(req, e)
+            self.log.exception(msg)
+            raise
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
+    data: Bytes
+
+    status: ta.Union[HttpStatus, int] = 200
+    content_type: ta.Optional[str] = 'application/octet-stream'
+    headers: ta.Optional[ta.Mapping[str, str]] = None
+    close_connection: bool = True
+
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
+            status=self.status,
+            headers={
+                **({'Content-Type': self.content_type} if self.content_type else {}),
+                'Content-Length': str(len(self.data)),
+                **(self.headers or {}),
+            },
+            data=self.data,
+            close_connection=self.close_connection,
+        )
+
+
+@dc.dataclass(frozen=True)
+class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
+    data: str
+
+    status: ta.Union[HttpStatus, int] = 200
+    content_type: ta.Optional[str] = 'text/plain; charset=utf-8'
+    headers: ta.Optional[ta.Mapping[str, str]] = None
+    close_connection: bool = True
+
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        data = self.data.encode('utf-8')
+        return SimpleHttpHandlerResponse(
+            status=self.status,
+            headers={
+                **({'Content-Type': self.content_type} if self.content_type else {}),
+                'Content-Length': str(len(data)),
+                **(self.headers or {}),
+            },
+            data=data,
+            close_connection=self.close_connection,
+        )
+
+
+########################################
 # ../../../omlish/http/simple/responses.py
 
 
@@ -16786,7 +16901,17 @@ class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
 
 class SimpleHttpHandlerResponses(NamespaceClass):
     @classmethod
-    def of_json(
+    def not_found(
+            cls,
+            **kwargs: ta.Any,
+    ) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
+            status=HttpStatus.NOT_FOUND,
+            **kwargs,
+        )
+
+    @classmethod
+    def json(
             cls,
             obj: ta.Any,
             *,
@@ -21406,6 +21531,10 @@ class ProcessImpl(Process):
         return self._config.name
 
     @property
+    def namespec(self) -> str:
+        return ':'.join([self._group.name, self._config.name])
+
+    @property
     def config(self) -> ProcessConfig:
         return self._config
 
@@ -22770,9 +22899,14 @@ class IoPipelineHttpObjectDecoder(
 ########################################
 # ../../../omlish/io/pipelines/drivers/fdio.py
 """
+FIXME:
+ - need to flush write_q before actually finalizing close lol
+
 TODO:
  - can implement sched w/ settimeout
  - sanity / upper bound read/write timeouts
+ - sendall? blocks prob
+ - self._sock.shutdown(socket.SHUT_WR) ?
 """
 
 
@@ -22907,11 +23041,23 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
 
     def _handle_output(self, msg: ta.Any) -> ta.Literal['handled', 'unhandled', 'stop']:
         if ByteStreamBuffers.can_bytes(msg):
+            queuing = False
             for mv in ByteStreamBuffers.iter_segments(msg):
-                try:
-                    check.not_none(self._sock).send(mv)
-                except BlockingIOError:
+                if queuing:
                     self._write_q.append(mv)
+                    continue
+                p = 0
+                while True:
+                    pmv = mv[p:] if p else mv
+                    try:
+                        sr = check.not_none(self._sock).send(pmv)
+                    except BlockingIOError:
+                        queuing = True
+                        self._write_q.append(pmv)
+                        break
+                    p += sr
+                    if p >= len(mv):
+                        break
             return 'handled'
 
         elif isinstance(msg, IoPipelineFlowMessages.FlushOutput):
@@ -23044,17 +23190,27 @@ class IoPipelineDriverSocketFdioHandler(SocketFdioHandler):
     def on_readable(self) -> None:
         check.none(self.next())
 
-    def on_writable(self) -> None:
-        check.not_empty(self._write_q)
+    def _try_flush_write_q(self) -> None:
         while self._write_q:
             b = self._write_q.popleft()
-            try:
-                check.not_none(self._sock).send(b)
-            except ConnectionResetError:
-                self.close()
-                break
-            except BlockingIOError:
-                break
+            p = 0
+            while True:
+                pb = b[p:] if p else b
+                try:
+                    sr = check.not_none(self._sock).send(pb)
+                except ConnectionResetError:
+                    self.close()
+                    return
+                except BlockingIOError:
+                    self._write_q.appendleft(pb)
+                    return
+                p += sr
+                if p >= len(b):
+                    break
+
+    def on_writable(self) -> None:
+        check.not_empty(self._write_q)
+        self._try_flush_write_q()
 
 
 ########################################
@@ -23492,6 +23648,9 @@ class SimpleHttpHandlerServerIoPipelineHandler(IoPipelineHandler):
 # ../http.py
 
 
+log = get_module_logger(globals())
+
+
 ##
 
 
@@ -23565,42 +23724,113 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             self,
             *,
             groups: ProcessGroupManager,
+            pid_map: PidMap,
     ) -> None:
         super().__init__()
 
         self._groups = groups
+        self._pid_map = pid_map
 
         self._router = UrlRouter([
-            UrlRoute('/', self._handle_index),
-            UrlRoute('/_internal', self._handle_index),
+            UrlRoute('/', self._handle_index, methods={'GET'}),
+            UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
         ])
 
-        self._router_handler = UrlRoutingSimpleHttpHandler(self._router)
+        handler: SimpleHttpHandler = UrlRoutingSimpleHttpHandler(self._router)
 
-    def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        dct = {
-            'groups': {
-                g.name: {
-                    'processes': {
-                        p.name: {
-                            'pid': p.pid,
-                            'state': p.state.name,
-                            **({'_internal': marshal_obj(getattr(p, '_internal'))} if req.path == '/_internal' else {}),
-                        }
-                        for p in g
-                    },
-                }
-                for g in self._groups
-            },
+        handler = LoggingSimpleHttpHandler(handler, log, logging.INFO)
+        handler = ExceptionLoggingSimpleHttpHandler(handler, log)
+
+        self._handler = handler
+
+    #
+
+    def _process_to_json(
+            self,
+            process: Process,
+            req: ta.Optional[SimpleHttpHandlerRequest] = None,
+            *,
+            config: ta.Optional[bool] = None,
+            internal: ta.Optional[bool] = None,
+    ) -> dict:
+        if req is not None:
+            if config is None and 'config' in req.parsed.qs:
+                config = True
+            if internal is None and '_internal' in req.parsed.qs:
+                internal = True
+
+        return {
+            'name': process.name,
+            'namespec': process.namespec,
+            'pid': process.pid,
+
+            'state': process.state.name,
+
+            **({'config': marshal_obj(process.config)} if config else {}),
+
+            **({'_internal': marshal_obj(getattr(process, '_internal'))} if internal else {}),
         }
 
-        return SimpleHttpHandlerResponses.of_json(
-            dct,
+    def _group_to_json(
+            self,
+            group: ProcessGroup,
+            req: ta.Optional[SimpleHttpHandlerRequest] = None,
+            *,
+            config: ta.Optional[bool] = None,
+    ) -> dict:
+        if req is not None:
+            if config is None and 'config' in req.parsed.qs:
+                config = True
+
+        return {
+            'name': group.name,
+
+            **({'config': marshal_obj(group.config)} if config else {}),
+        }
+
+    #
+
+    def _handle_process(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        match = req.context[UrlRouteMatch]
+
+        process: ta.Optional[Process] = None
+        namespec_or_pid = match.values['namespec_or_pid']
+        try:
+            pid = int(namespec_or_pid)
+        except ValueError:
+            namespec = namespec_or_pid
+            gn, pn = namespec.split(':')
+            if (group := self._groups.get(gn)) is not None:
+                process = group.get(pn)
+        else:
+            process = self._pid_map.get(Pid(pid))
+        if process is None:
+            return SimpleHttpHandlerResponses.not_found()
+
+        return SimpleHttpHandlerResponses.json(
+            self._process_to_json(process, req),
+            style='pretty',
+        )
+
+    def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponses.json(
+            {
+                'groups': {
+                    g.name: {
+                        **self._group_to_json(g, req),
+                        'processes': {
+                            p.name: self._process_to_json(p, req)
+                            for p in g
+                        },
+                    }
+                    for g in self._groups
+                },
+            },
             style='pretty',
         )
 
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        return self._router_handler(req)
+        return self._handler(req)
 
 
 ########################################

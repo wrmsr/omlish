@@ -22,6 +22,7 @@ main:
 - systemd? less urgent now
 - serializable / diffable process cfg, process state
 - prctl / pgrp killer failsafe
+- maybe GroupName/ProcessName/Namespec NewTypes?
 
 tests:
 

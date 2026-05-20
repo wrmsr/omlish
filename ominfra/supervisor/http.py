@@ -1,8 +1,11 @@
 # ruff: noqa: UP006 UP007 UP045
 import contextlib
+import logging
 import socket
 import typing as ta
 
+from omlish.http.simple.handlers import ExceptionLoggingSimpleHttpHandler
+from omlish.http.simple.handlers import LoggingSimpleHttpHandler
 from omlish.http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
 from omlish.http.simple.responses import SimpleHttpHandlerResponses
 from omlish.http.simple.types import SimpleHttpHandler
@@ -12,15 +15,24 @@ from omlish.http.simple.types import SimpleHttpHandlerResponse
 from omlish.http.simple.urlrouting import UrlRoutingSimpleHttpHandler
 from omlish.http.urlrouting.router import UrlRouter
 from omlish.http.urlrouting.types import UrlRoute
+from omlish.http.urlrouting.types import UrlRouteMatch
 from omlish.io.fdio.handlers import ServerSocketFdioHandler
 from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 from omlish.lite.check import check
 from omlish.lite.marshal import marshal_obj
+from omlish.logs.modules import get_module_logger
 from omlish.sockets.addresses import SocketAddress
 
 from .dispatchers import Dispatchers
+from .group import ProcessGroup
 from .group import ProcessGroupManager
+from .process import PidMap
+from .process import Process
 from .types import HasDispatchers
+from .utils.ostypes import Pid
+
+
+log = get_module_logger(globals())
 
 
 ##
@@ -96,39 +108,110 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             self,
             *,
             groups: ProcessGroupManager,
+            pid_map: PidMap,
     ) -> None:
         super().__init__()
 
         self._groups = groups
+        self._pid_map = pid_map
 
         self._router = UrlRouter([
-            UrlRoute('/', self._handle_index),
-            UrlRoute('/_internal', self._handle_index),
+            UrlRoute('/', self._handle_index, methods={'GET'}),
+            UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
         ])
 
-        self._router_handler = UrlRoutingSimpleHttpHandler(self._router)
+        handler: SimpleHttpHandler = UrlRoutingSimpleHttpHandler(self._router)
 
-    def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        dct = {
-            'groups': {
-                g.name: {
-                    'processes': {
-                        p.name: {
-                            'pid': p.pid,
-                            'state': p.state.name,
-                            **({'_internal': marshal_obj(getattr(p, '_internal'))} if req.path == '/_internal' else {}),
-                        }
-                        for p in g
-                    },
-                }
-                for g in self._groups
-            },
+        handler = LoggingSimpleHttpHandler(handler, log, logging.INFO)
+        handler = ExceptionLoggingSimpleHttpHandler(handler, log)
+
+        self._handler = handler
+
+    #
+
+    def _process_to_json(
+            self,
+            process: Process,
+            req: ta.Optional[SimpleHttpHandlerRequest] = None,
+            *,
+            config: ta.Optional[bool] = None,
+            internal: ta.Optional[bool] = None,
+    ) -> dict:
+        if req is not None:
+            if config is None and 'config' in req.parsed.qs:
+                config = True
+            if internal is None and '_internal' in req.parsed.qs:
+                internal = True
+
+        return {
+            'name': process.name,
+            'namespec': process.namespec,
+            'pid': process.pid,
+
+            'state': process.state.name,
+
+            **({'config': marshal_obj(process.config)} if config else {}),
+
+            **({'_internal': marshal_obj(getattr(process, '_internal'))} if internal else {}),
         }
 
-        return SimpleHttpHandlerResponses.of_json(
-            dct,
+    def _group_to_json(
+            self,
+            group: ProcessGroup,
+            req: ta.Optional[SimpleHttpHandlerRequest] = None,
+            *,
+            config: ta.Optional[bool] = None,
+    ) -> dict:
+        if req is not None:
+            if config is None and 'config' in req.parsed.qs:
+                config = True
+
+        return {
+            'name': group.name,
+
+            **({'config': marshal_obj(group.config)} if config else {}),
+        }
+
+    #
+
+    def _handle_process(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        match = req.context[UrlRouteMatch]
+
+        process: ta.Optional[Process] = None
+        namespec_or_pid = match.values['namespec_or_pid']
+        try:
+            pid = int(namespec_or_pid)
+        except ValueError:
+            namespec = namespec_or_pid
+            gn, pn = namespec.split(':')
+            if (group := self._groups.get(gn)) is not None:
+                process = group.get(pn)
+        else:
+            process = self._pid_map.get(Pid(pid))
+        if process is None:
+            return SimpleHttpHandlerResponses.not_found()
+
+        return SimpleHttpHandlerResponses.json(
+            self._process_to_json(process, req),
+            style='pretty',
+        )
+
+    def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponses.json(
+            {
+                'groups': {
+                    g.name: {
+                        **self._group_to_json(g, req),
+                        'processes': {
+                            p.name: self._process_to_json(p, req)
+                            for p in g
+                        },
+                    }
+                    for g in self._groups
+                },
+            },
             style='pretty',
         )
 
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        return self._router_handler(req)
+        return self._handler(req)

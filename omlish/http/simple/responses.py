@@ -14,7 +14,17 @@ from .types import SimpleHttpHandlerResponse
 
 class SimpleHttpHandlerResponses(NamespaceClass):
     @classmethod
-    def of_json(
+    def not_found(
+            cls,
+            **kwargs: ta.Any,
+    ) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
+            status=HttpStatus.NOT_FOUND,
+            **kwargs,
+        )
+
+    @classmethod
+    def json(
             cls,
             obj: ta.Any,
             *,

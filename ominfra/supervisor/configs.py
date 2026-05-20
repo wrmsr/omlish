@@ -172,7 +172,10 @@ class ProcessConfig:
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+        check.state(self.name.isidentifier())
+
         check.non_empty_str(self.group)
+        check.state(self.group.isidentifier())
 
 
 ##
@@ -190,6 +193,7 @@ class ProcessGroupConfig:
 
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
+        check.state(self.name.isidentifier())
 
 
 ##

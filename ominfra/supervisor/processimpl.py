@@ -105,6 +105,10 @@ class ProcessImpl(Process):
         return self._config.name
 
     @property
+    def namespec(self) -> str:
+        return ':'.join([self._group.name, self._config.name])
+
+    @property
     def config(self) -> ProcessConfig:
         return self._config
 

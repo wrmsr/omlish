@@ -2,6 +2,25 @@
 TODO:
  - import mimetypes lol
  - HttpStatus / http.HTTPMethod
+ - lite
+
+See:
+ - Werkzeug (werkzeug.http.parse_options_header, etc.)
+ - python-mimeparse
+ - aiohttp helpers
+
+===
+
+class ContentTypes:
+    JSON = 'application/json'
+    HTML = 'text/html'
+    TEXT = 'text/plain'
+    PNG = 'image/png'
+    OCTET_STREAM = 'application/octet-stream'
+    FORM_URLENCODED = 'application/x-www-form-urlencoded'
+
+class Charsets:
+    UTF8 = 'charset=utf-8'
 """
 import base64
 
