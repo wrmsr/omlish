@@ -524,6 +524,8 @@ class UrlRouter:
             raise UrlRouteMethodNotAllowedError(path, method or '', frozenset(allowed_methods))
         raise UrlRouteNotFoundError(path)
 
+    _MERGE_SLASHES_PAT: ta.ClassVar[re.Pattern] = re.compile('/{2,}')
+
     def match(
             self,
             path: str,
@@ -535,7 +537,7 @@ class UrlRouter:
         original_path = path
 
         if self._config.merge_slashes:
-            path = re.sub('/{2,}', '/', path)
+            path = self._MERGE_SLASHES_PAT.sub('/', path)
 
         try:
             return self._match(
