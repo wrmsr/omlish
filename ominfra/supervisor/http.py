@@ -9,6 +9,9 @@ from omlish.http.simple.types import SimpleHttpHandler
 from omlish.http.simple.types import SimpleHttpHandler_
 from omlish.http.simple.types import SimpleHttpHandlerRequest
 from omlish.http.simple.types import SimpleHttpHandlerResponse
+from omlish.http.simple.urlrouting import UrlRoutingSimpleHttpHandler
+from omlish.http.urlrouting.router import UrlRouter
+from omlish.http.urlrouting.types import UrlRoute
 from omlish.io.fdio.handlers import ServerSocketFdioHandler
 from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 from omlish.lite.check import check
@@ -98,7 +101,14 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
 
         self._groups = groups
 
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        self._router = UrlRouter([
+            UrlRoute('/', self._handle_index),
+            UrlRoute('/_internal', self._handle_index),
+        ])
+
+        self._router_handler = UrlRoutingSimpleHttpHandler(self._router)
+
+    def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         dct = {
             'groups': {
                 g.name: {
@@ -119,3 +129,6 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             dct,
             style='pretty',
         )
+
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return self._router_handler(req)

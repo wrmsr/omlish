@@ -83,6 +83,7 @@ import time
 import traceback
 import types
 import typing as ta
+import urllib.parse
 import uuid
 import warnings
 import weakref
@@ -112,6 +113,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/http/statuses.py', sha1='675eff6e1638e48aebb7aeae422e426c21a612d2'),
+            dict(path='../../omlish/http/urlrouting/converters.py', sha1='0becff48963da19a3ebc8848c9e5ba07dce75b5e'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
             dict(path='../../omlish/io/pipelines/errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
             dict(path='../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
@@ -127,7 +129,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
-            dict(path='../../omlish/lite/typemaps.py', sha1='5af83f347d24631f27e7320dd2d18f6e6dd6ba5c'),
+            dict(path='../../omlish/lite/typemaps.py', sha1='a3852d79b8342eb9de7939eaaa8d8246ec1cf9b4'),
             dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../omlish/logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
@@ -143,6 +145,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/headers.py', sha1='fa6777687a0573176750f358a4b7163d704c7e5b'),
             dict(path='../../omlish/http/parsing.py', sha1='4477d00145b207dd0397ecfbc8fef5ae8c641bb3'),
             dict(path='../../omlish/http/pipelines/compression/codings.py', sha1='b88bf055dff1b040ecde17d98484559e9078b8cf'),  # noqa
+            dict(path='../../omlish/http/urlrouting/types.py', sha1='197017272bd5353b59b71b66dc80e6b0707a14ed'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e54c78728659a0c15fec4b5647e5c8c349109e55'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
             dict(path='../../omlish/io/pipelines/core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
@@ -163,6 +166,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
             dict(path='../../omlish/http/simple/types.py', sha1='b3f71d44301f9a951d6190cdb3798dd0b39e131b'),
+            dict(path='../../omlish/http/urlrouting/utils.py', sha1='74f7f4fd387a88c90f7714f1dbd6223191a2f13c'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='b0ab07fba560a877ef394e843ac49dfb10a243b0'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
@@ -183,6 +187,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/requests.py', sha1='a0115429e52527073df8638f692aeca95803d3a7'),
             dict(path='../../omlish/http/pipelines/responses.py', sha1='49c0a85b1fb7571dc52e0362f2b9eb68a2a4ee34'),
             dict(path='../../omlish/http/simple/responses.py', sha1='8e31521d5380b779149a5d10d6d94f1ea5b4a2a5'),
+            dict(path='../../omlish/http/urlrouting/router.py', sha1='f09ef44fedbb3ebdd22fb78c2d330585f2a74e7e'),
             dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
             dict(path='../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
             dict(path='../../omlish/io/streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
@@ -192,6 +197,7 @@ def __omlish_amalg__():  # noqa
             dict(path='group.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='a5fa0e69b1d562ab4a73a0e9cd5f79756035fc60'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
+            dict(path='../../omlish/http/simple/urlrouting.py', sha1='15a69fddebe2fc1fc82d2e81a11efdaf77220395'),
             dict(path='../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
@@ -209,7 +215,7 @@ def __omlish_amalg__():  # noqa
             dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
-            dict(path='http.py', sha1='88f4c9f6c50c3b78153f04c0f9d28e17b7530974'),
+            dict(path='http.py', sha1='a19d98990e46334dd6fea244ca3697f7e8d12e61'),
             dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
@@ -278,6 +284,10 @@ K = ta.TypeVar('K')
 # ../../omlish/http/headers.py
 StrOrBytes = ta.Union[str, bytes]  # ta.TypeAlias
 
+# ../../omlish/http/urlrouting/types.py
+UrlRouteEndpoint = ta.Any  # ta.TypeAlias
+UrlRouteValues = ta.Mapping[str, ta.Any]  # ta.TypeAlias
+
 # ../../omlish/io/pipelines/core.py
 F = ta.TypeVar('F')
 IoPipelineHandlerFn = ta.Callable[['IoPipelineHandlerContext', F], T]  # ta.TypeAlias
@@ -314,6 +324,10 @@ InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # t
 
 # ../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
+
+# ../../omlish/http/urlrouting/router.py
+_UrlRoutePart = ta.Union[str, '_UrlRouteSegmentPattern']  # ta.TypeAlias
+_UrlRouteBuildPart = ta.Union[str, '_UrlRouteVariable']  # ta.TypeAlias
 
 
 ########################################
@@ -1855,6 +1869,171 @@ class TomlWriter:
 
 
 #
+
+
+########################################
+# ../../../omlish/http/urlrouting/converters.py
+
+
+##
+
+
+class UrlRouteConverter:
+    regex: str = r'[^/]+'
+    weight: ta.ClassVar[int] = 100
+    is_greedy: ta.ClassVar[bool] = False
+
+    def to_python(self, s: str) -> ta.Any:
+        return s
+
+    def to_url(self, v: ta.Any) -> str:
+        return urllib.parse.quote(str(v), safe="!$&'()*+,/:;=@")
+
+
+class UrlRouteStringConverter(UrlRouteConverter):
+    def __init__(
+            self,
+            min: int = 1,  # noqa
+            max: ta.Optional[int] = None,  # noqa
+            length: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        if length is not None:
+            self.regex = r'[^/]{' + str(int(length)) + '}'
+        elif max is not None:
+            self.regex = r'[^/]{' + str(int(min)) + ',' + str(int(max)) + '}'
+        elif min != 1:
+            self.regex = r'[^/]{' + str(int(min)) + ',}'
+
+    def to_url(self, v: ta.Any) -> str:
+        return urllib.parse.quote(str(v), safe="!$&'()*+,:;=@")
+
+
+class UrlRoutePathConverter(UrlRouteConverter):
+    regex = r'.+'
+    weight = 200
+    is_greedy = True
+
+
+class UrlRouteIntegerConverter(UrlRouteConverter):
+    regex = r'\d+'
+    weight = 50
+
+    def __init__(
+            self,
+            min: ta.Optional[int] = None,  # noqa
+            max: ta.Optional[int] = None,  # noqa
+            signed: bool = False,
+    ) -> None:
+        super().__init__()
+
+        if signed:
+            self.regex = r'-?' + self.regex
+        self._min = min
+        self._max = max
+        self._signed = signed
+
+    def to_python(self, s: str) -> int:
+        v = int(s)
+        if self._min is not None and v < self._min:
+            raise ValueError(s)
+        if self._max is not None and v > self._max:
+            raise ValueError(s)
+        return v
+
+    def to_url(self, v: ta.Any) -> str:
+        i = int(v)
+        if not self._signed and i < 0:
+            raise ValueError(v)
+        if self._min is not None and i < self._min:
+            raise ValueError(v)
+        if self._max is not None and i > self._max:
+            raise ValueError(v)
+        return str(i)
+
+
+class UrlRouteFloatConverter(UrlRouteConverter):
+    regex = r'\d+(?:\.\d+)?'
+    weight = 60
+
+    def __init__(
+            self,
+            min: ta.Optional[float] = None,  # noqa
+            max: ta.Optional[float] = None,  # noqa
+            signed: bool = False,
+    ) -> None:
+        super().__init__()
+
+        if signed:
+            self.regex = r'-?' + self.regex
+        self._min = min
+        self._max = max
+        self._signed = signed
+
+    def to_python(self, s: str) -> float:
+        v = float(s)
+        if self._min is not None and v < self._min:
+            raise ValueError(s)
+        if self._max is not None and v > self._max:
+            raise ValueError(s)
+        return v
+
+    def to_url(self, v: ta.Any) -> str:
+        f = float(v)
+        if not self._signed and f < 0:
+            raise ValueError(v)
+        if self._min is not None and f < self._min:
+            raise ValueError(v)
+        if self._max is not None and f > self._max:
+            raise ValueError(v)
+        return str(f)
+
+
+class UrlRouteUuidConverter(UrlRouteConverter):
+    regex = (
+        r'[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-'
+        r'[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}'
+    )
+    weight = 40
+
+    def to_python(self, s: str) -> uuid.UUID:
+        return uuid.UUID(s)
+
+    def to_url(self, v: ta.Any) -> str:
+        return str(uuid.UUID(str(v)))
+
+
+class UrlRouteAnyConverter(UrlRouteConverter):
+    weight = 30
+
+    def __init__(self, *items: str) -> None:
+        super().__init__()
+
+        self._items = frozenset(items)
+        self.regex = '(?:' + '|'.join(re.escape(i) for i in sorted(self._items)) + ')'
+
+    def to_python(self, s: str) -> str:
+        if s not in self._items:
+            raise ValueError(s)
+        return s
+
+    def to_url(self, v: ta.Any) -> str:
+        s = str(v)
+        if s not in self._items:
+            raise ValueError(s)
+        return urllib.parse.quote(s, safe="!$&'()*+,/:;=@")
+
+
+URL_ROUTE_DEFAULT_CONVERTERS: ta.Mapping[str, ta.Callable[..., UrlRouteConverter]] = {
+    'str': UrlRouteStringConverter,
+    'string': UrlRouteStringConverter,
+    'path': UrlRoutePathConverter,
+    'int': UrlRouteIntegerConverter,
+    'float': UrlRouteFloatConverter,
+    'uuid': UrlRouteUuidConverter,
+    'any': UrlRouteAnyConverter,
+}
 
 
 ########################################
@@ -3915,6 +4094,11 @@ class TypeMap(ta.Generic[T]):
             dct[ty] = item
         self._lst = lst
         self._dct = dct
+
+    def __repr__(self) -> str:
+        if not self._lst:
+            return f'{type(self).__name__}()'
+        return f'{type(self).__name__}<{", ".join(type(i).__name__ for i in self._lst)}>'
 
     @property
     def items(self) -> ta.Sequence[T]:
@@ -7644,6 +7828,99 @@ class DefaultIoPiplineHttpCompressionCodings(NamespaceClass):
     DECOMPRESSOR: ta.Final[IoPiplineHttpDecompressorCodings] = {
         'gzip': ZlibIoPiplineHttpDecompressorCoding,
     }
+
+
+########################################
+# ../../../omlish/http/urlrouting/types.py
+
+
+##
+
+
+class UrlRouteSlashStyle(enum.Enum):
+    STRICT = 'strict'
+    REDIRECT = 'redirect'
+    IGNORE = 'ignore'
+
+
+##
+
+
+class UrlRouteMatchError(Exception):
+    pass
+
+
+class UrlRouteBuildError(Exception):
+    pass
+
+
+class UrlRouteConflictError(Exception):
+    pass
+
+
+class UrlRouteArgParseError(ValueError):
+    pass
+
+
+@dc.dataclass()
+class UrlRouteNotFoundError(UrlRouteMatchError):
+    path: str
+
+
+@dc.dataclass()
+class UrlRouteMethodNotAllowedError(UrlRouteMatchError):
+    path: str
+    method: str
+    allowed_methods: ta.AbstractSet[str]
+
+
+@dc.dataclass()
+class UrlRouteRedirectRequiredError(UrlRouteMatchError):
+    path: str
+    redirect_path: str
+
+
+##
+
+
+@install_dataclass_filtered_repr('omit_none')
+@dc.dataclass(frozen=True)
+class UrlRoute:
+    pattern: str
+    endpoint: UrlRouteEndpoint = None
+
+    methods: ta.Optional[ta.AbstractSet[str]] = None
+    name: ta.Optional[str] = None
+    slash_style: ta.Optional[UrlRouteSlashStyle] = None
+
+    defaults: ta.Optional[ta.Mapping[str, ta.Any]] = None
+    data: ta.Optional[ta.Mapping[str, ta.Any]] = None
+
+
+@dc.dataclass(frozen=True)
+class UrlRouteMatchMetadata:
+    path: str
+    matched_path: str
+    query: str = ''
+
+
+@dc.dataclass(frozen=True)
+class UrlRouteMatch:
+    route: UrlRoute
+    values: UrlRouteValues
+    metadata: UrlRouteMatchMetadata
+
+    @property
+    def endpoint(self) -> UrlRouteEndpoint:
+        return self.route.endpoint
+
+    @property
+    def path(self) -> str:
+        return self.metadata.path
+
+    @property
+    def matched_path(self) -> str:
+        return self.metadata.matched_path
 
 
 ########################################
@@ -12988,6 +13265,168 @@ class SimpleHttpHandler_(Abstract):  # noqa
 
 
 ########################################
+# ../../../omlish/http/urlrouting/utils.py
+
+
+##
+
+
+class UrlRoutingUtils(NamespaceClass):
+    @staticmethod
+    def quote_static_part(s: str) -> str:
+        return urllib.parse.quote(s, safe="!$&'()*+,/:;=@")
+
+    @staticmethod
+    def unquote_part(s: str) -> str:
+        return urllib.parse.unquote(s, errors='strict')
+
+    #
+
+    @staticmethod
+    def query_encode(values: ta.Mapping[str, ta.Any]) -> str:
+        items = []
+        for k, v in values.items():
+            if v is None:
+                continue
+            if isinstance(v, (list, tuple)):
+                for e in v:
+                    if e is not None:
+                        items.append((k, e))
+            else:
+                items.append((k, v))
+        return urllib.parse.urlencode(items, doseq=True, safe="!$'()*,/:;?@")
+
+    #
+
+    @staticmethod
+    def normalize_method_set(
+            methods: ta.Optional[ta.AbstractSet[str]],
+            *,
+            add_head: bool,
+    ) -> ta.Optional[ta.AbstractSet[str]]:
+        if methods is None:
+            return None
+
+        ret = {m.upper() for m in methods}
+        if add_head and 'GET' in ret:
+            ret.add('HEAD')
+        return frozenset(ret)
+
+    @staticmethod
+    def methods_overlap(
+            a: ta.Optional[ta.AbstractSet[str]],
+            b: ta.Optional[ta.AbstractSet[str]],
+    ) -> bool:
+        if a is None or b is None:
+            return True
+        return bool(a & b)
+
+    #
+
+    @staticmethod
+    def split_raw_path(path: str) -> ta.List[str]:
+        if not path.startswith('/'):
+            raise ValueError(path)
+
+        if path == '/':
+            return []
+
+        return path[1:].split('/')
+
+    #
+
+    @staticmethod
+    def parse_arg_value(s: str) -> ta.Any:
+        if s == 'True':
+            return True
+        if s == 'False':
+            return False
+        if s == 'None':
+            return None
+        if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
+            return bytes(s[1:-1], 'utf-8').decode('unicode_escape')
+        try:
+            return int(s)
+        except ValueError:
+            pass
+        try:
+            return float(s)
+        except ValueError:
+            pass
+        return s
+
+    URL_ROUTE_ARG_PAT: ta.ClassVar[re.Pattern] = re.compile(
+        r"""
+        \s*
+        (?:(?P<name>[a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*)?
+        (?P<value>
+            True|False|None|
+            -?\d+\.\d+|
+            -?\d+|
+            "(?:[^"\\]|\\.)*"|
+            '(?:[^'\\]|\\.)*'|
+            [^,\s]+)
+        \s*(?:,|\Z)
+        """,
+        re.VERBOSE,
+    )
+
+    @classmethod
+    def parse_converter_args(cls, s: str) -> ta.Tuple[
+        ta.Tuple[ta.Any, ...],
+        ta.Dict[str, ta.Any],
+    ]:
+        if not s:
+            return (), {}
+
+        args: ta.List[ta.Any] = []
+        kwargs: ta.Dict[str, ta.Any] = {}
+        pos = 0
+        while pos < len(s):
+            m = cls.URL_ROUTE_ARG_PAT.match(s, pos)
+            if m is None:
+                raise UrlRouteArgParseError(s[pos:])
+            value = cls.parse_arg_value(m.group('value'))
+            name = m.group('name')
+            if name is None:
+                if kwargs:
+                    raise UrlRouteArgParseError(s[pos:])
+                args.append(value)
+            else:
+                kwargs[name] = value
+            pos = m.end()
+        return tuple(args), kwargs
+
+    URL_ROUTE_VARIABLE_PAT: ta.ClassVar[re.Pattern] = re.compile(
+        r"""
+        \{
+            (?P<name>[a-zA-Z_][a-zA-Z0-9_]*)
+            (?:
+                :
+                (?P<converter>[a-zA-Z_][a-zA-Z0-9_]*)
+                (?:
+                    \(
+                        (?P<args>[^{}]*)
+                    \)
+                )?
+            )?
+        \}
+        """,
+        re.VERBOSE,
+    )
+
+    #
+
+    @staticmethod
+    def alternate_slash_path(path: str) -> ta.Optional[str]:
+        if path == '/':
+            return None
+        if path.endswith('/'):
+            return path[:-1] or '/'
+        return path + '/'
+
+
+########################################
 # ../../../omlish/io/fdio/kqueue.py
 
 
@@ -16368,6 +16807,581 @@ class SimpleHttpHandlerResponses(NamespaceClass):
 
 
 ########################################
+# ../../../omlish/http/urlrouting/router.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class _UrlRouteVariable:
+    name: str
+    converter: UrlRouteConverter
+
+
+@dc.dataclass(frozen=True)
+class _UrlRouteSegmentPattern:
+    regex: ta.Pattern[str]
+    variables: ta.Sequence[_UrlRouteVariable]
+    weight: int
+    is_greedy: bool = False
+
+
+@dc.dataclass(frozen=True)
+class _CompiledUrlRoute:
+    route: UrlRoute
+    parts: ta.Sequence[_UrlRoutePart]
+    build_parts: ta.Sequence[_UrlRouteBuildPart]
+    methods: ta.Optional[ta.AbstractSet[str]]
+    order: int
+    match_key: ta.Tuple[ta.Any, ...]
+    build_names: ta.AbstractSet[str]
+
+
+@install_dataclass_filtered_repr('omit_falsey')
+@dc.dataclass()
+class _UrlRouteNode:
+    static: ta.MutableMapping[str, '_UrlRouteNode'] = dc.field(default_factory=dict)
+    dynamic: ta.List[ta.Tuple[_UrlRouteSegmentPattern, '_UrlRouteNode']] = dc.field(default_factory=list)
+    greedy: ta.List[ta.Tuple[_UrlRouteSegmentPattern, _CompiledUrlRoute]] = dc.field(default_factory=list)
+    routes: ta.List[_CompiledUrlRoute] = dc.field(default_factory=list)
+
+
+##
+
+
+class UrlRouter:
+    @dc.dataclass(frozen=True)
+    class Config:
+        slash_style: UrlRouteSlashStyle = UrlRouteSlashStyle.REDIRECT
+        merge_slashes: bool = False
+        add_head: bool = True
+
+    def __init__(
+            self,
+            routes: ta.Iterable[UrlRoute] = (),
+            *,
+            config: Config = Config(),
+            converters: ta.Optional[ta.Mapping[str, ta.Callable[..., UrlRouteConverter]]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+        self._converters = dict(URL_ROUTE_DEFAULT_CONVERTERS)
+        if converters is not None:
+            self._converters.update(converters)
+
+        self._root = _UrlRouteNode()
+        self._routes: ta.List[_CompiledUrlRoute] = []
+        self._routes_by_name_or_endpoint: ta.Dict[ta.Any, ta.List[_CompiledUrlRoute]] = {}
+        self._routes_by_match_key: ta.Dict[ta.Tuple[ta.Any, ...], ta.List[_CompiledUrlRoute]] = {}
+        self._route_build_names_by_name: ta.Dict[str, ta.AbstractSet[str]] = {}
+
+        for route in routes:
+            self.add(route)
+
+    @property
+    def config(self) -> Config:
+        return self._config
+
+    #
+
+    def _check_conflicts(self, compiled: _CompiledUrlRoute) -> None:
+        for other in self._routes_by_match_key.get(compiled.match_key, ()):
+            if UrlRoutingUtils.methods_overlap(other.methods, compiled.methods):
+                raise UrlRouteConflictError(compiled.route.pattern)
+
+        if compiled.route.name is not None:
+            existing_build_names = self._route_build_names_by_name.get(compiled.route.name)
+            if existing_build_names is not None and existing_build_names != compiled.build_names:
+                raise UrlRouteConflictError(compiled.route.name)
+
+    class _CompiledSegment(ta.NamedTuple):
+        pattern: _UrlRoutePart
+        segment_build_parts: ta.Sequence[_UrlRouteBuildPart]
+        segment_match_key: ta.Any
+        segment_variable_names: ta.AbstractSet[str]
+
+    def _compile_segment(
+            self,
+            segment: str,
+    ) -> _CompiledSegment:
+        pos = 0
+        regex_parts = []
+        variables = []
+        build_parts: ta.List[_UrlRouteBuildPart] = []
+        match_key_parts: ta.List[ta.Any] = []
+        variable_names: ta.Set[str] = set()
+        weight = 0
+        is_greedy = False
+
+        for m in UrlRoutingUtils.URL_ROUTE_VARIABLE_PAT.finditer(segment):
+            if m.start() > pos:
+                static = segment[pos:m.start()]
+                regex_parts.append(re.escape(static))
+                build_parts.append(static)
+                match_key_parts.append(('s', static))
+                weight -= len(static)
+
+            name = m.group('name')
+            if name in variable_names:
+                raise ValueError('duplicate route variable: ' + name)
+            variable_names.add(name)
+
+            converter_name = m.group('converter') or 'str'
+            converter_factory = self._converters.get(converter_name)
+            if converter_factory is None:
+                raise KeyError(converter_name)
+
+            c_args, c_kwargs = UrlRoutingUtils.parse_converter_args(m.group('args') or '')
+            converter = converter_factory(*c_args, **c_kwargs)
+            variable = _UrlRouteVariable(name, converter)
+            variables.append(variable)
+            build_parts.append(variable)
+            regex_parts.append('(' + converter.regex + ')')
+            match_key_parts.append(('v', converter.regex, converter.is_greedy))
+            weight += converter.weight
+            is_greedy = is_greedy or converter.is_greedy
+            pos = m.end()
+
+        if pos < len(segment):
+            static = segment[pos:]
+            regex_parts.append(re.escape(static))
+            build_parts.append(static)
+            match_key_parts.append(('s', static))
+            weight -= len(static)
+
+        if not variables:
+            return self._CompiledSegment(
+                segment,
+                (segment,),
+                ('s', segment),
+                frozenset(),
+            )
+
+        if is_greedy and len(variables) != 1:
+            raise ValueError(segment)
+
+        regex = re.compile(r'\A' + ''.join(regex_parts) + r'\Z')
+        return self._CompiledSegment(
+            _UrlRouteSegmentPattern(
+                regex,
+                tuple(variables),
+                weight,
+                is_greedy=is_greedy,
+            ),
+            tuple(build_parts),
+            ('d', regex.pattern, tuple(match_key_parts)),
+            frozenset(variable_names),
+        )
+
+    def _compile_route(self, route: UrlRoute, order: int) -> _CompiledUrlRoute:
+        if not route.pattern.startswith('/'):
+            raise ValueError(route.pattern)
+
+        parts: ta.List[_UrlRoutePart] = []
+        build_parts: ta.List[_UrlRouteBuildPart] = []
+        match_key = []
+        variable_names: ta.Set[str] = set()
+
+        for raw_segment in UrlRoutingUtils.split_raw_path(route.pattern):
+            segment = UrlRoutingUtils.unquote_part(raw_segment)
+            compiled = self._compile_segment(segment)
+            duplicate_names = variable_names & compiled.segment_variable_names
+            if duplicate_names:
+                raise ValueError('duplicate route variables: ' + ', '.join(sorted(duplicate_names)))
+            variable_names.update(compiled.segment_variable_names)
+            parts.append(compiled.pattern)
+            build_parts.extend(compiled.segment_build_parts)
+            build_parts.append('/')
+            match_key.append(compiled.segment_match_key)
+
+        if build_parts:
+            build_parts.pop()
+
+        build_names = frozenset(p.name for p in build_parts if isinstance(p, _UrlRouteVariable))
+        return _CompiledUrlRoute(
+            route=route,
+            parts=tuple(parts),
+            build_parts=tuple(build_parts),
+            methods=UrlRoutingUtils.normalize_method_set(route.methods, add_head=self._config.add_head),
+            order=order,
+            match_key=tuple(match_key),
+            build_names=build_names,
+        )
+
+    def _insert(self, compiled: _CompiledUrlRoute) -> None:
+        node = self._root
+        for idx, part in enumerate(compiled.parts):
+            if isinstance(part, str):
+                node = node.static.setdefault(part, _UrlRouteNode())
+                continue
+
+            if part.is_greedy:
+                if idx != len(compiled.parts) - 1:
+                    raise ValueError(compiled.route.pattern)
+                node.greedy.append((part, compiled))
+                node.greedy.sort(key=lambda e: (e[0].weight, e[1].order))
+                return
+
+            for existing, child in node.dynamic:
+                if existing == part:
+                    node = child
+                    break
+            else:
+                child = _UrlRouteNode()
+                node.dynamic.append((part, child))
+                node.dynamic.sort(key=lambda e: e[0].weight)
+                node = child
+
+        node.routes.append(compiled)
+        node.routes.sort(key=lambda r: r.order)
+
+    def add(self, route: UrlRoute) -> None:
+        compiled = self._compile_route(route, len(self._routes))
+        self._check_conflicts(compiled)
+
+        self._routes.append(compiled)
+        self._routes_by_match_key.setdefault(compiled.match_key, []).append(compiled)
+        if route.name is not None:
+            self._routes_by_name_or_endpoint.setdefault(route.name, []).append(compiled)
+            self._route_build_names_by_name[route.name] = compiled.build_names
+        if route.endpoint is not None:
+            self._routes_by_name_or_endpoint.setdefault(route.endpoint, []).append(compiled)
+        self._insert(compiled)
+
+    #
+
+    def _try_build(
+            self,
+            compiled: _CompiledUrlRoute,
+            values: ta.Mapping[str, ta.Any],
+            *,
+            append_unknown: bool,
+    ) -> ta.Optional[str]:
+        parts = ['/']
+        consumed_names = set()
+        for part in compiled.build_parts:
+            if isinstance(part, str):
+                parts.append(UrlRoutingUtils.quote_static_part(part))
+            else:
+                consumed_names.add(part.name)
+                if part.name not in values:
+                    if compiled.route.defaults is not None and part.name in compiled.route.defaults:
+                        value = compiled.route.defaults[part.name]
+                    else:
+                        return None
+                else:
+                    value = values[part.name]
+                try:
+                    parts.append(part.converter.to_url(value))
+                except ValueError:
+                    return None
+
+        unknown_values = {
+            k: v
+            for k, v in values.items()
+            if k not in consumed_names
+            and (
+                compiled.route.defaults is None or
+                k not in compiled.route.defaults or
+                compiled.route.defaults[k] != v
+            )
+        }
+        if unknown_values:
+            if not append_unknown:
+                raise UrlRouteBuildError('unknown values: ' + ', '.join(sorted(unknown_values)))
+            query = UrlRoutingUtils.query_encode(unknown_values)
+            if query:
+                parts.extend(['?', query])
+
+        return ''.join(parts)
+
+    def build(
+            self,
+            name_or_endpoint: ta.Any,
+            values: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+            *,
+            append_unknown: bool = False,
+    ) -> str:
+        values = values or {}
+        build_error: ta.Optional[Exception] = None
+        for compiled in self._routes_by_name_or_endpoint.get(name_or_endpoint, ()):
+            try:
+                built = self._try_build(compiled, values, append_unknown=append_unknown)
+            except UrlRouteBuildError as e:
+                build_error = e
+            else:
+                if built is not None:
+                    return built
+
+        if build_error is not None:
+            raise build_error
+        raise UrlRouteBuildError(name_or_endpoint)
+
+    #
+
+    class _ANY_METHOD:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    @dc.dataclass(frozen=True)
+    class _MatchContext:
+        method: ta.Union[str, ta.Type['UrlRouter._ANY_METHOD'], None]
+        metadata: UrlRouteMatchMetadata
+
+        on_match: ta.Callable[[UrlRouteMatch], bool]  # returns True to continue matching (go-style)
+        on_leaf: ta.Optional[ta.Callable[[_CompiledUrlRoute], None]]
+
+    def _match_pattern(
+            self,
+            ctx: _MatchContext,
+            pattern: _UrlRouteSegmentPattern,
+            raw_part: str,
+            values: ta.Mapping[str, ta.Any],
+    ) -> ta.Optional[ta.Dict[str, ta.Any]]:
+        decoded_part = UrlRoutingUtils.unquote_part(raw_part)
+        candidate_parts = [raw_part]
+        if decoded_part != raw_part:
+            candidate_parts.append(decoded_part)
+
+        for candidate_part in candidate_parts:
+            m = pattern.regex.match(candidate_part)
+            if m is None:
+                continue
+
+            next_values = dict(values)
+            for variable, s in zip(pattern.variables, m.groups()):
+                try:
+                    next_values[variable.name] = variable.converter.to_python(UrlRoutingUtils.unquote_part(s))
+                except ValueError:
+                    break
+            else:
+                return next_values
+
+        return None
+
+    def _match_compiled_route(
+            self,
+            ctx: _MatchContext,
+            compiled: _CompiledUrlRoute,
+            values: ta.Mapping[str, ta.Any],
+    ) -> bool:  # returns True to continue matching
+        if ctx.on_leaf is not None:
+            ctx.on_leaf(compiled)
+
+        if (
+                ctx.method is not None and
+                compiled.methods is not None and
+                ctx.method not in compiled.methods
+        ):
+            return True
+
+        route_values = {
+            **(compiled.route.defaults or {}),
+            **values,
+        }
+        return ctx.on_match(UrlRouteMatch(
+            compiled.route,
+            route_values,
+            ctx.metadata,
+        ))
+
+    def _match_routes(
+            self,
+            ctx: _MatchContext,
+            routes: ta.Iterable[_CompiledUrlRoute],
+            values: ta.Mapping[str, ta.Any],
+    ) -> bool:  # returns True to continue matching
+        for compiled in routes:  # noqa
+            if not self._match_compiled_route(
+                    ctx,
+                    compiled,
+                    values,
+            ):
+                return False
+        return True
+
+    def _match_node(
+            self,
+            ctx: _MatchContext,
+            node: _UrlRouteNode,
+            parts: ta.Sequence[str],
+            idx: int,
+            values: ta.Dict[str, ta.Any],
+    ) -> bool:  # returns True to continue matching
+        if idx == len(parts):
+            if not self._match_routes(
+                    ctx,
+                    node.routes,
+                    values,
+            ):
+                return False
+
+        if idx < len(parts):
+            raw_part = parts[idx]
+            part = UrlRoutingUtils.unquote_part(raw_part)
+
+            static_child = node.static.get(part)
+            if static_child is not None:
+                if not self._match_node(
+                        ctx,
+                        static_child,
+                        parts,
+                        idx + 1,
+                        values,
+                ):
+                    return False
+
+            for pattern, child in node.dynamic:
+                next_values = self._match_pattern(
+                    ctx,
+                    pattern,
+                    raw_part,
+                    values,
+                )
+                if next_values is None:
+                    continue
+                if not self._match_node(
+                        ctx,
+                        child,
+                        parts,
+                        idx + 1,
+                        next_values,
+                ):
+                    return False
+
+            for pattern, compiled in node.greedy:
+                remaining = '/'.join(parts[idx:])
+                next_values = self._match_pattern(
+                    ctx,
+                    pattern,
+                    remaining,
+                    values,
+                )
+                if next_values is None:
+                    continue
+                if not self._match_compiled_route(
+                        ctx,
+                        compiled,
+                        next_values,
+                ):
+                    return False
+
+        return True
+
+    def _match(
+            self,
+            path: str,
+            *,
+            original_path: str,
+            query: str,
+            method: ta.Union[str, ta.Type[_ANY_METHOD], None],
+    ) -> UrlRouteMatch:
+        method = method.upper() if isinstance(method, str) else method
+        parts = UrlRoutingUtils.split_raw_path(path)
+        metadata = UrlRouteMatchMetadata(
+            path=original_path,
+            matched_path=path,
+            query=query,
+        )
+
+        matched: ta.Optional[UrlRouteMatch] = None
+
+        def on_match(on_matched: UrlRouteMatch) -> bool:
+            nonlocal matched
+            matched = on_matched
+            return False  # do not continue
+
+        allowed_methods: ta.Set[str] = set()
+
+        def on_leaf(compiled: _CompiledUrlRoute) -> None:
+            if compiled.methods:
+                allowed_methods.update(compiled.methods)
+
+        if not self._match_node(
+            self._MatchContext(
+                method,
+                metadata,
+                on_match,
+                on_leaf,
+            ),
+            self._root,
+            parts,
+            0,
+            {},
+        ):
+            return check.not_none(matched)
+        check.none(matched)
+
+        if allowed_methods:
+            raise UrlRouteMethodNotAllowedError(
+                path,
+                method if isinstance(method, str) else '',
+                frozenset(allowed_methods),
+            )
+
+        raise UrlRouteNotFoundError(path)
+
+    _MERGE_SLASHES_PAT: ta.ClassVar[re.Pattern] = re.compile('/{2,}')
+
+    def match(
+            self,
+            path: str,
+            *,
+            method: ta.Union[str, ta.Type[_ANY_METHOD], None] = None,
+    ) -> UrlRouteMatch:
+        split = urllib.parse.urlsplit(path)
+        path = split.path or '/'
+        original_path = path
+
+        if self._config.merge_slashes:
+            path = self._MERGE_SLASHES_PAT.sub('/', path)
+
+        try:
+            return self._match(
+                path,
+                original_path=original_path,
+                query=split.query,
+                method=method,
+            )
+        except UrlRouteNotFoundError:
+            pass
+
+        alt_path = UrlRoutingUtils.alternate_slash_path(path)
+        if alt_path is not None:
+            try:
+                match = self._match(
+                    alt_path,
+                    original_path=original_path,
+                    query=split.query,
+                    method=method,
+                )
+            except UrlRouteNotFoundError:
+                pass
+            else:
+                slash_style = match.route.slash_style or self._config.slash_style
+                if slash_style is UrlRouteSlashStyle.REDIRECT:
+                    raise UrlRouteRedirectRequiredError(original_path, alt_path)
+                if slash_style is UrlRouteSlashStyle.IGNORE:
+                    return match
+
+        raise UrlRouteNotFoundError(original_path)
+
+    #
+
+    def allowed_methods(self, path: str) -> ta.AbstractSet[str]:
+        try:
+            self.match(path, method=self._ANY_METHOD)
+        except UrlRouteMethodNotAllowedError as e:
+            return e.allowed_methods
+        except UrlRouteMatchError:
+            return frozenset()
+        else:
+            return frozenset()
+
+
+########################################
 # ../../../omlish/io/pipelines/handlers/decoders.py
 
 
@@ -17884,6 +18898,52 @@ class IoPipelineHttpResponseChunker(IoPipelineHttpResponseObjects, IoPipelineHtt
 
 class IoPipelineHttpResponseCompressor(IoPipelineHttpResponseObjects, IoPipelineHttpObjectCompressor):
     pass
+
+
+########################################
+# ../../../omlish/http/simple/urlrouting.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class UrlRoutingSimpleHttpHandler(SimpleHttpHandler_):
+    router: UrlRouter
+
+    not_found_handler: ta.Optional[SimpleHttpHandler] = None
+    method_not_allowed_handler: ta.Optional[SimpleHttpHandler] = None
+
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        try:
+            match = self.router.match(req.path, method=req.method)
+
+        except UrlRouteRedirectRequiredError as e:
+            return SimpleHttpHandlerResponse(
+                status=HttpStatus.PERMANENT_REDIRECT,
+                headers={'Location': e.redirect_path},
+            )
+
+        except UrlRouteMethodNotAllowedError as e:
+            if self.method_not_allowed_handler is not None:
+                return self.method_not_allowed_handler(req)
+
+            return SimpleHttpHandlerResponse(
+                status=HttpStatus.METHOD_NOT_ALLOWED,
+                headers={'Allow': ', '.join(sorted(e.allowed_methods))},
+            )
+
+        except UrlRouteMatchError:
+            if self.not_found_handler is not None:
+                return self.not_found_handler(req)
+
+            return SimpleHttpHandlerResponse(status=HttpStatus.NOT_FOUND)
+
+        endpoint = match.endpoint
+        if not callable(endpoint):
+            raise TypeError(endpoint)
+
+        return endpoint(req.with_context(match))
 
 
 ########################################
@@ -22510,7 +23570,14 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
 
         self._groups = groups
 
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        self._router = UrlRouter([
+            UrlRoute('/', self._handle_index),
+            UrlRoute('/_internal', self._handle_index),
+        ])
+
+        self._router_handler = UrlRoutingSimpleHttpHandler(self._router)
+
+    def _handle_index(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         dct = {
             'groups': {
                 g.name: {
@@ -22531,6 +23598,9 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             dct,
             style='pretty',
         )
+
+    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
+        return self._router_handler(req)
 
 
 ########################################

@@ -115,7 +115,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
-            dict(path='../../omlish/lite/typemaps.py', sha1='5af83f347d24631f27e7320dd2d18f6e6dd6ba5c'),
+            dict(path='../../omlish/lite/typemaps.py', sha1='a3852d79b8342eb9de7939eaaa8d8246ec1cf9b4'),
             dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../omlish/logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
@@ -2983,6 +2983,11 @@ class TypeMap(ta.Generic[T]):
             dct[ty] = item
         self._lst = lst
         self._dct = dct
+
+    def __repr__(self) -> str:
+        if not self._lst:
+            return f'{type(self).__name__}()'
+        return f'{type(self).__name__}<{", ".join(type(i).__name__ for i in self._lst)}>'
 
     @property
     def items(self) -> ta.Sequence[T]:

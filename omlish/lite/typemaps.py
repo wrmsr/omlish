@@ -27,6 +27,11 @@ class TypeMap(ta.Generic[T]):
         self._lst = lst
         self._dct = dct
 
+    def __repr__(self) -> str:
+        if not self._lst:
+            return f'{type(self).__name__}()'
+        return f'{type(self).__name__}<{", ".join(type(i).__name__ for i in self._lst)}>'
+
     @property
     def items(self) -> ta.Sequence[T]:
         return self._lst

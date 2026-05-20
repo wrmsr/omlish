@@ -22,6 +22,10 @@ from .types import UrlRouteSlashStyle
 from .utils import UrlRoutingUtils
 
 
+_UrlRoutePart = ta.Union[str, '_UrlRouteSegmentPattern']  # ta.TypeAlias
+_UrlRouteBuildPart = ta.Union[str, '_UrlRouteVariable']  # ta.TypeAlias
+
+
 ##
 
 
@@ -37,10 +41,6 @@ class _UrlRouteSegmentPattern:
     variables: ta.Sequence[_UrlRouteVariable]
     weight: int
     is_greedy: bool = False
-
-
-_UrlRoutePart = ta.Union[str, _UrlRouteSegmentPattern]  # ta.TypeAlias
-_UrlRouteBuildPart = ta.Union[str, _UrlRouteVariable]  # ta.TypeAlias
 
 
 @dc.dataclass(frozen=True)
