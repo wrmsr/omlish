@@ -1,5 +1,6 @@
 """
 TODO:
+ - ! integrate / replace with omlish.http.urlrouter obviously
  - include route in process_app?
   - or, deduplicate handlers and only process apps once?
 """
