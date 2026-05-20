@@ -295,6 +295,9 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .logging2 import (  # noqa
+        LogGroup,
+        LogVerbosity,
+
         translate_log_level,
     )
 

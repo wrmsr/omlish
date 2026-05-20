@@ -10,12 +10,47 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .logging2 import LogGroup
+from .logging2 import LogVerbosity
 from .logging2 import translate_log_level
 
 
 with lang.auto_proxy_import(globals()):
     from textual_dev import client as tx_dev_client
     from textual_dev import redirect_output as tx_dev_redirect_output
+
+
+##
+
+
+class DevtoolsLogProtocol(ta.Protocol):
+    @property
+    def objects_or_string(self) -> tuple[ta.Any, ...] | str:
+        ...
+
+    @property
+    def caller(self) -> inspect.Traceback:
+        ...
+
+
+class DevtoolsClientProtocol(ta.Protocol):
+    def connect(self) -> ta.Awaitable[None]:
+        ...
+
+    def disconnect(self) -> ta.Awaitable[None]:
+        ...
+
+    @property
+    def is_connected(self) -> bool:
+        ...
+
+    def log(
+            self,
+            log: DevtoolsLogProtocol,
+            group: LogGroup = LogGroup.UNDEFINED,
+            verbosity: LogVerbosity = LogVerbosity.NORMAL,
+    ) -> None:
+        ...
 
 
 ##
