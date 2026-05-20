@@ -122,7 +122,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/infos.py', sha1='cf59ccf5a06ddf83cc1f93bf2336d2b9c56e22c7'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='../../omlish/os/atomics.py', sha1='a10430ddbf315df6faa53d3d8320ed28f9ff384f'),
+            dict(path='../../omlish/os/atomics.py', sha1='e4f617b52492e124717b4737da997b0f1c61f132'),
             dict(path='../../omlish/text/indent.py', sha1='cc23647bdcd8d26c8afe9e36a0aefb32da58cbb8'),
             dict(path='../../omdev/interp/types.py', sha1='c53a8d45d29f2010244760adeb8dcd02a4a240e1'),
             dict(path='commands/base.py', sha1='d76c14d18d685af4a572f01a552ddef1bbfc9378'),
@@ -8906,6 +8906,7 @@ class AtomicPathSwap(Abstract):
     def abort(self) -> None:
         if self._state == 'aborted':
             return
+        self._check_state('open')
         self._abort()
         self._state = 'aborted'
 
@@ -8921,7 +8922,7 @@ class AtomicPathSwap(Abstract):
                 self._state == 'open'
         ):
             self.commit()
-        else:
+        elif self._state == 'open':
             self.abort()
 
 
@@ -8974,7 +8975,15 @@ class OsReplaceAtomicPathSwap(AtomicPathSwap):
         os.replace(self._tmp_path, self._dst_path)
 
     def _abort(self) -> None:
-        shutil.rmtree(self._tmp_path, ignore_errors=True)
+        if self._kind == 'dir':
+            shutil.rmtree(self._tmp_path, ignore_errors=True)
+        elif self._kind == 'file':
+            try:
+                os.unlink(self._tmp_path)
+            except FileNotFoundError:
+                pass
+        else:
+            raise TypeError(self._kind)
 
 
 class TempDirAtomicPathSwapping(AtomicPathSwapping):
@@ -9005,7 +9014,7 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
         if (
                 not skip_root_dir_check and
                 self._root_dir is not None and
-                not dst_path.startswith(check.non_empty_str(self._root_dir))
+                os.path.commonpath([dst_path, check.non_empty_str(self._root_dir)]) != self._root_dir
         ):
             raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
 

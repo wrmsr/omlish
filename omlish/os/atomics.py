@@ -87,6 +87,7 @@ class AtomicPathSwap(Abstract):
     def abort(self) -> None:
         if self._state == 'aborted':
             return
+        self._check_state('open')
         self._abort()
         self._state = 'aborted'
 
@@ -102,7 +103,7 @@ class AtomicPathSwap(Abstract):
                 self._state == 'open'
         ):
             self.commit()
-        else:
+        elif self._state == 'open':
             self.abort()
 
 
@@ -155,7 +156,15 @@ class OsReplaceAtomicPathSwap(AtomicPathSwap):
         os.replace(self._tmp_path, self._dst_path)
 
     def _abort(self) -> None:
-        shutil.rmtree(self._tmp_path, ignore_errors=True)
+        if self._kind == 'dir':
+            shutil.rmtree(self._tmp_path, ignore_errors=True)
+        elif self._kind == 'file':
+            try:
+                os.unlink(self._tmp_path)
+            except FileNotFoundError:
+                pass
+        else:
+            raise TypeError(self._kind)
 
 
 class TempDirAtomicPathSwapping(AtomicPathSwapping):
@@ -186,7 +195,7 @@ class TempDirAtomicPathSwapping(AtomicPathSwapping):
         if (
                 not skip_root_dir_check and
                 self._root_dir is not None and
-                not dst_path.startswith(check.non_empty_str(self._root_dir))
+                os.path.commonpath([dst_path, check.non_empty_str(self._root_dir)]) != self._root_dir
         ):
             raise RuntimeError(f'Atomic path swap dst must be in root dir: {dst_path}, {self._root_dir}')
 
