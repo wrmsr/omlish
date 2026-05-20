@@ -37,6 +37,7 @@ all = [
     'asttokens ~= 3.0',
     'executing ~= 2.2',
     'psutil ~= 7.2',
+    'memray ~= 1.19',
     'orjson ~= 3.11',
     'ujson ~= 5.12',
     'pyyaml ~= 6.0',
@@ -78,6 +79,7 @@ diag = [
     'asttokens ~= 3.0',
     'executing ~= 2.2',
     'psutil ~= 7.2',
+    'memray ~= 1.19',
 ]
 formats = [
     'orjson ~= 3.11',

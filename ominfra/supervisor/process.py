@@ -15,5 +15,5 @@ class ProcessStateError(RuntimeError):
 ##
 
 
-class PidHistory(ta.Dict[Pid, Process]):
+class PidMap(ta.Dict[Pid, Process]):
     pass

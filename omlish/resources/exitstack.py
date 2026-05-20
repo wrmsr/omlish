@@ -66,7 +66,7 @@ class BaseKeyedExitStack:
     class _Callback(ta.NamedTuple):
         fn: ta.Callable
         is_async: bool
-        key: ta.Any
+        key: ta.Any | None
 
     def _push_callback(
             self,
@@ -76,9 +76,9 @@ class BaseKeyedExitStack:
             key: ta.Any | None = None,
     ) -> None:
         cb = self._Callback(
-            callback,
-            is_async,
-            key,
+            fn=callback,
+            is_async=is_async,
+            key=key,
         )
 
         with self.__lock:

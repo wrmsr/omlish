@@ -59,6 +59,8 @@ class Project(ProjectBase):
             'executing ~= 2.2',
 
             'psutil ~= 7.2',
+
+            'memray ~= 1.19',
         ],
 
         'formats': [

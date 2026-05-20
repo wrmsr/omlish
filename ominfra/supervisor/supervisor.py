@@ -17,7 +17,7 @@ from .events import SupervisorStoppingEvent
 from .group import ProcessGroup
 from .group import ProcessGroupManager
 from .io import IoManager
-from .process import PidHistory
+from .process import PidMap
 from .setup import SupervisorSetup
 from .signals import SignalHandler
 from .states import SupervisorState
@@ -76,7 +76,7 @@ class Supervisor:
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
             process_group_factory: ProcessGroupFactory,
-            pid_history: PidHistory,
+            pid_map: PidMap,
             setup: SupervisorSetup,
             states: SupervisorStateManager,
             io: IoManager,
@@ -89,7 +89,7 @@ class Supervisor:
         self._signal_handler = signal_handler
         self._event_callbacks = event_callbacks
         self._process_group_factory = process_group_factory
-        self._pid_history = pid_history
+        self._pid_map = pid_map
         self._setup = setup
         self._states = states
         self._io = io
@@ -253,13 +253,13 @@ class Supervisor:
             return
 
         log.info(f'Waited pid: {wp}')  # noqa
-        process = self._pid_history.get(wp.pid, None)
+        process = self._pid_map.get(wp.pid, None)
         if process is None:
             _, msg = decode_wait_status(wp.sts)
             log.info('reaped unknown pid %s (%s)', wp.pid, msg)
         else:
             process.finish(wp.sts)
-            del self._pid_history[wp.pid]
+            del self._pid_map[wp.pid]
 
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely

@@ -20,7 +20,7 @@ from .errors import ProcessError
 from .events import ProcessCommunicationEvent
 from .events import ProcessCommunicationStderrEvent
 from .events import ProcessCommunicationStdoutEvent
-from .process import PidHistory
+from .process import PidMap
 from .spawning import ProcessSpawnError
 from .spawning import ProcessSpawning
 from .spawning import SpawnedProcess
@@ -73,7 +73,7 @@ class ProcessSpawningImpl(ProcessSpawning):
             process: Process,
             *,
             server_config: ServerConfig,
-            pid_history: PidHistory,
+            pid_map: PidMap,
 
             output_dispatcher_factory: ProcessOutputDispatcherFactory,
             input_dispatcher_factory: ProcessInputDispatcherFactory,
@@ -85,7 +85,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         self._process = process
 
         self._server_config = server_config
-        self._pid_history = pid_history
+        self._pid_map = pid_map
 
         self._output_dispatcher_factory = output_dispatcher_factory
         self._input_dispatcher_factory = input_dispatcher_factory
@@ -239,7 +239,7 @@ class ProcessSpawningImpl(ProcessSpawning):
     def _spawn_as_parent(self, sp: SpawnedProcess) -> None:
         close_child_pipes(sp.pipes)
 
-        self._pid_history[sp.pid] = self.process
+        self._pid_map[sp.pid] = self.process
 
     #
 

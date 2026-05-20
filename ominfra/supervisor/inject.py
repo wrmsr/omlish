@@ -22,7 +22,7 @@ from .http import HttpServer
 from .http import SupervisorSimpleHttpHandler
 from .io import HasDispatchersList
 from .io import IoManager
-from .process import PidHistory
+from .process import PidMap
 from .processimpl import ProcessImpl
 from .processimpl import ProcessSpawningFactory
 from .setup import DaemonizeListener
@@ -95,7 +95,7 @@ def bind_server(
         inj.bind(SupervisorStateManagerImpl, singleton=True),
         inj.bind(SupervisorStateManager, to_key=SupervisorStateManagerImpl),
 
-        inj.bind(PidHistory()),
+        inj.bind(PidMap()),
 
         inj.bind_factory(ProcessGroupImpl, ProcessGroupFactory),
         inj.bind_factory(ProcessImpl, ProcessFactory),

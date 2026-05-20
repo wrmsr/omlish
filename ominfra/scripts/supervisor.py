@@ -174,7 +174,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupimpl.py', sha1='3c436973c383d1cf3d891c609e944f453c439636'),
-            dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
+            dict(path='process.py', sha1='d4463a1a71d13c8fcd1996867f4bfcfaeb98b2de'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
             dict(path='../../omlish/http/pipelines/compression/compressors.py', sha1='fda7c252cec85e4c895b905d1e4dd4063e29db1a'),  # noqa
             dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='f263936305f7be5085c6a5f2782ae734bf221813'),  # noqa
@@ -193,7 +193,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='spawningimpl.py', sha1='c07035418dce23af624ef399e26e4776d56be258'),
+            dict(path='spawningimpl.py', sha1='26309091ce97bcbf2864abad5d67ea93b6303ba9'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='680f486f4a17e02746dbb8f05794fc39a978315d'),
             dict(path='../../omlish/io/pipelines/bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -204,11 +204,11 @@ def __omlish_amalg__():  # noqa
             dict(path='signals.py', sha1='d7f3d0be3bea39c48555f54487f38553a8a98578'),
             dict(path='../../omlish/http/pipelines/decoders.py', sha1='953c4d8f9121097c3aa8b59ad10eb4a61481824a'),
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
-            dict(path='supervisor.py', sha1='3869c915af8357d1129a59c7e625e7bed9e49e24'),
+            dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
             dict(path='http.py', sha1='768e03f13e916ab7cace0d0f92e929d78d422d32'),
-            dict(path='inject.py', sha1='b98d687c79b64e17cfeac3e47b316fb38f6afaa0'),
+            dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
     )
@@ -15080,7 +15080,7 @@ class ProcessStateError(RuntimeError):
 ##
 
 
-class PidHistory(ta.Dict[Pid, Process]):
+class PidMap(ta.Dict[Pid, Process]):
     pass
 
 
@@ -18623,7 +18623,7 @@ class ProcessSpawningImpl(ProcessSpawning):
             process: Process,
             *,
             server_config: ServerConfig,
-            pid_history: PidHistory,
+            pid_map: PidMap,
 
             output_dispatcher_factory: ProcessOutputDispatcherFactory,
             input_dispatcher_factory: ProcessInputDispatcherFactory,
@@ -18635,7 +18635,7 @@ class ProcessSpawningImpl(ProcessSpawning):
         self._process = process
 
         self._server_config = server_config
-        self._pid_history = pid_history
+        self._pid_map = pid_map
 
         self._output_dispatcher_factory = output_dispatcher_factory
         self._input_dispatcher_factory = input_dispatcher_factory
@@ -18789,7 +18789,7 @@ class ProcessSpawningImpl(ProcessSpawning):
     def _spawn_as_parent(self, sp: SpawnedProcess) -> None:
         close_child_pipes(sp.pipes)
 
-        self._pid_history[sp.pid] = self.process
+        self._pid_map[sp.pid] = self.process
 
     #
 
@@ -21882,7 +21882,7 @@ class Supervisor:
             signal_handler: SignalHandler,
             event_callbacks: EventCallbacks,
             process_group_factory: ProcessGroupFactory,
-            pid_history: PidHistory,
+            pid_map: PidMap,
             setup: SupervisorSetup,
             states: SupervisorStateManager,
             io: IoManager,
@@ -21895,7 +21895,7 @@ class Supervisor:
         self._signal_handler = signal_handler
         self._event_callbacks = event_callbacks
         self._process_group_factory = process_group_factory
-        self._pid_history = pid_history
+        self._pid_map = pid_map
         self._setup = setup
         self._states = states
         self._io = io
@@ -22059,13 +22059,13 @@ class Supervisor:
             return
 
         log.info(f'Waited pid: {wp}')  # noqa
-        process = self._pid_history.get(wp.pid, None)
+        process = self._pid_map.get(wp.pid, None)
         if process is None:
             _, msg = decode_wait_status(wp.sts)
             log.info('reaped unknown pid %s (%s)', wp.pid, msg)
         else:
             process.finish(wp.sts)
-            del self._pid_history[wp.pid]
+            del self._pid_map[wp.pid]
 
         if not once:
             # keep reaping until no more kids to reap, but don't recurse infinitely
@@ -22423,7 +22423,7 @@ def bind_server(
         inj.bind(SupervisorStateManagerImpl, singleton=True),
         inj.bind(SupervisorStateManager, to_key=SupervisorStateManagerImpl),
 
-        inj.bind(PidHistory()),
+        inj.bind(PidMap()),
 
         inj.bind_factory(ProcessGroupImpl, ProcessGroupFactory),
         inj.bind_factory(ProcessImpl, ProcessFactory),

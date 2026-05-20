@@ -1892,6 +1892,7 @@ class ResourceType(_enum.Enum):
     SECONDARY_SUBNET = 'secondary-subnet'
     CAPACITY_MANAGER_DATA_EXPORT = 'capacity-manager-data-export'
     VPN_CONCENTRATOR = 'vpn-concentrator'
+    IPAM_POOL_ALLOCATION = 'ipam-pool-allocation'
 
 
 class RootDeviceType(_enum.Enum):

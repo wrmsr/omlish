@@ -31,7 +31,7 @@ dependencies = [
 all = [
     'ominfra == 0.0.20',
     'ommlds == 0.0.20',
-    'black ~= 26.3',
+    'black ~= 26.5',
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
     'docutils ~= 0.22',
@@ -53,7 +53,7 @@ ommlds = [
     'ommlds == 0.0.20',
 ]
 black = [
-    'black ~= 26.3',
+    'black ~= 26.5',
 ]
 c = [
     'pycparser ~= 3.0',
