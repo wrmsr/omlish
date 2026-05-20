@@ -23,7 +23,7 @@ from ....sockets.handlers.threading import ThreadingSocketHandler
 from ...pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
 from ...pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from ...pipelines.servers.responses import IoPipelineHttpResponseEncoder
-from ..handlers import SimpleHttpHandler
+from ..types import SimpleHttpHandler
 from .handlers import SimpleHttpHandlerServerIoPipelineHandler
 
 

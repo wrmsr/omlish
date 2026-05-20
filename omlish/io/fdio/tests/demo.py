@@ -1,10 +1,10 @@
 import socket
 import typing as ta
 
-from ....http.simple.handlers import SimpleHttpHandlerRequest
-from ....http.simple.handlers import SimpleHttpHandlerResponse
-from ....http.simple.handlers import SimpleHttpHandlerResponseStreamedData
 from ....http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
+from ....http.simple.types import SimpleHttpHandlerRequest
+from ....http.simple.types import SimpleHttpHandlerResponse
+from ....http.simple.types import SimpleHttpHandlerResponseStreamedData
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
 from ...pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
@@ -47,7 +47,7 @@ def say_hi_handler(req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         resp_data = data
 
     return SimpleHttpHandlerResponse(
-        200,
+        status=200,
         data=resp_data,
     )
 

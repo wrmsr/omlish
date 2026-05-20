@@ -6,7 +6,7 @@ import http
 import textwrap
 import typing as ta
 
-from .handlers import SimpleHttpHandlerResponse
+from .types import SimpleHttpHandlerResponse
 
 
 ##

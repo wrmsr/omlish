@@ -8,10 +8,10 @@ socat TCP-LISTEN:8000,fork UNIX-CONNECT:foo.sock
 import typing as ta
 
 from .... import check
-from ..handlers import SimpleHttpHandlerRequest
-from ..handlers import SimpleHttpHandlerResponse
-from ..handlers import SimpleHttpHandlerResponseStreamedData
 from ..pipelines.sync import make_simple_http_server
+from ..types import SimpleHttpHandlerRequest
+from ..types import SimpleHttpHandlerResponse
+from ..types import SimpleHttpHandlerResponseStreamedData
 
 
 ##
@@ -45,7 +45,7 @@ def say_hi_handler(req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         resp_data = data
 
     return SimpleHttpHandlerResponse(
-        200,
+        status=200,
         data=resp_data,
     )
 

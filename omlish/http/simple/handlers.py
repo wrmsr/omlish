@@ -1,69 +1,16 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import dataclasses as dc
 import http.server
 import logging
 import typing as ta
 
-from ...lite.abstract import Abstract
 from ...lite.bytes import Bytes
 from ...logs.protocols import LoggerLike
-from ...sockets.addresses import SocketAddress
-from ..parsing import ParsedHttpHeaders
-
-
-SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
-SimpleHttpHandlerResponseData = ta.Union[Bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SimpleHttpHandlerRequest:
-    client_address: SocketAddress
-    method: str
-    path: str
-    headers: ParsedHttpHeaders
-    data: ta.Optional[Bytes]
-
-
-@dc.dataclass(frozen=True)
-class SimpleHttpHandlerResponse:
-    status: ta.Union[http.HTTPStatus, int]
-
-    headers: ta.Optional[ta.Mapping[str, str]] = None
-    data: ta.Optional[SimpleHttpHandlerResponseData] = None
-    close_connection: ta.Optional[bool] = None
-
-    def close(self) -> None:
-        if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
-            d.close()
-
-
-@dc.dataclass(frozen=True)
-class SimpleHttpHandlerResponseStreamedData:
-    iter: ta.Iterable[Bytes]
-    length: ta.Optional[int] = None
-
-    def close(self) -> None:
-        if hasattr(d := self.iter, 'close'):
-            d.close()  # noqa
-
-
-class SimpleHttpHandlerError(Exception):
-    pass
-
-
-class UnsupportedMethodSimpleHttpHandlerError(Exception):
-    pass
-
-
-class SimpleHttpHandler_(Abstract):  # noqa
-    @abc.abstractmethod
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        raise NotImplementedError
+from .types import SimpleHttpHandler
+from .types import SimpleHttpHandler_
+from .types import SimpleHttpHandlerRequest
+from .types import SimpleHttpHandlerResponse
 
 
 ##

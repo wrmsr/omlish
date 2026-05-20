@@ -23,9 +23,9 @@ from ...pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
 from ...pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from ...pipelines.servers.responses import IoPipelineHttpResponseEncoder
 from ...pipelines.servers.responses import IoPipelineHttpResponseHead
-from ..handlers import SimpleHttpHandler
-from ..handlers import SimpleHttpHandlerRequest
-from ..handlers import SimpleHttpHandlerResponseStreamedData
+from ..types import SimpleHttpHandler
+from ..types import SimpleHttpHandlerRequest
+from ..types import SimpleHttpHandlerResponseStreamedData
 
 
 ##

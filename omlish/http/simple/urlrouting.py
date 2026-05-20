@@ -8,10 +8,10 @@ from ..urlrouting.router import UrlRouter
 from ..urlrouting.types import UrlRouteMatchError
 from ..urlrouting.types import UrlRouteMethodNotAllowedError
 from ..urlrouting.types import UrlRouteRedirectRequiredError
-from .handlers import SimpleHttpHandler
-from .handlers import SimpleHttpHandler_
-from .handlers import SimpleHttpHandlerRequest
-from .handlers import SimpleHttpHandlerResponse
+from .types import SimpleHttpHandler
+from .types import SimpleHttpHandler_
+from .types import SimpleHttpHandlerRequest
+from .types import SimpleHttpHandlerResponse
 
 
 ##
@@ -30,7 +30,7 @@ class UrlRoutingSimpleHttpHandler(SimpleHttpHandler_):
 
         except UrlRouteRedirectRequiredError as e:
             return SimpleHttpHandlerResponse(
-                http.HTTPStatus.PERMANENT_REDIRECT,
+                status=http.HTTPStatus.PERMANENT_REDIRECT,
                 headers={'Location': e.redirect_path},
             )
 
@@ -39,7 +39,7 @@ class UrlRoutingSimpleHttpHandler(SimpleHttpHandler_):
                 return self.method_not_allowed_handler(req)
 
             return SimpleHttpHandlerResponse(
-                http.HTTPStatus.METHOD_NOT_ALLOWED,
+                status=http.HTTPStatus.METHOD_NOT_ALLOWED,
                 headers={'Allow': ', '.join(sorted(e.allowed_methods))},
             )
 
@@ -47,11 +47,10 @@ class UrlRoutingSimpleHttpHandler(SimpleHttpHandler_):
             if self.not_found_handler is not None:
                 return self.not_found_handler(req)
 
-            return SimpleHttpHandlerResponse(http.HTTPStatus.NOT_FOUND)
+            return SimpleHttpHandlerResponse(status=http.HTTPStatus.NOT_FOUND)
 
         endpoint = match.endpoint
         if not callable(endpoint):
             raise TypeError(endpoint)
 
-        # FIXME: where does match go lol
-        return endpoint(req)
+        return endpoint(req.with_context(match))

@@ -4,11 +4,11 @@ import json
 import socket
 import typing as ta
 
-from omlish.http.simple.handlers import SimpleHttpHandler
-from omlish.http.simple.handlers import SimpleHttpHandler_
-from omlish.http.simple.handlers import SimpleHttpHandlerRequest
-from omlish.http.simple.handlers import SimpleHttpHandlerResponse
 from omlish.http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
+from omlish.http.simple.types import SimpleHttpHandler
+from omlish.http.simple.types import SimpleHttpHandler_
+from omlish.http.simple.types import SimpleHttpHandlerRequest
+from omlish.http.simple.types import SimpleHttpHandlerResponse
 from omlish.io.fdio.handlers import ServerSocketFdioHandler
 from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 from omlish.lite.check import check
@@ -117,7 +117,7 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
         }
 
         return SimpleHttpHandlerResponse(
-            200,
+            status=200,
             data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
             headers={
                 'Content-Type': 'application/json',

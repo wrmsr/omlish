@@ -13,10 +13,10 @@ from omlish import check
 from omlish import lang
 from omlish.http.simple.handlers import ExceptionLoggingSimpleHttpHandler
 from omlish.http.simple.handlers import LoggingSimpleHttpHandler
-from omlish.http.simple.handlers import SimpleHttpHandler_
-from omlish.http.simple.handlers import SimpleHttpHandlerRequest
-from omlish.http.simple.handlers import SimpleHttpHandlerResponse
 from omlish.http.simple.pipelines.sync import make_simple_http_server
+from omlish.http.simple.types import SimpleHttpHandler_
+from omlish.http.simple.types import SimpleHttpHandlerRequest
+from omlish.http.simple.types import SimpleHttpHandlerResponse
 from omlish.logs import all as logs
 from omlish.sockets.bind import CanSocketBinderConfig
 from omlish.sockets.bind import SocketBinder

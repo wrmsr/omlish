@@ -197,5 +197,6 @@ with _lang.auto_proxy_init(globals()):
 
     from ..lite.typemaps import (  # noqa
         TypeMap,
+
         DynamicTypeMap,
     )

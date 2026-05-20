@@ -46,7 +46,7 @@ def say_hi_handler(req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         resp_data = data
 
     return SimpleHttpHandlerResponse(
-        200,
+        status=200,
         data=resp_data,
     )
 

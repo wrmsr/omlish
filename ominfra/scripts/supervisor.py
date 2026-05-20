@@ -127,6 +127,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
+            dict(path='../../omlish/lite/typemaps.py', sha1='5af83f347d24631f27e7320dd2d18f6e6dd6ba5c'),
             dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../omlish/logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
@@ -161,7 +162,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
-            dict(path='../../omlish/http/simple/handlers.py', sha1='b67fdcc3ee80c27020407885a148aadf9a3b3636'),
+            dict(path='../../omlish/http/simple/types.py', sha1='b5286f2a123c19d320b4dfceb3115156659c47bf'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='b0ab07fba560a877ef394e843ac49dfb10a243b0'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
@@ -206,8 +207,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/pipelines/drivers/fdio.py', sha1='011627eeadf49ed12bd1706c64e55c92b31c0070'),
             dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
-            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='a6064bcd6dedec75072edc3a10f0f082c83dbb37'),  # noqa
-            dict(path='http.py', sha1='768e03f13e916ab7cace0d0f92e929d78d422d32'),
+            dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
+            dict(path='http.py', sha1='592baaca789e1f5ecdb430eebbc31bb2cde349ef'),
             dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
@@ -246,6 +247,9 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
+# ../../omlish/lite/typemaps.py
+V = ta.TypeVar('V')
+
 # ../../omlish/lite/typing.py
 A0 = ta.TypeVar('A0')
 A1 = ta.TypeVar('A1')
@@ -263,7 +267,6 @@ ProcessOutputChannel = ta.Literal['stdout', 'stderr']  # ta.TypeAlias
 
 # utils/collections.py
 K = ta.TypeVar('K')
-V = ta.TypeVar('V')
 
 # ../../omlish/http/headers.py
 StrOrBytes = ta.Union[str, bytes]  # ta.TypeAlias
@@ -289,7 +292,7 @@ LoggingContextInfo = ta.Any  # ta.TypeAlias
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 ObjConfigDataT = ta.TypeVar('ObjConfigDataT', bound='ObjConfigData')
 
-# ../../omlish/http/simple/handlers.py
+# ../../omlish/http/simple/types.py
 SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
 SimpleHttpHandlerResponseData = ta.Union[Bytes, 'SimpleHttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
@@ -3833,6 +3836,147 @@ def format_num_bytes(num_bytes: int) -> str:
                 return f'{value:.2f}{suffix}'
 
     return f'{num_bytes / 1024 ** (len(FORMAT_NUM_BYTES_SUFFIXES) - 1):.2f}{FORMAT_NUM_BYTES_SUFFIXES[-1]}'
+
+
+########################################
+# ../../../omlish/lite/typemaps.py
+
+
+##
+
+
+@ta.final
+class TypeMap(ta.Generic[T]):
+    def __init__(self, items: ta.Iterable[T] = (), *, override: bool = False) -> None:
+        super().__init__()
+
+        lst: ta.List[T] = []
+        dct: ta.Dict[type, ta.Any] = {}
+        for item in items:
+            if (ty := type(item)) in dct:
+                if not override:
+                    raise ValueError(ty)
+            lst.append(item)
+            dct[ty] = item
+        self._lst = lst
+        self._dct = dct
+
+    @property
+    def items(self) -> ta.Sequence[T]:
+        return self._lst
+
+    #
+
+    _EMPTY: 'TypeMap'
+
+    @classmethod
+    def of(cls, items: ta.Iterable[T]) -> 'TypeMap[T]':
+        if isinstance(items, TypeMap):
+            return items
+        if not items:
+            return cls._EMPTY
+        return cls(items)
+
+    @classmethod
+    def empty(cls) -> 'TypeMap[T]':
+        return cls._EMPTY
+
+    #
+
+    def update(
+            self,
+            items: ta.Iterable[T],
+            *,
+            override: bool = False,
+    ) -> 'TypeMap[T]':
+        if not items:
+            return self
+
+        return TypeMap(
+            (
+                *self._lst,
+                *items,
+            ),
+            override=override,
+        )
+
+    def __len__(self) -> int:
+        return len(self._lst)
+
+    def __iter__(self) -> ta.Iterator[T]:
+        return iter(self._lst)
+
+    def __contains__(self, ty: ta.Type[T]) -> bool:
+        return ty in self._lst
+
+    def get(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        return self._dct.get(ty)
+
+    def __getitem__(self, ty: ta.Type[T]) -> T:
+        return self._dct[ty]
+
+    _any_dct: ta.Dict[ta.Union[type, ta.Tuple[type, ...]], ta.Tuple[T, ...]]
+
+    def get_any(self, cls: ta.Union[type, ta.Tuple[type, ...]]) -> ta.Sequence[T]:
+        if not self._lst:
+            return ()
+
+        try:
+            any_dct = self._any_dct
+        except AttributeError:
+            any_dct = {}
+            self._any_dct = any_dct
+
+        try:
+            return any_dct[cls]
+        except KeyError:
+            pass
+
+        ret = tuple(tv for tv in self if isinstance(tv, cls))
+        any_dct[cls] = ret
+        return ret
+
+
+TypeMap._EMPTY = TypeMap()  # noqa
+
+
+##
+
+
+@ta.final
+class DynamicTypeMap(ta.Generic[V]):
+    def __init__(self, items: ta.Iterable[V] = (), *, weak: bool = False) -> None:
+        super().__init__()
+
+        self._items = list(items)
+        self._weak = bool(weak)
+
+        self._cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary() if weak else {}
+
+    @property
+    def items(self) -> ta.Sequence[V]:
+        return self._items
+
+    @property
+    def is_weak(self) -> bool:
+        return self._weak
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def __iter__(self) -> ta.Iterator[V]:
+        return iter(self._items)
+
+    def __getitem__(self, ty: ta.Type[T]) -> ta.Sequence[T]:
+        try:
+            return self._cache[ty]
+        except KeyError:
+            ret = []
+            for item in self._items:
+                if isinstance(item, ty):
+                    ret.append(item)
+            self._cache[ty] = ret
+            return ret
 
 
 ########################################
@@ -12717,28 +12861,41 @@ class IoPipelineHttpMessageObjects(Abstract):
 
 
 ########################################
-# ../../../omlish/http/simple/handlers.py
+# ../../../omlish/http/simple/types.py
 
 
 ##
 
 
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerRequest:
     client_address: SocketAddress
+
     method: str
     path: str
     headers: ParsedHttpHeaders
-    data: ta.Optional[Bytes]
+    data: ta.Optional[Bytes] = None
+
+    context: TypeMap = TypeMap()
+
+    def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerRequest':
+        return dc.replace(self, context=self.context.update(items, override=override))
 
 
+@install_dataclass_filtered_repr('omit_none')
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerResponse:
     status: ta.Union[http.HTTPStatus, int]
-
     headers: ta.Optional[ta.Mapping[str, str]] = None
     data: ta.Optional[SimpleHttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
+
+    context: TypeMap = TypeMap()
+
+    def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerResponse':
+        return dc.replace(self, context=self.context.update(items, override=override))
 
     def close(self) -> None:
         if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
@@ -12767,86 +12924,6 @@ class SimpleHttpHandler_(Abstract):  # noqa
     @abc.abstractmethod
     def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
         raise NotImplementedError
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class LoggingSimpleHttpHandler(SimpleHttpHandler_):
-    handler: SimpleHttpHandler
-    log: LoggerLike
-    level: int = logging.DEBUG
-
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        self.log.log(self.level, '%r', req)
-        resp = self.handler(req)
-        self.log.log(self.level, '%r', resp)
-        return resp
-
-
-@dc.dataclass(frozen=True)
-class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
-    handler: SimpleHttpHandler
-    log: LoggerLike
-    message: ta.Union[str, ta.Callable[[SimpleHttpHandlerRequest, BaseException], str]] = 'Error in http handler'
-
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        try:
-            return self.handler(req)
-        except Exception as e:  # noqa
-            if callable(msg := self.message):
-                msg = msg(req, e)
-            self.log.exception(msg)
-            raise
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
-    data: Bytes
-
-    status: ta.Union[http.HTTPStatus, int] = 200
-    content_type: ta.Optional[str] = 'application/octet-stream'
-    headers: ta.Optional[ta.Mapping[str, str]] = None
-    close_connection: bool = True
-
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        return SimpleHttpHandlerResponse(
-            status=self.status,
-            headers={
-                **({'Content-Type': self.content_type} if self.content_type else {}),
-                'Content-Length': str(len(self.data)),
-                **(self.headers or {}),
-            },
-            data=self.data,
-            close_connection=self.close_connection,
-        )
-
-
-@dc.dataclass(frozen=True)
-class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
-    data: str
-
-    status: ta.Union[http.HTTPStatus, int] = 200
-    content_type: ta.Optional[str] = 'text/plain; charset=utf-8'
-    headers: ta.Optional[ta.Mapping[str, str]] = None
-    close_connection: bool = True
-
-    def __call__(self, req: SimpleHttpHandlerRequest) -> SimpleHttpHandlerResponse:
-        data = self.data.encode('utf-8')
-        return SimpleHttpHandlerResponse(
-            status=self.status,
-            headers={
-                **({'Content-Type': self.content_type} if self.content_type else {}),
-                'Content-Length': str(len(data)),
-                **(self.headers or {}),
-            },
-            data=data,
-            close_connection=self.close_connection,
-        )
 
 
 ########################################
@@ -22361,7 +22438,7 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
         }
 
         return SimpleHttpHandlerResponse(
-            200,
+            status=200,
             data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
             headers={
                 'Content-Type': 'application/json',

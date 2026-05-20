@@ -138,8 +138,8 @@ class SimpleMitmHandler:
                             )
 
                 h_resp = SimpleHttpHandlerResponse(
-                    t_resp.status,
-                    resp_hdrs,
+                    status=t_resp.status,
+                    headers=resp_hdrs,
                     data=SimpleHttpHandlerResponseStreamedData(stream_data()),
                     # close_connection=True,
                 )

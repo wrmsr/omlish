@@ -7,10 +7,10 @@ TODO:
 """
 import typing as ta
 
-from omlish.http.simple.handlers import SimpleHttpHandler_
-from omlish.http.simple.handlers import SimpleHttpHandlerRequest
-from omlish.http.simple.handlers import SimpleHttpHandlerResponse
-from omlish.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
+from omlish.http.simple.types import SimpleHttpHandler_
+from omlish.http.simple.types import SimpleHttpHandlerRequest
+from omlish.http.simple.types import SimpleHttpHandlerResponse
+from omlish.http.simple.types import SimpleHttpHandlerResponseStreamedData
 
 from .handlers import DataServerRequest
 from .server import DataServer
