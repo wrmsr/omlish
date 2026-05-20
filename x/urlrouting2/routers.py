@@ -339,74 +339,6 @@ class UrlRouter:
         on_match: ta.Callable[[UrlRouteMatch], bool]  # returns True to continue matching (go-style)
         on_leaf: ta.Optional[ta.Callable[[_CompiledUrlRoute], None]]
 
-    def _match_node(
-            self,
-            ctx: _MatchContext,
-            node: _UrlRouteNode,
-            parts: ta.Sequence[str],
-            idx: int,
-            values: ta.Dict[str, ta.Any],
-    ) -> bool:  # returns True to continue matching
-        if idx == len(parts):
-            if not self._match_routes(
-                ctx,
-                node.routes,
-                values,
-            ):
-                return False
-
-        if idx < len(parts):
-            raw_part = parts[idx]
-            part = UrlRoutingUtils.unquote_part(raw_part)
-
-            static_child = node.static.get(part)
-            if static_child is not None:
-                if not self._match_node(
-                    ctx,
-                    static_child,
-                    parts,
-                    idx + 1,
-                    values,
-                ):
-                    return False
-
-            for pattern, child in node.dynamic:
-                next_values = self._match_pattern(
-                    ctx,
-                    pattern,
-                    raw_part,
-                    values,
-                )
-                if next_values is None:
-                    continue
-                if not self._match_node(
-                    ctx,
-                    child,
-                    parts,
-                    idx + 1,
-                    next_values,
-                ):
-                    return False
-
-            for pattern, compiled in node.greedy:
-                remaining = '/'.join(parts[idx:])
-                next_values = self._match_pattern(
-                    ctx,
-                    pattern,
-                    remaining,
-                    values,
-                )
-                if next_values is None:
-                    continue
-                if not self._match_compiled_route(
-                    ctx,
-                    compiled,
-                    next_values,
-                ):
-                    return False
-
-        return True
-
     def _match_pattern(
             self,
             ctx: _MatchContext,
@@ -435,21 +367,6 @@ class UrlRouter:
 
         return None
 
-    def _match_routes(
-            self,
-            ctx: _MatchContext,
-            routes: ta.Iterable[_CompiledUrlRoute],
-            values: ta.Mapping[str, ta.Any],
-    ) -> bool:  # returns True to continue matching
-        for compiled in routes:  # noqa
-            if not self._match_compiled_route(
-                ctx,
-                compiled,
-                values,
-            ):
-                return False
-        return True
-
     def _match_compiled_route(
             self,
             ctx: _MatchContext,
@@ -475,6 +392,89 @@ class UrlRouter:
             route_values,
             ctx.metadata,
         ))
+
+    def _match_routes(
+            self,
+            ctx: _MatchContext,
+            routes: ta.Iterable[_CompiledUrlRoute],
+            values: ta.Mapping[str, ta.Any],
+    ) -> bool:  # returns True to continue matching
+        for compiled in routes:  # noqa
+            if not self._match_compiled_route(
+                    ctx,
+                    compiled,
+                    values,
+            ):
+                return False
+        return True
+
+    def _match_node(
+            self,
+            ctx: _MatchContext,
+            node: _UrlRouteNode,
+            parts: ta.Sequence[str],
+            idx: int,
+            values: ta.Dict[str, ta.Any],
+    ) -> bool:  # returns True to continue matching
+        if idx == len(parts):
+            if not self._match_routes(
+                    ctx,
+                    node.routes,
+                    values,
+            ):
+                return False
+
+        if idx < len(parts):
+            raw_part = parts[idx]
+            part = UrlRoutingUtils.unquote_part(raw_part)
+
+            static_child = node.static.get(part)
+            if static_child is not None:
+                if not self._match_node(
+                        ctx,
+                        static_child,
+                        parts,
+                        idx + 1,
+                        values,
+                ):
+                    return False
+
+            for pattern, child in node.dynamic:
+                next_values = self._match_pattern(
+                    ctx,
+                    pattern,
+                    raw_part,
+                    values,
+                )
+                if next_values is None:
+                    continue
+                if not self._match_node(
+                        ctx,
+                        child,
+                        parts,
+                        idx + 1,
+                        next_values,
+                ):
+                    return False
+
+            for pattern, compiled in node.greedy:
+                remaining = '/'.join(parts[idx:])
+                next_values = self._match_pattern(
+                    ctx,
+                    pattern,
+                    remaining,
+                    values,
+                )
+                if next_values is None:
+                    continue
+                if not self._match_compiled_route(
+                        ctx,
+                        compiled,
+                        next_values,
+                ):
+                    return False
+
+        return True
 
     def _match(
             self,
