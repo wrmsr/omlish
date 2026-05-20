@@ -217,7 +217,7 @@ def __omlish_amalg__():  # noqa
             dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
-            dict(path='http.py', sha1='a7a60b88953252f6dc08ddf4cd445881cad5c80c'),
+            dict(path='http.py', sha1='0cc627117f93ed92cc5d1fff495044728b48434d'),
             dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
@@ -23861,14 +23861,19 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
         self._groups = groups
         self._pid_map = pid_map
 
-        self._router = UrlRouter([
-            UrlRoute('/group/{name}', self._handle_group, methods={'GET'}),
+        self._router = UrlRouter(
+            [
+                UrlRoute('/group/{name}', self._handle_group, methods={'GET'}),
 
-            UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
-            UrlRoute('/process/{namespec_or_pid}/stop', self._handle_process_stop, methods={'POST'}),
+                UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
+                UrlRoute('/process/{namespec_or_pid}/stop', self._handle_process_stop, methods={'POST'}),
 
-            UrlRoute('/', self._handle_index, methods={'GET'}),
-        ])
+                UrlRoute('/', self._handle_index, methods={'GET'}),
+            ],
+            config=UrlRouter.Config(
+                slash_style=UrlRouteSlashStyle.IGNORE,
+            ),
+        )
 
         handler: SimpleHttpHandler = UrlRoutingSimpleHttpHandler(self._router)
 

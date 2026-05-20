@@ -16,6 +16,7 @@ from omlish.http.simple.urlrouting import UrlRoutingSimpleHttpHandler
 from omlish.http.urlrouting.router import UrlRouter
 from omlish.http.urlrouting.types import UrlRoute
 from omlish.http.urlrouting.types import UrlRouteMatch
+from omlish.http.urlrouting.types import UrlRouteSlashStyle
 from omlish.io.fdio.handlers import ServerSocketFdioHandler
 from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 from omlish.lite.check import check
@@ -115,14 +116,19 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
         self._groups = groups
         self._pid_map = pid_map
 
-        self._router = UrlRouter([
-            UrlRoute('/group/{name}', self._handle_group, methods={'GET'}),
+        self._router = UrlRouter(
+            [
+                UrlRoute('/group/{name}', self._handle_group, methods={'GET'}),
 
-            UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
-            UrlRoute('/process/{namespec_or_pid}/stop', self._handle_process_stop, methods={'POST'}),
+                UrlRoute('/process/{namespec_or_pid}', self._handle_process, methods={'GET'}),
+                UrlRoute('/process/{namespec_or_pid}/stop', self._handle_process_stop, methods={'POST'}),
 
-            UrlRoute('/', self._handle_index, methods={'GET'}),
-        ])
+                UrlRoute('/', self._handle_index, methods={'GET'}),
+            ],
+            config=UrlRouter.Config(
+                slash_style=UrlRouteSlashStyle.IGNORE,
+            ),
+        )
 
         handler: SimpleHttpHandler = UrlRoutingSimpleHttpHandler(self._router)
 
