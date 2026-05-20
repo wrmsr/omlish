@@ -331,9 +331,13 @@ class UrlRouter:
 
     #
 
+    class _ANY_METHOD:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
     @dc.dataclass(frozen=True)
     class _MatchContext:
-        method: ta.Optional[str]
+        method: ta.Union[str, ta.Type['UrlRouter._ANY_METHOD'], None]
         metadata: UrlRouteMatchMetadata
 
         on_match: ta.Callable[[UrlRouteMatch], bool]  # returns True to continue matching (go-style)
@@ -482,9 +486,9 @@ class UrlRouter:
             *,
             original_path: str,
             query: str,
-            method: ta.Optional[str],
+            method: ta.Union[str, ta.Type[_ANY_METHOD], None],
     ) -> UrlRouteMatch:
-        method = method.upper() if method is not None else None
+        method = method.upper() if isinstance(method, str) else method
         parts = UrlRoutingUtils.split_raw_path(path)
         metadata = UrlRouteMatchMetadata(
             path=original_path,
@@ -521,7 +525,12 @@ class UrlRouter:
         check.none(matched)
 
         if allowed_methods:
-            raise UrlRouteMethodNotAllowedError(path, method or '', frozenset(allowed_methods))
+            raise UrlRouteMethodNotAllowedError(
+                path,
+                method if isinstance(method, str) else '',
+                frozenset(allowed_methods),
+            )
+
         raise UrlRouteNotFoundError(path)
 
     _MERGE_SLASHES_PAT: ta.ClassVar[re.Pattern] = re.compile('/{2,}')
@@ -530,7 +539,7 @@ class UrlRouter:
             self,
             path: str,
             *,
-            method: ta.Optional[str] = None,
+            method: ta.Union[str, ta.Type[_ANY_METHOD], None] = None,
     ) -> UrlRouteMatch:
         split = urllib.parse.urlsplit(path)
         path = split.path or '/'
@@ -571,16 +580,9 @@ class UrlRouter:
 
     #
 
-    # Used by allowed_methods() to reuse the normal matcher as a path-only probe. The sentinel is intentionally not a
-    # real HTTP method: if the path matches method-constrained routes, each route rejects this method and contributes
-    # its allowed methods to UrlRouteMethodNotAllowedError. allowed_methods() catches that error and returns the
-    # accumulated method set.
-    # FIXME: delete this crap
-    _URL_ROUTE_SENTINEL_METHOD: ta.ClassVar[str] = '__OMLISH_URL_ROUTER_METHOD_SENTINEL__'
-
     def allowed_methods(self, path: str) -> ta.AbstractSet[str]:
         try:
-            self.match(path, method=self._URL_ROUTE_SENTINEL_METHOD)
+            self.match(path, method=self._ANY_METHOD)
         except UrlRouteMethodNotAllowedError as e:
             return e.allowed_methods
         except UrlRouteMatchError:
