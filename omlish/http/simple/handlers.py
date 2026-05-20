@@ -1,12 +1,12 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import dataclasses as dc
-import http.server
 import logging
 import typing as ta
 
 from ...lite.bytes import Bytes
 from ...logs.protocols import LoggerLike
+from ..statuses import HttpStatus
 from .types import SimpleHttpHandler
 from .types import SimpleHttpHandler_
 from .types import SimpleHttpHandlerRequest
@@ -52,7 +52,7 @@ class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
 class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: Bytes
 
-    status: ta.Union[http.HTTPStatus, int] = 200
+    status: ta.Union[HttpStatus, int] = 200
     content_type: ta.Optional[str] = 'application/octet-stream'
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
@@ -74,7 +74,7 @@ class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
 class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: str
 
-    status: ta.Union[http.HTTPStatus, int] = 200
+    status: ta.Union[HttpStatus, int] = 200
     content_type: ta.Optional[str] = 'text/plain; charset=utf-8'
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True

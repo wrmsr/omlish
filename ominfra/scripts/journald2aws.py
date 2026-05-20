@@ -68,7 +68,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
-            dict(path='../../../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../../../omlish/lite/json.py', sha1='3c3feab40d760d51e1643f55acf9f30d840c4476'),
             dict(path='../../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -150,6 +150,9 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 # ../../../../omlish/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
+
+# ../../../../omlish/lite/json.py
+JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
 # ../../../../omlish/logs/levels.py
 LogLevel = int  # ta.TypeAlias
@@ -2612,6 +2615,47 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.IO[str],
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
 
 
 ########################################

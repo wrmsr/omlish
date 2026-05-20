@@ -1,8 +1,8 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 import dataclasses as dc
-import http.client
 import typing as ta
 
+from omlish.http.statuses import HttpStatus
 from omlish.lite.check import check
 
 from .handlers import DataServerHandler
@@ -85,6 +85,6 @@ class DataServer:
         try:
             rt = self._routes_by_path[req.path]
         except KeyError:
-            return DataServerResponse(http.HTTPStatus.NOT_FOUND)
+            return DataServerResponse(HttpStatus.NOT_FOUND)
 
         return rt.handler.handle(req)

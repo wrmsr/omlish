@@ -7,6 +7,7 @@ import os
 import typing as ta
 import urllib.request
 
+from omlish.http.statuses import HttpStatus
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
@@ -118,10 +119,10 @@ class BytesDataServerTargetHandler(DataServerTargetHandler[BytesDataServerTarget
 
     def handle(self, req: DataServerRequest) -> DataServerResponse:
         if req.method not in ('GET', 'HEAD'):
-            return DataServerResponse(http.HTTPStatus.METHOD_NOT_ALLOWED)
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
 
         return DataServerResponse(
-            http.HTTPStatus.OK,
+            HttpStatus.OK,
             headers=self._make_headers(),
             body=io.BytesIO(self._target.data) if self._target.data is not None and req.method == 'GET' else None,
         )
@@ -137,10 +138,10 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
             try:
                 st = os.stat(check.not_none(self._target.file_path))
             except FileNotFoundError:
-                return DataServerResponse(http.HTTPStatus.NOT_FOUND)
+                return DataServerResponse(HttpStatus.NOT_FOUND)
 
             return DataServerResponse(
-                http.HTTPStatus.OK,
+                HttpStatus.OK,
                 headers={
                     'Content-Length': str(st.st_size),
                     **self._make_headers(),
@@ -151,13 +152,13 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
             try:
                 f = open(check.not_none(self._target.file_path), 'rb')  # noqa
             except FileNotFoundError:
-                return DataServerResponse(http.HTTPStatus.NOT_FOUND)
+                return DataServerResponse(HttpStatus.NOT_FOUND)
 
             try:
                 sz = os.fstat(f.fileno())
 
                 return DataServerResponse(
-                    http.HTTPStatus.OK,
+                    HttpStatus.OK,
                     headers={
                         'Content-Length': str(sz.st_size),
                         **self._make_headers(),
@@ -170,7 +171,7 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
                 raise
 
         else:
-            return DataServerResponse(http.HTTPStatus.METHOD_NOT_ALLOWED)
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
 
 
 #
@@ -180,7 +181,7 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
 class UrlDataServerTargetHandler(DataServerTargetHandler[UrlDataServerTarget]):
     def handle(self, req: DataServerRequest) -> DataServerResponse:
         if req.method not in check.not_none(self._target.methods):
-            return DataServerResponse(http.HTTPStatus.METHOD_NOT_ALLOWED)
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
 
         resp: http.client.HTTPResponse = urllib.request.urlopen(urllib.request.Request(  # noqa
             method=req.method,

@@ -1,7 +1,6 @@
 # ruff: noqa: UP007 UP045
 # @omlish-lite
 import dataclasses as dc
-import http
 import typing as ta
 
 from ...lite.abstract import Abstract
@@ -10,6 +9,7 @@ from ...lite.check import check
 from ...lite.dataclasses import install_dataclass_kw_only_init
 from ..headers import HttpHeaders
 from ..parsing import ParsedHttpMessage
+from ..statuses import HttpStatus
 from ..versions import HttpVersion
 from ..versions import HttpVersions
 from .objects import FullIoPipelineHttpMessage
@@ -50,7 +50,7 @@ class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpRespon
     @staticmethod
     def get_reason_phrase(code: int) -> str:
         try:
-            return http.HTTPStatus(code).phrase
+            return HttpStatus(code).phrase
         except ValueError:
             return ''
 

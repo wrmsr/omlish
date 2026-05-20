@@ -2,10 +2,10 @@
 # @omlish-lite
 import dataclasses as dc
 import html
-import http
 import textwrap
 import typing as ta
 
+from ..statuses import HttpStatus
 from .types import SimpleHttpHandlerResponse
 
 
@@ -14,7 +14,7 @@ from .types import SimpleHttpHandlerResponse
 
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerError:
-    status: ta.Union[http.HTTPStatus, int]
+    status: ta.Union[HttpStatus, int]
     message: str
     explain: str
 
@@ -24,13 +24,13 @@ class SimpleHttpHandlerError:
 
     _STATUS_RESPONSES: ta.ClassVar[ta.Mapping[int, ta.Tuple[str, str]]] = {
         v: (v.phrase, v.description)
-        for v in http.HTTPStatus.__members__.values()
+        for v in HttpStatus.__members__.values()
     }
 
     @classmethod
     def build(
             cls,
-            status: ta.Union[http.HTTPStatus, int],
+            status: ta.Union[HttpStatus, int],
             message: ta.Optional[str] = None,
             explain: ta.Optional[str] = None,
             *,
@@ -93,11 +93,11 @@ class SimpleHttpHandlerError:
         #  - RFC7231: 6.3.6. 205(Reset Content)
         data: ta.Optional[bytes] = None
         if (
-            self.status >= http.HTTPStatus.OK and
+            self.status >= HttpStatus.OK and
             self.status not in (
-                http.HTTPStatus.NO_CONTENT,
-                http.HTTPStatus.RESET_CONTENT,
-                http.HTTPStatus.NOT_MODIFIED,
+                HttpStatus.NO_CONTENT,
+                HttpStatus.RESET_CONTENT,
+                HttpStatus.NOT_MODIFIED,
             )
         ):
             # HTML encode to prevent Cross Site Scripting attacks (see bug #1100201)

@@ -1,9 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import dataclasses as dc
-import http
 import typing as ta
 
+from ..statuses import HttpStatus
 from ..urlrouting.router import UrlRouter
 from ..urlrouting.types import UrlRouteMatchError
 from ..urlrouting.types import UrlRouteMethodNotAllowedError
@@ -30,7 +30,7 @@ class UrlRoutingSimpleHttpHandler(SimpleHttpHandler_):
 
         except UrlRouteRedirectRequiredError as e:
             return SimpleHttpHandlerResponse(
-                status=http.HTTPStatus.PERMANENT_REDIRECT,
+                status=HttpStatus.PERMANENT_REDIRECT,
                 headers={'Location': e.redirect_path},
             )
 
@@ -39,7 +39,7 @@ class UrlRoutingSimpleHttpHandler(SimpleHttpHandler_):
                 return self.method_not_allowed_handler(req)
 
             return SimpleHttpHandlerResponse(
-                status=http.HTTPStatus.METHOD_NOT_ALLOWED,
+                status=HttpStatus.METHOD_NOT_ALLOWED,
                 headers={'Allow': ', '.join(sorted(e.allowed_methods))},
             )
 
@@ -47,7 +47,7 @@ class UrlRoutingSimpleHttpHandler(SimpleHttpHandler_):
             if self.not_found_handler is not None:
                 return self.not_found_handler(req)
 
-            return SimpleHttpHandlerResponse(status=http.HTTPStatus.NOT_FOUND)
+            return SimpleHttpHandlerResponse(status=HttpStatus.NOT_FOUND)
 
         endpoint = match.endpoint
         if not callable(endpoint):

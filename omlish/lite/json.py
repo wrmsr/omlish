@@ -3,6 +3,9 @@ import json
 import typing as ta
 
 
+JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
+
+
 ##
 
 
@@ -28,3 +31,44 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.IO[str],
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )

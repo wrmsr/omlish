@@ -47,7 +47,6 @@ import hashlib
 import heapq
 import http
 import http.client
-import http.server
 import inspect
 import io
 import itertools
@@ -98,6 +97,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
             dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='a093aa6b49e25b3206f59b703b281d569c386838'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
+            dict(path='../../omlish/http/statuses.py', sha1='675eff6e1638e48aebb7aeae422e426c21a612d2'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
             dict(path='../../omlish/io/pipelines/errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
@@ -110,7 +110,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
             dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
-            dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../omlish/lite/json.py', sha1='3c3feab40d760d51e1643f55acf9f30d840c4476'),
             dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -160,7 +160,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/yaml/goyaml/tokens.py', sha1='e9744c171d982ea8b4a6ace5f937926d51d5ec30'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
-            dict(path='../../omlish/http/simple/types.py', sha1='b5286f2a123c19d320b4dfceb3115156659c47bf'),
+            dict(path='../../omlish/http/simple/types.py', sha1='b3f71d44301f9a951d6190cdb3798dd0b39e131b'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
             dict(path='../../omlish/io/pipelines/flow/types.py', sha1='ac9a91d0a8115443984a75a63ffac51a7acef580'),
@@ -178,7 +178,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/sockets/handlers/threading.py', sha1='24d7815c7bf8fcf3480267020785a3edc90b32f9'),
             dict(path='../../omlish/subprocesses/run.py', sha1='1d2a78b18bcc601c8b28269d792cc38bbf25a078'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../dataserver/handlers.py', sha1='029b20a1cfe336f16a02c395384cd1bd4dcc5058'),
+            dict(path='../dataserver/handlers.py', sha1='ce0a208cbd7f66b26b9539ec6d5e7ef1041a4886'),
             dict(path='../dataserver/routes.py', sha1='97379cba6a531ca1bde33de0eb432bd9b36791c1'),
             dict(path='../oci/media.py', sha1='ccebb9fa56214759e48fe5e65368b4ce70fe0417'),
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
@@ -189,8 +189,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='f263936305f7be5085c6a5f2782ae734bf221813'),  # noqa
             dict(path='../../omlish/http/pipelines/encoders.py', sha1='fdcc3953e2a7f9ba4c1fddba9c365da113c77b45'),
             dict(path='../../omlish/http/pipelines/requests.py', sha1='a0115429e52527073df8638f692aeca95803d3a7'),
-            dict(path='../../omlish/http/pipelines/responses.py', sha1='87fe1d8e0b429eb26f4a2b1f39701f4dae4ff939'),
-            dict(path='../../omlish/http/simple/handlers.py', sha1='19e752be7967420d72a6d0210116cba4fbaa3e31'),
+            dict(path='../../omlish/http/pipelines/responses.py', sha1='49c0a85b1fb7571dc52e0362f2b9eb68a2a4ee34'),
+            dict(path='../../omlish/http/simple/handlers.py', sha1='f15e127ac962f4577e06adfdb3c05a19fa896e89'),
             dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
             dict(path='../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
             dict(path='../../omlish/io/streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
@@ -199,7 +199,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
             dict(path='../../omlish/subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
             dict(path='docker/cacheserved/manifests.py', sha1='80a65d08319d152f0bc6f893351e23368b3de93b'),
-            dict(path='../dataserver/server.py', sha1='5d9bb045577600ee20d467e43b5f1613f6dada45'),
+            dict(path='../dataserver/server.py', sha1='91a673b19762088f3ed14aa91e7f6a0141bba3a5'),
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
@@ -259,6 +259,9 @@ T = ta.TypeVar('T')
 # ../../omlish/asyncs/asyncio/utils.py
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
+# ../../omlish/http/statuses.py
+HttpStatus = http.HTTPStatus  # ta.TypeAlias
+
 # ../../omlish/lite/bytes.py
 Bytes = ta.Union[bytes, bytearray]  # ta.TypeAlias
 BytesLike = ta.Union[Bytes, memoryview]  # ta.TypeAlias
@@ -274,6 +277,9 @@ CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 # ../../omlish/lite/contextmanagers.py
 ExitStackedT = ta.TypeVar('ExitStackedT', bound='ExitStacked')
 AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
+
+# ../../omlish/lite/json.py
+JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
 # ../../omlish/lite/typemaps.py
 V = ta.TypeVar('V')
@@ -684,6 +690,13 @@ class DockerPortRelay:
             '-i',
             *self.run_args(),
         ]
+
+
+########################################
+# ../../../omlish/http/statuses.py
+
+
+#
 
 
 ########################################
@@ -2630,6 +2643,47 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.IO[str],
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
 
 
 ########################################
@@ -13349,6 +13403,8 @@ class SimpleHttpHandlerRequest:
     headers: ParsedHttpHeaders
     data: ta.Optional[Bytes] = None
 
+    #
+
     context: TypeMap = TypeMap()
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerRequest':
@@ -13359,15 +13415,19 @@ class SimpleHttpHandlerRequest:
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerResponse:
-    status: ta.Union[http.HTTPStatus, int]
+    status: ta.Union[HttpStatus, int]
     headers: ta.Optional[ta.Mapping[str, str]] = None
     data: ta.Optional[SimpleHttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
+
+    #
 
     context: TypeMap = TypeMap()
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerResponse':
         return dc.replace(self, context=self.context.update(items, override=override))
+
+    #
 
     def close(self) -> None:
         if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
@@ -16216,10 +16276,10 @@ class BytesDataServerTargetHandler(DataServerTargetHandler[BytesDataServerTarget
 
     def handle(self, req: DataServerRequest) -> DataServerResponse:
         if req.method not in ('GET', 'HEAD'):
-            return DataServerResponse(http.HTTPStatus.METHOD_NOT_ALLOWED)
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
 
         return DataServerResponse(
-            http.HTTPStatus.OK,
+            HttpStatus.OK,
             headers=self._make_headers(),
             body=io.BytesIO(self._target.data) if self._target.data is not None and req.method == 'GET' else None,
         )
@@ -16235,10 +16295,10 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
             try:
                 st = os.stat(check.not_none(self._target.file_path))
             except FileNotFoundError:
-                return DataServerResponse(http.HTTPStatus.NOT_FOUND)
+                return DataServerResponse(HttpStatus.NOT_FOUND)
 
             return DataServerResponse(
-                http.HTTPStatus.OK,
+                HttpStatus.OK,
                 headers={
                     'Content-Length': str(st.st_size),
                     **self._make_headers(),
@@ -16249,13 +16309,13 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
             try:
                 f = open(check.not_none(self._target.file_path), 'rb')  # noqa
             except FileNotFoundError:
-                return DataServerResponse(http.HTTPStatus.NOT_FOUND)
+                return DataServerResponse(HttpStatus.NOT_FOUND)
 
             try:
                 sz = os.fstat(f.fileno())
 
                 return DataServerResponse(
-                    http.HTTPStatus.OK,
+                    HttpStatus.OK,
                     headers={
                         'Content-Length': str(sz.st_size),
                         **self._make_headers(),
@@ -16268,7 +16328,7 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
                 raise
 
         else:
-            return DataServerResponse(http.HTTPStatus.METHOD_NOT_ALLOWED)
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
 
 
 #
@@ -16278,7 +16338,7 @@ class FileDataServerTargetHandler(DataServerTargetHandler[FileDataServerTarget])
 class UrlDataServerTargetHandler(DataServerTargetHandler[UrlDataServerTarget]):
     def handle(self, req: DataServerRequest) -> DataServerResponse:
         if req.method not in check.not_none(self._target.methods):
-            return DataServerResponse(http.HTTPStatus.METHOD_NOT_ALLOWED)
+            return DataServerResponse(HttpStatus.METHOD_NOT_ALLOWED)
 
         resp: http.client.HTTPResponse = urllib.request.urlopen(urllib.request.Request(  # noqa
             method=req.method,
@@ -21790,7 +21850,7 @@ class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpRespon
     @staticmethod
     def get_reason_phrase(code: int) -> str:
         try:
-            return http.HTTPStatus(code).phrase
+            return HttpStatus(code).phrase
         except ValueError:
             return ''
 
@@ -22014,7 +22074,7 @@ class ExceptionLoggingSimpleHttpHandler(SimpleHttpHandler_):
 class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: Bytes
 
-    status: ta.Union[http.HTTPStatus, int] = 200
+    status: ta.Union[HttpStatus, int] = 200
     content_type: ta.Optional[str] = 'application/octet-stream'
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
@@ -22036,7 +22096,7 @@ class BytesResponseSimpleHttpHandler(SimpleHttpHandler_):
 class StringResponseSimpleHttpHandler(SimpleHttpHandler_):
     data: str
 
-    status: ta.Union[http.HTTPStatus, int] = 200
+    status: ta.Union[HttpStatus, int] = 200
     content_type: ta.Optional[str] = 'text/plain; charset=utf-8'
     headers: ta.Optional[ta.Mapping[str, str]] = None
     close_connection: bool = True
@@ -23862,7 +23922,7 @@ class DataServer:
         try:
             rt = self._routes_by_path[req.path]
         except KeyError:
-            return DataServerResponse(http.HTTPStatus.NOT_FOUND)
+            return DataServerResponse(HttpStatus.NOT_FOUND)
 
         return rt.handler.handle(req)
 

@@ -2,7 +2,6 @@
 # @omlish-lite
 import abc
 import dataclasses as dc
-import http.server
 import typing as ta
 
 from ...lite.abstract import Abstract
@@ -12,6 +11,7 @@ from ...lite.dataclasses import install_dataclass_kw_only_init
 from ...lite.typemaps import TypeMap
 from ...sockets.addresses import SocketAddress
 from ..parsing import ParsedHttpHeaders
+from ..statuses import HttpStatus
 
 
 SimpleHttpHandler = ta.Callable[['SimpleHttpHandlerRequest'], 'SimpleHttpHandlerResponse']  # ta.TypeAlias
@@ -31,6 +31,8 @@ class SimpleHttpHandlerRequest:
     headers: ParsedHttpHeaders
     data: ta.Optional[Bytes] = None
 
+    #
+
     context: TypeMap = TypeMap()
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerRequest':
@@ -41,15 +43,19 @@ class SimpleHttpHandlerRequest:
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerResponse:
-    status: ta.Union[http.HTTPStatus, int]
+    status: ta.Union[HttpStatus, int]
     headers: ta.Optional[ta.Mapping[str, str]] = None
     data: ta.Optional[SimpleHttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
+
+    #
 
     context: TypeMap = TypeMap()
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerResponse':
         return dc.replace(self, context=self.context.update(items, override=override))
+
+    #
 
     def close(self) -> None:
         if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):

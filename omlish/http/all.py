@@ -118,4 +118,8 @@ with _lang.auto_proxy_init(globals()):
         MultipartField,
     )
 
+    from .statuses import (  # noqa
+        HttpStatus,
+    )
+
     from . import wsgi  # noqa

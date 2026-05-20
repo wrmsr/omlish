@@ -1,5 +1,7 @@
 import typing as ta
 
+from ...lite.json import JsonStyle
+
 
 ##
 
@@ -30,3 +32,13 @@ COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
     indent=None,
     separators=COMPACT_SEPARATORS,
 )
+
+
+##
+
+
+KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': PRETTY_KWARGS,
+    'compact': COMPACT_KWARGS,
+    None: {},
+}

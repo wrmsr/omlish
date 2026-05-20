@@ -57,7 +57,6 @@ import functools
 import grp
 import http
 import http.client
-import http.server
 import inspect
 import io
 import itertools
@@ -112,6 +111,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
             dict(path='../../omlish/formats/toml/parser.py', sha1='275d1321063cfa9d662ca458af3cb2801b9140ce'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
+            dict(path='../../omlish/http/statuses.py', sha1='675eff6e1638e48aebb7aeae422e426c21a612d2'),
             dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
             dict(path='../../omlish/io/pipelines/errors.py', sha1='231f62c44c201a261f2a781bcc0060e997ecf33c'),
             dict(path='../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
@@ -122,7 +122,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
             dict(path='../../omlish/lite/dataclasses.py', sha1='42ff344c22262193795c54929bfb90d0a3507bab'),
             dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
-            dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../omlish/lite/json.py', sha1='3c3feab40d760d51e1643f55acf9f30d840c4476'),
             dict(path='../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -162,7 +162,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/formats.py', sha1='be99915a3580d5cfc90646c8341ccdb921fc7589'),
             dict(path='../../omlish/http/pipelines/bodymodes.py', sha1='d419b4bce96abbea7ee739412ece462ccbc77aa8'),
             dict(path='../../omlish/http/pipelines/objects.py', sha1='1d97b97dc148b53fce710f3bc35fbb6daeb60c79'),
-            dict(path='../../omlish/http/simple/types.py', sha1='b5286f2a123c19d320b4dfceb3115156659c47bf'),
+            dict(path='../../omlish/http/simple/types.py', sha1='b3f71d44301f9a951d6190cdb3798dd0b39e131b'),
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='b0ab07fba560a877ef394e843ac49dfb10a243b0'),
             dict(path='../../omlish/io/pipelines/bytes/buffering.py', sha1='c19bddb05ef9449aa1a1c228901cab0d2d927946'),
             dict(path='../../omlish/io/pipelines/drivers/metadata.py', sha1='44e49cb87136933ffe867087897eab5004034a93'),  # noqa
@@ -181,7 +181,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/pipelines/compression/decompressors.py', sha1='f263936305f7be5085c6a5f2782ae734bf221813'),  # noqa
             dict(path='../../omlish/http/pipelines/encoders.py', sha1='fdcc3953e2a7f9ba4c1fddba9c365da113c77b45'),
             dict(path='../../omlish/http/pipelines/requests.py', sha1='a0115429e52527073df8638f692aeca95803d3a7'),
-            dict(path='../../omlish/http/pipelines/responses.py', sha1='87fe1d8e0b429eb26f4a2b1f39701f4dae4ff939'),
+            dict(path='../../omlish/http/pipelines/responses.py', sha1='49c0a85b1fb7571dc52e0362f2b9eb68a2a4ee34'),
+            dict(path='../../omlish/http/simple/responses.py', sha1='8e31521d5380b779149a5d10d6d94f1ea5b4a2a5'),
             dict(path='../../omlish/io/pipelines/handlers/decoders.py', sha1='c7a5db7b3989f8b5c952e255f9e6c8fc91fa6236'),  # noqa
             dict(path='../../omlish/io/streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
             dict(path='../../omlish/io/streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
@@ -208,7 +209,7 @@ def __omlish_amalg__():  # noqa
             dict(path='supervisor.py', sha1='d4cc8fddd08f9af414734419677b643d4956915a'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='../../omlish/http/simple/pipelines/handlers.py', sha1='07c3ae396dda6334afe4310aa4077b4784988a63'),  # noqa
-            dict(path='http.py', sha1='592baaca789e1f5ecdb430eebbc31bb2cde349ef'),
+            dict(path='http.py', sha1='88f4c9f6c50c3b78153f04c0f9d28e17b7530974'),
             dict(path='inject.py', sha1='d905229fa8430db2327e355bd8253754845b3c6b'),
             dict(path='main.py', sha1='0b9d7dd52983f8a146a5f90c694085648b8f7e0c'),
         ],
@@ -229,6 +230,9 @@ TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
 TomlKey = ta.Tuple[str, ...]  # ta.TypeAlias
 TomlPos = int  # ta.TypeAlias
 
+# ../../omlish/http/statuses.py
+HttpStatus = http.HTTPStatus  # ta.TypeAlias
+
 # ../../omlish/lite/abstract.py
 T = ta.TypeVar('T')
 
@@ -246,6 +250,9 @@ CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
 CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
+
+# ../../omlish/lite/json.py
+JsonStyle = ta.Literal['pretty', 'compact', None]  # ta.TypeAlias
 
 # ../../omlish/lite/typemaps.py
 V = ta.TypeVar('V')
@@ -1841,6 +1848,13 @@ class TomlWriter:
         out = io.StringIO()
         cls(out).write_value(obj)
         return out.getvalue()
+
+
+########################################
+# ../../../omlish/http/statuses.py
+
+
+#
 
 
 ########################################
@@ -3561,6 +3575,47 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+##
+
+
+JSON_KWARGS_BY_STYLE: ta.Mapping[JsonStyle, ta.Mapping[str, ta.Any]] = {
+    'pretty': JSON_PRETTY_KWARGS,
+    'compact': JSON_COMPACT_KWARGS,
+    None: {},
+}
+
+
+##
+
+
+def json_dump(
+        obj: ta.Any,
+        fp: ta.IO[str],
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> None:
+    json.dump(
+        obj,
+        fp,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
+
+
+def json_dumps(
+        obj: ta.Any,
+        *,
+        style: JsonStyle = None,
+        **kwargs: ta.Any,
+) -> str:
+    return json.dumps(
+        obj,
+        **JSON_KWARGS_BY_STYLE[style],
+        **kwargs,
+    )
 
 
 ########################################
@@ -12877,6 +12932,8 @@ class SimpleHttpHandlerRequest:
     headers: ParsedHttpHeaders
     data: ta.Optional[Bytes] = None
 
+    #
+
     context: TypeMap = TypeMap()
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerRequest':
@@ -12887,15 +12944,19 @@ class SimpleHttpHandlerRequest:
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class SimpleHttpHandlerResponse:
-    status: ta.Union[http.HTTPStatus, int]
+    status: ta.Union[HttpStatus, int]
     headers: ta.Optional[ta.Mapping[str, str]] = None
     data: ta.Optional[SimpleHttpHandlerResponseData] = None
     close_connection: ta.Optional[bool] = None
+
+    #
 
     context: TypeMap = TypeMap()
 
     def with_context(self, *items: ta.Any, override: bool = False) -> 'SimpleHttpHandlerResponse':
         return dc.replace(self, context=self.context.update(items, override=override))
+
+    #
 
     def close(self) -> None:
         if isinstance(d := self.data, SimpleHttpHandlerResponseStreamedData):
@@ -16096,7 +16157,7 @@ class IoPipelineHttpResponseHead(IoPipelineHttpMessageHead, IoPipelineHttpRespon
     @staticmethod
     def get_reason_phrase(code: int) -> str:
         try:
-            return http.HTTPStatus(code).phrase
+            return HttpStatus(code).phrase
         except ValueError:
             return ''
 
@@ -16275,6 +16336,35 @@ class IoPipelineHttpResponseObjects(IoPipelineHttpMessageObjects):
 
     def _make_aborted(self, reason: ta.Union[str, BaseException]) -> IoPipelineHttpResponseAborted:
         return IoPipelineHttpResponseAborted(reason)
+
+
+########################################
+# ../../../omlish/http/simple/responses.py
+
+
+##
+
+
+class SimpleHttpHandlerResponses(NamespaceClass):
+    @classmethod
+    def of_json(
+            cls,
+            obj: ta.Any,
+            *,
+            style: JsonStyle = None,
+            status: ta.Union[HttpStatus, int] = 200,
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+            **kwargs: ta.Any,
+    ) -> SimpleHttpHandlerResponse:
+        return SimpleHttpHandlerResponse(
+            status=status,
+            data=json_dumps(obj, style=style).encode('utf-8') + b'\n',
+            headers={
+                'Content-Type': 'application/json',
+                **(headers or {}),
+            },
+            **kwargs,
+        )
 
 
 ########################################
@@ -22437,12 +22527,9 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             },
         }
 
-        return SimpleHttpHandlerResponse(
-            status=200,
-            data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
-            headers={
-                'Content-Type': 'application/json',
-            },
+        return SimpleHttpHandlerResponses.of_json(
+            dct,
+            style='pretty',
         )
 
 

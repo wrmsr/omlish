@@ -1,36 +1,37 @@
 """
 TODO:
  - import mimetypes lol
- - http.HTTPStatus / http.HTTPMethod
+ - HttpStatus / http.HTTPMethod
 """
 import base64
-import http
+
+from .statuses import HttpStatus
 
 
 ##
 
 
-def format_status(status: http.HTTPStatus) -> str:
+def format_status(status: HttpStatus) -> str:
     return f'{int(status)} {status.phrase}'
 
 
-STATUS_OK = format_status(http.HTTPStatus.OK)
+STATUS_OK = format_status(HttpStatus.OK)
 
-STATUS_FOUND = format_status(http.HTTPStatus.FOUND)
-STATUS_TEMPORARY_REDIRECT = format_status(http.HTTPStatus.TEMPORARY_REDIRECT)
+STATUS_FOUND = format_status(HttpStatus.FOUND)
+STATUS_TEMPORARY_REDIRECT = format_status(HttpStatus.TEMPORARY_REDIRECT)
 
-STATUS_BAD_REQUEST = format_status(http.HTTPStatus.BAD_REQUEST)
-STATUS_UNAUTHORIZED = format_status(http.HTTPStatus.UNAUTHORIZED)
-STATUS_FORBIDDEN = format_status(http.HTTPStatus.FORBIDDEN)
-STATUS_NOT_FOUND = format_status(http.HTTPStatus.NOT_FOUND)
-STATUS_METHOD_NOT_ALLOWED = format_status(http.HTTPStatus.METHOD_NOT_ALLOWED)
-STATUS_REQUEST_TIMEOUT = format_status(http.HTTPStatus.REQUEST_TIMEOUT)
+STATUS_BAD_REQUEST = format_status(HttpStatus.BAD_REQUEST)
+STATUS_UNAUTHORIZED = format_status(HttpStatus.UNAUTHORIZED)
+STATUS_FORBIDDEN = format_status(HttpStatus.FORBIDDEN)
+STATUS_NOT_FOUND = format_status(HttpStatus.NOT_FOUND)
+STATUS_METHOD_NOT_ALLOWED = format_status(HttpStatus.METHOD_NOT_ALLOWED)
+STATUS_REQUEST_TIMEOUT = format_status(HttpStatus.REQUEST_TIMEOUT)
 
-STATUS_INTERNAL_SERVER_ERROR = format_status(http.HTTPStatus.INTERNAL_SERVER_ERROR)
-STATUS_NOT_IMPLEMENTED = format_status(http.HTTPStatus.NOT_IMPLEMENTED)
-STATUS_BAD_GATEWAY = format_status(http.HTTPStatus.BAD_GATEWAY)
-STATUS_SERVICE_UNAVAILABLE = format_status(http.HTTPStatus.SERVICE_UNAVAILABLE)
-STATUS_GATEWAY_TIMEOUT = format_status(http.HTTPStatus.GATEWAY_TIMEOUT)
+STATUS_INTERNAL_SERVER_ERROR = format_status(HttpStatus.INTERNAL_SERVER_ERROR)
+STATUS_NOT_IMPLEMENTED = format_status(HttpStatus.NOT_IMPLEMENTED)
+STATUS_BAD_GATEWAY = format_status(HttpStatus.BAD_GATEWAY)
+STATUS_SERVICE_UNAVAILABLE = format_status(HttpStatus.SERVICE_UNAVAILABLE)
+STATUS_GATEWAY_TIMEOUT = format_status(HttpStatus.GATEWAY_TIMEOUT)
 
 
 ##

@@ -26,12 +26,16 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .consts import (  # noqa
-        COMPACT_KWARGS,
-        COMPACT_SEPARATORS,
+        Separators,
+
         PRETTY_INDENT,
         PRETTY_KWARGS,
         PRETTY_SEPARATORS,
-        Separators,
+
+        COMPACT_KWARGS,
+        COMPACT_SEPARATORS,
+
+        KWARGS_BY_STYLE,
     )
 
     from .encoding import (  # noqa
@@ -46,4 +50,10 @@ with _lang.auto_proxy_init(globals()):
     from .types import (  # noqa
         SCALAR_TYPES,
         Scalar,
+    )
+
+    #
+
+    from ...lite.json import (  # noqa
+        JsonStyle as Style,
     )

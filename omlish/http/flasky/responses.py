@@ -1,12 +1,12 @@
-import http
 import typing as ta
 
 from ... import dataclasses as dc
+from ..statuses import HttpStatus
 from ._compat import compat
 
 
 ResponseData: ta.TypeAlias = str | ta.Iterable[str] | bytes | ta.Iterable[bytes]
-ResponseStatus: ta.TypeAlias = int | str | http.HTTPStatus
+ResponseStatus: ta.TypeAlias = int | str | HttpStatus
 ResponseHeaders: ta.TypeAlias = ta.Mapping[str, str | ta.Iterable[str]] | ta.Iterable[tuple[str, str]]
 
 

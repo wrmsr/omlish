@@ -1,10 +1,10 @@
 # ruff: noqa: UP006 UP007 UP045
 import contextlib
-import json
 import socket
 import typing as ta
 
 from omlish.http.simple.pipelines.handlers import SimpleHttpHandlerServerIoPipelineHandler
+from omlish.http.simple.responses import SimpleHttpHandlerResponses
 from omlish.http.simple.types import SimpleHttpHandler
 from omlish.http.simple.types import SimpleHttpHandler_
 from omlish.http.simple.types import SimpleHttpHandlerRequest
@@ -12,7 +12,6 @@ from omlish.http.simple.types import SimpleHttpHandlerResponse
 from omlish.io.fdio.handlers import ServerSocketFdioHandler
 from omlish.io.pipelines.drivers.fdio import IoPipelineDriverSocketFdioHandler
 from omlish.lite.check import check
-from omlish.lite.json import JSON_PRETTY_KWARGS
 from omlish.lite.marshal import marshal_obj
 from omlish.sockets.addresses import SocketAddress
 
@@ -116,10 +115,7 @@ class SupervisorSimpleHttpHandler(SimpleHttpHandler_):
             },
         }
 
-        return SimpleHttpHandlerResponse(
-            status=200,
-            data=json.dumps(dct, **JSON_PRETTY_KWARGS).encode('utf-8') + b'\n',
-            headers={
-                'Content-Type': 'application/json',
-            },
+        return SimpleHttpHandlerResponses.of_json(
+            dct,
+            style='pretty',
         )
