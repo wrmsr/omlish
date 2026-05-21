@@ -1,54 +1,22 @@
-"""
-TODO:
- - dedicated single thread executor (current makes no guarantee about getting same thread)
-"""
 import concurrent.futures as cf
 import contextlib
-import sqlite3
 import typing as ta
 import urllib.parse
 
 import pytest
 
-from .... import check
-from .... import lang
-from ....asyncs.asyncio import all as au
-from ....testing import pytest as ptu
-from ...dbs import UrlDbLoc
-from ...queries import Q
-from ...tests.harness import HarnessDbs
-from .. import querierfuncs as qf
-from ..asyncs import AsyncioToExecutorSyncToAsyncRunner
-from ..asyncs import ImmediateSyncToAsyncRunner
-from ..asyncs import SyncToAsyncDb
-from ..dbapi import ClosingDbapiConnector
-from ..dbapi import DbapiDb
+from ..... import check
+from ..... import lang
+from .....asyncs.asyncio import all as au
+from .....testing import pytest as ptu
+from ....api import querierfuncs as qf
+from ....api.asyncs import SyncToAsyncDb
+from ....api.dbapi import ClosingDbapiConnector
+from ....api.dbapi import DbapiDb
+from ....dbs import UrlDbLoc
+from ....queries import Q
+from ....tests.harness import HarnessDbs
 from ..drivers.asyncpg import AsyncpgDb
-
-
-@pytest.mark.asyncs('asyncio')
-async def test_queries():
-    with cf.ThreadPoolExecutor(max_workers=1) as exe:
-        db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:'))
-        adb = SyncToAsyncDb(AsyncioToExecutorSyncToAsyncRunner.factory(exe), db)
-
-        async with adb.connect() as conn:
-            print(await qf.query_all(conn, Q.select([1])))
-
-        print(await qf.query_all(adb, Q.select([1])))
-
-
-def test_immediate_queries():
-    db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:'))
-    adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-
-    async def inner():
-        async with adb.connect() as conn:
-            print(await qf.query_all(conn, Q.select([1])))
-
-        print(await qf.query_all(adb, Q.select([1])))
-
-    lang.sync_await(inner())
 
 
 @pytest.mark.asyncs('asyncio')

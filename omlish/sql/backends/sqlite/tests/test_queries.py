@@ -2,9 +2,9 @@ import contextlib
 import sqlite3
 import typing as ta
 
-from ...dbapi.abc import DbapiColumnDescription_
-from .. import Q
-from .. import render
+from ....dbapi.abc import DbapiColumnDescription_
+from ....queries import Q
+from ....queries import render
 
 
 def test_sqlite_query():

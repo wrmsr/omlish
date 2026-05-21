@@ -1,13 +1,8 @@
 import sqlite3
-import urllib.parse
 
-from .... import check
-from ....testing import pytest as ptu
-from ...dbs import UrlDbLoc
-from ...tests.harness import HarnessDbs
-from .. import querierfuncs as qf
-from ..dbapi import ClosingDbapiConnector
-from ..dbapi import DbapiDb
+from ....api import querierfuncs as qf
+from ....api.dbapi import ClosingDbapiConnector
+from ....api.dbapi import DbapiDb
 
 
 ##
@@ -55,51 +50,3 @@ def test_sqlite(exit_stack) -> None:
     assert qf.query_scalar(conn, 'select count(*) from movies') == 3
 
     assert qf.query_scalar(conn, 'select ? + 1', [2]) == 3
-
-
-@ptu.skip.if_cant_import('pg8000')
-def test_pg8000(harness, exit_stack) -> None:
-    url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
-    p_u = urllib.parse.urlparse(url)
-
-    import pg8000
-
-    db = DbapiDb(ClosingDbapiConnector(
-        pg8000.connect,
-        p_u.username,
-        host=p_u.hostname,
-        port=p_u.port,
-        password=p_u.password,
-    ))
-
-    conn = exit_stack.enter_context(db.connect())
-
-    for q in [
-        'select 1',
-        'select 1 union select 2',
-        # 'select 1, 2 union select 3, 4',
-    ]:
-        with qf.query(conn, q) as rows:
-            vals = []
-            for row in rows:
-                vals.append(tuple(row.values))
-                print(row)
-
-        print(vals)
-
-
-def test_queries():
-    from ...queries import Q
-
-    db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:'))
-    with db.connect() as conn:
-        print(qf.query_all(conn, Q.select([1])))
-
-    print(qf.query_all(db, Q.select([1])))
-
-
-# def test_check_entered():
-#     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
-#         with db.connect() as conn:
-#             with pytest.raises(ResourceNotEnteredError):
-#                 print(list(ta.cast(ta.Any, qf.query(conn, 'select 1'))))
