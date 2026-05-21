@@ -146,6 +146,17 @@ _UNMERGED_GIT_STATUS_STATE_PAIRS: ta.FrozenSet[ta.Tuple[GitStatusState, GitStatu
     (GitStatusState.DELETED, GitStatusState.DELETED),
 ])
 
+_UNSTAGED_GIT_STATUS_STATES: ta.FrozenSet[GitStatusState] = frozenset([
+    GitStatusState.UNMODIFIED,
+    GitStatusState.UNTRACKED,
+    GitStatusState.IGNORED,
+])
+
+_CLEAN_WORKTREE_GIT_STATUS_STATES: ta.FrozenSet[GitStatusState] = frozenset([
+    GitStatusState.UNMODIFIED,
+    GitStatusState.IGNORED,
+])
+
 
 @dc.dataclass(frozen=True)
 class GitStatusItem:
@@ -158,8 +169,8 @@ class GitStatusItem:
     @property
     def is_unmerged(self) -> bool:
         return (
-            self.x in _UNMERGED_GIT_STATUS_STATE_PAIRS or
-            self.y in _UNMERGED_GIT_STATUS_STATE_PAIRS or
+            self.x in _UNMERGED_GIT_STATUS_STATES or
+            self.y in _UNMERGED_GIT_STATUS_STATES or
             (self.x, self.y) in _UNMERGED_GIT_STATUS_STATE_PAIRS
         )
 
@@ -205,16 +216,14 @@ class GitStatus(ta.Sequence[GitStatusItem]):
         by_x: ta.Dict[GitStatusState, list[GitStatusItem]] = {}
         by_y: ta.Dict[GitStatusState, list[GitStatusItem]] = {}
 
-        by_a: ta.Dict[str, GitStatusItem] = {}
+        by_a: ta.Dict[str, list[GitStatusItem]] = {}
         by_b: ta.Dict[str, GitStatusItem] = {}
 
         for l in self._lst:
             by_x.setdefault(l.x, []).append(l)
             by_y.setdefault(l.y, []).append(l)
 
-            if l.a in by_a:
-                raise KeyError(l.a)
-            by_a[l.a] = l
+            by_a.setdefault(l.a, []).append(l)
 
             if l.b is not None:
                 if l.b in by_b:
@@ -251,7 +260,7 @@ class GitStatus(ta.Sequence[GitStatusItem]):
         return self._by_y
 
     @property
-    def by_a(self) -> ta.Mapping[str, GitStatusItem]:
+    def by_a(self) -> ta.Mapping[str, ta.Sequence[GitStatusItem]]:
         return self._by_a
 
     @property
@@ -266,11 +275,11 @@ class GitStatus(ta.Sequence[GitStatusItem]):
 
     @property
     def has_staged(self) -> bool:
-        return any(l.x != GitStatusState.UNMODIFIED for l in self._lst)
+        return any(l.x not in _UNSTAGED_GIT_STATUS_STATES for l in self._lst)
 
     @property
     def has_dirty(self) -> bool:
-        return any(l.y != GitStatusState.UNMODIFIED for l in self._lst)
+        return any(l.y not in _CLEAN_WORKTREE_GIT_STATUS_STATES for l in self._lst)
 
 
 def parse_git_status(s: str) -> GitStatus:

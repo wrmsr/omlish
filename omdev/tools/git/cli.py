@@ -267,9 +267,9 @@ class Cli(ap.Cli):
         if self.args.verbose:
             dct = {
                 'by_x': {x.name.lower(): gsi_dct_lst(lst) for x, lst in st.by_x.items()},
-                'by_y': {y.name.lower(): gsi_dct_lst(lst) for y, lst in st.by_x.items()},
+                'by_y': {y.name.lower(): gsi_dct_lst(lst) for y, lst in st.by_y.items()},
 
-                'by_a': {a: gsi_dct(gsi) for a, gsi in sorted(st.by_a.items(), key=lambda t: t[0])},
+                'by_a': {a: gsi_dct_lst(gsis) for a, gsis in sorted(st.by_a.items(), key=lambda t: t[0])},
                 'by_b': {b: gsi_dct(gsi) for b, gsi in sorted(st.by_b.items(), key=lambda t: t[0])},
 
                 'has_unmerged': st.has_unmerged,

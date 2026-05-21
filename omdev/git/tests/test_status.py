@@ -7,6 +7,7 @@ from omlish.subprocesses.wrap import subprocess_maybe_shell_wrap_exec
 from ..status import GitStatusItem
 from ..status import GitStatusState
 from ..status import get_git_status
+from ..status import parse_git_status
 from ..status import parse_git_status_line
 
 
@@ -172,3 +173,43 @@ def test_parse_git_status_line_weird():
         a='copier/tests/demo/doc/mañana.txt',
         b='external/copier/tests/demo/doc/mañana.txt',
     )
+
+
+def test_parse_git_status_duplicate_a_path():
+    st = parse_git_status('R  a.txt -> b.txt\n?? a.txt\n')
+
+    assert list(st.by_a['a.txt']) == [
+        GitStatusItem(
+            GitStatusState.RENAMED,
+            GitStatusState.UNMODIFIED,
+            'a.txt',
+            'b.txt',
+        ),
+        GitStatusItem(
+            GitStatusState.UNTRACKED,
+            GitStatusState.UNTRACKED,
+            'a.txt',
+            None,
+        ),
+    ]
+    assert st.by_b['b.txt'] == GitStatusItem(
+        GitStatusState.RENAMED,
+        GitStatusState.UNMODIFIED,
+        'a.txt',
+        'b.txt',
+    )
+
+
+def test_parse_git_status_state_summaries():
+    st = parse_git_status('?? untracked.txt\n')
+    assert not st.has_staged
+    assert st.has_dirty
+
+    st = parse_git_status('!! ignored.txt\n')
+    assert not st.has_staged
+    assert not st.has_dirty
+
+    st = parse_git_status('UU conflicted.txt\n')
+    assert st.has_unmerged
+    assert st.has_staged
+    assert st.has_dirty
