@@ -89,6 +89,9 @@ class Keywords(_Renderable, lang.Final):
     def by_type(self) -> ta.Mapping[type[Keyword], Keyword]:
         return col.make_map_by(type, (k for k in self.lst if not isinstance(k, UnknownKeyword)), strict=True)  # noqa
 
+    def get_by_type(self, ty: type[KeywordT]) -> KeywordT | None:
+        return self.by_type.get(ty)
+
     @cached.property
     @dc.init
     def by_tag(self) -> ta.Mapping[str, Keyword]:

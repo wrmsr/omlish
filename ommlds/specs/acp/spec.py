@@ -24,9 +24,14 @@ ACP_SPEC_DATA = dcache.GitSpec(
 
 
 @lang.cached_function(lock=True)
-def spec_src() -> str:
+def spec_path() -> str:
     spec_dir = dcache.default().get(ACP_SPEC_DATA)
-    with open(os.path.join(spec_dir, ACP_SPEC_PATH)) as f:
+    return os.path.join(spec_dir, ACP_SPEC_PATH)
+
+
+@lang.cached_function(lock=True)
+def spec_src() -> str:
+    with open(spec_path()) as f:
         return f.read()
 
 
@@ -47,6 +52,10 @@ def spec_json_schema() -> js.Keywords:
 
 
 class Cli(ap.Cli):
+    @ap.cmd()
+    def path(self) -> None:
+        print(spec_path())
+
     @ap.cmd(
         ap.arg('--raw', action='store_true'),
     )

@@ -1,0 +1,2 @@
+- https://github.com/microsoft/language-server-protocol/blob/gh-pages/_specifications/lsp/3.17/metaModel/metaModel.schema.json
+- https://gist.github.com/bollwyvl/7a128978b8ae89ab02bbd5b84d07a4b7

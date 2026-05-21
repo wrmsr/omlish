@@ -7,3 +7,7 @@
 - speed up literals.py lol
 - schema inference
 - 3.15: `json.loads('{"a": [1, 2, 3, 4]}', array_hook=tuple, object_hook=frozendict) == frozendict({'a': (1, 2, 3, 4)})`
+- jsonpatch
+- jsonpath
+- jsonpointer.py
+- jsonref or whatever

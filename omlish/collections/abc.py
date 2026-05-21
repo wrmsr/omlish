@@ -1,4 +1,16 @@
 # ruff: noqa: ANN204 PLW1641
+"""
+https://docs.python.org/3/library/collections.abc.html
+https://github.com/python/cpython/blob/main/Doc/library/collections.abc.rst
+
+Present in collections.abc but absent in docs:
+- Set.__rand__
+- Set.__ror__
+- MutableSet.clear
+
+Present in docs but absent in collections.abc:
+- Mapping.__ne__
+"""
 
 
 class Hashable:
@@ -11,6 +23,10 @@ class Iterable:
 
 class Iterator(Iterable):
     def __next__(self): ...
+
+    # ::mixins::
+
+    def __iter__(self): ...
 
 
 class Reversible(Iterable):
@@ -26,7 +42,11 @@ class Container:
 
 
 class Collection(Sized, Iterable, Container):
-    pass
+    def __contains__(self, x): ...
+
+    def __iter__(self): ...
+
+    def __len__(self): ...
 
 
 # region Sequence
@@ -35,17 +55,47 @@ class Collection(Sized, Iterable, Container):
 class Sequence(Reversible, Collection):
     def __getitem__(self, index): ...
 
+    def __len__(self): ...
+
+    # ::mixins::
+
+    def __contains__(self, x): ...
+
+    def __iter__(self): ...
+
+    def __reversed__(self): ...
+
     def index(self, value, start=0, stop=None): ...
 
     def count(self, value): ...
 
 
 class MutableSequence(Sequence):
+    def __getitem__(self, index): ...
+
     def __setitem__(self, index, value): ...
 
     def __delitem__(self, index): ...
 
+    def __len__(self): ...
+
     def insert(self, index, value): ...
+
+    # ::mixins::
+
+    # Sequence
+
+    def __contains__(self, x): ...
+
+    def __iter__(self): ...
+
+    def __reversed__(self): ...
+
+    def index(self, value, start=0, stop=None): ...
+
+    def count(self, value): ...
+
+    # MutableSequence
 
     def append(self, value): ...
 
@@ -69,6 +119,14 @@ class MutableSequence(Sequence):
 
 
 class Set(Collection):
+    def __contains__(self, item): ...
+
+    def __iter__(self): ...
+
+    def __len__(self): ...
+
+    # ::mixins::
+
     def __le__(self, other): ...
 
     def __lt__(self, other): ...
@@ -81,13 +139,11 @@ class Set(Collection):
 
     def __and__(self, other): ...
 
-    __rand__ = __and__
-
-    def isdisjoint(self, other): ...
+    def __rand__(self, other): ...
 
     def __or__(self, other): ...
 
-    __ror__ = __or__
+    def __ror__(self, other): ...
 
     def __sub__(self, other): ...
 
@@ -95,13 +151,55 @@ class Set(Collection):
 
     def __xor__(self, other): ...
 
-    __rxor__ = __xor__
+    def __rxor__(self, other): ...
+
+    def isdisjoint(self, other): ...
 
 
 class MutableSet(Set):
+    def __contains__(self, item): ...
+
+    def __iter__(self): ...
+
+    def __len__(self): ...
+
     def add(self, value): ...
 
     def discard(self, value): ...
+
+    # ::mixins::
+
+    # Set
+
+    def __le__(self, other): ...
+
+    def __lt__(self, other): ...
+
+    def __gt__(self, other): ...
+
+    def __ge__(self, other): ...
+
+    def __eq__(self, other): ...
+
+    def __and__(self, other): ...
+
+    def __rand__(self, other): ...
+
+    def __or__(self, other): ...
+
+    def __ror__(self, other): ...
+
+    def __sub__(self, other): ...
+
+    def __rsub__(self, other): ...
+
+    def __xor__(self, other): ...
+
+    def __rxor__(self, other): ...
+
+    def isdisjoint(self, other): ...
+
+    # MutableSet
 
     def remove(self, value): ...
 
@@ -127,6 +225,12 @@ class MutableSet(Set):
 class Mapping(Collection):
     def __getitem__(self, key): ...
 
+    def __iter__(self): ...
+
+    def __len__(self): ...
+
+    # ::mixins::
+
     def get(self, key, default=None): ...
 
     def keys(self): ...
@@ -137,13 +241,41 @@ class Mapping(Collection):
 
     def __eq__(self, other): ...
 
-    __reversed__ = None
+    def __ne__(self, other): ...
+
+    def __contains__(self, item): ...
 
 
 class MutableMapping(Mapping):
+    def __getitem__(self, key): ...
+
     def __setitem__(self, key, value): ...
 
     def __delitem__(self, key): ...
+
+    def __iter__(self): ...
+
+    def __len__(self): ...
+
+    # ::mixins::
+
+    # Mapping
+
+    def get(self, key, default=None): ...
+
+    def keys(self): ...
+
+    def items(self): ...
+
+    def values(self): ...
+
+    def __eq__(self, other): ...
+
+    def __ne__(self, other): ...
+
+    def __contains__(self, item): ...
+
+    # MutableMapping
 
     def pop(self, key, default=None): ...
 
@@ -166,16 +298,37 @@ class MappingView(Sized):
     @property
     def _mapping(self): ...  # noqa
 
+    # ::mixins::
+
+    # __init__
+    # __len__
+    # __repr__
+
 
 class KeysView(MappingView, Set):
+    # ::mixins::
+
+    # __contains__
+    # __iter__
+
     pass
 
 
 class ValuesView(MappingView, Collection):
+    # ::mixins::
+
+    # __contains__
+    # __iter__
+
     pass
 
 
 class ItemsView(MappingView, Set):
+    # ::mixins::
+
+    # __contains__
+    # __iter__
+
     pass
 
 

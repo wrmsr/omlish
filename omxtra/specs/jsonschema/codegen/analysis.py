@@ -141,7 +141,7 @@ class JsonSchemaAnalyzer:
         for m in one_of.kws:
             if js.Const not in m.by_type:
                 return False
-            type_kw = m.by_type.get(js.Type)
+            type_kw = m.get_by_type(js.Type)
             if type_kw is None or type_kw.ss != 'string':
                 return False
         return True
