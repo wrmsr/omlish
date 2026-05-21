@@ -5,3 +5,5 @@
 - lite-ify stream
 - options/config dataclasses for stream/render
 - speed up literals.py lol
+- schema inference
+- 3.15: `json.loads('{"a": [1, 2, 3, 4]}', array_hook=tuple, object_hook=frozendict) == frozendict({'a': (1, 2, 3, 4)})`
