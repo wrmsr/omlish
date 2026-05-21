@@ -646,10 +646,10 @@ def _process_dataclass__11262894e09b3b420a70ca6beeca90e3128bc4d9():
         "Field(name='examples', kw_only=False, fn=None), ReprPlan.Field(name='requestbodies', kw_only=False, fn=None), "
         "ReprPlan.Field(name='headers', kw_only=False, fn=None), ReprPlan.Field(name='security_schemes', kw_only=False,"
         " fn=None), ReprPlan.Field(name='links', kw_only=False, fn=None), ReprPlan.Field(name='callbacks', kw_only=Fals"
-        "e, fn=None), ReprPlan.Field(name='path_items', kw_only=False, fn=None)), id=False, terse=False, default_fn=Non"
-        "e)))"
+        "e, fn=None), ReprPlan.Field(name='path_items', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpR"
+        "ef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='8fbbf0b78f29ea8e9798f7d145e63366fc728373',
+    plan_repr_sha1='4db5673d8b95fcdf287745358cf89de0f0e920a5',
     op_ref_idents=(
         '__dataclass__init__fields__00__annotation',
         '__dataclass__init__fields__00__default',
@@ -671,12 +671,13 @@ def _process_dataclass__11262894e09b3b420a70ca6beeca90e3128bc4d9():
         '__dataclass__init__fields__08__default',
         '__dataclass__init__fields__09__annotation',
         '__dataclass__init__fields__09__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Components'),
     ),
 )
-def _process_dataclass__8fbbf0b78f29ea8e9798f7d145e63366fc728373():
+def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -700,6 +701,7 @@ def _process_dataclass__8fbbf0b78f29ea8e9798f7d145e63366fc728373():
         __dataclass__init__fields__08__default,
         __dataclass__init__fields__09__annotation,
         __dataclass__init__fields__09__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -859,16 +861,26 @@ def _process_dataclass__8fbbf0b78f29ea8e9798f7d145e63366fc728373():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"schemas={self.schemas!r}")
-            parts.append(f"responses={self.responses!r}")
-            parts.append(f"parameters={self.parameters!r}")
-            parts.append(f"examples={self.examples!r}")
-            parts.append(f"requestbodies={self.requestbodies!r}")
-            parts.append(f"headers={self.headers!r}")
-            parts.append(f"security_schemes={self.security_schemes!r}")
-            parts.append(f"links={self.links!r}")
-            parts.append(f"callbacks={self.callbacks!r}")
-            parts.append(f"path_items={self.path_items!r}")
+            if (s := __dataclass__repr__default_fn(self.schemas)) is not None:
+                parts.append(f"schemas={s}")
+            if (s := __dataclass__repr__default_fn(self.responses)) is not None:
+                parts.append(f"responses={s}")
+            if (s := __dataclass__repr__default_fn(self.parameters)) is not None:
+                parts.append(f"parameters={s}")
+            if (s := __dataclass__repr__default_fn(self.examples)) is not None:
+                parts.append(f"examples={s}")
+            if (s := __dataclass__repr__default_fn(self.requestbodies)) is not None:
+                parts.append(f"requestbodies={s}")
+            if (s := __dataclass__repr__default_fn(self.headers)) is not None:
+                parts.append(f"headers={s}")
+            if (s := __dataclass__repr__default_fn(self.security_schemes)) is not None:
+                parts.append(f"security_schemes={s}")
+            if (s := __dataclass__repr__default_fn(self.links)) is not None:
+                parts.append(f"links={s}")
+            if (s := __dataclass__repr__default_fn(self.callbacks)) is not None:
+                parts.append(f"callbacks={s}")
+            if (s := __dataclass__repr__default_fn(self.path_items)) is not None:
+                parts.append(f"path_items={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -897,9 +909,9 @@ def _process_dataclass__8fbbf0b78f29ea8e9798f7d145e63366fc728373():
         "e, check_type=None)), self_param='self', std_params=('name', 'url', 'email'), kw_only_params=(), frozen=True, "
         "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name'"
         ", kw_only=False, fn=None), ReprPlan.Field(name='url', kw_only=False, fn=None), ReprPlan.Field(name='email', kw"
-        "_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='0381ae870a3fd063d4f2a0c33a8bb38fc4e6366d',
+    plan_repr_sha1='d4a541cb97da82c217d4aeb1a3c99ba233c59794',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -907,12 +919,13 @@ def _process_dataclass__8fbbf0b78f29ea8e9798f7d145e63366fc728373():
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Contact'),
     ),
 )
-def _process_dataclass__0381ae870a3fd063d4f2a0c33a8bb38fc4e6366d():
+def _process_dataclass__d4a541cb97da82c217d4aeb1a3c99ba233c59794():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -922,6 +935,7 @@ def _process_dataclass__0381ae870a3fd063d4f2a0c33a8bb38fc4e6366d():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1032,9 +1046,12 @@ def _process_dataclass__0381ae870a3fd063d4f2a0c33a8bb38fc4e6366d():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"name={self.name!r}")
-            parts.append(f"url={self.url!r}")
-            parts.append(f"email={self.email!r}")
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.url)) is not None:
+                parts.append(f"url={s}")
+            if (s := __dataclass__repr__default_fn(self.email)) is not None:
+                parts.append(f"email={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1060,25 +1077,28 @@ def _process_dataclass__0381ae870a3fd063d4f2a0c33a8bb38fc4e6366d():
         "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param="
         "'self', std_params=('property_name', 'mapping'), kw_only_params=(), frozen=True, slots=False, post_init_params"
         "=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='property_name', kw_only=False, fn="
-        "None), ReprPlan.Field(name='mapping', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "None), ReprPlan.Field(name='mapping', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='"
+        "repr.default_fn'))))"
     ),
-    plan_repr_sha1='4c4f296567c9175c0eb64eda9611e86785b410b2',
+    plan_repr_sha1='3d1a4171d606ce3a412ee1a299e055a625b5930f',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Discriminator'),
     ),
 )
-def _process_dataclass__4c4f296567c9175c0eb64eda9611e86785b410b2():
+def _process_dataclass__3d1a4171d606ce3a412ee1a299e055a625b5930f():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1182,8 +1202,10 @@ def _process_dataclass__4c4f296567c9175c0eb64eda9611e86785b410b2():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"property_name={self.property_name!r}")
-            parts.append(f"mapping={self.mapping!r}")
+            if (s := __dataclass__repr__default_fn(self.property_name)) is not None:
+                parts.append(f"property_name={s}")
+            if (s := __dataclass__repr__default_fn(self.mapping)) is not None:
+                parts.append(f"mapping={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1220,9 +1242,9 @@ def _process_dataclass__4c4f296567c9175c0eb64eda9611e86785b410b2():
         "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='content_type', kw_only=False, fn=None), ReprP"
         "lan.Field(name='headers', kw_only=False, fn=None), ReprPlan.Field(name='style', kw_only=False, fn=None), ReprP"
         "lan.Field(name='explode', kw_only=False, fn=None), ReprPlan.Field(name='allow_reserved', kw_only=False, fn=Non"
-        "e)), id=False, terse=False, default_fn=None)))"
+        "e)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='d4270516733520bca19cb9312321fb4da32e118f',
+    plan_repr_sha1='188ab7478374634cc437c58cd5e05b336158064f',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -1234,12 +1256,13 @@ def _process_dataclass__4c4f296567c9175c0eb64eda9611e86785b410b2():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Encoding'),
     ),
 )
-def _process_dataclass__d4270516733520bca19cb9312321fb4da32e118f():
+def _process_dataclass__188ab7478374634cc437c58cd5e05b336158064f():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1253,6 +1276,7 @@ def _process_dataclass__d4270516733520bca19cb9312321fb4da32e118f():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1377,11 +1401,16 @@ def _process_dataclass__d4270516733520bca19cb9312321fb4da32e118f():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"content_type={self.content_type!r}")
-            parts.append(f"headers={self.headers!r}")
-            parts.append(f"style={self.style!r}")
-            parts.append(f"explode={self.explode!r}")
-            parts.append(f"allow_reserved={self.allow_reserved!r}")
+            if (s := __dataclass__repr__default_fn(self.content_type)) is not None:
+                parts.append(f"content_type={s}")
+            if (s := __dataclass__repr__default_fn(self.headers)) is not None:
+                parts.append(f"headers={s}")
+            if (s := __dataclass__repr__default_fn(self.style)) is not None:
+                parts.append(f"style={s}")
+            if (s := __dataclass__repr__default_fn(self.explode)) is not None:
+                parts.append(f"explode={s}")
+            if (s := __dataclass__repr__default_fn(self.allow_reserved)) is not None:
+                parts.append(f"allow_reserved={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1414,10 +1443,10 @@ def _process_dataclass__d4270516733520bca19cb9312321fb4da32e118f():
         "'summary', 'description', 'value', 'external_value'), kw_only_params=(), frozen=True, slots=False, post_init_p"
         "arams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='summary', kw_only=False, fn=N"
         "one), ReprPlan.Field(name='description', kw_only=False, fn=None), ReprPlan.Field(name='value', kw_only=False, "
-        "fn=None), ReprPlan.Field(name='external_value', kw_only=False, fn=None)), id=False, terse=False, default_fn=No"
-        "ne)))"
+        "fn=None), ReprPlan.Field(name='external_value', kw_only=False, fn=None)), id=False, terse=False, default_fn=Op"
+        "Ref(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='21d95e4cf76da4f2e81ff8abe65c921574964cfa',
+    plan_repr_sha1='3255469da9b4c7981b4f6c4f6a90ccbf555db3eb',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -1427,12 +1456,13 @@ def _process_dataclass__d4270516733520bca19cb9312321fb4da32e118f():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Example'),
     ),
 )
-def _process_dataclass__21d95e4cf76da4f2e81ff8abe65c921574964cfa():
+def _process_dataclass__3255469da9b4c7981b4f6c4f6a90ccbf555db3eb():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1444,6 +1474,7 @@ def _process_dataclass__21d95e4cf76da4f2e81ff8abe65c921574964cfa():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1561,10 +1592,14 @@ def _process_dataclass__21d95e4cf76da4f2e81ff8abe65c921574964cfa():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"summary={self.summary!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"value={self.value!r}")
-            parts.append(f"external_value={self.external_value!r}")
+            if (s := __dataclass__repr__default_fn(self.summary)) is not None:
+                parts.append(f"summary={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.value)) is not None:
+                parts.append(f"value={s}")
+            if (s := __dataclass__repr__default_fn(self.external_value)) is not None:
+                parts.append(f"external_value={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1590,25 +1625,27 @@ def _process_dataclass__21d95e4cf76da4f2e81ff8abe65c921574964cfa():
         "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('url', 'de"
         "scription'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=())"
         ", ReprPlan(fields=(ReprPlan.Field(name='url', kw_only=False, fn=None), ReprPlan.Field(name='description', kw_o"
-        "nly=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "nly=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='b3c624467c7e3e876af1f97145b52a0dd0166908',
+    plan_repr_sha1='92c624435fbcbab9682c66aa9a03c714fb8df108',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'ExternalDocumentation'),
     ),
 )
-def _process_dataclass__b3c624467c7e3e876af1f97145b52a0dd0166908():
+def _process_dataclass__92c624435fbcbab9682c66aa9a03c714fb8df108():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1712,8 +1749,10 @@ def _process_dataclass__b3c624467c7e3e876af1f97145b52a0dd0166908():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"url={self.url!r}")
-            parts.append(f"description={self.description!r}")
+            if (s := __dataclass__repr__default_fn(self.url)) is not None:
+                parts.append(f"url={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1736,21 +1775,23 @@ def _process_dataclass__b3c624467c7e3e876af1f97145b52a0dd0166908():
         "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_par"
         "am='self', std_params=('common',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fn"
         "s=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='common', kw_only=False, fn=None),), id=False, te"
-        "rse=False, default_fn=None)))"
+        "rse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='7240d2f7f6a94c1b9dcb2e2cd6eaf2a22b908c91',
+    plan_repr_sha1='513a3812c33c8abe4d63e23623cf6ca96da920c9',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Header'),
     ),
 )
-def _process_dataclass__7240d2f7f6a94c1b9dcb2e2cd6eaf2a22b908c91():
+def _process_dataclass__513a3812c33c8abe4d63e23623cf6ca96da920c9():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1847,7 +1888,8 @@ def _process_dataclass__7240d2f7f6a94c1b9dcb2e2cd6eaf2a22b908c91():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"common={self.common!r}")
+            if (s := __dataclass__repr__default_fn(self.common)) is not None:
+                parts.append(f"common={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1890,9 +1932,9 @@ def _process_dataclass__7240d2f7f6a94c1b9dcb2e2cd6eaf2a22b908c91():
         "prPlan.Field(name='version', kw_only=False, fn=None), ReprPlan.Field(name='summary', kw_only=False, fn=None), "
         "ReprPlan.Field(name='description', kw_only=False, fn=None), ReprPlan.Field(name='terms_of_service', kw_only=Fa"
         "lse, fn=None), ReprPlan.Field(name='contact', kw_only=False, fn=None), ReprPlan.Field(name='license', kw_only="
-        "False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='1a5fe60b37cb1c9072901fdf37f68a2d30c014cd',
+    plan_repr_sha1='5f1e1eec066ba3cbccd2ca9c47c2b2efe9f82729',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -1906,12 +1948,13 @@ def _process_dataclass__7240d2f7f6a94c1b9dcb2e2cd6eaf2a22b908c91():
         '__dataclass__init__fields__5__default',
         '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Info'),
     ),
 )
-def _process_dataclass__1a5fe60b37cb1c9072901fdf37f68a2d30c014cd():
+def _process_dataclass__5f1e1eec066ba3cbccd2ca9c47c2b2efe9f82729():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1927,6 +1970,7 @@ def _process_dataclass__1a5fe60b37cb1c9072901fdf37f68a2d30c014cd():
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2065,13 +2109,20 @@ def _process_dataclass__1a5fe60b37cb1c9072901fdf37f68a2d30c014cd():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"title={self.title!r}")
-            parts.append(f"version={self.version!r}")
-            parts.append(f"summary={self.summary!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"terms_of_service={self.terms_of_service!r}")
-            parts.append(f"contact={self.contact!r}")
-            parts.append(f"license={self.license!r}")
+            if (s := __dataclass__repr__default_fn(self.title)) is not None:
+                parts.append(f"title={s}")
+            if (s := __dataclass__repr__default_fn(self.version)) is not None:
+                parts.append(f"version={s}")
+            if (s := __dataclass__repr__default_fn(self.summary)) is not None:
+                parts.append(f"summary={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.terms_of_service)) is not None:
+                parts.append(f"terms_of_service={s}")
+            if (s := __dataclass__repr__default_fn(self.contact)) is not None:
+                parts.append(f"contact={s}")
+            if (s := __dataclass__repr__default_fn(self.license)) is not None:
+                parts.append(f"license={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2100,21 +2151,22 @@ def _process_dataclass__1a5fe60b37cb1c9072901fdf37f68a2d30c014cd():
         "ck_type=None)), self_param='self', std_params=('name', 'identifier', 'url'), kw_only_params=(), frozen=True, s"
         "lots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name',"
         " kw_only=False, fn=None), ReprPlan.Field(name='identifier', kw_only=False, fn=None), ReprPlan.Field(name='url'"
-        ", kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        ", kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='b638b2a1e88aacfeb92dac3c6dab88ce5a6681b3',
+    plan_repr_sha1='87af0c109e49bcc4ab83b6b35870077c91033b7f',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'License'),
     ),
 )
-def _process_dataclass__b638b2a1e88aacfeb92dac3c6dab88ce5a6681b3():
+def _process_dataclass__87af0c109e49bcc4ab83b6b35870077c91033b7f():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2123,6 +2175,7 @@ def _process_dataclass__b638b2a1e88aacfeb92dac3c6dab88ce5a6681b3():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2233,9 +2286,12 @@ def _process_dataclass__b638b2a1e88aacfeb92dac3c6dab88ce5a6681b3():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"name={self.name!r}")
-            parts.append(f"identifier={self.identifier!r}")
-            parts.append(f"url={self.url!r}")
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.identifier)) is not None:
+                parts.append(f"identifier={s}")
+            if (s := __dataclass__repr__default_fn(self.url)) is not None:
+                parts.append(f"url={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2276,9 +2332,9 @@ def _process_dataclass__b638b2a1e88aacfeb92dac3c6dab88ce5a6681b3():
         "ame='operation_ref', kw_only=False, fn=None), ReprPlan.Field(name='operation_id', kw_only=False, fn=None), Rep"
         "rPlan.Field(name='parameters', kw_only=False, fn=None), ReprPlan.Field(name='request_body', kw_only=False, fn="
         "None), ReprPlan.Field(name='description', kw_only=False, fn=None), ReprPlan.Field(name='server', kw_only=False"
-        ", fn=None)), id=False, terse=False, default_fn=None)))"
+        ", fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='ec0f4081c40baf8094bc6b4db50436c02b5ea321',
+    plan_repr_sha1='68f380551d5fcf6a7b62539649fb8a049f38e6a8',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2292,12 +2348,13 @@ def _process_dataclass__b638b2a1e88aacfeb92dac3c6dab88ce5a6681b3():
         '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__5__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Link'),
     ),
 )
-def _process_dataclass__ec0f4081c40baf8094bc6b4db50436c02b5ea321():
+def _process_dataclass__68f380551d5fcf6a7b62539649fb8a049f38e6a8():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2313,6 +2370,7 @@ def _process_dataclass__ec0f4081c40baf8094bc6b4db50436c02b5ea321():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2444,12 +2502,18 @@ def _process_dataclass__ec0f4081c40baf8094bc6b4db50436c02b5ea321():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"operation_ref={self.operation_ref!r}")
-            parts.append(f"operation_id={self.operation_id!r}")
-            parts.append(f"parameters={self.parameters!r}")
-            parts.append(f"request_body={self.request_body!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"server={self.server!r}")
+            if (s := __dataclass__repr__default_fn(self.operation_ref)) is not None:
+                parts.append(f"operation_ref={s}")
+            if (s := __dataclass__repr__default_fn(self.operation_id)) is not None:
+                parts.append(f"operation_id={s}")
+            if (s := __dataclass__repr__default_fn(self.parameters)) is not None:
+                parts.append(f"parameters={s}")
+            if (s := __dataclass__repr__default_fn(self.request_body)) is not None:
+                parts.append(f"request_body={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.server)) is not None:
+                parts.append(f"server={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2482,9 +2546,9 @@ def _process_dataclass__ec0f4081c40baf8094bc6b4db50436c02b5ea321():
         "ng'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprP"
         "lan(fields=(ReprPlan.Field(name='schema', kw_only=False, fn=None), ReprPlan.Field(name='example', kw_only=Fals"
         "e, fn=None), ReprPlan.Field(name='examples', kw_only=False, fn=None), ReprPlan.Field(name='encoding', kw_only="
-        "False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='b1e39ab3eddf3d842ce704ed8f5995acd70f5611',
+    plan_repr_sha1='0c0080dfcfaf4cc95b55cdf6b5b5909bc1125e15',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2494,12 +2558,13 @@ def _process_dataclass__ec0f4081c40baf8094bc6b4db50436c02b5ea321():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'MediaType'),
     ),
 )
-def _process_dataclass__b1e39ab3eddf3d842ce704ed8f5995acd70f5611():
+def _process_dataclass__0c0080dfcfaf4cc95b55cdf6b5b5909bc1125e15():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2511,6 +2576,7 @@ def _process_dataclass__b1e39ab3eddf3d842ce704ed8f5995acd70f5611():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2628,10 +2694,14 @@ def _process_dataclass__b1e39ab3eddf3d842ce704ed8f5995acd70f5611():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"schema={self.schema!r}")
-            parts.append(f"example={self.example!r}")
-            parts.append(f"examples={self.examples!r}")
-            parts.append(f"encoding={self.encoding!r}")
+            if (s := __dataclass__repr__default_fn(self.schema)) is not None:
+                parts.append(f"schema={s}")
+            if (s := __dataclass__repr__default_fn(self.example)) is not None:
+                parts.append(f"example={s}")
+            if (s := __dataclass__repr__default_fn(self.examples)) is not None:
+                parts.append(f"examples={s}")
+            if (s := __dataclass__repr__default_fn(self.encoding)) is not None:
+                parts.append(f"encoding={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2664,21 +2734,22 @@ def _process_dataclass__b1e39ab3eddf3d842ce704ed8f5995acd70f5611():
         "arams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Rep"
         "rPlan.Field(name='authorization_url', kw_only=False, fn=None), ReprPlan.Field(name='token_url', kw_only=False,"
         " fn=None), ReprPlan.Field(name='scopes', kw_only=False, fn=None), ReprPlan.Field(name='refresh_ur', kw_only=Fa"
-        "lse, fn=None)), id=False, terse=False, default_fn=None)))"
+        "lse, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='de496e5c943c7c463a010470029e2c8626fbe1db',
+    plan_repr_sha1='f66d1979aaf6ccb54ddc86ecad04e787f2d5b154',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'OauthFlow'),
     ),
 )
-def _process_dataclass__de496e5c943c7c463a010470029e2c8626fbe1db():
+def _process_dataclass__f66d1979aaf6ccb54ddc86ecad04e787f2d5b154():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2687,6 +2758,7 @@ def _process_dataclass__de496e5c943c7c463a010470029e2c8626fbe1db():
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2804,10 +2876,14 @@ def _process_dataclass__de496e5c943c7c463a010470029e2c8626fbe1db():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"authorization_url={self.authorization_url!r}")
-            parts.append(f"token_url={self.token_url!r}")
-            parts.append(f"scopes={self.scopes!r}")
-            parts.append(f"refresh_ur={self.refresh_ur!r}")
+            if (s := __dataclass__repr__default_fn(self.authorization_url)) is not None:
+                parts.append(f"authorization_url={s}")
+            if (s := __dataclass__repr__default_fn(self.token_url)) is not None:
+                parts.append(f"token_url={s}")
+            if (s := __dataclass__repr__default_fn(self.scopes)) is not None:
+                parts.append(f"scopes={s}")
+            if (s := __dataclass__repr__default_fn(self.refresh_ur)) is not None:
+                parts.append(f"refresh_ur={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2841,9 +2917,10 @@ def _process_dataclass__de496e5c943c7c463a010470029e2c8626fbe1db():
         "dentials', 'authorization_code'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns"
         "=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='implicit', kw_only=False, fn=None), ReprPlan.Fiel"
         "d(name='password', kw_only=False, fn=None), ReprPlan.Field(name='client_credentials', kw_only=False, fn=None),"
-        " ReprPlan.Field(name='authorization_code', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        " ReprPlan.Field(name='authorization_code', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(n"
+        "ame='repr.default_fn'))))"
     ),
-    plan_repr_sha1='b1d9f14f898b8bd20dde927dd4bbceb75a4ab2e7',
+    plan_repr_sha1='c2628e645062ee631a5099d82bc8fbbcd320b6c0',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2853,12 +2930,13 @@ def _process_dataclass__de496e5c943c7c463a010470029e2c8626fbe1db():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'OauthFlows'),
     ),
 )
-def _process_dataclass__b1d9f14f898b8bd20dde927dd4bbceb75a4ab2e7():
+def _process_dataclass__c2628e645062ee631a5099d82bc8fbbcd320b6c0():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2870,6 +2948,7 @@ def _process_dataclass__b1d9f14f898b8bd20dde927dd4bbceb75a4ab2e7():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2987,10 +3066,14 @@ def _process_dataclass__b1d9f14f898b8bd20dde927dd4bbceb75a4ab2e7():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"implicit={self.implicit!r}")
-            parts.append(f"password={self.password!r}")
-            parts.append(f"client_credentials={self.client_credentials!r}")
-            parts.append(f"authorization_code={self.authorization_code!r}")
+            if (s := __dataclass__repr__default_fn(self.implicit)) is not None:
+                parts.append(f"implicit={s}")
+            if (s := __dataclass__repr__default_fn(self.password)) is not None:
+                parts.append(f"password={s}")
+            if (s := __dataclass__repr__default_fn(self.client_credentials)) is not None:
+                parts.append(f"client_credentials={s}")
+            if (s := __dataclass__repr__default_fn(self.authorization_code)) is not None:
+                parts.append(f"authorization_code={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3047,9 +3130,9 @@ def _process_dataclass__b1d9f14f898b8bd20dde927dd4bbceb75a4ab2e7():
         "=False, fn=None), ReprPlan.Field(name='components', kw_only=False, fn=None), ReprPlan.Field(name='security', k"
         "w_only=False, fn=None), ReprPlan.Field(name='tags', kw_only=False, fn=None), ReprPlan.Field(name='external_doc"
         "s', kw_only=False, fn=None), ReprPlan.Field(name='x', kw_only=False, fn=None)), id=False, terse=False, default"
-        "_fn=None)))"
+        "_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='e9c8a7510aa2cda46b324e79278e222150299dfc',
+    plan_repr_sha1='005124240f699ee17389834eb8ae96f50e1bc933',
     op_ref_idents=(
         '__dataclass__init__fields__00__annotation',
         '__dataclass__init__fields__01__annotation',
@@ -3072,12 +3155,13 @@ def _process_dataclass__b1d9f14f898b8bd20dde927dd4bbceb75a4ab2e7():
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__init_fns__0',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Openapi'),
     ),
 )
-def _process_dataclass__e9c8a7510aa2cda46b324e79278e222150299dfc():
+def _process_dataclass__005124240f699ee17389834eb8ae96f50e1bc933():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3102,6 +3186,7 @@ def _process_dataclass__e9c8a7510aa2cda46b324e79278e222150299dfc():
         __dataclass__init__fields__10__annotation,
         __dataclass__init__fields__10__default,
         __dataclass__init__init_fns__0,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3269,17 +3354,28 @@ def _process_dataclass__e9c8a7510aa2cda46b324e79278e222150299dfc():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"openapi={self.openapi!r}")
-            parts.append(f"info={self.info!r}")
-            parts.append(f"json_schema_dialect={self.json_schema_dialect!r}")
-            parts.append(f"servers={self.servers!r}")
-            parts.append(f"paths={self.paths!r}")
-            parts.append(f"webhooks={self.webhooks!r}")
-            parts.append(f"components={self.components!r}")
-            parts.append(f"security={self.security!r}")
-            parts.append(f"tags={self.tags!r}")
-            parts.append(f"external_docs={self.external_docs!r}")
-            parts.append(f"x={self.x!r}")
+            if (s := __dataclass__repr__default_fn(self.openapi)) is not None:
+                parts.append(f"openapi={s}")
+            if (s := __dataclass__repr__default_fn(self.info)) is not None:
+                parts.append(f"info={s}")
+            if (s := __dataclass__repr__default_fn(self.json_schema_dialect)) is not None:
+                parts.append(f"json_schema_dialect={s}")
+            if (s := __dataclass__repr__default_fn(self.servers)) is not None:
+                parts.append(f"servers={s}")
+            if (s := __dataclass__repr__default_fn(self.paths)) is not None:
+                parts.append(f"paths={s}")
+            if (s := __dataclass__repr__default_fn(self.webhooks)) is not None:
+                parts.append(f"webhooks={s}")
+            if (s := __dataclass__repr__default_fn(self.components)) is not None:
+                parts.append(f"components={s}")
+            if (s := __dataclass__repr__default_fn(self.security)) is not None:
+                parts.append(f"security={s}")
+            if (s := __dataclass__repr__default_fn(self.tags)) is not None:
+                parts.append(f"tags={s}")
+            if (s := __dataclass__repr__default_fn(self.external_docs)) is not None:
+                parts.append(f"external_docs={s}")
+            if (s := __dataclass__repr__default_fn(self.x)) is not None:
+                parts.append(f"x={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3344,9 +3440,9 @@ def _process_dataclass__e9c8a7510aa2cda46b324e79278e222150299dfc():
         " kw_only=False, fn=None), ReprPlan.Field(name='callbacks', kw_only=False, fn=None), ReprPlan.Field(name='depre"
         "cated', kw_only=False, fn=None), ReprPlan.Field(name='security', kw_only=False, fn=None), ReprPlan.Field(name="
         "'servers', kw_only=False, fn=None), ReprPlan.Field(name='x', kw_only=False, fn=None)), id=False, terse=False, "
-        "default_fn=None)))"
+        "default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='f7841955c71bc1ec7b98b8ec987d307d88c49517',
+    plan_repr_sha1='8ee4073aac44214f307f150371e41de5d524aa9d',
     op_ref_idents=(
         '__dataclass__init__fields__00__annotation',
         '__dataclass__init__fields__00__default',
@@ -3375,12 +3471,13 @@ def _process_dataclass__e9c8a7510aa2cda46b324e79278e222150299dfc():
         '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
         '__dataclass__init__init_fns__0',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Operation'),
     ),
 )
-def _process_dataclass__f7841955c71bc1ec7b98b8ec987d307d88c49517():
+def _process_dataclass__8ee4073aac44214f307f150371e41de5d524aa9d():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3411,6 +3508,7 @@ def _process_dataclass__f7841955c71bc1ec7b98b8ec987d307d88c49517():
         __dataclass__init__fields__12__annotation,
         __dataclass__init__fields__12__default,
         __dataclass__init__init_fns__0,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3592,19 +3690,32 @@ def _process_dataclass__f7841955c71bc1ec7b98b8ec987d307d88c49517():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"tags={self.tags!r}")
-            parts.append(f"summary={self.summary!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"external_docs={self.external_docs!r}")
-            parts.append(f"operation_id={self.operation_id!r}")
-            parts.append(f"parameters={self.parameters!r}")
-            parts.append(f"request_body={self.request_body!r}")
-            parts.append(f"responses={self.responses!r}")
-            parts.append(f"callbacks={self.callbacks!r}")
-            parts.append(f"deprecated={self.deprecated!r}")
-            parts.append(f"security={self.security!r}")
-            parts.append(f"servers={self.servers!r}")
-            parts.append(f"x={self.x!r}")
+            if (s := __dataclass__repr__default_fn(self.tags)) is not None:
+                parts.append(f"tags={s}")
+            if (s := __dataclass__repr__default_fn(self.summary)) is not None:
+                parts.append(f"summary={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.external_docs)) is not None:
+                parts.append(f"external_docs={s}")
+            if (s := __dataclass__repr__default_fn(self.operation_id)) is not None:
+                parts.append(f"operation_id={s}")
+            if (s := __dataclass__repr__default_fn(self.parameters)) is not None:
+                parts.append(f"parameters={s}")
+            if (s := __dataclass__repr__default_fn(self.request_body)) is not None:
+                parts.append(f"request_body={s}")
+            if (s := __dataclass__repr__default_fn(self.responses)) is not None:
+                parts.append(f"responses={s}")
+            if (s := __dataclass__repr__default_fn(self.callbacks)) is not None:
+                parts.append(f"callbacks={s}")
+            if (s := __dataclass__repr__default_fn(self.deprecated)) is not None:
+                parts.append(f"deprecated={s}")
+            if (s := __dataclass__repr__default_fn(self.security)) is not None:
+                parts.append(f"security={s}")
+            if (s := __dataclass__repr__default_fn(self.servers)) is not None:
+                parts.append(f"servers={s}")
+            if (s := __dataclass__repr__default_fn(self.x)) is not None:
+                parts.append(f"x={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3632,25 +3743,28 @@ def _process_dataclass__f7841955c71bc1ec7b98b8ec987d307d88c49517():
         "rce=None, validate=None, check_type=None)), self_param='self', std_params=('name', 'in_', 'common'), kw_only_p"
         "arams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Rep"
         "rPlan.Field(name='name', kw_only=False, fn=None), ReprPlan.Field(name='in_', kw_only=False, fn=None), ReprPlan"
-        ".Field(name='common', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        ".Field(name='common', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'"
+        "))))"
     ),
-    plan_repr_sha1='fd25dfde92b5cfa6342822281373131a3b6762f4',
+    plan_repr_sha1='413190da51b24ddc1aa6c3e244090f3d38971a03',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Parameter'),
     ),
 )
-def _process_dataclass__fd25dfde92b5cfa6342822281373131a3b6762f4():
+def _process_dataclass__413190da51b24ddc1aa6c3e244090f3d38971a03():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3761,9 +3875,12 @@ def _process_dataclass__fd25dfde92b5cfa6342822281373131a3b6762f4():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"name={self.name!r}")
-            parts.append(f"in_={self.in_!r}")
-            parts.append(f"common={self.common!r}")
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.in_)) is not None:
+                parts.append(f"in_={s}")
+            if (s := __dataclass__repr__default_fn(self.common)) is not None:
+                parts.append(f"common={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3845,9 +3962,9 @@ def _process_dataclass__fd25dfde92b5cfa6342822281373131a3b6762f4():
         "abel', kw_only=False, fn=None), ReprPlan.Field(name='form', kw_only=False, fn=None), ReprPlan.Field(name='simp"
         "le', kw_only=False, fn=None), ReprPlan.Field(name='space_delimited', kw_only=False, fn=None), ReprPlan.Field(n"
         "ame='pipe_delimited', kw_only=False, fn=None), ReprPlan.Field(name='deep_object', kw_only=False, fn=None)), id"
-        "=False, terse=False, default_fn=None)))"
+        "=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='efc6326179f66130ced0ea3c0a0c5e7d4c69957c',
+    plan_repr_sha1='245ffee6800cd0e12fb4c9b9d49d44fbce1db4b3',
     op_ref_idents=(
         '__dataclass__init__fields__00__annotation',
         '__dataclass__init__fields__00__default',
@@ -3885,12 +4002,13 @@ def _process_dataclass__fd25dfde92b5cfa6342822281373131a3b6762f4():
         '__dataclass__init__fields__16__default',
         '__dataclass__init__fields__17__annotation',
         '__dataclass__init__fields__17__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'ParameterCommon'),
     ),
 )
-def _process_dataclass__efc6326179f66130ced0ea3c0a0c5e7d4c69957c():
+def _process_dataclass__245ffee6800cd0e12fb4c9b9d49d44fbce1db4b3():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3930,6 +4048,7 @@ def _process_dataclass__efc6326179f66130ced0ea3c0a0c5e7d4c69957c():
         __dataclass__init__fields__16__default,
         __dataclass__init__fields__17__annotation,
         __dataclass__init__fields__17__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4145,24 +4264,42 @@ def _process_dataclass__efc6326179f66130ced0ea3c0a0c5e7d4c69957c():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"description={self.description!r}")
-            parts.append(f"required={self.required!r}")
-            parts.append(f"deprecated={self.deprecated!r}")
-            parts.append(f"allow_empty_value={self.allow_empty_value!r}")
-            parts.append(f"style={self.style!r}")
-            parts.append(f"explode={self.explode!r}")
-            parts.append(f"allow_reserved={self.allow_reserved!r}")
-            parts.append(f"schema={self.schema!r}")
-            parts.append(f"example={self.example!r}")
-            parts.append(f"examples={self.examples!r}")
-            parts.append(f"content={self.content!r}")
-            parts.append(f"matrix={self.matrix!r}")
-            parts.append(f"label={self.label!r}")
-            parts.append(f"form={self.form!r}")
-            parts.append(f"simple={self.simple!r}")
-            parts.append(f"space_delimited={self.space_delimited!r}")
-            parts.append(f"pipe_delimited={self.pipe_delimited!r}")
-            parts.append(f"deep_object={self.deep_object!r}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.required)) is not None:
+                parts.append(f"required={s}")
+            if (s := __dataclass__repr__default_fn(self.deprecated)) is not None:
+                parts.append(f"deprecated={s}")
+            if (s := __dataclass__repr__default_fn(self.allow_empty_value)) is not None:
+                parts.append(f"allow_empty_value={s}")
+            if (s := __dataclass__repr__default_fn(self.style)) is not None:
+                parts.append(f"style={s}")
+            if (s := __dataclass__repr__default_fn(self.explode)) is not None:
+                parts.append(f"explode={s}")
+            if (s := __dataclass__repr__default_fn(self.allow_reserved)) is not None:
+                parts.append(f"allow_reserved={s}")
+            if (s := __dataclass__repr__default_fn(self.schema)) is not None:
+                parts.append(f"schema={s}")
+            if (s := __dataclass__repr__default_fn(self.example)) is not None:
+                parts.append(f"example={s}")
+            if (s := __dataclass__repr__default_fn(self.examples)) is not None:
+                parts.append(f"examples={s}")
+            if (s := __dataclass__repr__default_fn(self.content)) is not None:
+                parts.append(f"content={s}")
+            if (s := __dataclass__repr__default_fn(self.matrix)) is not None:
+                parts.append(f"matrix={s}")
+            if (s := __dataclass__repr__default_fn(self.label)) is not None:
+                parts.append(f"label={s}")
+            if (s := __dataclass__repr__default_fn(self.form)) is not None:
+                parts.append(f"form={s}")
+            if (s := __dataclass__repr__default_fn(self.simple)) is not None:
+                parts.append(f"simple={s}")
+            if (s := __dataclass__repr__default_fn(self.space_delimited)) is not None:
+                parts.append(f"space_delimited={s}")
+            if (s := __dataclass__repr__default_fn(self.pipe_delimited)) is not None:
+                parts.append(f"pipe_delimited={s}")
+            if (s := __dataclass__repr__default_fn(self.deep_object)) is not None:
+                parts.append(f"deep_object={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -4224,9 +4361,9 @@ def _process_dataclass__efc6326179f66130ced0ea3c0a0c5e7d4c69957c():
         "=None), ReprPlan.Field(name='options', kw_only=False, fn=None), ReprPlan.Field(name='head', kw_only=False, fn="
         "None), ReprPlan.Field(name='patch', kw_only=False, fn=None), ReprPlan.Field(name='trace', kw_only=False, fn=No"
         "ne), ReprPlan.Field(name='servers', kw_only=False, fn=None), ReprPlan.Field(name='parameters', kw_only=False, "
-        "fn=None)), id=False, terse=False, default_fn=None)))"
+        "fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='6b3d69046f48a679bc05e9eb118a1248af80d485',
+    plan_repr_sha1='eddcd6e3715fc20c3fab37afd67aa30033d225fb',
     op_ref_idents=(
         '__dataclass__init__fields__00__annotation',
         '__dataclass__init__fields__00__default',
@@ -4254,12 +4391,13 @@ def _process_dataclass__efc6326179f66130ced0ea3c0a0c5e7d4c69957c():
         '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'PathItem'),
     ),
 )
-def _process_dataclass__6b3d69046f48a679bc05e9eb118a1248af80d485():
+def _process_dataclass__eddcd6e3715fc20c3fab37afd67aa30033d225fb():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4289,6 +4427,7 @@ def _process_dataclass__6b3d69046f48a679bc05e9eb118a1248af80d485():
         __dataclass__init__fields__11__default,
         __dataclass__init__fields__12__annotation,
         __dataclass__init__fields__12__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4469,19 +4608,32 @@ def _process_dataclass__6b3d69046f48a679bc05e9eb118a1248af80d485():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"ref={self.ref!r}")
-            parts.append(f"summary={self.summary!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"get={self.get!r}")
-            parts.append(f"put={self.put!r}")
-            parts.append(f"post={self.post!r}")
-            parts.append(f"delete={self.delete!r}")
-            parts.append(f"options={self.options!r}")
-            parts.append(f"head={self.head!r}")
-            parts.append(f"patch={self.patch!r}")
-            parts.append(f"trace={self.trace!r}")
-            parts.append(f"servers={self.servers!r}")
-            parts.append(f"parameters={self.parameters!r}")
+            if (s := __dataclass__repr__default_fn(self.ref)) is not None:
+                parts.append(f"ref={s}")
+            if (s := __dataclass__repr__default_fn(self.summary)) is not None:
+                parts.append(f"summary={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.get)) is not None:
+                parts.append(f"get={s}")
+            if (s := __dataclass__repr__default_fn(self.put)) is not None:
+                parts.append(f"put={s}")
+            if (s := __dataclass__repr__default_fn(self.post)) is not None:
+                parts.append(f"post={s}")
+            if (s := __dataclass__repr__default_fn(self.delete)) is not None:
+                parts.append(f"delete={s}")
+            if (s := __dataclass__repr__default_fn(self.options)) is not None:
+                parts.append(f"options={s}")
+            if (s := __dataclass__repr__default_fn(self.head)) is not None:
+                parts.append(f"head={s}")
+            if (s := __dataclass__repr__default_fn(self.patch)) is not None:
+                parts.append(f"patch={s}")
+            if (s := __dataclass__repr__default_fn(self.trace)) is not None:
+                parts.append(f"trace={s}")
+            if (s := __dataclass__repr__default_fn(self.servers)) is not None:
+                parts.append(f"servers={s}")
+            if (s := __dataclass__repr__default_fn(self.parameters)) is not None:
+                parts.append(f"parameters={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -4510,21 +4662,23 @@ def _process_dataclass__6b3d69046f48a679bc05e9eb118a1248af80d485():
         ", validate=None, check_type=None)), self_param='self', std_params=('ref', 'summary', 'description'), kw_only_p"
         "arams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Rep"
         "rPlan.Field(name='ref', kw_only=False, fn=None), ReprPlan.Field(name='summary', kw_only=False, fn=None), ReprP"
-        "lan.Field(name='description', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "lan.Field(name='description', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.def"
+        "ault_fn'))))"
     ),
-    plan_repr_sha1='323965ddb964e2f2d91aade97df7172cf67d092e',
+    plan_repr_sha1='3670b9ebea893cec23429f0248849b2585df602b',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Reference'),
     ),
 )
-def _process_dataclass__323965ddb964e2f2d91aade97df7172cf67d092e():
+def _process_dataclass__3670b9ebea893cec23429f0248849b2585df602b():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4533,6 +4687,7 @@ def _process_dataclass__323965ddb964e2f2d91aade97df7172cf67d092e():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4643,9 +4798,12 @@ def _process_dataclass__323965ddb964e2f2d91aade97df7172cf67d092e():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"ref={self.ref!r}")
-            parts.append(f"summary={self.summary!r}")
-            parts.append(f"description={self.description!r}")
+            if (s := __dataclass__repr__default_fn(self.ref)) is not None:
+                parts.append(f"ref={s}")
+            if (s := __dataclass__repr__default_fn(self.summary)) is not None:
+                parts.append(f"summary={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -4675,21 +4833,22 @@ def _process_dataclass__323965ddb964e2f2d91aade97df7172cf67d092e():
         "ption', 'required'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate"
         "_fns=()), ReprPlan(fields=(ReprPlan.Field(name='content', kw_only=False, fn=None), ReprPlan.Field(name='descri"
         "ption', kw_only=False, fn=None), ReprPlan.Field(name='required', kw_only=False, fn=None)), id=False, terse=Fal"
-        "se, default_fn=None)))"
+        "se, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='b5622fe959f2268ad97594541b8226d64c319c14',
+    plan_repr_sha1='4d7b50c4830d77baf175395781b487267d8cc483',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'RequestBody'),
     ),
 )
-def _process_dataclass__b5622fe959f2268ad97594541b8226d64c319c14():
+def _process_dataclass__4d7b50c4830d77baf175395781b487267d8cc483():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4698,6 +4857,7 @@ def _process_dataclass__b5622fe959f2268ad97594541b8226d64c319c14():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4808,9 +4968,12 @@ def _process_dataclass__b5622fe959f2268ad97594541b8226d64c319c14():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"content={self.content!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"required={self.required!r}")
+            if (s := __dataclass__repr__default_fn(self.content)) is not None:
+                parts.append(f"content={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.required)) is not None:
+                parts.append(f"required={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -4843,9 +5006,9 @@ def _process_dataclass__b5622fe959f2268ad97594541b8226d64c319c14():
         "frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Fiel"
         "d(name='description', kw_only=False, fn=None), ReprPlan.Field(name='headers', kw_only=False, fn=None), ReprPla"
         "n.Field(name='content', kw_only=False, fn=None), ReprPlan.Field(name='links', kw_only=False, fn=None)), id=Fal"
-        "se, terse=False, default_fn=None)))"
+        "se, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='51c756c2e4d549bfb6e40d3238d92f20b84f2366',
+    plan_repr_sha1='ba1130aff126463fd8f758d0ad559b5d4d40de0c',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -4854,12 +5017,13 @@ def _process_dataclass__b5622fe959f2268ad97594541b8226d64c319c14():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Response'),
     ),
 )
-def _process_dataclass__51c756c2e4d549bfb6e40d3238d92f20b84f2366():
+def _process_dataclass__ba1130aff126463fd8f758d0ad559b5d4d40de0c():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4870,6 +5034,7 @@ def _process_dataclass__51c756c2e4d549bfb6e40d3238d92f20b84f2366():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4987,10 +5152,14 @@ def _process_dataclass__51c756c2e4d549bfb6e40d3238d92f20b84f2366():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"description={self.description!r}")
-            parts.append(f"headers={self.headers!r}")
-            parts.append(f"content={self.content!r}")
-            parts.append(f"links={self.links!r}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.headers)) is not None:
+                parts.append(f"headers={s}")
+            if (s := __dataclass__repr__default_fn(self.content)) is not None:
+                parts.append(f"content={s}")
+            if (s := __dataclass__repr__default_fn(self.links)) is not None:
+                parts.append(f"links={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -5027,9 +5196,9 @@ def _process_dataclass__51c756c2e4d549bfb6e40d3238d92f20b84f2366():
         "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='discriminator', kw_only=False, fn=None), ReprPlan.F"
         "ield(name='xml', kw_only=False, fn=None), ReprPlan.Field(name='external_docs', kw_only=False, fn=None), ReprPl"
         "an.Field(name='example', kw_only=False, fn=None), ReprPlan.Field(name='keywords', kw_only=False, fn=None)), id"
-        "=False, terse=False, default_fn=None)))"
+        "=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='386b999cea6f0be35219650ec51b842634c7f807',
+    plan_repr_sha1='9dfacb9a92daa4820108c7c6b2beff0e8e7c7896',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -5041,12 +5210,13 @@ def _process_dataclass__51c756c2e4d549bfb6e40d3238d92f20b84f2366():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Schema'),
     ),
 )
-def _process_dataclass__386b999cea6f0be35219650ec51b842634c7f807():
+def _process_dataclass__9dfacb9a92daa4820108c7c6b2beff0e8e7c7896():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5060,6 +5230,7 @@ def _process_dataclass__386b999cea6f0be35219650ec51b842634c7f807():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5184,11 +5355,16 @@ def _process_dataclass__386b999cea6f0be35219650ec51b842634c7f807():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"discriminator={self.discriminator!r}")
-            parts.append(f"xml={self.xml!r}")
-            parts.append(f"external_docs={self.external_docs!r}")
-            parts.append(f"example={self.example!r}")
-            parts.append(f"keywords={self.keywords!r}")
+            if (s := __dataclass__repr__default_fn(self.discriminator)) is not None:
+                parts.append(f"discriminator={s}")
+            if (s := __dataclass__repr__default_fn(self.xml)) is not None:
+                parts.append(f"xml={s}")
+            if (s := __dataclass__repr__default_fn(self.external_docs)) is not None:
+                parts.append(f"external_docs={s}")
+            if (s := __dataclass__repr__default_fn(self.example)) is not None:
+                parts.append(f"example={s}")
+            if (s := __dataclass__repr__default_fn(self.keywords)) is not None:
+                parts.append(f"keywords={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -5234,9 +5410,9 @@ def _process_dataclass__386b999cea6f0be35219650ec51b842634c7f807():
         "=False, fn=None), ReprPlan.Field(name='name', kw_only=False, fn=None), ReprPlan.Field(name='in_', kw_only=Fals"
         "e, fn=None), ReprPlan.Field(name='description', kw_only=False, fn=None), ReprPlan.Field(name='bearer_format', "
         "kw_only=False, fn=None), ReprPlan.Field(name='flows', kw_only=False, fn=None), ReprPlan.Field(name='open_id_co"
-        "nnect_url', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "nnect_url', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='53e8436df184552086ca4992d226be5419027fb8',
+    plan_repr_sha1='8d8e79ef7f961f4f87613951588263cba38367cd',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -5252,12 +5428,13 @@ def _process_dataclass__386b999cea6f0be35219650ec51b842634c7f807():
         '__dataclass__init__fields__6__default',
         '__dataclass__init__fields__7__annotation',
         '__dataclass__init__fields__7__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'SecurityScheme'),
     ),
 )
-def _process_dataclass__53e8436df184552086ca4992d226be5419027fb8():
+def _process_dataclass__8d8e79ef7f961f4f87613951588263cba38367cd():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5275,6 +5452,7 @@ def _process_dataclass__53e8436df184552086ca4992d226be5419027fb8():
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5420,14 +5598,22 @@ def _process_dataclass__53e8436df184552086ca4992d226be5419027fb8():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"type={self.type!r}")
-            parts.append(f"scheme={self.scheme!r}")
-            parts.append(f"name={self.name!r}")
-            parts.append(f"in_={self.in_!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"bearer_format={self.bearer_format!r}")
-            parts.append(f"flows={self.flows!r}")
-            parts.append(f"open_id_connect_url={self.open_id_connect_url!r}")
+            if (s := __dataclass__repr__default_fn(self.type)) is not None:
+                parts.append(f"type={s}")
+            if (s := __dataclass__repr__default_fn(self.scheme)) is not None:
+                parts.append(f"scheme={s}")
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.in_)) is not None:
+                parts.append(f"in_={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.bearer_format)) is not None:
+                parts.append(f"bearer_format={s}")
+            if (s := __dataclass__repr__default_fn(self.flows)) is not None:
+                parts.append(f"flows={s}")
+            if (s := __dataclass__repr__default_fn(self.open_id_connect_url)) is not None:
+                parts.append(f"open_id_connect_url={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -5456,22 +5642,23 @@ def _process_dataclass__53e8436df184552086ca4992d226be5419027fb8():
         "oerce=None, validate=None, check_type=None)), self_param='self', std_params=('url', 'description', 'variables'"
         "), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan"
         "(fields=(ReprPlan.Field(name='url', kw_only=False, fn=None), ReprPlan.Field(name='description', kw_only=False,"
-        " fn=None), ReprPlan.Field(name='variables', kw_only=False, fn=None)), id=False, terse=False, default_fn=None))"
-        ")"
+        " fn=None), ReprPlan.Field(name='variables', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef("
+        "name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='fb52f9015679daf8725f142028e7e6fec88bbac6',
+    plan_repr_sha1='0d8ff939993b09e0048474b6080b9fc212767363',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Server'),
     ),
 )
-def _process_dataclass__fb52f9015679daf8725f142028e7e6fec88bbac6():
+def _process_dataclass__0d8ff939993b09e0048474b6080b9fc212767363():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5480,6 +5667,7 @@ def _process_dataclass__fb52f9015679daf8725f142028e7e6fec88bbac6():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5590,9 +5778,12 @@ def _process_dataclass__fb52f9015679daf8725f142028e7e6fec88bbac6():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"url={self.url!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"variables={self.variables!r}")
+            if (s := __dataclass__repr__default_fn(self.url)) is not None:
+                parts.append(f"url={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.variables)) is not None:
+                parts.append(f"variables={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -5621,21 +5812,23 @@ def _process_dataclass__fb52f9015679daf8725f142028e7e6fec88bbac6():
         "=None, validate=None, check_type=None)), self_param='self', std_params=('default', 'enum', 'description'), kw_"
         "only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(field"
         "s=(ReprPlan.Field(name='default', kw_only=False, fn=None), ReprPlan.Field(name='enum', kw_only=False, fn=None)"
-        ", ReprPlan.Field(name='description', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        ", ReprPlan.Field(name='description', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='r"
+        "epr.default_fn'))))"
     ),
-    plan_repr_sha1='747fe7f8c4fe5908a4834003dc934d7d1d5d6c56',
+    plan_repr_sha1='ed700960cbf73cb2c74eff6586b4e17b28ce3e64',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'ServerVariable'),
     ),
 )
-def _process_dataclass__747fe7f8c4fe5908a4834003dc934d7d1d5d6c56():
+def _process_dataclass__ed700960cbf73cb2c74eff6586b4e17b28ce3e64():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5644,6 +5837,7 @@ def _process_dataclass__747fe7f8c4fe5908a4834003dc934d7d1d5d6c56():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5754,9 +5948,12 @@ def _process_dataclass__747fe7f8c4fe5908a4834003dc934d7d1d5d6c56():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"default={self.default!r}")
-            parts.append(f"enum={self.enum!r}")
-            parts.append(f"description={self.description!r}")
+            if (s := __dataclass__repr__default_fn(self.default)) is not None:
+                parts.append(f"default={s}")
+            if (s := __dataclass__repr__default_fn(self.enum)) is not None:
+                parts.append(f"enum={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -5786,21 +5983,22 @@ def _process_dataclass__747fe7f8c4fe5908a4834003dc934d7d1d5d6c56():
         "'description', 'external_docs'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns="
         "(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_only=False, fn=None), ReprPlan.Field(nam"
         "e='description', kw_only=False, fn=None), ReprPlan.Field(name='external_docs', kw_only=False, fn=None)), id=Fa"
-        "lse, terse=False, default_fn=None)))"
+        "lse, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='50f667e6a637e33b63010908d90e19e5a797491e',
+    plan_repr_sha1='403f654c39247dc017aa2d5c3ad151dcdf42f5c9',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Tag'),
     ),
 )
-def _process_dataclass__50f667e6a637e33b63010908d90e19e5a797491e():
+def _process_dataclass__403f654c39247dc017aa2d5c3ad151dcdf42f5c9():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5809,6 +6007,7 @@ def _process_dataclass__50f667e6a637e33b63010908d90e19e5a797491e():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5919,9 +6118,12 @@ def _process_dataclass__50f667e6a637e33b63010908d90e19e5a797491e():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"name={self.name!r}")
-            parts.append(f"description={self.description!r}")
-            parts.append(f"external_docs={self.external_docs!r}")
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.description)) is not None:
+                parts.append(f"description={s}")
+            if (s := __dataclass__repr__default_fn(self.external_docs)) is not None:
+                parts.append(f"external_docs={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -5957,9 +6159,10 @@ def _process_dataclass__50f667e6a637e33b63010908d90e19e5a797491e():
         "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
         "ame='name', kw_only=False, fn=None), ReprPlan.Field(name='namespace', kw_only=False, fn=None), ReprPlan.Field("
         "name='prefix', kw_only=False, fn=None), ReprPlan.Field(name='attribute', kw_only=False, fn=None), ReprPlan.Fie"
-        "ld(name='wrapped', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "ld(name='wrapped', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn')))"
+        ")"
     ),
-    plan_repr_sha1='f1cafdf70989687325bd0479c172984b70bcae83',
+    plan_repr_sha1='c7656e6ca8a63c0cf248f48ba702df7d8aac96c5',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -5971,12 +6174,13 @@ def _process_dataclass__50f667e6a637e33b63010908d90e19e5a797491e():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.specs.openapi.openapi', 'Xml'),
     ),
 )
-def _process_dataclass__f1cafdf70989687325bd0479c172984b70bcae83():
+def _process_dataclass__c7656e6ca8a63c0cf248f48ba702df7d8aac96c5():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5990,6 +6194,7 @@ def _process_dataclass__f1cafdf70989687325bd0479c172984b70bcae83():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -6114,11 +6319,16 @@ def _process_dataclass__f1cafdf70989687325bd0479c172984b70bcae83():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"name={self.name!r}")
-            parts.append(f"namespace={self.namespace!r}")
-            parts.append(f"prefix={self.prefix!r}")
-            parts.append(f"attribute={self.attribute!r}")
-            parts.append(f"wrapped={self.wrapped!r}")
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.namespace)) is not None:
+                parts.append(f"namespace={s}")
+            if (s := __dataclass__repr__default_fn(self.prefix)) is not None:
+                parts.append(f"prefix={s}")
+            if (s := __dataclass__repr__default_fn(self.attribute)) is not None:
+                parts.append(f"attribute={s}")
+            if (s := __dataclass__repr__default_fn(self.wrapped)) is not None:
+                parts.append(f"wrapped={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

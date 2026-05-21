@@ -80,7 +80,7 @@ class ObjectMarshaler(Marshaler):
                 if (dks := set(ret) & set(ukf)):
                     raise KeyError(f'Unknown field keys duplicate fields: {dks!r}')
 
-            ret.update(ukf)  # FIXME: marshal?
+                ret.update(ukf)  # FIXME: marshal?
 
         if (usf := self.unwrap_if_single_field) is not None and len(ret) == 1:
             skk, skv = next(iter(ret.items()))

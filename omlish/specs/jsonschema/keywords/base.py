@@ -104,6 +104,8 @@ class KeywordsByTypeMapping(col.ProxyMapping[type[Keyword], Keyword]):
 class Keywords(_Renderable, lang.Final):
     lst: ta.Sequence[Keyword]
 
+    #
+
     @cached.property
     @dc.init
     def by_type(self) -> KeywordsByTypeMapping:
@@ -118,6 +120,8 @@ class Keywords(_Renderable, lang.Final):
     def by_tag(self) -> ta.Mapping[str, Keyword]:
         return col.make_map_by(operator.attrgetter('tag'), self.lst, strict=True)  # noqa
 
+    #
+
     def __getitem__(self, item: type[KeywordT] | str) -> KeywordT:
         if isinstance(item, type):
             return self.by_type[item]  # noqa
@@ -125,6 +129,23 @@ class Keywords(_Renderable, lang.Final):
             return self.by_tag[item]
         else:
             raise TypeError(item)
+
+    def __contains__(self, item: type[Keyword] | str | Keyword) -> bool:
+        if isinstance(item, Keyword):
+            return item in self.lst
+        else:
+            try:
+                self[item]  # noqa
+            except KeyError:
+                return False
+            else:
+                return True
+
+    def __len__(self) -> int:
+        return len(self.lst)
+
+    def __iter__(self) -> ta.Iterator[Keyword]:
+        return iter(self.lst)
 
 
 ##
