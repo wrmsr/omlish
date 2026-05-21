@@ -55,13 +55,11 @@ class GeneratorLike_(Abstract, ta.Generic[O, I, R]):  # noqa
 
 
 @ta.overload
-def adapt_generator_like(gl: GeneratorLike_[O, I, R]) -> ta.Generator[O, I, R]:
-    ...
+def adapt_generator_like(gl: GeneratorLike_[O, I, R]) -> ta.Generator[O, I, R]: ...
 
 
 @ta.overload
-def adapt_generator_like(gl: GeneratorLike[O, I, R]) -> ta.Generator[O, I, R]:
-    ...
+def adapt_generator_like(gl: GeneratorLike[O, I, R]) -> ta.Generator[O, I, R]: ...
 
 
 def adapt_generator_like(gl):

@@ -124,13 +124,11 @@ class ByteStreamBuffers(NamespaceClass):
 
     @classmethod
     @ta.overload
-    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]:
-        ...
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]: ...
 
     @classmethod
     @ta.overload
-    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int:
-        ...
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int: ...
 
     @classmethod
     def bytes_len(cls, obj, or_none=False):

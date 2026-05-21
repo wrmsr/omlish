@@ -112,13 +112,11 @@ class TupleBiMultiMap(BaseBiMultiMap[K, V, tuple[V, ...]], ta.Generic[K, V]):
 
 
 @ta.overload
-def seq_bi_multi_map(dct: ta.Mapping[K, ta.Iterable[V]]) -> SequenceBiMultiMap[K, V]:
-    ...
+def seq_bi_multi_map(dct: ta.Mapping[K, ta.Iterable[V]]) -> SequenceBiMultiMap[K, V]: ...
 
 
 @ta.overload
-def seq_bi_multi_map(items: ta.Iterable[tuple[K, ta.Iterable[V]]]) -> SequenceBiMultiMap[K, V]:
-    ...
+def seq_bi_multi_map(items: ta.Iterable[tuple[K, ta.Iterable[V]]]) -> SequenceBiMultiMap[K, V]: ...
 
 
 def seq_bi_multi_map(*args, **kwargs):

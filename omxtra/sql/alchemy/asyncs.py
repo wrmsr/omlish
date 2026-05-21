@@ -113,33 +113,27 @@ class AsyncEngine:
 
 
 @ta.overload
-def async_adapt(obj: AsyncEngine) -> AsyncEngine:
-    ...
+def async_adapt(obj: AsyncEngine) -> AsyncEngine: ...
 
 
 @ta.overload
-def async_adapt(obj: AsyncConnection) -> AsyncConnection:
-    ...
+def async_adapt(obj: AsyncConnection) -> AsyncConnection: ...
 
 
 @ta.overload
-def async_adapt(obj: AsyncTransaction) -> AsyncTransaction:
-    ...
+def async_adapt(obj: AsyncTransaction) -> AsyncTransaction: ...
 
 
 @ta.overload
-def async_adapt(obj: saa.AsyncEngine) -> AsyncEngine:
-    ...
+def async_adapt(obj: saa.AsyncEngine) -> AsyncEngine: ...
 
 
 @ta.overload
-def async_adapt(obj: saa.AsyncConnection) -> AsyncConnection:
-    ...
+def async_adapt(obj: saa.AsyncConnection) -> AsyncConnection: ...
 
 
 @ta.overload
-def async_adapt(obj: saa.AsyncTransaction) -> AsyncTransaction:
-    ...
+def async_adapt(obj: saa.AsyncTransaction) -> AsyncTransaction: ...
 
 
 def async_adapt(obj: ta.Any) -> ta.Any:

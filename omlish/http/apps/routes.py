@@ -109,13 +109,11 @@ class _HandlesAppMarker(AppMarker, lang.Final):
 
 
 @ta.overload
-def handles(method: KnownMethod, path: PatOrStr) -> ta.Callable[[CallableT], CallableT]:
-    ...
+def handles(method: KnownMethod, path: PatOrStr) -> ta.Callable[[CallableT], CallableT]: ...
 
 
 @ta.overload
-def handles(*routes: Route) -> ta.Callable[[CallableT], CallableT]:
-    ...
+def handles(*routes: Route) -> ta.Callable[[CallableT], CallableT]: ...
 
 
 def handles(*args):

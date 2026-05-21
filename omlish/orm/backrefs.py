@@ -27,12 +27,10 @@ class _BoundBackref(lang.Final, ta.Generic[T]):
 
 class Backref(lang.Abstract, lang.Sealed, ta.Generic[T]):
     @ta.overload
-    def __get__(self, instance: None, owner: ta.Any = None) -> Backref[T]:
-        ...
+    def __get__(self, instance: None, owner: ta.Any = None) -> Backref[T]: ...
 
     @ta.overload
-    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> _BoundBackref[T]:
-        raise NotImplementedError
+    def __get__(self, instance: ta.Any, owner: ta.Any = None) -> _BoundBackref[T]: ...
 
     @abc.abstractmethod
     def __get__(self, instance, owner=None):

@@ -56,13 +56,13 @@ def __omlish_amalg__():  # noqa
             dict(path='../packaging/versions.py', sha1='d515a54dd7fa27a9fd4d8c8617e5a21a3c12ea1e'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
+            dict(path='../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
             dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
+            dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
             dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
-            dict(path='../../omlish/logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
+            dict(path='../../omlish/logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
@@ -974,12 +974,10 @@ class Checks:
         return spec
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T: ...
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any: ...
 
     def isinstance(self, v, spec, msg=None):
         if not isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
@@ -994,12 +992,10 @@ class Checks:
         return v
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]:
-        ...
+    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]: ...
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]:
-        ...
+    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]: ...
 
     def of_isinstance(self, spec, msg=None, /):
         spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa
@@ -1662,13 +1658,11 @@ def strip_with_newline(s: str) -> str:
 
 
 @ta.overload
-def split_keep_delimiter(s: str, d: str) -> str:
-    ...
+def split_keep_delimiter(s: str, d: str) -> str: ...
 
 
 @ta.overload
-def split_keep_delimiter(s: bytes, d: bytes) -> bytes:
-    ...
+def split_keep_delimiter(s: bytes, d: bytes) -> bytes: ...
 
 
 def split_keep_delimiter(s, d):
@@ -1835,12 +1829,10 @@ class NamedLogLevel(int):
     _CACHE: ta.ClassVar[ta.MutableMapping[int, 'NamedLogLevel']] = {}
 
     @ta.overload
-    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel': ...
 
     @ta.overload
-    def __new__(cls, i: int, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, i: int, /) -> 'NamedLogLevel': ...
 
     def __new__(cls, x, offset=0, /):
         if isinstance(x, str):

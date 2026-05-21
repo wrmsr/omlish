@@ -190,12 +190,10 @@ class ClassSpec(_SpecBase, lang.Final):
     _metadata_by_type: ta.ClassVar[ta.Mapping[type, ta.Sequence[ta.Any]]]
 
     @ta.overload
-    def get_last_metadata(self, ty: type[T], default: T) -> T:
-        ...
+    def get_last_metadata(self, ty: type[T], default: T) -> T: ...
 
     @ta.overload
-    def get_last_metadata(self, ty: type[T], default: None = None) -> T | None:
-        ...
+    def get_last_metadata(self, ty: type[T], default: None = None) -> T | None: ...
 
     def get_last_metadata(self, ty, default=None):
         try:

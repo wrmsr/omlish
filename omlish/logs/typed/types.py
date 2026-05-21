@@ -480,18 +480,15 @@ TYPED_LOGGER_VALUE_OR_PROVIDER_OR_ABSENT_TYPES: ta.Tuple[ta.Union[
 
 
 @ta.overload
-def unwrap_typed_logger_field_value(rfv: TypedLoggerValue[T]) -> TypedLoggerValue[T]:
-    ...
+def unwrap_typed_logger_field_value(rfv: TypedLoggerValue[T]) -> TypedLoggerValue[T]: ...
 
 
 @ta.overload
-def unwrap_typed_logger_field_value(rfv: AbsentTypedLoggerValue) -> AbsentTypedLoggerValue:
-    ...
+def unwrap_typed_logger_field_value(rfv: AbsentTypedLoggerValue) -> AbsentTypedLoggerValue: ...
 
 
 @ta.overload
-def unwrap_typed_logger_field_value(rfv: TypedLoggerConstFieldValue) -> ta.Any:
-    ...
+def unwrap_typed_logger_field_value(rfv: TypedLoggerConstFieldValue) -> ta.Any: ...
 
 
 def unwrap_typed_logger_field_value(rfv):

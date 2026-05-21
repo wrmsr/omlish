@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
+            dict(path='check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='maybes.py', sha1='5ac5f92e5610c6795b0a228c38e7bcd272bf6305'),
@@ -354,12 +354,10 @@ class Checks:
         return spec
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T: ...
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any: ...
 
     def isinstance(self, v, spec, msg=None):
         if not isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
@@ -374,12 +372,10 @@ class Checks:
         return v
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]:
-        ...
+    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]: ...
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]:
-        ...
+    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]: ...
 
     def of_isinstance(self, spec, msg=None, /):
         spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa

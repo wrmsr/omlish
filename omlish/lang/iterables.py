@@ -149,18 +149,15 @@ def opt_list(it: ta.Iterable[T] | None) -> list[T] | None:
 
 
 @ta.overload
-def readiter(f: ta.TextIO, sz: int) -> ta.Iterator[str]:
-    ...
+def readiter(f: ta.TextIO, sz: int) -> ta.Iterator[str]: ...
 
 
 @ta.overload
-def readiter(f: ta.BinaryIO, sz: int) -> ta.Iterator[bytes]:
-    ...
+def readiter(f: ta.BinaryIO, sz: int) -> ta.Iterator[bytes]: ...
 
 
 @ta.overload
-def readiter(f: ta.IO, sz: int) -> ta.Iterator[ta.AnyStr]:
-    ...
+def readiter(f: ta.IO, sz: int) -> ta.Iterator[ta.AnyStr]: ...
 
 
 def readiter(f, sz):

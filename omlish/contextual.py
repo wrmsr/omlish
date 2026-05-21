@@ -35,8 +35,6 @@ class Wrapping(ta.Protocol):
     @ta.overload
     def __call__(self, fn: ta.Callable[P, T]) -> ta.Callable[P, T]: ...
 
-    def __call__(self, obj): ...
-
 
 def wrap() -> Wrapping:
     return _wrap()

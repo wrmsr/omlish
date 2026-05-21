@@ -113,18 +113,15 @@ class _KeyRef(Ref[T, K], lang.Final):
 
 
 @ta.overload
-def ref(obj: T) -> Ref[T, K]:
-    ...
+def ref(obj: T) -> Ref[T, K]: ...
 
 
 @ta.overload
-def ref(cls: type[T], k: Key[K]) -> Ref[T, K]:
-    ...
+def ref(cls: type[T], k: Key[K]) -> Ref[T, K]: ...
 
 
 @ta.overload
-def ref(cls: type[T], k: K) -> Ref[T, K]:
-    ...
+def ref(cls: type[T], k: K) -> Ref[T, K]: ...
 
 
 def ref(obj, *args):

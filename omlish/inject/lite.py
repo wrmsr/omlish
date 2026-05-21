@@ -34,23 +34,19 @@ class BoxedLiteProvider:
 
 
 @ta.overload
-def convert_from_lite(o: lij.InjectorBindings) -> Elements:
-    ...
+def convert_from_lite(o: lij.InjectorBindings) -> Elements: ...
 
 
 @ta.overload
-def convert_from_lite(o: lij.InjectorKey) -> Key:
-    ...
+def convert_from_lite(o: lij.InjectorKey) -> Key: ...
 
 
 @ta.overload
-def convert_from_lite(o: lij.InjectorBinding) -> Binding:
-    ...
+def convert_from_lite(o: lij.InjectorBinding) -> Binding: ...
 
 
 @ta.overload
-def convert_from_lite(o: lij.InjectorProvider) -> BoxedLiteProvider:
-    ...
+def convert_from_lite(o: lij.InjectorProvider) -> BoxedLiteProvider: ...
 
 
 def convert_from_lite(o):

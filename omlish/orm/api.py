@@ -260,13 +260,11 @@ async def add_one(obj: T) -> T:
 
 
 @ta.overload
-async def get(cls: type[T], k: Key[K]) -> T | None:
-    ...
+async def get(cls: type[T], k: Key[K]) -> T | None: ...
 
 
 @ta.overload
-async def get(cls: type[T], k: K) -> T | None:
-    ...
+async def get(cls: type[T], k: K) -> T | None: ...
 
 
 async def get(cls, k):  # noqa

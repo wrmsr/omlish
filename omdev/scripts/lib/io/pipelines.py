@@ -40,9 +40,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
-            dict(path='../../lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
+            dict(path='../../lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='../../logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
+            dict(path='../../logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
             dict(path='../../logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='core.py', sha1='cec21cacb85a0f443ea4caa021b33184d3816cf2'),
             dict(path='../streams/types.py', sha1='6a3167bf66a0a8817e19115b9c31973b2ff77788'),
@@ -58,14 +58,14 @@ def __omlish_amalg__():  # noqa
             dict(path='sched/types.py', sha1='854b3f0f8ed5da2132a516f787b9019f5cb4eef5'),
             dict(path='../streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../streams/utils.py', sha1='78d0ae24ddf41770289501d31542387a75859239'),
+            dict(path='../streams/utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
             dict(path='../../logs/contexts.py', sha1='2f5881193a0c19c89c399ab0e0b5072c4048a60c'),
             dict(path='../../logs/utils.py', sha1='f19e8f456172673b7418f3413f4ccef00a4b251c'),
             dict(path='bytes/queues.py', sha1='ea3b53a155622376836ba9e3499b85220f37b1fd'),
             dict(path='handlers/flatmap.py', sha1='118478ac94449a9a0b5ba44f5f3e8a5d69bb6f65'),
             dict(path='../streams/direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
             dict(path='../streams/scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
-            dict(path='../../logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
+            dict(path='../../logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
             dict(path='../../logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
             dict(path='../../logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
@@ -807,12 +807,10 @@ class Checks:
         return spec
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T: ...
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any: ...
 
     def isinstance(self, v, spec, msg=None):
         if not isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
@@ -827,12 +825,10 @@ class Checks:
         return v
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]:
-        ...
+    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]: ...
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]:
-        ...
+    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]: ...
 
     def of_isinstance(self, spec, msg=None, /):
         spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa
@@ -1286,12 +1282,10 @@ class NamedLogLevel(int):
     _CACHE: ta.ClassVar[ta.MutableMapping[int, 'NamedLogLevel']] = {}
 
     @ta.overload
-    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel': ...
 
     @ta.overload
-    def __new__(cls, i: int, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, i: int, /) -> 'NamedLogLevel': ...
 
     def __new__(cls, x, offset=0, /):
         if isinstance(x, str):
@@ -4991,13 +4985,11 @@ class ByteStreamBuffers(NamespaceClass):
 
     @classmethod
     @ta.overload
-    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]:
-        ...
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]: ...
 
     @classmethod
     @ta.overload
-    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int:
-        ...
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int: ...
 
     @classmethod
     def bytes_len(cls, obj, or_none=False):
@@ -6036,16 +6028,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     _level_proxy_method_stack_offset: int
 
     @ta.overload
-    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def log(self, level: LogLevel, *args, **kwargs):
@@ -6061,16 +6050,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def debug(self, *args, **kwargs):
@@ -6086,16 +6072,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def info(self, *args, **kwargs):
@@ -6111,16 +6094,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def warning(self, *args, **kwargs):
@@ -6136,16 +6116,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def error(self, *args, **kwargs):
@@ -6161,24 +6138,19 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def exception(self, *args, exc_info=True, **kwargs):
@@ -6205,16 +6177,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def critical(self, *args, **kwargs):

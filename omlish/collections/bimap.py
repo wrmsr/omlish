@@ -71,18 +71,15 @@ class _BiMapImpl(_BaseBiMapImpl[K, V]):
 
 
 @ta.overload
-def make_bi_map(**kwargs: V) -> BiMap[V, str]:
-    ...
+def make_bi_map(**kwargs: V) -> BiMap[V, str]: ...
 
 
 @ta.overload
-def make_bi_map(dct: ta.Mapping[K, V]) -> BiMap[K, V]:
-    ...
+def make_bi_map(dct: ta.Mapping[K, V]) -> BiMap[K, V]: ...
 
 
 @ta.overload
-def make_bi_map(items: ta.Iterable[tuple[K, V]]) -> BiMap[K, V]:
-    ...
+def make_bi_map(items: ta.Iterable[tuple[K, V]]) -> BiMap[K, V]: ...
 
 
 def make_bi_map(*args, **kwargs):

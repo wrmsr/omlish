@@ -25,12 +25,10 @@ class NamedLogLevel(int):
     _CACHE: ta.ClassVar[ta.MutableMapping[int, 'NamedLogLevel']] = {}
 
     @ta.overload
-    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel': ...
 
     @ta.overload
-    def __new__(cls, i: int, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, i: int, /) -> 'NamedLogLevel': ...
 
     def __new__(cls, x, offset=0, /):
         if isinstance(x, str):

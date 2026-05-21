@@ -100,12 +100,10 @@ class Vocab(lang.Final):
         return iter(self._tok_str_by_tok.items())
 
     @ta.overload
-    def __getitem__(self, item: Token) -> TokenStr:
-        ...
+    def __getitem__(self, item: Token) -> TokenStr: ...
 
     @ta.overload
-    def __getitem__(self, item: TokenStr) -> Token:
-        ...
+    def __getitem__(self, item: TokenStr) -> Token: ...
 
     def __getitem__(self, item):
         if isinstance(item, int):
@@ -116,20 +114,16 @@ class Vocab(lang.Final):
             raise TypeError(item)
 
     @ta.overload
-    def get(self, item: Token, default: TokenStr) -> TokenStr:
-        ...
+    def get(self, item: Token, default: TokenStr) -> TokenStr: ...
 
     @ta.overload
-    def get(self, item: Token, default: TokenStr | None = None) -> TokenStr | None:
-        ...
+    def get(self, item: Token, default: TokenStr | None = None) -> TokenStr | None: ...
 
     @ta.overload
-    def get(self, item: TokenStr, default: Token) -> Token:
-        ...
+    def get(self, item: TokenStr, default: Token) -> Token: ...
 
     @ta.overload
-    def get(self, item: TokenStr, default: Token | None = None) -> Token | None:
-        ...
+    def get(self, item: TokenStr, default: Token | None = None) -> Token | None: ...
 
     def get(self, item, default=None):
         try:

@@ -10,13 +10,11 @@ T = ta.TypeVar('T')
 
 
 @ta.overload
-def find_ancestor(flt: ta.Callable[[DOMNode], bool], no: DOMNode) -> DOMNode | None:
-    ...
+def find_ancestor(flt: ta.Callable[[DOMNode], bool], no: DOMNode) -> DOMNode | None: ...
 
 
 @ta.overload
-def find_ancestor(flt: type[T], no: DOMNode) -> T | None:
-    ...
+def find_ancestor(flt: type[T], no: DOMNode) -> T | None: ...
 
 
 def find_ancestor(flt, no):

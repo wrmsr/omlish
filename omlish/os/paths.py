@@ -8,13 +8,11 @@ import typing as ta
 
 
 @ta.overload
-def path_dirname(p: str, n: int = 1) -> str:
-    ...
+def path_dirname(p: str, n: int = 1) -> str: ...
 
 
 @ta.overload
-def path_dirname(p: bytes, n: int = 1) -> bytes:
-    ...
+def path_dirname(p: bytes, n: int = 1) -> bytes: ...
 
 
 def path_dirname(p, n=1):

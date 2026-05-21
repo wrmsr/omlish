@@ -43,13 +43,11 @@ def registry_type_repr(obj: ta.Any) -> str:
 
 
 @ta.overload
-def strip_registry_annotations(obj: RflTypeT) -> RflTypeT:
-    ...
+def strip_registry_annotations(obj: RflTypeT) -> RflTypeT: ...
 
 
 @ta.overload
-def strip_registry_annotations(obj: ta.Any) -> ta.Any:
-    ...
+def strip_registry_annotations(obj: ta.Any) -> ta.Any: ...
 
 
 def strip_registry_annotations(obj):

@@ -62,13 +62,11 @@ class _ValKey(Key[K], lang.Final):
 
 
 @ta.overload
-def key(k: Key[K]) -> Key[K]:
-    ...
+def key(k: Key[K]) -> Key[K]: ...
 
 
 @ta.overload
-def key(k: K) -> Key[K]:
-    ...
+def key(k: K) -> Key[K]: ...
 
 
 def key(k):

@@ -244,12 +244,10 @@ class SpecialTokens:
             raise TypeError(i)
 
     @ta.overload
-    def fix(self, i: int) -> Token:
-        ...
+    def fix(self, i: int) -> Token: ...
 
     @ta.overload
-    def fix(self, i: ta.Iterable[int]) -> list[Token]:
-        ...
+    def fix(self, i: ta.Iterable[int]) -> list[Token]: ...
 
     def fix(self, i):
         if isinstance(i, int):

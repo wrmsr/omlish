@@ -56,12 +56,10 @@ class AttrRegistry(ta.Generic[K, V]):
         self._invalidate_callbacks.append(callback)
 
     @ta.overload
-    def register(self, obj: K, val: V) -> None:
-        ...
+    def register(self, obj: K, val: V) -> None: ...
 
     @ta.overload
-    def register(self, val: V) -> ta.Callable[[T], T]:
-        ...
+    def register(self, val: V) -> ta.Callable[[T], T]: ...
 
     def register(self, *args):
         def inner(obj, val):

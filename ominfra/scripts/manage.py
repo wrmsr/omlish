@@ -85,7 +85,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/attrops.py', sha1='ab1b299f7525e1bc21ed843347ae0f4ed9b0dbe6'),
             dict(path='../../omlish/lite/bytes.py', sha1='b1833c50941b1177ed8e8c267259f7de7dbf1b96'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='7088e41034dbdce7bdae200793aaa9d6838c79d8'),
+            dict(path='../../omlish/lite/check.py', sha1='62b9ccea94c4f7bcef97e7adae8674b8cb11d4af'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='b3275ca829d21eb598092c1448bedd70b72dfd04'),
             dict(path='../../omlish/lite/injectinspect.py', sha1='dbf3696d74785c6eadd81e589546e3e974d99b58'),
             dict(path='../../omlish/lite/io.py', sha1='11c03421bf10d9d29796ef0db78f8b3dc994459b'),
@@ -93,16 +93,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/pycharm.py', sha1='6f84e57f02e2f1075918002f89e4201910d2a15e'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/resources.py', sha1='1365cb6046eb929358e7c86a3fda20d95fd4a296'),
-            dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
+            dict(path='../../omlish/lite/strings.py', sha1='89631bb5cfd6496176db71ab3abd58b89872068b'),
             dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
-            dict(path='../../omlish/logs/levels.py', sha1='83f6cdd019675b52181422442e7d7541597d0df2'),
+            dict(path='../../omlish/logs/levels.py', sha1='e9711a800dc711507a4bb2b0ad4445c82640fa6f'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../../omlish/os/deathsig.py', sha1='5d3f1a22132b7029d32e29b13c1cc20497c8f7a8'),
             dict(path='../../omlish/os/environ.py', sha1='5555815824a7583faa32ed2e57a0d4609bd48b90'),
             dict(path='../../omlish/os/linux.py', sha1='3e104ec5cbb84879f58fccae2a23800437249f4b'),
-            dict(path='../../omlish/os/paths.py', sha1='56c40b7c2aa84d1778d60ee4cda498f8c380cc8d'),
+            dict(path='../../omlish/os/paths.py', sha1='6402eb786ec21a8df33b2414d28d1f74162f9ccd'),
             dict(path='../../omlish/shlex.py', sha1='a69721913bcd4f4008600e390fb7822637c2a8ec'),
             dict(path='../../omdev/home/paths.py', sha1='15298067ada3cde9843324744b0f6b9d2e175549'),
             dict(path='../../omdev/packaging/specifiers.py', sha1='ffee3ba046c0c4243c648ad53bed77973921f036'),
@@ -147,7 +147,7 @@ def __omlish_amalg__():  # noqa
             dict(path='deploy/paths/paths.py', sha1='788c3b0d77d7f7aea96de20ad23f1e9541d72463'),
             dict(path='deploy/specs.py', sha1='b3a411b32b47f81f5ad673d8b0338970a6eb6ff9'),
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
-            dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
+            dict(path='../../omlish/logs/base.py', sha1='76bd4fff7a943cfdf0f992fb14d0cb7d89fc3fc6'),
             dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
@@ -3508,12 +3508,10 @@ class Checks:
         return spec
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T: ...
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any:
-        ...
+    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any: ...
 
     def isinstance(self, v, spec, msg=None):
         if not isinstance(v, spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)):  # noqa
@@ -3528,12 +3526,10 @@ class Checks:
         return v
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]:
-        ...
+    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]: ...
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]:
-        ...
+    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]: ...
 
     def of_isinstance(self, spec, msg=None, /):
         spec = spec if (st := type(spec)) is type or (st is tuple and all(type(x) is type for x in spec)) else self._unpack_isinstance_spec(spec)  # noqa
@@ -4542,13 +4538,11 @@ def strip_with_newline(s: str) -> str:
 
 
 @ta.overload
-def split_keep_delimiter(s: str, d: str) -> str:
-    ...
+def split_keep_delimiter(s: str, d: str) -> str: ...
 
 
 @ta.overload
-def split_keep_delimiter(s: bytes, d: bytes) -> bytes:
-    ...
+def split_keep_delimiter(s: bytes, d: bytes) -> bytes: ...
 
 
 def split_keep_delimiter(s, d):
@@ -4715,12 +4709,10 @@ class NamedLogLevel(int):
     _CACHE: ta.ClassVar[ta.MutableMapping[int, 'NamedLogLevel']] = {}
 
     @ta.overload
-    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel': ...
 
     @ta.overload
-    def __new__(cls, i: int, /) -> 'NamedLogLevel':
-        ...
+    def __new__(cls, i: int, /) -> 'NamedLogLevel': ...
 
     def __new__(cls, x, offset=0, /):
         if isinstance(x, str):
@@ -5601,13 +5593,11 @@ class LinuxOsRelease:
 
 
 @ta.overload
-def path_dirname(p: str, n: int = 1) -> str:
-    ...
+def path_dirname(p: str, n: int = 1) -> str: ...
 
 
 @ta.overload
-def path_dirname(p: bytes, n: int = 1) -> bytes:
-    ...
+def path_dirname(p: bytes, n: int = 1) -> bytes: ...
 
 
 def path_dirname(p, n=1):
@@ -12264,16 +12254,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     _level_proxy_method_stack_offset: int
 
     @ta.overload
-    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def log(self, level: LogLevel, *args, **kwargs):
@@ -12289,16 +12276,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def debug(self, *args, **kwargs):
@@ -12314,16 +12298,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def info(self, *args, **kwargs):
@@ -12339,16 +12320,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def warning(self, *args, **kwargs):
@@ -12364,16 +12342,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def error(self, *args, **kwargs):
@@ -12389,24 +12364,19 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
-        ...
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def exception(self, *args, exc_info=True, **kwargs):
@@ -12433,16 +12403,13 @@ class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     #
 
     @ta.overload
-    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-        ...
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
-        ...
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T: ...
 
     @ta.overload
-    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
-        ...
+    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T: ...
 
     @ta.final
     def critical(self, *args, **kwargs):

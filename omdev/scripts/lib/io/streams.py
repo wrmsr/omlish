@@ -30,7 +30,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='94ed2afc05aebc8108a5df168477d5273cd2acbf'),
-            dict(path='utils.py', sha1='78d0ae24ddf41770289501d31542387a75859239'),
+            dict(path='utils.py', sha1='5162329f6dc70d88a94c743bae4ea19dec6fcea7'),
             dict(path='direct.py', sha1='8f031ad9167bef9a359f9859f234751dd9823a8c'),
             dict(path='scanning.py', sha1='33a75b7c6fee3d0a3f06dd86a03e83d2027e0f77'),
             dict(path='adapters.py', sha1='c6fbf2e18ff040be75df7db137f14d91b57c64b4'),
@@ -1210,13 +1210,11 @@ class ByteStreamBuffers(NamespaceClass):
 
     @classmethod
     @ta.overload
-    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]:
-        ...
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]: ...
 
     @classmethod
     @ta.overload
-    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int:
-        ...
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int: ...
 
     @classmethod
     def bytes_len(cls, obj, or_none=False):

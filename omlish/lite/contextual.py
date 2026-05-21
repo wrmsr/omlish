@@ -101,13 +101,11 @@ class _UnboundContextualParam:
 
 
 @ta.overload
-def contextual_param() -> T:  # type: ignore[type-var]
-    ...
+def contextual_param() -> T: ...  # type: ignore[type-var]
 
 
 @ta.overload
-def contextual_param(default: T, /) -> T:
-    ...
+def contextual_param(default: T, /) -> T: ...
 
 
 def contextual_param(default=NO_CONTEXTUAL_DEFAULT, /):
@@ -245,8 +243,6 @@ class ContextualWrapping(ta.Protocol):
     @ta.overload
     def __call__(self, fn: CallableT) -> CallableT: ...
 
-    def __call__(self, obj): ...
-
 
 def contextual_wrap() -> ContextualWrapping:
     def inner(obj):
@@ -293,13 +289,11 @@ def contextual_bind(bindings: ta.Mapping[ta.Any, ta.Any]) -> ta.ContextManager[N
 
 
 @ta.overload
-def contextual_get(key: ta.Type[T], /) -> T:
-    ...
+def contextual_get(key: ta.Type[T], /) -> T: ...
 
 
 @ta.overload
-def contextual_get(key: ta.Type[T], default: ta.Union[T, U], /) -> ta.Union[T, U]:
-    ...
+def contextual_get(key: ta.Type[T], default: ta.Union[T, U], /) -> ta.Union[T, U]: ...
 
 
 def contextual_get(key, default=NO_CONTEXTUAL_DEFAULT, /):

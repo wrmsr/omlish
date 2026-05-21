@@ -260,13 +260,11 @@ def opt_coalesce(*vs: T | None) -> T | None:
 
 
 @ta.overload
-def attrsetter(a: str) -> ta.Callable[[ta.Any, ta.Any], None]:
-    ...
+def attrsetter(a: str) -> ta.Callable[[ta.Any, ta.Any], None]: ...
 
 
 @ta.overload
-def attrsetter(a: str, v: ta.Any) -> ta.Callable[[ta.Any], None]:
-    ...
+def attrsetter(a: str, v: ta.Any) -> ta.Callable[[ta.Any], None]: ...
 
 
 def attrsetter(a, v=_MISSING):
@@ -281,13 +279,11 @@ def attrsetter(a, v=_MISSING):
 
 
 @ta.overload
-def itemsetter(k: ta.Any) -> ta.Callable[[ta.Any, ta.Any], None]:
-    ...
+def itemsetter(k: ta.Any) -> ta.Callable[[ta.Any, ta.Any], None]: ...
 
 
 @ta.overload
-def itemsetter(k: ta.Any, v: ta.Any) -> ta.Callable[[ta.Any], None]:
-    ...
+def itemsetter(k: ta.Any, v: ta.Any) -> ta.Callable[[ta.Any], None]: ...
 
 
 def itemsetter(k, v=_MISSING):

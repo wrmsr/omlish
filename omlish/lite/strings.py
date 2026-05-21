@@ -49,13 +49,11 @@ def strip_with_newline(s: str) -> str:
 
 
 @ta.overload
-def split_keep_delimiter(s: str, d: str) -> str:
-    ...
+def split_keep_delimiter(s: str, d: str) -> str: ...
 
 
 @ta.overload
-def split_keep_delimiter(s: bytes, d: bytes) -> bytes:
-    ...
+def split_keep_delimiter(s: bytes, d: bytes) -> bytes: ...
 
 
 def split_keep_delimiter(s, d):

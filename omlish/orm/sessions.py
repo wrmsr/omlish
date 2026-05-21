@@ -299,12 +299,10 @@ class Session:
     #
 
     @ta.overload
-    async def get(self, cls: type[T], k: Key[K]) -> T | None:
-        ...
+    async def get(self, cls: type[T], k: Key[K]) -> T | None: ...
 
     @ta.overload
-    async def get(self, cls: type[T], k: K) -> T | None:
-        ...
+    async def get(self, cls: type[T], k: K) -> T | None: ...
 
     async def get(self, cls, k):  # noqa
         check.state(self.is_alive)

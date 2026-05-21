@@ -167,12 +167,10 @@ class UnmarshalContext(BaseContext, lang.Final):
         return self.unmarshal_factory_context.internal_state
 
     @ta.overload
-    def unmarshal(self, v: Value, ty: type[T]) -> T:
-        ...
+    def unmarshal(self, v: Value, ty: type[T]) -> T: ...
 
     @ta.overload
-    def unmarshal(self, v: Value, ty: ta.Any) -> ta.Any:
-        ...
+    def unmarshal(self, v: Value, ty: ta.Any) -> ta.Any: ...
 
     def unmarshal(self, v, ty):
         return self.unmarshal_factory_context.make_unmarshaler(ty).unmarshal(self, v)

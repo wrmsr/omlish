@@ -74,13 +74,11 @@ _TOOL_CONTEXT: contextvars.ContextVar[ToolContext] = contextvars.ContextVar(f'{_
 
 
 @ta.overload
-def activate_tool_context(ctx: ToolContext) -> ta.ContextManager[ToolContext]:
-    ...
+def activate_tool_context(ctx: ToolContext) -> ta.ContextManager[ToolContext]: ...
 
 
 @ta.overload
-def activate_tool_context(*items: ta.Any) -> ta.ContextManager[ToolContext]:
-    ...
+def activate_tool_context(*items: ta.Any) -> ta.ContextManager[ToolContext]: ...
 
 
 @contextlib.contextmanager  # type: ignore[misc]

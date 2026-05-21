@@ -27,13 +27,11 @@ class TopRightBottomLeft(ta.Protocol):
 
 
 @ta.overload
-def trbl_to_dict(trbl: Spacing) -> dict[str, int]:
-    ...
+def trbl_to_dict(trbl: Spacing) -> dict[str, int]: ...
 
 
 @ta.overload
-def trbl_to_dict(trbl: TopRightBottomLeft) -> dict[str, ta.Any]:
-    ...
+def trbl_to_dict(trbl: TopRightBottomLeft) -> dict[str, ta.Any]: ...
 
 
 def trbl_to_dict(trbl):

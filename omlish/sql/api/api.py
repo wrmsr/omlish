@@ -29,13 +29,11 @@ def async_connect(obj: AsyncConn | AsyncDb) -> ta.AsyncContextManager[AsyncConn]
 
 
 @ta.overload
-def connect(obj: Conn | Db) -> ta.ContextManager[Conn]:
-    ...
+def connect(obj: Conn | Db) -> ta.ContextManager[Conn]: ...
 
 
 @ta.overload
-def connect(obj: AsyncConn | AsyncDb) -> ta.AsyncContextManager[AsyncConn]:
-    ...
+def connect(obj: AsyncConn | AsyncDb) -> ta.AsyncContextManager[AsyncConn]: ...
 
 
 def connect(obj):

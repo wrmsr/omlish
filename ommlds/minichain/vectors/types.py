@@ -142,12 +142,10 @@ class Vector(lang.Final, ta.Sequence[float]):
         return iter(self._s)
 
     @ta.overload
-    def __getitem__(self, index: int) -> float:
-        ...
+    def __getitem__(self, index: int) -> float: ...
 
     @ta.overload
-    def __getitem__(self, index: slice) -> ta.Sequence[float]:
-        ...
+    def __getitem__(self, index: slice) -> ta.Sequence[float]: ...
 
     def __getitem__(self, index):
         return self._s[index]

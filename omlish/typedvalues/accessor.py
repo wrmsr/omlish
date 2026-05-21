@@ -50,16 +50,13 @@ class TypedValuesAccessor(
     #
 
     @ta.overload  # type: ignore[override]
-    def __getitem__(self, idx: int) -> TypedValueT0:
-        ...
+    def __getitem__(self, idx: int) -> TypedValueT0: ...
 
     @ta.overload
-    def __getitem__(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU:  # type: ignore[overload-overlap]
-        ...
+    def __getitem__(self, cls: type[UniqueTypedValueU]) -> UniqueTypedValueU: ...  # type: ignore[overload-overlap]
 
     @ta.overload
-    def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]:
-        ...
+    def __getitem__(self, cls: type[TypedValueU]) -> ta.Sequence[TypedValueU]: ...
 
     @ta.final
     def __getitem__(self, key):

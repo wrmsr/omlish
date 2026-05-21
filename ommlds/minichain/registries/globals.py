@@ -98,13 +98,11 @@ def register_type(
 
 
 @ta.overload
-def get_registry_cls(cls: type[T], name: str) -> type[T]:
-    ...
+def get_registry_cls(cls: type[T], name: str) -> type[T]: ...
 
 
 @ta.overload
-def get_registry_cls(cls: ta.Any, name: str) -> ta.Any:
-    ...
+def get_registry_cls(cls: ta.Any, name: str) -> ta.Any: ...
 
 
 def get_registry_cls(cls, name):
@@ -115,13 +113,11 @@ def get_registry_cls(cls, name):
 
 
 @ta.overload
-def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
-    ...
+def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T: ...
 
 
 @ta.overload
-def registry_new(cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-    ...
+def registry_new(cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any: ...
 
 
 def registry_new(cls, name, *args, **kwargs):

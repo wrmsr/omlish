@@ -156,13 +156,11 @@ def _check_proxy_function(fn: T) -> T:
 
 
 @ta.overload
-def isinstance(v: ta.Any, spec: type[T], msg: Message = None, /) -> T:  # noqa
-    ...
+def isinstance(v: ta.Any, spec: type[T], msg: Message = None, /) -> T: ...  # noqa
 
 
 @ta.overload
-def isinstance(v: ta.Any, spec: ta.Any, msg: Message = None, /) -> ta.Any:  # noqa
-    ...
+def isinstance(v: ta.Any, spec: ta.Any, msg: Message = None, /) -> ta.Any: ...  # noqa
 
 
 @_check_proxy_function
@@ -171,13 +169,11 @@ def isinstance(v, spec, msg=None):  # noqa
 
 
 @ta.overload
-def of_isinstance(spec: type[T], msg: Message = None, /) -> ta.Callable[[ta.Any], T]:
-    ...
+def of_isinstance(spec: type[T], msg: Message = None, /) -> ta.Callable[[ta.Any], T]: ...
 
 
 @ta.overload
-def of_isinstance(spec: ta.Any, msg: Message = None, /) -> ta.Callable[[ta.Any], ta.Any]:
-    ...
+def of_isinstance(spec: ta.Any, msg: Message = None, /) -> ta.Callable[[ta.Any], ta.Any]: ...
 
 
 @_check_proxy_function

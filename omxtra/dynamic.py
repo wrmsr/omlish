@@ -67,12 +67,10 @@ class Var(ta.Generic[T]):
         self._bindings_by_frame: ta.MutableMapping[types.FrameType, ta.MutableMapping[int, Binding]] = weakref.WeakValueDictionary()  # noqa
 
     @ta.overload
-    def __call__(self) -> T:
-        ...
+    def __call__(self) -> T: ...
 
     @ta.overload
-    def __call__(self, value: T, **kwargs: ta.Any) -> ta.ContextManager[T]:
-        ...
+    def __call__(self, value: T, **kwargs: ta.Any) -> ta.ContextManager[T]: ...
 
     def __call__(self, *args, **kwargs):
         if not args:

@@ -195,12 +195,10 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
             return l[0]
 
         @ta.overload
-        def get(self, key: str, /, default: str) -> str:
-            ...
+        def get(self, key: str, /, default: str) -> str: ...
 
         @ta.overload
-        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[str]:
-            ...
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[str]: ...
 
         def get(self, key, /, default=None):
             try:
@@ -239,12 +237,10 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
             return l
 
         @ta.overload
-        def get(self, key: str, /, default: ta.Sequence[str]) -> ta.Sequence[str]:
-            ...
+        def get(self, key: str, /, default: ta.Sequence[str]) -> ta.Sequence[str]: ...
 
         @ta.overload
-        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[ta.Sequence[str]]:
-            ...
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[ta.Sequence[str]]: ...
 
         def get(self, key, /, default=None):
             try:

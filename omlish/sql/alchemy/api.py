@@ -127,23 +127,19 @@ DEFAULT_SQLALCHEMY_ADAPTER = SqlalchemyApiAdapter()
 
 
 @ta.overload
-def api_adapt(o: sa.engine.Connection) -> SqlalchemyApiConn:
-    ...
+def api_adapt(o: sa.engine.Connection) -> SqlalchemyApiConn: ...
 
 
 @ta.overload
-def api_adapt(o: api.Conn) -> api.Conn:
-    ...
+def api_adapt(o: api.Conn) -> api.Conn: ...
 
 
 @ta.overload
-def api_adapt(o: sa.engine.Engine) -> SqlalchemyApiDb:
-    ...
+def api_adapt(o: sa.engine.Engine) -> SqlalchemyApiDb: ...
 
 
 @ta.overload
-def api_adapt(o: api.Db) -> api.Db:
-    ...
+def api_adapt(o: api.Db) -> api.Db: ...
 
 
 def api_adapt(o):

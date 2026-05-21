@@ -13,13 +13,11 @@ def as_bytes(s: ta.Union[str, bytes], encoding: str = 'utf8') -> bytes:
 
 
 @ta.overload
-def find_prefix_at_end(haystack: str, needle: str) -> int:
-    ...
+def find_prefix_at_end(haystack: str, needle: str) -> int: ...
 
 
 @ta.overload
-def find_prefix_at_end(haystack: bytes, needle: bytes) -> int:
-    ...
+def find_prefix_at_end(haystack: bytes, needle: bytes) -> int: ...
 
 
 def find_prefix_at_end(haystack, needle):

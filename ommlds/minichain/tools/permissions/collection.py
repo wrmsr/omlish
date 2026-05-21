@@ -63,16 +63,13 @@ class ToolPermissionRules(fh.FieldHashable, lang.Final):
         return iter(self.rules)
 
     @ta.overload
-    def __getitem__(self, key: int) -> ToolPermissionRule:
-        ...
+    def __getitem__(self, key: int) -> ToolPermissionRule: ...
 
     @ta.overload
-    def __getitem__(self, key: slice) -> ta.Sequence[ToolPermissionRule]:
-        ...
+    def __getitem__(self, key: slice) -> ta.Sequence[ToolPermissionRule]: ...
 
     @ta.overload
-    def __getitem__(self, key: str) -> ToolPermissionRule:
-        ...
+    def __getitem__(self, key: str) -> ToolPermissionRule: ...
 
     def __getitem__(self, key):
         if isinstance(key, (int, slice)):
@@ -90,12 +87,10 @@ class ToolPermissionRules(fh.FieldHashable, lang.Final):
         return key in self.by_digest
 
     @ta.overload
-    def get(self, key: str, default: None = None) -> ToolPermissionRule | None:
-        ...
+    def get(self, key: str, default: None = None) -> ToolPermissionRule | None: ...
 
     @ta.overload
-    def get(self, key: str, default: ToolPermissionRule) -> ToolPermissionRule:
-        ...
+    def get(self, key: str, default: ToolPermissionRule) -> ToolPermissionRule: ...
 
     def get(self, key, default=None):
         return self.by_digest.get(key, default)

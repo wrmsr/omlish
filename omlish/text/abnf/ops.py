@@ -73,13 +73,11 @@ class RangeLiteral(Literal, lang.Final):
 
 
 @ta.overload
-def literal(s: str, *, case_sensitive: bool = False) -> StringLiteral:
-    ...
+def literal(s: str, *, case_sensitive: bool = False) -> StringLiteral: ...
 
 
 @ta.overload
-def literal(lo: str, hi: str) -> RangeLiteral:
-    ...
+def literal(lo: str, hi: str) -> RangeLiteral: ...
 
 
 def literal(*args, case_sensitive=None):
@@ -208,23 +206,19 @@ class Repeat(CompositeOp, lang.Final):
 
 
 @ta.overload
-def repeat(child: Op) -> Repeat:  # noqa
-    ...
+def repeat(child: Op) -> Repeat: ...  # noqa
 
 
 @ta.overload
-def repeat(times: Repeat.Times, child: Op) -> Repeat:  # noqa
-    ...
+def repeat(times: Repeat.Times, child: Op) -> Repeat: ...  # noqa
 
 
 @ta.overload
-def repeat(min: int, child: Op) -> Repeat:  # noqa
-    ...
+def repeat(min: int, child: Op) -> Repeat: ...  # noqa
 
 
 @ta.overload
-def repeat(min: int, max: int | None, child: Op) -> Repeat:  # noqa
-    ...
+def repeat(min: int, max: int | None, child: Op) -> Repeat: ...  # noqa
 
 
 def repeat(*args):
