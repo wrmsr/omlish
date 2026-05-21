@@ -12,6 +12,8 @@ with lang.auto_proxy_import(globals()):
     from . import rendering as _rendering
 
 
+T = ta.TypeVar('T')
+
 KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 
 
@@ -80,17 +82,36 @@ class UnknownKeyword(Keyword, lang.Final):
 ##
 
 
+@ta.final
+class KeywordsByTypeMapping(col.ProxyMapping[type[Keyword], Keyword]):
+    def __getitem__(self, key: type[KeywordT], /) -> KeywordT:
+        return self._target[key]  # type: ignore[return-value]
+
+    @ta.overload
+    def get(self, key: type[KeywordT], /) -> KeywordT | None: ...  # noqa
+
+    @ta.overload
+    def get(self, key: type[KeywordT], default: KeywordT, /) -> KeywordT: ...  # noqa
+
+    @ta.overload
+    def get(self, key: type[KeywordT], default: T, /) -> KeywordT | T: ...  # noqa
+
+    def get(self, key, default=None):
+        return self._target.get(key, default)
+
+
 @dc.dataclass(frozen=True)
 class Keywords(_Renderable, lang.Final):
     lst: ta.Sequence[Keyword]
 
     @cached.property
     @dc.init
-    def by_type(self) -> ta.Mapping[type[Keyword], Keyword]:
-        return col.make_map_by(type, (k for k in self.lst if not isinstance(k, UnknownKeyword)), strict=True)  # noqa
-
-    def get_by_type(self, ty: type[KeywordT]) -> KeywordT | None:
-        return self.by_type.get(ty)
+    def by_type(self) -> KeywordsByTypeMapping:
+        return KeywordsByTypeMapping(col.make_map_by(  # noqa
+            type,
+            (k for k in self.lst if not isinstance(k, UnknownKeyword)),
+            strict=True,
+        ))
 
     @cached.property
     @dc.init

@@ -146,6 +146,13 @@ with _lang.auto_proxy_init(globals()):
         PersistentMapping,
     )
 
+    from .proxy import (  # noqa
+        Proxy,
+        ProxyMapping,
+        ProxySequence,
+        ProxySet,
+    )
+
     from .ranked import (  # noqa
         RankedSeq,
         RankedSetSeq,
