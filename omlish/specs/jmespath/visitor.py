@@ -120,14 +120,22 @@ class Visitor:
         super().__init__()
 
         self._method_cache: dict[str, ta.Callable] = {}
+        self._node_stack: list[Node] = []
 
     def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         nty = node_type(node)
+
         method = self._method_cache.get(nty)
         if method is None:
             method = check.not_none(getattr(self, f'visit_{nty}', self.default_visit))
             self._method_cache[nty] = method
-        return method(node, *args, **kwargs)
+
+        self._node_stack.append(node)
+        try:
+            return method(node, *args, **kwargs)
+        finally:
+            if (popped := self._node_stack.pop()) is not node:
+                raise RuntimeError(f'Expected {node} but got {popped}')
 
     def default_visit(self, node, *args, **kwargs):
         raise NotImplementedError('default_visit')
