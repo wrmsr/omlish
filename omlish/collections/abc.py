@@ -1,7 +1,20 @@
 # ruff: noqa: ANN204 PLW1641
 """
+TODO:
+ - SequenceLike / SequenceMixins
+ - rename to typing or smth? it's kinda both
+
+====
+
 https://docs.python.org/3/library/collections.abc.html
 https://github.com/python/cpython/blob/main/Doc/library/collections.abc.rst
+
+https://github.com/python/mypy/blob/master/mypy/typeshed/stdlib/typing.pyi
+
+https://github.com/python/typeshed/blob/main/stdlib/_collections_abc.pyi
+https://github.com/python/mypy/blob/master/mypy/typeshed/stdlib/_collections_abc.pyi
+
+====
 
 Present in collections.abc but absent in docs:
 - Set.__rand__
@@ -11,51 +24,68 @@ Present in collections.abc but absent in docs:
 Present in docs but absent in collections.abc:
 - Mapping.__ne__
 """
+import typing as ta
 
 
-class Hashable:
-    def __hash__(self): ...
+T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
+
+T_co = ta.TypeVar('T_co', covariant=True)
+K_co = ta.TypeVar('K_co', covariant=True)
+V_co = ta.TypeVar('V_co', covariant=True)
+
+T_contra = ta.TypeVar('T_contra', contravariant=True)
 
 
-class Iterable:
-    def __iter__(self): ...
+##
 
 
-class Iterator(Iterable):
-    def __next__(self): ...
+class Hashable(ta.Protocol):
+    def __hash__(self) -> int: ...
+
+
+class Iterable(ta.Protocol[T_co]):
+    def __iter__(self) -> ta.Iterator[T_co]: ...
+
+
+class Iterator(Iterable[T_co], ta.Protocol[T_co]):
+    def __next__(self) -> T_co: ...
 
     # ::mixins::
 
-    def __iter__(self): ...
+    def __iter__(self) -> ta.Iterator[T_co]: ...
 
 
-class Reversible(Iterable):
-    def __reversed__(self): ...
+class Reversible(Iterable[T_co], ta.Protocol[T_co]):
+    def __iter__(self) -> ta.Iterator[T_co]: ...
+
+    def __reversed__(self) -> Iterator[T_co]: ...
 
 
-class Sized:
-    def __len__(self): ...
+class Sized(ta.Protocol):
+    def __len__(self) -> int: ...
 
 
-class Container:
+class Container(ta.Protocol[T_contra]):
+    def __contains__(self, x: T_contra) -> bool: ...
+
+
+class Collection(Sized, Iterable, Container, ta.Protocol):
     def __contains__(self, x): ...
 
-
-class Collection(Sized, Iterable, Container):
-    def __contains__(self, x): ...
-
     def __iter__(self): ...
 
-    def __len__(self): ...
+    def __len__(self) -> int: ...
 
 
 # region Sequence
 
 
-class Sequence(Reversible, Collection):
+class Sequence(Reversible, Collection, ta.Protocol):
     def __getitem__(self, index): ...
 
-    def __len__(self): ...
+    def __len__(self) -> int: ...
 
     # ::mixins::
 
@@ -70,14 +100,14 @@ class Sequence(Reversible, Collection):
     def count(self, value): ...
 
 
-class MutableSequence(Sequence):
+class MutableSequence(Sequence, ta.Protocol):
     def __getitem__(self, index): ...
 
     def __setitem__(self, index, value): ...
 
     def __delitem__(self, index): ...
 
-    def __len__(self): ...
+    def __len__(self) -> int: ...
 
     def insert(self, index, value): ...
 
@@ -118,12 +148,12 @@ class MutableSequence(Sequence):
 # region Set
 
 
-class Set(Collection):
+class Set(Collection, ta.Protocol):
     def __contains__(self, item): ...
 
     def __iter__(self): ...
 
-    def __len__(self): ...
+    def __len__(self) -> int: ...
 
     # ::mixins::
 
@@ -156,12 +186,12 @@ class Set(Collection):
     def isdisjoint(self, other): ...
 
 
-class MutableSet(Set):
+class MutableSet(Set, ta.Protocol):
     def __contains__(self, item): ...
 
     def __iter__(self): ...
 
-    def __len__(self): ...
+    def __len__(self) -> int: ...
 
     def add(self, value): ...
 
@@ -222,12 +252,12 @@ class MutableSet(Set):
 # region Mapping
 
 
-class Mapping(Collection):
+class Mapping(Collection, ta.Protocol):
     def __getitem__(self, key): ...
 
     def __iter__(self): ...
 
-    def __len__(self): ...
+    def __len__(self) -> int: ...
 
     # ::mixins::
 
@@ -246,7 +276,7 @@ class Mapping(Collection):
     def __contains__(self, item): ...
 
 
-class MutableMapping(Mapping):
+class MutableMapping(Mapping, ta.Protocol):
     def __getitem__(self, key): ...
 
     def __setitem__(self, key, value): ...
@@ -255,7 +285,7 @@ class MutableMapping(Mapping):
 
     def __iter__(self): ...
 
-    def __len__(self): ...
+    def __len__(self) -> int: ...
 
     # ::mixins::
 
@@ -294,7 +324,7 @@ class MutableMapping(Mapping):
 # region Views
 
 
-class MappingView(Sized):
+class MappingView(Sized, ta.Protocol):
     @property
     def _mapping(self): ...  # noqa
 
@@ -305,7 +335,7 @@ class MappingView(Sized):
     # __repr__
 
 
-class KeysView(MappingView, Set):
+class KeysView(MappingView, Set, ta.Protocol):
     # ::mixins::
 
     # __contains__
@@ -314,7 +344,7 @@ class KeysView(MappingView, Set):
     pass
 
 
-class ValuesView(MappingView, Collection):
+class ValuesView(MappingView, Collection, ta.Protocol):
     # ::mixins::
 
     # __contains__
@@ -323,7 +353,7 @@ class ValuesView(MappingView, Collection):
     pass
 
 
-class ItemsView(MappingView, Set):
+class ItemsView(MappingView, Set, ta.Protocol):
     # ::mixins::
 
     # __contains__
