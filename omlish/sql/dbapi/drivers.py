@@ -83,12 +83,6 @@ class DbapiDrivers(lang.Namespace):
         package_name='sqlean.py',
     )
 
-    DUCKDB = DbapiDriver(
-        name='duckdb',
-        dialect=DbapiDialect.SQLITE,
-        param_style=ParamStyle.QMARK,
-    )
-
     ##
     # mysql
 
@@ -131,6 +125,12 @@ class DbapiDrivers(lang.Namespace):
 
     PSYCOPG = DbapiDriver(
         name='psycopg',
+        dialect=DbapiDialect.POSTGRES,
+        param_style=ParamStyle.PYFORMAT,
+    )
+
+    DUCKDB = DbapiDriver(
+        name='duckdb',
         dialect=DbapiDialect.POSTGRES,
         param_style=ParamStyle.PYFORMAT,
     )
