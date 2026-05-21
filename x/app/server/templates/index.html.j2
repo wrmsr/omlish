@@ -4,23 +4,23 @@
 
 {% block content %}
 
-    <h1 class="title">
-        NotFlask Login Example
-    </h1>
+  <h1 class="title">
+    NotFlask Login Example
+  </h1>
 
-    <h2 class="subtitle">
-        Easy authentication and authorization in NotFlask.
-    </h2>
+  <h2 class="subtitle">
+    Easy authentication and authorization in NotFlask.
+  </h2>
 
-    <div class="container has-text-centered">
-        Views: {{ views }}
+  <div class="container has-text-centered">
+    Views: {{ views }}
+  </div>
+
+  <div class="container has-text-centered">
+    <div x-data="{ count: 0 }">
+      <button x-on:click="count++">Increment</button>
+      <span x-text="count"></span>
     </div>
-
-    <div class="container has-text-centered">
-        <div x-data="{ count: 0 }">
-            <button x-on:click="count++">Increment</button>
-            <span x-text="count"></span>
-        </div>
-    </div>
+  </div>
 
 {% endblock %}

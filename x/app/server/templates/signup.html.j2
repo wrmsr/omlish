@@ -4,68 +4,68 @@
 
 {% block content %}
 
-    <div class="column is-4 is-offset-4">
+  <div class="column is-4 is-offset-4">
 
-        <h3 class="title">Sign Up</h3>
+    <h3 class="title">Sign Up</h3>
 
-        <div class="box">
+    <div class="box">
 
-            {{ flash_messages() }}
+      {{ flash_messages() }}
 
-            <form method="POST" action="{{ url_for('signup') }}">
+      <form method="POST" action="{{ url_for('signup') }}">
 
-                <div class="field">
-                    <div class="control">
-                        <label for="email">Email</label>
-                        <input
-                                id="email"
-                                class="input is-large"
-                                type="email"
-                                name="email"
-                                autocomplete="email"
-                                placeholder="Email"
-                                autofocus=""
-                                required
-                        >
-                    </div>
-                </div>
-
-                <div class="field">
-                    <div class="control">
-                        <label for="name">Name</label>
-                        <input
-                                id="name"
-                                class="input is-large"
-                                type="text"
-                                name="name"
-                                placeholder="Name"
-                                autofocus=""
-                                required
-                        >
-                    </div>
-                </div>
-
-                <div class="field">
-                    <div class="control">
-                        <label for="password">Password</label>
-                        <input
-                                id="password"
-                                class="input is-large"
-                                type="password"
-                                name="password"
-                                autocomplete="new-password"
-                                placeholder="Password"
-                                required
-                        >
-                    </div>
-                </div>
-
-                <button class="button is-block is-info is-large is-fullwidth">Sign Up</button>
-
-            </form>
-
+        <div class="field">
+          <div class="control">
+            <label for="email">Email</label>
+            <input
+                id="email"
+                class="input is-large"
+                type="email"
+                name="email"
+                autocomplete="email"
+                placeholder="Email"
+                autofocus=""
+                required
+            >
+          </div>
         </div>
 
+        <div class="field">
+          <div class="control">
+            <label for="name">Name</label>
+            <input
+                id="name"
+                class="input is-large"
+                type="text"
+                name="name"
+                placeholder="Name"
+                autofocus=""
+                required
+            >
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="control">
+            <label for="password">Password</label>
+            <input
+                id="password"
+                class="input is-large"
+                type="password"
+                name="password"
+                autocomplete="new-password"
+                placeholder="Password"
+                required
+            >
+          </div>
+        </div>
+
+        <button class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+
+      </form>
+
     </div>
+
+  </div>
 
 {% endblock %}

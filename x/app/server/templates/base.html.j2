@@ -2,66 +2,66 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>NotFlask Auth Example</title>
+  <title>NotFlask Auth Example</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"/>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.2/dist/htmx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.2/dist/htmx.min.js"></script>
 </head>
 
 <body>
 
 <section class="is-primary is-fullheight">
 
-    <div>
-        <nav class="navbar">
-            <div class="container">
-                <div id="navbarMenu" class="navbar-menu is-active">
-                    <div class="navbar-end">
+  <div>
+    <nav class="navbar">
+      <div class="container">
+        <div id="navbarMenu" class="navbar-menu is-active">
+          <div class="navbar-end">
 
-                        <a href="{{ url_for('') }}" class="navbar-item">
-                            Home
-                        </a>
+            <a href="{{ url_for('') }}" class="navbar-item">
+              Home
+            </a>
 
-                        {% if current_user() %}
-                            <a href="{{ url_for('profile') }}" class="navbar-item">
-                                Profile
-                            </a>
-                        {% endif %}
+            {% if current_user() %}
+              <a href="{{ url_for('profile') }}" class="navbar-item">
+                Profile
+              </a>
+            {% endif %}
 
-                        {% if not current_user() %}
-                            <a href="{{ url_for('login') }}" class="navbar-item">
-                                Login
-                            </a>
+            {% if not current_user() %}
+              <a href="{{ url_for('login') }}" class="navbar-item">
+                Login
+              </a>
 
-                            <a href="{{ url_for('signup') }}" class="navbar-item">
-                                Sign Up
-                            </a>
-                        {% endif %}
+              <a href="{{ url_for('signup') }}" class="navbar-item">
+                Sign Up
+              </a>
+            {% endif %}
 
-                        {% if current_user() %}
-                            <a href="{{ url_for('logout') }}" class="navbar-item">
-                                Logout
-                            </a>
-                        {% endif %}
+            {% if current_user() %}
+              <a href="{{ url_for('logout') }}" class="navbar-item">
+                Logout
+              </a>
+            {% endif %}
 
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </div>
-
-    <div>
-        <div class="container has-text-centered">
-            {% block content %}
-            {% endblock %}
+          </div>
         </div>
+      </div>
+    </nav>
+  </div>
+
+  <div>
+    <div class="container has-text-centered">
+      {% block content %}
+      {% endblock %}
     </div>
+  </div>
 
 </section>
 
