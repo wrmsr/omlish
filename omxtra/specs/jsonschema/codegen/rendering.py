@@ -58,7 +58,7 @@ class ModuleRenderer:
 
         return out.getvalue()
 
-    def _render_type_ann(self, ref, *, quote_refs: bool = True) -> str:
+    def _render_type_ann(self, ref, *, quote_refs: bool = False) -> str:
         return self._types.render(ref, quote_refs=quote_refs)
 
     @staticmethod
@@ -113,7 +113,7 @@ class ModuleRenderer:
         if ignore_unknown:
             opts.append('ignore_unknown=True')
         if not opts:
-            lines.append(f'{ind}@_set_class_marshal_options')
+            lines.append(f'{ind}@_set_class_marshal_options()')
         else:
             lines.append(f'{ind}@_set_class_marshal_options({", ".join(opts)})')
         lines.append(f'{ind}class {name}({bases}):')
@@ -157,7 +157,7 @@ class ModuleRenderer:
         return lines
 
     def _write_header(self, w: _Writer) -> None:
-        if self._config.generated_marker:
+        if not self._config.omit_generated_marker:
             w('# @omlish-generated')
         w('# ruff: noqa: UP007 UP037 UP045')
         w('import typing as ta')
@@ -170,20 +170,18 @@ class ModuleRenderer:
         w('##')
         w()
         w()
-        w('def _set_class_marshal_options(cls=None, *, field_naming=msh.Naming.LOW_CAMEL, ignore_unknown=False):')
-        w('    def inner(c):')
+        w('def _set_class_marshal_options(*, field_naming=msh.Naming.LOW_CAMEL, ignore_unknown=False):')
+        w('    def inner(cls):')
         w('        msh.update_object_options(')
         w('            field_naming=field_naming,')
         w('            ignore_unknown=ignore_unknown,')
         w('            field_defaults=msh.FieldOptions(')
         w('                omit_if=lang.is_none,')
         w('            ),')
-        w('        )(c)')
+        w('        )(cls)')
         w()
-        w('        return c')
+        w('        return cls')
         w()
-        w('    if cls is not None:')
-        w('        return inner(cls)')
         w('    return inner')
 
     def _write_discriminated_union_base_classes(self, w: _Writer, module: ModuleDef) -> None:
@@ -232,7 +230,7 @@ class ModuleRenderer:
                 w()
                 w()
                 w('@dc.dataclass(frozen=True, kw_only=True)')
-                w('@_set_class_marshal_options')
+                w('@_set_class_marshal_options()')
                 w(f'class {name}(lang.Final):')
                 w('    pass')
 
@@ -264,7 +262,7 @@ class ModuleRenderer:
                 w()
                 w()
                 if td.target is not None:
-                    w(f'{name}: ta.TypeAlias = {self._render_type_ann(td.target, quote_refs=False)}')
+                    w(f'{name}: ta.TypeAlias = {self._render_type_ann(td.target)}')
                 else:
                     w(f'{name}: ta.TypeAlias = ta.Any')
 

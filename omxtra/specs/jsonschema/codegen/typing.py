@@ -13,7 +13,7 @@ from .ir import UnionTypeRef
 
 
 class TypeAnnotationRenderer:
-    def render(self, ref: TypeRef, *, quote_refs: bool = True) -> str:
+    def render(self, ref: TypeRef, *, quote_refs: bool = False) -> str:
         if isinstance(ref, PrimitiveTypeRef):
             return ref.python_type
 

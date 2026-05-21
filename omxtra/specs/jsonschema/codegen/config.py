@@ -10,11 +10,11 @@ from omlish.specs import jsonschema as jsch
 
 @dc.dataclass(frozen=True, kw_only=True)
 class JsonSchemaCodeGenConfig(lang.Final):
-    generated_marker: bool = True
-    strict: bool = True
+    omit_generated_marker: bool = False
+    non_strict: bool = False
     allow_any_fallbacks: bool = False
 
-    allow_unknown_x: bool = True
+    forbid_unknown_x: bool = False
     allowed_unknown_tags: ta.AbstractSet[str] = frozenset({'discriminator'})
 
     ignored_keyword_types: ta.AbstractSet[type[jsch.Keyword]] = frozenset({

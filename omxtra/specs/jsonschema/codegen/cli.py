@@ -24,7 +24,7 @@ def _load_schema(path: str) -> ta.Any:
 def _parse_schema(obj: ta.Any) -> jsch.Keywords:
     return jsch.KeywordParser(
         allow_unknown='x-only',
-        allow_specific_unknowns={'discriminator'},
+        allow_specific_unknowns={'discriminator'},  # common in openapi
     ).parse_keywords(obj)
 
 
