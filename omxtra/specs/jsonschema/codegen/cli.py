@@ -5,7 +5,7 @@ import typing as ta
 from omlish.argparse import all as ap
 from omlish.formats.json import all as json
 from omlish.logs.std.standard import configure_standard_logging
-from omlish.specs import jsonschema as js
+from omlish.specs import jsonschema as jsch
 
 from .generator import JsonSchemaCodeGen
 
@@ -21,8 +21,8 @@ def _load_schema(path: str) -> ta.Any:
         return json.load(f)
 
 
-def _parse_schema(obj: ta.Any) -> js.Keywords:
-    return js.KeywordParser(
+def _parse_schema(obj: ta.Any) -> jsch.Keywords:
+    return jsch.KeywordParser(
         allow_unknown='x-only',
         allow_specific_unknowns={'discriminator'},
     ).parse_keywords(obj)

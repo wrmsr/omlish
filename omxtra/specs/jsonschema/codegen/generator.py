@@ -1,6 +1,6 @@
 import typing as ta
 
-from omlish.specs import jsonschema as js
+from omlish.specs import jsonschema as jsch
 
 from .analysis import JsonSchemaAnalyzer
 from .config import JsonSchemaCodeGenConfig
@@ -14,7 +14,7 @@ from .transforms import JsonSchemaIrTransformer
 class JsonSchemaCodeGen:
     def __init__(
             self,
-            defs: js.Keywords | ta.Mapping[str, js.Keywords],
+            defs: jsch.Keywords | ta.Mapping[str, jsch.Keywords],
             *,
             config: JsonSchemaCodeGenConfig | None = None,
     ) -> None:

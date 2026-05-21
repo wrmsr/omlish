@@ -113,7 +113,6 @@ class Tag:
 class Header:
     """https://swagger.io/specification/#header-object"""
 
-    # TODO: marshal embedding, shared with Parameter
     common: ParameterCommon
 
 

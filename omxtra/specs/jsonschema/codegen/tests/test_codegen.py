@@ -7,7 +7,7 @@ import pytest
 
 from omlish import check
 from omlish import marshal as msh
-from omlish.specs import jsonschema as js
+from omlish.specs import jsonschema as jsch
 
 from ..errors import UnresolvedRefError
 from ..errors import UnsupportedSchemaError
@@ -17,8 +17,8 @@ from ..generator import JsonSchemaCodeGen
 ##
 
 
-def _parse(obj: ta.Mapping[str, ta.Any], *, allow_unknown: bool = False) -> js.Keywords:
-    return js.KeywordParser(
+def _parse(obj: ta.Mapping[str, ta.Any], *, allow_unknown: bool = False) -> jsch.Keywords:
+    return jsch.KeywordParser(
         allow_unknown=allow_unknown,
         allow_specific_unknowns={'discriminator'},
     ).parse_keywords(obj)

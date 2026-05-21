@@ -1,7 +1,7 @@
 import typing as ta
 
 from omlish import check
-from omlish.specs import jsonschema as js
+from omlish.specs import jsonschema as jsch
 
 from .config import JsonSchemaCodeGenConfig
 from .errors import AmbiguousSchemaError
@@ -56,14 +56,14 @@ LITERAL_VALUE_TYPES: tuple[type, ...] = (
 class JsonSchemaAnalyzer:
     def __init__(
             self,
-            defs: js.Keywords | ta.Mapping[str, js.Keywords],
+            defs: jsch.Keywords | ta.Mapping[str, jsch.Keywords],
             *,
             config: JsonSchemaCodeGenConfig | None = None,
     ) -> None:
         super().__init__()
 
-        if isinstance(defs, js.Keywords):
-            defs = defs[js.Defs].m
+        if isinstance(defs, jsch.Keywords):
+            defs = defs[jsch.Defs].m
 
         self._defs = dict(defs)
         self._extra_type_defs: dict[str, TypeDef] = {}
@@ -89,9 +89,9 @@ class JsonSchemaAnalyzer:
 
     def _check_unhandled(
             self,
-            kws: js.Keywords,
+            kws: jsch.Keywords,
             *,
-            handled_types: ta.AbstractSet[type[js.Keyword]] = frozenset(),
+            handled_types: ta.AbstractSet[type[jsch.Keyword]] = frozenset(),
             path: SchemaPath,
     ) -> None:
         if not self._config.strict:
@@ -99,7 +99,7 @@ class JsonSchemaAnalyzer:
 
         allowed_types = handled_types | self._config.ignored_keyword_types
         for kw in kws.lst:
-            if isinstance(kw, js.UnknownKeyword):
+            if isinstance(kw, jsch.UnknownKeyword):
                 if (
                         (self._config.allow_unknown_x and kw.tag.startswith('x-')) or
                         kw.tag in self._config.allowed_unknown_tags
@@ -116,12 +116,12 @@ class JsonSchemaAnalyzer:
                     path=path,
                 )
 
-    def _has_only_ignored_keywords(self, kws: js.Keywords) -> bool:
+    def _has_only_ignored_keywords(self, kws: jsch.Keywords) -> bool:
         if not kws.lst:
             return False
 
         for kw in kws.lst:
-            if isinstance(kw, js.UnknownKeyword):
+            if isinstance(kw, jsch.UnknownKeyword):
                 if (
                         (self._config.allow_unknown_x and kw.tag.startswith('x-')) or
                         kw.tag in self._config.allowed_unknown_tags
@@ -135,13 +135,13 @@ class JsonSchemaAnalyzer:
         return True
 
     @staticmethod
-    def _is_string_const_one_of(one_of: js.OneOf) -> bool:
+    def _is_string_const_one_of(one_of: jsch.OneOf) -> bool:
         if not one_of.kws:
             return False
         for m in one_of.kws:
-            if js.Const not in m.by_type:
+            if jsch.Const not in m.by_type:
                 return False
-            type_kw = m.by_type.get(js.Type)
+            type_kw = m.by_type.get(jsch.Type)
             if type_kw is None or type_kw.ss != 'string':
                 return False
         return True
@@ -180,32 +180,32 @@ class JsonSchemaAnalyzer:
             raise UnsupportedSchemaError(message='Unsupported non-string enum', path=path)
         return literals
 
-    def _classify_def(self, name: str, kws: js.Keywords, path: SchemaPath) -> TypeDef:
+    def _classify_def(self, name: str, kws: jsch.Keywords, path: SchemaPath) -> TypeDef:
         by_type = kws.by_type
         by_tag = kws.by_tag
 
         candidates: list[str] = []
-        if by_tag.get('discriminator') is not None and js.OneOf in by_type:
+        if by_tag.get('discriminator') is not None and jsch.OneOf in by_type:
             candidates.append('discriminated_union')
         if (
                 not candidates and
-                (one_of_kw := by_type.get(js.OneOf)) is not None and
+                (one_of_kw := by_type.get(jsch.OneOf)) is not None and
                 self._is_string_const_one_of(one_of_kw)
         ):
             candidates.append('string_const_one_of')
-        if not candidates and js.Enum in by_type:
+        if not candidates and jsch.Enum in by_type:
             candidates.append('enum')
-        if not candidates and (props_kw := by_type.get(js.Properties)) is not None:
-            addl_kw = by_type.get(js.AdditionalProperties)
+        if not candidates and (props_kw := by_type.get(jsch.Properties)) is not None:
+            addl_kw = by_type.get(jsch.AdditionalProperties)
             if props_kw.m or addl_kw is None or addl_kw.bk is False:
                 candidates.append('object')
-        if not candidates and js.AnyOf in by_type:
+        if not candidates and jsch.AnyOf in by_type:
             candidates.append('any_of')
-        if not candidates and js.AllOf in by_type:
+        if not candidates and jsch.AllOf in by_type:
             candidates.append('all_of')
-        if not candidates and js.Ref in by_type:
+        if not candidates and jsch.Ref in by_type:
             candidates.append('ref_alias')
-        if js.Type in by_type and not candidates:
+        if jsch.Type in by_type and not candidates:
             candidates.append('type_alias')
 
         if len(candidates) > 1:
@@ -224,38 +224,38 @@ class JsonSchemaAnalyzer:
             return self._classify_disc_union(
                 name,
                 kws,
-                check.isinstance(by_tag['discriminator'], js.UnknownKeyword),
+                check.isinstance(by_tag['discriminator'], jsch.UnknownKeyword),
                 path,
             )
 
         if candidate == 'string_const_one_of':
-            one_of_kw = check.isinstance(by_type[js.OneOf], js.OneOf)
-            self._check_unhandled(kws, handled_types={js.OneOf}, path=path)
+            one_of_kw = check.isinstance(by_type[jsch.OneOf], jsch.OneOf)
+            self._check_unhandled(kws, handled_types={jsch.OneOf}, path=path)
             values = [
                 *self._string_enum_values([
-                    m[js.Const].v
+                    m[jsch.Const].v
                     for m in one_of_kw.kws
                 ], path),
             ]
             return StringEnumTypeDef(name=name, values=values)
 
         if candidate == 'enum':
-            enum_kw = check.isinstance(by_type[js.Enum], js.Enum)
-            self._check_unhandled(kws, handled_types={js.Enum, js.Type}, path=path)
+            enum_kw = check.isinstance(by_type[jsch.Enum], jsch.Enum)
+            self._check_unhandled(kws, handled_types={jsch.Enum, jsch.Type}, path=path)
             return StringEnumTypeDef(name=name, values=self._string_enum_values(enum_kw.vs, path))
 
         if candidate == 'object':
             return self._classify_object(name, kws, path)
 
         if candidate == 'any_of':
-            return self._classify_any_of(name, check.isinstance(by_type[js.AnyOf], js.AnyOf), path)
+            return self._classify_any_of(name, check.isinstance(by_type[jsch.AnyOf], jsch.AnyOf), path)
 
         if candidate == 'type_alias':
-            type_kw = check.isinstance(by_type[js.Type], js.Type)
+            type_kw = check.isinstance(by_type[jsch.Type], jsch.Type)
             target = self._resolve_type_from_type_kw(type_kw, kws, path)
             self._check_unhandled(
                 kws,
-                handled_types={js.Type, js.Items, js.AdditionalProperties},
+                handled_types={jsch.Type, jsch.Items, jsch.AdditionalProperties},
                 path=path,
             )
             return TypeAliasTypeDef(name=name, target=target)
@@ -265,15 +265,15 @@ class JsonSchemaAnalyzer:
             return TypeAliasTypeDef(name=name, target=target)
 
         if candidate == 'all_of':
-            return self._classify_all_of(name, check.isinstance(by_type[js.AllOf], js.AllOf), path)
+            return self._classify_all_of(name, check.isinstance(by_type[jsch.AllOf], jsch.AllOf), path)
 
         raise TypeError(candidate)
 
     def _classify_disc_union(
             self,
             name: str,
-            kws: js.Keywords,
-            disc_kw: js.UnknownKeyword,
+            kws: jsch.Keywords,
+            disc_kw: jsch.UnknownKeyword,
             path: SchemaPath,
     ) -> DiscriminatedUnionTypeDef:
         if not isinstance(disc_kw.value, ta.Mapping):
@@ -285,12 +285,12 @@ class JsonSchemaAnalyzer:
             raise UnsupportedSchemaError(message='Unsupported discriminator propertyName', path=path)
         prop_name = prop_name_obj
 
-        one_of = kws.by_type[js.OneOf]
+        one_of = kws.by_type[jsch.OneOf]
 
         variants: list[DiscriminatedUnionVariant] = []
         for i, variant_kws in enumerate(one_of.kws):
             v_path = (*path, 'oneOf', i)
-            props = variant_kws.by_type.get(js.Properties)
+            props = variant_kws.by_type.get(jsch.Properties)
             if props is None or prop_name not in props.m:
                 raise UnsupportedSchemaError(
                     message=f'Discriminator property {prop_name!r} missing from variant',
@@ -298,7 +298,7 @@ class JsonSchemaAnalyzer:
                 )
 
             tag_kws = props.m[prop_name]
-            const_kw = tag_kws.by_type.get(js.Const)
+            const_kw = tag_kws.by_type.get(jsch.Const)
             if const_kw is None:
                 raise UnsupportedSchemaError(
                     message=f'Discriminator property {prop_name!r} variant lacks const',
@@ -306,23 +306,23 @@ class JsonSchemaAnalyzer:
                 )
 
             ref_name_str: str | None = None
-            all_of = variant_kws.by_type.get(js.AllOf)
+            all_of = variant_kws.by_type.get(jsch.AllOf)
             if all_of is not None:
                 if len(all_of.kws) != 1:
                     raise UnsupportedSchemaError(message='Unsupported discriminator allOf variant', path=v_path)
-                ref_kw = all_of.kws[0].by_type.get(js.Ref)
+                ref_kw = all_of.kws[0].by_type.get(jsch.Ref)
                 if ref_kw is None:
                     raise UnsupportedSchemaError(message='Unsupported discriminator allOf variant', path=v_path)
                 ref_name_str = python_class_name(self._ref_name(ref_kw.s, (*v_path, 'allOf', 0)))
 
             self._check_unhandled(
                 variant_kws,
-                handled_types={js.Type, js.Properties, js.Required, js.AllOf},
+                handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.AllOf},
                 path=v_path,
             )
             self._check_unhandled(
                 tag_kws,
-                handled_types={js.Const, js.Type},
+                handled_types={jsch.Const, jsch.Type},
                 path=(*v_path, 'properties', prop_name),
             )
 
@@ -340,7 +340,7 @@ class JsonSchemaAnalyzer:
 
         self._check_unhandled(
             kws,
-            handled_types={js.Type, js.Properties, js.Required, js.OneOf, js.AdditionalProperties},
+            handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.OneOf, jsch.AdditionalProperties},
             path=path,
         )
 
@@ -353,22 +353,22 @@ class JsonSchemaAnalyzer:
     def _classify_object(
             self,
             name: str,
-            kws: js.Keywords,
+            kws: jsch.Keywords,
             path: SchemaPath,
             *,
             qual_name: str | None = None,
-            extra_handled_types: ta.AbstractSet[type[js.Keyword]] = frozenset(),
+            extra_handled_types: ta.AbstractSet[type[jsch.Keyword]] = frozenset(),
     ) -> ObjectTypeDef:
         if qual_name is None:
             qual_name = name
 
-        props = kws.by_type[js.Properties]
-        addl_kw = kws.by_type.get(js.AdditionalProperties)
+        props = kws.by_type[jsch.Properties]
+        addl_kw = kws.by_type.get(jsch.AdditionalProperties)
         ignore_unknown = False
         if props.m and addl_kw is not None and addl_kw.bk is not False:
             if not (
                     addl_kw.bk is True or
-                    (isinstance(addl_kw.bk, js.Keywords) and not addl_kw.bk.lst)
+                    (isinstance(addl_kw.bk, jsch.Keywords) and not addl_kw.bk.lst)
             ):
                 raise UnsupportedSchemaError(
                     message='Unsupported additionalProperties with declared properties',
@@ -376,7 +376,7 @@ class JsonSchemaAnalyzer:
                 )
             ignore_unknown = True
 
-        req_kw = kws.by_type.get(js.Required)
+        req_kw = kws.by_type.get(jsch.Required)
         required_names: ta.AbstractSet[str]
         if req_kw is not None:
             required_seq = (req_kw.ss,) if isinstance(req_kw.ss, str) else tuple(req_kw.ss)
@@ -426,7 +426,7 @@ class JsonSchemaAnalyzer:
 
         self._check_unhandled(
             kws,
-            handled_types={js.Type, js.Properties, js.Required, js.AdditionalProperties} | extra_handled_types,
+            handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.AdditionalProperties} | extra_handled_types,
             path=path,
         )
 
@@ -442,7 +442,7 @@ class JsonSchemaAnalyzer:
     def _classify_field(
             self,
             json_name: str,
-            kws: js.Keywords,
+            kws: jsch.Keywords,
             required: bool,
             path: SchemaPath,
             *,
@@ -452,12 +452,12 @@ class JsonSchemaAnalyzer:
         nested_defs: list[ObjectTypeDef] = []
         type_ref: TypeRef
 
-        addl_kw = kws.by_type.get(js.AdditionalProperties)
-        items_kw = kws.by_type.get(js.Items)
+        addl_kw = kws.by_type.get(jsch.AdditionalProperties)
+        items_kw = kws.by_type.get(jsch.Items)
         if (
                 addl_kw is not None and
-                isinstance(addl_kw.bk, js.Keywords) and
-                (addl_props := addl_kw.bk.by_type.get(js.Properties)) is not None and
+                isinstance(addl_kw.bk, jsch.Keywords) and
+                (addl_props := addl_kw.bk.by_type.get(jsch.Properties)) is not None and
                 addl_props.m
         ):
             nested_name = python_class_name(json_name) + 'Value'
@@ -471,13 +471,13 @@ class JsonSchemaAnalyzer:
             type_ref = MapTypeRef(value=RefTypeRef(nested_qual_name))
             self._check_unhandled(
                 kws,
-                handled_types={js.Type, js.AdditionalProperties, js.Default},
+                handled_types={jsch.Type, jsch.AdditionalProperties, jsch.Default},
                 path=path,
             )
 
         elif (
                 items_kw is not None and
-                (item_props := items_kw.kw.by_type.get(js.Properties)) is not None and
+                (item_props := items_kw.kw.by_type.get(jsch.Properties)) is not None and
                 item_props.m
         ):
             nested_name = python_class_name(json_name) + 'Item'
@@ -491,11 +491,11 @@ class JsonSchemaAnalyzer:
             type_ref = ArrayTypeRef(item=RefTypeRef(nested_qual_name))
             self._check_unhandled(
                 kws,
-                handled_types={js.Type, js.Items, js.Default},
+                handled_types={jsch.Type, jsch.Items, jsch.Default},
                 path=path,
             )
 
-        elif (props_kw := kws.by_type.get(js.Properties)) is not None and props_kw.m:
+        elif (props_kw := kws.by_type.get(jsch.Properties)) is not None and props_kw.m:
             nested_name = python_class_name(json_name)
             nested_qual_name = f'{qual_name}.{nested_name}'
             nested_defs.append(self._classify_object(nested_name, kws, path, qual_name=nested_qual_name))
@@ -504,13 +504,13 @@ class JsonSchemaAnalyzer:
         else:
             type_ref = self._resolve_field_type(kws, path)
 
-        const_kw = kws.by_type.get(js.Const)
+        const_kw = kws.by_type.get(jsch.Const)
         const: ta.Any = MISSING
         if const_kw is not None:
             const = self._literal_value(const_kw.v, path)
 
         default: ta.Any = MISSING
-        default_kw = kws.by_type.get(js.Default)
+        default_kw = kws.by_type.get(jsch.Default)
         if default_kw is not None:
             dv = default_kw.v
             if not isinstance(dv, LITERAL_VALUE_TYPES):
@@ -540,12 +540,12 @@ class JsonSchemaAnalyzer:
             tuple(nested_defs),
         )
 
-    def _classify_any_of(self, name: str, any_of: js.AnyOf, path: SchemaPath) -> TypeDef:
-        all_const = all(js.Const in m.by_type for m in any_of.kws)
+    def _classify_any_of(self, name: str, any_of: jsch.AnyOf, path: SchemaPath) -> TypeDef:
+        all_const = all(jsch.Const in m.by_type for m in any_of.kws)
         if all_const:
             types = set()
             for m in any_of.kws:
-                type_kw = m.by_type.get(js.Type)
+                type_kw = m.by_type.get(jsch.Type)
                 if type_kw and isinstance(type_kw.ss, str):
                     types.add(type_kw.ss)
             if len(types) == 1:
@@ -553,7 +553,7 @@ class JsonSchemaAnalyzer:
                 if t in JSON_TYPE_MAP:
                     return TypeAliasTypeDef(name=name, target=PrimitiveTypeRef(JSON_TYPE_MAP[t]))
 
-        non_const = [m for m in any_of.kws if js.Const not in m.by_type]
+        non_const = [m for m in any_of.kws if jsch.Const not in m.by_type]
         if non_const and len(non_const) < len(any_of.kws):
             members = [
                 self._resolve_any_of_member_type(m, (*path, 'anyOf', i), owner_name=name, index=i)
@@ -573,16 +573,16 @@ class JsonSchemaAnalyzer:
         return AnyOfUnionTypeDef(name=name, members=members)
 
     @staticmethod
-    def _any_of_member_name(owner_name: str, kws: js.Keywords, index: int) -> str:
-        title_kw = kws.by_type.get(js.Title)
+    def _any_of_member_name(owner_name: str, kws: jsch.Keywords, index: int) -> str:
+        title_kw = kws.by_type.get(jsch.Title)
         if title_kw is not None:
             return python_class_name(f'{owner_name}_{title_kw.s}')
 
-        props_kw = kws.by_type.get(js.Properties)
+        props_kw = kws.by_type.get(jsch.Properties)
         if props_kw is not None:
             type_kws = props_kw.m.get('type')
             if type_kws is not None:
-                const_kw = type_kws.by_type.get(js.Const)
+                const_kw = type_kws.by_type.get(jsch.Const)
                 if const_kw is not None and isinstance(const_kw.v, str):
                     return tag_to_camel(const_kw.v) + owner_name
 
@@ -590,20 +590,20 @@ class JsonSchemaAnalyzer:
 
     def _resolve_any_of_member_type(
             self,
-            kws: js.Keywords,
+            kws: jsch.Keywords,
             path: SchemaPath,
             *,
             owner_name: str | None = None,
             index: int | None = None,
     ) -> TypeRef:
-        if js.Properties in kws.by_type:
+        if jsch.Properties in kws.by_type:
             if owner_name is not None and index is not None:
                 member_name = self._any_of_member_name(owner_name, kws, index)
-                if (all_of := kws.by_type.get(js.AllOf)) is not None:
+                if (all_of := kws.by_type.get(jsch.AllOf)) is not None:
                     members: list[TypeDef | TypeRef] = []
                     for i, member_kws in enumerate(all_of.kws):
                         member_path = (*path, 'allOf', i)
-                        if member_kws.by_type.get(js.Ref) is not None:
+                        if member_kws.by_type.get(jsch.Ref) is not None:
                             members.append(self._resolve_field_type(member_kws, member_path))
                         else:
                             raise UnsupportedSchemaError(message='Unsupported allOf member', path=member_path)
@@ -612,7 +612,7 @@ class JsonSchemaAnalyzer:
                         kws,
                         path,
                         qual_name=member_name,
-                        extra_handled_types={js.AllOf},
+                        extra_handled_types={jsch.AllOf},
                     ))
                     self._add_extra_type_def(
                         member_name,
@@ -629,24 +629,24 @@ class JsonSchemaAnalyzer:
 
             self._check_unhandled(
                 kws,
-                handled_types={js.Type, js.Properties, js.Required, js.AdditionalProperties, js.AllOf},
+                handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.AdditionalProperties, jsch.AllOf},
                 path=path,
             )
             return self._any_fallback('Unsupported object anyOf member', path)
 
         return self._resolve_field_type(kws, path)
 
-    def _classify_all_of(self, name: str, all_of: js.AllOf, path: SchemaPath) -> TypeDef:
+    def _classify_all_of(self, name: str, all_of: jsch.AllOf, path: SchemaPath) -> TypeDef:
         members: list[TypeDef | TypeRef] = []
 
         for i, kws in enumerate(all_of.kws):
             by_type = kws.by_type
             m_path = (*path, 'allOf', i)
 
-            if by_type.get(js.Properties) is not None:
+            if by_type.get(jsch.Properties) is not None:
                 members.append(self._classify_object(name, kws, m_path, qual_name=name))
 
-            elif by_type.get(js.Ref) is not None:
+            elif by_type.get(jsch.Ref) is not None:
                 members.append(self._resolve_field_type(kws, m_path))
 
             else:
@@ -654,32 +654,32 @@ class JsonSchemaAnalyzer:
 
         return AllOfIntersectionTypeDef(name=name, members=members)
 
-    def _resolve_field_type(self, kws: js.Keywords, path: SchemaPath) -> TypeRef:
+    def _resolve_field_type(self, kws: jsch.Keywords, path: SchemaPath) -> TypeRef:
         by_type = kws.by_type
 
-        all_of = by_type.get(js.AllOf)
+        all_of = by_type.get(jsch.AllOf)
         if all_of is not None and len(all_of.kws) == 1:
-            ref_kw = all_of.kws[0].by_type.get(js.Ref)
+            ref_kw = all_of.kws[0].by_type.get(jsch.Ref)
             if ref_kw is not None:
-                self._check_unhandled(kws, handled_types={js.AllOf, js.Default}, path=path)
+                self._check_unhandled(kws, handled_types={jsch.AllOf, jsch.Default}, path=path)
                 return RefTypeRef(python_class_name(self._ref_name(ref_kw.s, (*path, 'allOf', 0))))
 
-        ref_kw = by_type.get(js.Ref)
+        ref_kw = by_type.get(jsch.Ref)
         if ref_kw is not None:
-            self._check_unhandled(kws, handled_types={js.Ref, js.Default}, path=path)
+            self._check_unhandled(kws, handled_types={jsch.Ref, jsch.Default}, path=path)
             return RefTypeRef(python_class_name(self._ref_name(ref_kw.s, path)))
 
-        enum_kw = by_type.get(js.Enum)
+        enum_kw = by_type.get(jsch.Enum)
         if enum_kw is not None:
-            self._check_unhandled(kws, handled_types={js.Type, js.Enum, js.Default}, path=path)
+            self._check_unhandled(kws, handled_types={jsch.Type, jsch.Enum, jsch.Default}, path=path)
             return LiteralTypeRef(self._literal_values(enum_kw.vs, path))
 
-        any_of = by_type.get(js.AnyOf)
+        any_of = by_type.get(jsch.AnyOf)
         if any_of is not None:
-            self._check_unhandled(kws, handled_types={js.AnyOf, js.Default}, path=path)
+            self._check_unhandled(kws, handled_types={jsch.AnyOf, jsch.Default}, path=path)
             return self._resolve_any_of_type(any_of, path)
 
-        type_kw = by_type.get(js.Type)
+        type_kw = by_type.get(jsch.Type)
         if type_kw is not None:
             return self._resolve_type_from_type_kw(type_kw, kws, path)
 
@@ -692,15 +692,15 @@ class JsonSchemaAnalyzer:
         if self._config.allow_any_fallbacks:
             return AnyTypeRef()
 
-        self._check_unhandled(kws, handled_types={js.Default}, path=path)
+        self._check_unhandled(kws, handled_types={jsch.Default}, path=path)
         return self._any_fallback('Unsupported unconstrained non-empty schema', path)
 
-    def _resolve_any_of_type(self, any_of: js.AnyOf, path: SchemaPath) -> TypeRef:
+    def _resolve_any_of_type(self, any_of: jsch.AnyOf, path: SchemaPath) -> TypeRef:
         refs: list[TypeRef] = []
         has_null = False
 
         for i, m in enumerate(any_of.kws):
-            type_kw = m.by_type.get(js.Type)
+            type_kw = m.by_type.get(jsch.Type)
             if type_kw is not None and type_kw.ss == 'null':
                 has_null = True
                 continue
@@ -720,13 +720,13 @@ class JsonSchemaAnalyzer:
             return NullableTypeRef(inner=inner)
         return inner
 
-    def _resolve_type_from_type_kw(self, type_kw: js.Type, kws: js.Keywords, path: SchemaPath) -> TypeRef:
+    def _resolve_type_from_type_kw(self, type_kw: jsch.Type, kws: jsch.Keywords, path: SchemaPath) -> TypeRef:
         ss = type_kw.ss
-        items_kw = kws.by_type.get(js.Items)
+        items_kw = kws.by_type.get(jsch.Items)
 
         self._check_unhandled(
             kws,
-            handled_types={js.Type, js.Items, js.AdditionalProperties, js.Default, js.Const, js.Properties},
+            handled_types={jsch.Type, jsch.Items, jsch.AdditionalProperties, jsch.Default, jsch.Const, jsch.Properties},
             path=path,
         )
 
@@ -755,20 +755,20 @@ class JsonSchemaAnalyzer:
     def _resolve_single_type(
             self,
             type_str: str,
-            kws: js.Keywords,
-            items_kw: js.Items | None,
+            kws: jsch.Keywords,
+            items_kw: jsch.Items | None,
             path: SchemaPath,
     ) -> TypeRef:
         if type_str in JSON_TYPE_MAP:
             return PrimitiveTypeRef(JSON_TYPE_MAP[type_str])
 
         if type_str == 'object':
-            props = kws.by_type.get(js.Properties)
+            props = kws.by_type.get(jsch.Properties)
             if props is not None and props.m:
                 raise UnsupportedSchemaError(message='Unsupported inline object type', path=path)
 
-            addl = kws.by_type.get(js.AdditionalProperties)
-            if addl is not None and isinstance(addl.bk, js.Keywords):
+            addl = kws.by_type.get(jsch.AdditionalProperties)
+            if addl is not None and isinstance(addl.bk, jsch.Keywords):
                 return MapTypeRef(value=self._resolve_field_type(addl.bk, (*path, 'additionalProperties')))
             return MapTypeRef()
 
