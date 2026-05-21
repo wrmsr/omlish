@@ -4,9 +4,9 @@ import urllib.parse
 
 import pytest
 
-from ... import check
-from ...secrets.tests.harness import HarnessSecrets
-from ...testing import pytest as ptu
+from ..... import check
+from .....secrets.tests.harness import HarnessSecrets
+from .....testing import pytest as ptu
 
 
 @ptu.skip.if_cant_import('snowflake.connector')

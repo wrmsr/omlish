@@ -39,16 +39,8 @@ from .lower import (  # noqa
     lower_table_elements,
 )
 
-from .rendering.base import (  # noqa
+from .rendering import (  # noqa
     StatementRenderer,
-)
-
-from .rendering.postgres import (  # noqa
-    PostgresStatementRenderer,
-)
-
-from .rendering.sqlite import (  # noqa
-    SqliteStatementRenderer,
 )
 
 from .tabledefs import (  # noqa

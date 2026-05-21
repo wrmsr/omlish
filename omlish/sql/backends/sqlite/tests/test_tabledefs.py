@@ -1,14 +1,14 @@
 import contextlib
 import sqlite3
 
-from ...dtypes import String
-from ...elements import Column
-from ...elements import CreatedAtUpdatedAt
-from ...elements import Elements
-from ...elements import IdIntegerPrimaryKey
-from ...lower import lower_table_elements
-from ...tabledefs import TableDef
-from ..sqlite import SqliteStatementRenderer
+from ....tabledefs.dtypes import String
+from ....tabledefs.elements import Column
+from ....tabledefs.elements import CreatedAtUpdatedAt
+from ....tabledefs.elements import Elements
+from ....tabledefs.elements import IdIntegerPrimaryKey
+from ....tabledefs.lower import lower_table_elements
+from ....tabledefs.tabledefs import TableDef
+from ..tabledefs import SqliteStatementRenderer
 
 
 def test_render_create_table():

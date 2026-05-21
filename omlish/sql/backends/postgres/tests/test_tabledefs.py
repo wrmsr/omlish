@@ -6,15 +6,15 @@ from ..... import check
 from ..... import lang
 from .....testing import pytest as ptu
 from ....dbs import UrlDbLoc
+from ....tabledefs.dtypes import String
+from ....tabledefs.elements import Column
+from ....tabledefs.elements import CreatedAtUpdatedAt
+from ....tabledefs.elements import Elements
+from ....tabledefs.elements import IdIntegerPrimaryKey
+from ....tabledefs.lower import lower_table_elements
+from ....tabledefs.tabledefs import TableDef
 from ....tests.harness import HarnessDbs
-from ...dtypes import String
-from ...elements import Column
-from ...elements import CreatedAtUpdatedAt
-from ...elements import Elements
-from ...elements import IdIntegerPrimaryKey
-from ...lower import lower_table_elements
-from ...tabledefs import TableDef
-from ..postgres import PostgresStatementRenderer
+from ..tabledefs import PostgresStatementRenderer
 
 
 if ta.TYPE_CHECKING:

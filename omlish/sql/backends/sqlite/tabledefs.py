@@ -4,17 +4,17 @@ import typing as ta
 from .... import check
 from .... import collections as col
 from .... import dataclasses as dc
-from ..dtypes import Datetime
-from ..dtypes import Integer
-from ..dtypes import String
-from ..dtypes import Uuid
-from ..elements import Column
-from ..elements import Index
-from ..elements import PrimaryKey
-from ..elements import UpdatedAtTrigger
-from ..tabledefs import TableDef
-from ..values import Now
-from .base import StatementRenderer
+from ...tabledefs.dtypes import Datetime
+from ...tabledefs.dtypes import Integer
+from ...tabledefs.dtypes import String
+from ...tabledefs.dtypes import Uuid
+from ...tabledefs.elements import Column
+from ...tabledefs.elements import Index
+from ...tabledefs.elements import PrimaryKey
+from ...tabledefs.elements import UpdatedAtTrigger
+from ...tabledefs.rendering import StatementRenderer
+from ...tabledefs.tabledefs import TableDef
+from ...tabledefs.values import Now
 
 
 ##

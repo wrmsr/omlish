@@ -46,11 +46,17 @@ with _lang.auto_proxy_init(globals()):
 
     #
 
+    from . import backends  # noqa
+    from . import backends as be  # noqa
+
+    #
+
     from . import dbapi  # noqa
 
     #
 
     from . import queries  # noqa
+    from . import queries as q  # noqa
 
     from .queries import (  # noqa
         Q,
@@ -59,7 +65,6 @@ with _lang.auto_proxy_init(globals()):
     #
 
     from . import tabledefs  # noqa
-
     from . import tabledefs as td  # noqa
 
     #

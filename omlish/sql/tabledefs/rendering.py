@@ -1,8 +1,8 @@
 import abc
 
-from .... import dataclasses as dc
-from .... import lang
-from ..tabledefs import TableDef
+from ... import dataclasses as dc
+from ... import lang
+from .tabledefs import TableDef
 
 
 ##

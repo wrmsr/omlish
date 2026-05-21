@@ -9,7 +9,7 @@ import sqlite3
 
 import pytest
 
-from ...testing import pytest as ptu
+from .....testing import pytest as ptu
 
 
 def test_sqlite_fts():

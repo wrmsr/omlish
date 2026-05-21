@@ -94,7 +94,7 @@ class SqlStore(Store):
 
         self._param_style = param_style
         if tabledef_renderer is None:
-            tabledef_renderer = sql.td.SqliteStatementRenderer()
+            tabledef_renderer = sql.be.sqlite.td.SqliteStatementRenderer()
         self._tabledef_renderer = tabledef_renderer
         if tabledef_create_options is None:
             tabledef_create_options = sql.td.StatementRenderer.CreateOptions(

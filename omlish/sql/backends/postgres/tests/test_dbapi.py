@@ -2,11 +2,11 @@ import contextlib
 import typing as ta
 import urllib.parse
 
-from ... import check
-from ... import lang
-from ...testing import pytest as ptu
-from ..dbs import UrlDbLoc
-from .harness import HarnessDbs
+from ..... import check
+from ..... import lang
+from .....testing import pytest as ptu
+from ....dbs import UrlDbLoc
+from ....tests.harness import HarnessDbs
 
 
 if ta.TYPE_CHECKING:
