@@ -41,6 +41,7 @@ DEPS="$DEPS\
   bison\
   bmon\
   btop\
+  bubblewrap\
   build-essential\
   ca-certificates\
   clang\
@@ -68,13 +69,22 @@ DEPS="$DEPS\
   irssi\
   jq\
   less\
+  libbz2-dev\
   libdb-dev\
   libgdbm6\
+  liblz4-dev\
+  libncurses5-dev\
   libpq-dev\
+  libreadline6-dev\
+  libsqlite3-dev\
+  libssl-dev\
   libyaml-dev\
   llvm\
   lsb-release\
   lsof\
+  lz4\
+  lzma\
+  lzma-dev\
   make\
   man-db\
   maven\
@@ -100,6 +110,7 @@ DEPS="$DEPS\
   subversion\
   sudo\
   tcpdump\
+  tcsh\
   telnet\
   tmux\
   unzip\

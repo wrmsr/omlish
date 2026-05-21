@@ -42,6 +42,11 @@ deps = [
   'make',
   'pkg-config',
 
+  # libs
+  'libncurses5-dev',
+  'libreadline6-dev',
+  'libssl-dev',
+
   # language toolchains & runtimes
   'maven',
   'perl',
@@ -64,6 +69,9 @@ deps = [
   'lsof',
   'strace',
 
+  # sandboxing
+  'bubblewrap',
+
   # data formats
   'jq',
   'libyaml-dev',
@@ -72,6 +80,7 @@ deps = [
   'libdb-dev',
   'libgdbm6',
   'libpq-dev',
+  'libsqlite3-dev',
   'postgresql-client',
   'sqlite3',
 
@@ -86,6 +95,7 @@ deps = [
   'tmux',
 
   # shells
+  'tcsh',
   'zsh',
 
   # editors & shells
@@ -99,13 +109,18 @@ deps = [
 
   # documentation & introspection
   'file',
-  'man-db',
   'graphviz',
+  'man-db',
 
   # chat & communication
   'irssi',
 
   # archiving & compression
-  'zip',
+  'libbz2-dev',
+  'liblz4-dev',
+  'lz4',
+  'lzma',
+  'lzma-dev',
   'unzip',
+  'zip',
 ]
