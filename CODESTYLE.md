@@ -13,7 +13,6 @@
 
 - Outside of a few specific subpackages (and test code), there are no external dependencies of any kind to rely on. Use
   the standard library liberally, use `omlish` for everything else.
-
 - All external runtime dependencies are optional, and generally fit into the following categories:
   - Cryptography: `cryptography`. Its use is optional.
   - File formats: `orjson`, `pyyaml`, `cbor2`, `lxml`, `cloudpickle`, etc. Wherever possible, they serve only as
@@ -23,12 +22,12 @@
     but simplified internal 'equivalents' exist for simpler usecases.
   - Compression algorithms: `lz4`, `python-snappy`, `brotli`, etc. These generally have no internal fallback if not
     present in the standard library, but are usually optional at runtime in practice.
-  - Database drivers: `pg8000`, `psycopg`, `psycopg2`, `mysql-connecteor-python`, `mysqlclient`, `pymysql`,
+  - Database drivers: `pg8000`, `psycopg`, `psycopg2`, `mysql-connector-python`, `mysqlclient`, `pymysql`,
     `snowflake-connector-python`, `duckdb`, etc. These also generally have no internal fallback.
   - Large <span aria-label="math">m̶̡̢̡̢̠̥͎͇̯̥̹̪͇͇͇̺̟͋̓͂̇͝͝a̴̧̛̞̾̊͒̈́̿͗̓̐̊͝t̸̥͖͂̀̆͛́̅́͝͠ȟ̴̢͎͙͍̱̒͂́̆̽̽̈́͝</span>
     libraries: `numpy`, `torch`, `mlx`, `tinygrad`, `transformers`, `llama-cpp-python`, `tokenizers`, etc. These tend to
-    have gigantic interface surface areas compared to the previous categories, and all interaction them is heavily
-    quarantined to a single isolated package per dependency. Outside of these isolated packages they absolutely cannot
+    have gigantic interface surface areas compared to the previous categories, and all interaction wht them is heavily
+    quarantined to a single isolated package per dependency. Outside of these isolated packages, they absolutely cannot
     be assumed to be present.
   - `textual`, specifically - it is the sole chosen TUI library. Almost all terminal functionality throughout the
     codebase is usable without it - it only powers a small number of specific, larger TUI apps.
@@ -41,10 +40,9 @@
     `omdev.packaging`. However, there is a small number of libraries that do things I have absolutely no interest in
     attempting or maintaining myself, such as those listed here. As with all other deps these are strictly optional, and
     fallbacks exist wherever possible.
-  - `httpx` specifically. It is **NOT** required - various internal async http client options exist. It is however an
-    optional integration.
   - Various other optional backends: `psutil`, `mwparserfromhell`, `regex`, `ddgs`, `tree-sitter`, etc.
 - Notably absent from this list:
+  - `httpx` / `requests` - use the internal `omlish.http` package.
   - `pydantic`. Use dataclasses.
   - `click`. Use argparse.
   - Any 'web client' library: `boto3`, `google-api-python-client`, `openai`, `anthropic`, etc. These are not used, even
@@ -96,7 +94,7 @@
 
 ### Packages
 
-  - All packages must have an `__init__.py` file, even if empty.
+- All packages must have an `__init__.py` file, even if empty.
 
 
 ### Imports
@@ -149,15 +147,64 @@
 - The codebase uses a handful of `# @omlish-...` magic comments in python source files, including:
   - `@omlish-lite` - denotes a \[**lite**\] source file. When present in a package's `__init__.py`, it means all source
     files in all packages and subpackages, recursively, are \[**lite**\].
-  - `@omlish-manifest` - triggers the automatic generation and manintenance of an entry in `.omlish-manifests.json`.
+  - `@omlish-manifest` - triggers the automatic generation and maintenance of an entry in `.omlish-manifests.json`.
   - `@omlish-generated` - written into source files that are the products of code generation - these are never to be
     modified manually, and can generally be ignored (they tend to be huge).
+
+
+### Module layout
+
+- Modules should generally follow the following layout:
+  - A single `# ruff: noqa: ...` line if necessary
+  - **NO blank line**
+  - Any module-scoped `# @omlish-...` comments
+  - **NO blank line**
+  - A module docstring, if any
+  - **NO blank line**
+  - Import blocks, separated by a single blank line if multiple blocks are present:
+    - Stdlib (always imported as whole modules, never individual items)
+    - Third-party
+    - Local (other in-repo `om*` packages)
+    - Current-`om*`-package internal imports (always relative)
+  - **TWO blank lines**, if the following is present:
+  - Typing stuff:
+    - TypeVars, like the following:
+      - `IntT = ta.TypeVar('IntT', bound=int)`
+      - `FooT = ta.TypeVar('FooT', bound='Foo')`
+      - `T_contra = ta.TypeVar('T_contra', contravariant=True)`
+    - TypeAliases, like the following:
+      - `IntOrStr: ta.TypeAlias = int | str`
+      - `FooOrBarOrStr: ta.TypeAlias = ta.Union['Foo', 'Bar']` (must quote forward refs here)
+    - These should generally be grouped semantically, and may or may not be separated by blank lines.
+  - **TWO blank lines, always**
+  - A divider line of specifically `##`
+  - **TWO blank lines, always**
+  - Then, finally, arbitrary module source code.
+
+As an example:
+
+```python
+import typing as ta
+
+from omlish import lang
+
+
+T = ta.TypeVar('T')
+
+
+##
+
+
+@lang.cached_function
+def make_it_a_tuple(t: T) -> tuple[T]:
+  return (t,)
+```
 
 
 ### Classes
 
 - Ensure constructors call `super().__init__()`, even if they don't appear to inherit from anything at their definition
-  - *except* if the class is `@ta.Final` and there is explicit reason to not.
+  - *except* if the class is `@ta.final` and there is explicit reason to not.
   - A blank line should follow the super call if it is the first statement of the method (which it usually is) and there
     are more statements in the method.
 - Prefer to use dataclasses for even moderately complex usecases - if there are, say, more than a 2-element tuple, a
@@ -196,9 +243,9 @@
 - Do not use `abc.ABC` - in standard code use `lang.Abstract` and in lite code use `omlish.lite.abstract.Abstract`.
   - Rationale: `abc.ABCMeta` adds extreme overhead to `isinstance` / `issubclass` checks (6x) in order to support
     virtual base classes, which are almost never needed or desirable.
-- Abstract methods should always do nothing but `raise NotImplementedError` - but they *should* do that, *unless* it's
-  likely they will be involved in `super()` calls through multiple layers of inheritance (which should be fairly rare as
-  composition is preferred to inheritance).
+- `@abc.abstractmethod`'s should always do nothing but `raise NotImplementedError` - but they *should* do that,
+  *unless* it's likely they will be involved in `super()` calls through multiple layers of inheritance (which should be
+  fairly rare as composition is preferred to inheritance).
 - Properties should be free of side-effects.
   - Rationale: Many utilities eagerly inspect properties at runtime, even private (underscore-prefixed) ones, so they
     cannot alter state.
@@ -229,7 +276,7 @@
   arguments.
 - **Strongly** prefer frozen dataclasses.
 - In standard code, prefer to `from omlish import dataclasses as dc` - not the standard library `dataclasses` module.
-  The interface and behavior is the same.
+  The interface and behavior are the same.
 
 
 ### Exceptions
@@ -259,7 +306,13 @@
     like `__exit__` and `__eq__` may be omitted.
   - An exception to this is test code - in general don't bother type annotating test code, and in fact avoid test
     function parameter annotations due to the dynamic nature of pytest fixtures.
-- Do **NOT** use `from __future__ import annotations`. Forward-refs must still be quoted.
+- We always prefer all `ta.TypeVar`'s, and usually prefer `ta.TypeAlias`'s, at the top of the module, just under
+  imports, and together with them before the initial separating `##` divider line.
+- Wherever possible, do **NOT** quote forward-refs.
+  - We are on python 3.14, so do not add `from __future__ import annotations` - in 3.14+ all type annotations are
+    already deferred.
+  - Per above, as we prefer `ta.TypeAlias`'s at the top of the module with imports, they're necessarily almost always
+    going to wind up quoting anything defined in the module.
 - In standard code, use PEP-585 and PEP-604 style annotations for builtin types - use `list[int]` instead of
   `ta.List[int]`, and `int | None` instead of `ta.Optional[int]`.
   - However, portions of type annotations quoted for forward refs must **ONLY** be simple identifiers, not 'type
@@ -268,7 +321,7 @@
     int'`.
   - Note that \[**lite**\] code must still use pre-PEP-585 annotations like `ta.List[int]` and `ta.Optional[int]` due to
     PEP-585 not being supported in python 3.8. Note that when doing this source files must `# ruff: noqa: ...` any
-    relevant lint errors - usually things lke UP006, UP007, UP045, ...
+    relevant lint errors - usually things like UP006, UP007, UP045, ...
 - Use `typing` aliases for non-builtin types - use `ta.Sequence[int]` instead of `collections.abc.Sequence[int]`.
 - Prefer to accept immutable, less-specific types - a function should likely use a `ta.Sequence[int]` parameter rather
   than a `list[int]`. Use `ta.AbstractSet` over `set` and `frozenset`, and use `ta.Mapping` over `dict`, accordingly.
@@ -278,8 +331,8 @@
   integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
 - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
   will suffice. When present in a class definition, `ta.Generic` should be the last class in the base class list.
-- Do **NOT** use PEP-695 style type parameter syntax yet:
-  - Continue to declare `ta.TypeVar`'s explicitly at the top of the module.
+- Do **NOT** use PEP-695 style type statement or type parameter syntax yet:
+  - Continue to declare `ta.TypeVar`'s `ta.TypeAlias`'s explicitly at the top of the module.
   - Continue to declare type aliases as global variables (whose own type is annotated as `ta.TypeAlias`). For example,
     do `IntList: ta.TypeAlias = list[int]`, not `type IntList = list[int]`.
     - Note that in \[**lite**\] code, there is no `ta.TypeAlias` yet (as it was added in 3.10). In lite code, suffix the
@@ -340,7 +393,7 @@
     injection that's too fine-grained to justify interface decomposition.
 - An ideal to aim for is a test suite reproducing all realistic (or encountered) failures at each individual IO and
   synchronization point.
-  - With multiple concurrent actors this may be achieved trhough 'lock-step' execution: with for example 2 related
+  - With multiple concurrent actors this may be achieved through 'lock-step' execution: with for example 2 related
     actors running concurrently which encounter a shared point of synchronization, run a test twice, once with the first
     actor running first, and once with the second actor running first.
 - Do **not** use 'sleep' to simulate lock-step execution, timeouts, or other test conditions. Tests should strive to
@@ -364,8 +417,8 @@
 ### C Extensions
 
 - As with python code - but more importantly - **target only CPython 3.14+**. API's which have been removed or rendered
-  obsolete since then (like `Py_TRASHCAN_BEGIN`) should be avoided, and no version guard is necessary for anything added
-  in 3.14 or earlier.
+  obsolete in or before 3.14 (like `Py_TRASHCAN_BEGIN`) should be avoided, and no version guard is necessary for
+  anything added in 3.14 or earlier.
 - C extensions use C11 and C++ extensions use C++20.
 - In general prefer to write native extensions in C++.
 - Use the C++ standard library liberally, but not 'excessively' lol. Write more 'C-style' code when interfacing with
@@ -375,6 +428,10 @@
 - C/C++ extensions should be kept to a single, self-contained source file - do not write new header files.
 - C++ source files use the `.cc` extension, and C++ header files use the `.hh` extension.
 - Native extensions *must* use PEP-489 style multi-phase extension initialization (`PyModuleDef_Init`).
+- Modules must not have any `PyObject` related global state.
+  - Anything python related that would otherwise be a global must go a struct accessed by `PyModule_GetState`
+    (PEP-3121).
+  - All defined types must be heap types via `PyType_FromModuleAndSpec`, never static `PyTypeObject`'s (PEP-573).
 - Modules should mark themselves `Py_MOD_GIL_NOT_USED` and `Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED` as applicable.
   Modules should strive to be written to support both if at all possible.
 - See `omdev/cexts/_boilerplate.cc` for a simple C++ extension template.
