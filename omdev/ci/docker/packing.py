@@ -11,9 +11,9 @@ from omlish.lite.contextmanagers import ExitStacked
 from omlish.logs.utils import log_timing_context
 from omlish.os.temp import temp_dir_context
 
-from ...oci.building import BuiltOciImageIndexRepository
-from ...oci.pack.repositories import OciPackedRepositoryBuilder
-from ...oci.repositories import DirectoryOciRepository
+from ...specs.oci.building import BuiltOciImageIndexRepository
+from ...specs.oci.pack.repositories import OciPackedRepositoryBuilder
+from ...specs.oci.repositories import DirectoryOciRepository
 
 
 ##

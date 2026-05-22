@@ -94,7 +94,7 @@ def __omlish_amalg__():  # noqa
             dict(path='consts.py', sha1='ef00d55ab4cdd799b22f2e8b736eacd52ee8a80e'),
             dict(path='github/env.py', sha1='c7a2389048f008f46f59f6bcc11e0d15655f2b1c'),
             dict(path='shell.py', sha1='a59e59b812394d0502837f4c198e1cf604f90227'),
-            dict(path='../oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
+            dict(path='../specs/oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
             dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='a093aa6b49e25b3206f59b703b281d569c386838'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
             dict(path='../../omlish/http/statuses.py', sha1='675eff6e1638e48aebb7aeae422e426c21a612d2'),
@@ -129,8 +129,8 @@ def __omlish_amalg__():  # noqa
             dict(path='github/api/v1/api.py', sha1='684744408bf968b8104d031dc4f35bbbc526b4b7'),
             dict(path='github/api/v2/api.py', sha1='4adbabd4d4cd1a954d7cc49ab33b88c28a59a365'),
             dict(path='github/bootstrap.py', sha1='9bf24b05603cd1a82db8be8b645bbad3e0d3f22f'),
-            dict(path='../oci/datarefs.py', sha1='793ce5f2774e052b28d04b226a5f1eff6eec0a72'),
-            dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
+            dict(path='../specs/oci/datarefs.py', sha1='793ce5f2774e052b28d04b226a5f1eff6eec0a72'),
+            dict(path='../specs/oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
             dict(path='../../omlish/argparse/parsers.py', sha1='51044d7b7d1b1ca27173be2d3c007d574827a188'),
             dict(path='../../omlish/formats/yaml/goyaml/errors.py', sha1='c4dda09d78bc14d9824e45e3d5d434185ee5598b'),
             dict(path='../../omlish/http/headers.py', sha1='aa2182505c9b09e2b658df8f8b3d927bc5fae13b'),
@@ -151,9 +151,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/sockets/handlers/types.py', sha1='3eba55a4d5c1ca303958020f8e278ffd366661f9'),
             dict(path='../../omlish/text/mangle.py', sha1='4583ee0724c77f8ad85ef47c225ced4fcd1598bf'),
             dict(path='../dataserver/targets.py', sha1='0fb9422ca0daaf54be1c21a63e06f0fa7c1f4dbb'),
-            dict(path='../oci/data.py', sha1='6c8b30260f3418505d0053d6a9cf8473196069d2'),
-            dict(path='../oci/repositories.py', sha1='f224ea10f5d0f9d3719bc9fe867c7e1d2ccffbf3'),
-            dict(path='../oci/tars.py', sha1='3ed00e97a494bd92c6a6149d22d51469bc0af384'),
+            dict(path='../specs/oci/data.py', sha1='6c8b30260f3418505d0053d6a9cf8473196069d2'),
+            dict(path='../specs/oci/repositories.py', sha1='f224ea10f5d0f9d3719bc9fe867c7e1d2ccffbf3'),
+            dict(path='../specs/oci/tars.py', sha1='3ed00e97a494bd92c6a6149d22d51469bc0af384'),
             dict(path='../../omlish/argparse/cli.py', sha1='aef500dd2d8f5a65c4c04ede11355ac8eb513f2e'),
             dict(path='../../omlish/asyncs/asyncio/sockets.py', sha1='8d24dae988a30bb73f167a9ab62d4fc9eef4ad06'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
@@ -180,8 +180,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../dataserver/handlers.py', sha1='ce0a208cbd7f66b26b9539ec6d5e7ef1041a4886'),
             dict(path='../dataserver/routes.py', sha1='97379cba6a531ca1bde33de0eb432bd9b36791c1'),
-            dict(path='../oci/media.py', sha1='ccebb9fa56214759e48fe5e65368b4ce70fe0417'),
-            dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
+            dict(path='../specs/oci/media.py', sha1='ccebb9fa56214759e48fe5e65368b4ce70fe0417'),
+            dict(path='../specs/oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
             dict(path='../../omlish/formats/yaml/goyaml/ast.py', sha1='5ae8fa62a717986ac45024d5988b626850ed1786'),
             dict(path='../../omlish/formats/yaml/goyaml/scanning.py', sha1='9c7bb51121f85ac499f8f907fbc3ce20a07f3e1d'),
             dict(path='../../omlish/http/pipelines/chunking.py', sha1='7e25a89726210c96b93b4d1c676fdd8347ba82c5'),
@@ -201,8 +201,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/subprocesses/base.py', sha1='483de755e9d090d8cae5a774e232e0965ea5713e'),
             dict(path='docker/cacheserved/manifests.py', sha1='80a65d08319d152f0bc6f893351e23368b3de93b'),
             dict(path='../dataserver/server.py', sha1='91a673b19762088f3ed14aa91e7f6a0141bba3a5'),
-            dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
-            dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
+            dict(path='../specs/oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
+            dict(path='../specs/oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/formats/yaml/goyaml/parsing.py', sha1='78c28c2b865c57077b071543361920db142242d0'),
             dict(path='../../omlish/http/pipelines/servers/responses.py', sha1='d2bc2464c242a7206edc015a7d9c88a7e21802ed'),  # noqa
             dict(path='../../omlish/io/streams/segmented.py', sha1='9bd6ccc359c933d113d97324d1dde6b6924066dc'),
@@ -211,7 +211,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
             dict(path='../dataserver/http.py', sha1='4e2235b3c874ede6c2ab72d0fd4e282926617fc7'),
-            dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
+            dict(path='../specs/oci/dataserver.py', sha1='49c8cde4810c4185a57696e84ce933978a3ed3a1'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='5047d6c283348c2cd4265c955bb94651e971addd'),
             dict(path='../../omlish/http/pipelines/aggregators.py', sha1='680f486f4a17e02746dbb8f05794fc39a978315d'),
@@ -225,12 +225,12 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/timing.py', sha1='af5022f5a508939f1b433ed0514ede340fd0d672'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
             dict(path='docker/cache.py', sha1='1c30c907c44e7cc12cd985ccb88b1f6b65558899'),
-            dict(path='docker/repositories.py', sha1='e4bfc0e91c3bf20259895ce7c95a1eb3f6507518'),
+            dict(path='docker/repositories.py', sha1='75c153882ec9f26f22ae955e6354cd5f65f1e5e0'),
             dict(path='docker/utils.py', sha1='082e2b962ca1bc8e6b3f9bbe6ecfcadff310d54f'),
             dict(path='github/api/clients.py', sha1='8ddc0f5ccf718f1b530f4a965f0cc56b68a6a2a8'),
             dict(path='github/api/v2/azure.py', sha1='19052e8e2babb8b2953ec10e6b9dcee97c21419a'),
             dict(path='requirements.py', sha1='c370a65958a00412e00608a0e1f12795e276aee1'),
-            dict(path='../oci/pack/repositories.py', sha1='e9bf6fa8bdaae2031dd0967d07a56c93a2e099b6'),
+            dict(path='../specs/oci/pack/repositories.py', sha1='e9bf6fa8bdaae2031dd0967d07a56c93a2e099b6'),
             dict(path='../../omlish/http/pipelines/servers/requests.py', sha1='e0872f2283ce5f573c5937da4bd30dcae7173965'),  # noqa
             dict(path='docker/buildcaching.py', sha1='7b2633d5b8dac6aab01dd459e273cb370c5b11c8'),
             dict(path='docker/imagepulling.py', sha1='d6b1ca1ecb9aa5c593a25e6deb78e942c75ebcb4'),
@@ -243,7 +243,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/simple/pipelines/sync.py', sha1='388ff0e3d7eca49116a57f344c4bef00bd7cd2e3'),
             dict(path='docker/dataserver.py', sha1='05c6c4ae8c3058496c162d0bd7105810a9b1a334'),
             dict(path='github/inject.py', sha1='99c0dd7c55767e7c49f70b7edac25da67f718b2e'),
-            dict(path='docker/cacheserved/cache.py', sha1='4f8c5c2b7451b8f0d7cccb12060ff609af4f44e8'),
+            dict(path='docker/cacheserved/cache.py', sha1='51587e48797f6e7b2cc99f023711b7466355aea5'),
             dict(path='docker/inject.py', sha1='69acac65fae413cb58c1f9aa739d2cc1c3ffa09d'),
             dict(path='inject.py', sha1='e86b16d79a113a4f387e68ed0db1d067bcada93a'),
             dict(path='cli.py', sha1='b392df23b6eaf1a0b5223db07a3c4bcd1d1fe0a2'),
@@ -363,7 +363,7 @@ DataServerTargetT = ta.TypeVar('DataServerTargetT', bound='DataServerTarget')
 # ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias
 
-# ../oci/building.py
+# ../specs/oci/building.py
 OciMediaDataclassT = ta.TypeVar('OciMediaDataclassT', bound='OciMediaDataclass')
 
 
@@ -437,7 +437,7 @@ class ShellCmd:
 
 
 ########################################
-# ../../oci/compression.py
+# ../../specs/oci/compression.py
 
 
 ##
@@ -3937,7 +3937,7 @@ def is_in_github_actions() -> bool:
 
 
 ########################################
-# ../../oci/datarefs.py
+# ../../specs/oci/datarefs.py
 
 
 ##
@@ -4065,7 +4065,7 @@ class OciDataRefInfo:
 
 
 ########################################
-# ../../oci/pack/unpacking.py
+# ../../specs/oci/pack/unpacking.py
 
 
 ##
@@ -11440,7 +11440,7 @@ class UrlDataServerTarget(DataServerTarget):
 
 
 ########################################
-# ../../oci/data.py
+# ../../specs/oci/data.py
 
 
 ##
@@ -11601,7 +11601,7 @@ def get_single_oci_image_manifest(image_index: OciImageIndex) -> OciImageManifes
 
 
 ########################################
-# ../../oci/repositories.py
+# ../../specs/oci/repositories.py
 
 
 ##
@@ -11756,7 +11756,7 @@ class DictOciRepository(OciRepository):
 
 
 ########################################
-# ../../oci/tars.py
+# ../../specs/oci/tars.py
 
 
 ##
@@ -16325,7 +16325,7 @@ class DataServerRoute:
 
 
 ########################################
-# ../../oci/media.py
+# ../../specs/oci/media.py
 
 
 ##
@@ -16498,7 +16498,7 @@ OCI_MANIFEST_MEDIA_TYPES: ta.AbstractSet[str] = frozenset([
 
 
 ########################################
-# ../../oci/pack/packing.py
+# ../../specs/oci/pack/packing.py
 
 
 ##
@@ -23952,7 +23952,7 @@ class DataServer:
 
 
 ########################################
-# ../../oci/building.py
+# ../../specs/oci/building.py
 
 
 ##
@@ -24148,7 +24148,7 @@ def build_oci_index_repository(index: OciImageIndex) -> BuiltOciImageIndexReposi
 
 
 ########################################
-# ../../oci/loading.py
+# ../../specs/oci/loading.py
 
 
 ##
@@ -27880,7 +27880,7 @@ class DataServerSimpleHttpHandler(SimpleHttpHandler_):
 
 
 ########################################
-# ../../oci/dataserver.py
+# ../../specs/oci/dataserver.py
 
 
 ##
@@ -32380,7 +32380,7 @@ def download_requirements(
 
 
 ########################################
-# ../../oci/pack/repositories.py
+# ../../specs/oci/pack/repositories.py
 
 
 ##

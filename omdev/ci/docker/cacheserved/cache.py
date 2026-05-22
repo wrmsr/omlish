@@ -18,12 +18,12 @@ from omlish.logs.modules import get_module_logger
 
 from ....dataserver.server import DataServer
 from ....dataserver.targets import DataServerTarget
-from ....oci.building import build_oci_index_repository
-from ....oci.data import get_single_leaf_oci_image_index
-from ....oci.dataserver import build_oci_repository_data_server_routes
-from ....oci.loading import read_oci_repository_root_index
-from ....oci.pack.repositories import OciPackedRepositoryBuilder
-from ....oci.repositories import OciRepository
+from ....specs.oci.building import build_oci_index_repository
+from ....specs.oci.data import get_single_leaf_oci_image_index
+from ....specs.oci.dataserver import build_oci_repository_data_server_routes
+from ....specs.oci.loading import read_oci_repository_root_index
+from ....specs.oci.pack.repositories import OciPackedRepositoryBuilder
+from ....specs.oci.repositories import OciRepository
 from ...cache import DataCache
 from ...cache import read_data_cache_data
 from ..cache import DockerCache

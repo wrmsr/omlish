@@ -9,8 +9,8 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.timing import log_timing_context
 from omlish.os.temp import temp_dir_context
 
-from ...oci.repositories import DirectoryOciRepository
-from ...oci.repositories import OciRepository
+from ...specs.oci.repositories import DirectoryOciRepository
+from ...specs.oci.repositories import OciRepository
 
 
 ##
