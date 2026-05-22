@@ -362,7 +362,7 @@ class TreeInterpreter(Visitor):
     def visit_key_val_pair(self, node: KeyValPair, value: ta.Any) -> ta.Any:
         return self.visit(node.node, value)
 
-    def visit_literal(self, node: Literal, value: ta.Any):
+    def visit_literal(self, node: Literal, value: ta.Any) -> ta.Any:
         return node.literal_value
 
     def visit_multi_select_dict(self, node: MultiSelectDict, value: ta.Any) -> ta.Any:
