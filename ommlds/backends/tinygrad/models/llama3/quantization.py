@@ -73,7 +73,7 @@ class Int8Embedding:
     def __call__(self, idx: Tensor) -> Tensor:
         if not hasattr(self, 'arange'):
             self.arange = Tensor.arange(
-                self.vocab_sz, requires_grad=False, device=self.weight.device,
+                self.vocab_sz, device=self.weight.device,
             ).unsqueeze(-1)
         big_shp = (*idx.shape, self.vocab_sz, self.embed_sz)
         arange, idx, vals = (

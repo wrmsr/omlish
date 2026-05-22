@@ -116,7 +116,7 @@ class Transformer:
         self.max_context = max_context
         self.freqs_cis = precompute_freqs_cis(
             dim // n_heads, self.max_context * 2, rope_theta,
-        ).contiguous().requires_grad_(False)
+        ).contiguous().is_param_(False)
         self.forward_jit = TinyJit(self.forward) if jit else None
 
     def forward(

@@ -26,7 +26,7 @@
     `snowflake-connector-python`, `duckdb`, etc. These also generally have no internal fallback.
   - Large <span aria-label="math">m̶̡̢̡̢̠̥͎͇̯̥̹̪͇͇͇̺̟͋̓͂̇͝͝a̴̧̛̞̾̊͒̈́̿͗̓̐̊͝t̸̥͖͂̀̆͛́̅́͝͠ȟ̴̢͎͙͍̱̒͂́̆̽̽̈́͝</span>
     libraries: `numpy`, `torch`, `mlx`, `tinygrad`, `transformers`, `llama-cpp-python`, `tokenizers`, etc. These tend to
-    have gigantic interface surface areas compared to the previous categories, and all interaction wht them is heavily
+    have gigantic interface surface areas compared to the previous categories, and all interaction with them is heavily
     quarantined to a single isolated package per dependency. Outside of these isolated packages, they absolutely cannot
     be assumed to be present.
   - `textual`, specifically - it is the sole chosen TUI library. Almost all terminal functionality throughout the

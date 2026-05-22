@@ -65,7 +65,7 @@ pydantic-monty==0.0.17
 # bins
 
 deno==2.7.14
-playwright==1.59.0
+playwright==1.60.0
 ripgrep==15.0.0
 
 

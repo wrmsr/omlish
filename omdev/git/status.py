@@ -31,7 +31,7 @@ def yield_git_status_line_fields(l_: str) -> ta.Iterator[str]:
     while True:
         if l[p] == ord('"'):
             p += 1
-            s: list[bytes] = []
+            s: ta.List[bytes] = []
             while (n := find_any(b'\\"', p)) > 0:
                 if (c := l[n]) == ord('\\'):
                     s.append(l[p:n])
@@ -213,10 +213,10 @@ class GitStatus(ta.Sequence[GitStatusItem]):
 
         self._lst = list(lines)
 
-        by_x: ta.Dict[GitStatusState, list[GitStatusItem]] = {}
-        by_y: ta.Dict[GitStatusState, list[GitStatusItem]] = {}
+        by_x: ta.Dict[GitStatusState, ta.List[GitStatusItem]] = {}
+        by_y: ta.Dict[GitStatusState, ta.List[GitStatusItem]] = {}
 
-        by_a: ta.Dict[str, list[GitStatusItem]] = {}
+        by_a: ta.Dict[str, ta.List[GitStatusItem]] = {}
         by_b: ta.Dict[str, GitStatusItem] = {}
 
         for l in self._lst:
