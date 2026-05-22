@@ -1,3 +1,7 @@
+"""
+TODO:
+ - filter by paths (like aws gen)
+"""
 import re
 import typing as ta
 
@@ -35,108 +39,6 @@ PATH_ITEM_METHODS: ta.Sequence[str] = (
     'patch',
     'trace',
 )
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class OpenapiJsonschema:
-    schema: ta.Mapping[str, ta.Any]
-    names: ta.Mapping[str, Schema]
-
-
-@dc.dataclass(frozen=True)
-class _NamedSchema:
-    name: str
-    schema: Schema
-
-
-##
-
-
-def render_schema(sch: Schema) -> dict[str, ta.Any]:
-    dct: dict[str, ta.Any] = {}
-
-    if sch.keywords is not None:
-        dct.update(jsch.render_keywords(sch.keywords))
-
-    if sch.discriminator is not None:
-        dct['discriminator'] = {
-            'propertyName': sch.discriminator.property_name,
-            **({'mapping': dict(sch.discriminator.mapping)} if sch.discriminator.mapping is not None else {}),
-        }
-
-    if sch.xml is not None:
-        xml = {}
-        for k in ('name', 'namespace', 'prefix', 'attribute', 'wrapped'):
-            if (v := getattr(sch.xml, k)) is not None:
-                xml[k] = v
-        dct['xml'] = xml
-
-    if sch.external_docs is not None:
-        dct['externalDocs'] = {
-            'url': sch.external_docs.url,
-            **({'description': sch.external_docs.description} if sch.external_docs.description is not None else {}),
-        }
-
-    if sch.example is not None:
-        dct['example'] = sch.example
-
-    return dct
-
-
-def build_jsonschema(api: Openapi) -> OpenapiJsonschema:
-    namer = _SchemaNamer()
-    named: list[_NamedSchema] = []
-
-    def add(name_parts: ta.Iterable[str], schema: Schema) -> None:
-        named.append(_NamedSchema(namer.name(name_parts), schema))
-
-    components = api.components
-    if components is not None:
-        for n, s in (components.schemas or {}).items():
-            add([n], s)
-
-        for n, p in (components.parameters or {}).items():
-            _collect_parameter(add, ['parameter', n], p)
-
-        for n, h in (components.headers or {}).items():
-            _collect_header(add, ['header', n], h)
-
-        for n, rb in (components.requestbodies or {}).items():
-            _collect_request_body(add, ['requestBody', n], rb)
-
-        for n, r in (components.responses or {}).items():
-            _collect_response(add, ['response', n], r)
-
-        for n, cb in (components.callbacks or {}).items():
-            _collect_callback(add, ['callback', n], cb)
-
-        for n, pi in (components.path_items or {}).items():
-            _collect_path_item(add, ['pathItem', n], pi)
-
-    for path, pi in (api.paths or {}).items():
-        _collect_path_item(add, ['path', path], pi)
-
-    for path, pi in (api.webhooks or {}).items():
-        _collect_path_item(add, ['webhook', path], pi)
-
-    defs = {ns.name: _rewrite_refs(render_schema(ns.schema)) for ns in named}
-
-    schema: dict[str, ta.Any] = {
-        '$schema': api.json_schema_dialect or DEFAULT_SCHEMA_DIALECT,
-        '$defs': defs,
-    }
-
-    if defs:
-        schema['anyOf'] = [{'$ref': DEFS_REF_PREFIX + n} for n in defs]
-
-    return OpenapiJsonschema(schema, {ns.name: ns.schema for ns in named})
-
-
-def build_jsonschema_schema(api: Openapi) -> ta.Mapping[str, ta.Any]:
-    return build_jsonschema(api).schema
 
 
 ##
@@ -347,3 +249,134 @@ def _rewrite_ref(ref: str) -> str:
 
     else:
         return ref
+
+
+##
+
+
+def render_schema(sch: Schema) -> dict[str, ta.Any]:
+    dct: dict[str, ta.Any] = {}
+
+    if sch.keywords is not None:
+        dct.update(jsch.render_keywords(sch.keywords))
+
+    if sch.discriminator is not None:
+        dct['discriminator'] = {
+            'propertyName': sch.discriminator.property_name,
+            **({'mapping': dict(sch.discriminator.mapping)} if sch.discriminator.mapping is not None else {}),
+        }
+
+    if sch.xml is not None:
+        xml = {}
+        for k in ('name', 'namespace', 'prefix', 'attribute', 'wrapped'):
+            if (v := getattr(sch.xml, k)) is not None:
+                xml[k] = v
+        dct['xml'] = xml
+
+    if sch.external_docs is not None:
+        dct['externalDocs'] = {
+            'url': sch.external_docs.url,
+            **({'description': sch.external_docs.description} if sch.external_docs.description is not None else {}),
+        }
+
+    if sch.example is not None:
+        dct['example'] = sch.example
+
+    return dct
+
+
+@dc.dataclass(frozen=True)
+class OpenapiJsonschema:
+    schema: ta.Mapping[str, ta.Any]
+    names: ta.Mapping[str, Schema]
+
+
+@dc.dataclass(frozen=True)
+class _NamedSchema:
+    name: str
+    schema: Schema
+
+
+def build_jsonschema(api: Openapi) -> OpenapiJsonschema:
+    namer = _SchemaNamer()
+    named: list[_NamedSchema] = []
+
+    def add(name_parts: ta.Iterable[str], schema: Schema) -> None:
+        named.append(_NamedSchema(namer.name(name_parts), schema))
+
+    components = api.components
+    if components is not None:
+        for n, s in (components.schemas or {}).items():
+            add([n], s)
+
+        for n, p in (components.parameters or {}).items():
+            _collect_parameter(add, ['parameter', n], p)
+
+        for n, h in (components.headers or {}).items():
+            _collect_header(add, ['header', n], h)
+
+        for n, rb in (components.request_bodies or {}).items():
+            _collect_request_body(add, ['requestBody', n], rb)
+
+        for n, r in (components.responses or {}).items():
+            _collect_response(add, ['response', n], r)
+
+        for n, cb in (components.callbacks or {}).items():
+            _collect_callback(add, ['callback', n], cb)
+
+        for n, pi in (components.path_items or {}).items():
+            _collect_path_item(add, ['pathItem', n], pi)
+
+    for path, pi in (api.paths or {}).items():
+        _collect_path_item(add, ['path', path], pi)
+
+    for path, pi in (api.webhooks or {}).items():
+        _collect_path_item(add, ['webhook', path], pi)
+
+    defs = {ns.name: _rewrite_refs(render_schema(ns.schema)) for ns in named}
+
+    schema: dict[str, ta.Any] = {
+        '$schema': api.json_schema_dialect or DEFAULT_SCHEMA_DIALECT,
+        '$defs': defs,
+    }
+
+    if defs:
+        schema['anyOf'] = [{'$ref': DEFS_REF_PREFIX + n} for n in defs]
+
+    return OpenapiJsonschema(schema, {ns.name: ns.schema for ns in named})
+
+
+def build_jsonschema_schema(api: Openapi) -> ta.Mapping[str, ta.Any]:
+    return build_jsonschema(api).schema
+
+
+##
+
+
+def _main() -> None:
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('openapi_path')
+    args = parser.parse_args()
+
+    if args.openapi_path == '-':
+        src = sys.stdin.read()
+    else:
+        with open(args.openapi_path) as f:
+            src = f.read()
+
+    from .... import marshal as msh
+    from ....formats.json import all as json
+
+    obj = json.loads(src)
+    api = msh.unmarshal(obj, Openapi)
+
+    api_jsch = build_jsonschema_schema(api)
+
+    print(json.dumps_pretty(api_jsch))
+
+
+if __name__ == '__main__':
+    _main()

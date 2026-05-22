@@ -57,7 +57,7 @@
   - Web frameworks: `flask`, `fastapi`, `starlette`, etc. Equivalent internal patterns exist.
 
 
-### Structure
+### Project Structure
 
 - In general, strongly prefer clusters of small source files to a single or small number of large ones - a few hundred
   lines of code is a good target maximum, and there is no minimum.
@@ -75,6 +75,16 @@
 - In general the structure should mirror a 'Clean' or 'Hexagonal' architecture:
   > Source code dependencies can only point inwards. Nothing in an inner circle can know anything at all about something
     in an outer circle.
+
+
+### Code Structure
+
+- Within a module, class, or function, code should generally flow from 'callee' to 'caller' - roughly as if things
+  needed to be declared before their use.
+  - `def _main() -> None:` should almost always be at the bottom of the module
+  - A class `Fooer` should generally have its main public `def foo(self) -> None:` as its last method.
+  - Internal helpers within a module / class don't necessarily have to be either strictly all together or strictly near
+    their dependent code - that is a case by case judgement call.
 
 
 ### Naming
@@ -152,7 +162,7 @@
     modified manually, and can generally be ignored (they tend to be huge).
 
 
-### Module layout
+### Module Layout
 
 - Modules should generally follow the following layout:
   - A single `# ruff: noqa: ...` line if necessary
