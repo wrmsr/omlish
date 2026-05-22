@@ -1,3 +1,4 @@
+import abc
 import numbers
 import operator
 import typing as ta
@@ -44,9 +45,11 @@ def _is_comparable(x: ta.Any) -> bool:
 
 
 class Runtime(lang.Abstract):
+    @abc.abstractmethod
     def type_of(self, value: ta.Any) -> JmespathType | ta.Literal['unknown']:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def is_false(self, value: ta.Any) -> bool:
         raise NotImplementedError
 
@@ -56,50 +59,67 @@ class Runtime(lang.Abstract):
     def is_null(self, value: ta.Any) -> bool:
         return self.type_of(value) == 'null'
 
+    @abc.abstractmethod
     def is_zero_number(self, value: ta.Any) -> bool:
         raise NotImplementedError
 
-    def null(self) -> ta.Any:
+    @abc.abstractmethod
+    def make_null(self) -> ta.Any:
         raise NotImplementedError
 
-    def bool(self, value: bool) -> ta.Any:
+    @abc.abstractmethod
+    def make_bool(self, value: bool) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def get_field(self, value: ta.Any, name: str) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def get_index(self, value: ta.Any, index: int) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def slice(self, value: ta.Any, start: int | None, end: int | None, step: int | None) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def iter_array(self, value: ta.Any) -> ta.Iterable[ta.Any] | None:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def iter_object_values(self, value: ta.Any) -> ta.Iterable[ta.Any] | None:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def iter_object_items(self, value: ta.Any) -> ta.Iterable[tuple[str, ta.Any]] | None:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def make_array(self, values: ta.Iterable[ta.Any]) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def make_object(self, values: ta.Mapping[str, ta.Any]) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def compare(self, op: ComparatorName, left: ta.Any, right: ta.Any) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def arithmetic_unary(self, op: UnaryArithmeticOperator, value: ta.Any) -> ta.Any:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def arithmetic(self, op: ArithmeticOperator, left: ta.Any, right: ta.Any) -> ta.Any:
         raise NotImplementedError
 
     def to_python(self, value: ta.Any) -> ta.Any:
         return value
+
+
+##
 
 
 class PythonRuntime(Runtime):
@@ -161,10 +181,10 @@ class PythonRuntime(Runtime):
     def is_zero_number(self, value: ta.Any) -> bool:
         return _is_actual_number(value) and value == 0
 
-    def null(self) -> None:
+    def make_null(self) -> None:
         return None
 
-    def bool(self, value: bool) -> bool:
+    def make_bool(self, value: bool) -> bool:
         return value
 
     def get_field(self, value: ta.Any, name: str) -> ta.Any:

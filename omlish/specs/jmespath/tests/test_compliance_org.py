@@ -5,7 +5,7 @@ import pprint
 import unittest
 
 from ... import jmespath
-from ..visitor import Options
+from ..options import Options
 from .test_lexer import suppress_deprecated_string_literals_warning
 
 

@@ -6,7 +6,7 @@ import warnings
 from ... import check
 from .errors import EmptyExpressionError
 from .errors import LexerError
-from .visitor import Options
+from .options import Options
 
 
 ##

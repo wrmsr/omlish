@@ -84,7 +84,7 @@ class TestPythonRuntime(unittest.TestCase):
             self.assertTrue(runtime.is_true(value))
 
 
-class TestTreeInterpreterRuntime(unittest.TestCase):
+class TestInterpreterRuntime(unittest.TestCase):
     def test_options_can_provide_runtime(self):
         obj = AttrObject(foo=AttrObject(bar='baz'))
 

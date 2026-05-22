@@ -61,11 +61,11 @@ from .ast import VariableRef
 from .errors import IncompleteExpressionError
 from .errors import LexerError
 from .errors import ParseError
+from .graphviz import GraphvizVisitor
+from .interpreter import Interpreter
 from .lexer import Lexer
 from .lexer import Token
-from .visitor import GraphvizVisitor
-from .visitor import Options
-from .visitor import TreeInterpreter
+from .options import Options
 
 
 ##
@@ -691,7 +691,7 @@ class ParsedResult:
         self.parsed = parsed
 
     def search(self, value: ta.Any, options: Options | None = None) -> ta.Any:
-        evaluator = TreeInterpreter(options)
+        evaluator = Interpreter(options)
         return evaluator.evaluate(self.parsed, value)
 
     def _render_dot_file(self) -> str:

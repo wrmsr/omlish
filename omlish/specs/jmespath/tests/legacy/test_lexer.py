@@ -3,7 +3,7 @@ import unittest
 
 from ... import lexer
 from ...errors import LexerError
-from ...visitor import Options
+from ...options import Options
 from ..test_lexer import LexerUtils
 
 

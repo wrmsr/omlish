@@ -8,8 +8,8 @@ import unittest
 
 from .. import ast
 from .. import errors
+from .. import interpreter
 from .. import parser
-from .. import visitor
 
 
 class TestParser(unittest.TestCase):
@@ -453,7 +453,7 @@ class TestParsedResultAddsOptions(unittest.TestCase):
     def test_can_have_ordered_dict(self):
         p = parser.Parser()
         parsed = p.parse('{a: a, b: b, c: c}')
-        options = visitor.Options()
+        options = interpreter.Options()
         result = parsed.search({'c': 'c', 'b': 'b', 'a': 'a'}, options=options)
         self.assertEqual(list(result), ['a', 'b', 'c'])
 

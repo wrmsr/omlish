@@ -45,6 +45,10 @@ from . import functions  # noqa
 from . import lexer  # noqa
 from . import parser  # noqa
 
+from .options import (  # noqa
+    Options,
+)
+
 from .parser import (  # noqa
     compile,  # noqa
     search,
@@ -53,8 +57,4 @@ from .parser import (  # noqa
 from .runtime import (  # noqa
     PythonRuntime,
     Runtime,
-)
-
-from .visitor import (  # noqa
-    Options,
 )
