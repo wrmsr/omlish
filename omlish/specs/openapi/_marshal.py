@@ -87,8 +87,8 @@ class _SchemaMarshaler(msh.Marshaler):
             if fv is None:
                 continue
             dct[k] = fm.marshal(ctx, fv)
-        if sch.keywords is not None:
-            dct.update(keywords=self.kw_m.marshal(ctx, sch.keywords))
+        if (skw := sch.keywords) is not None:
+            dct.update(check.isinstance(self.kw_m.marshal(ctx, skw), ta.Mapping))
         return dct
 
 
