@@ -10,8 +10,12 @@ import traceback
 import typing as ta
 import uuid
 
+from omlish import marshal as msh
 
-JsonObject: ta.TypeAlias = dict[str, ta.Any]
+from .. import protocol
+
+
+JsonObject: ta.TypeAlias = ta.Mapping[str, ta.Any]
 RequestId: ta.TypeAlias = str | int | None
 
 
@@ -21,7 +25,7 @@ RequestId: ta.TypeAlias = str | int | None
 
 def _put_meta(d: JsonObject, field_meta: JsonObject | None) -> JsonObject:
     if field_meta is not None:
-        d['_meta'] = field_meta
+        d = {**d, '_meta': field_meta}
     return d
 
 
@@ -51,7 +55,7 @@ class TextContentBlock:
         )
 
     def to_json(self) -> JsonObject:
-        d: JsonObject = {
+        d: dict[str, ta.Any] = {
             'type': 'text',
             'text': self.text,
         }
@@ -116,7 +120,7 @@ class PromptResponse:
     user_message_id: str | None = None
 
     def to_json(self) -> JsonObject:
-        d: JsonObject = {'stopReason': self.stop_reason}
+        d: dict[str, ta.Any] = {'stopReason': self.stop_reason}
 
         # Present in the Python SDK echo example you pasted. Some ACP schema versions do not include this field; clients
         # that do not care should ignore it.
@@ -296,7 +300,7 @@ class JsonRpcPeer:
         message: str,
         data: ta.Any = None,
     ) -> None:
-        err: JsonObject = {
+        err: dict[str, ta.Any] = {
             'code': code,
             'message': message,
         }
@@ -385,6 +389,7 @@ class EchoAcpHandler:
             return
 
         if is_request:
+            print(json.dumps(result, indent=2, separators=(', ', ': ')), file=sys.stderr)
             await self._peer.send_result(request_id, result)
 
     async def _dispatch(self, method: str, params: JsonObject) -> ta.Any:
@@ -411,7 +416,7 @@ class EchoAcpHandler:
         if not isinstance(protocol_version, int):
             raise JsonRpcError(INVALID_PARAMS, 'protocolVersion must be an integer')
 
-        return InitializeResponse(protocol_version=protocol_version).to_json()
+        return msh.marshal(protocol.InitializeResponse(protocol_version=protocol_version))  # type: ignore
 
     async def new_session(self, params: JsonObject) -> JsonObject:
         # Equivalent to the SDK sample: accept cwd/additionalDirectories/mcpServers but do not do anything with them.
@@ -471,7 +476,7 @@ class EchoAcpHandler:
         update: AgentMessageChunk,
         source: str | None = None,
     ) -> None:
-        params: JsonObject = {
+        params: dict[str, ta.Any] = {
             'sessionId': session_id,
             'update': update.to_json(),
         }

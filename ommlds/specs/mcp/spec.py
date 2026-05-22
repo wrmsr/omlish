@@ -71,7 +71,7 @@ class Cli(ap.Cli):
         ap.arg('-W', '--write', action='store_true'),
     )
     def gen(self) -> None:
-        from ..acp.codegen import JsonSchemaCodeGen
+        from omdev.specs.jsonschema.codegen import JsonSchemaCodeGen
 
         gen = JsonSchemaCodeGen(spec_json_schema())
         src = gen.gen_module()

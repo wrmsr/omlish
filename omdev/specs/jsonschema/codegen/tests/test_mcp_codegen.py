@@ -4,7 +4,6 @@ import sys
 
 from omlish import check
 from omlish import marshal as msh
-from ommlds.specs.mcp.spec import spec_json_schema
 
 from ..generator import JsonSchemaCodeGen
 
@@ -13,6 +12,8 @@ from ..generator import JsonSchemaCodeGen
 
 
 def test_mcp_codegen_import_and_marshal(tmp_path):
+    from ommlds.specs.mcp.spec import spec_json_schema
+
     src = JsonSchemaCodeGen(spec_json_schema()).gen_module()
     path = os.path.join(tmp_path, 'mcp_protocol.py')
     with open(path, 'w') as f:

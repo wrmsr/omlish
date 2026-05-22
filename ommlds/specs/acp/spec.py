@@ -8,8 +8,6 @@ from omlish.argparse import all as ap
 from omlish.formats.json import all as json
 from omlish.specs import jsonschema as js
 
-from .codegen import JsonSchemaCodeGen
-
 
 ##
 
@@ -69,6 +67,8 @@ class Cli(ap.Cli):
         ap.arg('-W', '--write', action='store_true'),
     )
     def gen(self) -> None:
+        from omdev.specs.jsonschema.codegen import JsonSchemaCodeGen
+
         gen = JsonSchemaCodeGen(spec_json_schema())
         src = gen.gen_module()
 
