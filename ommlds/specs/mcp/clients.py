@@ -1,16 +1,15 @@
+import asyncio
 import contextlib
 import subprocess
 import typing as ta
 
-import anyio.abc
-
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import marshal as msh
-from omlish.asyncs import anyio as aiu
 from omlish.specs import jsonrpc as jr
+from omlish.specs.jsonrpc import conns2 as jr2
 
-from . import protocol as pt
+from . import protocolold as pt
 
 
 ##
@@ -19,15 +18,13 @@ from . import protocol as pt
 class McpServerConnection:
     def __init__(
             self,
-            tg: anyio.abc.TaskGroup,
-            stream: anyio.abc.ByteStream,
+            stream: jr2.AsyncByteStream,
             *,
             default_timeout: float | None = 30.,
     ) -> None:
         super().__init__()
 
-        self._conn = jr.Connection(
-            tg,
+        self._conn = jr2.JsonrpcConnection(
             stream,
             request_handler=self._handle_client_request,
             notification_handler=self._handle_client_notification,
@@ -39,15 +36,13 @@ class McpServerConnection:
     @classmethod
     def from_process(
             cls,
-            tg: anyio.abc.TaskGroup,
-            proc: anyio.abc.Process,
+            proc: asyncio.subprocess.Process,
             **kwargs: ta.Any,
     ) -> McpServerConnection:
         return cls(
-            tg,
-            aiu.StapledByteStream(
-                check.not_none(proc.stdin),
+            jr2.AsyncioStreamAdapter(
                 check.not_none(proc.stdout),
+                check.not_none(proc.stdin),
             ),
             **kwargs,
         )
@@ -55,25 +50,43 @@ class McpServerConnection:
     @classmethod
     def open_process(
             cls,
-            tg: anyio.abc.TaskGroup,
             cmd: ta.Sequence[str],
             open_kwargs: ta.Mapping[str, ta.Any] | None = None,
             **kwargs: ta.Any,
-    ) -> ta.AsyncContextManager[tuple[anyio.abc.Process, McpServerConnection]]:
+    ) -> ta.AsyncContextManager[tuple[asyncio.subprocess.Process, McpServerConnection]]:
         @contextlib.asynccontextmanager
-        async def inner():
-            async with await anyio.open_process(
-                    cmd,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    **open_kwargs or {},
-            ) as proc:
+        async def inner() -> ta.AsyncIterator[tuple[asyncio.subprocess.Process, McpServerConnection]]:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                **(open_kwargs or {}),
+            )
+
+            try:
                 async with cls.from_process(
-                        tg,
                         proc,
                         **kwargs,
                 ) as client:
                     yield (proc, client)
+
+            finally:
+                if proc.returncode is None:
+                    if proc.stdin is not None:
+                        proc.stdin.close()
+                        with contextlib.suppress(Exception):
+                            await proc.stdin.wait_closed()
+
+                    proc.terminate()
+                    try:
+                        await asyncio.wait_for(proc.wait(), timeout=5)
+                    except TimeoutError:
+                        proc.kill()
+                        with contextlib.suppress(Exception):
+                            await proc.wait()
+                else:
+                    with contextlib.suppress(Exception):
+                        await proc.wait()
 
         return inner()
 
@@ -88,10 +101,10 @@ class McpServerConnection:
 
     #
 
-    async def _handle_client_request(self, _client: jr.Connection, req: jr.Request) -> None:
+    async def _handle_client_request(self, _client: jr2.JsonrpcConnection, req: jr.Request) -> None:
         pass
 
-    async def _handle_client_notification(self, _client: jr.Connection, no: jr.Request) -> None:
+    async def _handle_client_notification(self, _client: jr2.JsonrpcConnection, no: jr.Request) -> None:
         pass
 
     #

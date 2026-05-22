@@ -77,7 +77,7 @@ class Cli(ap.Cli):
         src = gen.gen_module()
 
         if self.args.write:
-            out_path = os.path.join(os.path.dirname(__file__), 'protocol2.py')
+            out_path = os.path.join(os.path.dirname(__file__), 'protocol.py')
             with open(out_path, 'w') as f:
                 f.write(src)
 

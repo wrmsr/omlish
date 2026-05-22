@@ -17,6 +17,8 @@ class JsonSchemaCodeGenConfig(lang.Final):
     forbid_unknown_x: bool = False
     allowed_unknown_tags: ta.AbstractSet[str] = frozenset({'discriminator'})
 
+    multiline_threshold: int = 80
+
     ignored_keyword_types: ta.AbstractSet[type[jsch.Keyword]] = frozenset({
         jsch.Description,
         jsch.Title,

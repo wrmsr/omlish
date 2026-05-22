@@ -392,7 +392,10 @@ class HttpMcpServer(lang.Final):
     headers: ta.Sequence[HttpHeader]
     name: str
     url: str
-    type: ta.Literal['http'] = dc.xfield('http', repr=False)
+    type: ta.Literal['http'] = dc.xfield(
+        'http',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -899,7 +902,10 @@ class SseMcpServer(lang.Final):
     headers: ta.Sequence[HttpHeader]
     name: str
     url: str
-    type: ta.Literal['sse'] = dc.xfield('sse', repr=False)
+    type: ta.Literal['sse'] = dc.xfield(
+        'sse',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1099,7 +1105,10 @@ class ExtResponse(lang.Final):
 @_set_class_marshal_options()
 class AgentMessageChunkSessionUpdate(SessionUpdate, lang.Final):
     content: ContentBlock
-    session_update: ta.Literal['agent_message_chunk'] = dc.xfield('agent_message_chunk', repr=False)
+    session_update: ta.Literal['agent_message_chunk'] = dc.xfield(
+        'agent_message_chunk',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1110,7 +1119,10 @@ class AgentMessageChunkSessionUpdate(SessionUpdate, lang.Final):
 @_set_class_marshal_options()
 class AgentThoughtChunkSessionUpdate(SessionUpdate, lang.Final):
     content: ContentBlock
-    session_update: ta.Literal['agent_thought_chunk'] = dc.xfield('agent_thought_chunk', repr=False)
+    session_update: ta.Literal['agent_thought_chunk'] = dc.xfield(
+        'agent_thought_chunk',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1122,7 +1134,10 @@ class AgentThoughtChunkSessionUpdate(SessionUpdate, lang.Final):
 class AudioContentBlock(ContentBlock, lang.Final):
     data: str
     mime_type: str
-    type: ta.Literal['audio'] = dc.xfield('audio', repr=False)
+    type: ta.Literal['audio'] = dc.xfield(
+        'audio',
+        repr=False,
+    )
     annotations: ta.Optional[Annotations] = None
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
@@ -1134,7 +1149,10 @@ class AudioContentBlock(ContentBlock, lang.Final):
 @_set_class_marshal_options()
 class AvailableCommandsUpdateSessionUpdate(SessionUpdate, lang.Final):
     available_commands: ta.Sequence[AvailableCommand]
-    session_update: ta.Literal['available_commands_update'] = dc.xfield('available_commands_update', repr=False)
+    session_update: ta.Literal['available_commands_update'] = dc.xfield(
+        'available_commands_update',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1144,14 +1162,20 @@ class AvailableCommandsUpdateSessionUpdate(SessionUpdate, lang.Final):
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options()
 class CancelledRequestPermissionOutcome(RequestPermissionOutcome, lang.Final):
-    outcome: ta.Literal['cancelled'] = dc.xfield('cancelled', repr=False)
+    outcome: ta.Literal['cancelled'] = dc.xfield(
+        'cancelled',
+        repr=False,
+    )
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options()
 class ConfigOptionUpdateSessionUpdate(SessionUpdate, lang.Final):
     config_options: ta.Sequence[SessionConfigOption]
-    session_update: ta.Literal['config_option_update'] = dc.xfield('config_option_update', repr=False)
+    session_update: ta.Literal['config_option_update'] = dc.xfield(
+        'config_option_update',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1162,7 +1186,10 @@ class ConfigOptionUpdateSessionUpdate(SessionUpdate, lang.Final):
 @_set_class_marshal_options()
 class ContentToolCallContent(ToolCallContent, lang.Final):
     content: ContentBlock
-    type: ta.Literal['content'] = dc.xfield('content', repr=False)
+    type: ta.Literal['content'] = dc.xfield(
+        'content',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1173,7 +1200,10 @@ class ContentToolCallContent(ToolCallContent, lang.Final):
 @_set_class_marshal_options()
 class CurrentModeUpdateSessionUpdate(SessionUpdate, lang.Final):
     current_mode_id: SessionModeId
-    session_update: ta.Literal['current_mode_update'] = dc.xfield('current_mode_update', repr=False)
+    session_update: ta.Literal['current_mode_update'] = dc.xfield(
+        'current_mode_update',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1185,7 +1215,10 @@ class CurrentModeUpdateSessionUpdate(SessionUpdate, lang.Final):
 class DiffToolCallContent(ToolCallContent, lang.Final):
     new_text: str
     path: str
-    type: ta.Literal['diff'] = dc.xfield('diff', repr=False)
+    type: ta.Literal['diff'] = dc.xfield(
+        'diff',
+        repr=False,
+    )
     old_text: ta.Optional[str] = None
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
@@ -1198,7 +1231,10 @@ class DiffToolCallContent(ToolCallContent, lang.Final):
 class ImageContentBlock(ContentBlock, lang.Final):
     data: str
     mime_type: str
-    type: ta.Literal['image'] = dc.xfield('image', repr=False)
+    type: ta.Literal['image'] = dc.xfield(
+        'image',
+        repr=False,
+    )
     annotations: ta.Optional[Annotations] = None
     uri: ta.Optional[str] = None
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
@@ -1211,7 +1247,10 @@ class ImageContentBlock(ContentBlock, lang.Final):
 @_set_class_marshal_options()
 class PlanSessionUpdate(SessionUpdate, lang.Final):
     entries: ta.Sequence[PlanEntry]
-    session_update: ta.Literal['plan'] = dc.xfield('plan', repr=False)
+    session_update: ta.Literal['plan'] = dc.xfield(
+        'plan',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1222,7 +1261,10 @@ class PlanSessionUpdate(SessionUpdate, lang.Final):
 @_set_class_marshal_options()
 class ResourceContentBlock(ContentBlock, lang.Final):
     resource: EmbeddedResourceResource
-    type: ta.Literal['resource'] = dc.xfield('resource', repr=False)
+    type: ta.Literal['resource'] = dc.xfield(
+        'resource',
+        repr=False,
+    )
     annotations: ta.Optional[Annotations] = None
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
@@ -1235,7 +1277,10 @@ class ResourceContentBlock(ContentBlock, lang.Final):
 class ResourceLinkContentBlock(ContentBlock, lang.Final):
     name: str
     uri: str
-    type: ta.Literal['resource_link'] = dc.xfield('resource_link', repr=False)
+    type: ta.Literal['resource_link'] = dc.xfield(
+        'resource_link',
+        repr=False,
+    )
     annotations: ta.Optional[Annotations] = None
     description: ta.Optional[str] = None
     mime_type: ta.Optional[str] = None
@@ -1252,14 +1297,20 @@ class ResourceLinkContentBlock(ContentBlock, lang.Final):
 class SelectSessionConfigOption(SessionConfigOption, lang.Final):
     current_value: SessionConfigValueId
     options: SessionConfigSelectOptions
-    type: ta.Literal['select'] = dc.xfield('select', repr=False)
+    type: ta.Literal['select'] = dc.xfield(
+        'select',
+        repr=False,
+    )
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options()
 class SelectedRequestPermissionOutcome(RequestPermissionOutcome, lang.Final):
     option_id: PermissionOptionId
-    outcome: ta.Literal['selected'] = dc.xfield('selected', repr=False)
+    outcome: ta.Literal['selected'] = dc.xfield(
+        'selected',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1269,7 +1320,10 @@ class SelectedRequestPermissionOutcome(RequestPermissionOutcome, lang.Final):
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options()
 class SessionInfoUpdateSessionUpdate(SessionUpdate, lang.Final):
-    session_update: ta.Literal['session_info_update'] = dc.xfield('session_info_update', repr=False)
+    session_update: ta.Literal['session_info_update'] = dc.xfield(
+        'session_info_update',
+        repr=False,
+    )
     title: ta.Optional[str] = None
     updated_at: ta.Optional[str] = None
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
@@ -1282,7 +1336,10 @@ class SessionInfoUpdateSessionUpdate(SessionUpdate, lang.Final):
 @_set_class_marshal_options()
 class TerminalToolCallContent(ToolCallContent, lang.Final):
     terminal_id: str
-    type: ta.Literal['terminal'] = dc.xfield('terminal', repr=False)
+    type: ta.Literal['terminal'] = dc.xfield(
+        'terminal',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},
@@ -1293,7 +1350,10 @@ class TerminalToolCallContent(ToolCallContent, lang.Final):
 @_set_class_marshal_options()
 class TextContentBlock(ContentBlock, lang.Final):
     text: str
-    type: ta.Literal['text'] = dc.xfield('text', repr=False)
+    type: ta.Literal['text'] = dc.xfield(
+        'text',
+        repr=False,
+    )
     annotations: ta.Optional[Annotations] = None
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
@@ -1306,7 +1366,10 @@ class TextContentBlock(ContentBlock, lang.Final):
 class ToolCallSessionUpdate(SessionUpdate, lang.Final):
     title: str
     tool_call_id: ToolCallId
-    session_update: ta.Literal['tool_call'] = dc.xfield('tool_call', repr=False)
+    session_update: ta.Literal['tool_call'] = dc.xfield(
+        'tool_call',
+        repr=False,
+    )
     content: ta.Optional[ta.Sequence[ToolCallContent]] = None
     kind: ta.Optional[ToolKind] = None
     locations: ta.Optional[ta.Sequence[ToolCallLocation]] = None
@@ -1323,7 +1386,10 @@ class ToolCallSessionUpdate(SessionUpdate, lang.Final):
 @_set_class_marshal_options()
 class ToolCallUpdateSessionUpdate(SessionUpdate, lang.Final):
     tool_call_id: ToolCallId
-    session_update: ta.Literal['tool_call_update'] = dc.xfield('tool_call_update', repr=False)
+    session_update: ta.Literal['tool_call_update'] = dc.xfield(
+        'tool_call_update',
+        repr=False,
+    )
     content: ta.Optional[ta.Sequence[ToolCallContent]] = None
     kind: ta.Optional[ToolKind] = None
     locations: ta.Optional[ta.Sequence[ToolCallLocation]] = None
@@ -1341,7 +1407,10 @@ class ToolCallUpdateSessionUpdate(SessionUpdate, lang.Final):
 @_set_class_marshal_options()
 class UserMessageChunkSessionUpdate(SessionUpdate, lang.Final):
     content: ContentBlock
-    session_update: ta.Literal['user_message_chunk'] = dc.xfield('user_message_chunk', repr=False)
+    session_update: ta.Literal['user_message_chunk'] = dc.xfield(
+        'user_message_chunk',
+        repr=False,
+    )
     meta: ta.Optional[ta.Mapping[str, ta.Any]] = dc.field(
         default=None,
         metadata={msh.FieldOptions: msh.FieldOptions(name='_meta')},

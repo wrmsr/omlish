@@ -281,7 +281,11 @@ class JsonSchemaAnalyzer:
             target = self._resolve_type_from_type_kw(type_kw, kws, path)
             self._check_unhandled(
                 kws,
-                handled_types={jsch.Type, jsch.Items, jsch.AdditionalProperties},
+                handled_types={
+                    jsch.Type,
+                    jsch.Items,
+                    jsch.AdditionalProperties,
+                },
                 path=path,
             )
             return TypeAliasTypeDef(name=name, target=target)
@@ -345,7 +349,12 @@ class JsonSchemaAnalyzer:
 
             self._check_unhandled(
                 variant_kws,
-                handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.AllOf},
+                handled_types={
+                    jsch.Type,
+                    jsch.Properties,
+                    jsch.Required,
+                    jsch.AllOf,
+                },
                 path=v_path,
             )
             self._check_unhandled(
@@ -368,7 +377,13 @@ class JsonSchemaAnalyzer:
 
         self._check_unhandled(
             kws,
-            handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.OneOf, jsch.AdditionalProperties},
+            handled_types={
+                jsch.Type,
+                jsch.Properties,
+                jsch.Required,
+                jsch.OneOf,
+                jsch.AdditionalProperties,
+            },
             path=path,
         )
 
@@ -456,7 +471,12 @@ class JsonSchemaAnalyzer:
 
         self._check_unhandled(
             kws,
-            handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.AdditionalProperties} | extra_handled_types,
+            handled_types={
+                jsch.Type,
+                jsch.Properties,
+                jsch.Required,
+                jsch.AdditionalProperties,
+            } | extra_handled_types,
             path=path,
         )
 
@@ -503,7 +523,11 @@ class JsonSchemaAnalyzer:
             type_ref = MapTypeRef(value=RefTypeRef(nested_qual_name))
             self._check_unhandled(
                 kws,
-                handled_types={jsch.Type, jsch.AdditionalProperties, jsch.Default},
+                handled_types={
+                    jsch.Type,
+                    jsch.AdditionalProperties,
+                    jsch.Default,
+                },
                 path=path,
             )
 
@@ -523,7 +547,11 @@ class JsonSchemaAnalyzer:
             type_ref = ArrayTypeRef(item=RefTypeRef(nested_qual_name))
             self._check_unhandled(
                 kws,
-                handled_types={jsch.Type, jsch.Items, jsch.Default},
+                handled_types={
+                    jsch.Type,
+                    jsch.Items,
+                    jsch.Default,
+                },
                 path=path,
             )
 
@@ -631,7 +659,13 @@ class JsonSchemaAnalyzer:
 
             self._check_unhandled(
                 kws,
-                handled_types={jsch.Type, jsch.Properties, jsch.Required, jsch.AdditionalProperties, jsch.AllOf},
+                handled_types={
+                    jsch.Type,
+                    jsch.Properties,
+                    jsch.Required,
+                    jsch.AdditionalProperties,
+                    jsch.AllOf,
+                },
                 path=path,
             )
             return self._any_fallback('Unsupported object anyOf member', path)
@@ -723,7 +757,14 @@ class JsonSchemaAnalyzer:
 
         self._check_unhandled(
             kws,
-            handled_types={jsch.Type, jsch.Items, jsch.AdditionalProperties, jsch.Default, jsch.Const, jsch.Properties},
+            handled_types={
+                jsch.Type,
+                jsch.Items,
+                jsch.AdditionalProperties,
+                jsch.Default,
+                jsch.Const,
+                jsch.Properties,
+            },
             path=path,
         )
 

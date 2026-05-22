@@ -71,7 +71,10 @@ class ModuleRenderer:
 
         if field.const is not MISSING:
             return [
-                f'{ind}{field.python_name}: ta.Literal[{field.const!r}] = dc.xfield({field.const!r}, repr=False)',
+                f'{ind}{field.python_name}: ta.Literal[{field.const!r}] = dc.xfield(',
+                f'{ind}    {field.const!r},',
+                f'{ind}    repr=False,',
+                f'{ind})',
             ]
 
         if field.json_name == '_meta':
@@ -146,7 +149,12 @@ class ModuleRenderer:
 
         if tag_field is not None:
             py_name, value = tag_field
-            lines.append(f'{body_ind}{py_name}: ta.Literal[{value!r}] = dc.xfield({value!r}, repr=False)')
+            lines.extend([
+                f'{body_ind}{py_name}: ta.Literal[{value!r}] = dc.xfield(',
+                f'{body_ind}    {value!r},',
+                f'{body_ind}    repr=False,',
+                f'{body_ind})',
+            ])
 
         for f in opt:
             lines.extend(self._gen_field_lines(f, level=level + 1))
@@ -279,7 +287,7 @@ class ModuleRenderer:
                 w()
                 vals_str = ', '.join(f'{v!r}' for v in td.values)
                 line = f'{name}: ta.TypeAlias = ta.Literal[{vals_str}]'
-                if len(line) <= 120:
+                if len(line) <= self._config.multiline_threshold:
                     w(line)
                 else:
                     w(f'{name}: ta.TypeAlias = ta.Literal[')
@@ -304,7 +312,7 @@ class ModuleRenderer:
 
                 parts = ', '.join(self._render_type_ann(m) for m in td.members)
                 line = f'{name}: ta.TypeAlias = ta.Union[{parts}]'
-                if len(line) <= 120:
+                if len(line) <= self._config.multiline_threshold:
                     w(line)
                 else:
                     w(f'{name}: ta.TypeAlias = ta.Union[')
