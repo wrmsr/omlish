@@ -11,23 +11,15 @@ from .errors import JmespathTypeError
 from .errors import JmespathValueError
 from .errors import UnknownFunctionError
 from .errors import VariadicArityError
+from .runtime import JmespathType
+from .runtime import PythonRuntime
+from .runtime import Runtime
 
 
 T = ta.TypeVar('T')
 
 
 ##
-
-
-JmespathType: ta.TypeAlias = ta.Literal[
-    'boolean',
-    'array',
-    'object',
-    'null',
-    'string',
-    'number',
-    'expref',
-]
 
 
 PyType = ta.NewType('PyType', str)
@@ -101,20 +93,33 @@ Signature: ta.TypeAlias = ta.Sequence[Parameter]
 
 
 @dc.dataclass(frozen=True)
+class FunctionContext:
+    runtime: Runtime
+
+
+@dc.dataclass(frozen=True)
 class Function:
     function: ta.Callable
     signature: Signature
+    pass_context: bool = False
 
 
-def signature(*params: Parameter):
+def signature(*params: Parameter, pass_context: bool = False):
     def _record_signature(func):
         func.signature = params
+        func.pass_context = pass_context
         return func
     return _record_signature
 
 
 class Functions(ta.Protocol):
-    def call_function(self, function_name, resolved_args): ...
+    def call_function(
+            self,
+            function_name: str,
+            resolved_args: ta.Sequence[ta.Any],
+            ctx: FunctionContext | None = None,
+    ) -> ta.Any:
+        ...
 
 
 class FunctionsClass:
@@ -140,24 +145,46 @@ class FunctionsClass:
                 function_table[name[6:]] = Function(
                     method,
                     sig,
+                    getattr(method, 'pass_context', False),
                 )
 
         cls._function_table = function_table
 
     #
 
-    def call_function(self, function_name: str, resolved_args: ta.Sequence[ta.Any]) -> ta.Any:
+    def call_function(
+            self,
+            function_name: str,
+            resolved_args: ta.Sequence[ta.Any],
+            ctx: FunctionContext | None = None,
+    ) -> ta.Any:
+        if ctx is None:
+            ctx = FunctionContext(PythonRuntime())
+
         try:
             spec = self._function_table[function_name]
         except KeyError:
             raise UnknownFunctionError(f'Unknown function: {function_name}()')  # noqa
 
-        self._validate_arguments(resolved_args, spec.signature, function_name)
-        return spec.function.__get__(self, self.__class__)(*resolved_args)  # noqa
+        self._validate_arguments(resolved_args, spec.signature, function_name, ctx=ctx)
+        func = spec.function.__get__(self, self.__class__)
+        if spec.pass_context:
+            return func(*resolved_args, ctx=ctx)  # noqa
+        else:
+            return func(*[ctx.runtime.to_python(arg) for arg in resolved_args])  # noqa
 
-    def _validate_arguments(self, args: ta.Sequence[ta.Any], sig: Signature, function_name: str) -> None:
+    def _validate_arguments(
+            self,
+            args: ta.Sequence[ta.Any],
+            sig: Signature,
+            function_name: str,
+            *,
+            ctx: FunctionContext | None = None,
+    ) -> None:
+        if ctx is None:
+            ctx = FunctionContext(PythonRuntime())
         if len(sig) == 0:
-            self._type_check(args, sig, function_name)
+            self._type_check(args, sig, function_name, ctx=ctx)
             return
 
         required_arguments_count = len([
@@ -182,13 +209,20 @@ class FunctionsClass:
         elif len(args) != required_arguments_count:
             raise ArityError(len(sig), len(args), function_name)
 
-        self._type_check(args, sig, function_name)
+        self._type_check(args, sig, function_name, ctx=ctx)
 
-    def _type_check(self, actual: ta.Sequence[ta.Any], sig: Signature, function_name: str) -> None:
+    def _type_check(
+            self,
+            actual: ta.Sequence[ta.Any],
+            sig: Signature,
+            function_name: str,
+            *,
+            ctx: FunctionContext,
+    ) -> None:
         for i in range(min(len(sig), len(actual))):
             allowed_types = self._get_allowed_types_from_signature(sig[i])
             if allowed_types:
-                self._type_check_single(actual[i], allowed_types, function_name)
+                self._type_check_single(actual[i], allowed_types, function_name, ctx=ctx)
 
     def _get_allowed_types_from_signature(self, spec: Parameter) -> ta.Sequence[ParameterType]:
         # signature supports monotype {'type': 'type-name'}## or multiple types {'types': ['type1-name', 'type2-name']}
@@ -197,80 +231,91 @@ class FunctionsClass:
             *spec.get('types', []),
         ]
 
-    def _type_check_single(self, current: ta.Any, types: ta.Sequence[ParameterType], function_name: str) -> None:
+    def _type_check_single(
+            self,
+            current: ta.Any,
+            types: ta.Sequence[ParameterType],
+            function_name: str,
+            *,
+            ctx: FunctionContext,
+    ) -> None:
         # Type checking involves checking the top level type, and in the case of arrays, potentially checking the types
         # of each element.
-        allowed_types, allowed_element_types = self._get_allowed_pytypes(types)
+        allowed_types, allowed_element_types = self._get_allowed_types(types)
 
-        # We're not using isinstance() on purpose. The type model for jmespath does not map 1-1 with python types
-        # (booleans are considered integers in python for example).
-        pytype = pytype_of(current)
-        if pytype not in allowed_types:
+        current_type = ctx.runtime.type_of(current)
+        if current_type not in allowed_types:
             raise JmespathTypeError(
                 function_name,
                 current,
-                self._convert_to_jmespath_type(pytype),
+                current_type,
                 types,
             )
 
-        # If we're dealing with a list type, we can have additional restrictions on the type of the list elements (for
-        # example a function can require a list of numbers or a list of strings). Arrays are the only types that can
-        # have element types.
+        # If we're dealing with an array type, we can have additional restrictions on the type of the array elements.
         if allowed_element_types:
             self._element_type_check(
                 current,
                 allowed_element_types,
                 types,
                 function_name,
+                ctx=ctx,
             )
 
-    class _AllowedPytypes(ta.NamedTuple):
-        types: ta.Sequence[PyType]
-        element_types: ta.Sequence[ta.Sequence[PyType]]
+    class _AllowedTypes(ta.NamedTuple):
+        types: ta.Sequence[JmespathType]
+        element_types: ta.Sequence[ta.Sequence[JmespathType]]
 
-    def _get_allowed_pytypes(self, types: ta.Iterable[ParameterType]) -> _AllowedPytypes:
-        allowed_types: list = []
-        allowed_element_types: list = []
+    def _get_allowed_types(self, types: ta.Iterable[ParameterType]) -> _AllowedTypes:
+        allowed_types: list[JmespathType] = []
+        allowed_element_types: list[ta.Sequence[JmespathType]] = []
 
         t: str
         for t in types:
             if '-' in t:
                 t, et = t.split('-', 1)
-                allowed_element_types.append(REVERSE_TYPES_MAP[ta.cast(JmespathType, et)])
+                allowed_element_types.append([ta.cast(JmespathType, et)])
 
-            allowed_types.extend(REVERSE_TYPES_MAP[ta.cast(JmespathType, t)])
+            allowed_types.append(ta.cast(JmespathType, t))
 
-        return FunctionsClass._AllowedPytypes(allowed_types, allowed_element_types)
+        return FunctionsClass._AllowedTypes(allowed_types, allowed_element_types)
 
     def _element_type_check(
             self,
-            current: ta.Sequence[ta.Any],
-            allowed_element_types: ta.Sequence[ta.Sequence[PyType]],
+            current: ta.Any,
+            allowed_element_types: ta.Sequence[ta.Sequence[JmespathType]],
             types: ta.Sequence[ParameterType],
             function_name: str,
+            *,
+            ctx: FunctionContext,
     ) -> None:
+        elements_iter = ctx.runtime.iter_array(current)
+        if elements_iter is None:
+            return
+        elements = list(elements_iter)
+
         if len(allowed_element_types) == 1:
             # The easy case, we know up front what type we need to validate.
             ets = allowed_element_types[0]
-            for element in current:
-                pytype = pytype_of(element)
-                if pytype not in ets:
-                    raise JmespathTypeError(function_name, element, pytype, types)
+            for element in elements:
+                element_type = ctx.runtime.type_of(element)
+                if element_type not in ets:
+                    raise JmespathTypeError(function_name, element, element_type, types)
 
-        elif len(allowed_element_types) > 1 and current:
+        elif len(allowed_element_types) > 1 and elements:
             # Dynamic type validation. Based on the first type we see, we validate that the remaining types match.
-            first = pytype_of(current[0])
+            first = ctx.runtime.type_of(elements[0])
             for element_types in allowed_element_types:
                 if first in element_types:
                     allowed = element_types
                     break
             else:
-                raise JmespathTypeError(function_name, current[0], first, types)
+                raise JmespathTypeError(function_name, elements[0], first, types)
 
-            for element in current:
-                pytype = pytype_of(element)
-                if pytype not in allowed:
-                    raise JmespathTypeError(function_name, element, pytype, types)
+            for element in elements:
+                element_type = ctx.runtime.type_of(element)
+                if element_type not in allowed:
+                    raise JmespathTypeError(function_name, element, element_type, types)
 
     #
 

@@ -32,6 +32,7 @@ from .ast import ValueProjection
 from .ast import VariableRef
 from .errors import UndefinedVariableError
 from .functions import DefaultFunctions
+from .functions import FunctionContext
 from .functions import Functions
 from .options import Options
 from .runtime import PythonRuntime
@@ -126,9 +127,13 @@ class Interpreter(Visitor):
         resolved_args = []
         for child in node.args:
             current = self.visit(child, value)
-            resolved_args.append(self._runtime.to_python(current))
+            resolved_args.append(current)
 
-        return self._functions.call_function(node.name, resolved_args)
+        return self._functions.call_function(
+            node.name,
+            resolved_args,
+            ctx=FunctionContext(self._runtime),
+        )
 
     def visit_filter_projection(self, node: FilterProjection, value: ta.Any) -> ta.Any:
         base = self.visit(node.left, value)

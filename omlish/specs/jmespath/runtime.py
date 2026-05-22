@@ -7,7 +7,17 @@ from ... import lang
 from .ast import ArithmeticOperator
 from .ast import ComparatorName
 from .ast import UnaryArithmeticOperator
-from .functions import JmespathType
+
+
+JmespathType: ta.TypeAlias = ta.Literal[
+    'boolean',
+    'array',
+    'object',
+    'null',
+    'string',
+    'number',
+    'expref',
+]
 
 
 ##
