@@ -2,19 +2,15 @@
 TODO:
  - cext?
 """
-import numbers
-import operator
 import typing as ta
 
 from ... import check
 from ... import lang
 from .ast import AndExpression
 from .ast import Arithmetic
-from .ast import ArithmeticOperator
 from .ast import ArithmeticUnary
 from .ast import Assign
 from .ast import Comparator
-from .ast import ComparatorName
 from .ast import CurrentNode
 from .ast import Expref
 from .ast import Field
@@ -38,12 +34,13 @@ from .ast import RootNode
 from .ast import Slice
 from .ast import Subexpression
 from .ast import TernaryOperator
-from .ast import UnaryArithmeticOperator
 from .ast import ValueProjection
 from .ast import VariableRef
 from .errors import UndefinedVariableError
 from .functions import DefaultFunctions
 from .functions import Functions
+from .runtime import PythonRuntime
+from .runtime import Runtime
 from .scope import ScopedChainDict
 
 
@@ -56,56 +53,6 @@ else:
 
 
 ##
-
-
-def _equals(x: ta.Any, y: ta.Any) -> bool:
-    if _is_special_number_case(x, y):
-        return False
-    else:
-        return x == y
-
-
-def _is_special_number_case(x: ta.Any, y: ta.Any) -> bool | None:
-    # We need to special case comparing 0 or 1 to True/False.  While normally comparing any integer other than 0/1 to
-    # True/False will always return False.  However 0/1 have this:
-    # >>> 0 == True
-    # False
-    # >>> 0 == False
-    # True
-    # >>> 1 == True
-    # True
-    # >>> 1 == False
-    # False
-    #
-    # Also need to consider that:
-    # >>> 0 in [True, False]
-    # True
-    if _is_actual_number(x) and x in (0, 1):
-        return isinstance(y, bool)
-
-    elif _is_actual_number(y) and y in (0, 1):
-        return isinstance(x, bool)
-
-    else:
-        return None
-
-
-def _is_comparable(x: ta.Any) -> bool:
-    # The spec doesn't officially support string types yet, but enough people are relying on this behavior that it's
-    # been added back.  This should eventually become part of the official spec.
-    return _is_actual_number(x) or isinstance(x, str)
-
-
-def _is_actual_number(x: ta.Any) -> bool:
-    # We need to handle python's quirkiness with booleans, specifically:
-    #
-    # >>> isinstance(False, int)
-    # True
-    # >>> isinstance(True, int)
-    # True
-    if isinstance(x, bool):
-        return False
-    return isinstance(x, numbers.Number)
 
 
 def node_type(n: Node) -> str:
@@ -152,6 +99,7 @@ class Options:
             dict_cls: type | None = None,
             custom_functions: Functions | None = None,
             enable_legacy_literals: bool = False,
+            runtime: Runtime | None = None,
     ) -> None:
         super().__init__()
 
@@ -161,6 +109,7 @@ class Options:
         # if you want to set a collections.OrderedDict so that you can have predictable key ordering.
         self.dict_cls = dict_cls
         self.custom_functions = custom_functions
+        self.runtime = runtime
 
         # The flag to enable pre-JEP-12 literal compatibility.
         # JEP-12 deprecates `foo` -> "foo" syntax.
@@ -181,58 +130,30 @@ class _Expression:
 
 
 class TreeInterpreter(Visitor):
-    _COMPARATOR_FUNC: ta.Mapping[ComparatorName, ta.Callable] = {
-        'eq': _equals,
-        'ne': lambda x, y: not _equals(x, y),
-        'lt': operator.lt,
-        'gt': operator.gt,
-        'lte': operator.le,
-        'gte': operator.ge,
-    }
-
-    _EQUALITY_OPS: ta.AbstractSet[ComparatorName] = {
-        'eq',
-        'ne',
-    }
-
-    _ARITHMETIC_FUNC: ta.Mapping[ArithmeticOperator, ta.Callable] = {
-        'div': operator.floordiv,
-        'divide': operator.truediv,
-        'minus': operator.sub,
-        'modulo': operator.mod,
-        'multiply': operator.mul,
-        'plus': operator.add,
-    }
-
-    _ARITHMETIC_UNARY_FUNC: ta.Mapping[UnaryArithmeticOperator, ta.Callable] = {
-        'minus': operator.neg,
-        'plus': lambda x: x,
-    }
-
     def __init__(self, options: Options | None = None) -> None:
         super().__init__()
-
-        self._dict_cls: type = dict
 
         if options is None:
             options = Options()
         self._options = options
 
-        if options.dict_cls is not None:
-            self._dict_cls = options.dict_cls
+        if options.runtime is not None:
+            self._runtime = options.runtime
+        else:
+            self._runtime = PythonRuntime(options.dict_cls)
 
         if options.custom_functions is not None:
             self._functions: Functions = options.custom_functions
         else:
             self._functions = DefaultFunctions()
 
-        self._root: Node | None = None
-        self._scope: ScopedChainDict = ScopedChainDict()
+        self._root: ta.Any = None
+        self._scope: ScopedChainDict[str, ta.Any] = ScopedChainDict()
 
     def default_visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.NoReturn:
         raise NotImplementedError(node_type(node))
 
-    def evaluate(self, ast: Node, root: Node) -> ta.Any:
+    def evaluate(self, ast: Node, root: ta.Any) -> ta.Any:
         self._root = root
         return self.visit(ast, root)
 
@@ -240,44 +161,29 @@ class TreeInterpreter(Visitor):
         result = value
         for child in node.children_nodes:
             result = self.visit(child, result)
-            if result is None:
-                return None
+            if self._runtime.is_null(result):
+                return self._runtime.null()
         return result
 
     def visit_field(self, node: Field, value: ta.Any) -> ta.Any:
-        try:
-            return value.get(node.name)
-        except AttributeError:
-            return None
+        return self._runtime.get_field(value, node.name)
 
     def visit_comparator(self, node: Comparator, value: ta.Any) -> ta.Any:
-        # Common case: comparator is == or !=
-        comparator_func = self._COMPARATOR_FUNC[node.name]
-        if node.name in self._EQUALITY_OPS:
-            return comparator_func(
-                self.visit(node.first, value),
-                self.visit(node.second, value),
-            )
-
-        else:
-            # Ordering operators are only valid for numbers. Evaluating any other type with a comparison operator will
-            # yield a None value.
-            left = self.visit(node.first, value)
-            right = self.visit(node.second, value)
-            # num_types = (int, float)
-            if not (_is_comparable(left) and _is_comparable(right)):
-                return None
-            return comparator_func(left, right)
+        return self._runtime.compare(
+            node.name,
+            self.visit(node.first, value),
+            self.visit(node.second, value),
+        )
 
     def visit_arithmetic_unary(self, node: ArithmeticUnary, value: ta.Any) -> ta.Any:
-        operation = self._ARITHMETIC_UNARY_FUNC[node.operator]
-        return operation(
+        return self._runtime.arithmetic_unary(
+            node.operator,
             self.visit(node.expression, value),
         )
 
     def visit_arithmetic(self, node: Arithmetic, value: ta.Any) -> ta.Any:
-        operation = self._ARITHMETIC_FUNC[node.operator]
-        return operation(
+        return self._runtime.arithmetic(
+            node.operator,
             self.visit(node.left, value),
             self.visit(node.right, value),
         )
@@ -295,52 +201,47 @@ class TreeInterpreter(Visitor):
         resolved_args = []
         for child in node.args:
             current = self.visit(child, value)
-            resolved_args.append(current)
+            resolved_args.append(self._runtime.to_python(current))
 
         return self._functions.call_function(node.name, resolved_args)
 
     def visit_filter_projection(self, node: FilterProjection, value: ta.Any) -> ta.Any:
         base = self.visit(node.left, value)
-        if not isinstance(base, list):
-            return None
+        base_items = self._runtime.iter_array(base)
+        if base_items is None:
+            return self._runtime.null()
 
         comparator_node = node.comparator
-        collected = []
-        for element in base:
-            if self._is_true(self.visit(comparator_node, element)):
+        collected: list[ta.Any] = []
+        for element in base_items:
+            if self._runtime.is_true(self.visit(comparator_node, element)):
                 current = self.visit(node.right, element)
-                if current is not None:
+                if not self._runtime.is_null(current):
                     collected.append(current)
 
-        return collected
+        return self._runtime.make_array(collected)
 
     def visit_flatten(self, node: Flatten, value: ta.Any) -> ta.Any:
         base = self.visit(node.node, value)
-        if not isinstance(base, list):
-            # Can't flatten the object if it's not a list.
-            return None
+        base_items = self._runtime.iter_array(base)
+        if base_items is None:
+            return self._runtime.null()
 
-        merged_list = []
-        for element in base:
-            if isinstance(element, list):
-                merged_list.extend(element)
+        merged_list: list[ta.Any] = []
+        for element in base_items:
+            nested_items = self._runtime.iter_array(element)
+            if nested_items is not None:
+                merged_list.extend(nested_items)
             else:
                 merged_list.append(element)
 
-        return merged_list
+        return self._runtime.make_array(merged_list)
 
     def visit_identity(self, node: Identity, value: ta.Any) -> ta.Any:
         return value
 
     def visit_index(self, node: Index, value: ta.Any) -> ta.Any:
-        # Even though we can index strings, we don't want to support that.
-        if not isinstance(value, list):
-            return None
-
-        try:
-            return value[node.index]
-        except IndexError:
-            return None
+        return self._runtime.get_index(value, node.index)
 
     def visit_index_expression(self, node: IndexExpression, value: ta.Any) -> ta.Any:
         result = value
@@ -350,14 +251,7 @@ class TreeInterpreter(Visitor):
         return result
 
     def visit_slice(self, node: Slice, value: ta.Any) -> ta.Any:
-        if isinstance(value, str):
-            return value[node.start:node.end:node.step]
-
-        if not isinstance(value, list):
-            return None
-
-        s = slice(node.start, node.end, node.step)
-        return value[s]
+        return self._runtime.slice(value, node.start, node.end, node.step)
 
     def visit_key_val_pair(self, node: KeyValPair, value: ta.Any) -> ta.Any:
         return self.visit(node.node, value)
@@ -366,18 +260,18 @@ class TreeInterpreter(Visitor):
         return node.literal_value
 
     def visit_multi_select_dict(self, node: MultiSelectDict, value: ta.Any) -> ta.Any:
-        collected = self._dict_cls()
+        collected: dict[str, ta.Any] = {}
         for child in node.nodes:
             collected[child.key_name] = self.visit(child, value)
 
-        return collected
+        return self._runtime.make_object(collected)
 
     def visit_multi_select_list(self, node: MultiSelectList, value: ta.Any) -> ta.Any:
-        collected = []
+        collected: list[ta.Any] = []
         for child in node.nodes:
             collected.append(self.visit(child, value))
 
-        return collected
+        return self._runtime.make_array(collected)
 
     def visit_or_expression(self, node: OrExpression, value: ta.Any) -> ta.Any:
         matched = self.visit(node.left, value)
@@ -398,11 +292,11 @@ class TreeInterpreter(Visitor):
     def visit_not_expression(self, node: NotExpression, value: ta.Any) -> ta.Any:
         original_result = self.visit(node.expr, value)
 
-        if _is_actual_number(original_result) and original_result == 0:
+        if self._runtime.is_zero_number(original_result):
             # Special case for 0, !0 should be false, not true. 0 is not a special cased integer in jmespath.
-            return False
+            return self._runtime.bool(False)
 
-        return not original_result
+        return self._runtime.bool(self._runtime.is_false(original_result))
 
     def visit_pipe(self, node: Pipe, value: ta.Any) -> ta.Any:
         result = value
@@ -420,29 +314,31 @@ class TreeInterpreter(Visitor):
             if len(nested_children) > 1 and isinstance(nested_children[1], Slice):
                 allow_string = True
 
-        if isinstance(base, str) and allow_string:
+        if self._runtime.type_of(base) == 'string' and allow_string:
             # projections are really sub-expressions in disguise evaluate the rhs when lhs is a sliced string
             return self.visit(node.right, base)
 
-        if not isinstance(base, list):
-            return None
+        base_items = self._runtime.iter_array(base)
+        if base_items is None:
+            return self._runtime.null()
 
-        collected = []
-        for element in base:
+        collected: list[ta.Any] = []
+        for element in base_items:
             current = self.visit(node.right, element)
-            if current is not None:
+            if not self._runtime.is_null(current):
                 collected.append(current)
 
-        return collected
+        return self._runtime.make_array(collected)
 
     def visit_let_expression(self, node: LetExpression, value: ta.Any) -> ta.Any:
         scope = {}
         for assign in node.bindings:
             scope.update(self.visit(assign, value))
         self._scope.push_scope(scope)
-        result = self.visit(node.expr, value)
-        self._scope.pop_scope()
-        return result
+        try:
+            return self.visit(node.expr, value)
+        finally:
+            self._scope.pop_scope()
 
     def visit_assign(self, node: Assign, value: ta.Any) -> ta.Any:
         name = node.name
@@ -465,32 +361,23 @@ class TreeInterpreter(Visitor):
 
     def visit_value_projection(self, node: ValueProjection, value: ta.Any) -> ta.Any:
         base = self.visit(node.left, value)
-        try:
-            base = base.values()
-        except AttributeError:
-            return None
+        base_values = self._runtime.iter_object_values(base)
+        if base_values is None:
+            return self._runtime.null()
 
-        collected = []
-        for element in base:
+        collected: list[ta.Any] = []
+        for element in base_values:
             current = self.visit(node.right, element)
-            if current is not None:
+            if not self._runtime.is_null(current):
                 collected.append(current)
 
-        return collected
+        return self._runtime.make_array(collected)
 
     def _is_false(self, value: ta.Any) -> bool:
-        # This looks weird, but we're explicitly using equality checks because the truth/false values are different
-        # between python and jmespath.
-        return (
-            value == '' or  # noqa
-            value == [] or
-            value == {} or
-            value is None or
-            value is False
-        )
+        return self._runtime.is_false(value)
 
     def _is_true(self, value: ta.Any) -> bool:
-        return not self._is_false(value)
+        return self._runtime.is_true(value)
 
 
 class GraphvizVisitor:
