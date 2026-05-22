@@ -1,13 +1,15 @@
+import os.path
+
 import yaml
 
-from .... import lang
-from .... import marshal as msh
-from ..openapi import Openapi
-from ..tools.jsonschema import build_jsonschema
+from ..... import marshal as msh
+from ...openapi import Openapi
+from ..jsonschema import build_jsonschema
 
 
 def test_build_jsonschema():
-    yml_src = lang.get_relative_resources('.', globals=globals())['example.yml'].read_bytes().decode('utf-8')
+    with open(os.path.join(os.path.dirname(__file__), '../../tests/example.yml')) as f:
+        yml_src = f.read()
     doc = yaml.safe_load(yml_src)
 
     api = msh.unmarshal(doc, Openapi)
