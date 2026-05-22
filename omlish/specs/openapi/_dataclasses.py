@@ -609,47 +609,47 @@ def _process_dataclass__11262894e09b3b420a70ca6beeca90e3128bc4d9():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('schemas', 'responses', 'parameters', 'examples', 'requestbodies', 'headers', 'sec"
-        "urity_schemes', 'links', 'callbacks', 'path_items')), EqPlan(fields=('schemas', 'responses', 'parameters', 'ex"
-        "amples', 'requestbodies', 'headers', 'security_schemes', 'links', 'callbacks', 'path_items')), FrozenPlan(fiel"
-        "ds=('schemas', 'responses', 'parameters', 'examples', 'requestbodies', 'headers', 'security_schemes', 'links',"
-        " 'callbacks', 'path_items'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('schemas', 'res"
-        "ponses', 'parameters', 'examples', 'requestbodies', 'headers', 'security_schemes', 'links', 'callbacks', 'path"
-        "_items'), cache=False), InitPlan(fields=(InitPlan.Field(name='schemas', annotation=OpRef(name='init.fields.00."
-        "annotation'), default=OpRef(name='init.fields.00.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='responses', a"
-        "nnotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_facto"
-        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
-        "), InitPlan.Field(name='parameters', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='i"
-        "nit.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='examples', annotation=OpRef(name='init.fields.03"
-        ".annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='requestbodie"
-        "s', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='headers', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name="
-        "'init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='security_schemes', annotation=OpRef(name='init"
-        ".fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='li"
-        "nks', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None), InitPlan.Field(name='callbacks', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(n"
-        "ame='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
-        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='path_items', annotation=OpRef(name='init.f"
-        "ields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_p"
-        "arams=('schemas', 'responses', 'parameters', 'examples', 'requestbodies', 'headers', 'security_schemes', 'link"
-        "s', 'callbacks', 'path_items'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=("
-        "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='schemas', kw_only=False, fn=None), ReprPlan.Field(n"
-        "ame='responses', kw_only=False, fn=None), ReprPlan.Field(name='parameters', kw_only=False, fn=None), ReprPlan."
-        "Field(name='examples', kw_only=False, fn=None), ReprPlan.Field(name='requestbodies', kw_only=False, fn=None), "
-        "ReprPlan.Field(name='headers', kw_only=False, fn=None), ReprPlan.Field(name='security_schemes', kw_only=False,"
-        " fn=None), ReprPlan.Field(name='links', kw_only=False, fn=None), ReprPlan.Field(name='callbacks', kw_only=Fals"
-        "e, fn=None), ReprPlan.Field(name='path_items', kw_only=False, fn=None)), id=False, terse=False, default_fn=OpR"
-        "ef(name='repr.default_fn'))))"
+        "Plans(tup=(CopyPlan(fields=('schemas', 'responses', 'parameters', 'examples', 'request_bodies', 'headers', 'se"
+        "curity_schemes', 'links', 'callbacks', 'path_items')), EqPlan(fields=('schemas', 'responses', 'parameters', 'e"
+        "xamples', 'request_bodies', 'headers', 'security_schemes', 'links', 'callbacks', 'path_items')), FrozenPlan(fi"
+        "elds=('schemas', 'responses', 'parameters', 'examples', 'request_bodies', 'headers', 'security_schemes', 'link"
+        "s', 'callbacks', 'path_items'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('schemas', '"
+        "responses', 'parameters', 'examples', 'request_bodies', 'headers', 'security_schemes', 'links', 'callbacks', '"
+        "path_items'), cache=False), InitPlan(fields=(InitPlan.Field(name='schemas', annotation=OpRef(name='init.fields"
+        ".00.annotation'), default=OpRef(name='init.fields.00.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='responses"
+        "', annotation=OpRef(name='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='parameters', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(nam"
+        "e='init.fields.02.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='examples', annotation=OpRef(name='init.field"
+        "s.03.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='request_"
+        "bodies', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='headers', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef("
+        "name='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='security_schemes', annotation=OpRef(name="
+        "'init.fields.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='links', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='callbacks', annotation=OpRef(name='init.fields.08.annotation'), default=Op"
+        "Ref(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
+        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='path_items', annotation=OpRef(name='i"
+        "nit.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', "
+        "std_params=('schemas', 'responses', 'parameters', 'examples', 'request_bodies', 'headers', 'security_schemes',"
+        " 'links', 'callbacks', 'path_items'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init"
+        "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='schemas', kw_only=False, fn=None), ReprPlan.F"
+        "ield(name='responses', kw_only=False, fn=None), ReprPlan.Field(name='parameters', kw_only=False, fn=None), Rep"
+        "rPlan.Field(name='examples', kw_only=False, fn=None), ReprPlan.Field(name='request_bodies', kw_only=False, fn="
+        "None), ReprPlan.Field(name='headers', kw_only=False, fn=None), ReprPlan.Field(name='security_schemes', kw_only"
+        "=False, fn=None), ReprPlan.Field(name='links', kw_only=False, fn=None), ReprPlan.Field(name='callbacks', kw_on"
+        "ly=False, fn=None), ReprPlan.Field(name='path_items', kw_only=False, fn=None)), id=False, terse=False, default"
+        "_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='4db5673d8b95fcdf287745358cf89de0f0e920a5',
+    plan_repr_sha1='70b15f8a60ca2e32dc7fec02c618641cd0243175',
     op_ref_idents=(
         '__dataclass__init__fields__00__annotation',
         '__dataclass__init__fields__00__default',
@@ -677,7 +677,7 @@ def _process_dataclass__11262894e09b3b420a70ca6beeca90e3128bc4d9():
         ('omlish.specs.openapi.openapi', 'Components'),
     ),
 )
-def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
+def _process_dataclass__70b15f8a60ca2e32dc7fec02c618641cd0243175():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -724,7 +724,7 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
                 responses=self.responses,
                 parameters=self.parameters,
                 examples=self.examples,
-                requestbodies=self.requestbodies,
+                request_bodies=self.request_bodies,
                 headers=self.headers,
                 security_schemes=self.security_schemes,
                 links=self.links,
@@ -747,7 +747,7 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
                 self.responses == other.responses and
                 self.parameters == other.parameters and
                 self.examples == other.examples and
-                self.requestbodies == other.requestbodies and
+                self.request_bodies == other.request_bodies and
                 self.headers == other.headers and
                 self.security_schemes == other.security_schemes and
                 self.links == other.links and
@@ -765,7 +765,7 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
             'responses',
             'parameters',
             'examples',
-            'requestbodies',
+            'request_bodies',
             'headers',
             'security_schemes',
             'links',
@@ -791,7 +791,7 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
             'responses',
             'parameters',
             'examples',
-            'requestbodies',
+            'request_bodies',
             'headers',
             'security_schemes',
             'links',
@@ -818,7 +818,7 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
                 self.responses,
                 self.parameters,
                 self.examples,
-                self.requestbodies,
+                self.request_bodies,
                 self.headers,
                 self.security_schemes,
                 self.links,
@@ -835,7 +835,7 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
             responses: __dataclass__init__fields__01__annotation = __dataclass__init__fields__01__default,
             parameters: __dataclass__init__fields__02__annotation = __dataclass__init__fields__02__default,
             examples: __dataclass__init__fields__03__annotation = __dataclass__init__fields__03__default,
-            requestbodies: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            request_bodies: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
             headers: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
             security_schemes: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
             links: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
@@ -846,7 +846,7 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
             __dataclass__object_setattr(self, 'responses', responses)
             __dataclass__object_setattr(self, 'parameters', parameters)
             __dataclass__object_setattr(self, 'examples', examples)
-            __dataclass__object_setattr(self, 'requestbodies', requestbodies)
+            __dataclass__object_setattr(self, 'request_bodies', request_bodies)
             __dataclass__object_setattr(self, 'headers', headers)
             __dataclass__object_setattr(self, 'security_schemes', security_schemes)
             __dataclass__object_setattr(self, 'links', links)
@@ -869,8 +869,8 @@ def _process_dataclass__4db5673d8b95fcdf287745358cf89de0f0e920a5():
                 parts.append(f"parameters={s}")
             if (s := __dataclass__repr__default_fn(self.examples)) is not None:
                 parts.append(f"examples={s}")
-            if (s := __dataclass__repr__default_fn(self.requestbodies)) is not None:
-                parts.append(f"requestbodies={s}")
+            if (s := __dataclass__repr__default_fn(self.request_bodies)) is not None:
+                parts.append(f"request_bodies={s}")
             if (s := __dataclass__repr__default_fn(self.headers)) is not None:
                 parts.append(f"headers={s}")
             if (s := __dataclass__repr__default_fn(self.security_schemes)) is not None:

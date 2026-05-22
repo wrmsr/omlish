@@ -354,7 +354,7 @@ class Components:
     responses: ta.Mapping[str, Response | Reference] | None = None
     parameters: ta.Mapping[str, Parameter | Reference] | None = None
     examples: ta.Mapping[str, Example | Reference] | None = None
-    requestbodies: ta.Mapping[str, RequestBody | Reference] | None = None
+    request_bodies: ta.Mapping[str, RequestBody | Reference] | None = None
     headers: ta.Mapping[str, Header | Reference] | None = None
     security_schemes: ta.Mapping[str, SecurityScheme | Reference] | None = None
     links: ta.Mapping[str, Link | Reference] | None = None
