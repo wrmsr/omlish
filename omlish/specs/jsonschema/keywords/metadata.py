@@ -1,5 +1,6 @@
 from .... import lang
 from .base import AnyKeyword
+from .base import BooleanKeyword
 from .base import KnownKeyword
 from .base import StrKeyword
 
@@ -23,4 +24,8 @@ class Description(StrKeyword, MetadataKeyword, lang.Final, tag='description'):
 
 
 class Default(AnyKeyword, MetadataKeyword, lang.Final, tag='default'):
+    pass
+
+
+class Deprecated(BooleanKeyword, MetadataKeyword, lang.Final, tag='deprecated'):
     pass

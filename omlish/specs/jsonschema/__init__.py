@@ -31,6 +31,7 @@ from .keywords.format import (  # noqa
 
 from .keywords.metadata import (  # noqa
     Default,
+    Deprecated,
     Description,
     MetadataKeyword,
     Title,
