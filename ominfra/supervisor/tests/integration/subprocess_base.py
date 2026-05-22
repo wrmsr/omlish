@@ -247,7 +247,6 @@ class SupervisorSubprocessTestBase(unittest.TestCase):
             if resp.status != 200:
                 raise RuntimeError(f'HTTP API returned {resp.status}')
             body = resp.read()
-            print(body)
             return json.loads(body)
         finally:
             conn.close()
