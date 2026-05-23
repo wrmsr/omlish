@@ -1459,22 +1459,42 @@ ToolCallId: ta.TypeAlias = str
 ##
 
 
-PermissionOptionKind: ta.TypeAlias = ta.Literal['allow_once', 'allow_always', 'reject_once', 'reject_always']
+PermissionOptionKind: ta.TypeAlias = ta.Literal[
+    'allow_once',
+    'allow_always',
+    'reject_once',
+    'reject_always',
+]
 
 
 PlanEntryPriority: ta.TypeAlias = ta.Literal['high', 'medium', 'low']
 
 
-PlanEntryStatus: ta.TypeAlias = ta.Literal['pending', 'in_progress', 'completed']
+PlanEntryStatus: ta.TypeAlias = ta.Literal[
+    'pending',
+    'in_progress',
+    'completed',
+]
 
 
 Role: ta.TypeAlias = ta.Literal['assistant', 'user']
 
 
-StopReason: ta.TypeAlias = ta.Literal['end_turn', 'max_tokens', 'max_turn_requests', 'refusal', 'cancelled']
+StopReason: ta.TypeAlias = ta.Literal[
+    'end_turn',
+    'max_tokens',
+    'max_turn_requests',
+    'refusal',
+    'cancelled',
+]
 
 
-ToolCallStatus: ta.TypeAlias = ta.Literal['pending', 'in_progress', 'completed', 'failed']
+ToolCallStatus: ta.TypeAlias = ta.Literal[
+    'pending',
+    'in_progress',
+    'completed',
+    'failed',
+]
 
 
 ToolKind: ta.TypeAlias = ta.Literal[
@@ -1494,16 +1514,22 @@ ToolKind: ta.TypeAlias = ta.Literal[
 ##
 
 
-AgentResponse: ta.TypeAlias = ta.Any
+AgentResponse: ta.TypeAlias = ta.Union[AgentresponseResult, AgentresponseError]
 
 
-ClientResponse: ta.TypeAlias = ta.Any
+ClientResponse: ta.TypeAlias = ta.Union[
+    ClientresponseResult,
+    ClientresponseError,
+]
 
 
-EmbeddedResourceResource: ta.TypeAlias = ta.Any
+EmbeddedResourceResource: ta.TypeAlias = ta.Union[
+    TextResourceContents,
+    BlobResourceContents,
+]
 
 
-McpServer: ta.TypeAlias = ta.Any
+McpServer: ta.TypeAlias = ta.Union[HttpMcpServer, SseMcpServer, McpServerStdio]
 
 
 RequestId: ta.TypeAlias = ta.Union[None, int, str]

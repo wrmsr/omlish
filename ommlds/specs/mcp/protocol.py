@@ -1162,7 +1162,16 @@ RequestId: ta.TypeAlias = ta.Union[str, int]
 ##
 
 
-LoggingLevel: ta.TypeAlias = ta.Literal['alert', 'critical', 'debug', 'emergency', 'error', 'info', 'notice', 'warning']
+LoggingLevel: ta.TypeAlias = ta.Literal[
+    'alert',
+    'critical',
+    'debug',
+    'emergency',
+    'error',
+    'info',
+    'notice',
+    'warning',
+]
 
 
 Role: ta.TypeAlias = ta.Literal['assistant', 'user']
@@ -1171,28 +1180,92 @@ Role: ta.TypeAlias = ta.Literal['assistant', 'user']
 ##
 
 
-ClientNotification: ta.TypeAlias = ta.Any
+ClientNotification: ta.TypeAlias = ta.Union[
+    CancelledNotification,
+    InitializedNotification,
+    ProgressNotification,
+    RootsListChangedNotification,
+]
 
 
-ClientRequest: ta.TypeAlias = ta.Any
+ClientRequest: ta.TypeAlias = ta.Union[
+    InitializeRequest,
+    PingRequest,
+    ListResourcesRequest,
+    ListResourceTemplatesRequest,
+    ReadResourceRequest,
+    SubscribeRequest,
+    UnsubscribeRequest,
+    ListPromptsRequest,
+    GetPromptRequest,
+    ListToolsRequest,
+    CallToolRequest,
+    SetLevelRequest,
+    CompleteRequest,
+]
 
 
-ClientResult: ta.TypeAlias = ta.Any
+ClientResult: ta.TypeAlias = ta.Union[
+    Result,
+    CreateMessageResult,
+    ListRootsResult,
+    ElicitResult,
+]
 
 
-ContentBlock: ta.TypeAlias = ta.Any
+ContentBlock: ta.TypeAlias = ta.Union[
+    TextContent,
+    ImageContent,
+    AudioContent,
+    ResourceLink,
+    EmbeddedResource,
+]
 
 
-JSONRPCMessage: ta.TypeAlias = ta.Any
+JSONRPCMessage: ta.TypeAlias = ta.Union[
+    JSONRPCRequest,
+    JSONRPCNotification,
+    JSONRPCResponse,
+    JSONRPCError,
+]
 
 
-PrimitiveSchemaDefinition: ta.TypeAlias = ta.Any
+PrimitiveSchemaDefinition: ta.TypeAlias = ta.Union[
+    StringSchema,
+    NumberSchema,
+    BooleanSchema,
+    EnumSchema,
+]
 
 
-ServerNotification: ta.TypeAlias = ta.Any
+ServerNotification: ta.TypeAlias = ta.Union[
+    CancelledNotification,
+    ProgressNotification,
+    ResourceListChangedNotification,
+    ResourceUpdatedNotification,
+    PromptListChangedNotification,
+    ToolListChangedNotification,
+    LoggingMessageNotification,
+]
 
 
-ServerRequest: ta.TypeAlias = ta.Any
+ServerRequest: ta.TypeAlias = ta.Union[
+    PingRequest,
+    CreateMessageRequest,
+    ListRootsRequest,
+    ElicitRequest,
+]
 
 
-ServerResult: ta.TypeAlias = ta.Any
+ServerResult: ta.TypeAlias = ta.Union[
+    Result,
+    InitializeResult,
+    ListResourcesResult,
+    ListResourceTemplatesResult,
+    ReadResourceResult,
+    ListPromptsResult,
+    GetPromptResult,
+    ListToolsResult,
+    CallToolResult,
+    CompleteResult,
+]

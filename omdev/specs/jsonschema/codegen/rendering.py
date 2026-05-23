@@ -9,6 +9,7 @@ from .ir import FieldDef
 from .ir import ModuleDef
 from .ir import ObjectTypeDef
 from .ir import PrimitiveTypeRef
+from .ir import RefTypeRef
 from .ir import StringEnumTypeDef
 from .ir import TypeAliasTypeDef
 from .ir import VariantWrapperDef
@@ -193,19 +194,21 @@ class ModuleRenderer:
         w('    return inner')
 
     def _write_discriminated_union_base_classes(self, w: _Writer, module: ModuleDef) -> None:
-        if module.disc_unions:
-            w.sep()
-            for name in sorted(module.disc_unions):
-                union_td = module.disc_unions[name]
-                w()
-                w()
-                w(f'@msh.set_polymorphic_from_subclasses(')
-                w(f'    type_tagging=msh.FieldTypeTagging({union_td.discriminator_field!r}),')
-                w(f'    naming=msh.Naming.SNAKE,')
-                w(f'    strip_suffix=msh.AUTO_STRIP_SUFFIX,')
-                w(f')')
-                w(f'class {name}(lang.Abstract, lang.Sealed):')
-                w('    pass')
+        if not module.disc_unions:
+            return
+
+        w.sep()
+        for name in sorted(module.disc_unions):
+            union_td = module.disc_unions[name]
+            w()
+            w()
+            w(f'@msh.set_polymorphic_from_subclasses(')
+            w(f'    type_tagging=msh.FieldTypeTagging({union_td.discriminator_field!r}),')
+            w(f'    naming=msh.Naming.SNAKE,')
+            w(f'    strip_suffix=msh.AUTO_STRIP_SUFFIX,')
+            w(f')')
+            w(f'class {name}(lang.Abstract, lang.Sealed):')
+            w('    pass')
 
     def _write_object_types(self, w: _Writer, module: ModuleDef) -> None:
         objects = sorted(
@@ -213,18 +216,20 @@ class ModuleRenderer:
             for n, td in module.type_defs.items()
             if isinstance(td, ObjectTypeDef)
         )
-        if objects:
-            w.sep()
-            for name, td in objects:
-                w()
-                w()
-                w.lines(self._gen_class_lines(
-                    name,
-                    td.fields,
-                    nested_defs=td.nested_defs,
-                    field_naming=td.field_naming,
-                    ignore_unknown=td.ignore_unknown,
-                ))
+        if not objects:
+            return
+
+        w.sep()
+        for name, td in objects:
+            w()
+            w()
+            w.lines(self._gen_class_lines(
+                name,
+                td.fields,
+                nested_defs=td.nested_defs,
+                field_naming=td.field_naming,
+                ignore_unknown=td.ignore_unknown,
+            ))
 
     def _write_empties(self, w: _Writer, module: ModuleDef) -> None:
         empties = sorted(
@@ -232,23 +237,27 @@ class ModuleRenderer:
             for n, td in module.type_defs.items()
             if isinstance(td, EmptyTypeDef)
         )
-        if empties:
-            w.sep()
-            for name, _td in empties:
-                w()
-                w()
-                w('@dc.dataclass(frozen=True, kw_only=True)')
-                w('@_set_class_marshal_options()')
-                w(f'class {name}(lang.Final):')
-                w('    pass')
+        if not empties:
+            return
+
+        w.sep()
+        for name, _td in empties:
+            w()
+            w()
+            w('@dc.dataclass(frozen=True, kw_only=True)')
+            w('@_set_class_marshal_options()')
+            w(f'class {name}(lang.Final):')
+            w('    pass')
 
     def _write_variant_wrapper_types(self, w: _Writer, module: ModuleDef) -> None:
-        if module.variant_wrappers:
-            w.sep()
-            for vw in sorted(module.variant_wrappers, key=lambda v: v.class_name):
-                w()
-                w()
-                w.lines(self._gen_variant_wrapper_lines(vw))
+        if not module.variant_wrappers:
+            return
+
+        w.sep()
+        for vw in sorted(module.variant_wrappers, key=lambda v: v.class_name):
+            w()
+            w()
+            w.lines(self._gen_variant_wrapper_lines(vw))
 
     def _gen_variant_wrapper_lines(self, vw: VariantWrapperDef) -> list[str]:
         return self._gen_class_lines(
@@ -264,15 +273,17 @@ class ModuleRenderer:
             for n, td in module.type_defs.items()
             if isinstance(td, TypeAliasTypeDef)
         )
-        if aliases:
-            w.sep()
-            for name, td in aliases:
-                w()
-                w()
-                if td.target is not None:
-                    w(f'{name}: ta.TypeAlias = {self._render_type_ann(td.target)}')
-                else:
-                    w(f'{name}: ta.TypeAlias = ta.Any')
+        if not aliases:
+            return
+
+        w.sep()
+        for name, td in aliases:
+            w()
+            w()
+            if td.target is not None:
+                w(f'{name}: ta.TypeAlias = {self._render_type_ann(td.target)}')
+            else:
+                w(f'{name}: ta.TypeAlias = ta.Any')
 
     def _write_string_enum_type_aliases(self, w: _Writer, module: ModuleDef) -> None:
         enums = sorted(
@@ -280,20 +291,22 @@ class ModuleRenderer:
             for n, td in module.type_defs.items()
             if isinstance(td, StringEnumTypeDef)
         )
-        if enums:
-            w.sep()
-            for name, td in enums:
-                w()
-                w()
-                vals_str = ', '.join(f'{v!r}' for v in td.values)
-                line = f'{name}: ta.TypeAlias = ta.Literal[{vals_str}]'
-                if len(line) <= self._config.multiline_threshold:
-                    w(line)
-                else:
-                    w(f'{name}: ta.TypeAlias = ta.Literal[')
-                    for v in td.values:
-                        w(f'    {v!r},')
-                    w(']')
+        if not enums:
+            return
+
+        w.sep()
+        for name, td in enums:
+            w()
+            w()
+            vals_str = ', '.join(f'{v!r}' for v in td.values)
+            line = f'{name}: ta.TypeAlias = ta.Literal[{vals_str}]'
+            if len(line) <= self._config.multiline_threshold:
+                w(line)
+            else:
+                w(f'{name}: ta.TypeAlias = ta.Literal[')
+                for v in td.values:
+                    w(f'    {v!r},')
+                w(']')
 
     def _write_any_of_union_type_aliases(self, w: _Writer, module: ModuleDef) -> None:
         unions = sorted(
@@ -301,21 +314,23 @@ class ModuleRenderer:
             for n, td in module.type_defs.items()
             if isinstance(td, AnyOfUnionTypeDef)
         )
-        if unions:
-            w.sep()
-            for name, td in unions:
-                w()
-                w()
-                if not all(isinstance(m, PrimitiveTypeRef) for m in td.members):
-                    w(f'{name}: ta.TypeAlias = ta.Any')
-                    continue
+        if not unions:
+            return
 
-                parts = ', '.join(self._render_type_ann(m) for m in td.members)
-                line = f'{name}: ta.TypeAlias = ta.Union[{parts}]'
-                if len(line) <= self._config.multiline_threshold:
-                    w(line)
-                else:
-                    w(f'{name}: ta.TypeAlias = ta.Union[')
-                    for m in td.members:
-                        w(f'    {self._render_type_ann(m)},')
-                    w(']')
+        w.sep()
+        for name, td in unions:
+            w()
+            w()
+            if not all(isinstance(m, (PrimitiveTypeRef, RefTypeRef)) for m in td.members):
+                w(f'{name}: ta.TypeAlias = ta.Any')
+                continue
+
+            parts = ', '.join(self._render_type_ann(m) for m in td.members)
+            line = f'{name}: ta.TypeAlias = ta.Union[{parts}]'
+            if len(line) <= self._config.multiline_threshold:
+                w(line)
+            else:
+                w(f'{name}: ta.TypeAlias = ta.Union[')
+                for m in td.members:
+                    w(f'    {self._render_type_ann(m)},')
+                w(']')
