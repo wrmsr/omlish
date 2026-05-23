@@ -1514,22 +1514,16 @@ ToolKind: ta.TypeAlias = ta.Literal[
 ##
 
 
-AgentResponse: ta.TypeAlias = ta.Union[AgentresponseResult, AgentresponseError]
+AgentResponse: ta.TypeAlias = ta.Any
 
 
-ClientResponse: ta.TypeAlias = ta.Union[
-    ClientresponseResult,
-    ClientresponseError,
-]
+ClientResponse: ta.TypeAlias = ta.Any
 
 
-EmbeddedResourceResource: ta.TypeAlias = ta.Union[
-    TextResourceContents,
-    BlobResourceContents,
-]
+EmbeddedResourceResource: ta.TypeAlias = ta.Any
 
 
-McpServer: ta.TypeAlias = ta.Union[HttpMcpServer, SseMcpServer, McpServerStdio]
+McpServer: ta.TypeAlias = ta.Any
 
 
 RequestId: ta.TypeAlias = ta.Union[None, int, str]

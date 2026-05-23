@@ -9,7 +9,6 @@ from .ir import FieldDef
 from .ir import ModuleDef
 from .ir import ObjectTypeDef
 from .ir import PrimitiveTypeRef
-from .ir import RefTypeRef
 from .ir import StringEnumTypeDef
 from .ir import TypeAliasTypeDef
 from .ir import VariantWrapperDef
@@ -321,7 +320,8 @@ class ModuleRenderer:
         for name, td in unions:
             w()
             w()
-            if not all(isinstance(m, (PrimitiveTypeRef, RefTypeRef)) for m in td.members):
+            # FIXME: if not all(isinstance(m, (PrimitiveTypeRef, RefTypeRef)) for m in td.members):
+            if not all(isinstance(m, PrimitiveTypeRef) for m in td.members):
                 w(f'{name}: ta.TypeAlias = ta.Any')
                 continue
 
