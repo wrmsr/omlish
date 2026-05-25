@@ -1,6 +1,6 @@
 #### optional
 
-greenlet==3.5.0
+greenlet==3.5.1
 
 pyyaml==6.0.3
 
@@ -21,7 +21,7 @@ brotli==1.2.0  # !! USES_GIL - https://github.com/google/brotli/commit/51be27dbd
 
 ### db:
 
-sqlalchemy[asyncio]==2.0.49
+sqlalchemy[asyncio]==2.0.50
 
 ## sql
 
