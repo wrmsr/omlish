@@ -16,9 +16,9 @@ class ContainerFunctions(FunctionsClass):
     def _func_contains(self, subject, *searches, ctx: FunctionContext):
         return any(ctx.runtime.contains(subject, search) for search in searches)
 
-    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
-    def _func_in(self, subject, *searches):
-        return subject in searches
+    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True}, pass_context=True)
+    def _func_in(self, subject, *searches, ctx: FunctionContext):
+        return ctx.runtime.contains(ctx.runtime.make_array(searches), subject)
 
     @signature({'types': ['string', 'array', 'object']}, pass_context=True)
     def _func_length(self, arg, *, ctx: FunctionContext):
