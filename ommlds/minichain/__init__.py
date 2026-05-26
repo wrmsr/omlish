@@ -925,8 +925,15 @@ with _lang.auto_proxy_init(
     )
 
     from .external import (  # noqa
+        ExternalServiceEvent,
+
         ExternalServiceRequestEvent,
         ExternalServiceResponseEvent,
+
+        ExternalServiceStreamResponseEvent,
+        ExternalServiceStreamResponseStartEvent,
+        ExternalServiceStreamResponseDataEvent,
+        ExternalServiceStreamResponseEndEvent,
     )
 
     from .json import (  # noqa

@@ -131,6 +131,7 @@ def build_mc_ai_choice_deltas(delta: pt.ChatCompletionChunk.Choice.Delta) -> AiC
             lst.append(PartialToolUseAiDelta(
                 id=tc.id,
                 name=tc_fn.name,
+                index=tc.index,
                 raw_args=tc_fn.arguments,
             ))
 

@@ -139,6 +139,7 @@ class AnthropicChatChoicesStreamService:
                                             await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiDelta(  # noqa
                                                 id=ae.content_block.id,
                                                 name=ae.content_block.name,
+                                                index=ae.index,
                                                 raw_args=ae.content_block.input,
                                             )])]))
 
@@ -155,6 +156,7 @@ class AnthropicChatChoicesStreamService:
 
                                         elif isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.InputJsonDelta):  # noqa
                                             await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiDelta(  # noqa
+                                                index=ae.index,
                                                 raw_args=ae.delta.partial_json,
                                             )])]))
 

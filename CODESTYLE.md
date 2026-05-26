@@ -253,6 +253,8 @@ def make_it_a_tuple(t: T) -> tuple[T]:
 - An abstract class with nothing but abstract (or constant) members is referred to as an interface. In general, prefer
   pure interfaces as opposed to full abstract classes containing partial implementations at package public interface
   boundaries.
+- For marking subgroups in an otherwise-'closed' family of classes, an empty mixed-in abstract class is usually
+  preferred to a `ta.Union` type alias of the qualifying concrete types - but this is not a strict requirement.
 - Do not use `abc.ABC` - in standard code use `lang.Abstract` and in lite code use `omlish.lite.abstract.Abstract`.
   - Rationale: `abc.ABCMeta` adds extreme overhead to `isinstance` / `issubclass` checks (6x) in order to support
     virtual base classes, which are almost never needed or desirable.

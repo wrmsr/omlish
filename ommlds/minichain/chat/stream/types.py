@@ -62,6 +62,7 @@ class ContentAiDelta(AiDelta, lang.Final):
 class AnyToolUseAiDelta(AiDelta, lang.Abstract):
     id: str | None = None
     name: str | None = None
+    index: int | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)

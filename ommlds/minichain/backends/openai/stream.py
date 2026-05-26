@@ -18,6 +18,7 @@ from ...chat.choices.stream.types import ChatChoicesStreamOption
 from ...configs import Config
 from ...events.types import EventCallback
 from ...external import ExternalServiceRequestEvent
+from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
 from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ...resources import ResourcesOption
@@ -55,7 +56,7 @@ class OpenaiChatChoicesStreamService:
 
     URL: ta.ClassVar[str] = 'https://api.openai.com/v1/chat/completions'
 
-    def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+    async def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
         if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
             return []
 
@@ -72,6 +73,13 @@ class OpenaiChatChoicesStreamService:
         # FIXME: stop reason
         if not ccc.choices:
             return []
+
+        if self._on_event is not None:
+            for choice in ccc.choices:
+                await self._on_event(ExternalServiceStreamResponseDataEvent(
+                    service=self,
+                    data=choice.delta,
+                ))
 
         if any(choice.finish_reason for choice in ccc.choices):
             check.state(all(choice.finish_reason for choice in ccc.choices))
@@ -122,6 +130,7 @@ class OpenaiChatChoicesStreamService:
             self._http_client,
             lambda http_response: SimpleSseLinesHttpStreamResponseHandler(self._process_sse).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
+            on_event=self._on_event,
         ).new_stream_response(
             http_request,
             request.options,

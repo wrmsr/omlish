@@ -13,6 +13,7 @@ from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecode
 from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
+from ..events.types import EventCallback
 from ..resources import UseResources
 from ..services import StreamResponse
 from ..services import StreamResponseSink
@@ -53,10 +54,10 @@ class HttpStreamResponseError(Exception):
 
 
 class HttpStreamResponseHandler(lang.Abstract):
-    def start(self) -> ta.Sequence[Output]:
+    async def start(self) -> ta.Sequence[Output]:
         return ()
 
-    def finish(self) -> ta.Sequence[Output]:
+    async def finish(self) -> ta.Sequence[Output]:
         return ()
 
 
@@ -64,7 +65,7 @@ class HttpStreamResponseHandler(lang.Abstract):
 
 
 class BytesHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
-    def process_bytes(self, data: lang.Bytes) -> ta.Iterable:
+    async def process_bytes(self, data: lang.Bytes) -> ta.Sequence[ta.Any]:
         return ()
 
 
@@ -75,12 +76,14 @@ class BytesHttpStreamResponseBuilder:
             handling: ta.Callable[[http.AsyncStreamHttpClientResponse], BytesHttpStreamResponseHandler],
             *,
             read_chunk_size: int = -1,
+            on_event: EventCallback | None = None,
     ) -> None:
         super().__init__()
 
         self._http_client = http_client
         self._handling = handling
         self._read_chunk_size = read_chunk_size
+        self._on_event = on_event
 
     async def new_stream_response(
             self,
@@ -100,7 +103,7 @@ class BytesHttpStreamResponseBuilder:
                 while True:
                     b = await http_response.stream.read1(self._read_chunk_size)
 
-                    for v in handler.process_bytes(b):
+                    for v in await handler.process_bytes(b):
                         if v is None:
                             break
 
@@ -109,12 +112,12 @@ class BytesHttpStreamResponseBuilder:
                     if not b:
                         break
 
-                return handler.finish()
+                return await handler.finish()
 
             return await new_stream_response(
                 rs,
                 inner,
-                handler.start(),
+                await handler.start(),
             )
 
 
@@ -122,7 +125,7 @@ class BytesHttpStreamResponseBuilder:
 
 
 class LinesHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
-    def process_line(self, line: lang.Bytes) -> ta.Iterable:
+    async def process_line(self, line: lang.Bytes) -> ta.Sequence[ta.Any]:
         return ()
 
     def as_bytes(self) -> BytesHttpStreamResponseHandler:
@@ -139,33 +142,37 @@ class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
         self._frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
         self._seen_eof = False
 
-    def start(self) -> ta.Sequence[Output]:
-        return self._handler.start()
+    async def start(self) -> ta.Sequence[Output]:
+        return await self._handler.start()
 
-    def process_bytes(self, data: lang.Bytes) -> ta.Iterable:
+    async def process_bytes(self, data: lang.Bytes) -> ta.Sequence[ta.Any]:
         check.state(not self._seen_eof)
 
         self._buf.write(data)
 
+        out: list = []
         for o in self._frm.decode(self._buf, final=not data):
-            yield from self._handler.process_line(o.tobytes())
+            for x in await self._handler.process_line(o.tobytes()):
+                out.append(x)  # noqa
 
         if not data:
             self._seen_eof = True
 
             check.state(not len(self._buf))
 
-    def finish(self) -> ta.Sequence[Output]:
+        return out
+
+    async def finish(self) -> ta.Sequence[Output]:
         check.state(self._seen_eof)
 
-        return self._handler.finish()
+        return await self._handler.finish()
 
 
 ##
 
 
 class SseHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
-    def process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable:
+    async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[ta.Any]:
         return ()
 
     def as_lines(self) -> LinesHttpStreamResponseHandler:
@@ -180,25 +187,28 @@ class SseLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
 
         self._sd = sse.SseDecoder()
 
-    def start(self) -> ta.Sequence[Output]:
-        return self._handler.start()
+    async def start(self) -> ta.Sequence[Output]:
+        return await self._handler.start()
 
-    def process_line(self, line: lang.Bytes) -> ta.Iterable:
+    async def process_line(self, line: lang.Bytes) -> ta.Sequence[ta.Any]:
+        out: list[ta.Any] = []
         for so in self._sd.process_line(line):
-            yield from self._handler.process_sse(so)
+            for x in await self._handler.process_sse(so):
+                out.append(x)  # noqa
+        return out
 
-    def finish(self) -> ta.Sequence[Output]:
-        return self._handler.finish()
+    async def finish(self) -> ta.Sequence[Output]:
+        return await self._handler.finish()
 
 
 #
 
 
 class SimpleSseLinesHttpStreamResponseHandler(SseHttpStreamResponseHandler):
-    def __init__(self, fn: ta.Callable[[sse.SseDecoderOutput], ta.Iterable]) -> None:
+    def __init__(self, fn: ta.Callable[[sse.SseDecoderOutput], ta.Awaitable[ta.Sequence[ta.Any]]]) -> None:
         super().__init__()
 
         self._fn = fn
 
-    def process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable:
-        return self._fn(so)
+    async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[ta.Any]:
+        return await self._fn(so)

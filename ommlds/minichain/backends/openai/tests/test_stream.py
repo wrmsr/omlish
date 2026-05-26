@@ -119,7 +119,10 @@ async def test_openai_stream_parallel_tools(harness):
     foo_req: ChatChoicesStreamRequest
     foo_req = ChatChoicesStreamRequest(
         [
-            SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
+            SystemMessage(
+                "You are a helpful agent. Use any tools available to you to answer the user's questions. "
+                "Before using tools, say a quick summary of what tools you're going to use.",
+            ),
             UserMessage('What is the weather in Seattle? Also, what is the weather in San Francisco?'),
         ],
         [

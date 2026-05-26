@@ -17,6 +17,7 @@ from ...chat.choices.stream.types import AiChoicesDeltas
 from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import ToolUseAiDelta
 from ...chat.tools.types import Tool
+from ...events.types import EventCallback
 from ...http.stream import BytesHttpStreamResponseBuilder
 from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ...models.configs import ModelName
@@ -42,10 +43,12 @@ class GoogleChatChoicesStreamService:
             self,
             *configs: ApiKey | ModelName,
             http_client: http.AsyncHttpClient | None = None,
+            on_event: EventCallback | None = None,
     ) -> None:
         super().__init__()
 
         self._http_client = http_client
+        self._on_event = on_event
 
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
@@ -53,25 +56,27 @@ class GoogleChatChoicesStreamService:
 
     BASE_URL: ta.ClassVar[str] = 'https://generativelanguage.googleapis.com/v1beta/models'
 
-    def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable[AiChoicesDeltas | None]:
+    async def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
         if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
-            return
+            return []
 
         gcr = msh.unmarshal(json.loads(so.data.decode('utf-8')), pt.GenerateContentResponse)  # noqa
         cnd = check.single(check.not_none(gcr.candidates))
 
+        out: list[AiChoicesDeltas | None] = []
+
         for p in check.not_none(cnd.content).parts or []:
             if (txt := p.text) is not None:
                 check.none(p.function_call)
-                yield AiChoicesDeltas([
+                out.append(AiChoicesDeltas([
                     AiChoiceDeltas([
                         ContentAiDelta(check.not_none(txt)),
                     ]),
-                ])
+                ]))
 
             elif (fc := p.function_call) is not None:
                 check.none(p.text)
-                yield AiChoicesDeltas([
+                out.append(AiChoicesDeltas([
                     AiChoiceDeltas([
                         ToolUseAiDelta(
                             id=fc.id,
@@ -79,10 +84,12 @@ class GoogleChatChoicesStreamService:
                             args=fc.args,
                         ),
                     ]),
-                ])
+                ]))
 
             else:
                 raise ValueError(p)
+
+        return out
 
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
@@ -128,6 +135,7 @@ class GoogleChatChoicesStreamService:
             self._http_client,
             lambda http_response: SimpleSseLinesHttpStreamResponseHandler(self._process_sse).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
+            on_event=self._on_event,
         ).new_stream_response(
             http_request,
             request.options,

@@ -68,6 +68,7 @@ class AiDeltaJoiner:
             for td in ta.cast('ta.Sequence[PartialToolUseAiDelta]', deltas)[1:]:
                 check.none(td.id)
                 check.none(td.name)
+                # check.none(td.index)  # FIXME
 
             ra = ''.join(filter(None, (td.raw_args for td in tds)))
 

@@ -159,6 +159,7 @@ def build_mc_ai_deltas(delta: pt.ChatCompletionChunkChoiceDelta) -> AiDeltas:
         return [PartialToolUseAiDelta(
             id=tc.id,
             name=tc_fn.name,
+            index=tc.index,
             raw_args=tc_fn.arguments,
         )]
 

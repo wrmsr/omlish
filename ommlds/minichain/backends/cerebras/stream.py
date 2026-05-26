@@ -15,6 +15,7 @@ from ...chat.choices.stream.services import static_check_is_chat_choices_stream_
 from ...chat.choices.stream.types import AiChoicesDeltas
 from ...chat.tools.types import Tool
 from ...configs import Config
+from ...events.types import EventCallback
 from ...http.stream import BytesHttpStreamResponseBuilder
 from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ...standard import ApiKey
@@ -38,10 +39,12 @@ class CerebrasChatChoicesStreamService:
             self,
             *configs: Config,
             http_client: http.AsyncHttpClient | None = None,
+            on_event: EventCallback | None = None,
     ) -> None:
         super().__init__()
 
         self._http_client = http_client
+        self._on_event = on_event
 
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(CerebrasChatChoicesService.DEFAULT_MODEL_NAME)
@@ -49,7 +52,7 @@ class CerebrasChatChoicesStreamService:
 
     URL: ta.ClassVar[str] = 'https://api.cerebras.ai/v1/chat/completions'
 
-    def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+    async def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
         if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
             return []
 
@@ -108,6 +111,7 @@ class CerebrasChatChoicesStreamService:
             self._http_client,
             lambda http_response: SimpleSseLinesHttpStreamResponseHandler(self._process_sse).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
+            on_event=self._on_event,
         ).new_stream_response(
             http_request,
             request.options,
