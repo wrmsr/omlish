@@ -25,7 +25,7 @@ def test_ordered_dot():
 
 def test_ordered_paren():
     m = scan_list_marker('42) item')
-    assert m.is_ordered and m.start == 42 and m.char == ')'
+    assert m.is_ordered and m.start == 42 and m.char == ')'  # type: ignore
 
 
 def test_ordered_max_digits():

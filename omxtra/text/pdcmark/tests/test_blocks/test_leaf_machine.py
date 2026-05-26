@@ -44,7 +44,7 @@ def test_atx_emits_heading():
 def test_atx_levels():
     for level in range(1, 7):
         out = feed('#' * level + ' h\n')
-        assert isinstance(out[0], m.Start) and out[0].tag.level == level
+        assert isinstance(out[0], m.Start) and out[0].tag.level == level  # type: ignore
 
 
 def test_paragraph_emits_paragraph():
@@ -78,9 +78,9 @@ def test_hrule_alternatives():
 
 def test_setext_h1_and_h2():
     out = feed('Title\n===\n')
-    assert isinstance(out[0], m.Start) and out[0].tag.level == 1
+    assert isinstance(out[0], m.Start) and out[0].tag.level == 1  # type: ignore
     out = feed('Title\n---\n')
-    assert isinstance(out[0], m.Start) and out[0].tag.level == 2
+    assert isinstance(out[0], m.Start) and out[0].tag.level == 2  # type: ignore
 
 
 def test_setext_only_applies_to_open_paragraph():
@@ -156,8 +156,8 @@ def test_atx_interrupts_paragraph():
 
 def test_hrule_interrupts_paragraph():
     out = feed('para\n---\n')
-    # Tricky case: `para\n---\n` is actually a setext-H2, NOT paragraph + hrule, per CM spec.
-    # Setext promotion wins because the underline is checked before paragraph-interrupters.
+    # Tricky case: `para\n---\n` is actually a setext-H2, NOT paragraph + hrule, per CM spec. Setext promotion wins
+    # because the underline is checked before paragraph-interrupters.
     assert isinstance(out[0].tag, m.Heading) and out[0].tag.level == 2
 
 

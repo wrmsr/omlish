@@ -1,7 +1,7 @@
 """
-Integration tests against the GFM-extension spec fixtures (vendored under the pulldown-cmark
-submodule's third_party/GitHub/). Tables / strikethrough / tasklists are required to be enabled
-via the GFM preset; without enabling the extensions these tests are not meaningful.
+Integration tests against the GFM-extension spec fixtures (vendored under the pulldown-cmark submodule's
+third_party/GitHub/). Tables / strikethrough / tasklists are required to be enabled via the GFM preset; without enabling
+the extensions these tests are not meaningful.
 """
 import os.path
 

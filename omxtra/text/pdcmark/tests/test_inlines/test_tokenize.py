@@ -26,8 +26,7 @@ def test_plain_text():
 
 def test_backslash_escape():
     out = _tokens(r'a\*b')
-    # Tokenizer accumulates `a`, `*`, `b` into the same buffer (escape consumes backslash, emits
-    # the punct as text).
+    # Tokenizer accumulates `a`, `*`, `b` into the same buffer (escape consumes backslash, emits the punct as text).
     text_parts = [t.text for t in out if isinstance(t, TextNode)]
     assert ''.join(text_parts) == 'a*b'
     # No DelimNode produced.

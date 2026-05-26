@@ -101,7 +101,7 @@ def scan_link_destination(text: str, start: int, *, max_parens: int = 32) -> Lin
     # Bare form: balanced parens; terminates at first ASCII control / space / unbalanced ')'.
     i = start
     depth = 0
-    out: list[str] = []
+    out = []
     while i < n:
         c = text[i]
         if ord(c) < 0x20 or c == ' ':

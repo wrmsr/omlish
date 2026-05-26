@@ -82,19 +82,19 @@ def test_simple_bullet_list():
     tags = [s.tag.__class__.__name__ for s in starts]
     assert tags == ['List', 'Item', 'Paragraph', 'Item', 'Paragraph']
     list_start = next(e for e in out if isinstance(e, m.Start) and isinstance(e.tag, m.List))
-    assert list_start.tag.start is None  # unordered
+    assert list_start.tag.start is None  # type: ignore  # unordered
 
 
 def test_ordered_list():
     out = feed('1. foo\n2. bar\n')
     list_start = next(e for e in out if isinstance(e, m.Start) and isinstance(e.tag, m.List))
-    assert list_start.tag.start == 1
+    assert list_start.tag.start == 1  # type: ignore
 
 
 def test_ordered_list_arbitrary_start():
     out = feed('42. foo\n')
     list_start = next(e for e in out if isinstance(e, m.Start) and isinstance(e.tag, m.List))
-    assert list_start.tag.start == 42
+    assert list_start.tag.start == 42  # type: ignore
 
 
 def test_different_marker_starts_new_list():

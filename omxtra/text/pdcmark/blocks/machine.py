@@ -19,6 +19,7 @@ Algorithm sketch for `feed_line`:
   4. Dispatch the remaining line content to leaf-block recognition (ATX heading, hrule, fence,
      HTML block, indented code, paragraph).
 """
+from omlish import check
 from omlish import dataclasses as dc
 
 from ..events import BlockQuote
@@ -229,7 +230,7 @@ class BlockMachine:
             while (
                 matched_depth > 0
                 and isinstance(self._stack[matched_depth - 1], OpenList)
-                and not self._line_opens_matching_item(self._stack[matched_depth - 1], ls)
+                and not self._line_opens_matching_item(check.isinstance(self._stack[matched_depth - 1], OpenList), ls)
             ):
                 matched_depth -= 1
 

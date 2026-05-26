@@ -95,8 +95,7 @@ def resolve_links(
                 continue
             match_s = len(stack) - 1
             entry = stack[match_s]
-            opener = nodes[entry.node_index]
-            check.isinstance(opener, LinkOpenNode)
+            opener = check.isinstance(nodes[entry.node_index], LinkOpenNode)
 
             # Inner children = nodes strictly between opener and closer.
             children = nodes[entry.node_index + 1:i]

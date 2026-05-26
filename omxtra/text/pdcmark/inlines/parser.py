@@ -104,6 +104,7 @@ def _resolve_emphasis_recursive(nodes: list[InlineNode]) -> None:
 
 
 def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
+    tag: Tag
     for n in nodes:
         if isinstance(n, TextNode):
             if n.text:
@@ -124,7 +125,6 @@ def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
         elif isinstance(n, HardBreakNode):
             out.append(HardBreak(offset=n.offset))
         elif isinstance(n, EmphasisGroup):
-            tag: Tag
             if n.kind == 'strong':
                 tag = Strong()
             elif n.kind == 'strikethrough':
@@ -135,7 +135,7 @@ def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
             _emit_events(n.children, out)
             out.append(End(offset=n.offset, tag=tag))
         elif isinstance(n, LinkGroup):
-            tag: Tag = (
+            tag = (
                 Image(link_type=n.link_type, dest_url=n.dest_url, title=n.title, id=n.id)
                 if n.is_image
                 else Link(link_type=n.link_type, dest_url=n.dest_url, title=n.title, id=n.id)

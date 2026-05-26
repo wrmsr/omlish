@@ -65,8 +65,7 @@ def test_tentative_updates_across_chunks():
 def test_open_code_block_tentative():
     sp = StreamingParser()
     fo = sp.feed('```py\nx = 1\n')
-    # The fence opened and one line of body went in. Tentative shows the open code block as if
-    # closed now.
+    # The fence opened and one line of body went in. Tentative shows the open code block as if closed now.
     assert any(isinstance(e, m.Start) and isinstance(e.tag, m.FencedCodeBlock) for e in fo.tentative)
     texts = [e.text for e in fo.tentative if isinstance(e, m.Text)]
     assert texts == ['x = 1\n']
@@ -76,7 +75,7 @@ def test_committed_appended_only():
     """The same event should NOT appear in both committed and tentative across feeds."""
 
     sp = StreamingParser()
-    all_committed = []
+    all_committed: list = []
     chunks = ['# heading\n', 'paragraph ', 'more\n', '\n', 'second para\n']
     for chunk in chunks:
         fo = sp.feed(chunk)
@@ -98,10 +97,7 @@ def test_crlf_handling():
 
 
 def test_cr_at_chunk_boundary():
-    """
-    CR ending one chunk + LF starting the next must form a single CRLF terminator, not two
-    separate line breaks.
-    """
+    """CR ending one chunk + LF starting the next must form a single CRLF terminator, not two separate line breaks."""
 
     sp = StreamingParser()
     sp.feed('a\r')
@@ -111,7 +107,7 @@ def test_cr_at_chunk_boundary():
     # Reconstruct from feeds. (We need to capture them all.)
     sp = StreamingParser()
     parts = ['a\r', '\nb\n']
-    out = []
+    out: list = []
     for p in parts:
         out.extend(sp.feed(p).committed)
     out.extend(sp.finish().committed)

@@ -1,8 +1,7 @@
 """
-Adversarial input tests — the link-reference expansion-bomb that motivates pulldown's
-`link_ref_expansion_limit` (see pulldown-cmark issue #844 and parse.rs::ParserInner). Without the
-fuel guard, an input that repeatedly references the same large refdef can balloon output size
-quadratically.
+Adversarial input tests — the link-reference expansion-bomb that motivates pulldown's `link_ref_expansion_limit` (see
+pulldown-cmark issue #844 and parse.rs::ParserInner). Without the fuel guard, an input that repeatedly references the
+same large refdef can balloon output size quadratically.
 """
 import time
 
@@ -14,8 +13,8 @@ from ...rendering.html import render_html
 
 
 def test_link_ref_expansion_bomb_stays_bounded():
-    # `[x]: <large>` followed by N copies of `[x]` would, without fuel, produce N copies of <large>
-    # in the rendered output. With fuel, expansion bails after the configured budget.
+    # `[x]: <large>` followed by N copies of `[x]` would, without fuel, produce N copies of <large> in the rendered
+    # output. With fuel, expansion bails after the configured budget.
     big = 'A' * 5000
     refs = '\n[x]\n' * 200
     src = f'[x]: {big}\n{refs}'

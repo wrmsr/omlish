@@ -101,8 +101,8 @@ def test_cm_section_full_pass(cm_cases, section):
 # A small set of CM spec case indices that exercise specific M1 features and must pass. If any fails, something specific
 # has regressed.
 _CURATED_CASE_INDICES = (
-    # Numbers reference upstream CM 0.30 spec.txt indices. Cases listed here are exact-match
-    # smoke tests covering features we explicitly want green on each milestone.
+    # Numbers reference upstream CM 0.30 spec.txt indices. Cases listed here are exact-match smoke tests covering
+    # features we explicitly want green on each milestone.
     # M1 — block-level:
     1,    # tab in indented code
     43,   # thematic break (* / - / _)

@@ -43,8 +43,7 @@ def resolve_emphasis(nodes: list[InlineNode]) -> list[InlineNode]:
             match_s = _find_matching_opener(nodes, delim_stack, node)
             if match_s is not None:
                 opener_i = delim_stack[match_s]
-                opener = nodes[opener_i]
-                check.isinstance(opener, DelimNode)
+                opener = check.isinstance(nodes[opener_i], DelimNode)
 
                 # GFM strikethrough: `~` and `~~` both produce <del>; longer runs (`~~~+`) don't pair at all. Equivalent
                 # to the GFM "tilde must be ≤ 2 chars" rule.

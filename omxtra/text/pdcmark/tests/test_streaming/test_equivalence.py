@@ -5,8 +5,8 @@ Full-reparse equivalence — the load-bearing invariant from docs/00_Goals.md:
   > identical to feeding it in N arbitrary chunks followed by finish(). The consumer never
   > needs a "safety reparse at end" pass.
 
-We verify this over the entire upstream CommonMark spec corpus and the GFM-extension corpora,
-under several chunking strategies — single-char, fixed-size, random, line-boundary, etc.
+We verify this over the entire upstream CommonMark spec corpus and the GFM-extension corpora, under several chunking
+strategies — single-char, fixed-size, random, line-boundary, etc.
 """
 import os.path
 import random
@@ -20,8 +20,7 @@ from ...streaming.parser import StreamingParser
 from ...tests.spec_runner import load_spec_file
 
 
-# Chunking strategies — each takes a str and yields a sequence of chunks whose concatenation is
-# the original.
+# Chunking strategies — each takes a str and yields a sequence of chunks whose concatenation is the original.
 
 
 def chunk_whole(s: str) -> list[str]:
@@ -71,7 +70,7 @@ _STRATEGIES = [
 
 def _stream(text: str, strategy, options=COMMONMARK):
     sp = StreamingParser(options)
-    committed = []
+    committed: list = []
     for chunk in strategy(text):
         out = sp.feed(chunk)
         committed.extend(out.committed)
@@ -129,15 +128,14 @@ def test_chunking_equivalence_gfm(gfm_corpus, name, strategy):
 
 def test_chunk_at_every_offset_smoke():
     """
-    Spot-check: for a small fixture, every possible single-split point produces equivalent
-    streamed and oneshot results.
+    Spot-check: for a small fixture, every possible single-split point produces equivalent streamed and oneshot results.
     """
 
     src = '# Heading\n\nA paragraph with *emphasis*.\n\n- item one\n- item two\n'
     expected = parse(src)
     for i in range(len(src) + 1):
         sp = StreamingParser()
-        committed = []
+        committed: list = []
         for chunk in (src[:i], src[i:]):
             if chunk:
                 committed.extend(sp.feed(chunk).committed)

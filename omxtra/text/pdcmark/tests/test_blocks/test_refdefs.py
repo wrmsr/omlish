@@ -114,8 +114,8 @@ def test_refdef_then_blank_then_use():
     tags = [type(s.tag).__name__ for s in starts]
     assert tags == ['Paragraph', 'Link']
     link_start = starts[1]
-    assert link_start.tag.dest_url == '/url'
-    assert link_start.tag.link_type == m.LinkType.SHORTCUT
+    assert link_start.tag.dest_url == '/url'  # type: ignore
+    assert link_start.tag.link_type == m.LinkType.SHORTCUT  # type: ignore
     assert 'foo' in refdefs
 
 
@@ -125,8 +125,8 @@ def test_first_definition_wins():
 
 
 def test_setext_paragraph_is_not_refdef():
-    # A paragraph that becomes a setext heading should NOT have refdefs peeled —
-    # `[foo]: /url\n===` is a level-1 heading with content `[foo]: /url`.
+    # A paragraph that becomes a setext heading should NOT have refdefs peeled — `[foo]: /url\n===` is a level-1 heading
+    # with content `[foo]: /url`.
     events, refdefs = _feed('[foo]: /url\n===\n')
     assert any(isinstance(e, m.Start) and isinstance(e.tag, m.Heading) for e in events)
     assert 'foo' not in refdefs
@@ -134,8 +134,8 @@ def test_setext_paragraph_is_not_refdef():
 
 def test_non_refdef_first_line_stops_consumption():
     events, refdefs = _feed('not a refdef\n[foo]: /url\n')
-    # The whole thing is ONE paragraph (the second line is paragraph continuation, not a fresh
-    # block). Refdef is NOT peeled because it's mid-paragraph.
+    # The whole thing is ONE paragraph (the second line is paragraph continuation, not a fresh block). Refdef is NOT
+    # peeled because it's mid-paragraph.
     paragraphs = [e for e in events if isinstance(e, m.Start) and isinstance(e.tag, m.Paragraph)]
     assert len(paragraphs) == 1
     assert 'foo' not in refdefs
