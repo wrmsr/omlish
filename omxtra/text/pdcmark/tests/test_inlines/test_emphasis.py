@@ -1,9 +1,9 @@
-from pdcmark.blocks.leaves import BufferedLine
-from pdcmark.inlines.emphasis import resolve_emphasis
-from pdcmark.inlines.nodes import DelimNode
-from pdcmark.inlines.nodes import EmphasisGroup
-from pdcmark.inlines.nodes import TextNode
-from pdcmark.inlines.tokenize import tokenize_inline
+from ...blocks.leaves import BufferedLine
+from ...inlines.emphasis import resolve_emphasis
+from ...inlines.nodes import DelimNode
+from ...inlines.nodes import EmphasisGroup
+from ...inlines.nodes import TextNode
+from ...inlines.tokenize import tokenize_inline
 
 
 def _resolve(text):

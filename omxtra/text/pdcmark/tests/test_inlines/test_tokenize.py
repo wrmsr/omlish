@@ -1,13 +1,13 @@
 """Inline tokenizer tests (pre-emphasis-resolution)."""
-from pdcmark.blocks.leaves import BufferedLine
-from pdcmark.inlines.nodes import AutolinkNode
-from pdcmark.inlines.nodes import CodeNode
-from pdcmark.inlines.nodes import DelimNode
-from pdcmark.inlines.nodes import HardBreakNode
-from pdcmark.inlines.nodes import HtmlNode
-from pdcmark.inlines.nodes import SoftBreakNode
-from pdcmark.inlines.nodes import TextNode
-from pdcmark.inlines.tokenize import tokenize_inline
+from ...blocks.leaves import BufferedLine
+from ...inlines.nodes import AutolinkNode
+from ...inlines.nodes import CodeNode
+from ...inlines.nodes import DelimNode
+from ...inlines.nodes import HardBreakNode
+from ...inlines.nodes import HtmlNode
+from ...inlines.nodes import SoftBreakNode
+from ...inlines.nodes import TextNode
+from ...inlines.tokenize import tokenize_inline
 
 
 def _line(text: str, line_start: int = 0) -> BufferedLine:

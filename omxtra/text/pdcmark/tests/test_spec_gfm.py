@@ -7,10 +7,9 @@ import os.path
 
 import pytest
 
-from pdcmark.options import GFM
-from pdcmark.parsing import parse
-from pdcmark.rendering.html import render_html
-
+from ..options import GFM
+from ..parsing import parse
+from ..rendering.html import render_html
 from .spec_runner import SpecCase
 from .spec_runner import load_spec_file
 

@@ -1,4 +1,4 @@
-from pdcmark.scanning.inlinehtml import scan_inline_html
+from ...scanning.inlinehtml import scan_inline_html
 
 
 def test_open_tag_simple():

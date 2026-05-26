@@ -1,4 +1,4 @@
-from pdcmark.scanning.setext import scan_setext_underline
+from ...scanning.setext import scan_setext_underline
 
 
 def test_basic_h1():

@@ -1,7 +1,7 @@
-from pdcmark.scanning.links import normalize_link_label
-from pdcmark.scanning.links import scan_link_destination
-from pdcmark.scanning.links import scan_link_label
-from pdcmark.scanning.links import scan_link_title
+from ...scanning.links import normalize_link_label
+from ...scanning.links import scan_link_destination
+from ...scanning.links import scan_link_label
+from ...scanning.links import scan_link_title
 
 
 def test_label_basic():

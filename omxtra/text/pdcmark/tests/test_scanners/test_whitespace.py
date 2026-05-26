@@ -1,8 +1,8 @@
-from pdcmark.scanning.whitespace import is_blank_line
-from pdcmark.scanning.whitespace import scan_blank_line
-from pdcmark.scanning.whitespace import scan_ch_repeat
-from pdcmark.scanning.whitespace import scan_eol
-from pdcmark.scanning.whitespace import scan_whitespace_no_nl
+from ...scanning.whitespace import is_blank_line
+from ...scanning.whitespace import scan_blank_line
+from ...scanning.whitespace import scan_ch_repeat
+from ...scanning.whitespace import scan_eol
+from ...scanning.whitespace import scan_whitespace_no_nl
 
 
 def test_scan_whitespace_no_nl():

@@ -1,4 +1,4 @@
-from pdcmark.scanning.entities import scan_entity
+from ...scanning.entities import scan_entity
 
 
 def test_named():

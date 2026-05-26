@@ -1,5 +1,5 @@
-from pdcmark.scanning.fences import is_fence_close
-from pdcmark.scanning.fences import scan_fence_open
+from ...scanning.fences import is_fence_close
+from ...scanning.fences import scan_fence_open
 
 
 def test_basic_backtick_open():

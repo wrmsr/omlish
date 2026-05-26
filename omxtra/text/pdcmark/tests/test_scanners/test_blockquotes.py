@@ -1,4 +1,4 @@
-from pdcmark.scanning.blockquotes import scan_blockquote_marker
+from ...scanning.blockquotes import scan_blockquote_marker
 
 
 def test_bare_marker():

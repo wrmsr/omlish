@@ -1,4 +1,4 @@
-from pdcmark.scanning.autolinks import scan_autolink
+from ...scanning.autolinks import scan_autolink
 
 
 def test_basic_uri():

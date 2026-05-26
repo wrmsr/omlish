@@ -1,6 +1,6 @@
-from pdcmark.scanning.htmlblocks import html_block_close_on_line
-from pdcmark.scanning.htmlblocks import html_block_closes_on_blank_line
-from pdcmark.scanning.htmlblocks import scan_html_block_start
+from ...scanning.htmlblocks import html_block_close_on_line
+from ...scanning.htmlblocks import html_block_closes_on_blank_line
+from ...scanning.htmlblocks import scan_html_block_start
 
 
 def test_type_1_script():

@@ -13,11 +13,11 @@ import random
 
 import pytest
 
-from pdcmark.options import COMMONMARK
-from pdcmark.options import GFM
-from pdcmark.parsing import parse
-from pdcmark.streaming.parser import StreamingParser
-from pdcmark.tests.spec_runner import load_spec_file
+from ...options import COMMONMARK
+from ...options import GFM
+from ...parsing import parse
+from ...streaming.parser import StreamingParser
+from ...tests.spec_runner import load_spec_file
 
 
 # Chunking strategies — each takes a str and yields a sequence of chunks whose concatenation is

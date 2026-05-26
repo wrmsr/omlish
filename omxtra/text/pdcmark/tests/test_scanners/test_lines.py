@@ -1,4 +1,4 @@
-from pdcmark.scanning.lines import LineStart
+from ...scanning.lines import LineStart
 
 
 def test_scan_space_simple():
