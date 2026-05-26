@@ -372,7 +372,7 @@ class ChatDriverInterface(
     # Input
 
     async def send_user_input(self, s: str, *, no_echo: bool = False) -> None:
-        input_uuid = uuid.uuid4()
+        input_uuid = uuid.uuid7()
 
         if not no_echo:
             await self._messages_container.mount_messages(

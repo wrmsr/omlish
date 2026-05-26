@@ -18,7 +18,7 @@ from ...asyncs.asyncio import all as au
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class Kv:
-    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid7))
 
     key: str
     value: str

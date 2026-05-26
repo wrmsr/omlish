@@ -22,58 +22,6 @@ T = ta.TypeVar('T')
 ##
 
 
-PyType = ta.NewType('PyType', str)
-
-
-def pytype_of(o: ta.Any) -> PyType:
-    return PyType(type(o).__name__)
-
-
-TYPES_MAP: ta.Mapping[PyType, JmespathType] = {
-    PyType('bool'): 'boolean',
-    PyType('list'): 'array',
-    PyType('dict'): 'object',
-    PyType('NoneType'): 'null',
-    PyType('unicode'): 'string',
-    PyType('str'): 'string',
-    PyType('float'): 'number',
-    PyType('int'): 'number',
-    PyType('long'): 'number',
-    PyType('OrderedDict'): 'object',
-    PyType('_Projection'): 'array',
-    PyType('_Expression'): 'expref',
-}
-
-
-REVERSE_TYPES_MAP: ta.Mapping[JmespathType, ta.Sequence[PyType]] = {
-    'boolean': [
-        PyType('bool'),
-    ],
-    'array': [
-        PyType('list'),
-        PyType('_Projection'),
-    ],
-    'object': [
-        PyType('dict'),
-        PyType('OrderedDict'),
-    ],
-    'null': [
-        PyType('NoneType'),
-    ],
-    'string': [
-        PyType('unicode'),
-        PyType('str'),
-    ],
-    'number': [
-        PyType('float'),
-        PyType('int'),
-    ],
-    'expref': [
-        PyType('_Expression'),
-    ],
-}
-
-
 ArrayParameterType: ta.TypeAlias = ta.Literal[
     'array-string',
     'array-number',
@@ -320,9 +268,6 @@ class FunctionsClass:
                     raise JmespathTypeError(function_name, element, element_type, types)
 
     #
-
-    def _convert_to_jmespath_type(self, pytype: PyType) -> JmespathType | ta.Literal['unknown']:
-        return TYPES_MAP.get(pytype, 'unknown')
 
     def _ensure_integer(
             self,

@@ -37,7 +37,7 @@ class CreatedAtAddingMessageTransform(CreatedAtAddingGeneralTransform[Message], 
 
 @dc.dataclass(frozen=True)
 class MessageUuidAddingMessageTransform(MessageTransform):
-    uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid4)
+    uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid7)
 
     _: dc.KW_ONLY
 
@@ -53,7 +53,7 @@ class MessageUuidAddingMessageTransform(MessageTransform):
 
 @dc.dataclass(frozen=True)
 class TurnUuidAddingMessageTransform(MessageTransform):
-    turn_uuid: uuid.UUID | None = dc.field(default_factory=uuid.uuid4)
+    turn_uuid: uuid.UUID | None = dc.field(default_factory=uuid.uuid7)
 
     _: dc.KW_ONLY
 

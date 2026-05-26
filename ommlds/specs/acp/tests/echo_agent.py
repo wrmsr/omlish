@@ -424,7 +424,7 @@ class EchoAcpHandler:
         if cwd is not None and not isinstance(cwd, str):
             raise JsonRpcError(INVALID_PARAMS, 'cwd must be a string')
 
-        session_id = uuid.uuid4().hex
+        session_id = uuid.uuid7().hex
         self._sessions.add(session_id)
         return NewSessionResponse(session_id=session_id).to_json()
 

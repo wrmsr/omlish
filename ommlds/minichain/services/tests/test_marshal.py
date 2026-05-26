@@ -23,7 +23,7 @@ def test_marshal():
             {'v': [{'role': 'user', 'message': 'hi'}], 'options': [{'max_tokens': 10}]},
         ),
         (
-            ChatRequest((Message('user', 'hi'),), [MaxTokens(10)]).with_metadata(RequestUuid(uid := uuid.uuid4())),
+            ChatRequest((Message('user', 'hi'),), [MaxTokens(10)]).with_metadata(RequestUuid(uid := uuid.uuid7())),
             {'v': [{'role': 'user', 'message': 'hi'}], 'options': [{'max_tokens': 10}], 'metadata': [{'request_uuid': str(uid)}]},  # noqa
         ),
     ]:

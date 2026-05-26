@@ -38,7 +38,7 @@ class _Base(lang.Abstract):
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class DriverChat(_Base):
-    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid7))
 
     name: str | None = None
 
@@ -50,7 +50,7 @@ class DriverChat(_Base):
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class DriverMessage(_Base):
-    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid7))
 
     chat: orm.Ref[DriverChat, uuid.UUID]
     seq: int

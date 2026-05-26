@@ -31,6 +31,7 @@ from .ast import TernaryOperator
 from .ast import ValueProjection
 from .ast import VariableRef
 from .errors import UndefinedVariableError
+from .exprefs import ExpRef
 from .functions import DefaultFunctions
 from .functions import FunctionContext
 from .functions import Functions
@@ -44,15 +45,23 @@ from .visitor import node_type
 ##
 
 
-class _Expression:
+class InterpreterExpression(ExpRef):
     def __init__(self, expression: Node, interpreter: Interpreter) -> None:
         super().__init__()
 
-        self.expression = expression
-        self.interpreter = interpreter
+        self._expression = expression
+        self._interpreter = interpreter
+
+    @property
+    def expression(self) -> Node:
+        return self._expression
+
+    @property
+    def interpreter(self) -> Interpreter:
+        return self._interpreter
 
     def visit(self, node: Node, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
-        return self.interpreter.visit(node, *args, **kwargs)
+        return self._interpreter.visit(node, *args, **kwargs)
 
 
 class Interpreter(Visitor):
@@ -121,7 +130,7 @@ class Interpreter(Visitor):
         return self._root
 
     def visit_expref(self, node: Expref, value: ta.Any) -> ta.Any:
-        return _Expression(node.expression, self)
+        return InterpreterExpression(node.expression, self)
 
     def visit_function_expression(self, node: FunctionExpression, value: ta.Any) -> ta.Any:
         resolved_args = []

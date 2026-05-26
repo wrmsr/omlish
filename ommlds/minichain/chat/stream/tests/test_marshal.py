@@ -12,7 +12,7 @@ def test_marshal():
     o = [
         ContentAiDelta('hi'),
         ContentAiDelta('bye').with_metadata(
-            MessageUuid(uuid.uuid4()),
+            MessageUuid(uuid.uuid7()),
         ),
     ]
     v = msh.marshal(o, AiDeltas)

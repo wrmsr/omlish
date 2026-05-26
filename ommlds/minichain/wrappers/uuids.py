@@ -35,7 +35,7 @@ class RequestResponseUuidAddingService(
         super().__init__(child)
 
         if uuid_factory is None:
-            uuid_factory = uuid.uuid4
+            uuid_factory = uuid.uuid7
         self._uuid_factory = uuid_factory
 
     async def invoke(self, request: WrappedRequest) -> WrappedResponse:

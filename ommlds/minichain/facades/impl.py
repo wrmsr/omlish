@@ -30,7 +30,7 @@ class FacadeImpl(Facade):
             input_uuid: uuid.UUID | None = None,
     ) -> None:
         if input_uuid is None:
-            input_uuid = uuid.uuid4()
+            input_uuid = uuid.uuid7()
 
         if text.startswith('/'):
             await self._commands.run_command_text(text[1:])

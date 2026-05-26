@@ -143,7 +143,7 @@ def bind_test_driver(
 
         inj.bind(ChatChoicesService, to_ctor=DummyChatChoicesService),
 
-        inj.bind(ChatId(uuid.uuid4())),
+        inj.bind(ChatId(uuid.uuid7())),
     ])
 
     return inj.as_elements(*els)

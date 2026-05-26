@@ -20,7 +20,7 @@ from ...content.marshal import DisableDynamicClassMarshaling
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class OrmChat:
-    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid7))
 
     created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
     updated_at: datetime.datetime = orm.auto_value[datetime.datetime]()
@@ -37,7 +37,7 @@ class OrmChat:
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class OrmMessage:
-    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid7))
 
     created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
     updated_at: datetime.datetime = orm.auto_value[datetime.datetime]()
@@ -53,7 +53,7 @@ class OrmMessage:
 @dc.dataclass(kw_only=True)
 @dc.extra_class_params(install_class_field_attrs='instance')
 class OrmDriver:
-    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid4))
+    id: orm.Key[uuid.UUID] = dc.field(default_factory=orm.key_wrapping(uuid.uuid7))
 
     created_at: datetime.datetime = orm.auto_value[datetime.datetime]()
     updated_at: datetime.datetime = orm.auto_value[datetime.datetime]()

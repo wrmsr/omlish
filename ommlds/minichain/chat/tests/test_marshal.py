@@ -22,7 +22,7 @@ def test_marshal_messages():
     m2 = msh.unmarshal(mv, Message)
     assert m2 == um
 
-    u = uuid.uuid4()
+    u = uuid.uuid7()
     um = UserMessage('hi').with_metadata(RequestUuid(u), no_original=True)
 
     mv = msh.marshal(um, Message)

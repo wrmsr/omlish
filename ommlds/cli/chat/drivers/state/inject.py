@@ -19,7 +19,7 @@ from .last import last_chat_id_mapper
 
 
 def _new_chat_id() -> mc.drivers.ChatId:
-    return mc.drivers.ChatId(uuid.uuid4())
+    return mc.drivers.ChatId(uuid.uuid7())
 
 
 async def _get_last_or_new_chat_id(lcm: LastChatIdManager) -> mc.drivers.ChatId:

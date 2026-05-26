@@ -29,7 +29,7 @@ def bind_openai_driver(
         inj.bind(svc),
         inj.bind(ChatChoicesStreamService, to_key=OpenaiChatChoicesStreamService),
 
-        inj.bind(ChatId(uuid.uuid4())),
+        inj.bind(ChatId(uuid.uuid7())),
     ])
 
     return inj.as_elements(*els)

@@ -13,7 +13,7 @@ from ..transform.types import MessageTransform
 
 
 def simple_uuid_tool_exec_request_id_factory(m: ToolUseMessage) -> str:  # noqa
-    return str(uuid.uuid4())
+    return str(uuid.uuid7())
 
 
 @dc.dataclass(frozen=True)

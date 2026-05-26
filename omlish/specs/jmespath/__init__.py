@@ -41,8 +41,15 @@ _dc.init_package(
 
 
 from . import errors  # noqa
+
+from .exprefs import (  # noqa
+    ExpRef,
+)
+
 from . import functions  # noqa
+
 from . import lexer  # noqa
+
 from . import parser  # noqa
 
 from .options import (  # noqa

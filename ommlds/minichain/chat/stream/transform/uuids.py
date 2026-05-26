@@ -16,7 +16,7 @@ from .types import AiDeltaTransform
 class TypeSequentialMessageUuidAddingAiDeltaTransform(AiDeltaTransform):
     def __init__(
             self,
-            uuid_factory: ta.Callable[[], uuid.UUID] = uuid.uuid4,
+            uuid_factory: ta.Callable[[], uuid.UUID] = uuid.uuid7,
     ) -> None:
         super().__init__()
 

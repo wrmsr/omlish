@@ -7,6 +7,7 @@ from ... import lang
 from .ast import ArithmeticOperator
 from .ast import ComparatorName
 from .ast import UnaryArithmeticOperator
+from .exprefs import ExpRef
 
 
 JmespathType: ta.TypeAlias = ta.Literal[
@@ -171,8 +172,9 @@ class Runtime(lang.Abstract):
         else:
             return search in self.to_python(value)
 
+    @abc.abstractmethod
     def to_python(self, value: ta.Any) -> ta.Any:
-        return value
+        raise NotImplementedError
 
 
 ##
@@ -220,7 +222,7 @@ class PythonRuntime(Runtime):
             return 'string'
         elif isinstance(value, (float, int)):
             return 'number'
-        elif type(value).__name__ == '_Expression':
+        elif isinstance(value, ExpRef):
             return 'expref'
         else:
             return 'unknown'
@@ -323,3 +325,6 @@ class PythonRuntime(Runtime):
 
     def arithmetic(self, op: ArithmeticOperator, left: ta.Any, right: ta.Any) -> ta.Any:
         return self._ARITHMETIC_FUNC[op](left, right)
+
+    def to_python(self, value: ta.Any) -> ta.Any:
+        return value

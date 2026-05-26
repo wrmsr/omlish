@@ -119,7 +119,7 @@ class JsonrpcConnection:
 
     @classmethod
     def default_create_id(cls) -> Id:
-        return str(uuid.uuid4())
+        return str(uuid.uuid7())
 
     #
 

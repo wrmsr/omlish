@@ -37,7 +37,7 @@ def test_marshal():
         assert msh.marshal(TextContent('hi'), Content) == {'text': {'s': 'hi'}}
         assert msh.marshal(ConcatContent(['hi', [TextContent('bye')]]), Content) == {'concat': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
 
-        u = uuid.uuid4()
+        u = uuid.uuid7()
         assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u), no_original=True), Content) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
         assert msh.marshal(JsonContent({'abc': 420}), Content) == {'json': {'v': {'abc': 420}}}
@@ -57,7 +57,7 @@ def test_single_raw_marshal():
 
     assert msh.marshal(TextContent('hi'), SingleRawContent) == {'text': {'s': 'hi'}}
 
-    u = uuid.uuid4()
+    u = uuid.uuid7()
     assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u), no_original=True), SingleRawContent) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
 
@@ -74,7 +74,7 @@ def test_raw_marshal():
     assert msh.marshal(TextContent('hi'), RawContent) == {'text': {'s': 'hi'}}
     assert msh.marshal([TextContent('hi'), 'bye'], RawContent) == [{'text': {'s': 'hi'}}, 'bye']
 
-    u = uuid.uuid4()
+    u = uuid.uuid7()
     assert msh.marshal(TextContent('hi').with_metadata(ContentUuid(u), no_original=True), RawContent) == {'text': {'s': 'hi', 'metadata': [{'content_uuid': str(u)}]}}  # noqa
 
 

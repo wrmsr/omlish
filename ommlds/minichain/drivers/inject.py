@@ -58,7 +58,7 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     #
 
-    els.append(inj.bind(DriverId(uuid.uuid4())))
+    els.append(inj.bind(DriverId(uuid.uuid7())))
 
     #
 

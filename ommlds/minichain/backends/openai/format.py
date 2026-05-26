@@ -247,7 +247,7 @@ class OpenaiChatRequestHandler:
             messages=build_oai_request_msgs(self._chat),
             top_p=1,
             tools=tools or None,
-            parallel_tool_calls=True if (tools and not (self._mandatory_kwargs or {}).get('stream')) else None,
+            parallel_tool_calls=True if tools else None,
             frequency_penalty=0.0,
             presence_penalty=0.0,
             **po.kwargs,

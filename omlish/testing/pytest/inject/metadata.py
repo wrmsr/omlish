@@ -18,7 +18,7 @@ from .harness import bind
 class RunMetadata:
     request: pytest.FixtureRequest
     started_at: datetime.datetime = dc.field(default_factory=lang.localnow)
-    uuid: uuid.UUID = dc.field(default_factory=uuid.uuid4)
+    uuid: uuid.UUID = dc.field(default_factory=uuid.uuid7)
 
 
 #
