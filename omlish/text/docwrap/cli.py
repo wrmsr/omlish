@@ -19,45 +19,40 @@ from .rendering import render
 ##
 
 
-def _main(argv: ta.Sequence[str] | None = None) -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file', nargs='?')
-
-    parser.add_argument('-w', '--width', type=int, default=120)
-
-    parser.add_argument('-s', '--start-line', type=int)
-    parser.add_argument('-e', '--end-line', type=int)
-    parser.add_argument('-i', '--in-place', action='store_true')
-
-    args = parser.parse_args(argv)
-
-    #
-
-    if args.file:
-        with open(args.file) as f:
+def wrap_cli_text(
+        *,
+        file: str | None = None,
+        width: int = 120,
+        start_line: int | None = None,
+        end_line: int | None = None,
+        in_place: bool = False,
+        stdin: ta.TextIO | None = None,
+) -> str:
+    if file:
+        with open(file) as f:
             in_txt = f.read()
     else:
-        if args.in_place:
+        if in_place:
             raise ValueError('Cannot use --in-place without specifying a file')
-        in_txt = sys.stdin.read()
+        in_txt = (stdin if stdin is not None else sys.stdin).read()
 
     in_lines = in_txt.splitlines()
 
     #
 
-    if args.start_line is not None and args.end_line is not None:
-        if args.start_line > args.end_line:
+    if start_line is not None and end_line is not None:
+        if start_line > end_line:
             raise ValueError('Start line cannot be greater than end line')
-    if args.start_line is not None:
-        if args.start_line < 1:
+    if start_line is not None:
+        if start_line < 1:
             raise ValueError('Start line cannot be less than 1')
-        start_line = args.start_line - 1
+        start_line = start_line - 1
     else:
         start_line = 0
-    if args.end_line is not None:
-        if args.end_line < 1:
+    if end_line is not None:
+        if end_line < 1:
             raise ValueError('End line cannot be less than 1')
-        end_line = args.end_line - 1
+        end_line = end_line - 1
     else:
         end_line = len(in_lines) - 1
 
@@ -67,7 +62,7 @@ def _main(argv: ta.Sequence[str] | None = None) -> None:
 
     root = docwrap(
         in_part,
-        width=args.width,
+        width=width,
     )
 
     out_part = render(root)
@@ -81,10 +76,36 @@ def _main(argv: ta.Sequence[str] | None = None) -> None:
 
     #
 
-    if args.in_place:
-        with open(args.file, 'w') as f:
+    if in_place:
+        if file is None:
+            raise RuntimeError
+        with open(file, 'w') as f:
             f.write(out_txt)
-    else:
+
+    return out_txt
+
+
+def _main(argv: ta.Sequence[str] | None = None) -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file', nargs='?')
+
+    parser.add_argument('-w', '--width', type=int, default=120)
+
+    parser.add_argument('-s', '--start-line', type=int)
+    parser.add_argument('-e', '--end-line', type=int)
+    parser.add_argument('-i', '--in-place', action='store_true')
+
+    args = parser.parse_args(argv)
+
+    out_txt = wrap_cli_text(
+        file=args.file,
+        width=args.width,
+        start_line=args.start_line,
+        end_line=args.end_line,
+        in_place=args.in_place,
+    )
+
+    if not args.in_place:
         print(out_txt)
 
 

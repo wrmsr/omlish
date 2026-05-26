@@ -97,13 +97,37 @@ class Runtime(lang.Abstract):
     def iter_array(self, value: ta.Any) -> ta.Iterable[ta.Any] | None:
         raise NotImplementedError
 
+    def iter_array_or_raise(self, value: ta.Any) -> ta.Iterable[ta.Any]:
+        items = self.iter_array(value)
+        if items is None:
+            raise TypeError(value)
+        return items
+
+    def array_items(self, value: ta.Any) -> ta.Sequence[ta.Any]:
+        items = self.iter_array_or_raise(value)
+        if isinstance(items, ta.Sequence):
+            return items
+        return tuple(items)
+
     @abc.abstractmethod
     def iter_object_values(self, value: ta.Any) -> ta.Iterable[ta.Any] | None:
         raise NotImplementedError
 
+    def iter_object_values_or_raise(self, value: ta.Any) -> ta.Iterable[ta.Any]:
+        items = self.iter_object_values(value)
+        if items is None:
+            raise TypeError(value)
+        return items
+
     @abc.abstractmethod
     def iter_object_items(self, value: ta.Any) -> ta.Iterable[tuple[str, ta.Any]] | None:
         raise NotImplementedError
+
+    def iter_object_items_or_raise(self, value: ta.Any) -> ta.Iterable[tuple[str, ta.Any]]:
+        items = self.iter_object_items(value)
+        if items is None:
+            raise TypeError(value)
+        return items
 
     @abc.abstractmethod
     def make_array(self, values: ta.Iterable[ta.Any]) -> ta.Any:
@@ -124,6 +148,28 @@ class Runtime(lang.Abstract):
     @abc.abstractmethod
     def arithmetic(self, op: ArithmeticOperator, left: ta.Any, right: ta.Any) -> ta.Any:
         raise NotImplementedError
+
+    def length(self, value: ta.Any) -> int:
+        value_type = self.type_of(value)
+        if value_type == 'array':
+            items = self.iter_array_or_raise(value)
+            if isinstance(items, ta.Sized):
+                return len(items)
+            return sum(1 for _ in items)
+        elif value_type == 'object':
+            items = self.iter_object_items_or_raise(value)
+            if isinstance(items, ta.Sized):
+                return len(items)
+            return sum(1 for _ in items)
+        else:
+            return len(self.to_python(value))
+
+    def contains(self, value: ta.Any, search: ta.Any) -> bool:
+        value_type = self.type_of(value)
+        if value_type == 'array':
+            return any(_equals(item, search) for item in self.iter_array_or_raise(value))
+        else:
+            return search in self.to_python(value)
 
     def to_python(self, value: ta.Any) -> ta.Any:
         return value
@@ -226,6 +272,11 @@ class PythonRuntime(Runtime):
             return None
         return value
 
+    def array_items(self, value: ta.Any) -> ta.Sequence[ta.Any]:
+        if isinstance(value, list):
+            return value
+        return super().array_items(value)
+
     def iter_object_values(self, value: ta.Any) -> ta.Iterable[ta.Any] | None:
         try:
             return value.values()
@@ -245,6 +296,18 @@ class PythonRuntime(Runtime):
         obj = self._dict_cls()
         obj.update(values)
         return obj
+
+    def length(self, value: ta.Any) -> int:
+        try:
+            return len(value)
+        except TypeError:
+            return super().length(value)
+
+    def contains(self, value: ta.Any, search: ta.Any) -> bool:
+        try:
+            return search in value
+        except TypeError:
+            return super().contains(value, search)
 
     def compare(self, op: ComparatorName, left: ta.Any, right: ta.Any) -> ta.Any:
         comparator_func = self._COMPARATOR_FUNC[op]

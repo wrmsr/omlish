@@ -54,6 +54,27 @@ class TestPythonRuntime(unittest.TestCase):
         self.assertEqual(list(check.not_none(runtime.iter_object_values({'a': 1, 'b': 2}))), [1, 2])
         self.assertEqual(list(check.not_none(runtime.iter_object_items({'a': 1, 'b': 2}))), [('a', 1), ('b', 2)])
 
+    def test_iter_or_raise_helpers_and_array_items(self):
+        runtime = PythonRuntime()
+        array = ['a', 'b']
+
+        self.assertIs(runtime.array_items(array), array)
+        self.assertEqual(list(runtime.iter_array_or_raise(array)), ['a', 'b'])
+        self.assertEqual(list(runtime.iter_object_values_or_raise({'a': 1, 'b': 2})), [1, 2])
+        self.assertEqual(list(runtime.iter_object_items_or_raise({'a': 1, 'b': 2})), [('a', 1), ('b', 2)])
+
+        with self.assertRaises(TypeError):
+            runtime.iter_array_or_raise({})
+
+        with self.assertRaises(TypeError):
+            runtime.array_items({})
+
+        with self.assertRaises(TypeError):
+            runtime.iter_object_values_or_raise([])
+
+        with self.assertRaises(TypeError):
+            runtime.iter_object_items_or_raise([])
+
     def test_make_object_uses_dict_cls(self):
         runtime = PythonRuntime(collections.OrderedDict)
 

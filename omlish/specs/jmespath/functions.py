@@ -292,17 +292,19 @@ class FunctionsClass:
         elements_iter = ctx.runtime.iter_array(current)
         if elements_iter is None:
             return
-        elements = list(elements_iter)
 
         if len(allowed_element_types) == 1:
             # The easy case, we know up front what type we need to validate.
             ets = allowed_element_types[0]
-            for element in elements:
+            for element in elements_iter:
                 element_type = ctx.runtime.type_of(element)
                 if element_type not in ets:
                     raise JmespathTypeError(function_name, element, element_type, types)
 
-        elif len(allowed_element_types) > 1 and elements:
+        else:
+            elements = ctx.runtime.array_items(current)
+
+        if len(allowed_element_types) > 1 and elements:
             # Dynamic type validation. Based on the first type we see, we validate that the remaining types match.
             first = ctx.runtime.type_of(elements[0])
             for element_types in allowed_element_types:
@@ -355,22 +357,12 @@ class FunctionsClass:
 
 
 class TypeFunctions(FunctionsClass):
-    @signature({'types': []})
-    def _func_type(self, arg):
-        if isinstance(arg, str):
-            return 'string'
-        elif isinstance(arg, bool):
-            return 'boolean'
-        elif isinstance(arg, list):
-            return 'array'
-        elif isinstance(arg, dict):
-            return 'object'
-        elif isinstance(arg, (float, int)):
-            return 'number'
-        elif arg is None:
-            return 'null'
-        else:
+    @signature({'types': []}, pass_context=True)
+    def _func_type(self, arg, *, ctx: FunctionContext):
+        value_type = ctx.runtime.type_of(arg)
+        if value_type == 'unknown':
             return None
+        return value_type
 
     @signature({'types': [], 'variadic': True})
     def _func_not_null(self, *arguments):
@@ -379,32 +371,31 @@ class TypeFunctions(FunctionsClass):
                 return argument
         return None
 
-    @signature({'types': []})
-    def _func_to_array(self, arg):
-        if isinstance(arg, list):
+    @signature({'types': []}, pass_context=True)
+    def _func_to_array(self, arg, *, ctx: FunctionContext):
+        if ctx.runtime.type_of(arg) == 'array':
             return arg
         else:
-            return [arg]
+            return ctx.runtime.make_array([arg])
 
-    @signature({'types': []})
-    def _func_to_string(self, arg):
-        if isinstance(arg, str):
+    @signature({'types': []}, pass_context=True)
+    def _func_to_string(self, arg, *, ctx: FunctionContext):
+        if ctx.runtime.type_of(arg) == 'string':
             return arg
         else:
-            return json.dumps(arg, separators=(',', ':'), default=str)
+            return json.dumps(ctx.runtime.to_python(arg), separators=(',', ':'), default=str)
 
-    @signature({'types': []})
-    def _func_to_number(self, arg):
-        if isinstance(arg, (list, dict, bool)):
+    @signature({'types': []}, pass_context=True)
+    def _func_to_number(self, arg, *, ctx: FunctionContext):
+        arg_type = ctx.runtime.type_of(arg)
+        if arg_type in ('array', 'object', 'boolean', 'null'):
             return None
 
-        elif arg is None:
-            return None
-
-        elif isinstance(arg, (int, float)):
+        elif arg_type == 'number':
             return arg
 
         else:
+            arg = ctx.runtime.to_python(arg)
             try:
                 return int(arg)
             except ValueError:
@@ -415,17 +406,17 @@ class TypeFunctions(FunctionsClass):
 
 
 class ContainerFunctions(FunctionsClass):
-    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
-    def _func_contains(self, subject, *searches):
-        return any(search in subject for search in searches)
+    @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True}, pass_context=True)
+    def _func_contains(self, subject, *searches, ctx: FunctionContext):
+        return any(ctx.runtime.contains(subject, search) for search in searches)
 
     @signature({'types': ['array', 'string']}, {'types': [], 'variadic': True})
     def _func_in(self, subject, *searches):
         return subject in searches
 
-    @signature({'types': ['string', 'array', 'object']})
-    def _func_length(self, arg):
-        return len(arg)
+    @signature({'types': ['string', 'array', 'object']}, pass_context=True)
+    def _func_length(self, arg, *, ctx: FunctionContext):
+        return ctx.runtime.length(arg)
 
     @signature({'types': ['array', 'string']})
     def _func_reverse(self, arg):
@@ -434,27 +425,28 @@ class ContainerFunctions(FunctionsClass):
         else:
             return list(reversed(arg))
 
-    @signature({'types': ['expref']}, {'types': ['array']})
-    def _func_map(self, expref, arg):
-        result = []
-        for element in arg:
-            result.append(expref.visit(expref.expression, element))
-        return result
+    @signature({'types': ['expref']}, {'types': ['array']}, pass_context=True)
+    def _func_map(self, expref, arg, *, ctx: FunctionContext):
+        return ctx.runtime.make_array(
+            expref.visit(expref.expression, element)
+            for element in ctx.runtime.iter_array_or_raise(arg)
+        )
 
-    @signature({'types': ['object'], 'variadic': True})
-    def _func_merge(self, *arguments):
-        merged = {}
+    @signature({'types': ['object'], 'variadic': True}, pass_context=True)
+    def _func_merge(self, *arguments, ctx: FunctionContext):
+        merged: dict[str, ta.Any] = {}
         for arg in arguments:
-            merged.update(arg)
-        return merged
+            merged.update(ctx.runtime.iter_object_items_or_raise(arg))
+        return ctx.runtime.make_object(merged)
 
-    @signature({'types': ['array-string', 'array-number']})
-    def _func_sort(self, arg):
-        return sorted(arg)
+    @signature({'types': ['array-string', 'array-number']}, pass_context=True)
+    def _func_sort(self, arg, *, ctx: FunctionContext):
+        return ctx.runtime.make_array(sorted(ctx.runtime.array_items(arg)))
 
-    @signature({'types': ['array'], 'variadic': True})
-    def _func_zip(self, *arguments):
-        return [list(t) for t in zip(*arguments)]
+    @signature({'types': ['array'], 'variadic': True}, pass_context=True)
+    def _func_zip(self, *arguments, ctx: FunctionContext):
+        arrays = [ctx.runtime.iter_array_or_raise(arg) for arg in arguments]
+        return ctx.runtime.make_array(ctx.runtime.make_array(t) for t in zip(*arrays))
 
 
 class NumberFunctions(FunctionsClass):
@@ -462,10 +454,11 @@ class NumberFunctions(FunctionsClass):
     def _func_abs(self, arg):
         return abs(arg)
 
-    @signature({'types': ['array-number']})
-    def _func_avg(self, arg):
-        if arg:
-            return sum(arg) / len(arg)
+    @signature({'types': ['array-number']}, pass_context=True)
+    def _func_avg(self, arg, *, ctx: FunctionContext):
+        items = ctx.runtime.array_items(arg)
+        if items:
+            return sum(items) / len(items)
         else:
             return None
 
@@ -477,23 +470,25 @@ class NumberFunctions(FunctionsClass):
     def _func_floor(self, arg):
         return math.floor(arg)
 
-    @signature({'types': ['array-number', 'array-string']})
-    def _func_max(self, arg):
-        if arg:
-            return max(arg)
+    @signature({'types': ['array-number', 'array-string']}, pass_context=True)
+    def _func_max(self, arg, *, ctx: FunctionContext):
+        items = ctx.runtime.array_items(arg)
+        if items:
+            return max(items)
         else:
             return None
 
-    @signature({'types': ['array-number', 'array-string']})
-    def _func_min(self, arg):
-        if arg:
-            return min(arg)
+    @signature({'types': ['array-number', 'array-string']}, pass_context=True)
+    def _func_min(self, arg, *, ctx: FunctionContext):
+        items = ctx.runtime.array_items(arg)
+        if items:
+            return min(items)
         else:
             return None
 
-    @signature({'types': ['array-number']})
-    def _func_sum(self, arg):
-        return sum(arg)
+    @signature({'types': ['array-number']}, pass_context=True)
+    def _func_sum(self, arg, *, ctx: FunctionContext):
+        return sum(ctx.runtime.iter_array_or_raise(arg))
 
 
 class StringFunctions(FunctionsClass):
@@ -666,37 +661,45 @@ class StringFunctions(FunctionsClass):
 
 
 class ObjectFunctions(FunctionsClass):
-    @signature({'types': ['object']})
-    def _func_items(self, arg):
-        return [list(t) for t in arg.items()]
+    @signature({'types': ['object']}, pass_context=True)
+    def _func_items(self, arg, *, ctx: FunctionContext):
+        return ctx.runtime.make_array(ctx.runtime.make_array(t) for t in ctx.runtime.iter_object_items_or_raise(arg))
 
-    @signature({'types': ['array']})
-    def _func_from_items(self, items):
-        return dict(items)
+    @signature({'types': ['array']}, pass_context=True)
+    def _func_from_items(self, items, *, ctx: FunctionContext):
+        return ctx.runtime.make_object(dict(ctx.runtime.array_items(items)))
 
-    @signature({'types': ['object']})
-    def _func_keys(self, arg):
+    @signature({'types': ['object']}, pass_context=True)
+    def _func_keys(self, arg, *, ctx: FunctionContext):
         # To be consistent with .values() should we also return the indices of a list?
-        return list(arg.keys())
+        return ctx.runtime.make_array(k for k, _ in ctx.runtime.iter_object_items_or_raise(arg))
 
-    @signature({'types': ['object']})
-    def _func_values(self, arg):
-        return list(arg.values())
+    @signature({'types': ['object']}, pass_context=True)
+    def _func_values(self, arg, *, ctx: FunctionContext):
+        return ctx.runtime.make_array(v for _, v in ctx.runtime.iter_object_items_or_raise(arg))
 
-    @signature({'types': ['expref']}, {'types': ['object']})
-    def _func_filter_keys(self, expref, arg):
-        return {k: v for k, v in arg.items() if expref.visit(expref.expression, k)}
+    @signature({'types': ['expref']}, {'types': ['object']}, pass_context=True)
+    def _func_filter_keys(self, expref, arg, *, ctx: FunctionContext):
+        return ctx.runtime.make_object({
+            k: v
+            for k, v in ctx.runtime.iter_object_items_or_raise(arg)
+            if expref.visit(expref.expression, k)
+        })
 
-    @signature({'types': ['expref']}, {'types': ['object']})
-    def _func_filter_values(self, expref, arg):
-        return {k: v for k, v in arg.items() if expref.visit(expref.expression, v)}
+    @signature({'types': ['expref']}, {'types': ['object']}, pass_context=True)
+    def _func_filter_values(self, expref, arg, *, ctx: FunctionContext):
+        return ctx.runtime.make_object({
+            k: v
+            for k, v in ctx.runtime.iter_object_items_or_raise(arg)
+            if expref.visit(expref.expression, v)
+        })
 
 
 class KeyedFunctions(FunctionsClass):
-    def _create_key_func(self, expref, allowed_types, function_name):
+    def _create_key_func(self, expref, allowed_types, function_name, *, ctx: FunctionContext):
         def keyfunc(x):
             result = expref.visit(expref.expression, x)
-            jmespath_type = self._convert_to_jmespath_type(pytype_of(result))
+            jmespath_type = ctx.runtime.type_of(result)
             # allowed_types is in terms of jmespath types, not python types.
             if jmespath_type not in allowed_types:
                 raise JmespathTypeError(
@@ -706,66 +709,72 @@ class KeyedFunctions(FunctionsClass):
 
         return keyfunc
 
-    @signature({'types': ['array']}, {'types': ['expref']})
-    def _func_sort_by(self, array, expref):
-        if not array:
+    @signature({'types': ['array']}, {'types': ['expref']}, pass_context=True)
+    def _func_sort_by(self, array, expref, *, ctx: FunctionContext):
+        items = ctx.runtime.array_items(array)
+        if not items:
             return array
 
         # sort_by allows for the expref to be either a number of a string, so we have some special logic to handle this.
         # We evaluate the first array element and verify that it's either a string of a number.  We then create a key
         # function that validates that type, which requires that remaining array elements resolve to the same type as
         # the first element.
-        required_type = self._convert_to_jmespath_type(pytype_of(expref.visit(expref.expression, array[0])))
+        required_type = ctx.runtime.type_of(expref.visit(expref.expression, items[0]))
         if required_type not in ['number', 'string']:
             raise JmespathTypeError(
                 'sort_by',
-                array[0],
+                items[0],
                 required_type,
                 ['string', 'number'],
             )
 
-        keyfunc = self._create_key_func(expref, [required_type], 'sort_by')
-        return sorted(array, key=keyfunc)
+        keyfunc = self._create_key_func(expref, [required_type], 'sort_by', ctx=ctx)
+        return ctx.runtime.make_array(sorted(items, key=keyfunc))
 
-    @signature({'types': ['array']}, {'types': ['expref']})
-    def _func_min_by(self, array, expref):
+    @signature({'types': ['array']}, {'types': ['expref']}, pass_context=True)
+    def _func_min_by(self, array, expref, *, ctx: FunctionContext):
         keyfunc = self._create_key_func(
             expref,
             ['number', 'string'],
             'min_by',
+            ctx=ctx,
         )
 
-        if array:
-            return min(array, key=keyfunc)
+        items = ctx.runtime.array_items(array)
+        if items:
+            return min(items, key=keyfunc)
         else:
             return None
 
-    @signature({'types': ['array']}, {'types': ['expref']})
-    def _func_max_by(self, array, expref):
+    @signature({'types': ['array']}, {'types': ['expref']}, pass_context=True)
+    def _func_max_by(self, array, expref, *, ctx: FunctionContext):
         keyfunc = self._create_key_func(
             expref,
             ['number', 'string'],
             'max_by',
+            ctx=ctx,
         )
 
-        if array:
-            return max(array, key=keyfunc)
+        items = ctx.runtime.array_items(array)
+        if items:
+            return max(items, key=keyfunc)
         else:
             return None
 
-    @signature({'types': ['array']}, {'types': ['expref']})
-    def _func_group_by(self, array, expref):
-        keyfunc = self._create_key_func(expref, ['null', 'string'], 'group_by')
-        if not array:
+    @signature({'types': ['array']}, {'types': ['expref']}, pass_context=True)
+    def _func_group_by(self, array, expref, *, ctx: FunctionContext):
+        keyfunc = self._create_key_func(expref, ['null', 'string'], 'group_by', ctx=ctx)
+        items = ctx.runtime.array_items(array)
+        if not items:
             return None
 
-        result = {}
-        keys = list(dict.fromkeys([keyfunc(item) for item in array if keyfunc(item) is not None]))
+        result: dict[str, ta.Any] = {}
+        keys = list(dict.fromkeys([keyfunc(item) for item in items if keyfunc(item) is not None]))
         for key in keys:
-            items = [item for item in array if keyfunc(item) == key]
-            result.update({key: items})
+            grouped_items = [item for item in items if keyfunc(item) == key]
+            result.update({key: ctx.runtime.make_array(grouped_items)})
 
-        return result
+        return ctx.runtime.make_object(result)
 
 
 class DefaultFunctions(

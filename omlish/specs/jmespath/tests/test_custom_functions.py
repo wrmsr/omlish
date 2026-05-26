@@ -17,10 +17,19 @@ class BoxedArray:
         self.values = values
 
 
+class BoxedObject:
+    def __init__(self, values):
+        super().__init__()
+
+        self.values = values
+
+
 class BoxedArrayRuntime(jmespath.PythonRuntime):
     def type_of(self, value):
         if isinstance(value, BoxedArray):
             return 'array'
+        elif isinstance(value, BoxedObject):
+            return 'object'
         return super().type_of(value)
 
     def iter_array(self, value):
@@ -28,9 +37,25 @@ class BoxedArrayRuntime(jmespath.PythonRuntime):
             return value.values
         return super().iter_array(value)
 
+    def iter_object_items(self, value):
+        if isinstance(value, BoxedObject):
+            return value.values.items()
+        return super().iter_object_items(value)
+
     def to_python(self, value):
         if isinstance(value, BoxedArray):
             return value.values
+        elif isinstance(value, BoxedObject):
+            return value.values
+        return super().to_python(value)
+
+
+class StrictBoxedArrayRuntime(BoxedArrayRuntime):
+    def to_python(self, value):
+        if isinstance(value, BoxedArray):
+            raise TypeError('unexpected array conversion')
+        elif isinstance(value, BoxedObject):
+            raise TypeError('unexpected object conversion')
         return super().to_python(value)
 
 
@@ -79,3 +104,23 @@ class TestRuntimeAwareFunctions(unittest.TestCase):
         )
 
         self.assertEqual(jmespath.search('arg_class(@)', BoxedArray([1, 2, 3]), options), 'list')
+
+    def test_runtime_aware_array_builtins_do_not_require_python_conversion(self):
+        options = jmespath.Options(runtime=StrictBoxedArrayRuntime())
+
+        self.assertEqual(jmespath.search('length(@)', BoxedArray([1, 2, 3]), options), 3)
+        self.assertEqual(jmespath.search('sum(@)', BoxedArray([1, 2, 3]), options), 6)
+        self.assertEqual(jmespath.search('sort(@)', BoxedArray([3, 1, 2]), options), [1, 2, 3])
+        self.assertEqual(
+            jmespath.search('map(&foo, @)', BoxedArray([{'foo': 'a'}, {'foo': 'b'}]), options),
+            ['a', 'b'],
+        )
+
+    def test_runtime_aware_object_builtins_do_not_require_python_conversion(self):
+        options = jmespath.Options(runtime=StrictBoxedArrayRuntime())
+        obj = BoxedObject({'a': 1, 'b': 2})
+
+        self.assertEqual(jmespath.search('length(@)', obj, options), 2)
+        self.assertEqual(jmespath.search('keys(@)', obj, options), ['a', 'b'])
+        self.assertEqual(jmespath.search('values(@)', obj, options), [1, 2])
+        self.assertEqual(jmespath.search('items(@)', obj, options), [['a', 1], ['b', 2]])
