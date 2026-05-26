@@ -28,6 +28,8 @@ class AiDeltaJoiner:
         self._all: list[AiDelta] = []
         self._queue: list[AiDelta] = []
         self._out: list[AnyAiMessage] = []
+        self._ptus_by_index: dict[int, list[PartialToolUseAiDelta]] = {}
+        self._closed = False
 
     def _confer_uuid(self, m: AnyAiMessage, ds: ta.Sequence[AiDelta]) -> AnyAiMessage:
         dus = {du for d in ds if (du := d.metadata.get(MessageUuid)) is not None}
@@ -94,6 +96,13 @@ class AiDeltaJoiner:
         self._out.append(self._build_joined(self._queue))
         self._queue.clear()
 
+    def _join_indexed_ptus(self) -> None:
+        if not self._ptus_by_index:
+            return
+
+        for ptus in self._ptus_by_index.values():
+            self._out.append(self._build_joined(ptus))
+
     def _should_join(self, *, new: AiDelta | None = None) -> bool:
         if not self._queue:
             return False
@@ -113,6 +122,13 @@ class AiDeltaJoiner:
         return False
 
     def _add_one(self, d: AiDelta) -> None:
+        if isinstance(d, PartialToolUseAiDelta) and (ptu_idx := d.index) is not None:
+            try:
+                self._ptus_by_index[ptu_idx].append(d)
+            except KeyError:
+                self._ptus_by_index[ptu_idx] = [d]
+            return
+
         if self._should_join(new=d):
             self._join()
 
@@ -135,10 +151,16 @@ class AiDeltaJoiner:
             self._queue.append(d)
 
     def add(self, deltas: AiDeltas) -> None:
+        check.state(not self._closed)
+
         for d in deltas:
             self._add_one(d)
 
     def build(self) -> AiChat:
+        check.state(not self._closed)
+        self._closed = True
+
         self._join()
+        self._join_indexed_ptus()
 
         return list(self._out)

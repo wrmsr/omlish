@@ -4038,24 +4038,21 @@ def _process_dataclass__90318fdb48d19a87c2a27afe4054bce3a6907730():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('_metadata', 'id', 'name', 'index')), EqPlan(fields=('_metadata', 'id', 'name', 'i"
-        "ndex')), FrozenPlan(fields=('_metadata', 'id', 'name', 'index'), allow_dynamic_dunder_attrs=False), HashPlan(a"
-        "ction='add', fields=('_metadata', 'id', 'name', 'index'), cache=False), InitPlan(fields=(InitPlan.Field(name='"
-        "_metadata', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0"
-        ".coerce'), validate=None, check_type=None), InitPlan.Field(name='id', annotation=OpRef(name='init.fields.1.ann"
-        "otation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='name', annotation"
-        "=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='index', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None)), self_param='self', std_params=(), kw_only_params=('_metadata', 'id', 'name', 'index'),"
-        " frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Fie"
-        "ld(name='id', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'index', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('_metadata', 'id', 'name')), EqPlan(fields=('_metadata', 'id', 'name')), FrozenPla"
+        "n(fields=('_metadata', 'id', 'name'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('_meta"
+        "data', 'id', 'name'), cache=False), InitPlan(fields=(InitPlan.Field(name='_metadata', annotation=OpRef(name='i"
+        "nit.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None, check_type"
+        "=None), InitPlan.Field(name='id', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init."
+        "fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.2.annotatio"
+        "n'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_p"
+        "arams=('_metadata', 'id', 'name'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns="
+        "()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=Tr"
+        "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f90fdf20739612af65942ebe28d119fd04d73bb9',
+    plan_repr_sha1='b6c34a783666972a7006d8f0b1419093054d280a',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -4064,14 +4061,12 @@ def _process_dataclass__90318fdb48d19a87c2a27afe4054bce3a6907730():
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
     ),
     cls_names=(
         ('ommlds.minichain.chat.stream.types', 'AnyToolUseAiDelta'),
     ),
 )
-def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
+def _process_dataclass__b6c34a783666972a7006d8f0b1419093054d280a():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4082,8 +4077,6 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4105,7 +4098,6 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
                 _metadata=self._metadata,
                 id=self.id,
                 name=self.name,
-                index=self.index,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -4121,8 +4113,7 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
             return (
                 self._metadata == other._metadata and
                 self.id == other.id and
-                self.name == other.name and
-                self.index == other.index
+                self.name == other.name
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -4134,7 +4125,6 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
             '_metadata',
             'id',
             'name',
-            'index',
         }
 
         def __setattr__(self, name, value):
@@ -4154,7 +4144,6 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
             '_metadata',
             'id',
             'name',
-            'index',
         }
 
         def __delattr__(self, name):
@@ -4175,7 +4164,6 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
                 self._metadata,
                 self.id,
                 self.name,
-                self.index,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -4187,13 +4175,11 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
             _metadata: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             name: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            index: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             _metadata = __dataclass__init__fields__0__coerce(_metadata)
             __dataclass__object_setattr(self, '_metadata', _metadata)
             __dataclass__object_setattr(self, 'id', id)
             __dataclass__object_setattr(self, 'name', name)
-            __dataclass__object_setattr(self, 'index', index)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -4205,7 +4191,6 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
             parts = []
             parts.append(f"id={self.id!r}")
             parts.append(f"name={self.name!r}")
-            parts.append(f"index={self.index!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -4222,9 +4207,9 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('_metadata', 'id', 'name', 'index', 'raw_args')), EqPlan(fields=('_metadata', 'id'"
-        ", 'name', 'index', 'raw_args')), FrozenPlan(fields=('_metadata', 'id', 'name', 'index', 'raw_args'), allow_dyn"
-        "amic_dunder_attrs=False), HashPlan(action='add', fields=('_metadata', 'id', 'name', 'index', 'raw_args'), cach"
+        "Plans(tup=(CopyPlan(fields=('_metadata', 'id', 'name', 'raw_args', 'index')), EqPlan(fields=('_metadata', 'id'"
+        ", 'name', 'raw_args', 'index')), FrozenPlan(fields=('_metadata', 'id', 'name', 'raw_args', 'index'), allow_dyn"
+        "amic_dunder_attrs=False), HashPlan(action='add', fields=('_metadata', 'id', 'name', 'raw_args', 'index'), cach"
         "e=False), InitPlan(fields=(InitPlan.Field(name='_metadata', annotation=OpRef(name='init.fields.0.annotation'),"
         " default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=Fiel"
         "dType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None, check_type=None), InitPlan.Field(nam"
@@ -4232,18 +4217,18 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
         "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
         "pe=None), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='i"
         "nit.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='index', annotation=OpRef(name='init.fields.3.anno"
-        "tation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='raw_args', annotat"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='raw_args', annotation=OpRef(name='init.fields.3.a"
+        "nnotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='index', annotat"
         "ion=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None,"
         " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self"
-        "_param='self', std_params=(), kw_only_params=('_metadata', 'id', 'name', 'index', 'raw_args'), frozen=True, sl"
+        "_param='self', std_params=(), kw_only_params=('_metadata', 'id', 'name', 'raw_args', 'index'), frozen=True, sl"
         "ots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw"
-        "_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='index', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='raw_args', kw_only=True, fn=None)), id=False, terse=False, default_fn=No"
+        "_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='raw_args', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='index', kw_only=True, fn=None)), id=False, terse=False, default_fn=No"
         "ne)))"
     ),
-    plan_repr_sha1='474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb',
+    plan_repr_sha1='cf7e4e754e443a7176b73c36aca492948999ce4b',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -4261,7 +4246,7 @@ def _process_dataclass__f90fdf20739612af65942ebe28d119fd04d73bb9():
         ('ommlds.minichain.chat.stream.types', 'PartialToolUseAiDelta'),
     ),
 )
-def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
+def _process_dataclass__cf7e4e754e443a7176b73c36aca492948999ce4b():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4297,8 +4282,8 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
                 _metadata=self._metadata,
                 id=self.id,
                 name=self.name,
-                index=self.index,
                 raw_args=self.raw_args,
+                index=self.index,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -4315,8 +4300,8 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
                 self._metadata == other._metadata and
                 self.id == other.id and
                 self.name == other.name and
-                self.index == other.index and
-                self.raw_args == other.raw_args
+                self.raw_args == other.raw_args and
+                self.index == other.index
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -4328,8 +4313,8 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
             '_metadata',
             'id',
             'name',
-            'index',
             'raw_args',
+            'index',
         }
 
         def __setattr__(self, name, value):
@@ -4349,8 +4334,8 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
             '_metadata',
             'id',
             'name',
-            'index',
             'raw_args',
+            'index',
         }
 
         def __delattr__(self, name):
@@ -4371,8 +4356,8 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
                 self._metadata,
                 self.id,
                 self.name,
-                self.index,
                 self.raw_args,
+                self.index,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -4384,15 +4369,15 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
             _metadata: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             name: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            index: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            raw_args: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            raw_args: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            index: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             _metadata = __dataclass__init__fields__0__coerce(_metadata)
             __dataclass__object_setattr(self, '_metadata', _metadata)
             __dataclass__object_setattr(self, 'id', id)
             __dataclass__object_setattr(self, 'name', name)
-            __dataclass__object_setattr(self, 'index', index)
             __dataclass__object_setattr(self, 'raw_args', raw_args)
+            __dataclass__object_setattr(self, 'index', index)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -4404,8 +4389,8 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
             parts = []
             parts.append(f"id={self.id!r}")
             parts.append(f"name={self.name!r}")
-            parts.append(f"index={self.index!r}")
             parts.append(f"raw_args={self.raw_args!r}")
+            parts.append(f"index={self.index!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -4422,27 +4407,24 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('_metadata', 'id', 'name', 'index', 'args')), EqPlan(fields=('_metadata', 'id', 'n"
-        "ame', 'index', 'args')), FrozenPlan(fields=('_metadata', 'id', 'name', 'index', 'args'), allow_dynamic_dunder_"
-        "attrs=False), HashPlan(action='add', fields=('_metadata', 'id', 'name', 'index', 'args'), cache=False), InitPl"
-        "an(fields=(InitPlan.Field(name='_metadata', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(n"
-        "ame='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=OpRef(name='init.fields.0.coerce'), validate=None, check_type=None), InitPlan.Field(name='id', annotati"
-        "on=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, "
-        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
-        "an.Field(name='name', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='index', annotation=OpRef(name='init.fields.3.annotation'), defaul"
-        "t=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='args', annotation=OpRef(name='init"
-        ".fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_p"
-        "arams=(), kw_only_params=('_metadata', 'id', 'name', 'index', 'args'), frozen=True, slots=False, post_init_par"
-        "ams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='index', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='args', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('_metadata', 'id', 'name', 'args')), EqPlan(fields=('_metadata', 'id', 'name', 'ar"
+        "gs')), FrozenPlan(fields=('_metadata', 'id', 'name', 'args'), allow_dynamic_dunder_attrs=False), HashPlan(acti"
+        "on='add', fields=('_metadata', 'id', 'name', 'args'), cache=False), InitPlan(fields=(InitPlan.Field(name='_met"
+        "adata', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coe"
+        "rce'), validate=None, check_type=None), InitPlan.Field(name='id', annotation=OpRef(name='init.fields.1.annotat"
+        "ion'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='name', annotation=OpR"
+        "ef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='args', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None)), self_param='self', std_params=(), kw_only_params=('_metadata', 'id', 'name', 'args'), froze"
+        "n=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(nam"
+        "e='id', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='args'"
+        ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b1b87560e6bebd27c8e68c88a12d0576090e52d0',
+    plan_repr_sha1='fbf0f0bb81f40b541937070a9db860c6ce9ebd3e',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -4453,14 +4435,12 @@ def _process_dataclass__474846d17c2d0d9a7c8db44a6c00ab51d2ae90fb():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
     ),
     cls_names=(
         ('ommlds.minichain.chat.stream.types', 'ToolUseAiDelta'),
     ),
 )
-def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
+def _process_dataclass__fbf0f0bb81f40b541937070a9db860c6ce9ebd3e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -4473,8 +4453,6 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4496,7 +4474,6 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
                 _metadata=self._metadata,
                 id=self.id,
                 name=self.name,
-                index=self.index,
                 args=self.args,
             )
 
@@ -4514,7 +4491,6 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
                 self._metadata == other._metadata and
                 self.id == other.id and
                 self.name == other.name and
-                self.index == other.index and
                 self.args == other.args
             )
 
@@ -4527,7 +4503,6 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
             '_metadata',
             'id',
             'name',
-            'index',
             'args',
         }
 
@@ -4548,7 +4523,6 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
             '_metadata',
             'id',
             'name',
-            'index',
             'args',
         }
 
@@ -4570,7 +4544,6 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
                 self._metadata,
                 self.id,
                 self.name,
-                self.index,
                 self.args,
             ))
 
@@ -4583,14 +4556,12 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
             _metadata: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             id: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             name: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            index: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            args: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            args: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             _metadata = __dataclass__init__fields__0__coerce(_metadata)
             __dataclass__object_setattr(self, '_metadata', _metadata)
             __dataclass__object_setattr(self, 'id', id)
             __dataclass__object_setattr(self, 'name', name)
-            __dataclass__object_setattr(self, 'index', index)
             __dataclass__object_setattr(self, 'args', args)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -4603,7 +4574,6 @@ def _process_dataclass__b1b87560e6bebd27c8e68c88a12d0576090e52d0():
             parts = []
             parts.append(f"id={self.id!r}")
             parts.append(f"name={self.name!r}")
-            parts.append(f"index={self.index!r}")
             parts.append(f"args={self.args!r}")
             return (
                 f"{self.__class__.__qualname__}("
