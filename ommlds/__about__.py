@@ -28,10 +28,10 @@ class Project(ProjectBase):
 
             'sentencepiece ~= 0.2',
 
-            'tiktoken ~= 0.12',
+            'tiktoken ~= 0.13',
 
             # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
-            'tinygrad ~= 0.12',
+            'tinygrad ~= 0.13',
 
             'tokenizers ~= 0.22',
 
