@@ -107,7 +107,7 @@ class Runtime(lang.Abstract):
         items = self.iter_array_or_raise(value)
         if isinstance(items, ta.Sequence):
             return items
-        return tuple(items)
+        return list(items)
 
     @abc.abstractmethod
     def iter_object_values(self, value: ta.Any) -> ta.Iterable[ta.Any] | None:
