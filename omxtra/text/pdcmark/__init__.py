@@ -1,5 +1,5 @@
 """
-pdcmark — pure-python streaming markdown parser, modeled on pulldown-cmark.
+pdcmark - pure-python streaming markdown parser, modeled on pulldown-cmark.
 
 See docs/00_Goals.md for goals / non-goals, docs/02_PrePlan.md for the streaming model, and docs/03_Plan.md for the
 implementation plan and module layout.

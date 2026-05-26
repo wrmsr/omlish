@@ -2,7 +2,7 @@
 Coalesce consecutive `Text` events into one and drop empties.
 
 The parser emits many small `Text` events because each text fragment maps to a slice of the source. Most consumers want
-them merged. Cf. `pulldown-cmark/src/utils.rs::TextMergeStream` and `TextMergeWithOffset` — same semantics, plus our
+them merged. Cf. `pulldown-cmark/src/utils.rs::TextMergeStream` and `TextMergeWithOffset` - same semantics, plus our
 `Text` events carry source offsets so we widen the span to cover the merged range.
 """
 import io

@@ -78,7 +78,7 @@ def resolve_links(
                 continue
             top = stack[-1]
             if not (top.active or top.is_image):
-                # Disabled link on top — closer fails, pop the disabled opener AND convert it to text right now (so it
+                # Disabled link on top - closer fails, pop the disabled opener AND convert it to text right now (so it
                 # doesn't get stranded inside any outer group's children).
                 opener = nodes[top.node_index]
                 if isinstance(opener, LinkOpenNode):
@@ -148,7 +148,7 @@ def resolve_links(
                 stack.pop()
             else:
                 # Convert this opener to text immediately and pop. Don't propagate deactivation to earlier link openers
-                # — only successful resolutions do that.
+                # - only successful resolutions do that.
                 nodes[entry.node_index] = TextNode(
                     offset=opener.offset,
                     text='[',
@@ -159,7 +159,7 @@ def resolve_links(
         i += 1
 
     # Finalize: convert any remaining placeholders to text, including those stranded inside successfully-built LinkGroup
-    # children (can happen when an inner closer pairs with an outer opener over a still-present inner opener — see CM
+    # children (can happen when an inner closer pairs with an outer opener over a still-present inner opener - see CM
     # example 519).
     _finalize_link_placeholders(nodes)
     return nodes
@@ -214,7 +214,7 @@ def _try_resolve_link(
         if ld is not None:
             return _Resolved(LinkType.REFERENCE, ld.dest, ld.title, label)
         return _try_broken(LinkType.REFERENCE, label, close_node, broken_link_resolver)
-    # 'collapsed' or 'shortcut' — label is the inner text.
+    # 'collapsed' or 'shortcut' - label is the inner text.
     inner_label = normalize_link_label(_flatten_to_text(children))
     if not inner_label:
         return None

@@ -2,7 +2,7 @@
 Events emitted by the parser and the tags that classify Start / End events.
 
 Surface mirrors pulldown-cmark's `Event` / `Tag` ADT (see pulldown-cmark/src/lib.rs). We drop variants for the
-extensions we don't support — math, definition lists, metadata blocks, container extensions, heading attributes,
+extensions we don't support - math, definition lists, metadata blocks, container extensions, heading attributes,
 wikilinks, super / subscript, footnotes (initial). We also drop pulldown's `TagEnd`: pulldown uses it as a memory
 optimization (it has a static assertion that `TagEnd` stays at most two bytes), which we have no equivalent need for.
 Our `End` event just carries the same `Tag` instance type as `Start`, and any close-time-only attribute lives as a
@@ -51,7 +51,7 @@ class BlockQuoteKind(enum.Enum):
 # Tags
 
 
-# Marker base for all element tags. Inheritance, not a TypeAlias union — we want isinstance(t, Tag) to mean something
+# Marker base for all element tags. Inheritance, not a TypeAlias union - we want isinstance(t, Tag) to mean something
 # and the project preference is empty abstract bases for capability markers.
 class Tag(lang.Abstract):
     pass
@@ -90,7 +90,7 @@ class HtmlBlock(Tag):
 @dc.dataclass(frozen=True)
 class List(Tag):
     start: int | None = None   # ordered list start number; None means unordered
-    tight: bool | None = None  # None at Start; bool at End — only authoritative on the End event
+    tight: bool | None = None  # None at Start; bool at End - only authoritative on the End event
 
 
 @dc.dataclass(frozen=True)

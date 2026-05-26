@@ -13,7 +13,7 @@ class PdcmarkError(Exception):
 
 
 class ParserStateError(PdcmarkError):
-    """Raised when the parser is used incorrectly — e.g. `feed()` after `finish()`."""
+    """Raised when the parser is used incorrectly - e.g. `feed()` after `finish()`."""
 
 
 class ResourceLimitExceededError(PdcmarkError):

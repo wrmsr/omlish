@@ -27,7 +27,7 @@ def test_link_ref_expansion_bomb_stays_bounded():
     elapsed = time.monotonic() - t0
 
     # Output size should be bounded by something like fuel + overhead.
-    assert len(out) < 50_000, f'output ballooned to {len(out)} bytes — fuel guard not effective'
+    assert len(out) < 50_000, f'output ballooned to {len(out)} bytes - fuel guard not effective'
     # And it shouldn't take noticeable wall time on a sane impl.
     assert elapsed < 2.0, f'expansion bomb took {elapsed:.2f}s'
 

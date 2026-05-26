@@ -1,6 +1,6 @@
 # ruff: noqa: SLF001
 """
-Start-of-line scanner — indentation, tab expansion, container markers.
+Start-of-line scanner - indentation, tab expansion, container markers.
 
 Mirrors `pulldown-cmark/src/scanners.rs::LineStart`. The role of this struct is to step through the prefix of a line,
 consuming logical "columns" of indentation while respecting CommonMark's tab-stop-of-4 rule. After each container marker
@@ -24,7 +24,7 @@ from .whitespace import scan_eol
 ##
 
 
-# pulldown-cmark/src/scanners.rs::LineStart — same role, same tab-handling math.
+# pulldown-cmark/src/scanners.rs::LineStart - same role, same tab-handling math.
 class LineStart:
     __slots__ = ('_line', '_pos', '_tab_origin', '_tab_carry', '_min_hrule')
 
@@ -35,7 +35,7 @@ class LineStart:
         self._tab_origin = 0
         # Leftover phantom-space columns from a tab whose advance was wider than requested.
         self._tab_carry = 0
-        # `min_hrule_offset` in pulldown-cmark — caches "no hrule possible before this index".
+        # `min_hrule_offset` in pulldown-cmark - caches "no hrule possible before this index".
         self._min_hrule = 0
 
     @property

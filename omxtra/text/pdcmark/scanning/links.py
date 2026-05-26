@@ -22,7 +22,7 @@ class LinkLabelScan:
     raw: str  # label content as it appeared (between brackets), unnormalized
 
 
-# pulldown-cmark/src/linklabel.rs::scan_link_label_rest — single-line version. We do NOT do whitespace collapsing here;
+# pulldown-cmark/src/linklabel.rs::scan_link_label_rest - single-line version. We do NOT do whitespace collapsing here;
 # the caller normalizes via `normalize_link_label`.
 def scan_link_label(text: str, start: int) -> LinkLabelScan | None:
     """
@@ -76,7 +76,7 @@ class LinkDestScan:
     dest: str  # the destination (angle brackets stripped if present; escapes preserved)
 
 
-# pulldown-cmark/src/scanners.rs::scan_link_dest — restricted to single-line use here.
+# pulldown-cmark/src/scanners.rs::scan_link_dest - restricted to single-line use here.
 def scan_link_destination(text: str, start: int, *, max_parens: int = 32) -> LinkDestScan | None:
     n = len(text)
     if start >= n:

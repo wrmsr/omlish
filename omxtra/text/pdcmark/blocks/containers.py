@@ -7,13 +7,13 @@ foo` is:
 
     [OpenBlockQuote, OpenList(ordered, '.', 1), OpenItem(content_indent=3)]
 
-Cf. pulldown-cmark/src/firstpass.rs::FirstPass — pulldown stores containers as tree nodes with `ItemBody::BlockQuote` /
+Cf. pulldown-cmark/src/firstpass.rs::FirstPass - pulldown stores containers as tree nodes with `ItemBody::BlockQuote` /
 `ItemBody::List` / `ItemBody::ListItem`; we store them as Python objects on a stack. Continuation handling and the
 "scan_containers" walk are the same algorithm. """
-import typing as ta
-
 from omlish import dataclasses as dc
 from omlish import lang
+
+from ..events import BlockQuoteKind
 
 
 ##
@@ -26,19 +26,19 @@ class OpenContainer(lang.Abstract):
 @dc.dataclass(frozen=True)
 class OpenBlockQuote(OpenContainer):
     """
-    A blockquote — continuation marker is `>` (optionally indented up to 3 spaces). Cf.
+    A blockquote - continuation marker is `>` (optionally indented up to 3 spaces). Cf.
     pulldown-cmark/src/scanners.rs::LineStart::scan_blockquote_marker. `kind` is set on the open event for GFM
     admonition tags (`[!NOTE]` etc.) and carried here so the close event matches.
     """
 
     open_start: int
-    kind: ta.Any = None  # BlockQuoteKind | None — kept untyped to avoid event-module import
+    kind: BlockQuoteKind | None = None
 
 
 @dc.dataclass(frozen=True)
 class OpenList(OpenContainer):
     """
-    A list. Has no continuation marker of its own — it stays open as long as its items continue or another item of the
+    A list. Has no continuation marker of its own - it stays open as long as its items continue or another item of the
     same kind opens. Cf. pulldown-cmark/src/parse.rs::ItemBody::List.
 
     Tight / loose tracking: `had_blank` is set true when a blank line is processed while this list is open, and reset to

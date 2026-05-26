@@ -1,5 +1,5 @@
 """
-List marker scanners — bullet, ordered, and task-list-item-marker.
+List marker scanners - bullet, ordered, and task-list-item-marker.
 
 CommonMark §5.2. Bullet markers are `-`, `+`, or `*`. Ordered markers are 1-9 decimal digits followed by `.` or `)`. The
 marker must be followed by either a space / tab or end-of-line (otherwise the line is plain text).
@@ -13,7 +13,7 @@ from omlish import dataclasses as dc
 ##
 
 
-# pulldown-cmark/src/scanners.rs::LineStart::scan_list_marker_with_indent and scan_listitem — split here into a pure
+# pulldown-cmark/src/scanners.rs::LineStart::scan_list_marker_with_indent and scan_listitem - split here into a pure
 # marker-only scanner; the indent calculation lives in the BlockMachine.
 
 # CommonMark spec caps ordered-list start numbers at 9 digits.

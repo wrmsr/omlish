@@ -14,6 +14,8 @@ Conventions:
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ..events import Alignment
+
 
 ##
 
@@ -98,5 +100,5 @@ class OpenTable(OpenLeaf):
     Cf. pulldown-cmark/src/firstpass.rs::parse_table.
     """
 
-    alignments: tuple  # tuple[Alignment, ...] — kept untyped here to avoid event-module import.
+    alignments: tuple[Alignment, ...]
     open_start: int

@@ -7,7 +7,7 @@ wraps paired `DelimNode`s into `EmphasisGroup`s, and finally the resolved node l
 Nodes carry absolute source offsets so events can carry them too. They are mutable (the emphasis resolution rewrites the
 list in place), but the events emitted at the end are immutable.
 
-Cf. pulldown-cmark/src/parse.rs::ItemBody — same conceptual role, different shape (pulldown stores inlines in its block
+Cf. pulldown-cmark/src/parse.rs::ItemBody - same conceptual role, different shape (pulldown stores inlines in its block
 tree as `Maybe*` placeholders that the inline pass mutates in place; we maintain a separate flat list per block).
 """
 from omlish import dataclasses as dc
@@ -42,7 +42,7 @@ class CodeNode(InlineNode):
 @dc.dataclass()
 class HtmlNode(InlineNode):
     """
-    Inline HTML span — emitted as `InlineHtml`. Distinguished from `HtmlBlock` (the leaf-block event) by source context,
+    Inline HTML span - emitted as `InlineHtml`. Distinguished from `HtmlBlock` (the leaf-block event) by source context,
     not by node type.
     """
 
@@ -73,7 +73,7 @@ class DelimNode(InlineNode):
     An unresolved emphasis delimiter run. After tokenization the emphasis algorithm walks the node list, pairs
     DelimNodes (or leaves them as text), and replaces matched pairs with `EmphasisGroup`s.
 
-    Cf. pulldown-cmark/src/parse.rs::InlineStack — same role; we store can_open / can_close directly instead of
+    Cf. pulldown-cmark/src/parse.rs::InlineStack - same role; we store can_open / can_close directly instead of
     computing them at scan time.
     """
 
@@ -114,7 +114,7 @@ class LinkCloseNode(InlineNode):
     """
     Placeholder for a `]` and any immediately-following link-suffix syntax.
 
-    `kind` is one of 'inline', 'reference', 'collapsed', or 'shortcut' — set by the tokenizer based on what immediately
+    `kind` is one of 'inline', 'reference', 'collapsed', or 'shortcut' - set by the tokenizer based on what immediately
     followed the `]` (`(...)`, `[label]`, `[]`, or nothing). For 'inline' the `dest_url` / `title` fields are populated;
     for 'reference' the `label` field is set; for 'collapsed' / 'shortcut' the label is derived from the inner text at
     resolution time.
@@ -123,7 +123,7 @@ class LinkCloseNode(InlineNode):
     position when no suffix was present).
 
     `raw_consumed` is the literal source text that was consumed (everything from the `]` through `consumed_end`). On
-    resolution failure we emit this as plain text so consumed suffix syntax doesn't get lost — see CM Appendix A's rule
+    resolution failure we emit this as plain text so consumed suffix syntax doesn't get lost - see CM Appendix A's rule
     about reconstituting "fake" link suffixes.
     """
 

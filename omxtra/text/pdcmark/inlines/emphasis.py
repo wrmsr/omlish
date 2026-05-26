@@ -6,7 +6,7 @@ each emphasis-marker run. We walk those entries in order, maintaining a "delimit
 a closer we look back through the stack for a compatible opener, applying the spec's mod-3 rule, and wrap matched pairs
 into `EmphasisGroup`s. Anything left unpaired at the end falls back to plain text.
 
-Cf. pulldown-cmark/src/parse.rs::{handle_emphasis_and_hard_break, InlineStack} — same algorithm. The pulldown version
+Cf. pulldown-cmark/src/parse.rs::{handle_emphasis_and_hard_break, InlineStack} - same algorithm. The pulldown version
 operates on its block tree in place; we operate on a fresh list.
 """
 from omlish import check
@@ -28,7 +28,7 @@ def resolve_emphasis(nodes: list[InlineNode]) -> list[InlineNode]:
     for the nearest valid opener of the same char; if found, the span between is wrapped into an `EmphasisGroup`. The
     closer may match multiple openers (e.g. `***foo***` is processed in two passes, strong then emphasis).
 
-    After the walk, any leftover `DelimNode`s — at the top level or inside groups — are converted to `TextNode`s.
+    After the walk, any leftover `DelimNode`s - at the top level or inside groups - are converted to `TextNode`s.
     """
 
     delim_stack: list[int] = []
@@ -121,7 +121,7 @@ def _find_matching_opener(
         opener_i = delim_stack[s_idx]
         opener = nodes[opener_i]
         if not isinstance(opener, DelimNode):
-            continue  # stale entry — was rewritten by a prior pair
+            continue  # stale entry - was rewritten by a prior pair
         if opener.char != closer.char:
             continue
         if not opener.can_open:

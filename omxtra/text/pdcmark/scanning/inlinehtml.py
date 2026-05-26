@@ -56,7 +56,7 @@ def scan_inline_html(text: str, start: int) -> InlineHtmlMatch | None:
 
 
 def _scan_comment(text: str, start: int) -> InlineHtmlMatch | None:
-    # `<!-- ... -->` — body may NOT contain `--` or end with `-`.
+    # `<!-- ... -->` - body may NOT contain `--` or end with `-`.
     body_start = start + 4
     end = text.find('-->', body_start)
     if end < 0:

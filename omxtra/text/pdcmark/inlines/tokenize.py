@@ -8,7 +8,7 @@ pass.
 
 Source offsets are tracked via a small position-to-offset lookup table built during joining.
 
-Cf. pulldown-cmark/src/parse.rs::handle_inline_pass1 — same role and same construct precedences, but operating on a
+Cf. pulldown-cmark/src/parse.rs::handle_inline_pass1 - same role and same construct precedences, but operating on a
 fresh joined string rather than mutating a tree.
 """
 import unicodedata
@@ -73,7 +73,7 @@ def _build_joined(lines: tuple[BufferedLine, ...]) -> _Joined:
         if i < last_ix:
             if text.endswith('\\'):
                 # Literal backslash at end of line → hard break, consume the backslash. Only if the backslash isn't
-                # itself escaped — CM treats the trailing-`\` form specially and we don't have to worry about
+                # itself escaped - CM treats the trailing-`\` form specially and we don't have to worry about
                 # double-backslash because we trim only one.
                 text = text[:-1]
                 is_hardbreak = True
@@ -85,7 +85,7 @@ def _build_joined(lines: tuple[BufferedLine, ...]) -> _Joined:
                 # Strip trailing whitespace (it's not significant for non-hard-break case).
                 text = text.rstrip(' \t')
         else:
-            # Last line — no following line, no hard break. Just strip trailing whitespace.
+            # Last line - no following line, no hard break. Just strip trailing whitespace.
             text = text.rstrip(' \t')
 
         info.append(_LineInfo(
@@ -116,7 +116,7 @@ def _source_offset(joined: _Joined, p: int) -> int:
         if p < li.joined_start + li.text_len:
             return li.source_start + (p - li.joined_start)
         if p == li.joined_start + li.text_len:
-            # On the newline boundary — point at start of the newline char in source. If trailing whitespace was
+            # On the newline boundary - point at start of the newline char in source. If trailing whitespace was
             # trimmed, the newline is somewhere before line_next; we approximate by using line_next - 1.
             return max(li.source_start, li.source_next - 1)
     # Off the end of joined → end of last line.
@@ -138,7 +138,7 @@ def tokenize_inline(
     s = joined.text
     n = len(s)
 
-    # Text accumulator — flushed into a TextNode on any non-text token.
+    # Text accumulator - flushed into a TextNode on any non-text token.
     buf: list[str] = []
     buf_start = 0  # joined position where buf started (only valid if buf is non-empty)
 
@@ -160,7 +160,7 @@ def tokenize_inline(
     while i < n:
         c = s[i]
 
-        # Newline boundary — soft or hard break.
+        # Newline boundary - soft or hard break.
         if c == '\n':
             # Determine which line transition this newline marks. Find the line whose joined_start + text_len == i.
             line_ix = _line_index_at_newline(joined, i)
@@ -184,7 +184,7 @@ def tokenize_inline(
         if c == '\\' and i + 1 < n:
             nxt = s[i + 1]
             if nxt == '\n':
-                # Backslash before EOL — already handled at trim time as a hard break (the `\` was consumed). This
+                # Backslash before EOL - already handled at trim time as a hard break (the `\` was consumed). This
                 # branch shouldn't normally hit, but if it does we treat as text.
                 if not buf:
                     buf_start = i
@@ -197,7 +197,7 @@ def tokenize_inline(
                 buf.append(nxt)
                 i += 2
                 continue
-            # Fall through — backslash before non-escapable char is literal.
+            # Fall through - backslash before non-escapable char is literal.
 
         # Entity reference.
         if c == '&':
@@ -222,7 +222,7 @@ def tokenize_inline(
                 emit(CodeNode(offset=(start_src, end_src), text=content))
                 i = close + run
                 continue
-            # No matching close — treat backticks as text.
+            # No matching close - treat backticks as text.
             if not buf:
                 buf_start = i
             buf.append(s[i:i + run])
@@ -262,7 +262,7 @@ def tokenize_inline(
             i += 1
             continue
 
-        # Link close `]` — also peeks ahead for the link suffix.
+        # Link close `]` - also peeks ahead for the link suffix.
         if c == ']':
             close_start_src = _source_offset(joined, i)  # noqa
             close_node, consumed_to = _scan_link_suffix(s, i, joined)
@@ -413,7 +413,7 @@ def _scan_link_suffix(s: str, close_pos: int, joined: _Joined) -> tuple[LinkClos
     Inspect what follows a `]` at `s[close_pos]` to determine the link-close kind.
 
     Returns (LinkCloseNode, new_position_in_joined). The new position is the index just past any consumed suffix syntax.
-    If no suffix matches, only the `]` itself is consumed and the close node is tagged as 'shortcut' — link resolution
+    If no suffix matches, only the `]` itself is consumed and the close node is tagged as 'shortcut' - link resolution
     will try refdefs later.
 
     The literal source text from `]` through the consumed suffix is captured in `raw_consumed` so a resolution failure
@@ -448,7 +448,7 @@ def _scan_link_suffix(s: str, close_pos: int, joined: _Joined) -> tuple[LinkClos
                 dest_url=dest,
                 title=title,
             ), end_pos
-        # Fall through — `(` without a valid link → shortcut form.
+        # Fall through - `(` without a valid link → shortcut form.
 
     # Reference link: `[label]` or `[]`.
     if nxt == '[':
@@ -475,7 +475,7 @@ def _scan_link_suffix(s: str, close_pos: int, joined: _Joined) -> tuple[LinkClos
                 label=label_scan.raw,
             ), end_pos
 
-    # Default — shortcut form (try inner text against refdefs at resolution time).
+    # Default - shortcut form (try inner text against refdefs at resolution time).
     return LinkCloseNode(
         offset=(close_src, close_src_end),
         consumed_end=close_src_end,
@@ -495,7 +495,7 @@ def _try_parse_inline_link(s: str, paren_pos: int) -> tuple[str, str, int] | Non
         return None
     if s[i] == ')':
         return '', '', i + 1
-    # Destination — may or may not be present.
+    # Destination - may or may not be present.
     dest = ''
     if s[i] != ')':
         dest_scan = scan_link_destination(s, i)
@@ -515,7 +515,7 @@ def _try_parse_inline_link(s: str, paren_pos: int) -> tuple[str, str, int] | Non
             i = title_scan.end
             i = _consume_link_ws(s, i, allow_nl=True)
         else:
-            # Title-shaped but invalid — fail the whole inline link.
+            # Title-shaped but invalid - fail the whole inline link.
             return None
     else:
         i = pre_title  # no title; rewind ws-skip if it ate nothing useful

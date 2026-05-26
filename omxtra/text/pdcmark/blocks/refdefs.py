@@ -11,7 +11,7 @@ A refdef spans 1, 2, or 3 lines:
   - `[label]: dest` / `"title"`
   - `[label]:` / `dest` / `"title"`
 
-(Plus combinations — title is optional; dest and title can each follow the label or sit on their
+(Plus combinations - title is optional; dest and title can each follow the label or sit on their
 own line.) See CommonMark §4.7 for the full grammar. Cf. pulldown-cmark/src/firstpass.rs::FirstPass::parse_refdef_total.
 """
 import typing as ta
@@ -33,7 +33,7 @@ class LinkDef:
     title: str
 
 
-# pulldown-cmark/src/parse.rs::RefDefs — same role (label-keyed table with case-insensitive normalization). We use a
+# pulldown-cmark/src/parse.rs::RefDefs - same role (label-keyed table with case-insensitive normalization). We use a
 # plain dict; pulldown wraps a HashMap<LinkLabel, LinkDef>.
 class RefDefs:
     def __init__(self) -> None:
@@ -69,7 +69,7 @@ class RefDefMatch:
     link_def: LinkDef
 
 
-# pulldown-cmark/src/firstpass.rs::FirstPass::parse_refdef_total — full multi-line version.
+# pulldown-cmark/src/firstpass.rs::FirstPass::parse_refdef_total - full multi-line version.
 def try_consume_refdef(lines: ta.Sequence[str], start: int) -> RefDefMatch | None:
     """
     Try to parse a refdef beginning at `lines[start]`. Returns a RefDefMatch on success, or None if the lines starting
@@ -185,8 +185,8 @@ def _skip_ws_across_lines(
             return None, 0
 
 
-# pulldown-cmark/src/firstpass.rs::FirstPass::parse_refdef_total — single-line subset; preserved for the single-line
-# code path (still used by the BlockMachine — kept for now to avoid churn, but the multi-line `try_consume_refdef` is
+# pulldown-cmark/src/firstpass.rs::FirstPass::parse_refdef_total - single-line subset; preserved for the single-line
+# code path (still used by the BlockMachine - kept for now to avoid churn, but the multi-line `try_consume_refdef` is
 # now the canonical entry point).
 def parse_single_line_refdef(line: str) -> tuple[str, LinkDef] | None:
     """
@@ -216,7 +216,7 @@ def parse_single_line_refdef(line: str) -> tuple[str, LinkDef] | None:
     while pos < n and (line[pos] == ' ' or line[pos] == '\t'):
         pos += 1
     if pos >= n:
-        # Destination on next line — multi-line refdef.
+        # Destination on next line - multi-line refdef.
         return None
 
     dest_scan = scan_link_destination(line, pos)

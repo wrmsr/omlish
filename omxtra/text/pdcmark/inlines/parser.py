@@ -3,16 +3,16 @@ Inline parser entry point.
 
 Three-stage pipeline per block:
 
-  1. `tokenize_inline` — walks the block's text producing a flat list of `InlineNode`s, resolving
+  1. `tokenize_inline` - walks the block's text producing a flat list of `InlineNode`s, resolving
      confident constructs (code, escapes, entities, autolinks, inline HTML, breaks, link-suffix syntax) and leaving
      emphasis as raw `DelimNode` placeholders and link bracket-pairs as `LinkOpenNode`/`LinkCloseNode` placeholders.
-  2. `resolve_links` — pairs link openers/closers, looks up refdefs (consulting the fuel guard and
+  2. `resolve_links` - pairs link openers/closers, looks up refdefs (consulting the fuel guard and
      the broken-link resolver), wraps matched pairs into `LinkGroup` nodes. Unmatched fall back to text.
-  3. `resolve_emphasis` — pairs delimiter runs per CommonMark Appendix A, recurses into link-group
+  3. `resolve_emphasis` - pairs delimiter runs per CommonMark Appendix A, recurses into link-group
      children. Wraps matched pairs into `EmphasisGroup`s.
-  4. `_emit_events` — walks the resolved tree of nodes and produces `Event`s.
+  4. `_emit_events` - walks the resolved tree of nodes and produces `Event`s.
 
-Cf. pulldown-cmark/src/parse.rs::{handle_inline_pass1, handle_emphasis_and_hard_break} — same roles, distributed
+Cf. pulldown-cmark/src/parse.rs::{handle_inline_pass1, handle_emphasis_and_hard_break} - same roles, distributed
 differently. Pulldown does link recognition + the first emphasis-marker pass together in `handle_inline_pass1`; we split
 link from emphasis into two explicit passes that operate on the same flat node list.
 """

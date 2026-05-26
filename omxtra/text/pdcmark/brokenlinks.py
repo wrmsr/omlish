@@ -1,8 +1,8 @@
 """
 Broken-link callback hook.
 
-When inline parsing encounters a reference link whose label isn't in the refdef table — either because the doc has no
-such refdef, or because we're streaming and it would only appear later — the parser consults a `BrokenLinkResolver`.
+When inline parsing encounters a reference link whose label isn't in the refdef table - either because the doc has no
+such refdef, or because we're streaming and it would only appear later - the parser consults a `BrokenLinkResolver`.
 Default behavior is to emit the link with a `*_UNKNOWN` `LinkType` and no destination; an alternative resolver may
 supply a fallback URL / title.
 

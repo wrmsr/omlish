@@ -1,7 +1,7 @@
 """
 Chunked-input streaming parser.
 
-`StreamingParser` wraps a `BlockMachine` with a line buffer. `feed(chunk)` accepts any string — chunks may break across
+`StreamingParser` wraps a `BlockMachine` with a line buffer. `feed(chunk)` accepts any string - chunks may break across
 lines, words, or even multi-byte boundaries (since we work in `str` units). The output of each call is a `FeedOutput`
 with two parts: the newly-committed events (the consumer appends these to a stable log) and the current tentative tail
 (the consumer replaces its previous tentative with this one).
@@ -28,8 +28,8 @@ class StreamingParser:
     """
     Chunk-fed markdown parser. Each `feed(chunk)` returns a `FeedOutput` carrying:
 
-      - `committed` — events newly finalized; append to your stable log.
-      - `tentative` — current best-effort tail; replace your previous tentative with this one.
+      - `committed` - events newly finalized; append to your stable log.
+      - `tentative` - current best-effort tail; replace your previous tentative with this one.
 
     Calling `feed("")` is an explicit no-op. After `finish()`, further `feed()` calls raise `ParserStateError`. For any
     chunking of input, the concatenated `committed` stream equals `pdcmark.parse(input)`.
@@ -50,7 +50,7 @@ class StreamingParser:
         if self._terminated:
             raise ParserStateError('StreamingParser: feed() after finish()')
         if not chunk:
-            # Empty feed — explicit no-op. The previous tentative is unchanged.
+            # Empty feed - explicit no-op. The previous tentative is unchanged.
             return FeedOutput(committed=(), tentative=tuple(self._last_tentative))
 
         self._buffer += chunk
@@ -103,7 +103,7 @@ class StreamingParser:
                 if cr_pos < 0:
                     return
                 if cr_pos == len(self._buffer) - 1:
-                    # CR at end — defer; the next chunk might supply `\n` to form CRLF.
+                    # CR at end - defer; the next chunk might supply `\n` to form CRLF.
                     return
                 line_body = self._buffer[:cr_pos]
                 nl_len = 1

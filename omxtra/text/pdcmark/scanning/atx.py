@@ -22,7 +22,7 @@ class AtxOpen:
     content_end: int    # one past the end of the content (after stripping trailing-hash run)
 
 
-# pulldown-cmark/src/scanners.rs::scan_atx_heading — returns just the level. We also compute the content slice in the
+# pulldown-cmark/src/scanners.rs::scan_atx_heading - returns just the level. We also compute the content slice in the
 # same pass because the block machine wants both anyway.
 def scan_atx_open(line: str, i: int = 0) -> AtxOpen | None:
     level = scan_ch_repeat(line, i, '#')

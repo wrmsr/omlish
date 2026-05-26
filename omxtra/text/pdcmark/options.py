@@ -30,7 +30,7 @@ class Options:
     # which cannot look ahead.
     prescan_refdefs: bool = False
 
-    # Hook for unresolved reference links. None means "use the no-op resolver" — link is emitted with a `*_UNKNOWN`
+    # Hook for unresolved reference links. None means "use the no-op resolver" - link is emitted with a `*_UNKNOWN`
     # LinkType.
     broken_link_resolver: BrokenLinkResolver | None = None
 

@@ -3,15 +3,15 @@ HTML-block start / end recognition for the 7 CommonMark types.
 
 CommonMark §4.6 defines 7 distinct kinds of HTML block, each with its own start condition and its own end condition:
 
-  type 1 — opens with `<script>` / `<pre>` / `<style>` / `<textarea>` (case-insensitive); closes when the corresponding
+  type 1 - opens with `<script>` / `<pre>` / `<style>` / `<textarea>` (case-insensitive); closes when the corresponding
            close-tag is matched on the same or a later line.
-  type 2 — opens with `<!--`; closes at `-->`.
-  type 3 — opens with `<?`; closes at `?>`.
-  type 4 — opens with `<!` followed by an ASCII letter; closes at `>`.
-  type 5 — opens with `<![CDATA[`; closes at `]]>`.
-  type 6 — opens with `<` or `</` followed by a tag from a fixed list of block-level HTML tags, followed by space / tab
+  type 2 - opens with `<!--`; closes at `-->`.
+  type 3 - opens with `<?`; closes at `?>`.
+  type 4 - opens with `<!` followed by an ASCII letter; closes at `>`.
+  type 5 - opens with `<![CDATA[`; closes at `]]>`.
+  type 6 - opens with `<` or `</` followed by a tag from a fixed list of block-level HTML tags, followed by space / tab
            / EOL / `>` / `/>`; closes on a blank line.
-  type 7 — opens with any complete HTML open/close tag followed by only whitespace; closes on a blank line. Type 7 may
+  type 7 - opens with any complete HTML open/close tag followed by only whitespace; closes on a blank line. Type 7 may
            not interrupt a paragraph.
 """
 import re
@@ -24,7 +24,7 @@ from .inlinehtml import scan_inline_html
 ##
 
 
-# pulldown-cmark/src/scanners.rs::HTML_TAGS — same list. CommonMark §4.6 block-tag set.
+# pulldown-cmark/src/scanners.rs::HTML_TAGS - same list. CommonMark §4.6 block-tag set.
 _HTML_BLOCK_TAGS = frozenset({
     'address',
     'article',
@@ -169,7 +169,7 @@ def scan_html_block_start(line: str) -> HtmlBlockStart | None:
     return None
 
 
-# pulldown-cmark/src/firstpass.rs::FirstPass::parse_html_block_type_1_to_5 — same end conditions.
+# pulldown-cmark/src/firstpass.rs::FirstPass::parse_html_block_type_1_to_5 - same end conditions.
 def html_block_close_on_line(html_type: int, line: str) -> bool:
     """
     True iff `line` contains the close marker for `html_type`. Type 6 and 7 close on a blank line; the caller handles

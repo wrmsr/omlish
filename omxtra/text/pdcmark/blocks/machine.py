@@ -7,7 +7,7 @@ than driven by a single internal `run()` loop, and emitting events directly inst
 
 Algorithm sketch for `feed_line`:
 
-  1. Walk the open container stack matching continuation markers. Track `matched_depth` — the
+  1. Walk the open container stack matching continuation markers. Track `matched_depth` - the
      number of containers that continued. (See `_walk_continuations`; mirrors
      pulldown-cmark/src/parse.rs::scan_containers.)
   2. Decide how to handle unmatched containers:
@@ -138,7 +138,7 @@ def _post_marker_indent(line: str, marker_end: int) -> int:
 ##
 
 
-# pulldown-cmark/src/firstpass.rs::FirstPass — same line-driven model exposed as feed_line(); emits events directly
+# pulldown-cmark/src/firstpass.rs::FirstPass - same line-driven model exposed as feed_line(); emits events directly
 # instead of building a Tree<Item>.
 class BlockMachine:
     def __init__(
@@ -210,7 +210,7 @@ class BlockMachine:
 
         # Lazy continuation: an open paragraph absorbs the line even if some outer containers' markers were missed. We
         # require the line not to be blank AND not to be a new-block starter at the *post-container-walk* position.
-        # `ls.remaining()` is what's left after the matched containers' marker / indent consumption — that's the
+        # `ls.remaining()` is what's left after the matched containers' marker / indent consumption - that's the
         # context against which "is this a new block?" should be evaluated, NOT the raw line (whose leading whitespace
         # belongs to the unmatched outer containers).
         if (
@@ -224,7 +224,7 @@ class BlockMachine:
 
         # Lists themselves have no continuation marker; they continue iff a same-type item starts here or some inner
         # container did. If the deepest matched container is a List and the line doesn't open a same-type marker, the
-        # List itself also closes. (Blank lines do not trigger List closure — a single blank between items only marks
+        # List itself also closes. (Blank lines do not trigger List closure - a single blank between items only marks
         # the list "loose".)
         if not blank:
             while (
@@ -245,7 +245,7 @@ class BlockMachine:
             ls.restore(ls_save)
             break
 
-        # Process the remaining line content. Re-check blankness here — container openers (e.g. GFM `> [!NOTE]`) may
+        # Process the remaining line content. Re-check blankness here - container openers (e.g. GFM `> [!NOTE]`) may
         # have consumed the entire post-marker remainder of the line.
         if blank or is_blank_line(ls.remaining()):
             self._handle_blank(bl, events)
@@ -290,7 +290,7 @@ class BlockMachine:
     # Container stack walk.
 
     def _walk_continuations(self, ls: LineStart) -> int:
-        # pulldown-cmark/src/parse.rs::scan_containers — same per-container check set.
+        # pulldown-cmark/src/parse.rs::scan_containers - same per-container check set.
         matched = 0
         for c in self._stack:
             if isinstance(c, OpenBlockQuote):
@@ -315,7 +315,7 @@ class BlockMachine:
         return matched
 
     def _close_to_depth(self, depth: int, events: list[Event], line_offset: int) -> None:
-        # First close any open leaf — it belongs to the innermost (currently doomed) container.
+        # First close any open leaf - it belongs to the innermost (currently doomed) container.
         if self._open is not None:
             events.extend(self._close_to_events(self._open, line_offset))
             self._open = None
@@ -330,7 +330,7 @@ class BlockMachine:
         save = ls.clone()
         leading = ls.scan_space_upto(3)
         if leading == 3 and ls.position < len(ls.line) and ls.line[ls.position] == ' ':
-            # Actually 4+ spaces of indent — no container start here.
+            # Actually 4+ spaces of indent - no container start here.
             ls.restore(save)
             return False
 
@@ -385,7 +385,7 @@ class BlockMachine:
                 existing_list.is_ordered != marker.is_ordered
                 or existing_list.marker_char != marker.char
             ):
-                # Different list kind — close it first.
+                # Different list kind - close it first.
                 if self._open is not None:
                     events.extend(self._close_to_events(self._open, bl.line_start))
                     self._open = None
@@ -499,7 +499,7 @@ class BlockMachine:
                     )
                     self._open = None
                     return
-                # Table head promotion — the LAST line of the open paragraph is a header candidate iff it contains a
+                # Table head promotion - the LAST line of the open paragraph is a header candidate iff it contains a
                 # `|`. The line under inspection (`content`) is the alignment row. Per GFM, the head row's column count
                 # must match the alignment row's exactly; padding doesn't count.
                 if (
@@ -622,7 +622,7 @@ class BlockMachine:
             self._open = block
             return
 
-        # Default — open a paragraph.
+        # Default - open a paragraph.
         new_bl = dc.replace(bl, text=content, line_start=absolute_content_start)
         self._open = OpenParagraph(lines=(new_bl,))
 
@@ -685,7 +685,7 @@ class BlockMachine:
             if cell_text:
                 # Inline-parse the cell content. We give it a synthetic single-line wrap; offsets are approximate (the
                 # per-cell source-offset accounting would require tracking each cell's start position back into the row
-                # line, which is doable but adds noise to the table scanner — punted to a later refinement).
+                # line, which is doable but adds noise to the table scanner - punted to a later refinement).
                 synth = BufferedLine(
                     text=cell_text,
                     line_start=row_line.line_start,
@@ -708,7 +708,7 @@ class BlockMachine:
     ) -> None:
         # A blank line ALWAYS ends the table. Other non-row content (any line that doesn't contain at least one `|`, but
         # per GFM a single-column row is allowed with no pipe at all if the table is open with single-column alignments)
-        # — we accept anything non-blank while the table is open, treating it as a row.
+        # - we accept anything non-blank while the table is open, treating it as a row.
         if is_blank_line(content):
             events.extend(self._close_to_events(open_, bl.line_start))
             self._open = None
@@ -795,7 +795,7 @@ class BlockMachine:
             new_line = BufferedLine(text='', line_start=bl.line_start, line_next=bl.line_next)
             self._open = dc.replace(self._open, lines=(*self._open.lines, new_line))
             return
-        # No open leaf — blank lines just pass through.
+        # No open leaf - blank lines just pass through.
 
     def _line_starts_new_block(self, line: str) -> bool:
         """
@@ -803,7 +803,7 @@ class BlockMachine:
         lazy / direct paragraph continuation applies.
 
         The CommonMark "ordered list with start != 1 cannot interrupt a paragraph" rule only applies when there is no
-        enclosing list of matching type — a `2.` on a line whose enclosing list is ordered-with-period continues that
+        enclosing list of matching type - a `2.` on a line whose enclosing list is ordered-with-period continues that
         list and therefore interrupts the prior item's paragraph.
         """
 
@@ -826,7 +826,7 @@ class BlockMachine:
             return True
         marker = scan_list_marker(body)
         if marker is not None:
-            # Bullet `-` / `*` only — `- - -` is a thematic break, not a list-marker interrupt.
+            # Bullet `-` / `*` only - `- - -` is a thematic break, not a list-marker interrupt.
             if not marker.is_ordered and marker.char in '-*' and scan_hrule(body):
                 return False
             if marker.is_ordered and marker.start != 1:
@@ -866,7 +866,7 @@ class BlockMachine:
             heading_level: int | None,
     ) -> list[Event]:
         out: list[Event] = events if events is not None else []
-        # Refdef peel — only for plain paragraphs (a setext-promoted heading uses the entire paragraph as heading
+        # Refdef peel - only for plain paragraphs (a setext-promoted heading uses the entire paragraph as heading
         # content, so refdefs would be inside the heading text per CM).
         lines = p.lines
         if heading_level is None:

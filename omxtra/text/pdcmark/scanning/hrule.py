@@ -9,7 +9,7 @@ or tabs, optionally indented up to 3 spaces, possibly followed by trailing space
 ##
 
 
-# pulldown-cmark/src/scanners.rs::scan_hrule — same semantics; we return a plain bool instead of Rust's Result<usize,
+# pulldown-cmark/src/scanners.rs::scan_hrule - same semantics; we return a plain bool instead of Rust's Result<usize,
 # usize>. The position-bound caching that motivates the Err(min_offset) form in Rust is handled separately by
 # LineStart.min_hrule on our side.
 def scan_hrule(line: str) -> bool:

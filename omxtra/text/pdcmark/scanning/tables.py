@@ -2,9 +2,9 @@
 GFM pipe-table scanners.
 
 Two scanners:
-  - `parse_alignment_row` — recognizes the dashes-and-colons row that confirms a table head. Returns the per-column
+  - `parse_alignment_row` - recognizes the dashes-and-colons row that confirms a table head. Returns the per-column
     `Alignment` tuple on success.
-  - `parse_table_row` — splits a regular row into trimmed cell texts, padded or truncated to the expected column count.
+  - `parse_table_row` - splits a regular row into trimmed cell texts, padded or truncated to the expected column count.
 
 Both handle the GFM rules around leading / trailing pipes, escaped pipes `\\|` inside cells, and optional surrounding
 whitespace.

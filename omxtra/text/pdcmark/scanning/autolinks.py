@@ -24,7 +24,7 @@ _RE_URI = re.compile(
 )
 
 
-# Per CM §6.5 — direct port of the spec regex.
+# Per CM §6.5 - direct port of the spec regex.
 _RE_EMAIL = re.compile(
     r"[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+"
     r"@"

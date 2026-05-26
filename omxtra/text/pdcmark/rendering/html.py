@@ -117,7 +117,7 @@ def _escape_href(s: str) -> str:
     while i < n:
         c = s[i]
         if c == '%' and i + 2 < n and s[i + 1] in '0123456789abcdefABCDEF' and s[i + 2] in '0123456789abcdefABCDEF':
-            # Pre-existing percent-escape — pass through.
+            # Pre-existing percent-escape - pass through.
             out.append(s[i:i + 3])
             i += 3
             continue
@@ -162,10 +162,10 @@ class _HtmlRenderer:
         # escape_html, swallowing nested Start/End tags. We do the same: when image nesting depth > 0, suppress nested
         # Start/End and gather Text events into the alt buffer.
         self._image_nesting = 0
-        self._image_dest_url: list[str] = []   # stack — supports nested images
+        self._image_dest_url: list[str] = []   # stack - supports nested images
         self._image_title: list[str] = []
         self._image_alt_buf: list[list[str]] = []
-        # Table state — pulldown-cmark/src/html.rs uses the same shape. Pushed on Start(Table), popped on End(Table);
+        # Table state - pulldown-cmark/src/html.rs uses the same shape. Pushed on Start(Table), popped on End(Table);
         # supports nested tables (rare but legal).
         self._table_alignments: list[tuple] = []  # current table's alignments
         self._table_in_head: list[bool] = []      # True while inside TableHead
@@ -232,7 +232,7 @@ class _HtmlRenderer:
                 return
             if isinstance(tag, Paragraph):
                 if self._suppressed_paragraphs and self._suppressed_paragraphs.pop():
-                    return  # matching suppressed Start — emit no </p>
+                    return  # matching suppressed Start - emit no </p>
                 self._end_tag(tag)
                 return
             if isinstance(tag, _BLOCK_TAGS):
@@ -333,7 +333,7 @@ class _HtmlRenderer:
             self._newline()
             self._write('<pre><code>')
         elif isinstance(tag, HtmlBlock):
-            # No wrapper — content is raw HTML emitted via Html events.
+            # No wrapper - content is raw HTML emitted via Html events.
             pass
         elif isinstance(tag, List):
             self._newline()
@@ -389,7 +389,7 @@ class _HtmlRenderer:
             if tag.title:
                 self._write(f' title="{_escape_html(tag.title)}"')
             self._write('>')
-        # Image starts are handled by _dispatch via _open_image — they switch the renderer into alt-text-collection mode
+        # Image starts are handled by _dispatch via _open_image - they switch the renderer into alt-text-collection mode
         # and never reach _start_tag.
         else:
             raise TypeError(tag)
@@ -416,7 +416,7 @@ class _HtmlRenderer:
                 self._write('</tbody>')
                 self._newline()
             else:
-                # No body rows — emit empty <tbody></tbody> (pulldown / GFM convention).
+                # No body rows - emit empty <tbody></tbody> (pulldown / GFM convention).
                 self._write('<tbody></tbody>')
                 self._newline()
             self._write('</table>')

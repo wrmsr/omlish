@@ -9,7 +9,7 @@ CommonMark §5.1: a blockquote starts with `>` (optionally indented up to 3 spac
 ##
 
 
-# pulldown-cmark/src/scanners.rs::scan_blockquote_start — same semantics; we don't take leading indent (the BlockMachine
+# pulldown-cmark/src/scanners.rs::scan_blockquote_start - same semantics; we don't take leading indent (the BlockMachine
 # consumes that via LineStart before calling us).
 def scan_blockquote_marker(line: str, i: int = 0) -> int | None:
     """
