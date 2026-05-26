@@ -1,5 +1,5 @@
 """
-Adversarial input tests — the link-reference expansion-bomb that motivates pulldown's `link_ref_expansion_limit` (see
+Adversarial input tests - the link-reference expansion-bomb that motivates pulldown's `link_ref_expansion_limit` (see
 pulldown-cmark issue #844 and parse.rs::ParserInner). Without the fuel guard, an input that repeatedly references the
 same large refdef can balloon output size quadratically.
 """

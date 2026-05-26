@@ -190,7 +190,7 @@ def test_hrule_beats_bullet_list():
 def test_deeply_nested_list_marker_starts_new_item():
     # Regression: a deeply-indented bullet marker must start a new item in the matching enclosing list, not be absorbed
     # by lazy continuation into the parent item's open paragraph. Before the fix, the lazy-continuation check evaluated
-    # `_line_starts_new_block` against the RAW line (`      - C2`) — saw 6 leading spaces, treated as indented-code
+    # `_line_starts_new_block` against the RAW line (`      - C2`) - saw 6 leading spaces, treated as indented-code
     # territory, returned False, and lazy-extended the paragraph.
     src = '- A\n  - B\n    - C1\n    - C2\n    - C3\n'
     out = feed(src)

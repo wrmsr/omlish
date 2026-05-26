@@ -29,8 +29,8 @@ def test_ordered_paren():
 
 
 def test_ordered_max_digits():
-    assert scan_list_marker('1234567890. x') is None  # 10 digits — over the limit
-    m = scan_list_marker('123456789. x')              # 9 digits — ok
+    assert scan_list_marker('1234567890. x') is None  # 10 digits - over the limit
+    m = scan_list_marker('123456789. x')              # 9 digits - ok
     assert m is not None and m.start == 123456789
 
 

@@ -100,7 +100,7 @@ def test_fenced_code_block():
 
 
 def test_fenced_code_closes_at_eof():
-    # No close fence — should still emit a valid code block at finish.
+    # No close fence - should still emit a valid code block at finish.
     out = feed('```\nfoo\n')
     assert isinstance(out[0], m.Start) and isinstance(out[0].tag, m.FencedCodeBlock)
     assert isinstance(out[-1], m.End)

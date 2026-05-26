@@ -69,7 +69,7 @@ def test_nested_strong_in_emphasis():
 
 
 def test_asymmetric_left_loses_to_mod3():
-    # `*foo**bar*` — D2 (count=2) doesn't pair with D3 (count=1) due to mod-3 rule; D3 falls through to D1, emphasis
+    # `*foo**bar*` - D2 (count=2) doesn't pair with D3 (count=1) due to mod-3 rule; D3 falls through to D1, emphasis
     # wraps everything.
     out = _resolve('*foo**bar*')
     assert _summarize(out) == "E['foo' '**' 'bar']"
@@ -93,6 +93,6 @@ def test_mixed_marker_no_pairing():
 
 
 def test_emphasis_inside_emphasis_same_marker():
-    # `*foo *bar* baz*` — inner emphasis nested in outer.
+    # `*foo *bar* baz*` - inner emphasis nested in outer.
     out = _resolve('*foo *bar* baz*')
     assert _summarize(out) == "E['foo ' E['bar'] ' baz']"

@@ -1,13 +1,13 @@
 """
 Source-offset consistency checks.
 
-Every event carries `offset = (start, end)` — character indices into the absolute input stream. We assert a small set of
+Every event carries `offset = (start, end)` - character indices into the absolute input stream. We assert a small set of
 invariants over the CommonMark spec corpus:
 
   - 0 <= start <= end <= len(input)
   - For Start/End pairs of the same Tag: enclosing event's start <= every inner offset start, and enclosing event's end
     >= every inner offset end.
-  - For leaf events (Text, Code, Html, …) the offsets must be inside their enclosing Start/End.
+  - For leaf events (Text, Code, Html, ...) the offsets must be inside their enclosing Start/End.
 
 We don't enforce strict monotonicity (Text events can have empty spans, autolinks emit Start/Text/End all with the same
 offset, etc.), but we DO assert no event reports an offset outside [0, len(input)].
@@ -47,17 +47,15 @@ def _bad_offsets(events, src_len) -> list[str]:
                 issues.append(f'event #{ix} End with no matching Start')
                 continue
             tag, span, sx = open_stack.pop()
-            # End's offset should be the same (start, end) as the Start's — both span the whole element.
+            # End's offset should be the same (start, end) as the Start's - both span the whole element.
             if ev.offset[0] != span[0] or ev.offset[1] != span[1]:
                 # NOTE: a couple of constructs (e.g. blockquotes whose final newline is missing because the document
                 # ended on an unterminated line) reasonably have End.end > Start.end. We tolerate end-difference but not
                 # start-difference.
                 if ev.offset[0] != span[0]:
-                    issues.append(
-                        f'End #{ix} span {ev.offset} doesn\'t match opening Start #{sx} span {span}',
-                    )
+                    issues.append(f'End #{ix} span {ev.offset} doesn\'t match opening Start #{sx} span {span}')
             continue
-        # Leaf event — must be inside the topmost open span if any.
+        # Leaf event - must be inside the topmost open span if any.
         if open_stack:
             parent_tag, parent_span, _ = open_stack[-1]
             if start < parent_span[0] or end > parent_span[1]:
@@ -103,7 +101,7 @@ def test_offset_slice_round_trips_basic():
     events = parse(src)
     text_events = [e for e in events if isinstance(e, m.Text)]
     for t in text_events:
-        # The slice should equal the text content (possibly modulo trivial whitespace — the inline parser strips leading
+        # The slice should equal the text content (possibly modulo trivial whitespace - the inline parser strips leading
         # whitespace from paragraph lines).
         slice_ = src[t.offset[0]:t.offset[1]]
         assert t.text in slice_ or slice_.strip() == t.text.strip()

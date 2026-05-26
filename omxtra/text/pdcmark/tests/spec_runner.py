@@ -9,10 +9,10 @@ Format (cf. CommonMark dingus / pulldown-cmark/pulldown-cmark/specs/*.txt):
     <expected html>
     ````````````````````````````````
 
-The fence is a long run of backticks (>= 3, in practice 32). The opening fence is followed by a keyword — `example` for
+The fence is a long run of backticks (>= 3, in practice 32). The opening fence is followed by a keyword - `example` for
 tests that run, `DISABLED example` (or `... DISABLED`) for tests skipped. Inside, a `.` on its own line separates the
-markdown source from the expected HTML. Section titles (setext-style `=== ` underlines or `## …` headings) are picked up
-as group names for nicer pytest IDs.
+markdown source from the expected HTML. Section titles (setext-style `=== ` underlines or `## ...` headings) are picked
+up as group names for nicer pytest IDs.
 
 Tabs in spec fixtures are written as the literal arrow character `→` (U+2192) and substituted back to `\\t` at load
 time, matching how the CommonMark spec source is authored.

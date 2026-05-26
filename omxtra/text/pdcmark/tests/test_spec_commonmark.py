@@ -103,7 +103,7 @@ def test_cm_section_full_pass(cm_cases, section):
 _CURATED_CASE_INDICES = (
     # Numbers reference upstream CM 0.30 spec.txt indices. Cases listed here are exact-match smoke tests covering
     # features we explicitly want green on each milestone.
-    # M1 — block-level:
+    # M1 - block-level:
     1,    # tab in indented code
     43,   # thematic break (* / - / _)
     69,   # HTML block - <table>
@@ -112,24 +112,24 @@ _CURATED_CASE_INDICES = (
     148,  # blockquote with ATX heading and paragraph
     568,  # soft line break
     570,  # textual content with punctuation
-    # M2 — inline core:
+    # M2 - inline core:
     13,   # backslash-escape of various ASCII punctuation
     248,  # simple code span: `foo`
     249,  # code span trimming: `` foo ` bar ``
     270,  # *foo bar*
-    273,  # `* a *` — non-breaking-space flanking
+    273,  # `* a *` - non-breaking-space flanking
     514,  # autolink URI
     515,  # autolink URI with query
     533,  # raw inline HTML series
     553,  # hard break via trailing spaces
-    # M3 — links / images (default mode, no prescan needed for these):
+    # M3 - links / images (default mode, no prescan needed for these):
     402,  # inline link `[link](/uri "title")`
     403,  # inline link no title
     404,  # inline link with empty text
     492,  # inline image
-    # M4 — GFM extensions are tested in test_spec_gfm.py.
-    # M5 — tight-list rendering:
-    177,  # tight list — `-    one\n\n     two`
+    # M4 - GFM extensions are tested in test_spec_gfm.py.
+    # M5 - tight-list rendering:
+    177,  # tight list - `-    one\n\n     two`
     221,  # mixed bullet markers → multiple tight lists
 )
 

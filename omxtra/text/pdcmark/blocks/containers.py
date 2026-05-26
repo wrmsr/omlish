@@ -9,7 +9,8 @@ foo` is:
 
 Cf. pulldown-cmark/src/firstpass.rs::FirstPass - pulldown stores containers as tree nodes with `ItemBody::BlockQuote` /
 `ItemBody::List` / `ItemBody::ListItem`; we store them as Python objects on a stack. Continuation handling and the
-"scan_containers" walk are the same algorithm. """
+"scan_containers" walk are the same algorithm.
+"""
 from omlish import dataclasses as dc
 from omlish import lang
 

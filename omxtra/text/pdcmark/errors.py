@@ -18,7 +18,7 @@ class ParserStateError(PdcmarkError):
 
 class ResourceLimitExceededError(PdcmarkError):
     """
-    Raised when a DoS-mitigation limit (nesting depth, fuel, …) is exceeded.
+    Raised when a DoS-mitigation limit (nesting depth, fuel, ...) is exceeded.
 
     See `pulldown-cmark/src/parse.rs::LINK_MAX_NESTED_PARENS` and `ParserInner::link_ref_expansion_limit` for the
     analogous Rust-side guards.

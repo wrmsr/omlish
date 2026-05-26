@@ -125,7 +125,7 @@ def test_first_definition_wins():
 
 
 def test_setext_paragraph_is_not_refdef():
-    # A paragraph that becomes a setext heading should NOT have refdefs peeled — `[foo]: /url\n===` is a level-1 heading
+    # A paragraph that becomes a setext heading should NOT have refdefs peeled - `[foo]: /url\n===` is a level-1 heading
     # with content `[foo]: /url`.
     events, refdefs = _feed('[foo]: /url\n===\n')
     assert any(isinstance(e, m.Start) and isinstance(e.tag, m.Heading) for e in events)

@@ -1,12 +1,12 @@
 """
-Full-reparse equivalence — the load-bearing invariant from docs/00_Goals.md:
+Full-reparse equivalence - the load-bearing invariant from docs/00_Goals.md:
 
   > Feeding the entire input in one feed() followed by finish() produces a committed stream
   > identical to feeding it in N arbitrary chunks followed by finish(). The consumer never
   > needs a "safety reparse at end" pass.
 
 We verify this over the entire upstream CommonMark spec corpus and the GFM-extension corpora, under several chunking
-strategies — single-char, fixed-size, random, line-boundary, etc.
+strategies - single-char, fixed-size, random, line-boundary, etc.
 """
 import os.path
 import random
@@ -20,7 +20,7 @@ from ...streaming.parser import StreamingParser
 from ...tests.spec_runner import load_spec_file
 
 
-# Chunking strategies — each takes a str and yields a sequence of chunks whose concatenation is the original.
+# Chunking strategies - each takes a str and yields a sequence of chunks whose concatenation is the original.
 
 
 def chunk_whole(s: str) -> list[str]:
