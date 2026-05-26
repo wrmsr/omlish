@@ -964,7 +964,7 @@ _GFM_ADMONITION_TAGS = {
 }
 
 
-def _scan_blockquote_kind_consuming(ls: LineStart) -> 'BlockQuoteKind | None':
+def _scan_blockquote_kind_consuming(ls: LineStart) -> BlockQuoteKind | None:
     """
     Look at the remainder of the line for `[!NAME]` followed only by whitespace through EOL. On match, consume the
     marker text and return the kind. Otherwise leave `ls` unchanged.

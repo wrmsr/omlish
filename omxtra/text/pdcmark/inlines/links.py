@@ -14,6 +14,7 @@ CommonMark Appendix A:
   - Resolution order for a closer: inline → reference → collapsed → shortcut. Whichever first succeeds wins. None
     succeeded? The opener / closer revert to text.
 """
+from omlish import check
 from omlish import dataclasses as dc
 
 from ..blocks.refdefs import LinkDef
@@ -95,7 +96,7 @@ def resolve_links(
             match_s = len(stack) - 1
             entry = stack[match_s]
             opener = nodes[entry.node_index]
-            assert isinstance(opener, LinkOpenNode)
+            check.isinstance(opener, LinkOpenNode)
 
             # Inner children = nodes strictly between opener and closer.
             children = nodes[entry.node_index + 1:i]

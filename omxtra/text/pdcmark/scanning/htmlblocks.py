@@ -143,7 +143,7 @@ def scan_html_block_start(line: str) -> HtmlBlockStart | None:
     if is_close:
         i += 1
     j = i
-    while j < n and (line[j].isalnum() and line[j].isascii() or (j > i and line[j] in '0123456789')):
+    while j < n and ((line[j].isalnum() and line[j].isascii()) or (j > i and line[j] in '0123456789')):
         j += 1
     if j == i:
         return None

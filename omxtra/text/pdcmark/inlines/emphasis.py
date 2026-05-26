@@ -9,6 +9,8 @@ into `EmphasisGroup`s. Anything left unpaired at the end falls back to plain tex
 Cf. pulldown-cmark/src/parse.rs::{handle_emphasis_and_hard_break, InlineStack} — same algorithm. The pulldown version
 operates on its block tree in place; we operate on a fresh list.
 """
+from omlish import check
+
 from .nodes import DelimNode
 from .nodes import EmphasisGroup
 from .nodes import InlineNode
@@ -42,7 +44,7 @@ def resolve_emphasis(nodes: list[InlineNode]) -> list[InlineNode]:
             if match_s is not None:
                 opener_i = delim_stack[match_s]
                 opener = nodes[opener_i]
-                assert isinstance(opener, DelimNode)
+                check.isinstance(opener, DelimNode)
 
                 # GFM strikethrough: `~` and `~~` both produce <del>; longer runs (`~~~+`) don't pair at all. Equivalent
                 # to the GFM "tilde must be ≤ 2 chars" rule.

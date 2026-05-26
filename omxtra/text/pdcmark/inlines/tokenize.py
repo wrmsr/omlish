@@ -398,7 +398,7 @@ def _is_unicode_punct(c: str) -> bool:
     if c in '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~':
         return True
     cat = unicodedata.category(c)
-    return cat.startswith('P') or cat.startswith('S')
+    return cat.startswith(('P', 'S'))
 
 
 def _line_index_at_newline(joined: _Joined, pos: int) -> int | None:
