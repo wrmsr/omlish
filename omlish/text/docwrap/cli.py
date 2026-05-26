@@ -75,6 +75,7 @@ def _main(argv: ta.Sequence[str] | None = None) -> None:
 
     parser.add_argument('-s', '--start-line', type=int)
     parser.add_argument('-e', '--end-line', type=int)
+
     parser.add_argument('-i', '--in-place', action='store_true')
 
     args = parser.parse_args(argv)

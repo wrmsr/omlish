@@ -8,6 +8,7 @@ from omlish import marshal as msh
 from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
+from .....backends.openai import protocol as pt
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesService
 from ....chat.messages import Message
@@ -22,9 +23,87 @@ from ....standard import ApiKey
 from ....tools.types import ToolDtype
 from ....tools.types import ToolParam
 from ....tools.types import ToolSpec
+from ....tools.types import ToolUse
 from ....tools.types import ToolUseResult
 from ....wrappers.updateoptions import UpdateOptionsService
 from ..chat import OpenaiChatChoicesService
+from ..format import OpenaiChatRequestHandler
+from ..format import build_oai_request_msgs
+
+
+def test_openai_parallel_tool_call_request_messages():
+    chat: list[Message] = [
+        UserMessage('Use both tools.'),
+        ToolUseMessage(ToolUse(
+            id='call_1',
+            name='first_tool',
+            args={'value': 1},
+            raw_args='{"value":1}',
+        )),
+        ToolUseMessage(ToolUse(
+            id='call_2',
+            name='second_tool',
+            args={'value': 2},
+            raw_args='{"value":2}',
+        )),
+        ToolUseResultMessage(ToolUseResult(
+            id='call_1',
+            name='first_tool',
+            c='first result',
+        )),
+        ToolUseResultMessage(ToolUseResult(
+            id='call_2',
+            name='second_tool',
+            c='second result',
+        )),
+    ]
+
+    oai_msgs = list(build_oai_request_msgs(chat))
+
+    assert len(oai_msgs) == 4
+    assistant_msg = check.isinstance(oai_msgs[1], pt.AssistantChatCompletionMessage)
+    assert assistant_msg.content is None
+    tool_calls = list(check.not_none(assistant_msg.tool_calls))
+    assert [tc.id for tc in tool_calls] == ['call_1', 'call_2']
+    assert [tc.function.name for tc in tool_calls] == ['first_tool', 'second_tool']
+    assert [tc.function.arguments for tc in tool_calls] == ['{"value":1}', '{"value":2}']
+
+    tool_result_msgs = [
+        check.isinstance(oai_msg, pt.ToolChatCompletionMessage)
+        for oai_msg in oai_msgs[2:]
+    ]
+    assert [m.tool_call_id for m in tool_result_msgs] == ['call_1', 'call_2']
+
+
+def test_openai_parallel_tool_calls_enabled_with_tools():
+    tool_spec = ToolSpec(
+        'get_weather',
+        params=[
+            ToolParam(
+                'location',
+                type=ToolDtype.of(str),
+            ),
+        ],
+    )
+
+    req = OpenaiChatRequestHandler(
+        [UserMessage('What is the weather in Seattle?')],
+        Tool(tool_spec),
+        model='gpt-test',
+    ).oai_request()
+
+    assert req.tools is not None
+    assert req.parallel_tool_calls is True
+
+
+def test_openai_parallel_tool_calls_omitted_without_tools():
+    req = OpenaiChatRequestHandler(
+        [UserMessage('Hi!')],
+        model='gpt-test',
+    ).oai_request()
+
+    assert req.tools is None
+    assert req.parallel_tool_calls is None
 
 
 @pytest.mark.online

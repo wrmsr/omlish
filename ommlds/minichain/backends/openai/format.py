@@ -1,3 +1,4 @@
+import itertools
 import typing as ta
 
 from omlish import cached
@@ -40,48 +41,65 @@ from ...types import Option
 def build_oai_request_msgs(mc_chat: Chat) -> ta.Sequence[pt.ChatCompletionMessage]:
     oai_msgs: list[pt.ChatCompletionMessage] = []
 
-    for mc_msg in mc_chat:
-        if isinstance(mc_msg, SystemMessage):
-            oai_msgs.append(pt.SystemChatCompletionMessage(
-                content=check.isinstance(mc_msg.c, str),
-            ))
+    for _, g in itertools.groupby(mc_chat, lambda mc_m: isinstance(mc_m, AnyAiMessage)):
+        mc_msgs = list(g)
 
-        elif isinstance(mc_msg, AiMessage):
-            oai_msgs.append(pt.AssistantChatCompletionMessage(
-                content=check.isinstance(mc_msg.c, (str, None)),
-            ))
+        if isinstance(mc_msgs[0], AnyAiMessage):
+            tups: list[tuple[AiMessage | None, list[ToolUseMessage]]] = []
+            for mc_msg in mc_msgs:
+                if isinstance(mc_msg, AiMessage):
+                    tups.append((mc_msg, []))
 
-        elif isinstance(mc_msg, ToolUseMessage):
-            oai_msgs.append(pt.AssistantChatCompletionMessage(
-                tool_calls=[pt.AssistantChatCompletionMessage.ToolCall(
-                    id=check.not_none(mc_msg.tu.id),
-                    function=pt.AssistantChatCompletionMessage.ToolCall.Function(
-                        arguments=check.not_none(mc_msg.tu.raw_args),
-                        name=mc_msg.tu.name,
-                    ),
-                )],
-            ))
+                elif isinstance(mc_msg, ToolUseMessage):
+                    if not tups:
+                        tups.append((None, []))
+                    tups[-1][1].append(mc_msg)
 
-        elif isinstance(mc_msg, UserMessage):
-            oai_msgs.append(pt.UserChatCompletionMessage(
-                content=render_content_str(mc_msg.c),
-            ))
+                else:
+                    raise TypeError(mc_msg)
 
-        elif isinstance(mc_msg, ToolUseResultMessage):
-            tc: str
-            if isinstance(mc_msg.tur.c, str):
-                tc = mc_msg.tur.c
-            elif isinstance(mc_msg.tur.c, JsonContent):
-                tc = json.dumps_compact(mc_msg.tur.c)
-            else:
-                raise TypeError(mc_msg.tur.c)
-            oai_msgs.append(pt.ToolChatCompletionMessage(
-                tool_call_id=check.not_none(mc_msg.tur.id),
-                content=tc,
-            ))
+            for mc_ai_msg, mc_tu_msgs in tups:
+                oai_msgs.append(pt.AssistantChatCompletionMessage(
+                    content=check.isinstance(mc_ai_msg.c, (str, None)) if mc_ai_msg is not None else None,
+                    tool_calls=[
+                        pt.AssistantChatCompletionMessage.ToolCall(
+                            id=check.not_none(mc_tu_msg.tu.id),
+                            function=pt.AssistantChatCompletionMessage.ToolCall.Function(
+                                arguments=check.not_none(mc_tu_msg.tu.raw_args),
+                                name=mc_tu_msg.tu.name,
+                            ),
+                        )
+                        for mc_tu_msg in mc_tu_msgs
+                    ] if mc_tu_msgs else None,
+                ))
 
         else:
-            raise TypeError(mc_msg)
+            for mc_msg in mc_msgs:
+                if isinstance(mc_msg, SystemMessage):
+                    oai_msgs.append(pt.SystemChatCompletionMessage(
+                        content=check.isinstance(mc_msg.c, str),
+                    ))
+
+                elif isinstance(mc_msg, UserMessage):
+                    oai_msgs.append(pt.UserChatCompletionMessage(
+                        content=render_content_str(mc_msg.c),
+                    ))
+
+                elif isinstance(mc_msg, ToolUseResultMessage):
+                    tc: str
+                    if isinstance(mc_msg.tur.c, str):
+                        tc = mc_msg.tur.c
+                    elif isinstance(mc_msg.tur.c, JsonContent):
+                        tc = json.dumps_compact(mc_msg.tur.c)
+                    else:
+                        raise TypeError(mc_msg.tur.c)
+                    oai_msgs.append(pt.ToolChatCompletionMessage(
+                        tool_call_id=check.not_none(mc_msg.tur.id),
+                        content=tc,
+                    ))
+
+                else:
+                    raise TypeError(mc_msg)
 
     return oai_msgs
 
@@ -228,6 +246,7 @@ class OpenaiChatRequestHandler:
             messages=build_oai_request_msgs(self._chat),
             top_p=1,
             tools=tools or None,
+            parallel_tool_calls=True if (tools and not (self._mandatory_kwargs or {}).get('stream')) else None,
             frequency_penalty=0.0,
             presence_penalty=0.0,
             **po.kwargs,

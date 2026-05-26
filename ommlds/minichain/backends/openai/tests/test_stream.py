@@ -85,7 +85,42 @@ async def test_openai_stream_tools(harness):
         [
             SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
             UserMessage('What is the weather in Seattle?'),
-            UserMessage(''),
+        ],
+        [
+            Tool(tool_spec),
+        ],
+    )
+
+    async with (await llm.invoke(foo_req)).v as it:
+        async for o in it:
+            print(o)
+        print(it.outputs)
+
+
+@pytest.mark.asyncs('asyncio')
+@pytest.mark.online
+async def test_openai_stream_parallel_tools(harness):
+    tool_spec = ToolSpec(
+        'get_weather',
+        params=[
+            ToolParam(
+                'location',
+                type=ToolDtype.of(str),
+                desc='The location to get the weather for.',
+            ),
+        ],
+        desc='Gets the weather in the given location.',
+    )
+
+    llm = OpenaiChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+    )
+
+    foo_req: ChatChoicesStreamRequest
+    foo_req = ChatChoicesStreamRequest(
+        [
+            SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
+            UserMessage('What is the weather in Seattle? Also, what is the weather in San Francisco?'),
         ],
         [
             Tool(tool_spec),

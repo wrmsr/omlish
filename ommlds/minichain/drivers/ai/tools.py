@@ -47,28 +47,29 @@ class ToolExecutingAiChatGenerator(AiChatGenerator):
                 dc.replace(args, chat=[*args.chat, *out]),
             )
 
-            cont = False
+            out.extend(new)
 
-            for msg in new:
-                out.append(msg)
+            tool_use_messages = [
+                msg
+                for msg in new
+                if isinstance(msg, ToolUseMessage)
+            ]
 
-                if isinstance(msg, ToolUseMessage):
-                    use = msg.tu
+            for msg in tool_use_messages:
+                use = msg.tu
 
-                    tce = self._catalog.by_name[check.non_empty_str(use.name)]
+                tce = self._catalog.by_name[check.non_empty_str(use.name)]
 
-                    trr = await self._executor.execute_tool_use(ToolUseExecution(
-                        msg.tu,
-                        tce,
-                    ))
+                trr = await self._executor.execute_tool_use(ToolUseExecution(
+                    msg.tu,
+                    tce,
+                ))
 
-                    trm = ToolUseResultMessage(trr)
+                trm = ToolUseResultMessage(trr)
 
-                    trm = check.isinstance(check.single(self._mt.transform(trm)), ToolUseResultMessage)
+                trm = check.isinstance(check.single(self._mt.transform(trm)), ToolUseResultMessage)
 
-                    out.append(trm)
+                out.append(trm)
 
-                    cont = True
-
-            if not cont:
+            if not tool_use_messages:
                 return out
