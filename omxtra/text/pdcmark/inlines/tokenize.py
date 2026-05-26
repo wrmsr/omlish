@@ -165,8 +165,14 @@ def tokenize_inline(
             # Determine which line transition this newline marks. Find the line whose joined_start + text_len == i.
             line_ix = _line_index_at_newline(joined, i)
             is_hard = joined.hard_break_after[line_ix] if line_ix is not None else False
-            line_end_source = joined.lines[line_ix].source_next if line_ix is not None else _source_offset(joined, i + 1)
-            line_start_source = joined.lines[line_ix].source_start + joined.lines[line_ix].text_len if line_ix is not None else _source_offset(joined, i)
+            line_end_source = (
+                joined.lines[line_ix].source_next
+                if line_ix is not None else _source_offset(joined, i + 1)
+            )
+            line_start_source = (
+                joined.lines[line_ix].source_start + joined.lines[line_ix].text_len
+                if line_ix is not None else _source_offset(joined, i)
+            )
             if is_hard:
                 emit(HardBreakNode(offset=(line_start_source, line_end_source)))
             else:
@@ -258,7 +264,7 @@ def tokenize_inline(
 
         # Link close `]` — also peeks ahead for the link suffix.
         if c == ']':
-            close_start_src = _source_offset(joined, i)
+            close_start_src = _source_offset(joined, i)  # noqa
             close_node, consumed_to = _scan_link_suffix(s, i, joined)
             emit(close_node)
             i = consumed_to

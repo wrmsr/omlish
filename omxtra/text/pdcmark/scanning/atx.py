@@ -1,7 +1,7 @@
 """
 ATX heading scanner.
 
-CommonMark §4.2: opening sequence of 1–6 `#` characters, followed by a space, a tab, or end-of-line. The line content
+CommonMark §4.2: opening sequence of 1-6 `#` characters, followed by a space, a tab, or end-of-line. The line content
 runs until end-of-line; optional trailing `#` sequence (preceded by space and followed by spaces only) is stripped.
 
 This module provides the scan side; trimming the trailing `#` run lives in `strip_atx_trailers` for the block machine to

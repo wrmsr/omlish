@@ -96,7 +96,4 @@ def is_blank_line(line: str) -> bool:
 
     if not line:
         return True
-    for c in line:
-        if not is_ascii_whitespace_no_nl(c):
-            return False
-    return True
+    return all(is_ascii_whitespace_no_nl(c) for c in line)

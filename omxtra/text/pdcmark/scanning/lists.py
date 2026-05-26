@@ -1,7 +1,7 @@
 """
 List marker scanners — bullet, ordered, and task-list-item-marker.
 
-CommonMark §5.2. Bullet markers are `-`, `+`, or `*`. Ordered markers are 1–9 decimal digits followed by `.` or `)`. The
+CommonMark §5.2. Bullet markers are `-`, `+`, or `*`. Ordered markers are 1-9 decimal digits followed by `.` or `)`. The
 marker must be followed by either a space / tab or end-of-line (otherwise the line is plain text).
 
 We return only the marker descriptor itself. Post-marker indent / tab handling lives in the BlockMachine (it needs

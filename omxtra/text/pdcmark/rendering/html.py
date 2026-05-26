@@ -261,7 +261,7 @@ class _HtmlRenderer:
             else:
                 self._write('<input disabled="" type="checkbox"/>\n')
         else:
-            raise AssertionError(ev)
+            raise TypeError(ev)
 
     # image alt collection
 
@@ -392,7 +392,7 @@ class _HtmlRenderer:
         # Image starts are handled by _dispatch via _open_image — they switch the renderer into alt-text-collection mode
         # and never reach _start_tag.
         else:
-            raise AssertionError(tag)
+            raise TypeError(tag)
 
     def _end_tag(self, tag) -> None:
         if isinstance(tag, Paragraph):
@@ -448,4 +448,4 @@ class _HtmlRenderer:
             self._write('</a>')
         # Image ends are handled by _dispatch via _close_image.
         else:
-            raise AssertionError(tag)
+            raise TypeError(tag)

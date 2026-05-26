@@ -48,7 +48,7 @@ class BlockQuoteKind(enum.Enum):
     CAUTION = 'caution'
 
 
-##  Tags  ##
+# Tags
 
 
 # Marker base for all element tags. Inheritance, not a TypeAlias union — we want isinstance(t, Tag) to mean something
@@ -149,7 +149,7 @@ class Image(Tag):
     id: str
 
 
-##  Events  ##
+# Events
 
 
 # pulldown-cmark/src/lib.rs::Event

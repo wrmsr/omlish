@@ -82,9 +82,7 @@ def _stream(text: str, strategy, options=COMMONMARK):
 
 @pytest.fixture(scope='module')
 def cm_corpus(pulldown_cmark_root) -> list[str]:
-    cases = load_spec_file(
-        os.path.join(pulldown_cmark_root, 'third_party', 'CommonMark', 'spec.txt')
-    )
+    cases = load_spec_file(os.path.join(pulldown_cmark_root, 'third_party', 'CommonMark', 'spec.txt'))
     return [c.markdown for c in cases]
 
 
@@ -97,7 +95,7 @@ def gfm_corpus(pulldown_cmark_root) -> list[str]:
     return out
 
 
-@pytest.mark.parametrize('name,strategy', _STRATEGIES)
+@pytest.mark.parametrize(('name', 'strategy'), _STRATEGIES)
 def test_chunking_equivalence_cm(cm_corpus, name, strategy):
     """For each chunking strategy, streamed committed == oneshot parse for every CM case."""
 
@@ -113,7 +111,7 @@ def test_chunking_equivalence_cm(cm_corpus, name, strategy):
     )
 
 
-@pytest.mark.parametrize('name,strategy', _STRATEGIES)
+@pytest.mark.parametrize(('name', 'strategy'), _STRATEGIES)
 def test_chunking_equivalence_gfm(gfm_corpus, name, strategy):
     """Same equivalence under the GFM preset."""
 

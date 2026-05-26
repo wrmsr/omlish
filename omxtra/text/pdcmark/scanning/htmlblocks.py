@@ -178,10 +178,7 @@ def html_block_close_on_line(html_type: int, line: str) -> bool:
 
     if html_type == 1:
         # Any of the four type-1 close tags. Case-insensitive.
-        for name in _TYPE_1_NAMES:
-            if _TYPE_1_CLOSE_RES[name].search(line):
-                return True
-        return False
+        return any(_TYPE_1_CLOSE_RES[name].search(line) for name in _TYPE_1_NAMES)
     if html_type == 2:
         return '-->' in line
     if html_type == 3:

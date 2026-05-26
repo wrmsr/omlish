@@ -1,3 +1,4 @@
+# ruff: noqa: RUF003
 """
 Integration tests against the upstream CommonMark spec.txt (vendored under the pulldown-cmark submodule's
 third_party/CommonMark/).
@@ -31,7 +32,7 @@ def _render(md: str) -> str:
 def _passes(case: SpecCase) -> bool:
     try:
         return _render(case.markdown) == case.expected_html
-    except Exception:
+    except Exception:  # noqa
         return False
 
 
@@ -62,7 +63,7 @@ def test_cm_spec_pass_count_meets_baseline_prescan(cm_cases):
     def passes_with_prescan(c):
         try:
             return render_html(m.parse(c.markdown, pre_opts)) == c.expected_html
-        except Exception:
+        except Exception:  # noqa
             return False
 
     passes = sum(1 for c in cm_cases if passes_with_prescan(c))

@@ -20,7 +20,7 @@ from omlish import dataclasses as dc
 
 
 _RE_URI = re.compile(
-    r'[A-Za-z][A-Za-z0-9+.\-]{1,31}:[^\s<>\x00-\x1f]*'
+    r'[A-Za-z][A-Za-z0-9+.\-]{1,31}:[^\s<>\x00-\x1f]*',
 )
 
 
@@ -29,7 +29,7 @@ _RE_EMAIL = re.compile(
     r"[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+"
     r"@"
     r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?"
-    r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*"
+    r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*",
 )
 
 

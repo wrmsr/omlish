@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 """
 Start-of-line scanner — indentation, tab expansion, container markers.
 
@@ -65,7 +66,7 @@ class LineStart:
     def min_hrule(self, v: int) -> None:
         self._min_hrule = v
 
-    def clone(self) -> 'LineStart':
+    def clone(self) -> LineStart:
         c = LineStart.__new__(LineStart)
         c._line = self._line
         c._pos = self._pos

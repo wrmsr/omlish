@@ -24,7 +24,7 @@ from .spec_runner import load_spec_file
 @pytest.fixture(scope='module')
 def cm_inputs(pulldown_cmark_root) -> list[str]:
     cases = load_spec_file(
-        os.path.join(pulldown_cmark_root, 'third_party', 'CommonMark', 'spec.txt')
+        os.path.join(pulldown_cmark_root, 'third_party', 'CommonMark', 'spec.txt'),
     )
     return [c.markdown for c in cases]
 
@@ -55,7 +55,7 @@ def _bad_offsets(events, src_len) -> list[str]:
                 # Start.end. We tolerate end-difference but not start-difference.
                 if ev.offset[0] != span[0]:
                     issues.append(
-                        f'End #{ix} span {ev.offset} doesn\'t match opening Start #{sx} span {span}'
+                        f'End #{ix} span {ev.offset} doesn\'t match opening Start #{sx} span {span}',
                     )
             continue
         # Leaf event — must be inside the topmost open span if any.
@@ -64,7 +64,7 @@ def _bad_offsets(events, src_len) -> list[str]:
             if start < parent_span[0] or end > parent_span[1]:
                 issues.append(
                     f'leaf #{ix} {type(ev).__name__} offset {ev.offset} outside '
-                    f'enclosing {type(parent_tag).__name__} span {parent_span}'
+                    f'enclosing {type(parent_tag).__name__} span {parent_span}',
                 )
     if open_stack:
         issues.append(f'unclosed Starts: {[type(t).__name__ for t, _, _ in open_stack]}')

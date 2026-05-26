@@ -144,4 +144,4 @@ def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
             _emit_events(n.children, out)
             out.append(End(offset=n.offset, tag=tag))
         else:
-            raise AssertionError(n)
+            raise TypeError(n)

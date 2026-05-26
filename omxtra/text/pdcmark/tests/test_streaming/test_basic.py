@@ -106,8 +106,8 @@ def test_cr_at_chunk_boundary():
     sp = StreamingParser()
     sp.feed('a\r')
     sp.feed('\nb\n')
-    end = sp.finish()
-    committed = []
+    end = sp.finish()  # noqa
+    committed = []  # noqa
     # Reconstruct from feeds. (We need to capture them all.)
     sp = StreamingParser()
     parts = ['a\r', '\nb\n']

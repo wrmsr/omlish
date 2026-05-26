@@ -11,11 +11,14 @@ def feed(text, *, do_finish=True):
     offset = 0
     for line in text.splitlines(keepends=True):
         if line.endswith('\r\n'):
-            nl = 2; body = line[:-2]
+            nl = 2
+            body = line[:-2]
         elif line.endswith(('\n', '\r')):
-            nl = 1; body = line[:-1]
+            nl = 1
+            body = line[:-1]
         else:
-            nl = 0; body = line
+            nl = 0
+            body = line
         next_off = offset + len(body) + nl
         events.extend(bm.feed_line(body, offset, next_off))
         offset = next_off

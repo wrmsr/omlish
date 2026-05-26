@@ -62,7 +62,7 @@ def _scan_comment(text: str, start: int) -> InlineHtmlMatch | None:
     if end < 0:
         return None
     body = text[body_start:end]
-    if body.startswith('>') or body.startswith('->'):
+    if body.startswith(('>', '->')):
         return None
     if '--' in body:
         return None

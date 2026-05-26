@@ -31,7 +31,7 @@ def gfm_caseses(pulldown_cmark_root) -> dict[str, list[SpecCase]]:
 def _passes(c: SpecCase) -> bool:
     try:
         return render_html(parse(c.markdown, GFM)) == c.expected_html
-    except Exception:
+    except Exception:  # noqa
         return False
 
 

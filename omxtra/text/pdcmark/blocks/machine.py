@@ -854,7 +854,7 @@ class BlockMachine:
             return self._emit_html_block(open_, end_offset)
         if isinstance(open_, OpenTable):
             return [End(offset=(open_.open_start, end_offset), tag=Table(alignments=open_.alignments))]
-        raise AssertionError(open_)
+        raise TypeError(open_)
 
     def _emit_paragraph_or_heading(
             self,
@@ -952,7 +952,7 @@ class BlockMachine:
             )
         if isinstance(c, OpenItem):
             return End(offset=(c.open_start, end_offset), tag=Item())
-        raise AssertionError(c)
+        raise TypeError(c)
 
 
 _GFM_ADMONITION_TAGS = {
