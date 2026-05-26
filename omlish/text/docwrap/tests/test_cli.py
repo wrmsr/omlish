@@ -1,5 +1,3 @@
-import io
-
 from ..cli import _main as cli_main
 from ..cli import wrap_cli_text
 
@@ -125,16 +123,16 @@ def test_wrap_cli_text_stdin_range():
     )
 
     actual = wrap_cli_text(
+        given,
         width=45,
         start_line=3,
         end_line=4,
-        stdin=io.StringIO(given),
     )
 
     assert actual == expected
 
 
-def test_wrap_cli_text_in_place(tmp_path):
+def test_wrap_cli_text2():
     given = (
         'line 1\n'
         'line 2 line 2 line 2 line 2 line 2 line 2 line 2 line 2\n'
@@ -148,21 +146,14 @@ def test_wrap_cli_text_in_place(tmp_path):
         'line 3\n'
     )
 
-    fp = str(tmp_path / 'test.txt')
-    with open(fp, 'w') as f:
-        f.write(given)
-
     actual = wrap_cli_text(
-        file=fp,
+        given,
         width=35,
         start_line=2,
         end_line=2,
-        in_place=True,
     )
 
     assert actual == expected
-    with open(fp) as f:
-        assert f.read() == expected
 
 
 def test_wrap_cli_text_docstring_body_range_preserves_closing_quote():
@@ -184,10 +175,10 @@ def test_wrap_cli_text_docstring_body_range_preserves_closing_quote():
     )
 
     actual = wrap_cli_text(
+        given,
         width=52,
         start_line=3,
         end_line=4,
-        stdin=io.StringIO(given),
     )
 
     assert actual == expected

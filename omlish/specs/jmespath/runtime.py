@@ -289,7 +289,7 @@ class PythonRuntime(Runtime):
         except AttributeError:
             return None
 
-    def make_array(self, values: ta.Iterable[ta.Any]) -> list[ta.Any]:
+    def make_array(self, values: ta.Iterable[ta.Any]) -> ta.Any:
         return list(values)
 
     def make_object(self, values: ta.Mapping[str, ta.Any]) -> ta.Any:

@@ -20,22 +20,12 @@ from .rendering import render
 
 
 def wrap_cli_text(
+        in_txt: str,
         *,
-        file: str | None = None,
         width: int = 120,
         start_line: int | None = None,
         end_line: int | None = None,
-        in_place: bool = False,
-        stdin: ta.TextIO | None = None,
 ) -> str:
-    if file:
-        with open(file) as f:
-            in_txt = f.read()
-    else:
-        if in_place:
-            raise ValueError('Cannot use --in-place without specifying a file')
-        in_txt = (stdin if stdin is not None else sys.stdin).read()
-
     in_lines = in_txt.splitlines()
 
     #
@@ -74,14 +64,6 @@ def wrap_cli_text(
         '',
     ])
 
-    #
-
-    if in_place:
-        if file is None:
-            raise RuntimeError
-        with open(file, 'w') as f:
-            f.write(out_txt)
-
     return out_txt
 
 
@@ -97,15 +79,31 @@ def _main(argv: ta.Sequence[str] | None = None) -> None:
 
     args = parser.parse_args(argv)
 
+    #
+
+    if args.file:
+        with open(args.file) as f:
+            in_txt = f.read()
+    else:
+        if args.in_place:
+            raise ValueError('Cannot use --in-place without specifying a file')
+        in_txt = sys.stdin.read()
+
+    #
+
     out_txt = wrap_cli_text(
-        file=args.file,
+        in_txt,
         width=args.width,
         start_line=args.start_line,
         end_line=args.end_line,
-        in_place=args.in_place,
     )
 
-    if not args.in_place:
+    #
+
+    if args.in_place:
+        with open(args.file, 'w') as f:
+            f.write(out_txt)
+    else:
         print(out_txt)
 
 
