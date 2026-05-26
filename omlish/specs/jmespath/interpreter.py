@@ -32,9 +32,9 @@ from .ast import ValueProjection
 from .ast import VariableRef
 from .errors import UndefinedVariableError
 from .exprefs import ExpRef
-from .functions import DefaultFunctions
-from .functions import FunctionContext
-from .functions import Functions
+from .functions.default import DefaultFunctions
+from .functions.types import FunctionContext
+from .functions.types import Functions
 from .options import Options
 from .runtime import PythonRuntime
 from .scope import ScopedChainDict
