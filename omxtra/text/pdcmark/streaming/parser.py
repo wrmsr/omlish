@@ -37,6 +37,7 @@ class StreamingParser:
 
     def __init__(self, options: Options = COMMONMARK) -> None:
         super().__init__()
+
         self._options = options
         self._bm = BlockMachine(options)
         self._buffer = ''  # accumulated chars not yet known to be a complete line

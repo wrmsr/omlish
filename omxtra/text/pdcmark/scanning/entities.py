@@ -36,6 +36,7 @@ class EntityMatch:
 def scan_entity(text: str, start: int) -> EntityMatch | None:
     if start >= len(text) or text[start] != '&':
         return None
+
     # Try each form in fixed precedence: hex (most specific), then decimal, then named.
     m = _RE_HEX.match(text, start)
     if m is not None:
@@ -43,12 +44,14 @@ def scan_entity(text: str, start: int) -> EntityMatch | None:
         if not _is_valid_codepoint(code):
             return EntityMatch(end=m.end(), decoded='�')
         return EntityMatch(end=m.end(), decoded=chr(code))
+
     m = _RE_DECIMAL.match(text, start)
     if m is not None:
         code = int(m.group(1))
         if not _is_valid_codepoint(code):
             return EntityMatch(end=m.end(), decoded='�')
         return EntityMatch(end=m.end(), decoded=chr(code))
+
     m = _RE_NAMED.match(text, start)
     if m is not None:
         # `html.unescape` resolves all HTML5 named entities; for unknown names it returns the input unchanged (which is
@@ -58,6 +61,7 @@ def scan_entity(text: str, start: int) -> EntityMatch | None:
         if decoded == raw:
             return None
         return EntityMatch(end=m.end(), decoded=decoded)
+
     return None
 
 

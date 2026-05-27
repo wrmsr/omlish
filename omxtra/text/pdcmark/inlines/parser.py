@@ -62,6 +62,7 @@ class InlineParser:
             fuel: Fuel | None = None,
     ) -> None:
         super().__init__()
+
         self._options = options
         self._refdefs = refdefs if refdefs is not None else RefDefs()
         self._fuel = fuel if fuel is not None else Fuel(remaining=options.link_ref_expansion_min)
@@ -96,23 +97,29 @@ class InlineParser:
 
 def _resolve_emphasis_recursive(nodes: list[InlineNode]) -> None:
     resolve_emphasis(nodes)
+
     for n in nodes:
         if isinstance(n, LinkGroup):
             _resolve_emphasis_recursive(n.children)
+
         elif isinstance(n, EmphasisGroup):
             _resolve_emphasis_recursive(n.children)
 
 
 def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
     tag: Tag
+
     for n in nodes:
         if isinstance(n, TextNode):
             if n.text:
                 out.append(Text(offset=n.offset, text=n.text))
+
         elif isinstance(n, CodeNode):
             out.append(Code(offset=n.offset, text=n.text))
+
         elif isinstance(n, HtmlNode):
             out.append(InlineHtml(offset=n.offset, text=n.text))
+
         elif isinstance(n, AutolinkNode):
             dest = ('mailto:' + n.target) if n.is_email else n.target
             link_type = LinkType.EMAIL if n.is_email else LinkType.AUTOLINK
@@ -120,10 +127,13 @@ def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
             out.append(Start(offset=n.offset, tag=tag))
             out.append(Text(offset=n.offset, text=n.target))
             out.append(End(offset=n.offset, tag=tag))
+
         elif isinstance(n, SoftBreakNode):
             out.append(SoftBreak(offset=n.offset))
+
         elif isinstance(n, HardBreakNode):
             out.append(HardBreak(offset=n.offset))
+
         elif isinstance(n, EmphasisGroup):
             if n.kind == 'strong':
                 tag = Strong()
@@ -134,6 +144,7 @@ def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
             out.append(Start(offset=n.offset, tag=tag))
             _emit_events(n.children, out)
             out.append(End(offset=n.offset, tag=tag))
+
         elif isinstance(n, LinkGroup):
             tag = (
                 Image(link_type=n.link_type, dest_url=n.dest_url, title=n.title, id=n.id)
@@ -143,5 +154,6 @@ def _emit_events(nodes: ta.Iterable[InlineNode], out: list[Event]) -> None:
             out.append(Start(offset=n.offset, tag=tag))
             _emit_events(n.children, out)
             out.append(End(offset=n.offset, tag=tag))
+
         else:
             raise TypeError(n)

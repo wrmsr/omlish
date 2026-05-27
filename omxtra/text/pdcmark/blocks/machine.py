@@ -275,6 +275,7 @@ class BlockMachine:
             return False
         rem = ls.remaining()
         ls.restore(save)
+
         marker = scan_list_marker(rem)
         if marker is None:
             return False
@@ -282,9 +283,11 @@ class BlockMachine:
             return False
         if marker.char != lst.marker_char:
             return False
+
         # An hrule like `- - -` wins; don't reuse the list in that case.
         if not marker.is_ordered and marker.char in '-*' and scan_hrule(rem):
             return False
+
         return True
 
     # Container stack walk.
@@ -292,6 +295,7 @@ class BlockMachine:
     def _walk_continuations(self, ls: LineStart) -> int:
         # pulldown-cmark/src/parse.rs::scan_containers - same per-container check set.
         matched = 0
+
         for c in self._stack:
             if isinstance(c, OpenBlockQuote):
                 save = ls.clone()
@@ -302,16 +306,20 @@ class BlockMachine:
                 ls.scan_ch('>')
                 if ls.position < len(ls.line) and ls.line[ls.position] in ' \t':
                     ls.scan_space(1)
+
             elif isinstance(c, OpenList):
                 # Lists themselves have no marker; their inner items carry the indent requirement. Always "matches"
                 # here, mirroring scan_containers' fallthrough.
                 pass
+
             elif isinstance(c, OpenItem):
                 save = ls.clone()
                 if not ls.scan_space(c.content_indent) and not ls.is_at_eol():
                     ls.restore(save)
                     break
+
             matched += 1
+
         return matched
 
     def _close_to_depth(self, depth: int, events: list[Event], line_offset: int) -> None:
@@ -343,10 +351,12 @@ class BlockMachine:
             if self._open is not None:
                 events.extend(self._close_to_events(self._open, bl.line_start))
                 self._open = None
+
             # Consume the marker.
             ls.scan_ch('>')
             if ls.position < len(ls.line) and ls.line[ls.position] in ' \t':
                 ls.scan_space(1)
+
             # GFM admonition tag: `[!NOTE]` / `[!TIP]` / ... on the first content line. Consumed entirely; the next line
             # begins the actual blockquote content.
             kind: BlockQuoteKind | None = None
@@ -360,6 +370,7 @@ class BlockMachine:
                 open_start=bl.line_start + ls.position,
                 kind=kind,
             ))
+
             return True
 
         # List marker. Bullet markers `-` and `*` lose to thematic breaks on the same line (`- - -` is hrule, not a
@@ -369,6 +380,7 @@ class BlockMachine:
         if marker is not None and not marker.is_ordered and marker.char in '-*' and scan_hrule(rem):
             ls.restore(save)
             return False
+
         if marker is not None:
             # Only marker `1.` / `1)` may interrupt a paragraph (CommonMark §5.2 example 277-279). ATX-ish interrupters
             # and other block starters already handled in lazy-continuation check; for list markers we apply the
@@ -389,10 +401,12 @@ class BlockMachine:
                 if self._open is not None:
                     events.extend(self._close_to_events(self._open, bl.line_start))
                     self._open = None
+
                 events.append(self._close_container_event(self._stack.pop(), bl.line_start))
                 existing_list = None
 
             marker_start_in_line = ls.position
+
             # Consume the marker characters themselves.
             for _ in range(marker.marker_width):
                 ls.scan_ch(ls.line[ls.position])
@@ -404,6 +418,7 @@ class BlockMachine:
             if self._open is not None:
                 events.extend(self._close_to_events(self._open, bl.line_start))
                 self._open = None
+
             if existing_list is None:
                 events.append(Start(
                     offset=(bl.line_start + marker_start_in_line, bl.line_next),
@@ -417,6 +432,7 @@ class BlockMachine:
                     start=marker.start,
                     open_start=bl.line_start + marker_start_in_line,
                 ))
+
             else:
                 # Close previous item.
                 while self._stack and isinstance(self._stack[-1], OpenItem):
@@ -448,9 +464,11 @@ class BlockMachine:
                     ls.advance(tl.end)
                     if ls.position < len(ls.line) and ls.line[ls.position] == ' ':
                         ls.scan_space(1)
+
             return True
 
         ls.restore(save)
+
         return False
 
     # Leaf dispatch.
@@ -464,15 +482,19 @@ class BlockMachine:
         # If a leaf is already open, dispatch to its per-type continuation handler.
         if self._open is not None:
             open_ = self._open
+
             if isinstance(open_, OpenFencedCode):
                 self._feed_fenced_code(open_, bl, content, absolute_content_start, events)
                 return
+
             if isinstance(open_, OpenHtmlBlock):
                 self._feed_html_block(open_, bl, content, absolute_content_start, events)
                 return
+
             if isinstance(open_, OpenTable):
                 self._feed_table(open_, bl, ls, content, absolute_content_start, events)
                 return
+
             if isinstance(open_, OpenIndentedCode):
                 # Continuation requires 4+ columns of indent relative to the container; we
                 # already consumed container markers so we measure on `content`.
@@ -487,6 +509,7 @@ class BlockMachine:
                 events.extend(self._close_to_events(open_, bl.line_start))
                 self._open = None
                 # Fall through to fresh leaf opening on the same line.
+
             elif isinstance(open_, OpenParagraph):
                 # Setext underline?
                 if _leading_indent(content) < 4:
@@ -499,6 +522,7 @@ class BlockMachine:
                     )
                     self._open = None
                     return
+
                 # Table head promotion - the LAST line of the open paragraph is a header candidate iff it contains a
                 # `|`. The line under inspection (`content`) is the alignment row. Per GFM, the head row's column count
                 # must match the alignment row's exactly; padding doesn't count.
@@ -527,10 +551,12 @@ class BlockMachine:
                                 open_start=head_line.line_start,
                             )
                             return
+
                 if self._line_starts_new_block(content):
                     events.extend(self._close_to_events(open_, bl.line_start))
                     self._open = None
                     # Fall through to fresh leaf opening.
+
                 else:
                     # Direct paragraph continuation (we already consumed container markers).
                     new_bl = dc.replace(bl, text=content, line_start=absolute_content_start)
@@ -714,12 +740,14 @@ class BlockMachine:
             self._open = None
             self._dispatch_leaf(bl, ls, events)
             return
+
         # Any leaf-level construct (atx heading, fenced code, etc.) also terminates the table.
         if self._line_starts_new_block(content):
             events.extend(self._close_to_events(open_, bl.line_start))
             self._open = None
             self._dispatch_leaf(bl, ls, events)
             return
+
         cells = parse_table_row(content, len(open_.alignments))
         row_line = BufferedLine(
             text=content,
@@ -771,22 +799,26 @@ class BlockMachine:
         for i, c in enumerate(self._stack):
             if isinstance(c, OpenList) and not c.had_blank:
                 self._stack[i] = dc.replace(c, had_blank=True)
+
         # Close an open paragraph or indented-code block; fenced-code and html blocks 1-5 stay.
         if isinstance(self._open, OpenParagraph):
             events.extend(self._close_to_events(self._open, bl.line_start))
             self._open = None
             return
+
         if isinstance(self._open, OpenIndentedCode):
             # Blank lines inside indented code are kept (with empty text); on close they're stripped by
             # `_emit_indented_code`.
             new_line = BufferedLine(text='', line_start=bl.line_start, line_next=bl.line_next)
             self._open = dc.replace(self._open, lines=(*self._open.lines, new_line))
             return
+
         if isinstance(self._open, OpenFencedCode):
             # Blank lines inside a fenced code block are content.
             new_line = BufferedLine(text='', line_start=bl.line_start, line_next=bl.line_next)
             self._open = dc.replace(self._open, content=(*self._open.content, new_line))
             return
+
         if isinstance(self._open, OpenHtmlBlock):
             if html_block_closes_on_blank_line(self._open.html_type):
                 events.extend(self._close_to_events(self._open, bl.line_start))
@@ -795,6 +827,7 @@ class BlockMachine:
             new_line = BufferedLine(text='', line_start=bl.line_start, line_next=bl.line_next)
             self._open = dc.replace(self._open, lines=(*self._open.lines, new_line))
             return
+
         # No open leaf - blank lines just pass through.
 
     def _line_starts_new_block(self, line: str) -> bool:
@@ -809,26 +842,35 @@ class BlockMachine:
 
         if _leading_indent(line) >= 4:
             return False
+
         i = 0
         while i < len(line) and line[i] == ' ' and i < 3:
             i += 1
+
         body = line[i:]
+
         if scan_atx_open(body) is not None:
             return True
+
         if scan_hrule(body):
             return True
+
         if scan_fence_open(body) is not None:
             return True
+
         html_start = scan_html_block_start(body)
         if html_start is not None and html_start.can_interrupt_paragraph:
             return True
+
         if scan_blockquote_marker(body) is not None:
             return True
+
         marker = scan_list_marker(body)
         if marker is not None:
             # Bullet `-` / `*` only - `- - -` is a thematic break, not a list-marker interrupt.
             if not marker.is_ordered and marker.char in '-*' and scan_hrule(body):
                 return False
+
             if marker.is_ordered and marker.start != 1:
                 # Only interrupts if some enclosing list has matching type.
                 for c in self._stack:
@@ -838,8 +880,11 @@ class BlockMachine:
                         and c.marker_char == marker.char
                     ):
                         return True
+
                 return False
+
             return True
+
         return False
 
     # Close-and-emit.
@@ -847,14 +892,19 @@ class BlockMachine:
     def _close_to_events(self, open_: OpenLeaf, end_offset: int) -> list[Event]:
         if isinstance(open_, OpenParagraph):
             return self._emit_paragraph_or_heading(open_, end_offset, heading_level=None)
+
         if isinstance(open_, OpenFencedCode):
             return self._emit_fenced_code(open_, end_offset)
+
         if isinstance(open_, OpenIndentedCode):
             return self._emit_indented_code(open_, end_offset)
+
         if isinstance(open_, OpenHtmlBlock):
             return self._emit_html_block(open_, end_offset)
+
         if isinstance(open_, OpenTable):
             return [End(offset=(open_.open_start, end_offset), tag=Table(alignments=open_.alignments))]
+
         raise TypeError(open_)
 
     def _emit_paragraph_or_heading(

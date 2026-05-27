@@ -81,6 +81,7 @@ def scan_link_destination(text: str, start: int, *, max_parens: int = 32) -> Lin
     n = len(text)
     if start >= n:
         return None
+
     if text[start] == '<':
         # Angle-bracketed form: any chars but unescaped `<`, `\n`, or `\r`; ends at `>`.
         i = start + 1
@@ -98,6 +99,7 @@ def scan_link_destination(text: str, start: int, *, max_parens: int = 32) -> Lin
             out.append(c)
             i += 1
         return None
+
     # Bare form: balanced parens; terminates at first ASCII control / space / unbalanced ')'.
     i = start
     depth = 0
@@ -120,10 +122,12 @@ def scan_link_destination(text: str, start: int, *, max_parens: int = 32) -> Lin
             depth -= 1
         out.append(c)
         i += 1
+
     if i == start:
         return None
     if depth != 0:
         return None
+
     return LinkDestScan(end=i, dest=''.join(out))
 
 

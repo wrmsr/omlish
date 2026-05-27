@@ -64,6 +64,7 @@ def _build_joined(lines: tuple[BufferedLine, ...]) -> _Joined:
         # Strip leading whitespace per CM paragraph rules. Block parsing has already stripped up-to-3-space indentation;
         # what remains here is the line content as it appeared after container markers.
         text = ln.text
+
         # Leading whitespace stripping happens in the block parser for paragraph emission; for inline parsing we strip
         # again to handle any continuation-line leading whitespace that the block parser didn't (e.g., lazy-continuation
         # lines).
@@ -77,13 +78,16 @@ def _build_joined(lines: tuple[BufferedLine, ...]) -> _Joined:
                 # double-backslash because we trim only one.
                 text = text[:-1]
                 is_hardbreak = True
+
             elif text.endswith('  '):
                 # 2+ trailing spaces → hard break.
                 text = text.rstrip(' \t')
                 is_hardbreak = True
+
             else:
                 # Strip trailing whitespace (it's not significant for non-hard-break case).
                 text = text.rstrip(' \t')
+
         else:
             # Last line - no following line, no hard break. Just strip trailing whitespace.
             text = text.rstrip(' \t')
@@ -115,10 +119,12 @@ def _source_offset(joined: _Joined, p: int) -> int:
     for li in joined.lines:
         if p < li.joined_start + li.text_len:
             return li.source_start + (p - li.joined_start)
+
         if p == li.joined_start + li.text_len:
             # On the newline boundary - point at start of the newline char in source. If trailing whitespace was
             # trimmed, the newline is somewhere before line_next; we approximate by using line_next - 1.
             return max(li.source_start, li.source_next - 1)
+
     # Off the end of joined → end of last line.
     return joined.lines[-1].source_next
 
@@ -191,6 +197,7 @@ def tokenize_inline(
                 buf.append(c)
                 i += 1
                 continue
+
             if is_escapable(nxt):
                 if not buf:
                     buf_start = i
@@ -222,6 +229,7 @@ def tokenize_inline(
                 emit(CodeNode(offset=(start_src, end_src), text=content))
                 i = close + run
                 continue
+
             # No matching close - treat backticks as text.
             if not buf:
                 buf_start = i
@@ -238,6 +246,7 @@ def tokenize_inline(
                 emit(AutolinkNode(offset=(start_src, end_src), target=al.target, is_email=al.is_email))
                 i = al.end
                 continue
+
             html_m = scan_inline_html(s, i)
             if html_m is not None:
                 start_src = _source_offset(joined, i)
@@ -462,6 +471,7 @@ def _scan_link_suffix(s: str, close_pos: int, joined: _Joined) -> tuple[LinkClos
                 kind='collapsed',
                 raw_consumed=s[close_pos:end_pos],
             ), end_pos
+
         # `[label]` → reference.
         label_scan = scan_link_label(s, after)
         if label_scan is not None:
@@ -489,12 +499,14 @@ def _try_parse_inline_link(s: str, paren_pos: int) -> tuple[str, str, int] | Non
 
     n = len(s)
     i = paren_pos + 1  # past `(`
+
     # Optional whitespace (including up to 1 newline).
     i = _consume_link_ws(s, i, allow_nl=True)
     if i >= n:
         return None
     if s[i] == ')':
         return '', '', i + 1
+
     # Destination - may or may not be present.
     dest = ''
     if s[i] != ')':
@@ -503,25 +515,31 @@ def _try_parse_inline_link(s: str, paren_pos: int) -> tuple[str, str, int] | Non
             return None
         dest = dest_scan.dest
         i = dest_scan.end
+
     # Optional whitespace before title.
     pre_title = i
     i = _consume_link_ws(s, i, allow_nl=True)
     title = ''
     if i < n and s[i] in '"\'(':
         title_scan = scan_link_title(s, i)
+
         if title_scan is not None:
             # Title valid; require ws-then-`)` after.
             title = title_scan.title
             i = title_scan.end
             i = _consume_link_ws(s, i, allow_nl=True)
+
         else:
             # Title-shaped but invalid - fail the whole inline link.
             return None
+
     else:
         i = pre_title  # no title; rewind ws-skip if it ate nothing useful
         i = _consume_link_ws(s, i, allow_nl=True)
+
     if i >= n or s[i] != ')':
         return None
+
     return dest, title, i + 1
 
 

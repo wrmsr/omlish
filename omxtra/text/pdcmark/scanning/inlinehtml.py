@@ -135,11 +135,13 @@ def _scan_open_tag(text: str, start: int) -> InlineHtmlMatch | None:
     if m is None:
         return None
     i = m.end()
+
     # Zero or more attributes.
     while True:
         save = i
         if not _scan_attribute_ws(text, i):
             break
+
         # Now consume the attribute itself, if any.
         i_after_ws = _consume_ws_inline(text, i)
         attr_m = _RE_ATTR_NAME.match(text, i_after_ws)
@@ -147,6 +149,7 @@ def _scan_open_tag(text: str, start: int) -> InlineHtmlMatch | None:
             i = save
             break
         i = attr_m.end()
+
         # Optional `= value`.
         j = _consume_ws_inline(text, i)
         if j < n and text[j] == '=':
@@ -157,12 +160,14 @@ def _scan_open_tag(text: str, start: int) -> InlineHtmlMatch | None:
                 # `=` requires a value; this tag is malformed.
                 return None
             i = val
+
     # Optional self-close `/`.
     j = _consume_ws_inline(text, i)
     if j < n and text[j] == '/':
         j += 1
     if j < n and text[j] == '>':
         return InlineHtmlMatch(end=j + 1)
+
     return None
 
 

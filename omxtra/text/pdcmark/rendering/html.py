@@ -116,23 +116,29 @@ def _escape_href(s: str) -> str:
     safe_punct = "!#$&'()*+,-./:;=?@_~"  # URL chars left untouched
     while i < n:
         c = s[i]
+
         if c == '%' and i + 2 < n and s[i + 1] in '0123456789abcdefABCDEF' and s[i + 2] in '0123456789abcdefABCDEF':
             # Pre-existing percent-escape - pass through.
             out.append(s[i:i + 3])
             i += 3
             continue
+
         if c == '&':
             out.append('&amp;')
             i += 1
             continue
+
         if c.isalnum() or c in safe_punct:
             out.append(c)
             i += 1
             continue
+
         # Percent-encode each UTF-8 byte.
         for b in c.encode('utf-8'):
             out.append(f'%{b:02X}')
+
         i += 1
+
     return ''.join(out)
 
 
@@ -148,6 +154,7 @@ def render_html(events: ta.Iterable[Event]) -> str:
 class _HtmlRenderer:
     def __init__(self) -> None:
         super().__init__()
+
         self._buf = io.StringIO()
         self._end_newline = True
         # Block-container nesting + tight-list tracking. `_block_stack` holds the open block- container tags;
@@ -203,63 +210,84 @@ class _HtmlRenderer:
         if self._image_nesting > 0 and not isinstance(ev, (Start, End)):
             self._absorb_into_alt(ev)
             return
+
         if isinstance(ev, Start):
             tag = ev.tag
+
             if isinstance(tag, Image):
                 self._open_image(tag)
                 return
+
             if self._image_nesting > 0:
                 return
+
             # Tight-list `<p>` suppression: a Paragraph that's the direct child of an Item whose List is tight emits no
             # wrapper. We still push a sentinel so End(Paragraph) can mirror the decision.
             if isinstance(tag, Paragraph) and self._is_in_tight_item():
                 self._suppressed_paragraphs.append(True)
                 return
+
             # Push block tags onto the structural stack so the suppression check above works.
             if isinstance(tag, _BLOCK_TAGS):
                 if isinstance(tag, List):
                     self._open_list_tight.append(self._list_tight_map.get(event_ix, False))
                 self._block_stack.append(tag)
+
             if isinstance(tag, Paragraph):
                 self._suppressed_paragraphs.append(False)
+
             self._start_tag(tag)
+
         elif isinstance(ev, End):
             tag = ev.tag
+
             if isinstance(tag, Image):
                 self._close_image()
                 return
+
             if self._image_nesting > 0:
                 return
+
             if isinstance(tag, Paragraph):
                 if self._suppressed_paragraphs and self._suppressed_paragraphs.pop():
                     return  # matching suppressed Start - emit no </p>
                 self._end_tag(tag)
                 return
+
             if isinstance(tag, _BLOCK_TAGS):
                 if isinstance(tag, List):
                     self._open_list_tight.pop()
                 self._block_stack.pop()
+
             self._end_tag(tag)
+
         elif isinstance(ev, Text):
             self._write(_escape_html(ev.text))
+
         elif isinstance(ev, Code):
             self._write('<code>')
             self._write(_escape_html(ev.text))
             self._write('</code>')
+
         elif isinstance(ev, (Html, InlineHtml)):
             self._write(ev.text)
+
         elif isinstance(ev, SoftBreak):
             self._write('\n')
+
         elif isinstance(ev, HardBreak):
             self._write('<br />\n')
+
         elif isinstance(ev, Rule):
             self._newline()
             self._write('<hr />\n')
+
         elif isinstance(ev, TaskListMarker):
             if ev.checked:
                 self._write('<input disabled="" type="checkbox" checked=""/>\n')
             else:
                 self._write('<input disabled="" type="checkbox"/>\n')
+
         else:
             raise TypeError(ev)
 
@@ -275,17 +303,22 @@ class _HtmlRenderer:
         # Only text-bearing events contribute. We intentionally drop SoftBreak / HardBreak HTML markup and substitute
         # plain spaces / newlines instead.
         buf = self._image_alt_buf[-1]
+
         if isinstance(ev, Text):
             buf.append(ev.text)
+
         elif isinstance(ev, Code):
             buf.append(ev.text)
+
         elif isinstance(ev, (Html, InlineHtml)):
             # CM spec says inline HTML inside image alt becomes plain text; we don't strip tags (the spec test 494 shows
             # simple cases work as-is once stripped of nested image rendering, but we do flatten). For our purposes,
             # write the raw HTML chars; the alt attribute will be HTML-escaped by the caller.
             buf.append(ev.text)
+
         elif isinstance(ev, SoftBreak):
             buf.append('\n')
+
         elif isinstance(ev, HardBreak):
             buf.append('\n')
 
@@ -295,10 +328,12 @@ class _HtmlRenderer:
         alt_parts = self._image_alt_buf.pop()
         self._image_nesting -= 1
         alt = ''.join(alt_parts)
+
         if self._image_nesting > 0:
             # Nested image: contributes its alt text to the outer image's buffer.
             self._image_alt_buf[-1].append(alt)
             return
+
         # Emit the <img> tag.
         self._write(f'<img src="{_escape_href(dest)}" alt="{_escape_html(alt)}"')
         if title:
@@ -311,9 +346,11 @@ class _HtmlRenderer:
         if isinstance(tag, Paragraph):
             self._newline()
             self._write('<p>')
+
         elif isinstance(tag, Heading):
             self._newline()
             self._write(f'<h{tag.level}>')
+
         elif isinstance(tag, BlockQuote):
             self._newline()
             if tag.kind is not None:
@@ -321,6 +358,7 @@ class _HtmlRenderer:
                 self._write(f'<blockquote class="markdown-alert-{tag.kind.value}">\n')
             else:
                 self._write('<blockquote>\n')
+
         elif isinstance(tag, FencedCodeBlock):
             self._newline()
             if tag.info:
@@ -329,12 +367,15 @@ class _HtmlRenderer:
                 self._write(f'<pre><code class="language-{_escape_html(lang)}">')
             else:
                 self._write('<pre><code>')
+
         elif isinstance(tag, IndentedCodeBlock):
             self._newline()
             self._write('<pre><code>')
+
         elif isinstance(tag, HtmlBlock):
             # No wrapper - content is raw HTML emitted via Html events.
             pass
+
         elif isinstance(tag, List):
             self._newline()
             if tag.start is None:
@@ -343,9 +384,11 @@ class _HtmlRenderer:
                 self._write('<ol>\n')
             else:
                 self._write(f'<ol start="{tag.start}">\n')
+
         elif isinstance(tag, Item):
             self._newline()
             self._write('<li>')
+
         elif isinstance(tag, Table):
             self._newline()
             self._write('<table>')
@@ -354,6 +397,7 @@ class _HtmlRenderer:
             self._table_in_head.append(False)
             self._table_cell_ix.append(0)
             self._table_body_open.append(False)
+
         elif isinstance(tag, TableHead):
             self._table_in_head[-1] = True
             self._table_cell_ix[-1] = 0
@@ -361,6 +405,7 @@ class _HtmlRenderer:
             self._newline()
             self._write('<tr>')
             self._newline()
+
         elif isinstance(tag, TableRow):
             self._table_cell_ix[-1] = 0
             if not self._table_body_open[-1]:
@@ -369,6 +414,7 @@ class _HtmlRenderer:
                 self._table_body_open[-1] = True
             self._write('<tr>')
             self._newline()
+
         elif isinstance(tag, TableCell):
             cell_ix = self._table_cell_ix[-1]
             aligns = self._table_alignments[-1]
@@ -377,18 +423,23 @@ class _HtmlRenderer:
             align_attr = _align_attr(align)
             self._write(f'<{tag_name}{align_attr}>')
             self._table_cell_ix[-1] = cell_ix + 1
+
         elif isinstance(tag, Emphasis):
             self._write('<em>')
+
         elif isinstance(tag, Strong):
             self._write('<strong>')
+
         elif isinstance(tag, Strikethrough):
             self._write('<del>')
+
         elif isinstance(tag, Link):
             href = _escape_href(tag.dest_url)
             self._write(f'<a href="{href}"')
             if tag.title:
                 self._write(f' title="{_escape_html(tag.title)}"')
             self._write('>')
+
         # Image starts are handled by _dispatch via _open_image - they switch the renderer into alt-text-collection mode
         # and never reach _start_tag.
         else:
@@ -397,20 +448,27 @@ class _HtmlRenderer:
     def _end_tag(self, tag) -> None:
         if isinstance(tag, Paragraph):
             self._write('</p>\n')
+
         elif isinstance(tag, Heading):
             self._write(f'</h{tag.level}>\n')
+
         elif isinstance(tag, BlockQuote):
             self._newline()
             self._write('</blockquote>\n')
+
         elif isinstance(tag, (FencedCodeBlock, IndentedCodeBlock)):
             self._write('</code></pre>\n')
+
         elif isinstance(tag, HtmlBlock):
             pass
+
         elif isinstance(tag, List):
             self._newline()
             self._write('</ul>\n' if tag.start is None else '</ol>\n')
+
         elif isinstance(tag, Item):
             self._write('</li>\n')
+
         elif isinstance(tag, Table):
             if self._table_body_open[-1]:
                 self._write('</tbody>')
@@ -425,27 +483,35 @@ class _HtmlRenderer:
             self._table_in_head.pop()
             self._table_cell_ix.pop()
             self._table_body_open.pop()
+
         elif isinstance(tag, TableHead):
             self._write('</tr>')
             self._newline()
             self._write('</thead>')
             self._newline()
             self._table_in_head[-1] = False
+
         elif isinstance(tag, TableRow):
             self._write('</tr>')
             self._newline()
+
         elif isinstance(tag, TableCell):
             tag_name = 'th' if self._table_in_head[-1] else 'td'
             self._write(f'</{tag_name}>')
             self._newline()
+
         elif isinstance(tag, Emphasis):
             self._write('</em>')
+
         elif isinstance(tag, Strong):
             self._write('</strong>')
+
         elif isinstance(tag, Strikethrough):
             self._write('</del>')
+
         elif isinstance(tag, Link):
             self._write('</a>')
+
         # Image ends are handled by _dispatch via _close_image.
         else:
             raise TypeError(tag)

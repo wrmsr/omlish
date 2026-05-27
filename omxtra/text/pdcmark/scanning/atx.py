@@ -47,6 +47,7 @@ def scan_atx_open(line: str, i: int = 0) -> AtxOpen | None:
     end = n
     while end > content_start and (line[end - 1] == ' ' or line[end - 1] == '\t'):
         end -= 1
+
     # If end of content has a `#` run preceded by a space (or is at the start), strip it.
     hash_end = end
     while hash_end > content_start and line[hash_end - 1] == '#':

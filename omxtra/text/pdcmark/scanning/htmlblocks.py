@@ -166,6 +166,7 @@ def scan_html_block_start(line: str) -> HtmlBlockStart | None:
         tail = line[html_match.end:]
         if tail == '' or tail.lstrip(' \t') == '':
             return HtmlBlockStart(type=7, can_interrupt_paragraph=False)
+
     return None
 
 

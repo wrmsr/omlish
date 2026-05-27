@@ -44,19 +44,24 @@ class AutolinkMatch:
 def scan_autolink(text: str, start: int) -> AutolinkMatch | None:
     if start >= len(text) or text[start] != '<':
         return None
+
     # Find the `>`.
     close = text.find('>', start + 1)
     if close < 0:
         return None
+
     body = text[start + 1:close]
     if not body:
         return None
+
     # Reject if body contains whitespace.
     if any(c.isspace() or c == '<' for c in body):
         return None
+
     # Try URI form first (must contain `:` after scheme).
     if _RE_URI.fullmatch(body):
         return AutolinkMatch(end=close + 1, target=body, is_email=False)
     if _RE_EMAIL.fullmatch(body):
         return AutolinkMatch(end=close + 1, target=body, is_email=True)
+
     return None

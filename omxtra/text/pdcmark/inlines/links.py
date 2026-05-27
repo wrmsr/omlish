@@ -58,13 +58,16 @@ def resolve_links(
         broken_link_resolver: BrokenLinkResolver | None,
 ) -> list[InlineNode]:
     stack: list[_LinkStackEntry] = []
+
     i = 0
     while i < len(nodes):
         node = nodes[i]
+
         if isinstance(node, LinkOpenNode):
             stack.append(_LinkStackEntry(node_index=i, is_image=node.is_image, active=True))
             i += 1
             continue
+
         if isinstance(node, LinkCloseNode):
             # Per CM Appendix A we only consider the topmost opener. If the top of stack is a deactivated link, the
             # closer fails AND the deactivated opener is dropped from the stack. (We still convert it to text below for
@@ -76,6 +79,7 @@ def resolve_links(
                 )
                 i += 1
                 continue
+
             top = stack[-1]
             if not (top.active or top.is_image):
                 # Disabled link on top - closer fails, pop the disabled opener AND convert it to text right now (so it
@@ -93,6 +97,7 @@ def resolve_links(
                 stack.pop()
                 i += 1
                 continue
+
             match_s = len(stack) - 1
             entry = stack[match_s]
             opener = check.isinstance(nodes[entry.node_index], LinkOpenNode)
@@ -118,17 +123,21 @@ def resolve_links(
                     id=resolved.id,
                     children=children,
                 )
+
                 # Replace nodes[opener_node_i:closer_node_i+1] (which includes any nodes that the tokenizer left between
                 # e.g. for `[foo][bar]`, the inner-`[bar]` was already consumed by the closer's scan; only the `[`
                 # opener through `]` closer occupies node slots).
                 nodes[entry.node_index:i + 1] = [group]
+
                 # Stack: drop everything from match_s onward (inner openers are now inside group).
                 stack = stack[:match_s]
+
                 # If this was a link (not image), deactivate all earlier link openers.
                 if not entry.is_image:
                     for e in stack:
                         if not e.is_image:
                             e.active = False
+
                 # Continue right after the group.
                 i = entry.node_index + 1
                 continue
@@ -146,6 +155,7 @@ def resolve_links(
                     text='![',
                 )
                 stack.pop()
+
             else:
                 # Convert this opener to text immediately and pop. Don't propagate deactivation to earlier link openers
                 # - only successful resolutions do that.
@@ -154,8 +164,10 @@ def resolve_links(
                     text='[',
                 )
                 stack.pop()
+
             i += 1
             continue
+
         i += 1
 
     # Finalize: convert any remaining placeholders to text, including those stranded inside successfully-built LinkGroup
@@ -168,16 +180,19 @@ def resolve_links(
 def _finalize_link_placeholders(nodes: list[InlineNode]) -> None:
     for j in range(len(nodes)):
         n = nodes[j]
+
         if isinstance(n, LinkOpenNode):
             nodes[j] = TextNode(
                 offset=n.offset,
                 text='![' if n.is_image else '[',
             )
+
         elif isinstance(n, LinkCloseNode):
             nodes[j] = TextNode(
                 offset=(n.offset[0], n.consumed_end),
                 text=n.raw_consumed,
             )
+
         elif isinstance(n, LinkGroup):
             _finalize_link_placeholders(n.children)
 
@@ -208,20 +223,24 @@ def _try_resolve_link(
             title=close_node.title,
             id='',
         )
+
     if close_node.kind == 'reference':
         label = normalize_link_label(close_node.label)
         ld = _lookup_with_fuel(label, refdefs, fuel)
         if ld is not None:
             return _Resolved(LinkType.REFERENCE, ld.dest, ld.title, label)
         return _try_broken(LinkType.REFERENCE, label, close_node, broken_link_resolver)
+
     # 'collapsed' or 'shortcut' - label is the inner text.
     inner_label = normalize_link_label(_flatten_to_text(children))
     if not inner_label:
         return None
+
     ld = _lookup_with_fuel(inner_label, refdefs, fuel)
     if ld is not None:
         lt = LinkType.COLLAPSED if close_node.kind == 'collapsed' else LinkType.SHORTCUT
         return _Resolved(lt, ld.dest, ld.title, inner_label)
+
     lt = LinkType.COLLAPSED if close_node.kind == 'collapsed' else LinkType.SHORTCUT
     return _try_broken(lt, inner_label, close_node, broken_link_resolver)
 
@@ -279,15 +298,21 @@ def _flatten_to_text(nodes: list[InlineNode]) -> str:
     """
 
     parts: list[str] = []
+
     for n in nodes:
         if isinstance(n, TextNode):
             parts.append(n.text)
+
         elif isinstance(n, DelimNode):
             parts.append(n.char * n.count)
+
         elif isinstance(n, EmphasisGroup):
             parts.append(_flatten_to_text(n.children))
+
         elif isinstance(n, LinkGroup):
             parts.append(_flatten_to_text(n.children))
+
         elif isinstance(n, (CodeNode, HtmlNode)):
             parts.append(n.text)
+
     return ''.join(parts)
