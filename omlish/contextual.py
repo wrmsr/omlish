@@ -14,6 +14,7 @@ from .lite.contextual import (  # noqa
     ContextualParam as Param,
     inspect_contextual_params as inspect_params,
 
+    is_contextual_wrapped as is_wrapped,
     contextual_wrap as _wrap,
 
     contextual_bind as bind,

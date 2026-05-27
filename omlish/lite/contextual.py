@@ -187,6 +187,9 @@ def inspect_contextual_params(
 ##
 
 
+_CONTEXTUAL_WRAPPER_ATTR = '__contextual_wrapper__'
+
+
 @ta.final
 class _ContextualWrapper(ta.Generic[T]):
     def __init__(self, fn: ta.Callable[..., T]) -> None:
@@ -217,6 +220,8 @@ class _ContextualWrapper(ta.Generic[T]):
 
             return fn(*args, **kwargs)
 
+        setattr(wrapped, _CONTEXTUAL_WRAPPER_ATTR, self)
+
         self._wrapped = wrapped
 
     #
@@ -240,6 +245,16 @@ class _ContextualWrapper(ta.Generic[T]):
         return self._wrapped
 
 
+def is_contextual_wrapped(obj: ta.Any) -> bool:
+    if not callable(obj):
+        raise TypeError(obj)
+    try:
+        wa = getattr(obj, _CONTEXTUAL_WRAPPER_ATTR)
+    except AttributeError:
+        return False
+    return isinstance(wa, _ContextualWrapper)
+
+
 class ContextualWrapping(ta.Protocol):
     @ta.overload
     def __call__(self, ty: ta.Type[T]) -> ta.Type[T]: ...
@@ -250,7 +265,10 @@ class ContextualWrapping(ta.Protocol):
 
 def contextual_wrap() -> ContextualWrapping:
     def inner(obj):
-        if isinstance(obj, type):
+        if is_contextual_wrapped(obj):
+            return obj
+
+        elif isinstance(obj, type):
             wr_init = _ContextualWrapper(getattr(obj, '__init__')).wrapped
             setattr(obj, '__init__', wr_init)
             wr_init.__qualname__ = f'{obj.__qualname__}.__init__'

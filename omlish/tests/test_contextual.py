@@ -112,6 +112,9 @@ def int_shower_with_frobber(
 
 
 def test_shower():
+    assert cxl.is_wrapped(int_shower_with_frobber)
+    assert not cxl.is_wrapped(test_shower)
+
     with pytest.raises(cxl.UnboundError):
         uses_int_shower(42)
 
