@@ -8,7 +8,6 @@ from omlish import marshal as msh
 from ...content.content import Content
 from ..fns import ToolFn
 from ..types import ToolSpec
-from .context import ToolContext
 from .invokers import ToolFnToolInvoker
 from .invokers import ToolInvoker
 
@@ -69,14 +68,12 @@ class ToolCatalog(ToolInvoker):
 
     async def invoke_tool(
             self,
-            ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> Content:
         e = self._by_name[name]
 
         return await e.invoker().invoke_tool(
-            ctx,
             name,
             args,
         )

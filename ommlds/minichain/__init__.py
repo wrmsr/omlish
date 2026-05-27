@@ -652,14 +652,8 @@ with _lang.auto_proxy_init(
     )
 
     from .tools.execution.context import (  # noqa
-        ToolContextKeyError,
-        ToolContext,
-
         ToolContextProvider,
         ToolContextProviders,
-
-        activate_tool_context,
-        tool_context,
     )
 
     from .tools.execution.errorhandling import (  # noqa
@@ -697,8 +691,7 @@ with _lang.auto_proxy_init(
         DecidedToolPermissionState,
         ToolPermissionDecider,
         StaticToolPermissionDecider,
-
-        tool_permission_decider,
+        DENY_TOOL_PERMISSION_DECIDER,
     )
 
     from .tools.execution.reflect import (  # noqa

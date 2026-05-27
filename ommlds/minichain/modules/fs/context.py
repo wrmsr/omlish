@@ -4,8 +4,8 @@ import stat
 from omlish import check
 
 from ...fs import FsRoot
-from ...tools.execution.context import tool_context
-from ...tools.execution.permissions import tool_permission_decider
+from ...tools.execution.permissions import DENY_TOOL_PERMISSION_DECIDER
+from ...tools.execution.permissions import ToolPermissionDecider
 from ...tools.permissions.fs import FsToolPermissionTarget
 from .binfiles import has_binary_file_extension
 from .binfiles import is_binary_file
@@ -25,17 +25,19 @@ class FsContext:
             self,
             *,
             root_dir: FsRoot | None = None,
+            tool_permission_decider: ToolPermissionDecider = DENY_TOOL_PERMISSION_DECIDER,
     ) -> None:
         super().__init__()
 
         self._root_dir = root_dir
+        self._tool_permission_decider = tool_permission_decider
 
         self._abs_root_dir = os.path.abspath(root_dir) if root_dir is not None else None
 
     #
 
     async def check_requested_path(self, req_path: str) -> None:
-        await tool_permission_decider().check_allowed(FsToolPermissionTarget(req_path, 'r'))
+        await self._tool_permission_decider.check_allowed(FsToolPermissionTarget(req_path, 'r'))
 
         abs_req_path = os.path.abspath(req_path)
 
@@ -137,11 +139,7 @@ class FsContext:
     #
 
     async def check_writes_permitted(self, req_path: str) -> str:
-        if not await tool_permission_decider().is_allowed(FsToolPermissionTarget(req_path, 'w')):
+        if not await self._tool_permission_decider.is_allowed(FsToolPermissionTarget(req_path, 'w')):
             raise RequestedPathWriteNotPermittedError(req_path)
 
         return req_path
-
-
-def tool_fs_context() -> FsContext:
-    return tool_context()[FsContext]

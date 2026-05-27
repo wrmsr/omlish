@@ -3,18 +3,22 @@ import asyncio
 import shutil
 
 from omlish import check
+from omlish import contextual as cxl
 from omlish import lang
 
 from ...tools.execution.catalog import ToolCatalogEntry
 from ...tools.execution.reflect import reflect_tool_catalog_entry
-from .context import tool_bash_context
+from .context import BashContext
 
 
 ##
 
 
+@cxl.wrap()
 async def bash(
         bash_code: str,
+        *,
+        ctx: BashContext = cxl.param(),
 ) -> str:
     """
     Executes the given bash code in a new bash shell.
@@ -26,7 +30,6 @@ async def bash(
         The stdout of the executed bash code.
     """
 
-    ctx = tool_bash_context()
     await ctx.check_cmd_permitted(bash_code)
 
     proc = await asyncio.create_subprocess_exec(

@@ -11,8 +11,6 @@ from omlish import lang
 from ...content.content import Content
 from ..fns import ToolFn
 from ..fns import invoke_tool_fn
-from .context import ToolContext
-from .context import activate_tool_context
 
 
 ##
@@ -22,7 +20,6 @@ class ToolInvoker(lang.Abstract):
     @abc.abstractmethod
     def invoke_tool(
             self,
-            ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> ta.Awaitable[Content]:
@@ -38,15 +35,13 @@ class ToolFnToolInvoker(ToolInvoker):
 
     async def invoke_tool(
             self,
-            ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> Content:
-        with activate_tool_context(ctx):
-            return await invoke_tool_fn(
-                self.tool_fn,
-                args,
-            )
+        return await invoke_tool_fn(
+            self.tool_fn,
+            args,
+        )
 
 
 ##
@@ -58,8 +53,7 @@ class NameSwitchedToolInvoker(ToolInvoker):
 
     async def invoke_tool(
             self,
-            ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> Content:
-        return await self.invokers_by_name[name].invoke_tool(ctx, name, args)
+        return await self.invokers_by_name[name].invoke_tool(name, args)

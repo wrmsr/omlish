@@ -4,6 +4,7 @@ TODO:
 """
 import typing as ta
 
+from omlish import contextual as cxl
 from omlish import lang
 from omlish import marshal as msh
 
@@ -12,7 +13,7 @@ from ....content.namespaces import NamespaceContent
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
-from ..context import tool_todo_context
+from ..context import TodoContext
 from ..types import TODO_ITEM_FIELD_DESCS
 from ..types import TodoItem
 
@@ -314,14 +315,18 @@ class TodoWriteDescriptionChunks(ContentNamespace):
 @tool_spec_override(
     desc=NamespaceContent(TodoWriteDescriptionChunks),
 )
-def todo_write(todo_items: ta.Sequence[TodoItem]) -> ta.Sequence[TodoItem]:
+@cxl.wrap()
+def todo_write(
+        todo_items: ta.Sequence[TodoItem],
+        *,
+        ctx: TodoContext = cxl.param(),
+) -> ta.Sequence[TodoItem]:
     if todo_items:
         todo_items = [
             msh.unmarshal(o, TodoItem) if not isinstance(o, TodoItem) else o  # noqa
             for o in todo_items
         ]
 
-    ctx = tool_todo_context()
     out_items = ctx.set_items(todo_items)
 
     return out_items or []

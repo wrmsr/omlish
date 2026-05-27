@@ -8,13 +8,14 @@ TODO:
 import io
 import itertools
 
+from omlish import contextual as cxl
 from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
 from ....tools.types import ToolParam
-from ..context import tool_fs_context
+from ..context import FsContext
 
 
 ##
@@ -58,13 +59,15 @@ MAX_LINE_LENGTH = 2_000
         ),
     ],
 )
+@cxl.wrap()
 async def read_file(
         file_path: str,
         *,
         line_offset: int = 0,
         num_lines: int = DEFAULT_MAX_NUM_LINES,
+
+        ctx: FsContext = cxl.param(),
 ) -> str:
-    ctx = tool_fs_context()
     await ctx.check_stat_file(file_path, text=True)
 
     out = io.StringIO()

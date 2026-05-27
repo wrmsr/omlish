@@ -1,9 +1,9 @@
 import abc
 import typing as ta
 
+from omlish import contextual as cxl
 from omlish import lang
 
-from ...tools.execution.context import tool_context
 from ...tools.execution.execution import ToolUseExecution
 from ...tools.execution.permissions import DecidedToolPermissionState
 from ...tools.execution.permissions import ToolPermissionDecider
@@ -70,7 +70,7 @@ class StandardToolPermissionDecider(ToolPermissionDecider):
             return mr
 
         elif mr is ToolPermissionState.ASK:
-            tue = tool_context()[ToolUseExecution]
+            tue = cxl.get(ToolUseExecution)  # FIXME: :$
             return await self._confirmation.confirm_tool_permission(tue, target)
 
         else:

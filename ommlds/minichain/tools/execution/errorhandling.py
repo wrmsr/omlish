@@ -4,7 +4,6 @@ from omlish import check
 
 from ...content.content import Content
 from ..types import ToolUseResult
-from .context import ToolContext
 from .errors import ToolExecutionError
 from .execution import ToolUseExecution
 from .execution import ToolUseExecutor
@@ -26,12 +25,11 @@ class ErrorHandlingToolInvoker(ToolInvoker):
 
     async def invoke_tool(
             self,
-            ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> Content:
         try:
-            return await self._wrapped.invoke_tool(ctx, name, args)
+            return await self._wrapped.invoke_tool(name, args)
 
         except ToolExecutionError as txe:
             return txe.content

@@ -2,7 +2,6 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
-from ...tools.execution.context import tool_context
 from .types import TodoItem
 
 
@@ -48,7 +47,3 @@ class TodoContext:
 
         self._items = list(items) if items is not None else None
         return items
-
-
-def tool_todo_context() -> TodoContext:
-    return tool_context()[TodoContext]

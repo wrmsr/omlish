@@ -2,14 +2,17 @@ import abc
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
+from omlish import contextual as cxl
 from omlish import dataclasses as dc
 from omlish import lang
 
 from ...tools.execution.catalog import ToolCatalogEntry
-from ...tools.execution.context import ToolContext
+from ...tools.fns import ToolFn
 from ...tools.types import ToolUse
 from ..types import ToolUseResult
 from .context import ToolContextProvider
+from .context import ToolContextProviders
 from .invokers import ToolInvoker
 
 
@@ -22,8 +25,6 @@ class ToolUseExecution(lang.Final):
     use: ToolUse
 
     catalog_entry: ToolCatalogEntry | None = None
-
-    ctx_items: ta.Sequence[ta.Any] = ()
 
 
 class ToolUseExecutor(lang.Abstract):
@@ -39,35 +40,46 @@ class ToolUseExecutorImpl(ToolUseExecutor):
     def __init__(
             self,
             *,
-            ctx_provider: ToolContextProvider,
+            ctx_providers: ToolContextProviders,
     ) -> None:
         super().__init__()
 
-        self._ctx_provider = ctx_provider
+        self._ctx_providers = ctx_providers
+
+        self._ctx_providers_by_ty: ta.Mapping[type, ToolContextProvider] = col.make_map(
+            ((cp.ty, cp) for cp in self._ctx_providers),
+            strict=True,
+        )
 
     async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResult:
-        return await execute_tool_use(
-            ToolContext(
-                tue,
+        cbs: dict[type, ta.Any] = {}
+
+        tce = check.not_none(tue.catalog_entry)
+        if isinstance(tfn := tce.target, ToolFn):
+            cbs.update({
+                ty: self._ctx_providers_by_ty[ty].fn()
+                for ty in tfn.context or []
+            })
+
+        with cxl.bind({
+            ToolUseExecution: tue,
+            ToolUse: tue.use,
+            **cbs,
+        }):
+            return await execute_tool_use(
+                check.not_none(tue.catalog_entry).invoker(),
                 tue.use,
-                *self._ctx_provider(),
-                *tue.ctx_items,
-            ),
-            check.not_none(tue.catalog_entry).invoker(),
-            tue.use,
-        )
+            )
 
 
 ##
 
 
 async def execute_tool_use(
-        ctx: ToolContext,
         tei: ToolInvoker,
         ter: ToolUse,
 ) -> ToolUseResult:
     result_str = await tei.invoke_tool(
-        ctx,
         ter.name,
         ter.args,
     )

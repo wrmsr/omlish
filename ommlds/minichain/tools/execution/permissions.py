@@ -6,7 +6,6 @@ from omlish import lang
 
 from ..permissions.types import ToolPermissionState
 from ..permissions.types import ToolPermissionTarget
-from .context import tool_context
 from .errors import PermissionDeniedToolExecutionError
 
 
@@ -43,8 +42,4 @@ class StaticToolPermissionDecider(ToolPermissionDecider):
         return self.state
 
 
-##
-
-
-def tool_permission_decider() -> ToolPermissionDecider:
-    return tool_context()[ToolPermissionDecider]  # type: ignore[type-abstract]
+DENY_TOOL_PERMISSION_DECIDER = StaticToolPermissionDecider(ToolPermissionState.DENY)

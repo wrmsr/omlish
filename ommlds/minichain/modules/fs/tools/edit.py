@@ -6,11 +6,12 @@ TODO:
  - accept diff format impl
  - injectable confirmation, diff format
 """
+from omlish import contextual as cxl
 from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
-from ..context import tool_fs_context
+from ..context import FsContext
 from ..errors import RequestedPathError
 
 
@@ -42,12 +43,15 @@ class OldStringPresentMultipleTimesError(EditToolError):
 ##
 
 
+@cxl.wrap()
 async def edit_file(
         *,
         file_path: str,
         old_string: str,
         new_string: str,
         replace_all: bool = False,
+
+        ctx: FsContext = cxl.param(),
 ) -> str:
     """
     Edits the given file by replacing the string given by the 'old_string' parameter with the string given by the
@@ -76,7 +80,6 @@ async def edit_file(
     if not old_string:
         raise EmptyNewStringError(file_path)
 
-    ctx = tool_fs_context()
     await ctx.check_stat_file(file_path, text=True, write=True)
 
     with open(file_path) as f:  # noqa

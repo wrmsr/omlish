@@ -1,18 +1,22 @@
+from omlish import contextual as cxl
 from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
-from ..context import tool_fs_context
+from ..context import FsContext
 
 
 ##
 
 
+@cxl.wrap()
 async def write_file(
         *,
         file_path: str,
         contents: str,
         overwrite: bool = False,
+
+        ctx: FsContext = cxl.param(),
 ) -> str:
     """
     Writes a new file at the given absolute path with the given contents.
@@ -25,8 +29,6 @@ async def write_file(
         contents: The contents of the file to write.
         overwrite: Whether or not to overwrite existing files. Defaults to False.
     """
-
-    ctx = tool_fs_context()
 
     if overwrite:
         await ctx.check_writes_permitted(file_path)

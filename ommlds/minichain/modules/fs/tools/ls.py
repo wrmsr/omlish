@@ -6,7 +6,7 @@ from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
-from ..context import tool_fs_context
+from ..context import FsContext
 
 
 ##
@@ -15,6 +15,8 @@ from ..context import tool_fs_context
 @cxl.wrap()
 async def ls(
         dir_path: str,
+        *,
+        ctx: FsContext = cxl.param(),
 ) -> str:
     """
     Lists the contents of the specified dir.
@@ -23,7 +25,6 @@ async def ls(
         dir_path: The dir to list the contents of. Must be an absolute path.
     """
 
-    ctx = tool_fs_context()
     await ctx.check_stat_dir(dir_path)
 
     out = io.StringIO()

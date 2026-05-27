@@ -1,8 +1,6 @@
 from omlish import inject as inj
 
 from ...tools.execution.catalog import ToolCatalog
-from ...tools.execution.context import ToolContextProvider
-from ...tools.execution.context import ToolContextProviders
 from ...tools.execution.errorhandling import ErrorHandlingToolUseExecutor
 from ...tools.execution.eventemit import EventEmittingToolUseExecutor
 from ...tools.execution.execution import ToolUseExecutor
@@ -58,10 +56,6 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
 
     els.extend([
         tool_context_providers().bind_items_provider(singleton=True),
-
-        inj.bind(ToolContextProvider, to_fn=inj.target(tcps=ToolContextProviders)(
-            lambda tcps: ToolContextProvider(lambda: [tc for tcp in tcps for tc in tcp()]),
-        ), singleton=True),
     ])
 
     #

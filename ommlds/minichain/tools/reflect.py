@@ -235,7 +235,7 @@ class ToolReflector:
                 dct = {
                     n: p
                     for n, p in dct.items()
-                    if cxl.is_unbound_param(p.default)
+                    if not cxl.is_unbound_param(p.default)
                 }
 
             return dct

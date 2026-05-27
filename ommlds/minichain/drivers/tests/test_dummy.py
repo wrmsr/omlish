@@ -44,7 +44,6 @@ class DummyChatChoicesService:
 class _NoopToolInvoker(ToolInvoker):
     async def invoke_tool(
             self,
-            ctx: ta.Any,
             name: str,
             args: ta.Mapping[str, ta.Any],
     ) -> str:

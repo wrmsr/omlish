@@ -3,10 +3,10 @@ import os.path
 import pytest
 
 from omlish import check
+from omlish import contextual as cxl
 
 from ......chat.messages import ToolUse
 from ......fs import FsRoot
-from ......tools.execution.context import ToolContext
 from ......tools.execution.execution import execute_tool_use
 from ......tools.execution.invokers import NameSwitchedToolInvoker
 from ......tools.execution.permissions import StaticToolPermissionDecider
@@ -43,15 +43,16 @@ async def test_recursive_ls_tool():
         check.not_none(rlt.name): rlt.invoker(),
     })
 
-    tool_exec_result = await execute_tool_use(
-        ToolContext(
-            tool_exec_request,
-            StaticToolPermissionDecider(ToolPermissionState.ALLOW),
-            FsContext(root_dir=FsRoot(root_dir)),
+    with cxl.bind({
+        FsContext: FsContext(
+            root_dir=FsRoot(root_dir),
+            tool_permission_decider=StaticToolPermissionDecider(ToolPermissionState.ALLOW),
         ),
-        tool_invoker,
-        tool_exec_request,
-    )
+    }):
+        tool_exec_result = await execute_tool_use(
+            tool_invoker,
+            tool_exec_request,
+        )
 
     print()
     print(tool_exec_result.c)

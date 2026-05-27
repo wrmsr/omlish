@@ -1,11 +1,12 @@
 import typing as ta
 
+from omlish import contextual as cxl
 from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
-from ..context import tool_todo_context
+from ..context import TodoContext
 from ..types import TodoItem
 
 
@@ -30,9 +31,11 @@ from ..types import TodoItem
         - Use this information to track progress and plan next steps.
     """,
 )
-def todo_read() -> ta.Sequence[TodoItem]:
-    ctx = tool_todo_context()
-
+@cxl.wrap()
+def todo_read(
+        *,
+        ctx: TodoContext = cxl.param(),
+) -> ta.Sequence[TodoItem]:
     return ctx.get_items() or []
 
 
