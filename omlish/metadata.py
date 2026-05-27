@@ -75,9 +75,22 @@ def _unwrap_object_metadata_target(obj: ta.Any) -> ta.Any:
 ##
 
 
-class _ObjectMetadataState(ta.NamedTuple):
-    ver: int
-    seq: ta.Sequence[ta.Any]
+@ta.final
+class _ObjectMetadataState:
+    def __init__(self, ver: int, seq: ta.Sequence[ta.Any]) -> None:
+        self._ver = ver
+        self._seq = seq
+
+    @property
+    def ver(self) -> int:
+        return self._ver
+
+    @property
+    def seq(self) -> ta.Sequence[ta.Any]:
+        return self._seq
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._ver}, {self._seq!r})'
 
 
 _EMPTY_OBJECT_METADATA_STATE = _ObjectMetadataState(0, ())
@@ -92,6 +105,10 @@ class _ObjectMetadataContainer:
 
     def __init__(self, state: _ObjectMetadataState) -> None:
         self._state = state
+
+    @property
+    def state(self) -> _ObjectMetadataState:
+        return self._state
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}({self._state!r})'
@@ -128,7 +145,7 @@ def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
             except KeyError:
                 dct[_OBJECT_METADATA_ATTR] = ctr = _ObjectMetadataContainer(_EMPTY_OBJECT_METADATA_STATE)
 
-        ctr._state = _ObjectMetadataState(ctr._state.ver + 1, (*ctr._state.seq, *mds))
+        ctr._state = _ObjectMetadataState(ctr._state._ver + 1, (*ctr._state._seq, *mds))
 
     return obj
 
@@ -210,7 +227,7 @@ def get_object_metadata(
             cur_ctr = dct[_OBJECT_METADATA_ATTR]
         except KeyError:
             continue
-        cur_mds = cur_ctr._state.seq
+        cur_mds = cur_ctr._state._seq
         if not cur_mds:
             continue
 
@@ -278,7 +295,7 @@ def get_single_object_metadata(
             cur_ctr = dct[_OBJECT_METADATA_ATTR]
         except KeyError:
             continue
-        cur_mds = cur_ctr._state.seq
+        cur_mds = cur_ctr._state._seq
         if not cur_mds:
             continue
 
