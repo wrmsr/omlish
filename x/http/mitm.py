@@ -8,10 +8,10 @@ from omlish import codecs as cdu
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.http import all as hu
-from omlish.http.simple.pipelines import make_simple_http_server
 from omlish.http.simple.handlers import SimpleHttpHandlerRequest
 from omlish.http.simple.handlers import SimpleHttpHandlerResponse
-from omlish.http.simple.handlers import SimpleHttpHandlerResponseStreamedData
+from omlish.http.simple.pipelines.sync import make_simple_http_server
+from omlish.http.simple.types import SimpleHttpHandlerResponseStreamedData
 from omlish.io.coro import iterable_bytes_stepped_coro
 
 

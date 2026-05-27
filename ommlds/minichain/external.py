@@ -29,15 +29,13 @@ class ExternalServiceEvent(Event, lang.Abstract, lang.Sealed):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_field_options('request', **_MARSHAL_FIELD_OPAQUE_REPR_KWARGS)
 class ExternalServiceRequestEvent(ExternalServiceEvent, lang.Final):
-    request: ta.Any | lang.OpaqueRepr
+    request: ta.Any
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_field_options('response', **_MARSHAL_FIELD_OPAQUE_REPR_KWARGS)
 class ExternalServiceResponseEvent(ExternalServiceEvent, lang.Final):
-    response: ta.Any | lang.OpaqueRepr
+    response: ta.Any
 
 
 #
@@ -53,9 +51,8 @@ class ExternalServiceStreamResponseStartEvent(ExternalServiceStreamResponseEvent
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_field_options('data', **_MARSHAL_FIELD_OPAQUE_REPR_KWARGS)
 class ExternalServiceStreamResponseDataEvent(ExternalServiceStreamResponseEvent, lang.Final):
-    data: ta.Any | lang.OpaqueRepr
+    data: ta.Any
 
 
 @dc.dataclass(frozen=True, kw_only=True)

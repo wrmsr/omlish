@@ -32,7 +32,7 @@ class MetadataAddingToolUseExecutor(ToolUseExecutor):
             tue = dc.replace(tue, use=tue.use.with_metadata(CreatedAt(self._clock())))
 
         if ToolUseUuid not in tue.use.metadata:
-            tue = dc.replace(tue, use=tue.use.with_metadata(ToolUseUuid(uuid.uuid7)))
+            tue = dc.replace(tue, use=tue.use.with_metadata(ToolUseUuid(uuid.uuid7())))
 
         tur = await self._wrapped.execute_tool_use(tue)
 

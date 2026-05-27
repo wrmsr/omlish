@@ -18,6 +18,8 @@ from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import ToolUseAiDelta
 from ...chat.tools.types import Tool
 from ...events.types import EventCallback
+from ...external import ExternalServiceRequestEvent
+from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
 from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ...models.configs import ModelName
@@ -60,7 +62,15 @@ class GoogleChatChoicesStreamService:
         if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
             return []
 
-        gcr = msh.unmarshal(json.loads(so.data.decode('utf-8')), pt.GenerateContentResponse)  # noqa
+        sj = json.loads(so.data.decode('utf-8'))
+
+        if self._on_event is not None:
+            await self._on_event(ExternalServiceStreamResponseDataEvent(
+                service=self,
+                data=sj,
+            ))
+
+        gcr = msh.unmarshal(sj, pt.GenerateContentResponse)  # noqa
         cnd = check.single(check.not_none(gcr.candidates))
 
         out: list[AiChoicesDeltas | None] = []
@@ -121,6 +131,12 @@ class GoogleChatChoicesStreamService:
         )
 
         req_dct = msh.marshal(g_req)
+
+        if self._on_event is not None:
+            await self._on_event(ExternalServiceRequestEvent(
+                service=self,
+                request=req_dct,
+            ))
 
         model_name = MODEL_NAMES.resolve(self._model_name.v)
 

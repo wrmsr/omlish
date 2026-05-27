@@ -66,6 +66,12 @@ class OpenaiChatChoicesStreamService:
 
         sj = json.loads(ss)  # ChatCompletionChunk
 
+        if self._on_event is not None:
+            await self._on_event(ExternalServiceStreamResponseDataEvent(
+                service=self,
+                data=sj,
+            ))
+
         check.state(sj['object'] == 'chat.completion.chunk')
 
         ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
@@ -73,13 +79,6 @@ class OpenaiChatChoicesStreamService:
         # FIXME: stop reason
         if not ccc.choices:
             return []
-
-        if self._on_event is not None:
-            for choice in ccc.choices:
-                await self._on_event(ExternalServiceStreamResponseDataEvent(
-                    service=self,
-                    data=choice.delta,
-                ))
 
         if any(choice.finish_reason for choice in ccc.choices):
             check.state(all(choice.finish_reason for choice in ccc.choices))
