@@ -40,6 +40,21 @@ class UnmarshalVia(tv.UniqueTypedValue, Config, lang.Final):
         check.not_none(self.o)
 
 
+def kw_marshal_via(o: MarshalerFactory | Marshaler | ta.Any) -> ta.Any:
+    return dict(marshal_via=MarshalVia(o))
+
+
+def kw_unmarshal_via(o: UnmarshalerFactory | Unmarshaler | ta.Any) -> ta.Any:
+    return dict(unmarshal_via=UnmarshalVia(o))
+
+
+def kw_marshal_unmarshal_via(o: ta.Any) -> ta.Any:
+    return dict(
+        marshal_via=MarshalVia(o),
+        unmarshal_via=UnmarshalVia(o),
+    )
+
+
 ##
 
 

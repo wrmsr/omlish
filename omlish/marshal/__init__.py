@@ -109,6 +109,10 @@ with _lang.auto_proxy_init(globals()):
         MarshalVia,
         UnmarshalVia,
 
+        kw_marshal_via,
+        kw_unmarshal_via,
+        kw_marshal_unmarshal_via,
+
         make_marshaler_via,
         make_unmarshaler_via,
 

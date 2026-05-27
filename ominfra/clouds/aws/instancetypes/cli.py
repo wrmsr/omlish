@@ -1,5 +1,4 @@
-import datetime
-import gzip
+import bz2
 import os.path
 import typing as ta
 
@@ -21,17 +20,15 @@ else:
 ##
 
 
-# Use a hardcoded gz mtime to prevent the gz file from changing when the contents don't. We still have the git metadata
-# to track modifications.
-FIXED_CACHE_TIMESTAMP = datetime.datetime(2025, 1, 1, tzinfo=datetime.UTC).timestamp()
-
-
 @lang.cached_function
 def _get_secrets() -> sec.Secrets:
     return load_secrets()
 
 
-def get_ec2_instance_types(session: boto3.Session) -> dict[str, dict[str, ta.Any]]:
+##
+
+
+def fetch_ec2_instance_types(session: boto3.Session) -> dict[str, dict[str, ta.Any]]:
     ec2 = session.client('ec2')
     next_token = None
     dct = {}
@@ -47,6 +44,32 @@ def get_ec2_instance_types(session: boto3.Session) -> dict[str, dict[str, ta.Any
     return dct
 
 
+##
+
+
+def sanitize_ec2_instance_types(instance_types: dict[str, dict[str, ta.Any]]) -> None:
+    def mask_match(v, p):
+        return len(v) == len(p) and all(pe is None or ve == pe for ve, pe in zip(v, p))
+
+    def rec(path: tuple[str | int, ...], obj: dict[str, ta.Any] | list[ta.Any]) -> None:
+        if mask_match(path, (None, 'GpuInfo', 'Gpus', None)):
+            if wl := obj.get('Workloads'):  # type: ignore[union-attr]
+                wl.sort()
+
+        elif isinstance(obj, dict):
+            for k, v in obj.items():
+                rec((*path, k), v)
+
+        elif isinstance(obj, list):
+            for i, c in enumerate(obj):
+                rec((*path, i), c)
+
+    rec((), instance_types)
+
+
+##
+
+
 class Cli(ap.Cli):
     @ap.cmd()
     def fetch(self) -> None:
@@ -58,16 +81,15 @@ class Cli(ap.Cli):
             region_name=cfg.get('aws_region').reveal(),
         )
 
-        instance_types = get_ec2_instance_types(session)
+        instance_types = fetch_ec2_instance_types(session)
 
-        cache_file = os.path.join(os.path.dirname(__file__), 'cache.json.gz')
+        sanitize_ec2_instance_types(instance_types)
+
+        compressed = bz2.compress(json.dumps_compact(instance_types).encode('utf-8'))
+
+        cache_file = os.path.join(os.path.dirname(__file__), 'cache.json.bz2')
         with open(cache_file, 'wb') as f:
-            with gzip.GzipFile(
-                    fileobj=f,
-                    mode='w',
-                    mtime=FIXED_CACHE_TIMESTAMP,
-            ) as gf:
-                gf.write(json.dumps_compact(instance_types).encode('utf-8'))
+            f.write(compressed)
 
     @ap.cmd()
     def dump(self) -> None:

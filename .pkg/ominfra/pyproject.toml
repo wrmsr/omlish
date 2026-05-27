@@ -69,7 +69,7 @@ exclude = [
     'DESIGN.md',
 ]
 'ominfra.clouds.aws.instancetypes' = [
-    'cache.json.gz',
+    'cache.json.bz2',
 ]
 'ominfra.clouds.aws.models.services' = [
     '*.toml',
