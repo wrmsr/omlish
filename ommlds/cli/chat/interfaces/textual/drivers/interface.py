@@ -68,6 +68,7 @@ class ChatDriverInterface(
         self._background_terminal_renderer = background_terminal_renderer
         self._clipboard = clipboard
         self._state_listener = state_listener
+        self._welcome_message = welcome_message
         self._chat_id = chat_id
 
         #
@@ -85,7 +86,6 @@ class ChatDriverInterface(
         #
 
         self._messages_container = MessagesContainer(
-            [welcome_message] if welcome_message is not None else [],
             clipboard=self._clipboard,
             chat_uuid=chat_id.v,
         )
@@ -123,7 +123,8 @@ class ChatDriverInterface(
         check.state(self._chat_action_queue_task is None)
         self._chat_action_queue_task = asyncio.create_task(self._chat_action_queue_task_main())
 
-        await self._messages_container.mount_messages()
+        if (wm := self._welcome_message) is not None:
+            await self._messages_container.mount_messages(wm)
 
         self.call_after_refresh(self._chat_driver.start)
 
@@ -194,8 +195,7 @@ class ChatDriverInterface(
             for w in wx:
                 self._suppressed_background_terminal_render_set.add(w)
 
-        await self._messages_container.enqueue_mount_messages(*wx)
-        self.call_later(self._messages_container.mount_messages)
+        self.call_later(self._messages_container.mount_messages, *wx)
 
     ##
     # Chat events
@@ -265,8 +265,7 @@ class ChatDriverInterface(
             )
 
             self._suppressed_background_terminal_render_set.add(tm)
-            await self._messages_container.enqueue_mount_messages(tm)
-            self.call_later(self._messages_container.mount_messages)
+            self.call_later(self._messages_container.mount_messages, tm)
 
         elif isinstance(ev, mc.ToolUseResultEvent):
             pass

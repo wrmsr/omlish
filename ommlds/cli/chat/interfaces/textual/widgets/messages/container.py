@@ -25,8 +25,6 @@ class MessagesContainer(
 
     def __init__(
             self,
-            init_messages: ta.Sequence[Message] | None = None,
-            *,
             clipboard: cpb.Clipboard | None = None,
             chat_uuid: uuid.UUID | None = None,
     ) -> None:
@@ -36,9 +34,6 @@ class MessagesContainer(
         self._chat_uuid = chat_uuid
 
         self._messages_by_uuid: dict[uuid.UUID, Message] = {}
-
-        if init_messages:
-            self._pending_mount_messages = list(init_messages)
 
     @property
     def chat_uuid(self) -> uuid.UUID | None:
@@ -68,18 +63,8 @@ class MessagesContainer(
 
     #
 
-    _pending_mount_messages: list[Message] | None = None
-
-    async def enqueue_mount_messages(self, *messages: Message) -> None:
-        if (lst := self._pending_mount_messages) is None:
-            lst = self._pending_mount_messages = []
-
-        lst.extend(messages)
-
-    #
-
     async def append_stream_message_content(self, parts: ta.Sequence[StreamMessagePart]) -> None:
-        mount_messages = False
+        mount_messages: list[Message] = []
         refresh = False
         scroll_to_bottom = False
 
@@ -93,9 +78,7 @@ class MessagesContainer(
 
                     self._messages_by_uuid[message_uuid] = aim
 
-                    await self.enqueue_mount_messages(aim)
-
-                    mount_messages = True
+                    mount_messages.append(aim)
                     refresh = True
 
                 else:
@@ -118,7 +101,7 @@ class MessagesContainer(
                 raise TypeError(part)
 
         if mount_messages:
-            self.call_later(self.mount_messages)
+            self.call_later(self.mount_messages, *mount_messages)
         if scroll_to_bottom:
             self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
         if refresh:
@@ -129,7 +112,7 @@ class MessagesContainer(
     async def mount_messages(self, *messages: Message) -> None:
         was_at_bottom = self._is_messages_at_bottom()
 
-        for msg in [*(self._pending_mount_messages or []), *messages]:
+        for msg in messages:
             if (mu := msg.message_uuid) is not None:
                 try:
                     xm = self._messages_by_uuid[mu]
@@ -146,8 +129,6 @@ class MessagesContainer(
 
             if isinstance(msg, StreamMessage):
                 await msg.start_stream()
-
-        self._pending_mount_messages = None
 
         self.call_after_refresh(self._scroll_messages_to_bottom)
 
