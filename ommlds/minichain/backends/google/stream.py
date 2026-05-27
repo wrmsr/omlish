@@ -14,6 +14,8 @@ from ...chat.choices.stream.services import ChatChoicesStreamResponse
 from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.choices.stream.types import AiChoicesDeltas
+from ...chat.metadata import ThoughtSignature
+from ...chat.stream.types import AiDelta
 from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import ToolUseAiDelta
 from ...chat.tools.types import Tool
@@ -76,28 +78,29 @@ class GoogleChatChoicesStreamService:
         out: list[AiChoicesDeltas | None] = []
 
         for p in check.not_none(cnd.content).parts or []:
+            ai_delta: AiDelta
+
             if (txt := p.text) is not None:
                 check.none(p.function_call)
-                out.append(AiChoicesDeltas([
-                    AiChoiceDeltas([
-                        ContentAiDelta(check.not_none(txt)),
-                    ]),
-                ]))
+                ai_delta = ContentAiDelta(check.not_none(txt))
 
             elif (fc := p.function_call) is not None:
                 check.none(p.text)
-                out.append(AiChoicesDeltas([
-                    AiChoiceDeltas([
-                        ToolUseAiDelta(
-                            id=fc.id,
-                            name=fc.name,
-                            args=fc.args,
-                        ),
-                    ]),
-                ]))
+                ai_delta = ToolUseAiDelta(
+                    id=fc.id,
+                    name=fc.name,
+                    args=fc.args,
+                )
 
             else:
                 raise ValueError(p)
+
+            if p.thought_signature is not None:
+                ai_delta = ai_delta.with_metadata(ThoughtSignature(p.thought_signature))
+
+            out.append(AiChoicesDeltas([
+                AiChoiceDeltas([ai_delta]),
+            ]))
 
         return out
 

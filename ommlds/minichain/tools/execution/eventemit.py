@@ -22,10 +22,17 @@ class EventEmittingToolUseExecutor(ToolUseExecutor):
         self._on_event = on_event
 
     async def execute_tool_use(self, tue: ToolUseExecution) -> ToolUseResult:
-        await self._on_event(ToolUseEvent(tue))
+        await self._on_event(ToolUseEvent(
+            tue.use,
+            tue=tue,
+        ))
 
         out = await self._wrapped.execute_tool_use(tue)
 
-        await self._on_event(ToolUseResultEvent(tue, out))
+        await self._on_event(ToolUseResultEvent(
+            tue.use,
+            out,
+            tue=tue,
+        ))
 
         return out

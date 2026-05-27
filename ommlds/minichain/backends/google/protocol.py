@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import check
+from omlish.formats.json import all as json
 
 from ....backends.google.protocol import types as pt
 from ...chat.messages import AiMessage
@@ -9,6 +10,8 @@ from ...chat.messages import SystemMessage
 from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
+from ...chat.metadata import ThoughtSignature
+from ...content.json import JsonContent
 
 
 ##
@@ -51,6 +54,8 @@ def make_msg_content(m: Message) -> pt.Content:
             tr_resp_val = pt.NullValue()  # type: ignore[unreachable]
         elif isinstance(m.tur.c, str):
             tr_resp_val = pt.StringValue(m.tur.c)
+        elif isinstance(m.tur.c, JsonContent):
+            tr_resp_val = pt.StringValue(json.dumps_compact(m.tur.c))
         else:
             raise TypeError(m.tur.c)
 
@@ -73,6 +78,10 @@ def make_msg_content(m: Message) -> pt.Content:
                     id=m.tu.id,
                     name=m.tu.name,
                     args=m.tu.args,
+                ),
+                **(
+                    dict(thought_signature=ts_md.v)  # type: ignore
+                    if (ts_md := m.metadata.get(ThoughtSignature)) is not None else {}
                 ),
             )],
             role='model',

@@ -241,9 +241,9 @@ class ChatDriverInterface(
 
         elif isinstance(ev, mc.ToolUseEvent):
             tr_dct = dict(
-                id=ev.tue.use.id,
-                name=check.not_none(ev.tue.catalog_entry).spec.name,
-                args=ev.tue.use.args,
+                id=ev.use.id,
+                name=check.not_none(check.not_none(ev.tue).catalog_entry).spec.name,
+                args=ev.use.args,
                 # spec=msh.marshal(tce.spec),
             )
 
@@ -259,7 +259,7 @@ class ChatDriverInterface(
             tr_rt = mc.ui_text_to_rich_text(tr_uit)
 
             tm = ToolMessage(
-                tx.Text(ev.tue.use.name),
+                tx.Text(ev.use.name),
                 tr_rt,
                 ToolMessage.State.RUNNING,
             )

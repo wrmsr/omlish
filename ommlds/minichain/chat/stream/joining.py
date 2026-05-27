@@ -10,6 +10,7 @@ from ..messages import AnyAiMessage
 from ..messages import ThinkingMessage
 from ..messages import ToolUseMessage
 from ..metadata import MessageUuid
+from ..metadata import ThoughtSignature
 from .types import AiDelta
 from .types import AiDeltas
 from .types import ContentAiDelta
@@ -142,8 +143,9 @@ class AiDeltaJoiner:
                 raw_args=json.dumps_compact(d.args),
             ))
 
-            if (mu := d.metadata.get(MessageUuid)) is not None:
-                tum = tum.with_metadata(mu)
+            for md_ty in (MessageUuid, ThoughtSignature):
+                if (md := d.metadata.get(md_ty)) is not None:
+                    tum = tum.with_metadata(md)
 
             self._out.append(tum)
 

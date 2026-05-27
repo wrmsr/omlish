@@ -120,11 +120,11 @@ class VideoMetadata(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_field_options(
-    ['thought_signature'],
-    marshal_via=msh.MarshalVia(msh.OptionalMarshaler(msh.Base64MarshalerUnmarshaler(bytes))),
-    unmarshal_via=msh.UnmarshalVia(msh.OptionalUnmarshaler(msh.Base64MarshalerUnmarshaler(bytes))),
-)
+# @msh.update_field_options(
+#     ['thought_signature'],
+#     marshal_via=msh.MarshalVia(msh.OptionalMarshaler(msh.Base64MarshalerUnmarshaler(bytes))),
+#     unmarshal_via=msh.UnmarshalVia(msh.OptionalUnmarshaler(msh.Base64MarshalerUnmarshaler(bytes))),
+# )
 @_set_class_marshal_options
 class Part(lang.Final):
     # TODO: data: msh.oneof ...
@@ -137,7 +137,7 @@ class Part(lang.Final):
     code_execution_result: CodeExecutionResult | None = None
 
     thought: bool | None = None
-    thought_signature: bytes | None = None
+    thought_signature: str | None = None  # actually bytes | None
 
     # TODO: metadata: msh.oneof ...
     video_metadata: VideoMetadata | None = None

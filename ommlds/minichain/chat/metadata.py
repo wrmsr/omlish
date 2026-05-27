@@ -27,3 +27,10 @@ class MessageUuid(tv.UniqueScalarTypedValue[uuid.UUID], MessageMetadata, lang.Fi
 
 class TurnUuid(tv.UniqueScalarTypedValue[uuid.UUID], MessageMetadata, lang.Final):
     pass
+
+
+##
+
+
+class ThoughtSignature(tv.UniqueScalarTypedValue[str], MessageMetadata, lang.Final):
+    pass

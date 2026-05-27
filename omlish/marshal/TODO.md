@@ -21,6 +21,8 @@
 - bidirectional dc field embedding (currently unmarshal only)
 - default options in config
 - xml
+- TaggedJson
+- ta.AnyStr
 
 See:
 - https://github.com/python-attrs/cattrs

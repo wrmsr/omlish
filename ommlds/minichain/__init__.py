@@ -190,6 +190,8 @@ with _lang.auto_proxy_init(
 
         MessageUuid,
         TurnUuid,
+
+        ThoughtSignature,
     )
 
     from .chat.services import (  # noqa
