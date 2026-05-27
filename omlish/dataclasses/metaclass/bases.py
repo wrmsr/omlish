@@ -82,3 +82,9 @@ class Box(
     ]),
 ):
     v: T
+
+    def __init__(self, v: T) -> None:  # noqa
+        # For typechecking
+        raise RuntimeError('Should not be called')
+
+    locals().__delitem__('__init__')

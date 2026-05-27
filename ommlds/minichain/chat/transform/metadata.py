@@ -53,7 +53,7 @@ class MessageUuidAddingMessageTransform(MessageTransform):
 
 @dc.dataclass(frozen=True)
 class TurnUuidAddingMessageTransform(MessageTransform):
-    turn_uuid: uuid.UUID | None = dc.field(default_factory=uuid.uuid7)
+    turn_uuid: uuid.UUID = dc.field(default_factory=uuid.uuid7)
 
     _: dc.KW_ONLY
 

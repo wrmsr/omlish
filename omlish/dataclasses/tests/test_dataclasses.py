@@ -292,7 +292,7 @@ def test_box():
     class Thing(dc.Box[list[str]]):
         pass
 
-    assert Thing('foo').v == 'foo'
+    assert Thing(['foo']).v == ['foo']
 
     sig = inspect.signature(Thing)
 
