@@ -6,7 +6,6 @@ TODO:
 import dataclasses as dc
 import typing as ta
 
-from .. import check
 from .. import lang
 from .accessor import TypedValuesAccessor
 from .consumer import TypedValuesConsumer
@@ -301,7 +300,7 @@ class TypedValues(
         if isinstance(key, int):
             return self._tup[key]
         elif isinstance(key, type):
-            return self._dct2[check.issubclass(key, TypedValue)]
+            return self._dct2[key]
         else:
             raise TypeError(key)
 
