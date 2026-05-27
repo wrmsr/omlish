@@ -29,6 +29,7 @@ class AiStreamDeltaEvent(AiStreamEvent, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 @msh.update_field_options(
     'exception',
     marshal_via=msh.MarshalVia(lang.OpaqueRepr | None),

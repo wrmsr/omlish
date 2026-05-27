@@ -3883,9 +3883,10 @@ def _process_dataclass__e562f7e241b2b48a25dd615cc744b5a161886c37():
         " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='sel"
         "f', std_params=(), kw_only_params=('uuid', 'message_uuid', 'exception'), frozen=True, slots=False, post_init_p"
         "arams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='message_uuid', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='exception', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "fn=None), ReprPlan.Field(name='exception', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(na"
+        "me='repr.default_fn'))))"
     ),
-    plan_repr_sha1='90318fdb48d19a87c2a27afe4054bce3a6907730',
+    plan_repr_sha1='a8fff377601979f51282bfd13791df37315f0816',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default_factory',
@@ -3893,12 +3894,13 @@ def _process_dataclass__e562f7e241b2b48a25dd615cc744b5a161886c37():
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('ommlds.minichain.chat.stream.events', 'AiStreamEndEvent'),
     ),
 )
-def _process_dataclass__90318fdb48d19a87c2a27afe4054bce3a6907730():
+def _process_dataclass__a8fff377601979f51282bfd13791df37315f0816():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3908,6 +3910,7 @@ def _process_dataclass__90318fdb48d19a87c2a27afe4054bce3a6907730():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -4021,8 +4024,10 @@ def _process_dataclass__90318fdb48d19a87c2a27afe4054bce3a6907730():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"message_uuid={self.message_uuid!r}")
-            parts.append(f"exception={self.exception!r}")
+            if (s := __dataclass__repr__default_fn(self.message_uuid)) is not None:
+                parts.append(f"message_uuid={s}")
+            if (s := __dataclass__repr__default_fn(self.exception)) is not None:
+                parts.append(f"exception={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

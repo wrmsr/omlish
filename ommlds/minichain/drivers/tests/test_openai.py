@@ -44,15 +44,15 @@ async def test_openai_chat_stream_model(harness):
     )
 
     async with inj.create_async_managed_injector(bind_openai_driver(
-            llm,
-            cfg=DriverConfig(
-                ai=AiConfig(
-                    stream=True,
-                ),
-                user=UserConfig(
-                    initial_user_content='Hi!',
-                ),
+        llm,
+        cfg=DriverConfig(
+            ai=AiConfig(
+                stream=True,
             ),
+            user=UserConfig(
+                initial_user_content='Hi!',
+            ),
+        ),
     )) as injector:
         driver = await injector[Driver]
         assert driver
