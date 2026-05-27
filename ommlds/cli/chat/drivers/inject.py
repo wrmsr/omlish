@@ -97,10 +97,16 @@ def bind_driver(
 
     #
 
+    fs_root = mc.FsRoot(os.path.abspath(os.getcwd()))  # FIXME: lol
+
+    els.append(inj.bind(mc.FsRoot, to_const=fs_root))
+
+    #
+
     els.extend([
         inj.bind(mc.SimpleToolPermissionsManager([
             mc.ToolPermissionRule(
-                mc.GlobFsToolPermissionMatcher(os.path.join(os.getcwd(), '**/*'), ['r']),  # FIXME: lol
+                mc.GlobFsToolPermissionMatcher(os.path.join(fs_root, '**/*'), ['r']),
                 mc.ToolPermissionState.ALLOW,
             ),
         ])),

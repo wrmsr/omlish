@@ -1,3 +1,5 @@
+import os.path
+import typing as ta
 import uuid
 
 import pytest
@@ -12,6 +14,7 @@ from .....chat.choices.stream.services import ChatChoicesStreamService
 from .....chat.messages import UserMessage
 from .....events.injection import event_callbacks
 from .....events.types import Event
+from .....fs import FsRoot
 from .....modules.code.configs import CodeConfig
 from .....modules.fs.configs import FsConfig
 from .....modules.inject import bind_module
@@ -52,6 +55,9 @@ def bind_openai_driver(
 #     pass
 
 
+FS_ROOT = FsRoot(os.path.abspath(os.path.dirname(__file__)))
+
+
 class MyToolPermissionDecider(ToolPermissionDecider):
     async def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState | None:
         fs_pt = check.isinstance(target, FsToolPermissionTarget)  # noqa
@@ -70,29 +76,32 @@ async def test_fizzbuzz(harness):
     async def on_event(event: Event) -> None:
         print(event)
 
-    async with inj.create_async_managed_injector(
-            inj.bind(MyToolPermissionDecider, singleton=True),
+    els: list[ta.Any] = [
+        inj.bind(FsRoot, to_const=FS_ROOT),
 
-            inj.override(
-                bind_openai_driver(
-                    llm,
-                    cfg=DriverConfig(
-                        ai=AiConfig(
-                            stream=True,
-                            enable_tools=True,
-                        ),
+        inj.bind(MyToolPermissionDecider, singleton=True),
+
+        inj.override(
+            bind_openai_driver(
+                llm,
+                cfg=DriverConfig(
+                    ai=AiConfig(
+                        stream=True,
+                        enable_tools=True,
                     ),
                 ),
-
-                inj.bind(ToolPermissionDecider, to_key=MyToolPermissionDecider),
             ),
 
-            bind_module(CodeConfig()),
-            bind_module(FsConfig()),
+            inj.bind(ToolPermissionDecider, to_key=MyToolPermissionDecider),
+        ),
 
-            event_callbacks().bind_item(to_const=on_event),
+        bind_module(CodeConfig()),
+        bind_module(FsConfig()),
 
-    ) as injector:
+        event_callbacks().bind_item(to_const=on_event),
+    ]
+
+    async with inj.create_async_managed_injector(*els) as injector:
         driver = await injector[Driver]
         assert driver
 

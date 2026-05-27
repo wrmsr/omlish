@@ -5,6 +5,7 @@ import pytest
 from omlish import check
 
 from ......chat.messages import ToolUse
+from ......fs import FsRoot
 from ......tools.execution.context import ToolContext
 from ......tools.execution.execution import execute_tool_use
 from ......tools.execution.invokers import NameSwitchedToolInvoker
@@ -46,7 +47,7 @@ async def test_recursive_ls_tool():
         ToolContext(
             tool_exec_request,
             StaticToolPermissionDecider(ToolPermissionState.ALLOW),
-            FsContext(root_dir=root_dir),
+            FsContext(root_dir=FsRoot(root_dir)),
         ),
         tool_invoker,
         tool_exec_request,

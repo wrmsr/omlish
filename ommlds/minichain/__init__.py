@@ -938,6 +938,10 @@ with _lang.auto_proxy_init(
         ExternalServiceStreamResponseEndEvent,
     )
 
+    from .fs import (  # noqa
+        FsRoot,
+    )
+
     from .json import (  # noqa
         JsonSchema,
 

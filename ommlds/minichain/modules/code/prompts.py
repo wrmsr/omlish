@@ -1,10 +1,12 @@
-# TODO: :|
-import os
-
+"""
+TODO:
+ - lol
+"""
 from ...content.content import Content
 from ...content.parse.simple import parse_simple_content
 from ...content.placeholders import ContentPlaceholder
 from ...content.placeholders import PlaceholderContent
+from ...fs import FsRoot
 
 
 ##
@@ -36,10 +38,13 @@ CODE_AGENT_SYSTEM_PROMPT: Content = [
 ]
 
 
-def build_code_agent_system_prompt_environment() -> Content:
-    return parse_simple_content(f"""\
-        Working Directory: {os.getcwd()}
-    """)
+def build_code_agent_system_prompt_environment(
+        *,
+        fs_root: FsRoot | None = None,
+) -> Content:
+    return '\n'.join([
+        *([f'Working Directory: {fs_root}'] if fs_root is not None else []),
+    ])
 
 
 # CODE_AGENT_SYSTEM_PROMPT = """

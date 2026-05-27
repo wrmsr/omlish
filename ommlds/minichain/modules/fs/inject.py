@@ -1,5 +1,3 @@
-import os
-
 from omlish import inject as inj
 from omlish import lang
 
@@ -29,9 +27,7 @@ def bind_fs(cfg: FsConfig = FsConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_context.FsContext(
-            root_dir=os.getcwd(),  # FIXME: lol
-        )),
+        inj.bind(_context.FsContext, singleton=True),
         bind_tool_context_provider_to_key(_context.FsContext),
     ])
 

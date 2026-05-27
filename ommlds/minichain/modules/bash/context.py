@@ -1,5 +1,6 @@
 import os.path
 
+from ...fs import FsRoot
 from ...tools.execution.context import tool_context
 from ...tools.execution.permissions import tool_permission_decider
 from ...tools.permissions.bash import BashToolPermissionTarget
@@ -12,7 +13,7 @@ class BashContext:
     def __init__(
             self,
             *,
-            root_dir: str | None = None,
+            root_dir: FsRoot | None = None,
     ) -> None:
         super().__init__()
 

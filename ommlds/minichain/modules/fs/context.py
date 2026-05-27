@@ -3,6 +3,7 @@ import stat
 
 from omlish import check
 
+from ...fs import FsRoot
 from ...tools.execution.context import tool_context
 from ...tools.execution.permissions import tool_permission_decider
 from ...tools.permissions.fs import FsToolPermissionTarget
@@ -23,7 +24,7 @@ class FsContext:
     def __init__(
             self,
             *,
-            root_dir: str | None = None,
+            root_dir: FsRoot | None = None,
     ) -> None:
         super().__init__()
 

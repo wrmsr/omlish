@@ -1,5 +1,3 @@
-import os
-
 from omlish import inject as inj
 from omlish import lang
 
@@ -22,9 +20,7 @@ def bind_bash(cfg: BashConfig = BashConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_context.BashContext(
-            root_dir=os.getcwd(),  # FIXME: lol
-        )),
+        inj.bind(_context.BashContext, singleton=True),
         bind_tool_context_provider_to_key(_context.BashContext),
     ])
 
