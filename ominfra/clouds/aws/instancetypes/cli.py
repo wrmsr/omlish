@@ -4,6 +4,7 @@ import typing as ta
 
 from omdev.home.secrets import load_secrets
 from omlish import lang
+from omlish import marshal as msh
 from omlish.argparse import all as ap
 from omlish.formats.json import all as json
 from omlish.secrets import all as sec
@@ -95,11 +96,14 @@ class Cli(ap.Cli):
         ap.arg('-m', '--marshal', action='store_true'),
     )
     def dump(self) -> None:
-        dct = load_instance_types()
+        dct: ta.Any = load_instance_types()
 
         if self.args.marshal:
             from ..models.services.ec2 import InstanceTypeInfo
-            InstanceTypeInfo.__shape__.from_json(dct)
+
+            val = msh.unmarshal(dct, dict[str, InstanceTypeInfo])
+
+            dct = msh.marshal(val)
 
         print(json.dumps_pretty(dct))
 

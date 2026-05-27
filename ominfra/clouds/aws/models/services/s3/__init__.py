@@ -2,7 +2,6 @@
 # ruff: noqa: N801 S105
 # fmt: off
 # @omlish-generated
-import enum as _enum  # noqa
 import typing as _ta  # noqa
 
 from omlish import dataclasses as _dc  # noqa
@@ -36,7 +35,7 @@ BypassGovernanceRetention = _ta.NewType('BypassGovernanceRetention', bool)
 CacheControl = _ta.NewType('CacheControl', str)
 
 
-class ChecksumAlgorithm(_enum.Enum):
+class ChecksumAlgorithm(_base.Enum):
     CRC32 = 'CRC32'
     CRC32C = 'CRC32C'
     SHA1 = 'SHA1'
@@ -58,7 +57,7 @@ ChecksumCRC64NVME = _ta.NewType('ChecksumCRC64NVME', str)
 ChecksumMD5 = _ta.NewType('ChecksumMD5', str)
 
 
-class ChecksumMode(_enum.Enum):
+class ChecksumMode(_base.Enum):
     ENABLED = 'ENABLED'
 
 
@@ -69,7 +68,7 @@ ChecksumSHA256 = _ta.NewType('ChecksumSHA256', str)
 ChecksumSHA512 = _ta.NewType('ChecksumSHA512', str)
 
 
-class ChecksumType(_enum.Enum):
+class ChecksumType(_base.Enum):
     COMPOSITE = 'COMPOSITE'
     FULL_OBJECT = 'FULL_OBJECT'
 
@@ -105,7 +104,7 @@ DisplayName = _ta.NewType('DisplayName', str)
 ETag = _ta.NewType('ETag', str)
 
 
-class EncodingType(_enum.Enum):
+class EncodingType(_base.Enum):
     URL = 'url'
 
 
@@ -146,7 +145,7 @@ IfNoneMatch = _ta.NewType('IfNoneMatch', str)
 IfUnmodifiedSince = _ta.NewType('IfUnmodifiedSince', _base.Timestamp)
 
 
-class IntelligentTieringAccessTier(_enum.Enum):
+class IntelligentTieringAccessTier(_base.Enum):
     ARCHIVE_ACCESS = 'ARCHIVE_ACCESS'
     DEEP_ARCHIVE_ACCESS = 'DEEP_ARCHIVE_ACCESS'
 
@@ -206,7 +205,7 @@ class NoSuchKey(
     pass
 
 
-class ObjectCannedACL(_enum.Enum):
+class ObjectCannedACL(_base.Enum):
     PRIVATE = 'private'
     PUBLIC_READ = 'public-read'
     PUBLIC_READ_WRITE = 'public-read-write'
@@ -219,12 +218,12 @@ class ObjectCannedACL(_enum.Enum):
 ObjectKey = _ta.NewType('ObjectKey', str)
 
 
-class ObjectLockLegalHoldStatus(_enum.Enum):
+class ObjectLockLegalHoldStatus(_base.Enum):
     ON = 'ON'
     OFF = 'OFF'
 
 
-class ObjectLockMode(_enum.Enum):
+class ObjectLockMode(_base.Enum):
     GOVERNANCE = 'GOVERNANCE'
     COMPLIANCE = 'COMPLIANCE'
 
@@ -232,7 +231,7 @@ class ObjectLockMode(_enum.Enum):
 ObjectLockRetainUntilDate = _ta.NewType('ObjectLockRetainUntilDate', _base.Timestamp)
 
 
-class ObjectStorageClass(_enum.Enum):
+class ObjectStorageClass(_base.Enum):
     STANDARD = 'STANDARD'
     REDUCED_REDUNDANCY = 'REDUCED_REDUNDANCY'
     GLACIER = 'GLACIER'
@@ -251,7 +250,7 @@ class ObjectStorageClass(_enum.Enum):
 ObjectVersionId = _ta.NewType('ObjectVersionId', str)
 
 
-class OptionalObjectAttributes(_enum.Enum):
+class OptionalObjectAttributes(_base.Enum):
     RESTORE_STATUS = 'RestoreStatus'
 
 
@@ -264,7 +263,7 @@ Prefix = _ta.NewType('Prefix', str)
 Range = _ta.NewType('Range', str)
 
 
-class ReplicationStatus(_enum.Enum):
+class ReplicationStatus(_base.Enum):
     COMPLETE = 'COMPLETE'
     PENDING = 'PENDING'
     FAILED = 'FAILED'
@@ -272,11 +271,11 @@ class ReplicationStatus(_enum.Enum):
     COMPLETED = 'COMPLETED'
 
 
-class RequestCharged(_enum.Enum):
+class RequestCharged(_base.Enum):
     REQUESTER = 'requester'
 
 
-class RequestPayer(_enum.Enum):
+class RequestPayer(_base.Enum):
     REQUESTER = 'requester'
 
 
@@ -309,7 +308,7 @@ SSEKMSEncryptionContext = _ta.NewType('SSEKMSEncryptionContext', str)
 SSEKMSKeyId = _ta.NewType('SSEKMSKeyId', str)
 
 
-class ServerSideEncryption(_enum.Enum):
+class ServerSideEncryption(_base.Enum):
     AES256 = 'AES256'
     AWS_FSX = 'aws:fsx'
     AWS_KMS = 'aws:kms'
@@ -321,7 +320,7 @@ Size = _ta.NewType('Size', int)
 StartAfter = _ta.NewType('StartAfter', str)
 
 
-class StorageClass(_enum.Enum):
+class StorageClass(_base.Enum):
     STANDARD = 'STANDARD'
     REDUCED_REDUNDANCY = 'REDUCED_REDUNDANCY'
     STANDARD_IA = 'STANDARD_IA'

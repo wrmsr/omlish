@@ -22,6 +22,8 @@ from .base import (  # noqa
     ListValueType,
     MapValueType,
 
+    Enum,
+
     SHAPE_NAME,
     common_metadata,
 
@@ -36,3 +38,11 @@ from .base import (  # noqa
 
     Operation,
 )
+
+
+##
+
+
+from omlish import marshal as _msh  # noqa
+
+_msh.register_global_module_import('._marshal', __package__)

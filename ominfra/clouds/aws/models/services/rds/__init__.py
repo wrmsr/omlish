@@ -2,7 +2,6 @@
 # ruff: noqa: N801 S105
 # fmt: off
 # @omlish-generated
-import enum as _enum  # noqa
 import typing as _ta  # noqa
 
 from omlish import dataclasses as _dc  # noqa
@@ -19,19 +18,19 @@ _dc.init_package(
 ##
 
 
-class ActivityStreamMode(_enum.Enum):
+class ActivityStreamMode(_base.Enum):
     SYNC = 'sync'
     ASYNC = 'async'
 
 
-class ActivityStreamPolicyStatus(_enum.Enum):
+class ActivityStreamPolicyStatus(_base.Enum):
     LOCKED = 'locked'
     UNLOCKED = 'unlocked'
     LOCKING_POLICY = 'locking-policy'
     UNLOCKING_POLICY = 'unlocking-policy'
 
 
-class ActivityStreamStatus(_enum.Enum):
+class ActivityStreamStatus(_base.Enum):
     STOPPED = 'stopped'
     STARTING = 'starting'
     STARTED = 'started'
@@ -46,7 +45,7 @@ class AuthorizationNotFoundFault(
     pass
 
 
-class AutomationMode(_enum.Enum):
+class AutomationMode(_base.Enum):
     FULL = 'full'
     ALL_PAUSED = 'all-paused'
 
@@ -142,7 +141,7 @@ class DBSubnetGroupNotFoundFault(
     pass
 
 
-class DatabaseInsightsMode(_enum.Enum):
+class DatabaseInsightsMode(_base.Enum):
     STANDARD = 'standard'
     ADVANCED = 'advanced'
 
@@ -214,7 +213,7 @@ class KMSKeyNotAccessibleFault(
     pass
 
 
-class MasterUserAuthenticationType(_enum.Enum):
+class MasterUserAuthenticationType(_base.Enum):
     PASSWORD = 'password'
     IAM_DB_AUTH = 'iam-db-auth'
 
@@ -243,7 +242,7 @@ class ProvisionedIopsNotAvailableInAZFault(
     pass
 
 
-class ReplicaMode(_enum.Enum):
+class ReplicaMode(_base.Enum):
     OPEN_READ_ONLY = 'open-read-only'
     MOUNTED = 'mounted'
 
@@ -259,7 +258,7 @@ class SnapshotQuotaExceededFault(
     pass
 
 
-class StorageEncryptionType(_enum.Enum):
+class StorageEncryptionType(_base.Enum):
     NONE = 'none'
     SSE_KMS = 'sse-kms'
     SSE_RDS = 'sse-rds'
@@ -292,7 +291,7 @@ class TenantDatabaseQuotaExceededFault(
     pass
 
 
-class UpgradeRolloutOrder(_enum.Enum):
+class UpgradeRolloutOrder(_base.Enum):
     FIRST = 'first'
     SECOND = 'second'
     LAST = 'last'

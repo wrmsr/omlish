@@ -2,7 +2,6 @@
 # ruff: noqa: N801 S105
 # fmt: off
 # @omlish-generated
-import enum as _enum  # noqa
 import typing as _ta  # noqa
 
 from omlish import dataclasses as _dc  # noqa
@@ -19,7 +18,7 @@ _dc.init_package(
 ##
 
 
-class ApplicationLogLevel(_enum.Enum):
+class ApplicationLogLevel(_base.Enum):
     TRACE = 'TRACE'
     DEBUG = 'DEBUG'
     INFO = 'INFO'
@@ -28,7 +27,7 @@ class ApplicationLogLevel(_enum.Enum):
     FATAL = 'FATAL'
 
 
-class Architecture(_enum.Enum):
+class Architecture(_base.Enum):
     X86_64 = 'x86_64'
     ARM64 = 'arm64'
 
@@ -54,7 +53,7 @@ FileSystemArn = _ta.NewType('FileSystemArn', str)
 FunctionArn = _ta.NewType('FunctionArn', str)
 
 
-class FunctionVersion(_enum.Enum):
+class FunctionVersion(_base.Enum):
     ALL = 'ALL'
 
 
@@ -63,7 +62,7 @@ Handler = _ta.NewType('Handler', str)
 KMSKeyArn = _ta.NewType('KMSKeyArn', str)
 
 
-class LastUpdateStatus(_enum.Enum):
+class LastUpdateStatus(_base.Enum):
     SUCCESSFUL = 'Successful'
     FAILED = 'Failed'
     IN_PROGRESS = 'InProgress'
@@ -72,7 +71,7 @@ class LastUpdateStatus(_enum.Enum):
 LastUpdateStatusReason = _ta.NewType('LastUpdateStatusReason', str)
 
 
-class LastUpdateStatusReasonCode(_enum.Enum):
+class LastUpdateStatusReasonCode(_base.Enum):
     ENI_LIMIT_EXCEEDED = 'EniLimitExceeded'
     INSUFFICIENT_ROLE_PERMISSIONS = 'InsufficientRolePermissions'
     INVALID_CONFIGURATION = 'InvalidConfiguration'
@@ -114,7 +113,7 @@ LayerVersionArn = _ta.NewType('LayerVersionArn', str)
 LocalMountPath = _ta.NewType('LocalMountPath', str)
 
 
-class LogFormat(_enum.Enum):
+class LogFormat(_base.Enum):
     JSON = 'JSON'
     TEXT = 'Text'
 
@@ -134,7 +133,7 @@ NamespacedFunctionName = _ta.NewType('NamespacedFunctionName', str)
 NullableBoolean = _ta.NewType('NullableBoolean', bool)
 
 
-class PackageType(_enum.Enum):
+class PackageType(_base.Enum):
     ZIP = 'Zip'
     IMAGE = 'Image'
 
@@ -148,7 +147,7 @@ RetentionPeriodInDays = _ta.NewType('RetentionPeriodInDays', int)
 RoleArn = _ta.NewType('RoleArn', str)
 
 
-class Runtime(_enum.Enum):
+class Runtime(_base.Enum):
     NODEJS = 'nodejs'
     NODEJS4_3 = 'nodejs4.3'
     NODEJS6_10 = 'nodejs6.10'
@@ -204,17 +203,17 @@ SecurityGroupId = _ta.NewType('SecurityGroupId', str)
 SensitiveString = _ta.NewType('SensitiveString', str)
 
 
-class SnapStartApplyOn(_enum.Enum):
+class SnapStartApplyOn(_base.Enum):
     PUBLISHED_VERSIONS = 'PublishedVersions'
     NONE = 'None'
 
 
-class SnapStartOptimizationStatus(_enum.Enum):
+class SnapStartOptimizationStatus(_base.Enum):
     ON = 'On'
     OFF = 'Off'
 
 
-class State(_enum.Enum):
+class State(_base.Enum):
     PENDING = 'Pending'
     ACTIVE = 'Active'
     INACTIVE = 'Inactive'
@@ -228,7 +227,7 @@ class State(_enum.Enum):
 StateReason = _ta.NewType('StateReason', str)
 
 
-class StateReasonCode(_enum.Enum):
+class StateReasonCode(_base.Enum):
     IDLE = 'Idle'
     CREATING = 'Creating'
     RESTORING = 'Restoring'
@@ -272,17 +271,17 @@ class StateReasonCode(_enum.Enum):
 SubnetId = _ta.NewType('SubnetId', str)
 
 
-class SystemLogLevel(_enum.Enum):
+class SystemLogLevel(_base.Enum):
     DEBUG = 'DEBUG'
     INFO = 'INFO'
     WARN = 'WARN'
 
 
-class TenantIsolationMode(_enum.Enum):
+class TenantIsolationMode(_base.Enum):
     PER_TENANT = 'PER_TENANT'
 
 
-class ThrottleReason(_enum.Enum):
+class ThrottleReason(_base.Enum):
     CONCURRENT_INVOCATION_LIMIT_EXCEEDED = 'ConcurrentInvocationLimitExceeded'
     FUNCTION_INVOCATION_RATE_LIMIT_EXCEEDED = 'FunctionInvocationRateLimitExceeded'
     RESERVED_FUNCTION_CONCURRENT_INVOCATION_LIMIT_EXCEEDED = 'ReservedFunctionConcurrentInvocationLimitExceeded'
@@ -296,7 +295,7 @@ Timeout = _ta.NewType('Timeout', int)
 Timestamp = _ta.NewType('Timestamp', str)
 
 
-class TracingMode(_enum.Enum):
+class TracingMode(_base.Enum):
     ACTIVE = 'Active'
     PASS_THROUGH = 'PassThrough'
 

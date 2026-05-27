@@ -308,8 +308,24 @@ with _lang.auto_proxy_init(globals()):
         BASE64_UNMARSHALER_FACTORY,
     )
 
+    from .singular.enums import (  # noqa
+        EnumNameMarshaler,
+        EnumNameUnmarshaler,
+
+        EnumValueMarshaler,
+        EnumValueUnmarshaler,
+
+        EnumMode,
+        EnumMarshalerFactory,
+        EnumUnmarshalerFactory,
+    )
+
     from .singular.primitives import (  # noqa
         PRIMITIVE_TYPES,
+
+        PrimitiveMarshalerUnmarshaler,
+        PRIMITIVE_MARSHALER_FACTORY,
+        PRIMITIVE_UNMARSHALER_FACTORY,
     )
 
     from .standard.api import (  # noqa

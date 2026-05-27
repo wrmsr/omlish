@@ -308,7 +308,6 @@ class ModelGen:
         '# ruff: noqa: N801 S105',
         '# fmt: off',
         '# @omlish-generated',
-        'import enum as _enum  # noqa',
         'import typing as _ta  # noqa',
         '',
         'from omlish import dataclasses as _dc  # noqa',
@@ -470,7 +469,7 @@ class ModelGen:
         elif isinstance(shape, botocore.model.StringShape):
             if shape.enum:
                 ls = [
-                    f'class {san_name}(_enum.Enum):',
+                    f'class {san_name}(_base.Enum):',
                 ]
                 all_caps = all(v == v.upper() for v in shape.enum)
                 for v in shape.enum:

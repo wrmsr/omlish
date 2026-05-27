@@ -2,7 +2,6 @@
 # ruff: noqa: N801 S105
 # fmt: off
 # @omlish-generated
-import enum as _enum  # noqa
 import typing as _ta  # noqa
 
 from omlish import dataclasses as _dc  # noqa
@@ -24,12 +23,12 @@ AdditionalFlexibleNetworkInterfaces = _ta.NewType('AdditionalFlexibleNetworkInte
 AllocationId = _ta.NewType('AllocationId', str)
 
 
-class AmdSevSnpSpecification(_enum.Enum):
+class AmdSevSnpSpecification(_base.Enum):
     ENABLED = 'enabled'
     DISABLED = 'disabled'
 
 
-class ArchitectureType(_enum.Enum):
+class ArchitectureType(_base.Enum):
     I386 = 'i386'
     X86_64 = 'x86_64'
     ARM64 = 'arm64'
@@ -37,7 +36,7 @@ class ArchitectureType(_enum.Enum):
     ARM64_MAC = 'arm64_mac'
 
 
-class ArchitectureValues(_enum.Enum):
+class ArchitectureValues(_base.Enum):
     I386 = 'i386'
     X86_64 = 'x86_64'
     ARM64 = 'arm64'
@@ -45,12 +44,12 @@ class ArchitectureValues(_enum.Enum):
     ARM64_MAC = 'arm64_mac'
 
 
-class AttachmentLimitType(_enum.Enum):
+class AttachmentLimitType(_base.Enum):
     SHARED = 'shared'
     DEDICATED = 'dedicated'
 
 
-class AttachmentStatus(_enum.Enum):
+class AttachmentStatus(_base.Enum):
     ATTACHING = 'attaching'
     ATTACHED = 'attached'
     DETACHING = 'detaching'
@@ -62,7 +61,7 @@ AutoRecoveryFlag = _ta.NewType('AutoRecoveryFlag', bool)
 AvailabilityZoneId = _ta.NewType('AvailabilityZoneId', str)
 
 
-class BandwidthWeightingType(_enum.Enum):
+class BandwidthWeightingType(_base.Enum):
     DEFAULT = 'default'
     VPC_1 = 'vpc-1'
     EBS_1 = 'ebs-1'
@@ -79,18 +78,18 @@ BaselineIops = _ta.NewType('BaselineIops', int)
 BaselineThroughputInMBps = _ta.NewType('BaselineThroughputInMBps', float)
 
 
-class BlockPublicAccessMode(_enum.Enum):
+class BlockPublicAccessMode(_base.Enum):
     OFF = 'off'
     BLOCK_BIDIRECTIONAL = 'block-bidirectional'
     BLOCK_INGRESS = 'block-ingress'
 
 
-class BootModeType(_enum.Enum):
+class BootModeType(_base.Enum):
     LEGACY_BIOS = 'legacy-bios'
     UEFI = 'uefi'
 
 
-class BootModeValues(_enum.Enum):
+class BootModeValues(_base.Enum):
     LEGACY_BIOS = 'legacy-bios'
     UEFI = 'uefi'
     UEFI_PREFERRED = 'uefi-preferred'
@@ -101,7 +100,7 @@ BurstablePerformanceFlag = _ta.NewType('BurstablePerformanceFlag', bool)
 CapacityReservationId = _ta.NewType('CapacityReservationId', str)
 
 
-class CapacityReservationPreference(_enum.Enum):
+class CapacityReservationPreference(_base.Enum):
     CAPACITY_RESERVATIONS_ONLY = 'capacity-reservations-only'
     OPEN = 'open'
     NONE = 'none'
@@ -146,7 +145,7 @@ DescribeSubnetsMaxResults = _ta.NewType('DescribeSubnetsMaxResults', int)
 DescribeVpcsMaxResults = _ta.NewType('DescribeVpcsMaxResults', int)
 
 
-class DeviceType(_enum.Enum):
+class DeviceType(_base.Enum):
     EBS = 'ebs'
     INSTANCE_STORE = 'instance-store'
 
@@ -156,12 +155,12 @@ DiskCount = _ta.NewType('DiskCount', int)
 DiskSize = _ta.NewType('DiskSize', int)
 
 
-class DiskType(_enum.Enum):
+class DiskType(_base.Enum):
     HDD = 'hdd'
     SSD = 'ssd'
 
 
-class DomainType(_enum.Enum):
+class DomainType(_base.Enum):
     VPC = 'vpc'
     STANDARD = 'standard'
 
@@ -169,18 +168,18 @@ class DomainType(_enum.Enum):
 EbsCardIndex = _ta.NewType('EbsCardIndex', int)
 
 
-class EbsEncryptionSupport(_enum.Enum):
+class EbsEncryptionSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
 
 
-class EbsNvmeSupport(_enum.Enum):
+class EbsNvmeSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
     REQUIRED = 'required'
 
 
-class EbsOptimizedSupport(_enum.Enum):
+class EbsOptimizedSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
     DEFAULT = 'default'
@@ -197,7 +196,7 @@ ElasticInferenceAcceleratorCount = _ta.NewType('ElasticInferenceAcceleratorCount
 EnaSrdSupported = _ta.NewType('EnaSrdSupported', bool)
 
 
-class EnaSupport(_enum.Enum):
+class EnaSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
     REQUIRED = 'required'
@@ -206,13 +205,13 @@ class EnaSupport(_enum.Enum):
 EncryptionInTransitSupported = _ta.NewType('EncryptionInTransitSupported', bool)
 
 
-class EphemeralNvmeSupport(_enum.Enum):
+class EphemeralNvmeSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
     REQUIRED = 'required'
 
 
-class FlexibleEnaQueuesSupport(_enum.Enum):
+class FlexibleEnaQueuesSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
 
@@ -240,17 +239,17 @@ GpuPartitionSize = _ta.NewType('GpuPartitionSize', float)
 HibernationFlag = _ta.NewType('HibernationFlag', bool)
 
 
-class HostnameType(_enum.Enum):
+class HostnameType(_base.Enum):
     IP_NAME = 'ip-name'
     RESOURCE_NAME = 'resource-name'
 
 
-class HttpTokensState(_enum.Enum):
+class HttpTokensState(_base.Enum):
     OPTIONAL = 'optional'
     REQUIRED = 'required'
 
 
-class HypervisorType(_enum.Enum):
+class HypervisorType(_base.Enum):
     OVM = 'ovm'
     XEN = 'xen'
 
@@ -258,7 +257,7 @@ class HypervisorType(_enum.Enum):
 ImageId = _ta.NewType('ImageId', str)
 
 
-class ImageState(_enum.Enum):
+class ImageState(_base.Enum):
     PENDING = 'pending'
     AVAILABLE = 'available'
     INVALID = 'invalid'
@@ -269,13 +268,13 @@ class ImageState(_enum.Enum):
     DISABLED = 'disabled'
 
 
-class ImageTypeValues(_enum.Enum):
+class ImageTypeValues(_base.Enum):
     MACHINE = 'machine'
     KERNEL = 'kernel'
     RAMDISK = 'ramdisk'
 
 
-class ImdsSupportValues(_enum.Enum):
+class ImdsSupportValues(_base.Enum):
     V2_0 = 'v2.0'
 
 
@@ -290,18 +289,18 @@ InferenceDeviceMemorySize = _ta.NewType('InferenceDeviceMemorySize', int)
 InferenceDeviceName = _ta.NewType('InferenceDeviceName', str)
 
 
-class InstanceAutoRecoveryState(_enum.Enum):
+class InstanceAutoRecoveryState(_base.Enum):
     DISABLED = 'disabled'
     DEFAULT = 'default'
 
 
-class InstanceBandwidthWeighting(_enum.Enum):
+class InstanceBandwidthWeighting(_base.Enum):
     DEFAULT = 'default'
     VPC_1 = 'vpc-1'
     EBS_1 = 'ebs-1'
 
 
-class InstanceBootModeValues(_enum.Enum):
+class InstanceBootModeValues(_base.Enum):
     LEGACY_BIOS = 'legacy-bios'
     UEFI = 'uefi'
 
@@ -309,45 +308,45 @@ class InstanceBootModeValues(_enum.Enum):
 InstanceId = _ta.NewType('InstanceId', str)
 
 
-class InstanceInterruptionBehavior(_enum.Enum):
+class InstanceInterruptionBehavior(_base.Enum):
     HIBERNATE = 'hibernate'
     STOP = 'stop'
     TERMINATE = 'terminate'
 
 
-class InstanceLifecycleType(_enum.Enum):
+class InstanceLifecycleType(_base.Enum):
     SPOT = 'spot'
     SCHEDULED = 'scheduled'
     CAPACITY_BLOCK = 'capacity-block'
     INTERRUPTIBLE_CAPACITY_RESERVATION = 'interruptible-capacity-reservation'
 
 
-class InstanceMetadataEndpointState(_enum.Enum):
+class InstanceMetadataEndpointState(_base.Enum):
     DISABLED = 'disabled'
     ENABLED = 'enabled'
 
 
-class InstanceMetadataOptionsState(_enum.Enum):
+class InstanceMetadataOptionsState(_base.Enum):
     PENDING = 'pending'
     APPLIED = 'applied'
 
 
-class InstanceMetadataProtocolState(_enum.Enum):
+class InstanceMetadataProtocolState(_base.Enum):
     DISABLED = 'disabled'
     ENABLED = 'enabled'
 
 
-class InstanceMetadataTagsState(_enum.Enum):
+class InstanceMetadataTagsState(_base.Enum):
     DISABLED = 'disabled'
     ENABLED = 'enabled'
 
 
-class InstanceRebootMigrationState(_enum.Enum):
+class InstanceRebootMigrationState(_base.Enum):
     DISABLED = 'disabled'
     DEFAULT = 'default'
 
 
-class InstanceStateName(_enum.Enum):
+class InstanceStateName(_base.Enum):
     PENDING = 'pending'
     RUNNING = 'running'
     SHUTTING_DOWN = 'shutting-down'
@@ -356,7 +355,7 @@ class InstanceStateName(_enum.Enum):
     STOPPED = 'stopped'
 
 
-class InstanceStorageEncryptionSupport(_enum.Enum):
+class InstanceStorageEncryptionSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     REQUIRED = 'required'
 
@@ -364,7 +363,7 @@ class InstanceStorageEncryptionSupport(_enum.Enum):
 InstanceStorageFlag = _ta.NewType('InstanceStorageFlag', bool)
 
 
-class InstanceType(_enum.Enum):
+class InstanceType(_base.Enum):
     A1_MEDIUM = 'a1.medium'
     A1_LARGE = 'a1.large'
     A1_XLARGE = 'a1.xlarge'
@@ -1579,7 +1578,7 @@ class InstanceType(_enum.Enum):
     HPC8A_96XLARGE = 'hpc8a.96xlarge'
 
 
-class InstanceTypeHypervisor(_enum.Enum):
+class InstanceTypeHypervisor(_base.Enum):
     NITRO = 'nitro'
     XEN = 'xen'
 
@@ -1587,7 +1586,7 @@ class InstanceTypeHypervisor(_enum.Enum):
 InternetGatewayId = _ta.NewType('InternetGatewayId', str)
 
 
-class IpSource(_enum.Enum):
+class IpSource(_base.Enum):
     AMAZON = 'amazon'
     BYOIP = 'byoip'
     NONE = 'none'
@@ -1596,7 +1595,7 @@ class IpSource(_enum.Enum):
 Ipv4AddressesPerSecondaryInterface = _ta.NewType('Ipv4AddressesPerSecondaryInterface', int)
 
 
-class Ipv6AddressAttribute(_enum.Enum):
+class Ipv6AddressAttribute(_base.Enum):
     PUBLIC = 'public'
     PRIVATE = 'private'
 
@@ -1610,7 +1609,7 @@ KeyPairId = _ta.NewType('KeyPairId', str)
 KeyPairName = _ta.NewType('KeyPairName', str)
 
 
-class KeyType(_enum.Enum):
+class KeyType(_base.Enum):
     RSA = 'rsa'
     ED25519 = 'ed25519'
 
@@ -1622,7 +1621,7 @@ LocalGatewayId = _ta.NewType('LocalGatewayId', str)
 LogicalGpuCount = _ta.NewType('LogicalGpuCount', int)
 
 
-class MarketType(_enum.Enum):
+class MarketType(_base.Enum):
     SPOT = 'spot'
     CAPACITY_BLOCK = 'capacity-block'
     INTERRUPTIBLE_CAPACITY_RESERVATION = 'interruptible-capacity-reservation'
@@ -1665,7 +1664,7 @@ MediaDeviceName = _ta.NewType('MediaDeviceName', str)
 MemorySize = _ta.NewType('MemorySize', int)
 
 
-class MonitoringState(_enum.Enum):
+class MonitoringState(_base.Enum):
     DISABLED = 'disabled'
     DISABLING = 'disabling'
     ENABLED = 'enabled'
@@ -1675,7 +1674,7 @@ class MonitoringState(_enum.Enum):
 NatGatewayId = _ta.NewType('NatGatewayId', str)
 
 
-class NestedVirtualizationSpecification(_enum.Enum):
+class NestedVirtualizationSpecification(_base.Enum):
     ENABLED = 'enabled'
     DISABLED = 'disabled'
 
@@ -1685,7 +1684,7 @@ NetworkCardIndex = _ta.NewType('NetworkCardIndex', int)
 NetworkInterfaceId = _ta.NewType('NetworkInterfaceId', str)
 
 
-class NetworkInterfaceStatus(_enum.Enum):
+class NetworkInterfaceStatus(_base.Enum):
     AVAILABLE = 'available'
     ASSOCIATED = 'associated'
     ATTACHING = 'attaching'
@@ -1693,7 +1692,7 @@ class NetworkInterfaceStatus(_enum.Enum):
     DETACHING = 'detaching'
 
 
-class NetworkInterfaceType(_enum.Enum):
+class NetworkInterfaceType(_base.Enum):
     INTERFACE = 'interface'
     NAT_GATEWAY = 'natGateway'
     EFA = 'efa'
@@ -1729,12 +1728,12 @@ NeuronDeviceName = _ta.NewType('NeuronDeviceName', str)
 NextToken = _ta.NewType('NextToken', str)
 
 
-class NitroEnclavesSupport(_enum.Enum):
+class NitroEnclavesSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
 
 
-class NitroTpmSupport(_enum.Enum):
+class NitroTpmSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
 
@@ -1746,7 +1745,7 @@ OdbNetworkArn = _ta.NewType('OdbNetworkArn', str)
 PeakBandwidthInGbps = _ta.NewType('PeakBandwidthInGbps', float)
 
 
-class PhcSupport(_enum.Enum):
+class PhcSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
 
@@ -1756,13 +1755,13 @@ PlacementGroupId = _ta.NewType('PlacementGroupId', str)
 PlacementGroupName = _ta.NewType('PlacementGroupName', str)
 
 
-class PlacementGroupStrategy(_enum.Enum):
+class PlacementGroupStrategy(_base.Enum):
     CLUSTER = 'cluster'
     PARTITION = 'partition'
     SPREAD = 'spread'
 
 
-class PlatformValues(_enum.Enum):
+class PlatformValues(_base.Enum):
     WINDOWS = 'Windows'
 
 
@@ -1771,7 +1770,7 @@ PrefixListResourceId = _ta.NewType('PrefixListResourceId', str)
 ProcessorSustainedClockSpeed = _ta.NewType('ProcessorSustainedClockSpeed', float)
 
 
-class ProductCodeValues(_enum.Enum):
+class ProductCodeValues(_base.Enum):
     DEVPAY = 'devpay'
     MARKETPLACE = 'marketplace'
 
@@ -1779,12 +1778,12 @@ class ProductCodeValues(_enum.Enum):
 RamdiskId = _ta.NewType('RamdiskId', str)
 
 
-class RebootMigrationSupport(_enum.Enum):
+class RebootMigrationSupport(_base.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
 
 
-class ResourceType(_enum.Enum):
+class ResourceType(_base.Enum):
     CAPACITY_RESERVATION = 'capacity-reservation'
     CLIENT_VPN_ENDPOINT = 'client-vpn-endpoint'
     CUSTOMER_GATEWAY = 'customer-gateway'
@@ -1895,7 +1894,7 @@ class ResourceType(_enum.Enum):
     IPAM_POOL_ALLOCATION = 'ipam-pool-allocation'
 
 
-class RootDeviceType(_enum.Enum):
+class RootDeviceType(_base.Enum):
     EBS = 'ebs'
     INSTANCE_STORE = 'instance-store'
 
@@ -1903,20 +1902,20 @@ class RootDeviceType(_enum.Enum):
 RouteGatewayId = _ta.NewType('RouteGatewayId', str)
 
 
-class RouteOrigin(_enum.Enum):
+class RouteOrigin(_base.Enum):
     CREATE_ROUTE_TABLE = 'CreateRouteTable'
     CREATE_ROUTE = 'CreateRoute'
     ENABLE_VGW_ROUTE_PROPAGATION = 'EnableVgwRoutePropagation'
     ADVERTISEMENT = 'Advertisement'
 
 
-class RouteState(_enum.Enum):
+class RouteState(_base.Enum):
     ACTIVE = 'active'
     BLACKHOLE = 'blackhole'
     FILTERED = 'filtered'
 
 
-class RouteTableAssociationStateCode(_enum.Enum):
+class RouteTableAssociationStateCode(_base.Enum):
     ASSOCIATING = 'associating'
     ASSOCIATED = 'associated'
     DISASSOCIATING = 'disassociating'
@@ -1931,12 +1930,12 @@ RunInstancesUserData = _ta.NewType('RunInstancesUserData', str)
 SecondaryInterfaceId = _ta.NewType('SecondaryInterfaceId', str)
 
 
-class SecondaryInterfaceStatus(_enum.Enum):
+class SecondaryInterfaceStatus(_base.Enum):
     AVAILABLE = 'available'
     IN_USE = 'in-use'
 
 
-class SecondaryInterfaceType(_enum.Enum):
+class SecondaryInterfaceType(_base.Enum):
     SECONDARY = 'secondary'
 
 
@@ -1951,14 +1950,14 @@ SecurityGroupId = _ta.NewType('SecurityGroupId', str)
 SecurityGroupName = _ta.NewType('SecurityGroupName', str)
 
 
-class ServiceManaged(_enum.Enum):
+class ServiceManaged(_base.Enum):
     ALB = 'alb'
     NLB = 'nlb'
     RNAT = 'rnat'
     RDS = 'rds'
 
 
-class ShutdownBehavior(_enum.Enum):
+class ShutdownBehavior(_base.Enum):
     STOP = 'stop'
     TERMINATE = 'terminate'
 
@@ -1966,7 +1965,7 @@ class ShutdownBehavior(_enum.Enum):
 SnapshotId = _ta.NewType('SnapshotId', str)
 
 
-class SpotInstanceType(_enum.Enum):
+class SpotInstanceType(_base.Enum):
     ONE_TIME = 'one-time'
     PERSISTENT = 'persistent'
 
@@ -1974,7 +1973,7 @@ class SpotInstanceType(_enum.Enum):
 SubnetCidrAssociationId = _ta.NewType('SubnetCidrAssociationId', str)
 
 
-class SubnetCidrBlockStateCode(_enum.Enum):
+class SubnetCidrBlockStateCode(_base.Enum):
     ASSOCIATING = 'associating'
     ASSOCIATED = 'associated'
     DISASSOCIATING = 'disassociating'
@@ -1986,7 +1985,7 @@ class SubnetCidrBlockStateCode(_enum.Enum):
 SubnetId = _ta.NewType('SubnetId', str)
 
 
-class SubnetState(_enum.Enum):
+class SubnetState(_base.Enum):
     PENDING = 'pending'
     AVAILABLE = 'available'
     UNAVAILABLE = 'unavailable'
@@ -1994,7 +1993,7 @@ class SubnetState(_enum.Enum):
     FAILED_INSUFFICIENT_CAPACITY = 'failed-insufficient-capacity'
 
 
-class SupportedAdditionalProcessorFeature(_enum.Enum):
+class SupportedAdditionalProcessorFeature(_base.Enum):
     AMD_SEV_SNP = 'amd-sev-snp'
     NESTED_VIRTUALIZATION = 'nested-virtualization'
 
@@ -2002,7 +2001,7 @@ class SupportedAdditionalProcessorFeature(_enum.Enum):
 SupportedInRegion = _ta.NewType('SupportedInRegion', bool)
 
 
-class Tenancy(_enum.Enum):
+class Tenancy(_base.Enum):
     DEFAULT = 'default'
     DEDICATED = 'dedicated'
     HOST = 'host'
@@ -2015,14 +2014,14 @@ TotalMediaMemory = _ta.NewType('TotalMediaMemory', int)
 TotalNeuronMemory = _ta.NewType('TotalNeuronMemory', int)
 
 
-class TpmSupportValues(_enum.Enum):
+class TpmSupportValues(_base.Enum):
     V2_0 = 'v2.0'
 
 
 TransitGatewayId = _ta.NewType('TransitGatewayId', str)
 
 
-class UsageClassType(_enum.Enum):
+class UsageClassType(_base.Enum):
     SPOT = 'spot'
     ON_DEMAND = 'on-demand'
     CAPACITY_BLOCK = 'capacity-block'
@@ -2031,12 +2030,12 @@ class UsageClassType(_enum.Enum):
 VCpuCount = _ta.NewType('VCpuCount', int)
 
 
-class VirtualizationType(_enum.Enum):
+class VirtualizationType(_base.Enum):
     HVM = 'hvm'
     PARAVIRTUAL = 'paravirtual'
 
 
-class VolumeType(_enum.Enum):
+class VolumeType(_base.Enum):
     STANDARD = 'standard'
     IO1 = 'io1'
     IO2 = 'io2'
@@ -2046,7 +2045,7 @@ class VolumeType(_enum.Enum):
     GP3 = 'gp3'
 
 
-class VpcCidrBlockStateCode(_enum.Enum):
+class VpcCidrBlockStateCode(_base.Enum):
     ASSOCIATING = 'associating'
     ASSOCIATED = 'associated'
     DISASSOCIATING = 'disassociating'
@@ -2055,7 +2054,7 @@ class VpcCidrBlockStateCode(_enum.Enum):
     FAILED = 'failed'
 
 
-class VpcEncryptionControlExclusionState(_enum.Enum):
+class VpcEncryptionControlExclusionState(_base.Enum):
     ENABLING = 'enabling'
     ENABLED = 'enabled'
     DISABLING = 'disabling'
@@ -2065,12 +2064,12 @@ class VpcEncryptionControlExclusionState(_enum.Enum):
 VpcEncryptionControlId = _ta.NewType('VpcEncryptionControlId', str)
 
 
-class VpcEncryptionControlMode(_enum.Enum):
+class VpcEncryptionControlMode(_base.Enum):
     MONITOR = 'monitor'
     ENFORCE = 'enforce'
 
 
-class VpcEncryptionControlState(_enum.Enum):
+class VpcEncryptionControlState(_base.Enum):
     ENFORCE_IN_PROGRESS = 'enforce-in-progress'
     MONITOR_IN_PROGRESS = 'monitor-in-progress'
     ENFORCE_FAILED = 'enforce-failed'
@@ -2089,7 +2088,7 @@ VpcId = _ta.NewType('VpcId', str)
 VpcPeeringConnectionId = _ta.NewType('VpcPeeringConnectionId', str)
 
 
-class VpcState(_enum.Enum):
+class VpcState(_base.Enum):
     PENDING = 'pending'
     AVAILABLE = 'available'
 

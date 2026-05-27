@@ -1,3 +1,4 @@
+import enum
 import typing as ta
 
 from omlish import cached
@@ -5,10 +6,6 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-
-
-with lang.auto_proxy_import(globals()):
-    from . import json as _json
 
 
 DateTime = ta.NewType('DateTime', str)
@@ -45,6 +42,13 @@ class ListValueType(ValueType):
 class MapValueType(ValueType):
     k: type
     v: type
+
+
+##
+
+
+class Enum(enum.Enum):
+    pass
 
 
 ##
@@ -124,16 +128,6 @@ class ShapeInfo:
             elif mn := f.metadata.get(MEMBER_NAME):
                 l.append((mn, f))
         return col.make_map(l, strict=True)
-
-    #
-
-    @cached.property
-    def to_json(self) -> ta.Callable[[ta.Any], ta.Mapping[str, ta.Any]]:
-        return _json.build_to_json_fn(self)
-
-    @cached.property
-    def from_json(self) -> ta.Callable[[ta.Any], ta.Mapping[str, ta.Any]]:
-        return _json.build_from_json_fn(self)
 
 
 @dc.dataclass(frozen=True, kw_only=True)
