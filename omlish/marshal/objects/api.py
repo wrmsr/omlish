@@ -22,7 +22,7 @@ T = ta.TypeVar('T')
 
 
 @ta.final
-@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_filtered_repr('omit_none')
 @dc.dataclass(frozen=True, kw_only=True)
 class FieldOptions(lang.Final):
     """
@@ -126,7 +126,7 @@ class ObjectSpecials(lang.Final):
 
 
 @ta.final
-@install_dataclass_filtered_repr('omit_falsey')
+@install_dataclass_filtered_repr('omit_none')
 @dc.dataclass(frozen=True, kw_only=True)
 class ObjectOptions(Config, lang.Final):
     """Object-level marshaling options."""

@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 """
 These attempt to punch through *all* wrappers. The the usecases involve having things like bound methods, classmethods,
 functools.partial instances, and needing to get the metadata of the underlying thing the end-user wrote.
@@ -74,32 +75,61 @@ def _unwrap_object_metadata_target(obj: ta.Any) -> ta.Any:
 ##
 
 
-_OBJECT_METADATA_LOCK = threading.RLock()
+class _ObjectMetadataState(ta.NamedTuple):
+    ver: int
+    seq: ta.Sequence[ta.Any]
+
+
+_EMPTY_OBJECT_METADATA_STATE = _ObjectMetadataState(0, ())
+
+
+#
+
+
+@ta.final
+class _ObjectMetadataContainer:
+    __slots__ = ('_state',)
+
+    def __init__(self, state: _ObjectMetadataState) -> None:
+        self._state = state
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._state!r})'
+
+
+##
+
+
+_OBJECT_METADATA_LOCK = threading.Lock()
 
 _OBJECT_METADATA_ATTR = '__' + __name__.replace('.', '_') + '__metadata__'
 
 
 def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
+    if not mds:
+        return obj
+
     for md in mds:
         check.isinstance(md, ObjectMetadata)
 
     tgt = _unwrap_object_metadata_target(obj)
     dct = tgt.__dict__
 
-    if isinstance(dct, types.MappingProxyType):
-        try:
-            lst = dct[_OBJECT_METADATA_ATTR]
-        except KeyError:
-            with _OBJECT_METADATA_LOCK:
-                try:
-                    lst = dct[_OBJECT_METADATA_ATTR]
-                except KeyError:
-                    setattr(tgt, _OBJECT_METADATA_ATTR, lst := [])
+    with _OBJECT_METADATA_LOCK:
+        if isinstance(dct, types.MappingProxyType):
+            try:
+                ctr = dct[_OBJECT_METADATA_ATTR]
+            except KeyError:
+                setattr(tgt, _OBJECT_METADATA_ATTR, ctr := _ObjectMetadataContainer(_EMPTY_OBJECT_METADATA_STATE))
 
-    else:
-        lst = dct.setdefault(_OBJECT_METADATA_ATTR, [])
+        else:
+            try:
+                ctr = dct[_OBJECT_METADATA_ATTR]
+            except KeyError:
+                dct[_OBJECT_METADATA_ATTR] = ctr = _ObjectMetadataContainer(_EMPTY_OBJECT_METADATA_STATE)
 
-    lst.extend(mds)
+        ctr._state = _ObjectMetadataState(ctr._state.ver + 1, (*ctr._state.seq, *mds))
+
     return obj
 
 
@@ -177,9 +207,10 @@ def get_object_metadata(
             continue
 
         try:
-            cur_mds = dct[_OBJECT_METADATA_ATTR]
+            cur_ctr = dct[_OBJECT_METADATA_ATTR]
         except KeyError:
             continue
+        cur_mds = cur_ctr._state.seq
         if not cur_mds:
             continue
 
@@ -244,9 +275,10 @@ def get_single_object_metadata(
             continue
 
         try:
-            cur_mds = dct[_OBJECT_METADATA_ATTR]
+            cur_ctr = dct[_OBJECT_METADATA_ATTR]
         except KeyError:
             continue
+        cur_mds = cur_ctr._state.seq
         if not cur_mds:
             continue
 
