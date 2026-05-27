@@ -91,9 +91,16 @@ class Cli(ap.Cli):
         with open(cache_file, 'wb') as f:
             f.write(compressed)
 
-    @ap.cmd()
+    @ap.cmd(
+        ap.arg('-m', '--marshal', action='store_true'),
+    )
     def dump(self) -> None:
         dct = load_instance_types()
+
+        if self.args.marshal:
+            from ..models.services.ec2 import InstanceTypeInfo
+            InstanceTypeInfo.__shape__.from_json(dct)
+
         print(json.dumps_pretty(dct))
 
 

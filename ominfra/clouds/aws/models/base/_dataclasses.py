@@ -37,7 +37,7 @@ def _register(**kwargs):
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ominfra.clouds.aws.models.base', 'ListValueType'),
+        ('ominfra.clouds.aws.models.base.base', 'ListValueType'),
     ),
 )
 def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
@@ -174,7 +174,7 @@ def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ominfra.clouds.aws.models.base', 'MapValueType'),
+        ('ominfra.clouds.aws.models.base.base', 'MapValueType'),
     ),
 )
 def _process_dataclass__578f7d51b95e4fe4ec2ad0437b5688e4ff9ac9e6():
@@ -331,7 +331,7 @@ def _process_dataclass__578f7d51b95e4fe4ec2ad0437b5688e4ff9ac9e6():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ominfra.clouds.aws.models.base', 'Operation'),
+        ('ominfra.clouds.aws.models.base.base', 'Operation'),
     ),
 )
 def _process_dataclass__28e083342d85b6259c08f4deabe13615b48d50bd():
@@ -465,7 +465,7 @@ def _process_dataclass__28e083342d85b6259c08f4deabe13615b48d50bd():
     plan_repr_sha1='fe6ee985e5454d23ff07c1fb86524a86d9239cf5',
     op_ref_idents=(),
     cls_names=(
-        ('ominfra.clouds.aws.models.base', 'Shape'),
+        ('ominfra.clouds.aws.models.base.base', 'Shape'),
     ),
 )
 def _process_dataclass__fe6ee985e5454d23ff07c1fb86524a86d9239cf5():
@@ -593,7 +593,7 @@ def _process_dataclass__fe6ee985e5454d23ff07c1fb86524a86d9239cf5():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ominfra.clouds.aws.models.base', 'Tag'),
+        ('ominfra.clouds.aws.models.base.base', 'Tag'),
     ),
 )
 def _process_dataclass__e99da15cf5726b0f5d37d0fa8c353b161d357ea9():
