@@ -47,17 +47,14 @@ class UnboundContextualError(RuntimeError):
     pass
 
 
+def _raise_unbound_contextual_error(*args, **kwargs):
+    raise UnboundContextualError
+
+
 @ta.final
 class NO_CONTEXTUAL_DEFAULT:  # noqa
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
-
-
-##
-
-
-def _raise_unbound_contextual_error(*args, **kwargs):
-    raise UnboundContextualError
 
 
 @ta.final
@@ -98,6 +95,13 @@ class _UnboundContextualParam:
     __str__ = _raise_unbound_contextual_error
     # __repr__ = _raise_unbound_contextual_error  # Needed by inspect
     __format__ = _raise_unbound_contextual_error
+
+
+def is_unbound_contextual_param(obj: ta.Any) -> bool:
+    return isinstance(obj, _UnboundContextualParam)
+
+
+#
 
 
 @ta.overload

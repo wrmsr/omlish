@@ -17849,36 +17849,38 @@ def _process_dataclass__dd85158a53c93a82289b98788d08c557aa37e325():
         "erride'), allow_dynamic_dunder_attrs=False), InitPlan(fields=(InitPlan.Field(name='spec', annotation=OpRef(nam"
         "e='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Field"
         "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='target', annotation=OpRef(na"
-        "me='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='name_override', annotation="
-        "OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_par"
-        "am='self', std_params=('spec', 'target'), kw_only_params=('name_override',), frozen=True, slots=False, post_in"
-        "it_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='spec', kw_only=False, fn=No"
-        "ne), ReprPlan.Field(name='target', kw_only=False, fn=None), ReprPlan.Field(name='name_override', kw_only=True,"
-        " fn=OpRef(name='repr.fns.2.fn'))), id=False, terse=False, default_fn=None)))"
+        "me='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='name_override', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None)), self_param='self', std_params=('spec', 'target'), kw_only_params=('name_override',), fr"
+        "ozen=True, slots=False, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(na"
+        "me='spec', kw_only=False, fn=None), ReprPlan.Field(name='target', kw_only=False, fn=None), ReprPlan.Field(name"
+        "='name_override', kw_only=True, fn=None)), id=False, terse=True, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='f92c2b600e9ab772595277d8dcfde959106424fb',
+    plan_repr_sha1='822cfb79568db586d5aa4e0712ca68531910d013',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__repr__fns__2__fn',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('ommlds.minichain.tools.execution.catalog', 'ToolCatalogEntry'),
     ),
 )
-def _process_dataclass__f92c2b600e9ab772595277d8dcfde959106424fb():
+def _process_dataclass__822cfb79568db586d5aa4e0712ca68531910d013():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__repr__fns__2__fn,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -17948,7 +17950,7 @@ def _process_dataclass__f92c2b600e9ab772595277d8dcfde959106424fb():
         def __init__(
             self,
             spec: __dataclass__init__fields__0__annotation,
-            target: __dataclass__init__fields__1__annotation,
+            target: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             *,
             name_override: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
@@ -17965,9 +17967,11 @@ def _process_dataclass__f92c2b600e9ab772595277d8dcfde959106424fb():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"spec={self.spec!r}")
-            parts.append(f"target={self.target!r}")
-            if (s := __dataclass__repr__fns__2__fn(self.name_override)) is not None:
+            if (s := __dataclass__repr__default_fn(self.spec)) is not None:
+                parts.append(f"{s}")
+            if (s := __dataclass__repr__default_fn(self.target)) is not None:
+                parts.append(f"{s}")
+            if (s := __dataclass__repr__default_fn(self.name_override)) is not None:
                 parts.append(f"name_override={s}")
             return (
                 f"{self.__class__.__qualname__}("
@@ -18988,36 +18992,46 @@ def _process_dataclass__b8d886b10fdec5e3812e5cb215372d1c9898e10e():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('impl', 'input', 'output')), EqPlan(fields=('impl', 'input', 'output')), FrozenPla"
-        "n(fields=('impl', 'input', 'output'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('impl'"
-        ", 'input', 'output'), cache=False), InitPlan(fields=(InitPlan.Field(name='impl', annotation=OpRef(name='init.f"
-        "ields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='input', annotation=OpRef(name='init.f"
-        "ields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='output', annotation=OpRef(name='init."
-        "fields.2.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('impl', 'input', 'output'"
-        "), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan"
-        "(fields=(ReprPlan.Field(name='impl', kw_only=False, fn=None), ReprPlan.Field(name='input', kw_only=False, fn=N"
-        "one), ReprPlan.Field(name='output', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('impl', 'input', 'output', 'context')), EqPlan(fields=('impl', 'input', 'output', "
+        "'context')), FrozenPlan(fields=('impl', 'input', 'output', 'context'), allow_dynamic_dunder_attrs=False), Hash"
+        "Plan(action='add', fields=('impl', 'input', 'output', 'context'), cache=False), InitPlan(fields=(InitPlan.Fiel"
+        "d(name='impl', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='input', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='output', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='context', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None)), self_param='self', std_params=('impl', 'input', 'output'), kw_only_params=('context',), f"
+        "rozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field"
+        "(name='impl', kw_only=False, fn=None), ReprPlan.Field(name='input', kw_only=False, fn=None), ReprPlan.Field(na"
+        "me='output', kw_only=False, fn=None), ReprPlan.Field(name='context', kw_only=True, fn=None)), id=False, terse="
+        "False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='de3be5fd6f60c4f97ffe6dc8063dfe0114df6340',
+    plan_repr_sha1='d60319bf361eafa4ccfcb75b89bcc62a0908949c',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('ommlds.minichain.tools.fns', 'ToolFn'),
     ),
 )
-def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
+def _process_dataclass__d60319bf361eafa4ccfcb75b89bcc62a0908949c():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -19039,6 +19053,7 @@ def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
                 impl=self.impl,
                 input=self.input,
                 output=self.output,
+                context=self.context,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -19054,7 +19069,8 @@ def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
             return (
                 self.impl == other.impl and
                 self.input == other.input and
-                self.output == other.output
+                self.output == other.output and
+                self.context == other.context
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -19066,6 +19082,7 @@ def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
             'impl',
             'input',
             'output',
+            'context',
         }
 
         def __setattr__(self, name, value):
@@ -19085,6 +19102,7 @@ def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
             'impl',
             'input',
             'output',
+            'context',
         }
 
         def __delattr__(self, name):
@@ -19105,6 +19123,7 @@ def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
                 self.impl,
                 self.input,
                 self.output,
+                self.context,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -19115,10 +19134,13 @@ def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
             impl: __dataclass__init__fields__0__annotation,
             input: __dataclass__init__fields__1__annotation,
             output: __dataclass__init__fields__2__annotation,
+            *,
+            context: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'impl', impl)
             __dataclass__object_setattr(self, 'input', input)
             __dataclass__object_setattr(self, 'output', output)
+            __dataclass__object_setattr(self, 'context', context)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -19128,9 +19150,14 @@ def _process_dataclass__de3be5fd6f60c4f97ffe6dc8063dfe0114df6340():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"impl={self.impl!r}")
-            parts.append(f"input={self.input!r}")
-            parts.append(f"output={self.output!r}")
+            if (s := __dataclass__repr__default_fn(self.impl)) is not None:
+                parts.append(f"impl={s}")
+            if (s := __dataclass__repr__default_fn(self.input)) is not None:
+                parts.append(f"input={s}")
+            if (s := __dataclass__repr__default_fn(self.output)) is not None:
+                parts.append(f"output={s}")
+            if (s := __dataclass__repr__default_fn(self.context)) is not None:
+                parts.append(f"context={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

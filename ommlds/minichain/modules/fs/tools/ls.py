@@ -1,6 +1,7 @@
 import io
 import os
 
+from omlish import contextual as cxl
 from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
@@ -11,6 +12,7 @@ from ..context import tool_fs_context
 ##
 
 
+@cxl.wrap()
 async def ls(
         dir_path: str,
 ) -> str:

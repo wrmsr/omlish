@@ -21,6 +21,7 @@ D = ta.TypeVar('D')
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ToolFn(lang.Final):
     @dc.dataclass(frozen=True)
     class Impl(lang.Abstract, lang.Sealed):
@@ -88,6 +89,14 @@ class ToolFn(lang.Final):
         pass
 
     output: Output
+
+    #
+
+    _: dc.KW_ONLY
+
+    #
+
+    context: frozenset[ta.Any] | None = None
 
 
 ##

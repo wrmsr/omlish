@@ -17,6 +17,7 @@ import typing as ta
 
 from omlish import check
 from omlish import collections as col
+from omlish import contextual as cxl
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import metadata as md
@@ -72,10 +73,12 @@ class ToolReflector:
             self,
             *,
             raw_descs: bool = False,
+            include_contextual_params: bool = False,
     ) -> None:
         super().__init__()
 
         self._raw_descs = raw_descs
+        self._include_contextual_params = include_contextual_params
 
     def reflect_union_type(self, *args: rfl.Type) -> ToolDtype:
         check.unique(args)
@@ -224,13 +227,26 @@ class ToolReflector:
         def sig() -> inspect.Signature:
             return inspect.signature(fn)
 
+        @cached_nullary
+        def sig_params() -> ta.Mapping[str, inspect.Parameter]:
+            dct: ta.Mapping[str, inspect.Parameter] = sig().parameters
+
+            if not self._include_contextual_params:
+                dct = {
+                    n: p
+                    for n, p in dct.items()
+                    if cxl.is_unbound_param(p.default)
+                }
+
+            return dct
+
         if 'params' not in ts_kw:
             ds_p_dct = {
                 ds_p.arg_name: ds_p
                 for ds_p in (ds.params if ds is not None else {})
             }
 
-            sig_p_dct = sig().parameters
+            sig_p_dct = sig_params()
 
             pns: list[str] = list({**p_ovr_dct, **ds_p_dct, **sig_p_dct})
 
@@ -308,5 +324,8 @@ class ToolReflector:
 ##
 
 
-def reflect_tool_spec(fn: ta.Callable) -> ToolSpec:
-    return ToolReflector().reflect_function(fn)
+def reflect_tool_spec(
+        fn: ta.Callable,
+        **kwargs: ta.Any,
+) -> ToolSpec:
+    return ToolReflector(**kwargs).reflect_function(fn)

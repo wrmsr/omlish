@@ -5,6 +5,7 @@ TODO:
 import inspect
 import typing as ta
 
+from omlish import contextual as cxl
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
@@ -23,6 +24,7 @@ def reflect_tool_catalog_entry(
         marshal_input: bool = False,
         marshal_output: bool = False,
         no_marshal_check: bool = False,
+        include_contextual_params: bool = False,
 ) -> ToolCatalogEntry:
     impl: ToolFn.Impl
     if lang.is_maysync(fn):
@@ -34,11 +36,15 @@ def reflect_tool_catalog_entry(
 
     #
 
-    tf_input: ToolFn.Input
     sig = inspect.signature(fn)
+
+    tf_input: ToolFn.Input
     if marshal_input:
         in_rtys: dict[str, rfl.Type] = {}
         for p in sig.parameters.values():
+            # FIXME: dedupe vs ToolReflector
+            if not include_contextual_params and cxl.is_unbound_param(p.default):
+                continue
             p_rty = rfl.typeof(p.annotation)
             if not no_marshal_check:
                 msh.global_marshaling().new_unmarshal_factory_context().make_unmarshaler(p_rty)
@@ -62,11 +68,23 @@ def reflect_tool_catalog_entry(
 
     #
 
+    context = {
+        p.annotation
+        for p in sig.parameters.values()
+        if cxl.is_unbound_param(p.default)
+    }
+
+    #
+
     return ToolCatalogEntry(
-        reflect_tool_spec(fn),
+        reflect_tool_spec(
+            fn,
+            include_contextual_params=include_contextual_params,
+        ),
         ToolFn(
             impl,
             tf_input,
             tf_output,
+            context=frozenset(context) if context else None,
         ),
     )

@@ -7,6 +7,7 @@ from .lite.contextual import (  # noqa
 
     UnboundContextualError as UnboundError,
     NO_CONTEXTUAL_DEFAULT as NO_DEFAULT,
+    is_unbound_contextual_param as is_unbound_param,
 
     contextual_param as param,
 

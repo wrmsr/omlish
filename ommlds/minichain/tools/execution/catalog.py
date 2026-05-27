@@ -17,18 +17,15 @@ from .invokers import ToolInvoker
 
 
 @dc.dataclass(frozen=True, eq=False)
-@msh.update_field_options(
-    'target',
-    marshal_via=msh.MarshalVia(lang.OpaqueRepr),
-    unmarshal_via=msh.UnmarshalVia(lang.OpaqueRepr),
-)
+@dc.extra_class_params(terse_repr=True, default_repr_fn=lang.opt_repr)
+@msh.update_field_options('target', no_marshal=True, no_unmarshal=True)
 class ToolCatalogEntry(lang.Final):
     spec: ToolSpec
-    target: ToolFn | ToolInvoker
+    target: ToolFn | ToolInvoker | None = None
 
     _: dc.KW_ONLY
 
-    name_override: str | None = dc.xfield(default=None, repr_fn=lang.opt_repr)
+    name_override: str | None = None
 
     @property
     def name(self) -> str:
