@@ -12,10 +12,14 @@ TODO:
   - unwrap instances of objects to their types?
   - merge mro?
   - are these better left up to callers? too usecase-specific to favor either way?
- - cls_dct_fn?
  - unique? too much? turns into just typedvalues?
   - ... typedvalues?
- - cache?
+ - mro-merge cache?
+  - hm, flag to make sure md ctrs present on all baseclasses, then under lock.. something?
+  - ctrs contain lazy strong mro parent + weakref child links?
+  - result is one single 'cache_ver' int, usable as key part into separate external cache (like a tv.TypedValues coll)
+ - dc.Field target type?
+  - no, but maybe a Map[str, ...] helper? maybe a merging helper?
 """
 import threading
 import types
