@@ -34,7 +34,7 @@ from ....responses import IoPipelineHttpResponseEnd
 from ....responses import IoPipelineHttpResponseEndChunk
 from ....responses import IoPipelineHttpResponseHead
 from ....responses import IoPipelineHttpResponseLastChunk
-from ...apps.wsgi import WsgiSpec
+from ...apps.wsgi import IoPipelineWsgiSpec
 from ...requests import IoPipelineHttpRequestAggregatorDecoder
 from ...requests import IoPipelineHttpRequestDecoder
 from ...responses import IoPipelineHttpResponseEncoder
@@ -85,7 +85,7 @@ def build_wsgi_spec() -> IoPipeline.Spec:
 class WsgiConnHandler:
     def __init__(
             self,
-            spec: WsgiSpec,
+            spec: IoPipelineWsgiSpec,
             conn: socket.socket,
             addr: ta.Any,
     ) -> None:
@@ -275,7 +275,7 @@ class WsgiConnHandler:
         check.state(not self._drv.is_running)
 
 
-def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
+def serve_wsgi_pipeline(spec: IoPipelineWsgiSpec) -> None:
     def _handle_client(conn: socket.socket, addr: ta.Any) -> None:  # noqa
         try:
             WsgiConnHandler(spec, conn, addr).run()
@@ -295,7 +295,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
 ##
 
 
-def serve_wsgi_wsgiref(spec: WsgiSpec) -> None:
+def serve_wsgi_wsgiref(spec: IoPipelineWsgiSpec) -> None:
     from wsgiref.simple_server import make_server  # noqa
 
     httpd = make_server(spec.host, spec.port, spec.app)
@@ -358,7 +358,7 @@ def demo_app(environ, start_response):
 def _main() -> None:
     configure_standard_logging('debug')
 
-    wsgi_spec = WsgiSpec(demo_app)
+    wsgi_spec = IoPipelineWsgiSpec(demo_app)
 
     # serve_wsgi_wsgiref(ping_spec)
     serve_wsgi_pipeline(wsgi_spec)

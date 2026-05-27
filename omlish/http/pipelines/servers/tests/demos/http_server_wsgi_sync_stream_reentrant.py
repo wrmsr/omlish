@@ -23,7 +23,7 @@ from ....requests import IoPipelineHttpRequestBodyData
 from ....requests import IoPipelineHttpRequestEnd
 from ....requests import IoPipelineHttpRequestHead
 from ....responses import FullIoPipelineHttpResponse
-from ...apps.wsgi import WsgiSpec
+from ...apps.wsgi import IoPipelineWsgiSpec
 from ...requests import IoPipelineHttpRequestDecoder
 from ...responses import IoPipelineHttpResponseEncoder
 from ...responses import IoPipelineHttpResponseHead
@@ -171,7 +171,7 @@ def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
     )
 
 
-def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
+def serve_wsgi_pipeline(spec: IoPipelineWsgiSpec) -> None:
     def _handle_client(conn: socket.socket, addr: ta.Any) -> None:  # noqa
         try:
             conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -199,7 +199,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
 ##
 
 
-def serve_wsgi_wsgiref(spec: WsgiSpec) -> None:
+def serve_wsgi_wsgiref(spec: IoPipelineWsgiSpec) -> None:
     from wsgiref.simple_server import make_server  # noqa
 
     httpd = make_server(spec.host, spec.port, spec.app)
@@ -237,7 +237,7 @@ def sha1_app(environ, start_response):
 
 
 def _main() -> None:
-    ping_spec = WsgiSpec(sha1_app)
+    ping_spec = IoPipelineWsgiSpec(sha1_app)
 
     # serve_wsgi_wsgiref(ping_spec)
     serve_wsgi_pipeline(ping_spec)

@@ -22,8 +22,8 @@ from ......sockets.handlers.simple import SocketHandler
 from ......sockets.handlers.simple import StandardSocketHandler
 from ......sockets.handlers.threading import ThreadingSocketHandler
 from ......sockets.handlers.types import SocketHandler_
-from ...apps.wsgi import WsgiHandler
-from ...apps.wsgi import WsgiSpec
+from ...apps.wsgi import IoPipelineWsgiSpec
+from ...apps.wsgi import WsgiIoPipelineHandler
 from ...requests import IoPipelineHttpRequestAggregatorDecoder
 from ...requests import IoPipelineHttpRequestDecoder
 from ...responses import IoPipelineHttpResponseEncoder
@@ -63,7 +63,7 @@ def build_wsgi_spec(
 
             IoPipelineHttpResponseEncoder(),
 
-            WsgiHandler(app),
+            WsgiIoPipelineHandler(app),
 
             *(innermost_handlers or []),
         ],
@@ -78,8 +78,8 @@ def build_wsgi_spec(
     )
 
 
-class PipelineHttpServerSocketHandler(SocketHandler_):
-    def __init__(self, spec: WsgiSpec) -> None:
+class IoPipelineHttpServerSocketHandler(SocketHandler_):
+    def __init__(self, spec: IoPipelineWsgiSpec) -> None:
         super().__init__()
 
         self._spec = spec
@@ -107,7 +107,7 @@ class PipelineHttpServerSocketHandler(SocketHandler_):
 
 @contextlib.contextmanager
 def make_simple_http_server(
-        spec: WsgiSpec,
+        spec: IoPipelineWsgiSpec,
         *,
         executor: ta.Optional[cf.Executor] = None,
         use_threads: bool = False,
@@ -118,7 +118,7 @@ def make_simple_http_server(
     #
 
     with contextlib.ExitStack() as es:
-        socket_handler: SocketHandler = PipelineHttpServerSocketHandler(
+        socket_handler: SocketHandler = IoPipelineHttpServerSocketHandler(
             spec,
         )
 
@@ -153,7 +153,7 @@ def make_simple_http_server(
         yield server
 
 
-def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
+def serve_wsgi_pipeline(spec: IoPipelineWsgiSpec) -> None:
     with make_simple_http_server(
             spec,
             use_threads=True,
@@ -188,7 +188,7 @@ def ping_app(environ, start_response):
 
 
 def _main() -> None:
-    ping_spec = WsgiSpec(ping_app)
+    ping_spec = IoPipelineWsgiSpec(ping_app)
 
     serve_wsgi_pipeline(ping_spec)
 

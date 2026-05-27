@@ -6,8 +6,8 @@ import typing as ta
 
 from ......io.pipelines.core import IoPipeline
 from ......io.pipelines.drivers.sync import SyncSocketIoPipelineDriver
-from ...apps.wsgi import WsgiHandler
-from ...apps.wsgi import WsgiSpec
+from ...apps.wsgi import IoPipelineWsgiSpec
+from ...apps.wsgi import WsgiIoPipelineHandler
 from ...requests import IoPipelineHttpRequestAggregatorDecoder
 from ...requests import IoPipelineHttpRequestDecoder
 from ...responses import IoPipelineHttpResponseEncoder
@@ -22,12 +22,12 @@ def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
             IoPipelineHttpRequestDecoder(),
             IoPipelineHttpRequestAggregatorDecoder(),
             IoPipelineHttpResponseEncoder(),
-            WsgiHandler(app),
+            WsgiIoPipelineHandler(app),
         ],
     )
 
 
-def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
+def serve_wsgi_pipeline(spec: IoPipelineWsgiSpec) -> None:
     def _handle_client(conn: socket.socket, addr: ta.Any) -> None:  # noqa
         try:
             conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -55,7 +55,7 @@ def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
 ##
 
 
-def serve_wsgi_wsgiref(spec: WsgiSpec) -> None:
+def serve_wsgi_wsgiref(spec: IoPipelineWsgiSpec) -> None:
     from wsgiref.simple_server import make_server  # noqa
 
     httpd = make_server(spec.host, spec.port, spec.app)
@@ -89,7 +89,7 @@ def ping_app(environ, start_response):
 
 
 def _main() -> None:
-    ping_spec = WsgiSpec(ping_app)
+    ping_spec = IoPipelineWsgiSpec(ping_app)
 
     # serve_wsgi_wsgiref(ping_spec)
     serve_wsgi_pipeline(ping_spec)

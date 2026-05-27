@@ -5,8 +5,8 @@ import typing as ta
 
 from ......io.pipelines.core import IoPipeline
 from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
-from ...apps.wsgi import WsgiHandler
-from ...apps.wsgi import WsgiSpec
+from ...apps.wsgi import IoPipelineWsgiSpec
+from ...apps.wsgi import WsgiIoPipelineHandler
 from ...requests import IoPipelineHttpRequestAggregatorDecoder
 from ...requests import IoPipelineHttpRequestDecoder
 from ...responses import IoPipelineHttpResponseEncoder
@@ -20,11 +20,11 @@ def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
         IoPipelineHttpRequestDecoder(),
         IoPipelineHttpRequestAggregatorDecoder(),
         IoPipelineHttpResponseEncoder(),
-        WsgiHandler(app),
+        WsgiIoPipelineHandler(app),
     ])
 
 
-async def a_serve_wsgi_pipeline(spec: WsgiSpec) -> None:
+async def a_serve_wsgi_pipeline(spec: IoPipelineWsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = LoopAsyncioStreamIoPipelineDriver(
             build_wsgi_spec(spec.app),
@@ -39,14 +39,14 @@ async def a_serve_wsgi_pipeline(spec: WsgiSpec) -> None:
         await srv.serve_forever()
 
 
-def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
+def serve_wsgi_pipeline(spec: IoPipelineWsgiSpec) -> None:
     asyncio.run(a_serve_wsgi_pipeline(spec))
 
 
 ##
 
 
-def serve_wsgi_wsgiref(spec: WsgiSpec) -> None:
+def serve_wsgi_wsgiref(spec: IoPipelineWsgiSpec) -> None:
     from wsgiref.simple_server import make_server  # noqa
 
     httpd = make_server(spec.host, spec.port, spec.app)
@@ -80,7 +80,7 @@ def ping_app(environ, start_response):
 
 
 def _main() -> None:
-    ping_spec = WsgiSpec(ping_app)
+    ping_spec = IoPipelineWsgiSpec(ping_app)
 
     # serve_wsgi_wsgiref(ping_spec)
     serve_wsgi_pipeline(ping_spec)

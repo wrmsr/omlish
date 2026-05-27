@@ -32,7 +32,7 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True)
-class AsgiSpec:
+class IoPipelineAsgiSpec:
     app: ta.Any
     host: str = '127.0.0.1'
     port: int = 8087
@@ -41,28 +41,28 @@ class AsgiSpec:
 ##
 
 
-class _AsgiOp(Abstract):
+class _IoPipelineAsgiOp(Abstract):
     pass
 
 
-class _AsgiOps(NamespaceClass):
+class _IoPipelineAsgiOps(NamespaceClass):
     @dc.dataclass(frozen=True)
-    class Receive(_AsgiOp):
+    class Receive(_IoPipelineAsgiOp):
         pass
 
     @dc.dataclass(frozen=True)
-    class Send(_AsgiOp):
+    class Send(_IoPipelineAsgiOp):
         msg: ta.Any
 
 
 #
 
 
-class _AsgiFutureNotAwaitedError(RuntimeError):
+class _IoPipelineAsgiFutureNotAwaitedError(RuntimeError):
     pass
 
 
-class _AsgiFuture(ta.Generic[T]):
+class _IoPipelineAsgiFuture(ta.Generic[T]):
     def __init__(self, arg: ta.Any) -> None:
         self.arg = arg
 
@@ -70,11 +70,11 @@ class _AsgiFuture(ta.Generic[T]):
     result: T
     error: ta.Optional[BaseException] = None
 
-    def __await__(self) -> ta.Generator['_AsgiFuture', None, T]:
+    def __await__(self) -> ta.Generator['_IoPipelineAsgiFuture', None, T]:
         if not self.done:
             yield self
         if not self.done:
-            raise _AsgiFutureNotAwaitedError
+            raise _IoPipelineAsgiFutureNotAwaitedError
         if self.error is not None:
             raise self.error
         else:
@@ -84,7 +84,7 @@ class _AsgiFuture(ta.Generic[T]):
 #
 
 
-class _AsgiPump:
+class _IoPipelineAsgiPump:
     def __init__(self, fn: ta.Any) -> None:
         super().__init__()
 
@@ -112,14 +112,14 @@ class _AsgiPump:
 
     @types.coroutine
     def _receive(self) -> ta.Any:
-        return _AsgiFuture(_AsgiOps.Receive())  # type: ignore
+        return _IoPipelineAsgiFuture(_IoPipelineAsgiOps.Receive())  # type: ignore
 
     @types.coroutine
     def _send(self, msg: ta.Any) -> ta.Any:
-        return _AsgiFuture(_AsgiOps.Send(msg))  # type: ignore
+        return _IoPipelineAsgiFuture(_IoPipelineAsgiOps.Send(msg))  # type: ignore
 
 
-class _AsgiDriver:
+class _IoPipelineAsgiDriver:
     def __init__(
             self,
             ctx: IoPipelineHandlerContext,
@@ -144,7 +144,7 @@ class _AsgiDriver:
         else:
             raise TypeError(req)
 
-        self._pump = _AsgiPump(functools.partial(app, self._build_request_scope()))
+        self._pump = _IoPipelineAsgiPump(functools.partial(app, self._build_request_scope()))
 
     #
 
@@ -170,16 +170,16 @@ class _AsgiDriver:
     #
 
     def start(self) -> None:
-        self._state = _AsgiDriver.State.NEW
+        self._state = _IoPipelineAsgiDriver.State.NEW
         self._pump.start()
-        self._state = _AsgiDriver.State.RUNNING
+        self._state = _IoPipelineAsgiDriver.State.RUNNING
 
     def close(self) -> None:
-        if self._state in (_AsgiDriver.State.CLOSING, _AsgiDriver.State.CLOSED):
+        if self._state in (_IoPipelineAsgiDriver.State.CLOSING, _IoPipelineAsgiDriver.State.CLOSED):
             return
-        self._state = _AsgiDriver.State.CLOSING
+        self._state = _IoPipelineAsgiDriver.State.CLOSING
         self._pump.close()
-        self._state = _AsgiDriver.State.CLOSED
+        self._state = _IoPipelineAsgiDriver.State.CLOSED
 
     #
 
@@ -213,13 +213,13 @@ class _AsgiDriver:
         v: ta.Any
 
     def step(self) -> None:
-        if self._state == _AsgiDriver.State.NEW:
+        if self._state == _IoPipelineAsgiDriver.State.NEW:
             self.start()
         check.state(self._state not in (
-            _AsgiDriver.State.NEW,
-            _AsgiDriver.State.STARTING,
-            _AsgiDriver.State.CLOSING,
-            _AsgiDriver.State.CLOSED,
+            _IoPipelineAsgiDriver.State.NEW,
+            _IoPipelineAsgiDriver.State.STARTING,
+            _IoPipelineAsgiDriver.State.CLOSING,
+            _IoPipelineAsgiDriver.State.CLOSED,
         ))
 
         out: ta.List[ta.Any] = []
@@ -229,7 +229,7 @@ class _AsgiDriver:
                 y = next(self._pump.g)  # noqa
             except StopIteration as si:
                 r = si.value  # noqa
-                check.not_isinstance(r, _AsgiFuture)
+                check.not_isinstance(r, _IoPipelineAsgiFuture)
                 gv = self._Gv('r', r)
             else:
                 gv = self._Gv('y', y)
@@ -242,7 +242,7 @@ class _AsgiDriver:
 
     #
 
-    _receiving_fut: ta.Optional[_AsgiFuture] = None
+    _receiving_fut: ta.Optional[_IoPipelineAsgiFuture] = None
 
     def feed_in(self, msg: ta.Any) -> None:
         if isinstance(msg, (IoPipelineHttpRequestBodyData, IoPipelineHttpRequestEnd)):
@@ -254,7 +254,7 @@ class _AsgiDriver:
             else:
                 d = b''
 
-            if self._state == _AsgiDriver.State.RECEIVING:
+            if self._state == _IoPipelineAsgiDriver.State.RECEIVING:
                 f = check.not_none(self._receiving_fut)
                 self._receiving_fut = None
 
@@ -265,7 +265,7 @@ class _AsgiDriver:
                 }
                 f.done = True
 
-                self._state = _AsgiDriver.State.RUNNING
+                self._state = _IoPipelineAsgiDriver.State.RUNNING
 
                 self._ctx.defer_no_context(self.step)
 
@@ -280,7 +280,7 @@ class _AsgiDriver:
     ##
 
     def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
-        if gv.k == 'y' and not isinstance(gv.v, _AsgiFuture):
+        if gv.k == 'y' and not isinstance(gv.v, _IoPipelineAsgiFuture):
             awm = AsyncIoPipelineMessages.Await(gv.v)
 
             @awm.add_listener
@@ -291,11 +291,11 @@ class _AsgiDriver:
 
             return False
 
-        if self._state == _AsgiDriver.State.RUNNING:
+        if self._state == _IoPipelineAsgiDriver.State.RUNNING:
             check.state(gv.k == 'y')
-            f = check.isinstance(gv.v, _AsgiFuture)
+            f = check.isinstance(gv.v, _IoPipelineAsgiFuture)
 
-            if isinstance(f.arg, _AsgiOps.Send):
+            if isinstance(f.arg, _IoPipelineAsgiOps.Send):
                 md = check.isinstance(f.arg.msg, collections.abc.Mapping)
                 check.equal(md['type'], 'http.response.start')
 
@@ -307,13 +307,13 @@ class _AsgiDriver:
 
                 IoPipelineFlow.maybe_flush_output(self._ctx)
 
-                self._state = _AsgiDriver.State.RESPONSE_STARTED
+                self._state = _IoPipelineAsgiDriver.State.RESPONSE_STARTED
 
                 f.result, f.done = None, True
 
                 return True
 
-            elif isinstance(f.arg, _AsgiOps.Receive):
+            elif isinstance(f.arg, _IoPipelineAsgiOps.Receive):
                 check.none(self._receiving_fut)
 
                 if len(self._read_q):
@@ -331,7 +331,7 @@ class _AsgiDriver:
                 else:
                     self._receiving_fut = f
 
-                    self._state = _AsgiDriver.State.RECEIVING
+                    self._state = _IoPipelineAsgiDriver.State.RECEIVING
 
                     IoPipelineFlow.maybe_ready_for_input(self._ctx)
 
@@ -340,23 +340,23 @@ class _AsgiDriver:
             else:
                 raise TypeError(f.arg)
 
-        elif self._state == _AsgiDriver.State.RESPONSE_STARTED:
+        elif self._state == _IoPipelineAsgiDriver.State.RESPONSE_STARTED:
             check.state(gv.k == 'y')
-            f = check.isinstance(gv.v, _AsgiFuture)
-            md = check.isinstance(check.isinstance(f.arg, _AsgiOps.Send).msg, collections.abc.Mapping)
+            f = check.isinstance(gv.v, _IoPipelineAsgiFuture)
+            md = check.isinstance(check.isinstance(f.arg, _IoPipelineAsgiOps.Send).msg, collections.abc.Mapping)
             check.equal(md['type'], 'http.response.body')
 
             out.append(md['body'])
             IoPipelineFlow.maybe_flush_output(self._ctx)
 
             if not md.get('more_body', False):
-                self._state = _AsgiDriver.State.RESPONSE_FINISHED
+                self._state = _IoPipelineAsgiDriver.State.RESPONSE_FINISHED
 
             f.result, f.done = None, True
 
             return True
 
-        elif self._state == _AsgiDriver.State.RESPONSE_FINISHED:
+        elif self._state == _IoPipelineAsgiDriver.State.RESPONSE_FINISHED:
             check.state(gv.k == 'r')
             check.state(gv.v is None)
 
@@ -373,18 +373,18 @@ class _AsgiDriver:
 #
 
 
-class AsgiHandler(IoPipelineHandler):
+class AsgiIoPipelineHandler(IoPipelineHandler):
     def __init__(self, app: ta.Any) -> None:
         super().__init__()
 
         self._app = app
 
-    _drv: ta.Optional[_AsgiDriver] = None
+    _drv: ta.Optional[_IoPipelineAsgiDriver] = None
 
     def _maybe_reset_driver(self) -> None:
         if (drv := self._drv) is None:
             return
-        if drv.state == _AsgiDriver.State.CLOSED:
+        if drv.state == _IoPipelineAsgiDriver.State.CLOSED:
             self._drv = None
 
     def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
@@ -399,7 +399,7 @@ class AsgiHandler(IoPipelineHandler):
             return
 
         if isinstance(msg, (FullIoPipelineHttpRequest, IoPipelineHttpRequestHead)):
-            self._drv = drv = _AsgiDriver(
+            self._drv = drv = _IoPipelineAsgiDriver(
                 ctx,
                 self._app,
                 msg,

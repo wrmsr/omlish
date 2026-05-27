@@ -1,7 +1,7 @@
 import asyncio
 
-from omlish.http.pipelines.servers.apps.asgi import AsgiHandler
-from omlish.http.pipelines.servers.apps.asgi import AsgiSpec
+from omlish.http.pipelines.servers.apps.asgi import AsgiIoPipelineHandler
+from omlish.http.pipelines.servers.apps.asgi import IoPipelineAsgiSpec
 from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestAggregatorDecoder
 from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
@@ -12,7 +12,7 @@ from omlish.io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriv
 ##
 
 
-async def serve_asgi_pipeline(spec: AsgiSpec) -> None:
+async def serve_asgi_pipeline(spec: IoPipelineAsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = PollAsyncioStreamIoPipelineDriver(
             IoPipeline.Spec(
@@ -20,7 +20,7 @@ async def serve_asgi_pipeline(spec: AsgiSpec) -> None:
                     IoPipelineHttpRequestDecoder(),
                     IoPipelineHttpRequestAggregatorDecoder(),
                     IoPipelineHttpResponseEncoder(),
-                    AsgiHandler(spec.app),
+                    AsgiIoPipelineHandler(spec.app),
                 ],
             ).update_config(
                 raise_immediately=True,

@@ -1,4 +1,4 @@
-from omlish.http.pipelines.servers.apps.asgi import AsgiSpec
+from omlish.http.pipelines.servers.apps.asgi import IoPipelineAsgiSpec
 
 from ..base import ChatInterface
 from .app import ChatApp
@@ -25,7 +25,7 @@ class WebChatInterface(ChatInterface):
     async def run(self) -> None:
         port = self._port
 
-        app_spec = AsgiSpec(self._app.handle, port=port)
+        app_spec = IoPipelineAsgiSpec(self._app.handle, port=port)
 
         print(f'Launching server at http://localhost:{port}.')
 

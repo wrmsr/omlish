@@ -18,7 +18,7 @@ from ...responses import IoPipelineHttpResponseHead
 
 
 @dc.dataclass(frozen=True)
-class WsgiSpec:
+class IoPipelineWsgiSpec:
     app: ta.Any
     host: str = '127.0.0.1'
     port: int = 8087
@@ -27,7 +27,7 @@ class WsgiSpec:
 ##
 
 
-class WsgiHandler(IoPipelineHandler):
+class WsgiIoPipelineHandler(IoPipelineHandler):
     def __init__(self, app: ta.Any) -> None:
         super().__init__()
 

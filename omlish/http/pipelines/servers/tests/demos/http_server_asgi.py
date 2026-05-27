@@ -8,8 +8,8 @@ from ......io.pipelines.core import IoPipeline
 from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
 from ....responses import FullIoPipelineHttpResponse  # noqa
 from ....responses import IoPipelineHttpResponseHead  # noqa
-from ...apps.asgi import AsgiHandler
-from ...apps.asgi import AsgiSpec
+from ...apps.asgi import AsgiIoPipelineHandler
+from ...apps.asgi import IoPipelineAsgiSpec
 from ...requests import IoPipelineHttpRequestAggregatorDecoder
 from ...requests import IoPipelineHttpRequestDecoder
 from ...responses import IoPipelineHttpResponseEncoder
@@ -24,14 +24,14 @@ def build_asgi_spec(app: ta.Any) -> IoPipeline.Spec:
             IoPipelineHttpRequestDecoder(),
             IoPipelineHttpRequestAggregatorDecoder(),
             IoPipelineHttpResponseEncoder(),
-            AsgiHandler(app),
+            AsgiIoPipelineHandler(app),
         ],
     ).update_config(
         # raise_immediately=True,
     )
 
 
-async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
+async def a_serve_asgi_pipeline(spec: IoPipelineAsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = LoopAsyncioStreamIoPipelineDriver(
             build_asgi_spec(spec.app),
@@ -46,14 +46,14 @@ async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
         await srv.serve_forever()
 
 
-def serve_asgi_pipeline(spec: AsgiSpec) -> None:
+def serve_asgi_pipeline(spec: IoPipelineAsgiSpec) -> None:
     asyncio.run(a_serve_asgi_pipeline(spec))
 
 
 ##
 
 
-def serve_asgi_uvicorn(spec: AsgiSpec) -> None:
+def serve_asgi_uvicorn(spec: IoPipelineAsgiSpec) -> None:
     import uvicorn  # noqa
 
     server = uvicorn.Server(uvicorn.Config(
@@ -119,7 +119,7 @@ async def ping_app(scope, receive, send):
 
 
 def _main() -> None:
-    ping_spec = AsgiSpec(ping_app)
+    ping_spec = IoPipelineAsgiSpec(ping_app)
 
     # serve_asgi_uvicorn(ping_spec)
     serve_asgi_pipeline(ping_spec)
