@@ -5,6 +5,8 @@ import uuid
 from omdev import clipboard as cpb
 from omdev.tui import textual as tx
 from omlish import check
+from omlish import lang
+from omlish.asyncs.relays import SchedulingAsyncBufferRelay
 
 from .base import Message
 from .stream import ContentStreamMessagePart
@@ -35,6 +37,12 @@ class MessagesContainer(
 
         self._messages_by_uuid: dict[uuid.UUID, Message] = {}
 
+        self._mount_message_buffer: SchedulingAsyncBufferRelay[Message] = SchedulingAsyncBufferRelay(  # noqa
+            lang.as_async(lambda: self.call_next(self._drain_mount_message_buffer)),
+        )
+        self._scroll_to_bottom_after_mount_messages = False
+        self._refresh_after_mount_messages = False
+
     @property
     def chat_uuid(self) -> uuid.UUID | None:
         return self._chat_uuid
@@ -50,24 +58,13 @@ class MessagesContainer(
     def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
         return self.scroll_y >= (self.max_scroll_y - threshold)
 
-    def _scroll_messages_to_bottom(self) -> None:
-        self.scroll_end(animate=False)
-
     def _anchor_messages(self) -> None:
         if self.max_scroll_y:
             self.anchor()
 
-    def _scroll_messages_to_bottom_and_anchor(self) -> None:
-        self._scroll_messages_to_bottom()
-        self._anchor_messages()
-
     #
 
     async def append_stream_message_content(self, parts: ta.Sequence[StreamMessagePart]) -> None:
-        mount_messages: list[Message] = []
-        refresh = False
-        scroll_to_bottom = False
-
         for part in parts:
             if isinstance(part, ContentStreamMessagePart):
                 message_uuid = part.message_uuid
@@ -78,14 +75,14 @@ class MessagesContainer(
 
                     self._messages_by_uuid[message_uuid] = aim
 
-                    mount_messages.append(aim)
-                    refresh = True
+                    await self.mount_messages(aim)
+                    self._refresh_after_mount_messages = True
 
                 else:
                     aim = check.isinstance(msg, part.message_cls)
 
                     if aim.is_mounted:
-                        scroll_to_bottom |= self._is_messages_at_bottom()
+                        self._scroll_to_bottom_after_mount_messages |= self._is_messages_at_bottom()
 
                     await aim.append_stream_content(content)
 
@@ -100,16 +97,16 @@ class MessagesContainer(
             else:
                 raise TypeError(part)
 
-        if mount_messages:
-            self.call_later(self.mount_messages, *mount_messages)
-        if scroll_to_bottom:
-            self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
-        if refresh:
-            self.refresh()
-
     #
 
     async def mount_messages(self, *messages: Message) -> None:
+        await self._mount_messages(*messages)
+
+    async def _drain_mount_message_buffer(self) -> None:
+        messages = await self._mount_message_buffer.swap()
+        await self._mount_messages(*messages)
+
+    async def _mount_messages(self, *messages: Message) -> None:
         was_at_bottom = self._is_messages_at_bottom()
 
         for msg in messages:
@@ -130,7 +127,10 @@ class MessagesContainer(
             if isinstance(msg, StreamMessage):
                 await msg.start_stream()
 
-        self.call_after_refresh(self._scroll_messages_to_bottom)
-
-        if was_at_bottom:
+        if was_at_bottom or self._scroll_to_bottom_after_mount_messages:
+            self._scroll_to_bottom_after_mount_messages = False
             self.call_after_refresh(self._anchor_messages)
+
+        if self._refresh_after_mount_messages:
+            self._refresh_after_mount_messages = False
+            self.refresh()

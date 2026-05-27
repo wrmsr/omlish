@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
@@ -13,17 +11,8 @@ from .execution import ToolUseResult
 ##
 
 
-_MARSHAL_FIELD_CONST_NONE_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    marshal_via=msh.MarshalVia(msh.ConstMarshaler(None)),
-    unmarshal_via=msh.UnmarshalVia(msh.ConstUnmarshaler(None)),
-)
-
-
-#
-
-
 @dc.dataclass(frozen=True)
-@msh.update_field_options('tue', **_MARSHAL_FIELD_CONST_NONE_KWARGS)
+@msh.update_field_options('tue', no_marshal=True, no_unmarshal=True)
 class ToolUseEvent(Event, lang.Final):
     use: ToolUse
 
@@ -33,7 +22,7 @@ class ToolUseEvent(Event, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_field_options('tue', **_MARSHAL_FIELD_CONST_NONE_KWARGS)
+@msh.update_field_options('tue', no_marshal=True, no_unmarshal=True)
 class ToolUseResultEvent(Event, lang.Final):
     use: ToolUse
     tur: ToolUseResult

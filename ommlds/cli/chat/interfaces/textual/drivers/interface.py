@@ -8,6 +8,7 @@ from omdev import clipboard as cpb
 from omdev.tui import textual as tx
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish.asyncs.relays import SchedulingAsyncBufferRelay
 from omlish.logs import all as logs
 
@@ -77,8 +78,8 @@ class ChatDriverInterface(
 
         self._pending_tool_confirmations: set[ToolConfirmationMessage] = set()
 
-        self._append_stream_message_buffer: SchedulingAsyncBufferRelay[StreamMessagePart] = SchedulingAsyncBufferRelay(  # noqa
-            self._schedule_drain_append_stream_message_buffer,
+        self._append_stream_message_buffer: SchedulingAsyncBufferRelay[StreamMessagePart] = SchedulingAsyncBufferRelay(
+            lang.as_async(lambda: self.call_next(self._drain_append_stream_message_buffer)),
         )
 
         self._suppressed_background_terminal_render_set: ta.MutableSet[tx.Widget] = weakref.WeakSet()
@@ -156,9 +157,6 @@ class ChatDriverInterface(
 
         self.refresh(layout=True)
         self.call_after_refresh(inner)
-
-    async def _schedule_drain_append_stream_message_buffer(self) -> None:
-        self.call_next(self._drain_append_stream_message_buffer)
 
     async def _drain_append_stream_message_buffer(self) -> None:
         parts = await self._append_stream_message_buffer.swap()
