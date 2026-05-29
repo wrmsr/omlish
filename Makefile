@@ -234,11 +234,11 @@ RUFF_FIX_CODES:=\
 	Q000 \
 	W291 \
 	W292 \
-	W293
+	W293 \
 
 .PHONY: fix-ruff
 fix-ruff: venv
-	${PYTHON} -m ruff check --select $(shell echo "$(RUFF_FIX_CODES)" | tr ' ' ',') --fix ${SRCS}
+	${PYTHON} -m ruff check --select "$(shell printf '%s' '$(strip $(RUFF_FIX_CODES))' | tr ' ' ',')" --fix ${SRCS}
 
 .PHONY: fix
 fix: fix-docstrings fix-ruff
