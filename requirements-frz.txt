@@ -196,7 +196,6 @@ pytz==2026.2
 PyYAML==6.0.3
 rapidocr-onnxruntime==1.4.4
 readme_renderer==44.0
-redis==7.4.0
 regex==2026.5.9
 requests==2.34.2
 requests-toolbelt==1.0.0

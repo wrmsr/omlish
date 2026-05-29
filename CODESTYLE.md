@@ -141,6 +141,9 @@
 
 ### Modules
 
+- Module names should always be lowercase, and there should **never** be underscores in module names, *except* for a
+  `test_` prefix on test modules. For module names we strive to make them one word only, and failing that we squash
+  words together like the stdlib: `functools`, etc.
 - Avoid global state in general. Constants are however fine.
 - Do basically no 'work' in module body:
   - *NEVER* eagerly do any IO in module body - wrap any such things in a `@lang.cached_function`.
