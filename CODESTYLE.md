@@ -109,6 +109,23 @@
 
 ### Imports
 
+- Outside of `__init__.py` modules, imports are always one item per statement.
+  - *Do not* do the following (outside of `__init__.py` modules):
+    - `from foo import a, b`
+    - ```python
+      from foo import (
+          a,
+          b,
+      )
+      ```
+  - *Do* do the following:
+    - ```python
+      from foo import a
+      from foo import b
+      ```
+  - `__init__.py` modules are kind of free to do whatever makes sense in their context.
+- **NEVER** `import *`.
+  - Because of this rule it's not necessary to ever use `__all__ = ...`.
 - **Always** use relative imports within a package. **Never** reference the name of the root package from within itself.
   For example, within the `omlish` package, it's `from . import lang`, not `from omlish import lang`. Within the
   `omlish` root package there should never be an import line containing the word `omlish` - and references to the root
