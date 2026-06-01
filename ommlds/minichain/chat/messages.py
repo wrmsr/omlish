@@ -2,6 +2,7 @@
 TODO:
  - channel? reasoning / thinking?
 """
+import contextvars
 import operator
 import typing as ta
 
@@ -69,7 +70,20 @@ class MessageOriginal(MessageMetadata, lang.Final):
     c: ta.Sequence[Message]
 
 
+SUPPRESS_MESSAGE_ORIGINALS_CV: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    f'{__name__}.SUPPRESS_MESSAGE_ORIGINALS_CV',
+    default=False,
+)
+
+
+def suppress_message_originals(st: bool = True) -> ta.ContextManager[None]:
+    return SUPPRESS_MESSAGE_ORIGINALS_CV.set(st)  # type: ignore[return-value]
+
+
 def with_message_original(m: MessageT, *, original: Message | ta.Sequence[Message]) -> MessageT:
+    if SUPPRESS_MESSAGE_ORIGINALS_CV.get():
+        return m
+
     if not isinstance(original, ta.Sequence):
         original = [original]
 

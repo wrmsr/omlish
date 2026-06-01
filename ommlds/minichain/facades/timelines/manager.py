@@ -96,6 +96,8 @@ class TimelineManager:
         if old is None:
             return new
 
+        # FIXME: lazy, collapse-on-access, linked-listy box thingy
+
         if isinstance(old, str) and isinstance(new, str):
             return old + new
 

@@ -28,7 +28,9 @@ class ArgsCommandError(CommandError):
 ##
 
 
-PRINTED_MESSAGES_CV: contextvars.ContextVar[list[str]] = contextvars.ContextVar(f'{__name__}.PRINTED_MESSAGES_CV')
+PRINTED_MESSAGES_CV: contextvars.ContextVar[list[str]] = contextvars.ContextVar(
+    f'{__name__}.PRINTED_MESSAGES_CV',
+)
 
 
 class Command(lang.Abstract):
