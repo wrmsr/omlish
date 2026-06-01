@@ -26,6 +26,9 @@
 
           super().__init__()
   ```
+- **DO NOT** read `_dataclasses.py` files - these are mechanically generated code for dataclasses and contain nothing of
+  interest. They tend to be huge and will waste your context, they exist solely to speed up imports and assist
+  debugging, and the codebase behaves the same without them.
 
 ### Running stuff
 
