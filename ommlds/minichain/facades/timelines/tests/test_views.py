@@ -3,6 +3,7 @@ import uuid
 import pytest
 
 from ....chat.messages import UserMessage
+from ...timelines.history import StateTimelineHistory
 from ...timelines.items import TimelineId
 from ...timelines.items import TimelineItemId
 from ...timelines.items import UserMessageTimelineItem
@@ -28,7 +29,7 @@ def _state(*items: UserMessageTimelineItem) -> TimelineState:
 @pytest.mark.asyncs('asyncio')
 async def test_get_latest() -> None:
     items = [_item(str(i)) for i in range(5)]
-    view = TimelineView(state=_state(*items))
+    view = TimelineView(history=StateTimelineHistory(state=_state(*items)))
 
     win = await view.get_latest(2)
 
@@ -42,7 +43,7 @@ async def test_get_latest() -> None:
 @pytest.mark.asyncs('asyncio')
 async def test_get_latest_with_large_limit() -> None:
     items = [_item(str(i)) for i in range(3)]
-    view = TimelineView(state=_state(*items))
+    view = TimelineView(history=StateTimelineHistory(state=_state(*items)))
 
     win = await view.get_latest(10)
 
@@ -55,7 +56,7 @@ async def test_get_latest_with_large_limit() -> None:
 
 @pytest.mark.asyncs('asyncio')
 async def test_get_latest_empty() -> None:
-    view = TimelineView(state=_state())
+    view = TimelineView(history=StateTimelineHistory(state=_state()))
 
     win = await view.get_latest(10)
 
@@ -69,7 +70,7 @@ async def test_get_latest_empty() -> None:
 @pytest.mark.asyncs('asyncio')
 async def test_get_before() -> None:
     items = [_item(str(i)) for i in range(6)]
-    view = TimelineView(state=_state(*items))
+    view = TimelineView(history=StateTimelineHistory(state=_state(*items)))
 
     win = await view.get_before(TimelineCursor(items[4].id, 4), 2)
 
@@ -83,7 +84,7 @@ async def test_get_before() -> None:
 @pytest.mark.asyncs('asyncio')
 async def test_get_after() -> None:
     items = [_item(str(i)) for i in range(6)]
-    view = TimelineView(state=_state(*items))
+    view = TimelineView(history=StateTimelineHistory(state=_state(*items)))
 
     win = await view.get_after(TimelineCursor(items[1].id, 1), 3)
 
@@ -97,7 +98,7 @@ async def test_get_after() -> None:
 @pytest.mark.asyncs('asyncio')
 async def test_cursor_fallback_when_ordinal_is_stale() -> None:
     items = [_item(str(i)) for i in range(5)]
-    view = TimelineView(state=_state(*items))
+    view = TimelineView(history=StateTimelineHistory(state=_state(*items)))
 
     win = await view.get_after(TimelineCursor(items[1].id, 99), 2)
 

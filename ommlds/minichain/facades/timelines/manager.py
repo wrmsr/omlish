@@ -19,6 +19,7 @@ from ...events.types import Event
 from ...tools.execution.events import ToolUseEvent
 from ...tools.execution.events import ToolUseResultEvent
 from .events import TimelineEvent
+from .history import StateTimelineHistory
 from .items import AiMessageTimelineItem
 from .items import AiStreamTimelineItem
 from .items import MessageTimelineItem
@@ -50,7 +51,7 @@ class TimelineManager:
 
         self._events = events
         self._state = state if state is not None else TimelineState(timeline_id=timeline_id)
-        self._view = TimelineView(state=self._state)
+        self._view = TimelineView(history=StateTimelineHistory(state=self._state))
 
         self._stream_items_by_message_uuid: dict[uuid.UUID, TimelineItemId] = {}
         self._tool_items_by_use_key: dict[str, TimelineItemId] = {}

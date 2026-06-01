@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
@@ -32,7 +34,7 @@ class TimelineItemFinalizedEvent(TimelineEvent, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class TimelineItemsPrependedEvent(TimelineEvent, lang.Final):
-    items: tuple[TimelineItem, ...]
+    items: ta.Sequence[TimelineItem]
 
 
 @dc.dataclass(frozen=True, kw_only=True)
