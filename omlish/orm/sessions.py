@@ -427,11 +427,12 @@ class Session:
         m = self._registry.mapper_for_cls(cls)
 
         wh: dict[str, ta.Any] = {}
-        for k, v in q.where.items():
-            f = m._fields_by_name[k]
-            wh[f._store_name] = m.field_value_to_snap_value(f, v)
+        if (qwh := q.where):
+            for k, v in qwh.items():
+                f = m._fields_by_name[k]
+                wh[f._store_name] = m.field_value_to_snap_value(f, v)
 
-        if not (snaps := await self._store_ctx.lookup(m, wh)):
+        if not (snaps := await self._store_ctx.lookup(Store.Lookup(m, wh))):
             return []
 
         out: list[T] = []

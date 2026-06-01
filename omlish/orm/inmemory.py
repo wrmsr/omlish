@@ -143,19 +143,22 @@ class InMemoryStore(Store):
 
         return ts.snaps.get(k)
 
-    async def _lookup(self, st: _State, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
-        t = self._table_for_mapper(m)
+    async def _lookup(self, st: _State, lu: Store.Lookup) -> ta.Sequence[Snap]:
+        if lu.order_by:
+            raise NotImplementedError
+
+        t = self._table_for_mapper(lu.m)
 
         try:
             ts = st.tables[t.m._store_name]
         except KeyError:
             return []
 
-        if not where:
+        if not (where := lu.where):
             return list(ts.snaps.values())
 
         if t.m.key_field.store_name in where:
-            if (ks := await self._fetch(st, m, where[t.m.key_field.store_name])) is not None:
+            if (ks := await self._fetch(st, lu.m, where[t.m.key_field.store_name])) is not None:
                 return [ks]
             else:
                 return []
@@ -494,8 +497,8 @@ class InMemoryStore(Store):
         async def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
             return await self._o._fetch(self._state, m, k)
 
-        async def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
-            return await self._o._lookup(self._state, m, where)
+        async def lookup(self, lu: Store.Lookup) -> ta.Sequence[Snap]:
+            return await self._o._lookup(self._state, lu)
 
         #
 

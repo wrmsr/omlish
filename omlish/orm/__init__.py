@@ -28,6 +28,7 @@ from .api import (  # noqa
     refresh_one,
 
     make_query,
+    as_query,
     query,
     query_one,
 )
@@ -97,6 +98,12 @@ from .options import (  # noqa
     MapperOption,
     FieldOption,
     IndexOption,
+)
+
+from .ordering import (  # noqa
+    OrderByDirection,
+    OrderByItem,
+    Ordering,
 )
 
 from .queries import (  # noqa

@@ -1,8 +1,10 @@
 import abc
 import typing as ta
 
+from .. import dataclasses as dc
 from .. import lang
 from .mappers import Mapper
+from .ordering import Ordering
 from .snaps import Snap
 
 
@@ -10,6 +12,15 @@ from .snaps import Snap
 
 
 class Store(lang.Abstract):
+    @dc.dataclass(frozen=True)
+    class Lookup:
+        m: Mapper
+        where: ta.Mapping[str, ta.Any] | None = None
+
+        _: dc.KW_ONLY
+
+        order_by: Ordering | None = None
+
     class Context(lang.Abstract):
         @property
         @abc.abstractmethod
@@ -33,7 +44,7 @@ class Store(lang.Abstract):
             raise NotImplementedError
 
         @abc.abstractmethod
-        def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Awaitable[ta.Sequence[Snap]]:
+        def lookup(self, lu: Store.Lookup) -> ta.Awaitable[ta.Sequence[Snap]]:
             raise NotImplementedError
 
         #

@@ -340,29 +340,33 @@ class SqlStore(Store):
         #
 
         async def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
-            rows = await self.lookup(m, {m.key_field.store_name: k})
+            rows = await self.lookup(Store.Lookup(m, {m.key_field.store_name: k}))
             return check.single(rows) if rows else None
 
-        async def lookup(self, m: Mapper, where: ta.Mapping[str, ta.Any]) -> ta.Sequence[Snap]:
-            sm = self._o._mappers[m]
+        async def lookup(self, lu: Store.Lookup) -> ta.Sequence[Snap]:
+            if lu.order_by:
+                raise NotImplementedError
+
+            sm = self._o._mappers[lu.m]
 
             clauses: list[str] = []
             params: list[ta.Any] = []
             pp = sql.make_params_preparer(self._o._param_style)
 
-            for fk, fv in sm.encode(where).items():
-                check.not_in(fv.__class__, WRAPPER_TYPES)
-                clauses.append(f'{fk} = {pp.add(len(params))}')
-                params.append(fv)
+            if (where := lu.where):
+                for fk, fv in sm.encode(where).items():
+                    check.not_in(fv.__class__, WRAPPER_TYPES)
+                    clauses.append(f'{fk} = {pp.add(len(params))}')
+                    params.append(fv)
 
             px = pp.prepare()
             qp = sql.params.substitute_params(px, dict(enumerate(params)), strict=True)  # type: ignore
 
             stmt = ' '.join([
                 'select',
-                ', '.join(m._store_name_by_field_name.values()),
+                ', '.join(lu.m._store_name_by_field_name.values()),
                 'from',
-                m._store_name,
+                lu.m._store_name,
                 *(['where', ' and '.join(clauses)] if clauses else []),
             ])
 

@@ -291,28 +291,51 @@ async def refresh_one(obj: T) -> T:
 #
 
 
-def make_query(
-        cls: type[T],
-        **where: ta.Any,
-) -> Query[T]:
+def make_query(cls: type[T], /, **where: ta.Any) -> Query[T]:
     return Query(
         cls,
         where,
     )
 
 
-async def query(
-        cls: type[T],
-        **where: ta.Any,
-) -> list[T]:
-    return await active_session().query(make_query(cls, **where))
+@ta.overload
+def as_query(qry: Query[T], /) -> Query[T]: ...
 
 
-async def query_one(
-        cls: type[T],
-        **where: ta.Any,
-) -> T | None:
-    objs = await query(cls, **where)
+@ta.overload
+def as_query(cls: type[T], /, **where: ta.Any) -> Query[T]: ...
+
+
+def as_query(obj, /, **kwargs: ta.Any) -> Query[T]:
+    if isinstance(obj, Query):
+        check.empty(kwargs)
+        return obj
+    else:
+        return make_query(obj, **kwargs)
+
+
+@ta.overload
+async def query(qry: Query[T], /) -> list[T]: ...
+
+
+@ta.overload
+async def query(cls: type[T], /, **where: ta.Any) -> list[T]: ...
+
+
+async def query(obj, /, **kwargs: ta.Any) -> list[T]:
+    return await active_session().query(as_query(obj, **kwargs))
+
+
+@ta.overload
+async def query_one(qry: Query[T], /) -> T | None: ...
+
+
+@ta.overload
+async def query_one(cls: type[T], /, **where: ta.Any) -> T | None: ...
+
+
+async def query_one(obj, /, **kwargs: ta.Any) -> T | None:
+    objs = await query(obj, **kwargs)
     if not objs:
         return None
     return check.single(objs)
