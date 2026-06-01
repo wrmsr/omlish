@@ -2,6 +2,7 @@ import typing as ta
 
 from .. import lang
 from .ordering import Ordering
+from .wheres import Where
 
 
 T = ta.TypeVar('T')
@@ -15,7 +16,7 @@ class Query(lang.Final, ta.Generic[T]):
     def __init__(
             self,
             cls: type[T],
-            where: ta.Mapping[str, ta.Any] | None = None,
+            where: Where | None = None,
             /,
             order_by: Ordering | None = None,
             limit: int | None = None,
@@ -44,7 +45,7 @@ class Query(lang.Final, ta.Generic[T]):
         return self._cls
 
     @property
-    def where(self) -> ta.Mapping[str, ta.Any] | None:
+    def where(self) -> Where | None:
         return self._where
 
     @property

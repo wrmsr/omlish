@@ -6,12 +6,6 @@ from .. import dataclasses as dc
 from .. import lang
 
 
-if ta.TYPE_CHECKING:
-    from . import wrappers as _wrappers
-else:
-    _wrappers = lang.proxy_import('.wrappers', __package__)
-
-
 ##
 
 
@@ -24,22 +18,34 @@ class WhereOp(enum.Enum):
     GT = '>'
 
 
+WhereOpGlyph: ta.TypeAlias = ta.Literal[
+    '=',
+    '!=',
+    '<',
+    '<=',
+    '>=',
+    '>',
+]
+
+
 @ta.final
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class WhereItem(lang.Final):
     field: str
     op: WhereOp
     value: ta.Any
 
-    def __post_init__(self) -> None:
-        check.not_isinstance(self.value, _wrappers.WRAPPER_TYPES)
+    # Note: can't - needs to take refs and stuff.
+    # def __post_init__(self) -> None:
+    #     check.not_in(self.value.__class__, _wrappers.WRAPPER_TYPES)
 
 
 @ta.final
-class Wheres(ta.Sequence[WhereItem], lang.Final):
+class Where(ta.Sequence[WhereItem], lang.Final):
     def __init__(
             self,
-            items: ta.Sequence[WhereItem],
+            *items: WhereItem,
     ) -> None:
         super().__init__()
 
@@ -48,6 +54,27 @@ class Wheres(ta.Sequence[WhereItem], lang.Final):
         for item in self._items:
             check.not_in(item.field, self._items_by_field)
             self._items_by_field[item.field] = item
+
+    @classmethod
+    def of_eq(cls, **field_values: ta.Any) -> Where:
+        return cls(*(
+            WhereItem(k, WhereOp.EQ, v)
+            for k, v in field_values.items()
+        ))
+
+    def __repr__(self) -> str:
+        return ''.join([
+            f'{self.__class__.__name__}(',
+            ', '.join([repr(i) for i in self._items]),
+            ')',
+        ])
+
+    @property
+    def by_field(self) -> ta.Mapping[str, WhereItem]:
+        return self._items_by_field
+
+    def __bool__(self) -> bool:
+        return bool(self._items)
 
     def __iter__(self) -> ta.Iterator[WhereItem]:
         return iter(self._items)
@@ -70,5 +97,5 @@ class Wheres(ta.Sequence[WhereItem], lang.Final):
 
 _WHERES_TYPES: tuple[type, ...] = (
     WhereItem,
-    Wheres,
+    Where,
 )

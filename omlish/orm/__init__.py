@@ -150,8 +150,9 @@ from .values import (  # noqa
 
 from .wheres import (  # noqa
     WhereOp,
+    WhereOpGlyph,
     WhereItem,
-    Wheres,
+    Where,
 )
 
 from .wrappers import (  # noqa

@@ -24,6 +24,7 @@ from .registries import Registry
 from .sessions import Session
 from .sessions import active_session
 from .stores import Store
+from .wheres import Where
 
 
 K = ta.TypeVar('K')
@@ -294,7 +295,7 @@ async def refresh_one(obj: T) -> T:
 def make_query(cls: type[T], /, **where: ta.Any) -> Query[T]:
     return Query(
         cls,
-        where,
+        Where.of_eq(**where),
     )
 
 

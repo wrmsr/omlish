@@ -8,7 +8,7 @@ from .wheres import _WHERES_TYPES
 #
 
 
-# TODO: Probably just want a sealed _InternalWrapper type by now lol
+# TODO: Do we just want a sealed _InternalWrapper type at this point lol
 WRAPPER_TYPES: tuple[type, ...] = (
     *_BACKREF_TYPES,
     *_KEY_TYPES,

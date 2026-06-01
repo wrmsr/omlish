@@ -1565,11 +1565,11 @@ def _process_dataclass__9bcadc6b485436dde22f785cd523e64b41ba962f():
         "one, validate=None, check_type=None), InitPlan.Field(name='value', annotation=OpRef(name='init.fields.2.annota"
         "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
         "one, validate=None, check_type=None)), self_param='self', std_params=('field', 'op', 'value'), kw_only_params="
-        "(), frozen=True, slots=False, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Fi"
-        "eld(name='field', kw_only=False, fn=None), ReprPlan.Field(name='op', kw_only=False, fn=None), ReprPlan.Field(n"
-        "ame='value', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan."
+        "Field(name='field', kw_only=False, fn=None), ReprPlan.Field(name='op', kw_only=False, fn=None), ReprPlan.Field"
+        "(name='value', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='2d4a6198b476318ac8502eb77dbc39c61cc69a7c',
+    plan_repr_sha1='3ab05ea17c713f5290931aaba77e1199cc4cdcc7',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -1579,7 +1579,7 @@ def _process_dataclass__9bcadc6b485436dde22f785cd523e64b41ba962f():
         ('omlish.orm.wheres', 'WhereItem'),
     ),
 )
-def _process_dataclass__2d4a6198b476318ac8502eb77dbc39c61cc69a7c():
+def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1687,7 +1687,6 @@ def _process_dataclass__2d4a6198b476318ac8502eb77dbc39c61cc69a7c():
             __dataclass__object_setattr(self, 'field', field)
             __dataclass__object_setattr(self, 'op', op)
             __dataclass__object_setattr(self, 'value', value)
-            self.__post_init__()
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1697,9 +1696,9 @@ def _process_dataclass__2d4a6198b476318ac8502eb77dbc39c61cc69a7c():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"field={self.field!r}")
-            parts.append(f"op={self.op!r}")
-            parts.append(f"value={self.value!r}")
+            parts.append(f"{self.field!r}")
+            parts.append(f"{self.op!r}")
+            parts.append(f"{self.value!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

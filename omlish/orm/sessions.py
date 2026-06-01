@@ -19,6 +19,8 @@ from .refs import _ObjRef
 from .registries import Registry
 from .snaps import Snap
 from .stores import Store
+from .wheres import Where
+from .wheres import WhereOp
 
 
 K = ta.TypeVar('K')
@@ -146,7 +148,7 @@ class Session:
     #
 
     def activate(self) -> ta.AsyncContextManager[ta.Self]:
-        return _SessionActivator(self)
+        return _SessionActivator(self)  # noqa
 
     #
 
@@ -413,7 +415,7 @@ class Session:
         [brf] = brf_lst
         rf = check.isinstance(brf, RefField)
 
-        return await self.query(Query(rf._mapper._cls, {rf._name: _ObjRef(bbr._obj)}))
+        return await self.query(Query(rf._mapper._cls, Where.of_eq(**{rf._name: _ObjRef(bbr._obj)})))
 
     #
 
@@ -428,9 +430,11 @@ class Session:
 
         wh: dict[str, ta.Any] = {}
         if (qwh := q.where):
-            for k, v in qwh.items():
-                f = m._fields_by_name[k]
-                wh[f._store_name] = m.field_value_to_snap_value(f, v)
+            for wi in qwh:
+                if wi.op is not WhereOp.EQ:
+                    raise NotImplementedError
+                f = m._fields_by_name[wi.field]
+                wh[f._store_name] = m.field_value_to_snap_value(f, wi.value)
 
         lu = Store.Lookup(
             m,
