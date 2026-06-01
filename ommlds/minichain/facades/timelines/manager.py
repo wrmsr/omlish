@@ -4,11 +4,8 @@ from omlish import dataclasses as dc
 
 from ...chat.events import AiMessagesEvent
 from ...chat.events import UserMessagesEvent
-from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import ToolUseMessage
-from ...chat.messages import UserMessage
-from ...chat.metadata import MessageUuid
 from ...chat.stream.events import AiStreamBeginEvent
 from ...chat.stream.events import AiStreamDeltaEvent
 from ...chat.stream.events import AiStreamEndEvent
@@ -20,15 +17,13 @@ from ...tools.execution.events import ToolUseEvent
 from ...tools.execution.events import ToolUseResultEvent
 from .events import TimelineEvent
 from .history import StateTimelineHistory
-from .items import AiMessageTimelineItem
 from .items import AiStreamTimelineItem
-from .items import MessageTimelineItem
 from .items import TimelineId
 from .items import TimelineItem
 from .items import TimelineItemId
 from .items import ToolUseTimelineItem
 from .items import ToolUseTimelineItemState
-from .items import UserMessageTimelineItem
+from .messages import timeline_item_from_message
 from .state import TimelineState
 from .views import TimelineView
 
@@ -81,13 +76,6 @@ class TimelineManager:
     #
 
     @staticmethod
-    def _message_item_id(message: Message) -> TimelineItemId:
-        try:
-            return TimelineItemId(message.metadata[MessageUuid].v)
-        except KeyError:
-            return TimelineItemId(uuid.uuid7())
-
-    @staticmethod
     def _tool_use_key(ev: ToolUseEvent | ToolUseResultEvent) -> str:
         return ev.use.id or ev.use.name
 
@@ -96,7 +84,11 @@ class TimelineManager:
         if old is None:
             return new
 
-        # FIXME: lazy, collapse-on-access, linked-listy box thingy
+        # FIXME:
+        #  - lazy, collapse-on-access, linked-listy box thingy
+        #  - also, like, resolve the fact deltas are only really defined for string concat'd markdown lol - non-lifted
+        #    list content is intentionally undefined, configurably lifted to containers in
+        #    LiftToStandardContentTransform
 
         if isinstance(old, str) and isinstance(new, str):
             return old + new
@@ -104,38 +96,10 @@ class TimelineManager:
         return [old, new]
 
     async def _append_message(self, message: Message) -> None:
-        item_id = self._message_item_id(message)
+        item = timeline_item_from_message(message)
 
-        item: TimelineItem
-        if isinstance(message, UserMessage):
-            item = UserMessageTimelineItem(
-                id=item_id,
-                message=message,
-                finalized=True,
-            )
-
-        elif isinstance(message, AiMessage):
-            item = AiMessageTimelineItem(
-                id=item_id,
-                message=message,
-                finalized=True,
-            )
-
-        elif isinstance(message, ToolUseMessage):
-            item = ToolUseTimelineItem(
-                id=item_id,
-                use=message.tu,
-                state=ToolUseTimelineItemState.COMPLETE,
-                finalized=True,
-            )
+        if isinstance(message, ToolUseMessage):
             self._tool_items_by_use_key[message.tu.id or message.tu.name] = item.id
-
-        else:
-            item = MessageTimelineItem(
-                id=item_id,
-                message=message,
-                finalized=True,
-            )
 
         await self._append_item(item)
 
