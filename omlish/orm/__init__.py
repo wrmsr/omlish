@@ -148,6 +148,12 @@ from .values import (  # noqa
     auto_value,
 )
 
+from .wheres import (  # noqa
+    WhereOp,
+    WhereItem,
+    Wheres,
+)
+
 from .wrappers import (  # noqa
     WRAPPER_TYPES,
 )

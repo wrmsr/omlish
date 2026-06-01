@@ -432,7 +432,14 @@ class Session:
                 f = m._fields_by_name[k]
                 wh[f._store_name] = m.field_value_to_snap_value(f, v)
 
-        if not (snaps := await self._store_ctx.lookup(Store.Lookup(m, wh))):
+        lu = Store.Lookup(
+            m,
+            wh,
+            order_by=q.order_by,
+            limit=q.limit,
+        )
+
+        if not (snaps := await self._store_ctx.lookup(lu)):
             return []
 
         out: list[T] = []

@@ -20,6 +20,7 @@ class Store(lang.Abstract):
         _: dc.KW_ONLY
 
         order_by: Ordering | None = None
+        limit: int | None = None
 
     class Context(lang.Abstract):
         @property

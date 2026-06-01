@@ -344,7 +344,7 @@ class SqlStore(Store):
             return check.single(rows) if rows else None
 
         async def lookup(self, lu: Store.Lookup) -> ta.Sequence[Snap]:
-            if lu.order_by:
+            if lu.order_by or lu.limit is not None:
                 raise NotImplementedError
 
             sm = self._o._mappers[lu.m]

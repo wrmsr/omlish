@@ -144,7 +144,7 @@ class InMemoryStore(Store):
         return ts.snaps.get(k)
 
     async def _lookup(self, st: _State, lu: Store.Lookup) -> ta.Sequence[Snap]:
-        if lu.order_by:
+        if lu.order_by or lu.limit is not None:
             raise NotImplementedError
 
         t = self._table_for_mapper(lu.m)
