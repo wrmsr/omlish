@@ -6,6 +6,7 @@ from .. import lang
 from .mappers import Mapper
 from .ordering import Ordering
 from .snaps import Snap
+from .wheres import Where
 
 
 ##
@@ -15,7 +16,7 @@ class Store(lang.Abstract):
     @dc.dataclass(frozen=True)
     class Lookup:
         m: Mapper
-        where: ta.Mapping[str, ta.Any] | None = None
+        where: Where | None = None
 
         _: dc.KW_ONLY
 

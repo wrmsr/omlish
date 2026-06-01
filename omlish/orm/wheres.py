@@ -51,9 +51,13 @@ class Where(ta.Sequence[WhereItem], lang.Final):
 
         self._items = items
         self._items_by_field: dict[str, WhereItem] = {}
+        is_all_eq = True
         for item in self._items:
             check.not_in(item.field, self._items_by_field)
+            if item.op is not WhereOp.EQ:
+                is_all_eq = False
             self._items_by_field[item.field] = item
+        self._is_all_eq = is_all_eq
 
     @classmethod
     def of_eq(cls, **field_values: ta.Any) -> Where:
@@ -72,6 +76,14 @@ class Where(ta.Sequence[WhereItem], lang.Final):
     @property
     def by_field(self) -> ta.Mapping[str, WhereItem]:
         return self._items_by_field
+
+    @property
+    def is_all_eq(self) -> bool:
+        return self._is_all_eq
+
+    def eq_dict(self) -> dict[str, ta.Any]:
+        check.state(self.is_all_eq)
+        return {i.field: i.value for i in self._items}
 
     def __bool__(self) -> bool:
         return bool(self._items)

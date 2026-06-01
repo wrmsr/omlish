@@ -154,8 +154,10 @@ class InMemoryStore(Store):
         except KeyError:
             return []
 
-        if not (where := lu.where):
+        if not (luw := lu.where):
             return list(ts.snaps.values())
+
+        where = luw.eq_dict()
 
         if t.m.key_field.store_name in where:
             if (ks := await self._fetch(st, lu.m, where[t.m.key_field.store_name])) is not None:

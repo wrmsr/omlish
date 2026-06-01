@@ -64,6 +64,7 @@ from .stores import Store
 from .timestamps import CreatedAt
 from .timestamps import Timestamp
 from .timestamps import UpdatedAt
+from .wheres import Where
 from .wrappers import WRAPPER_TYPES
 
 
@@ -340,7 +341,7 @@ class SqlStore(Store):
         #
 
         async def fetch(self, m: Mapper, k: ta.Any) -> Snap | None:
-            rows = await self.lookup(Store.Lookup(m, {m.key_field.store_name: k}))
+            rows = await self.lookup(Store.Lookup(m, Where.of_eq(**{m.key_field.store_name: k})))
             return check.single(rows) if rows else None
 
         async def lookup(self, lu: Store.Lookup) -> ta.Sequence[Snap]:
@@ -353,7 +354,8 @@ class SqlStore(Store):
             params: list[ta.Any] = []
             pp = sql.make_params_preparer(self._o._param_style)
 
-            if (where := lu.where):
+            if (luw := lu.where):
+                where = luw.eq_dict()
                 for fk, fv in sm.encode(where).items():
                     check.not_in(fv.__class__, WRAPPER_TYPES)
                     clauses.append(f'{fk} = {pp.add(len(params))}')

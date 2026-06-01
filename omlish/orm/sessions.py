@@ -20,6 +20,7 @@ from .registries import Registry
 from .snaps import Snap
 from .stores import Store
 from .wheres import Where
+from .wheres import WhereItem
 from .wheres import WhereOp
 
 
@@ -428,13 +429,17 @@ class Session:
         cls = q._cls
         m = self._registry.mapper_for_cls(cls)
 
-        wh: dict[str, ta.Any] = {}
+        wh: Where | None = None
         if (qwh := q.where):
-            for wi in qwh:
-                if wi.op is not WhereOp.EQ:
-                    raise NotImplementedError
-                f = m._fields_by_name[wi.field]
-                wh[f._store_name] = m.field_value_to_snap_value(f, wi.value)
+            wis: list[WhereItem] = []
+            for qwi in qwh:
+                f = m._fields_by_name[qwi.field]
+                wis.append(WhereItem(
+                    f._store_name,
+                    WhereOp.EQ,
+                    m.field_value_to_snap_value(f, qwi.value),
+                ))
+            wh = Where(*wis)
 
         lu = Store.Lookup(
             m,
