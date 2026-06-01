@@ -208,13 +208,8 @@ def breakpoint_on_exception():  # noqa
         raise
 
 
-@contextlib.contextmanager
-def context_var_setting(var: contextvars.ContextVar[T], val: T) -> ta.Iterator[T]:
-    token = var.set(val)
-    try:
-        yield val
-    finally:
-        var.reset(token)
+def context_var_setting(var: contextvars.ContextVar[T], val: T) -> ta.ContextManager[None]:
+    return var.set(val)  # type: ignore[return-value]
 
 
 ##
