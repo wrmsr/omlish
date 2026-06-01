@@ -157,7 +157,9 @@ class InMemoryStore(Store):
         if not (luw := lu.where):
             return list(ts.snaps.values())
 
-        where = luw.eq_dict()
+        if not luw.is_all_eq:
+            raise NotImplementedError
+        where = luw.eqs
 
         if t.m.key_field.store_name in where:
             if (ks := await self._fetch(st, lu.m, where[t.m.key_field.store_name])) is not None:
