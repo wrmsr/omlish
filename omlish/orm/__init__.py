@@ -101,7 +101,7 @@ from .options import (  # noqa
 )
 
 from .ordering import (  # noqa
-    OrderByDirection,
+    OrderByDir,
     OrderByItem,
     Ordering,
 )

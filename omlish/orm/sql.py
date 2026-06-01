@@ -345,9 +345,6 @@ class SqlStore(Store):
             return check.single(rows) if rows else None
 
         async def lookup(self, lu: Store.Lookup) -> ta.Sequence[Snap]:
-            if lu.order_by or lu.limit is not None:
-                raise NotImplementedError
-
             sm = self._o._mappers[lu.m]
 
             clauses: list[str] = []
@@ -355,14 +352,24 @@ class SqlStore(Store):
             pp = sql.make_params_preparer(self._o._param_style)
 
             if (luw := lu.where):
-                where = luw.eq_dict()
-                for fk, fv in sm.encode(where).items():
+                fes = sm.field_encoders
+                for wi in luw:
+                    fk = wi.field
+                    fv = wi.value
+                    if (fe := fes.get(fk)) is not None:
+                        fv = fe(fv)
                     check.not_in(fv.__class__, WRAPPER_TYPES)
-                    clauses.append(f'{fk} = {pp.add(len(params))}')
+                    clauses.append(f'{fk} {wi.op.value} {pp.add(len(params))}')
                     params.append(fv)
 
             px = pp.prepare()
             qp = sql.params.substitute_params(px, dict(enumerate(params)), strict=True)  # type: ignore
+
+            sfx: list[str] = []
+            if lu.order_by:
+                sfx.append(f'order by {", ".join(f"{obi.field} {obi.dir}" for obi in lu.order_by)}')
+            if lu.limit is not None:
+                sfx.append(f'limit {lu.limit}')  # FIXME: param
 
             stmt = ' '.join([
                 'select',
@@ -370,6 +377,7 @@ class SqlStore(Store):
                 'from',
                 lu.m._store_name,
                 *(['where', ' and '.join(clauses)] if clauses else []),
+                *sfx,
             ])
 
             await self._o._maybe_create_schema()

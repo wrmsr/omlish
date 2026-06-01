@@ -1,5 +1,7 @@
+# ruff: noqa: SLF001
 import typing as ta
 
+from .. import check
 from .. import lang
 from .ordering import Ordering
 from .wheres import Where
@@ -27,6 +29,11 @@ class Query(lang.Final, ta.Generic[T]):
         self._where = where
         self._order_by = order_by
         self._limit = limit
+
+        if order_by:
+            wh_bf = check.not_none(where)._by_field
+            for obi in order_by:
+                check.in_(obi.field, wh_bf)
 
     def __repr__(self) -> str:
         return ''.join([

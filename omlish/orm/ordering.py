@@ -1,12 +1,28 @@
-# ruff: noqa: UP007
 import typing as ta
 
+from .. import check
+from .. import dataclasses as dc
+from .. import lang
 
-OrderByDirection: ta.TypeAlias = ta.Literal['asc', 'desc']
 
-OrderByItem: ta.TypeAlias = ta.Union[
-    str,
-    tuple[str, OrderByDirection],
-]
+OrderByDir: ta.TypeAlias = ta.Literal['asc', 'desc']
+
+
+##
+
+
+ORDER_BY_DIR_VALUES: tuple[str, ...] = ('asc', 'desc')
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
+class OrderByItem(lang.Final):
+    field: str
+    dir: OrderByDir
+
+    def __post_init__(self) -> None:
+        check.in_(self.dir, ORDER_BY_DIR_VALUES)
+
 
 Ordering: ta.TypeAlias = ta.Sequence[OrderByItem]
