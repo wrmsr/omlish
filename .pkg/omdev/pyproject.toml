@@ -34,7 +34,7 @@ all = [
     'black ~= 26.5',
     'pycparser ~= 3.0',
     'pcpp ~= 1.30',
-    'docutils ~= 0.22',
+    'docutils ~= 0.23',
     'markdown-it-py ~= 4.2',
     'mdit-py-plugins ~= 0.6',
     'pygments ~= 2.20',
@@ -60,7 +60,7 @@ c = [
     'pcpp ~= 1.30',
 ]
 doc = [
-    'docutils ~= 0.22',
+    'docutils ~= 0.23',
     'markdown-it-py ~= 4.2',
     'mdit-py-plugins ~= 0.6',
     'pygments ~= 2.20',
