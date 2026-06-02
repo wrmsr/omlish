@@ -1,5 +1,5 @@
 aiohappyeyeballs==2.6.2
-aiohttp==3.13.5
+aiohttp==3.14.0
 aiohttp-jinja2==1.6
 aiomysql==0.3.2
 aiosignal==1.4.0
@@ -22,8 +22,8 @@ bcrypt==5.0.0
 bitsandbytes==0.49.2
 black==26.5.1
 blobfile==3.2.0
-boto3==1.43.18
-botocore==1.43.18
+boto3==1.43.19
+botocore==1.43.19
 botocore-stubs==1.43.14
 brotli==1.2.0
 build==1.5.0
@@ -261,7 +261,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.25.1
 types-awscrt==0.33.0
-types-boto3==1.43.18
+types-boto3==1.43.19
 types-docutils==0.22.3.20260518
 types-greenlet==3.5.0.20260518
 types-paramiko==4.0.0.20260518
@@ -281,7 +281,7 @@ uritemplate==4.2.0
 urllib3==2.7.0
 urwid==4.0.1
 urwid_readline==0.15.1
-uv==0.11.17
+uv==0.11.18
 uvicorn==0.48.0
 watchdog==6.0.0
 wcwidth==0.7.0
