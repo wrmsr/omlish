@@ -225,8 +225,15 @@ class InMemoryStore(Store):
                     lst2.append(snap)
             lst = lst2
 
-        if lu.order_by or lu.limit is not None:
-            raise NotImplementedError
+        if lu.order_by:
+            for obi in reversed(lu.order_by):
+                lst.sort(
+                    key=operator.itemgetter(obi.field),
+                    reverse=(obi.dir == 'desc'),
+                )
+
+        if lu.limit is not None:
+            lst = lst[:lu.limit]
 
         return lst
 
