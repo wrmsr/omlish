@@ -1,10 +1,6 @@
-import typing as ta
-
-from omlish import check
 from omlish import orm
 
 from ...chat.messages import Chat
-from ...chat.messages import Message
 from ...chat.metadata import MessageUuid
 from ..orm.types import Orm
 from ..types import DriverId
@@ -32,6 +28,28 @@ class DriverStorageManagerImpl(DriverStorageManager):
         self._driver_id = driver_id
         self._chat_id = chat_id
         self._orm = orm_
+
+    @staticmethod
+    def _make_chat_page(
+            orm_messages: list[OrmMessage],
+            *,
+            has_before: bool = False,
+            has_after: bool = False,
+    ) -> ChatPage:
+        before_seq: int | None = None
+        after_seq: int | None = None
+
+        if orm_messages:
+            before_seq = orm_messages[0].seq
+            after_seq = orm_messages[-1].seq
+
+        return ChatPage(
+            messages=tuple(orm_m.message for orm_m in orm_messages),
+            has_before=has_before,
+            has_after=has_after,
+            before_seq=before_seq,
+            after_seq=after_seq,
+        )
 
     async def _get_orm_chat(self) -> OrmChat:
         if (orm_chat := await orm.get(OrmChat, self._chat_id.v)) is not None:
@@ -70,41 +88,76 @@ class DriverStorageManagerImpl(DriverStorageManager):
 
         return chat
 
-    async def _get_chat_sequenced_messages(self) -> ta.Sequence[tuple[int, Message]]:
+    async def _get_chat_page_by_seq(
+            self,
+            *,
+            seq_op: orm.WhereOp | orm.WhereOpGlyph,
+            seq: int,
+            order_by: orm.OrderByDir,
+            limit: int,
+            reverse: bool = False,
+            has_before: bool = False,
+            has_after: bool = False,
+            overfetch_sets_has_before: bool = False,
+            overfetch_sets_has_after: bool = False,
+    ) -> ChatPage:
         async with self._orm.new_session():
             orm_driver = await self._get_orm_driver()
 
             orm_chat = await orm_driver.chat()
 
-            orm_messages = await orm_chat.messages()
+            orm_messages = await orm.query(orm.Query(
+                OrmMessage,
+                orm.Where(
+                    orm.WhereItem.of('chat', '=', orm.ref(orm_chat)),
+                    orm.WhereItem.of('seq', seq_op, seq),
+                ),
+                order_by=[
+                    orm.OrderByItem('seq', order_by),
+                ],
+                limit=limit + 1,
+            ))
 
-            # FIXME: Do this with an ordered/paged ORM query once the query interface supports order_by/limit.
-            return tuple(
-                (orm_m.seq, orm_m.message)
-                for orm_m in sorted(
-                    orm_messages,
-                    key=lambda orm_m: orm_m.seq,
-                )
-            )
+            overfetched = len(orm_messages) > limit
+            page_messages = orm_messages[:limit]
+            if reverse:
+                page_messages = list(reversed(page_messages))
+
+        return self._make_chat_page(
+            page_messages,
+            has_before=has_before or (overfetched and overfetch_sets_has_before),
+            has_after=has_after or (overfetched and overfetch_sets_has_after),
+        )
 
     async def get_latest_chat_page(self, limit: int) -> ChatPage:
-        return make_chat_page_latest(
-            await self._get_chat_sequenced_messages(),
-            limit,
+        return await self._get_chat_page_by_seq(
+            seq_op='>=',
+            seq=0,
+            order_by='desc',
+            limit=limit,
+            reverse=True,
+            overfetch_sets_has_before=True,
         )
 
     async def get_chat_page_before(self, seq: int, limit: int) -> ChatPage:
-        return make_chat_page_before(
-            await self._get_chat_sequenced_messages(),
-            seq,
-            limit,
+        return await self._get_chat_page_by_seq(
+            seq_op='<',
+            seq=seq,
+            order_by='desc',
+            limit=limit,
+            reverse=True,
+            has_after=True,
+            overfetch_sets_has_before=True,
         )
 
     async def get_chat_page_after(self, seq: int, limit: int) -> ChatPage:
-        return make_chat_page_after(
-            await self._get_chat_sequenced_messages(),
-            seq,
-            limit,
+        return await self._get_chat_page_by_seq(
+            seq_op='>',
+            seq=seq,
+            order_by='asc',
+            limit=limit,
+            has_before=seq > 0,
+            overfetch_sets_has_after=True,
         )
 
     async def extend_chat(self, chat_additions: Chat) -> None:
@@ -122,90 +175,3 @@ class DriverStorageManagerImpl(DriverStorageManager):
                 ))
 
                 orm_chat.num_messages += 1
-
-
-##
-
-
-def _make_chat_page(
-        sequenced_messages: ta.Sequence[tuple[int, Message]],
-        *,
-        start: int,
-        stop: int,
-) -> ChatPage:
-    start = max(start, 0)
-    stop = min(stop, len(sequenced_messages))
-    check.arg(start <= stop)
-
-    page = sequenced_messages[start:stop]
-
-    before_seq: int | None = None
-    after_seq: int | None = None
-
-    if page:
-        before_seq = page[0][0]
-        after_seq = page[-1][0]
-
-    return ChatPage(
-        messages=tuple(message for _, message in page),
-        has_before=start > 0,
-        has_after=stop < len(sequenced_messages),
-        before_seq=before_seq,
-        after_seq=after_seq,
-    )
-
-
-def make_chat_page_latest(
-        sequenced_messages: ta.Sequence[tuple[int, Message]],
-        limit: int,
-) -> ChatPage:
-    check.arg(limit >= 0)
-
-    stop = len(sequenced_messages)
-    start = max(stop - limit, 0)
-
-    return _make_chat_page(
-        sequenced_messages,
-        start=start,
-        stop=stop,
-    )
-
-
-def make_chat_page_before(
-        sequenced_messages: ta.Sequence[tuple[int, Message]],
-        seq: int,
-        limit: int,
-) -> ChatPage:
-    check.arg(limit >= 0)
-
-    stop = next(
-        (i for i, (cur_seq, _) in enumerate(sequenced_messages) if cur_seq >= seq),
-        len(sequenced_messages),
-    )
-    start = max(stop - limit, 0)
-
-    return _make_chat_page(
-        sequenced_messages,
-        start=start,
-        stop=stop,
-    )
-
-
-def make_chat_page_after(
-        sequenced_messages: ta.Sequence[tuple[int, Message]],
-        seq: int,
-        limit: int,
-) -> ChatPage:
-    check.arg(limit >= 0)
-
-    start = next(
-        (i for i, (cur_seq, _) in enumerate(sequenced_messages) if cur_seq > seq),
-        len(sequenced_messages),
-    )
-    stop = min(start + limit, len(sequenced_messages))
-
-    return _make_chat_page(
-        sequenced_messages,
-        start=start,
-        stop=stop,
-    )
