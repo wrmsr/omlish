@@ -29,27 +29,7 @@ class DriverStorageManagerImpl(DriverStorageManager):
         self._chat_id = chat_id
         self._orm = orm_
 
-    @staticmethod
-    def _make_chat_page(
-            orm_messages: list[OrmMessage],
-            *,
-            has_before: bool = False,
-            has_after: bool = False,
-    ) -> ChatPage:
-        before_seq: int | None = None
-        after_seq: int | None = None
-
-        if orm_messages:
-            before_seq = orm_messages[0].seq
-            after_seq = orm_messages[-1].seq
-
-        return ChatPage(
-            messages=tuple(orm_m.message for orm_m in orm_messages),
-            has_before=has_before,
-            has_after=has_after,
-            before_seq=before_seq,
-            after_seq=after_seq,
-        )
+    #
 
     async def _get_orm_chat(self) -> OrmChat:
         if (orm_chat := await orm.get(OrmChat, self._chat_id.v)) is not None:
@@ -87,6 +67,30 @@ class DriverStorageManagerImpl(DriverStorageManager):
             ]
 
         return chat
+
+    #
+
+    @staticmethod
+    def _make_chat_page(
+            orm_messages: list[OrmMessage],
+            *,
+            has_before: bool = False,
+            has_after: bool = False,
+    ) -> ChatPage:
+        before_seq: int | None = None
+        after_seq: int | None = None
+
+        if orm_messages:
+            before_seq = orm_messages[0].seq
+            after_seq = orm_messages[-1].seq
+
+        return ChatPage(
+            messages=tuple(orm_m.message for orm_m in orm_messages),
+            has_before=has_before,
+            has_after=has_after,
+            before_seq=before_seq,
+            after_seq=after_seq,
+        )
 
     async def _get_chat_page_by_seq(
             self,
@@ -159,6 +163,8 @@ class DriverStorageManagerImpl(DriverStorageManager):
             has_before=seq > 0,
             overfetch_sets_has_after=True,
         )
+
+    #
 
     async def extend_chat(self, chat_additions: Chat) -> None:
         async with self._orm.new_session() as sess:  # noqa
