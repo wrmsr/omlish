@@ -25,7 +25,7 @@ class Scope(enum.Enum):
 
 
 class _HashedSeq(list):
-    __slots__ = ['hash_value']
+    __slots__ = ('hash_value',)
 
     def __init__(
             self,

@@ -17,12 +17,12 @@ class SkipList(SortedCollection[T]):
     """https://gist.github.com/icejoywoo/3bf0c54983a725fa3917"""
 
     class _Node:
-        __slots__ = [
+        __slots__ = (
             'value',
             'level',
             'next',
             'prev',
-        ]
+        )
 
         next: list[SkipList._Node | None]
         prev: SkipList._Node | None

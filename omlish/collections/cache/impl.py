@@ -54,7 +54,7 @@ class CacheImpl(Cache[K, V]):
     """https://google.github.io/guava/releases/16.0/api/docs/com/google/common/cache/CacheBuilder.html"""
 
     class Link:
-        __slots__ = [
+        __slots__ = (
             'seq',
             'ins_prev',
             'ins_next',
@@ -69,7 +69,7 @@ class CacheImpl(Cache[K, V]):
             'accessed',
             'hits',
             'unlinked',
-        ]
+        )
 
         seq: int
         ins_prev: CacheImpl.Link

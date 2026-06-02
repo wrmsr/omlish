@@ -1892,6 +1892,7 @@ class ResourceType(_base.Enum):
     CAPACITY_MANAGER_DATA_EXPORT = 'capacity-manager-data-export'
     VPN_CONCENTRATOR = 'vpn-concentrator'
     IPAM_POOL_ALLOCATION = 'ipam-pool-allocation'
+    CAPACITY_RESERVATION_CANCELLATION_QUOTE = 'capacity-reservation-cancellation-quote'
 
 
 class RootDeviceType(_base.Enum):
