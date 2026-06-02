@@ -1,4 +1,5 @@
 # ruff: noqa: SLF001
+import operator
 import typing as ta
 
 from .. import check
@@ -10,6 +11,7 @@ from .indexes import Index
 from .mappers import Mapper
 from .snaps import Snap
 from .stores import Store
+from .wheres import WhereOp
 from .wrappers import WRAPPER_TYPES
 
 
@@ -143,10 +145,7 @@ class InMemoryStore(Store):
 
         return ts.snaps.get(k)
 
-    async def _lookup(self, st: _State, lu: Store.Lookup) -> ta.Sequence[Snap]:
-        if lu.order_by or lu.limit is not None:
-            raise NotImplementedError
-
+    async def _lookup_candidates(self, st: _State, lu: Store.Lookup) -> list[Snap]:
         t = self._table_for_mapper(lu.m)
 
         try:
@@ -154,12 +153,9 @@ class InMemoryStore(Store):
         except KeyError:
             return []
 
-        if not (luw := lu.where):
+        # FIXME: actually use sorted indexes lol
+        if not (luw := lu.where) or not (where := luw.eqs):
             return list(ts.snaps.values())
-
-        if not luw.is_all_eq:
-            raise NotImplementedError
-        where = luw.eqs
 
         if t.m.key_field.store_name in where:
             if (ks := await self._fetch(st, lu.m, where[t.m.key_field.store_name])) is not None:
@@ -207,6 +203,36 @@ class InMemoryStore(Store):
                 lst.append(x)
 
         return lst
+
+    _OP_FN_BY_OP: ta.Final[ta.Mapping[WhereOp, ta.Callable[[ta.Any, ta.Any], bool]]] = {
+        WhereOp.EQ: operator.eq,
+        WhereOp.NE: operator.ne,
+        WhereOp.GT: operator.gt,
+        WhereOp.GE: operator.ge,
+        WhereOp.LT: operator.lt,
+        WhereOp.LE: operator.le,
+    }
+
+    def _postprocess_lookup_candidates(self, st: _State, lu: Store.Lookup, lst: list[Snap]) -> list[Snap]:
+        if luw := lu.where:
+            op_tups: list[tuple[str, ta.Callable[[ta.Any, ta.Any], bool], ta.Any]] = [
+                (wi.field, self._OP_FN_BY_OP[wi.op], wi.value)
+                for wi in luw._items
+            ]
+            lst2: list[Snap] = []
+            for snap in lst:
+                if all(fn(snap[k], v) for k, fn, v in op_tups):
+                    lst2.append(snap)
+            lst = lst2
+
+        if lu.order_by or lu.limit is not None:
+            raise NotImplementedError
+
+        return lst
+
+    async def _lookup(self, st: _State, lu: Store.Lookup) -> ta.Sequence[Snap]:
+        lst = await self._lookup_candidates(st, lu)
+        return self._postprocess_lookup_candidates(st, lu, lst)
 
     #
 

@@ -116,6 +116,15 @@ async def _test_orm(store: Store, registry: Registry | None = None) -> None:
         print(alice)
         print(await alice.favorite_business())  # type: ignore
 
+    async with orm.session(registry, store):
+        users_over_b = await orm.query(orm.Query(
+            User,
+            orm.Where(
+                orm.WhereItem.of('name', '>', 'Bp'),
+            ),
+        ))
+        print(users_over_b)
+
 
 @pytest.mark.asyncs('asyncio')
 async def test_orm_in_memory():

@@ -21,7 +21,6 @@ from .snaps import Snap
 from .stores import Store
 from .wheres import Where
 from .wheres import WhereItem
-from .wheres import WhereOp
 
 
 K = ta.TypeVar('K')
@@ -436,7 +435,7 @@ class Session:
                 f = m._fields_by_name[qwi.field]
                 wis.append(WhereItem(
                     f._store_name,
-                    WhereOp.EQ,
+                    qwi.op,
                     m.field_value_to_snap_value(f, qwi.value),
                 ))
             wh = Where(*wis)

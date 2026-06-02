@@ -40,6 +40,19 @@ class WhereItem(lang.Final):
     # def __post_init__(self) -> None:
     #     check.not_in(self.value.__class__, _wrappers.WRAPPER_TYPES)
 
+    @classmethod
+    def of(
+            cls,
+            field: str,
+            op: WhereOp | WhereOpGlyph,
+            value: ta.Any,
+    ) -> WhereItem:
+        return cls(
+            field,
+            WhereOp(op),
+            value,
+        )
+
 
 @ta.final
 class Where(ta.Sequence[WhereItem], lang.Final):
