@@ -63,16 +63,29 @@ class Where(ta.Sequence[WhereItem], lang.Final):
         super().__init__()
 
         self._items = items
-        self._by_field: dict[str, WhereItem] = {}
-        self._eq_values: dict[str, ta.Any] = {}
+        by_field: dict[str, list[WhereItem]] = {}
+        eq_values: dict[str, ta.Any] = {}
         is_all_eq = True
         for item in self._items:
-            check.not_in(item.field, self._by_field)
-            self._by_field[item.field] = item
+            check.not_in(item.field, by_field)
+            try:
+                lst = by_field[item.field]
+            except KeyError:
+                lst = by_field[item.field] = [item]
+            else:
+                lst.append(item)
             if item.op is WhereOp.EQ:
-                self._eq_values[item.field] = item.value
+                try:
+                    xeq = eq_values[item.field]
+                except KeyError:
+                    eq_values[item.field] = item.value
+                else:
+                    # FIXME: not, like, illegal lol, just no results
+                    check.equal(xeq, item.value)
             else:
                 is_all_eq = False
+        self._by_field = by_field
+        self._eq_values = eq_values
         self._is_all_eq = is_all_eq
 
     @classmethod
@@ -90,7 +103,7 @@ class Where(ta.Sequence[WhereItem], lang.Final):
         ])
 
     @property
-    def by_field(self) -> ta.Mapping[str, WhereItem]:
+    def by_field(self) -> ta.Mapping[str, ta.Sequence[WhereItem]]:
         return self._by_field
 
     @property
@@ -108,10 +121,10 @@ class Where(ta.Sequence[WhereItem], lang.Final):
         return iter(self._items)
 
     @ta.overload
-    def __getitem__(self, index: int | str) -> WhereItem: ...
+    def __getitem__(self, index: int) -> WhereItem: ...
 
     @ta.overload
-    def __getitem__(self, index: slice) -> ta.Sequence[WhereItem]: ...
+    def __getitem__(self, index: slice | str) -> ta.Sequence[WhereItem]: ...
 
     def __getitem__(self, index):
         if isinstance(index, str):
