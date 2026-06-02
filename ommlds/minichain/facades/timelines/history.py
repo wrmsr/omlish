@@ -5,8 +5,11 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ...drivers.storage.manager import DriverStorageManager
+from ...drivers.storage.types import ChatPage
 from .items import TimelineItem
 from .items import TimelineItemId
+from .messages import timeline_item_from_message
 from .state import TimelineState
 
 
@@ -45,6 +48,9 @@ class TimelineHistory(lang.Abstract):
     @abc.abstractmethod
     async def get_after(self, cursor: TimelineCursor, limit: int) -> TimelineWindow:
         raise NotImplementedError
+
+
+#
 
 
 class StateTimelineHistory(TimelineHistory):
@@ -126,3 +132,51 @@ class StateTimelineHistory(TimelineHistory):
             return cursor.position
 
         return check.not_none(self._state.get_item_ordinal(cursor.item_id))
+
+
+#
+
+
+class StorageTimelineHistory(TimelineHistory):
+    def __init__(
+            self,
+            *,
+            storage: DriverStorageManager,
+    ) -> None:
+        super().__init__()
+
+        self._storage = storage
+
+    @staticmethod
+    def _page_to_window(page: ChatPage) -> TimelineWindow:
+        items = tuple(
+            timeline_item_from_message(message)
+            for message in page.messages
+        )
+
+        before_cursor: TimelineCursor | None = None
+        after_cursor: TimelineCursor | None = None
+
+        if items:
+            if page.before_seq is not None:
+                before_cursor = TimelineCursor(items[0].id, page.before_seq)
+
+            if page.after_seq is not None:
+                after_cursor = TimelineCursor(items[-1].id, page.after_seq)
+
+        return TimelineWindow(
+            items=items,
+            has_before=page.has_before,
+            has_after=page.has_after,
+            before_cursor=before_cursor,
+            after_cursor=after_cursor,
+        )
+
+    async def get_latest(self, limit: int) -> TimelineWindow:
+        return self._page_to_window(await self._storage.get_latest_chat_page(limit))
+
+    async def get_before(self, cursor: TimelineCursor, limit: int) -> TimelineWindow:
+        return self._page_to_window(await self._storage.get_chat_page_before(cursor.position, limit))
+
+    async def get_after(self, cursor: TimelineCursor, limit: int) -> TimelineWindow:
+        return self._page_to_window(await self._storage.get_chat_page_after(cursor.position, limit))
