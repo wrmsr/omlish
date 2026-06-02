@@ -81,7 +81,7 @@ httpx==0.28.1
 huggingface_hub==1.17.0
 hyperframe==6.1.0
 id==1.6.1
-idna==3.17
+idna==3.18
 ImageIO==2.37.3
 importlib_metadata==9.0.0
 iniconfig==2.3.0
@@ -101,7 +101,7 @@ kiwisolver==1.5.0
 lazy-loader==0.5
 librt==0.11.0
 linkify-it-py==2.1.0
-llama_cpp_python==0.3.24
+llama_cpp_python==0.3.25
 lxml==6.1.1
 lxml-stubs==0.5.1
 lz4==4.4.5
@@ -279,7 +279,7 @@ uc-micro-py==2.0.0
 ujson==5.12.1
 uritemplate==4.2.0
 urllib3==2.7.0
-urwid==4.0.1
+urwid==4.0.2
 urwid_readline==0.15.1
 uv==0.11.18
 uvicorn==0.48.0

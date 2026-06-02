@@ -200,22 +200,13 @@ gen-antlr:
 	${PYTHON} -m omxtra.text.antlr.cli gen ${SRCS} x
 
 
-### Check
+### Fix / Check
+
+.PHONY: fix
+fix: fix-docstrings fix-ruff
 
 .PHONY: check
 check: flake8 ruff mypy precheck
-
-.PHONY: flake8
-flake8: venv
-	${PYTHON} -m flake8 ${SRCS}
-
-.PHONY: ruff
-ruff: venv
-	${PYTHON} -m ruff check ${SRCS}
-
-.PHONY: ruff-stats
-ruff-stats: venv
-	${PYTHON} -m ruff check --statistics ${SRCS}
 
 .PHONY: fix-docstrings
 fix-docstrings: venv
@@ -226,6 +217,10 @@ fix-docstrings: venv
 		-X '(?m)^# @omlish-no-fixdocstrings$$' \
 		-W \
 		${SRCS}
+
+.PHONY: flake8
+flake8: venv
+	${PYTHON} -m flake8 ${SRCS}
 
 RUFF_FIX_CODES:=\
 	COM812 \
@@ -240,8 +235,13 @@ RUFF_FIX_CODES:=\
 fix-ruff: venv
 	${PYTHON} -m ruff check --select "$(shell printf '%s' '$(strip $(RUFF_FIX_CODES))' | tr ' ' ',')" --fix ${SRCS}
 
-.PHONY: fix
-fix: fix-docstrings fix-ruff
+.PHONY: ruff
+ruff: venv
+	${PYTHON} -m ruff check ${SRCS}
+
+.PHONY: ruff-stats
+ruff-stats: venv
+	${PYTHON} -m ruff check --statistics ${SRCS}
 
 MYPY_OPTS=\
 	--check-untyped-defs \
