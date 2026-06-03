@@ -35,13 +35,20 @@ from ...timelines.manager import TimelineManager
 def _manager() -> tuple[TimelineManager, list[Event]]:
     seen: list[Event] = []
 
+    return (
+        TimelineManager(events=_events_manager(seen)),
+        seen,
+    )
+
+
+def _events_manager(seen: list[Event] | None = None) -> EventsManager:
+    if seen is None:
+        seen = []
+
     async def cb(event: Event) -> None:
         seen.append(event)
 
-    return (
-        TimelineManager(events=EventsManager(EventCallbacks([EventCallback(cb)]))),
-        seen,
-    )
+    return EventsManager(EventCallbacks([EventCallback(cb)]))
 
 
 def _user_message(s: str) -> UserMessage:
