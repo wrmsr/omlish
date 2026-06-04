@@ -22,8 +22,8 @@ bcrypt==5.0.0
 bitsandbytes==0.49.2
 black==26.5.1
 blobfile==3.2.0
-boto3==1.43.19
-botocore==1.43.19
+boto3==1.43.22
+botocore==1.43.22
 botocore-stubs==1.43.14
 brotli==1.2.0
 build==1.5.0
@@ -52,7 +52,7 @@ duckdb==1.5.3
 execnet==2.1.2
 executing==2.2.1
 fake-useragent==2.2.0
-filelock==3.29.0
+filelock==3.29.1
 flake8==7.3.0
 Flake8-pyproject==1.2.4
 flatbuffers==25.12.19
@@ -60,11 +60,11 @@ fonttools==4.63.0
 frozenlist==1.8.0
 fsspec==2026.2.0
 gguf==0.19.0
-google-api-core==2.30.3
+google-api-core==2.31.0
 google-api-python-client==2.197.0
 google-auth==2.53.0
 google-auth-httplib2==0.4.0
-google-cloud-compute==1.47.0
+google-cloud-compute==1.48.0
 googleapis-common-protos==1.75.0
 gprof2dot==2025.4.14
 greenlet==3.5.1
@@ -238,7 +238,7 @@ tomlkit==0.15.0
 torch==2.12.0
 torchvision==0.27.0
 tqdm==4.67.3
-traitlets==5.15.0
+traitlets==5.15.1
 transformers==5.7.0
 tree-sitter==0.25.2
 tree-sitter-bash==0.25.1
@@ -261,7 +261,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.25.1
 types-awscrt==0.33.0
-types-boto3==1.43.19
+types-boto3==1.43.22
 types-docutils==0.22.3.20260518
 types-greenlet==3.5.0.20260518
 types-paramiko==4.0.0.20260518
@@ -281,7 +281,7 @@ uritemplate==4.2.0
 urllib3==2.7.0
 urwid==4.0.2
 urwid_readline==0.15.1
-uv==0.11.18
+uv==0.11.19
 uvicorn==0.48.0
 watchdog==6.0.0
 wcwidth==0.7.0
