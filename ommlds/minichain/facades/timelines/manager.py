@@ -54,6 +54,10 @@ class TimelineManager:
         self._tool_items_by_use_key: dict[str, TimelineItemId] = {}
 
     @property
+    def timeline_id(self) -> TimelineId:
+        return self._state.timeline_id
+
+    @property
     def state(self) -> TimelineState:
         return self._state
 

@@ -123,4 +123,25 @@ deps = [
   'lzma-dev',
   'unzip',
   'zip',
+
+  # multiarch dev
+  'binutils-aarch64-linux-gnu',
+  'binutils-multiarch',
+  'binutils-riscv64-linux-gnu',
+  'binutils-x86-64-linux-gnu',
+  'capstone-tool',
+  'file',
+  'gdb-multiarch',
+  'lld',
+  'opensbi',
+  'ovmf',
+  'qemu-efi-aarch64',
+  'qemu-efi-riscv64',
+  'qemu-system-arm',
+  'qemu-system-misc',
+  'qemu-system-x86',
+  'qemu-user',
+  'qemu-utils',
+  'u-boot-qemu',
+
 ]

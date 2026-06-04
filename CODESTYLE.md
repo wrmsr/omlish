@@ -288,10 +288,11 @@ def make_it_a_tuple(t: T) -> tuple[T]:
   - Keep all mutable state private as single-underscore-prefixed fields.
   - As necessary for usage, expose internal state via methods or `@property`'s. For such cases do one of the following:
     - Type-annotate the return type as immutable. For example, a property exposing an internal `list[int]` would be
-      annotated as returning a `ta.Sequence[int]`, and a `dict[int, str]` would be annotated as returning a
-      `ta.Mapping[int, str]`.
-    - Return a defensive copy of the internal state. For example, a property returning an internal `list[int]` would
+      annotated as returning a `ta.Sequence[int]`, a `dict[int, str]` would be annotated as returning a
+      `ta.Mapping[int, str]`, and a `set[int]` would be annotated as returning an `ta.AbstractSet[int]`.
+    - Return a defensive copy of the internal state. For example, a method returning an internal `list[int]` would
       return a copy of the internal list.
+      - Note 'method' not 'property' - properties should not return mutable containers!
 
 
 ### Functions

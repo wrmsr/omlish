@@ -38,12 +38,17 @@ DEPS="$DEPS\
   aria2\
   autoconf\
   bindfs\
+  binutils-aarch64-linux-gnu\
+  binutils-multiarch\
+  binutils-riscv64-linux-gnu\
+  binutils-x86-64-linux-gnu\
   bison\
   bmon\
   btop\
   bubblewrap\
   build-essential\
   ca-certificates\
+  capstone-tool\
   clang\
   cmake\
   curl\
@@ -58,6 +63,7 @@ DEPS="$DEPS\
   gcc\
   gcc-14\
   gdb\
+  gdb-multiarch\
   git\
   gnupg\
   gnupg-agent\
@@ -79,6 +85,7 @@ DEPS="$DEPS\
   libsqlite3-dev\
   libssl-dev\
   libyaml-dev\
+  lld\
   llvm\
   lsb-release\
   lsof\
@@ -95,11 +102,20 @@ DEPS="$DEPS\
   ncdu\
   net-tools\
   netcat-openbsd\
+  opensbi\
   openssh-server\
+  ovmf\
   perl\
   pkg-config\
   postgresql-client\
   protobuf-compiler\
+  qemu-efi-aarch64\
+  qemu-efi-riscv64\
+  qemu-system-arm\
+  qemu-system-misc\
+  qemu-system-x86\
+  qemu-user\
+  qemu-utils\
   ripgrep\
   ruby\
   silversearcher-ag\
@@ -113,6 +129,7 @@ DEPS="$DEPS\
   tcsh\
   telnet\
   tmux\
+  u-boot-qemu\
   unzip\
   vim\
   wget\
