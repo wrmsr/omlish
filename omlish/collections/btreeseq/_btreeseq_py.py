@@ -110,19 +110,40 @@ def _pack_children(children: tuple[Node[T], ...]) -> Node[T] | None:
 
 
 def _concat(a: Node[T] | None, b: Node[T] | None) -> Node[T] | None:
+    # Height-guided, rope-style: descend the taller side's spine until heights match, merge there, and repack on the
+    # way back up. Merging at matched height means leaves meet leaves and branches meet branches, so splice boundaries
+    # stay mergeable -- the old single-level flatten could hoist a leaf among branch siblings, where same-type-only
+    # _can_merge stranded it at minimal occupancy forever. Sibling heights may still differ (packing is relaxed, not
+    # RRB-strict); everything downstream is count- and isinstance-driven, so that's fine. Relies on: height == 0 <=>
+    # leaf, since unary collapse keeps every branch at height >= 1 with >= 2 children. This is also the lone consumer
+    # of the stored height field.
     if a is None:
         return b
 
     if b is None:
         return a
 
-    if isinstance(a, _Leaf) and isinstance(b, _Leaf) and len(a.items) + len(b.items) <= MAX_LEAF_LEN:
-        return _make_leaf(a.items + b.items)
+    if a.height == b.height:
+        if isinstance(a, _Leaf):
+            bl = ta.cast('_Leaf[T]', b)
 
-    left = a.children if isinstance(a, _Branch) else (a,)
-    right = b.children if isinstance(b, _Branch) else (b,)
+            if len(a.items) + len(bl.items) <= MAX_LEAF_LEN:
+                return _make_leaf(a.items + bl.items)
 
-    return _pack_children(left + right)
+            return _pack_children((a, bl))
+
+        bb = ta.cast('_Branch[T]', b)
+
+        return _pack_children(a.children + bb.children)
+
+    if a.height > b.height:
+        ab = ta.cast('_Branch[T]', a)
+
+        return _pack_children((*ab.children[:-1], ta.cast('Node[T]', _concat(ab.children[-1], b))))
+
+    bb = ta.cast('_Branch[T]', b)
+
+    return _pack_children((ta.cast('Node[T]', _concat(a, bb.children[0])), *bb.children[1:]))
 
 
 def _find_child(n: _Branch[T], idx: int) -> tuple[int, int]:
@@ -157,6 +178,46 @@ def _iter_items(n: Node[T] | None) -> ta.Iterator[T]:
 
     for child in n.children:
         yield from _iter_items(child)
+
+
+def _iter_items_desc(n: Node[T] | None) -> ta.Iterator[T]:
+    if n is None:
+        return
+
+    if isinstance(n, _Leaf):
+        yield from reversed(n.items)
+        return
+
+    for child in reversed(n.children):
+        yield from _iter_items_desc(child)
+
+
+def _iter_items_from(n: Node[T] | None, idx: int) -> ta.Iterator[T]:
+    if n is None or idx >= n.count:
+        return
+
+    if idx <= 0:
+        yield from _iter_items(n)
+        return
+
+    if isinstance(n, _Leaf):
+        yield from n.items[idx:]
+        return
+
+    base = 0
+    started = False
+
+    for child in n.children:
+        if started:
+            yield from _iter_items(child)
+        else:
+            nxt = base + child.count
+
+            if idx < nxt:
+                yield from _iter_items_from(child, idx - base)
+                started = True
+
+            base = nxt
 
 
 def _split(n: Node[T] | None, idx: int) -> tuple[Node[T] | None, Node[T] | None]:
@@ -226,19 +287,27 @@ def _replace_same(
         n: Node[T],
         start: int,
         items: tuple[T, ...],
+        off: int = 0,
+        lim: int | None = None,
 ) -> Node[T]:
-    if not items:
+    # Same-length replacement of positions [start, start + (lim - off)) with items[off:lim]. Threads (off, lim)
+    # instead of slicing `items` per level -- the old form partitioned the full replacement at every depth, costing
+    # O(k * log n) tuple copying; this is O(k + B * log n), with the only item copies at the leaves.
+    if lim is None:
+        lim = len(items)
+
+    if off >= lim:
         return n
 
     if isinstance(n, _Leaf):
-        stop = start + len(items)
+        stop = start + (lim - off)
 
-        return ta.cast('Node[T]', _make_leaf(n.items[:start] + items + n.items[stop:]))
+        return ta.cast('Node[T]', _make_leaf(n.items[:start] + items[off:lim] + n.items[stop:]))
 
     children = list(n.children)
-    end = start + len(items)
+    end = start + (lim - off)
     base = 0
-    item_base = 0
+    item_off = off
 
     for i, child in enumerate(n.children):
         nxt = base + child.count
@@ -252,18 +321,22 @@ def _replace_same(
 
         child_start = max(start, base) - base
         child_stop = min(end, nxt) - base
-        item_stop = item_base + (child_stop - child_start)
+        item_lim = item_off + (child_stop - child_start)
 
-        children[i] = _replace_same(
-            child,
-            child_start,
-            items[item_base:item_stop],
-        )
+        children[i] = _replace_same(child, child_start, items, item_off, item_lim)
 
-        item_base = item_stop
+        item_off = item_lim
         base = nxt
 
-    return ta.cast('Node[T]', _make_branch_raw(tuple(children)))
+    # Shape-preserving by induction (leaves replace equal-length runs, so every child's count is unchanged), which
+    # makes counts/count/height all reusable as-is -- sharing the counts tuple across versions. len(children) ==
+    # len(n.children) >= 2, so _make_branch_raw's unary collapse cannot apply and bypassing it is safe.
+    return _Branch(
+        children=tuple(children),
+        counts=n.counts,
+        count=n.count,
+        height=n.height,
+    )
 
 
 def _splice(
@@ -296,10 +369,10 @@ def _splice(
 class BtreeSeqIterator(ta.Iterator[T], ta.Generic[T]):
     __slots__ = ('_it', '_next')
 
-    def __init__(self, root: Node[T] | None) -> None:
+    def __init__(self, it: ta.Iterator[T]) -> None:
         super().__init__()
 
-        self._it = _iter_items(root)
+        self._it = it
         self._next: ta.Any = _MISSING
 
     def __iter__(self) -> ta.Self:
@@ -329,6 +402,23 @@ class BtreeSeqIterator(ta.Iterator[T], ta.Generic[T]):
 
 
 ##
+#
+# Public backend surface. Indices are assumed pre-normalized by the wrapper: 0 <= idx < count for get, and
+# 0 <= start <= stop <= count for slice/splice/iter_from. Violations are not reliably detected here -- e.g. a negative
+# get() on a leaf root wraps python-style, and on a deeper tree returns an unrelated element -- the wrapper owns
+# validation, and the C++ backend mirrors this contract rather than adding checks.
+
+
+def iter(root: Node[T] | None) -> BtreeSeqIterator[T]:  # noqa
+    return BtreeSeqIterator(_iter_items(root))
+
+
+def riter(root: Node[T] | None) -> BtreeSeqIterator[T]:
+    return BtreeSeqIterator(_iter_items_desc(root))
+
+
+def iter_from(root: Node[T] | None, idx: int) -> BtreeSeqIterator[T]:
+    return BtreeSeqIterator(_iter_items_from(root, idx))
 
 
 def from_iterable(items: ta.Iterable[T]) -> Node[T] | None:
@@ -357,10 +447,6 @@ def get(root: Node[T] | None, idx: int) -> T:
         raise IndexError(idx)
 
     return _get(root, idx)
-
-
-def iter(root: Node[T] | None) -> BtreeSeqIterator[T]:  # noqa
-    return BtreeSeqIterator(root)
 
 
 def slice(root: Node[T] | None, start: int, stop: int):  # noqa

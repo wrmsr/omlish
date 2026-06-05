@@ -1,4 +1,5 @@
 """Persistent counted B+-ish sequence with dense leaves and opportunistic compaction."""
+import operator
 import typing as ta
 
 from ..iterators import HasNextIterator
@@ -56,12 +57,32 @@ class BtreeSeq(
     def __getitem__(self, item):
         if isinstance(item, slice):
             start, stop = self._normalize_slice(item)
-            return self.__class__(
-                _root=self._backend.slice(self._root, start, stop),
-            )
+            root = self._backend.slice(self._root, start, stop)
+
+            if root is self._root:
+                return self
+
+            return self.__class__(_root=root)
 
         idx = self._normalize_index(item)
         return self._backend.get(self._root, idx)
+
+    def __reversed__(self) -> HasNextIterator[T]:
+        return self._backend.riter(self._root)
+
+    def iter_from(self, idx: int) -> HasNextIterator[T]:
+        start, _ = self._normalize_bounds(idx, None)
+        return self._backend.iter_from(self._root, start)
+
+    def index(self, value: ta.Any, start: int = 0, stop: int | None = None) -> int:
+        start, stop = self._normalize_bounds(start, stop)
+        it = self._backend.iter_from(self._root, start)
+
+        for i in range(start, stop):
+            if (v := next(it)) is value or v == value:
+                return i
+
+        raise ValueError(value)
 
     def __iter__(self) -> HasNextIterator[T]:
         return self._backend.iter(self._root)
@@ -103,8 +124,7 @@ class BtreeSeq(
         return self.splice(ln, ln, items)
 
     def _normalize_index(self, idx: int) -> int:
-        if not isinstance(idx, int):
-            raise TypeError(idx)
+        idx = operator.index(idx)
 
         ln = len(self)
 

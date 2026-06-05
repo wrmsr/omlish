@@ -21,6 +21,10 @@ class PersistentSequence(ta.Sequence[T], lang.Abstract, ta.Generic[T]):
     def __iter__(self) -> ta.Iterator[T]:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def iter_from(self, idx: int) -> ta.Iterator[T]:
+        raise NotImplementedError
+
     @ta.overload
     @abc.abstractmethod
     def __getitem__(self, item: int) -> T:
