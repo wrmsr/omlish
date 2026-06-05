@@ -30,6 +30,27 @@ with _lang.auto_proxy_init(
         DummyChatChoicesStreamService,
     )
 
+    from .backends.scripted.chat import (  # noqa
+        ScriptedChatScript,
+        ScriptedChatChoicesService,
+        ScriptedChatChoicesStreamService,
+    )
+
+    from .backends.scripted.scripts import (  # noqa
+        ChatScriptTurnExpectation,
+        ChatScriptGate,
+
+        ChatScriptError,
+        ChatScriptExhaustedError,
+
+        ChatScriptGatePoint,
+
+        ChatScriptTurn,
+        ChatScript,
+
+        ChatScriptCursor,
+    )
+
     ##
 
     from .chat.choices.stream.adapters import (  # noqa

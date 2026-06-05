@@ -687,6 +687,52 @@
     }
   },
   {
+    "module": ".minichain.backends.scripted.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/scripted/chat.py",
+    "line": 115,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.scripted.chat",
+        "attr": "ScriptedChatChoicesService",
+        "name": "scripted",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.scripted.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/scripted/chat.py",
+    "line": 141,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.scripted.chat",
+        "attr": "ScriptedChatChoicesStreamService",
+        "name": "scripted",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.scripted.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/scripted/chat.py",
+    "line": 171,
+    "value": {
+      "!.minichain.specs.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "scripted",
+        "model_names": null
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.tavily",
     "attr": null,
     "file": "ommlds/minichain/backends/tavily.py",
