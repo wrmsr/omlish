@@ -43,8 +43,7 @@ struct BtreeNode {
     unsigned short len;
     unsigned char is_leaf;
 
-    // One-element trailing array. The actual allocation has 2 * len PyObject*
-    // slots, arranged as:
+    // One-element trailing array. The actual allocation has 2 * len PyObject* slots, arranged as:
     //
     //   leaf:   items[0:len] = keys, items[len:2*len] = values
     //   branch: items[0:len] = child max keys, items[len:2*len] = children
@@ -88,34 +87,24 @@ static inline BtreeNode *branch_child(BtreeNode *n, Py_ssize_t i) {
 }
 
 
-static inline int node_is_cleared(BtreeNode *n) {
-    return n->len != 0 && n->items[0] == nullptr;
-}
-
-
-static int check_node_alive(BtreeNode *n) {
-    if (n != nullptr && node_is_cleared(n)) {
-        PyErr_SetString(PyExc_RuntimeError, "BtreeNode has been cleared");
-        return -1;
-    }
-
-    return 0;
-}
-
+// GC protocol notes, relied on non-locally:
+//
+//  - Instances of heap types (PyType_FromSpec) own a strong reference to their type -- the Py_DECREF(tp) in the
+//    deallocs pays it back -- so tp_traverse must Py_VISIT the type, or instance -> type -> module cycles are invisible
+//    to GC and the types/module state leak on interpreter teardown.
+//
+//  - BtreeNode deliberately has no tp_clear, tuple-style. Nodes are immutable after construction and built bottom-up
+//    from already-finished objects, so a pure-node reference cycle is unconstructible; any real cycle through a node
+//    also passes through some mutable participant (a dict, a module, a BtreeIter, ...), and GC breaks the cycle
+//    *there*, after which node refcounts fall and ordinary dealloc runs. Consequence: a live node is never observable
+//    in a partially-cleared state, which is what licenses the absence of any "cleared node" defensive checks in
+//    find/iteration below.
 
 static int BtreeNode_traverse(BtreeNode *self, visitproc visit, void *arg) {
     Py_VISIT(Py_TYPE(self));
+
     for (Py_ssize_t i = 0; i < node_slots(self); ++i) {
         Py_VISIT(self->items[i]);
-    }
-
-    return 0;
-}
-
-
-static int BtreeNode_clear(BtreeNode *self) {
-    for (Py_ssize_t i = 0; i < node_slots(self); ++i) {
-        Py_CLEAR(self->items[i]);
     }
 
     return 0;
@@ -126,7 +115,10 @@ static void BtreeNode_dealloc(BtreeNode *self) {
     PyTypeObject *tp = Py_TYPE(self);
 
     PyObject_GC_UnTrack(self);
-    BtreeNode_clear(self);
+
+    for (Py_ssize_t i = 0; i < node_slots(self); ++i) {
+        Py_XDECREF(self->items[i]);
+    }
 
     tp->tp_free((PyObject *)self);
     Py_DECREF(tp);
@@ -134,14 +126,6 @@ static void BtreeNode_dealloc(BtreeNode *self) {
 
 
 static PyObject *BtreeNode_repr(BtreeNode *self) {
-    if (node_is_cleared(self)) {
-        return PyUnicode_FromFormat(
-            "BtreeNode(<cleared>, len=%hu, count=%zd)",
-            self->len,
-            self->count
-        );
-    }
-
     return PyUnicode_FromFormat(
         "BtreeNode(kind=%s, len=%hu, count=%zd)",
         self->is_leaf ? "leaf" : "branch",
@@ -185,7 +169,6 @@ static PyGetSetDef BtreeNode_getset[] = {
 static PyType_Slot BtreeNode_slots[] = {
     {Py_tp_dealloc, (void *)BtreeNode_dealloc},
     {Py_tp_traverse, (void *)BtreeNode_traverse},
-    {Py_tp_clear, (void *)BtreeNode_clear},
     {Py_tp_repr, (void *)BtreeNode_repr},
     {Py_tp_iter, (void *)BtreeNode_iter},
     {Py_tp_getset, (void *)BtreeNode_getset},
@@ -217,6 +200,16 @@ struct BtreeIterFrame {
 };
 
 
+// Locking discipline (free-threaded builds): the post-construction mutable state (stack, stack_cap, stack_top, leaf,
+// idx) is touched in exactly three contexts:
+//
+//   1. construction (make_iter / make_*_iter) -- the object is not yet visible to any other thread, so no locking is
+//      needed;
+//   2. BtreeIter_next -- guarded by a per-object critical section (a no-op on GIL builds);
+//   3. tp_clear -- only ever invoked by GC, which is stop-the-world on free-threaded builds.
+//
+// Anything new that mutates an iterator after construction must join scheme 2.
+
 struct BtreeIter {
     PyObject_HEAD
 
@@ -238,10 +231,13 @@ struct BtreeIter {
 static int BtreeIter_traverse(BtreeIter *self, visitproc visit, void *arg) {
     Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->root);
+
     return 0;
 }
 
 
+// Kept (unlike BtreeNode's): clearing root is what lets GC break cycles of the form node -(value)-> iter -(root)->
+// node, and it leaves the iterator in a safe exhausted state if anything resurrects it.
 static int BtreeIter_clear(BtreeIter *self) {
     Py_CLEAR(self->root);
 
@@ -396,43 +392,41 @@ static int iter_normalize(BtreeIter *self) {
 
 
 static PyObject *BtreeIter_next(BtreeIter *self) {
-    if (iter_normalize(self) < 0) {
-        return nullptr;
-    }
-
-    BtreeNode *leaf = self->leaf;
-
-    if (leaf == nullptr) {
-        return nullptr;  // StopIteration
-    }
-
-    if (!leaf->is_leaf || node_is_cleared(leaf)) {
-        PyErr_SetString(PyExc_RuntimeError, "iterated over an invalid BtreeNode");
-        return nullptr;
-    }
-
-    PyObject *key = node_key(leaf, self->idx);
-    PyObject *value = leaf_value(leaf, self->idx);
-
-    if (key == nullptr || value == nullptr) {
-        PyErr_SetString(PyExc_RuntimeError, "iterated over a cleared BtreeNode");
-        return nullptr;
-    }
-
+    // Allocated speculatively, *outside* the critical section: PyTuple_New can trigger GC and run arbitrary Python
+    // code, which must never happen while the lock is held. Nothing inside the section below can re-enter Python:
+    // iter_normalize is pointer walks plus at most a PyMem_Realloc, and the rest is increfs and array stores. A side
+    // benefit of preallocating is that a MemoryError here mutates nothing -- the element stays unconsumed.
     PyObject *ret = PyTuple_New(2);
 
     if (ret == nullptr) {
         return nullptr;
     }
 
-    PyTuple_SET_ITEM(ret, 0, Py_NewRef(key));
-    PyTuple_SET_ITEM(ret, 1, Py_NewRef(value));
+    int have = 0;
 
-    if (self->reverse) {
-        --self->idx;
+    Py_BEGIN_CRITICAL_SECTION((PyObject *)self);
+
+    if (iter_normalize(self) == 0 && self->leaf != nullptr) {
+        PyTuple_SET_ITEM(ret, 0, Py_NewRef(node_key(self->leaf, self->idx)));
+        PyTuple_SET_ITEM(ret, 1, Py_NewRef(leaf_value(self->leaf, self->idx)));
+
+        if (self->reverse) {
+            --self->idx;
+        }
+        else {
+            ++self->idx;
+        }
+
+        have = 1;
     }
-    else {
-        ++self->idx;
+
+    Py_END_CRITICAL_SECTION();
+
+    if (!have) {
+        // Either iter_normalize failed (exception already set) or the iterator is exhausted (bare nullptr ==
+        // StopIteration). Tuple dealloc handles the null items.
+        Py_DECREF(ret);
+        return nullptr;
     }
 
     return ret;
@@ -506,13 +500,7 @@ static int parse_node_arg(btree_state *state, PyObject *obj, BtreeNode **out) {
     }
 
     if (Py_TYPE(obj) == state->BtreeNodeType) {
-        BtreeNode *n = (BtreeNode *)obj;
-
-        if (check_node_alive(n) < 0) {
-            return -1;
-        }
-
-        *out = n;
+        *out = (BtreeNode *)obj;
         return 0;
     }
 
@@ -734,8 +722,8 @@ static int child_index(
 //
 // Owned temporary vector for deletion compaction.
 //
-// Entries are always owned strong refs. This deliberately pays a few INCREFs
-// around deletion to keep the merge/cleanup logic boring and correct.
+// Entries are always owned strong refs. This deliberately pays a few INCREFs around deletion to keep the merge/cleanup
+// logic boring and correct.
 //
 
 struct NodeVec {
@@ -1330,10 +1318,6 @@ static PyObject *btree_find_impl(
     PyObject *cmp
 ) {
     while (n != nullptr) {
-        if (check_node_alive(n) < 0) {
-            return nullptr;
-        }
-
         if (n->is_leaf) {
             Py_ssize_t idx;
             int found;
@@ -1365,6 +1349,9 @@ static PyObject *btree_find_impl(
 //
 // Iterator creation
 //
+// Construction-time descents (iter_push / iter_descend_* / iter_normalize calls below) mutate the iterator without
+// locking: the object is not visible to any other thread until it is returned.
+//
 
 static BtreeIter *make_iter(
     btree_state *state,
@@ -1390,6 +1377,8 @@ static BtreeIter *make_iter(
     );
 
     if (iter->stack == nullptr) {
+        // Safe pre-track: PyObject_GC_UnTrack in dealloc is a guarded no-op on never-tracked objects -- the trashcan
+        // protocol depends on exactly that.
         Py_DECREF(iter);
         PyErr_NoMemory();
         return nullptr;
@@ -1562,10 +1551,6 @@ static PyObject *make_from_reverse_iter(
 
 static PyObject *BtreeNode_iter(PyObject *self) {
     BtreeNode *node = (BtreeNode *)self;
-
-    if (check_node_alive(node) < 0) {
-        return nullptr;
-    }
 
     PyObject *module = PyType_GetModule(Py_TYPE(self));
 
@@ -1842,7 +1827,7 @@ static PyMethodDef btree_methods[] = {
     {"find", (PyCFunction)btree_find_func, METH_VARARGS, "find(root, key, cmp)"},
     {"insert", (PyCFunction)btree_insert_func, METH_VARARGS, "insert(root, key, value, cmp)"},
     {"delete", (PyCFunction)btree_delete_func, METH_VARARGS, "delete(root, key, cmp)"},
-    {"len", (PyCFunction)btree_len_func, METH_VARARGS, "len(root)"},
+    {"len_", (PyCFunction)btree_len_func, METH_VARARGS, "len(root)"},
     {"iter", (PyCFunction)btree_iter_func, METH_VARARGS, "iter(root)"},
     {"riter", (PyCFunction)btree_riter_func, METH_VARARGS, "riter(root)"},
     {"iter_from", (PyCFunction)btree_iter_from_func, METH_VARARGS, "iter_from(root, key, cmp)"},

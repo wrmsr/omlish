@@ -3,8 +3,8 @@ import typing as ta
 
 import pytest
 
-from ..btreemap import _MAX_BRANCH_LEN
-from ..btreemap import _MAX_LEAF_LEN
+from .._btreemap_py import MAX_BRANCH_LEN
+from .._btreemap_py import MAX_LEAF_LEN
 from ..btreemap import BtreeMap
 from ..btreemap import _Branch
 from ..btreemap import _Leaf
@@ -20,7 +20,7 @@ def _check_node(n, cmp):
     if isinstance(n, _Leaf):
         assert len(n.keys) == len(n.values)
         assert n.count == len(n.keys)
-        assert len(n.keys) <= _MAX_LEAF_LEN
+        assert len(n.keys) <= MAX_LEAF_LEN
 
         for a, b in zip(n.keys, n.keys[1:]):
             assert cmp(a, b) < 0
@@ -29,7 +29,7 @@ def _check_node(n, cmp):
 
     assert isinstance(n, _Branch)
     assert len(n.keys) == len(n.children)
-    assert len(n.children) <= _MAX_BRANCH_LEN
+    assert len(n.children) <= MAX_BRANCH_LEN
 
     total = 0
     mins = []
