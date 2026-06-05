@@ -105,11 +105,16 @@ class MessagesContainer(
     async def mount_messages(self, *messages: Message) -> None:
         await self._mount_messages(*messages)
 
+    async def mount_messages_before(self, anchor: Message, *messages: Message) -> None:
+        """Mounts older messages above `anchor`, in order - the lazy-scrollback prepend path."""
+
+        await self._mount_messages(*messages, before=anchor)
+
     async def _drain_mount_message_buffer(self) -> None:
         messages = await self._mount_message_buffer.swap()
         await self._mount_messages(*messages)
 
-    async def _mount_messages(self, *messages: Message) -> None:
+    async def _mount_messages(self, *messages: Message, before: Message | None = None) -> None:
         was_at_bottom = self._is_messages_at_bottom()
 
         for msg in messages:
@@ -122,7 +127,10 @@ class MessagesContainer(
                     if not (isinstance(msg, StreamMessage) and xm is msg):
                         raise ValueError(f'message uuid already in use: {mu}')
 
-            await self.mount(msg)
+            if before is not None:
+                await self.mount(msg, before=before)
+            else:
+                await self.mount(msg)
 
             if mu is not None:
                 self._messages_by_uuid[mu] = msg
@@ -130,7 +138,7 @@ class MessagesContainer(
             if isinstance(msg, StreamMessage):
                 await msg.start_stream()
 
-        if was_at_bottom or self._scroll_to_bottom_after_mount_messages:
+        if before is None and (was_at_bottom or self._scroll_to_bottom_after_mount_messages):
             self._scroll_to_bottom_after_mount_messages = False
             self.call_after_refresh(self._anchor_messages)
 

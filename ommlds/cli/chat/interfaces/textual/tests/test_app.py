@@ -8,6 +8,7 @@ streamed thinking + prose widgets observed *while streaming*, finalization, resu
 import pytest
 
 from omdev.tui import textual as tx
+from omlish import dataclasses as dc
 from omlish import inject as inj
 
 from ...... import minichain as mc
@@ -49,10 +50,11 @@ def _chat_cfg(db: str | None, new: bool, script: mc.ChatScript) -> ChatConfig:
     return ChatConfig(
         driver=DriverConfig(
             ai=mc.drivers.AiConfig(stream=True),
-            # The script rides the real backend-config path into the registry-instantiated scripted backend.
+            # The script rides the real backend-config path into the registry-instantiated scripted backend - as a
+            # shared cursor, since that path instantiates a fresh backend per invocation.
             backend=BackendConfig(
                 backend='scripted',
-                configs=[mc.ScriptedChatScript(script)],
+                configs=[mc.ScriptedChatCursor(mc.ChatScriptCursor(script))],
             ),
             state=StateConfig(new=new),
             **(dict(orm=mc.drivers.OrmConfig(file_path=db)) if db is not None else {}),  # type: ignore[arg-type]
@@ -173,3 +175,58 @@ async def test_textual_chat_app_resume(tmp_path):
 
             (stm,) = app.query(StaticThinkingMessage)
             assert stm.message_content == THINKING_TEXT
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_textual_lazy_scrollback(tmp_path):
+    """A small initial window plus load_older_items pages history in above the fold."""
+
+    db = str(tmp_path / 'state.db')
+
+    script = mc.ChatScript([
+        mc.ChatScriptTurn.of(mc.AiMessage(f'answer number {i}'))
+        for i in range(4)
+    ])
+
+    # Session one: four turns persisted.
+    async with inj.create_async_managed_injector(_els(_chat_cfg(db, True, script))) as injector:
+        app = await injector[ChatApp]
+
+        async with app.run_test() as pilot:
+            cdi = app._chat_driver_interface
+            for i in range(4):
+                await cdi.send_user_input(f'question number {i}')
+                await _pump_until(pilot, lambda i=i: any(
+                    f'answer number {i}' in (w.message_content or '')
+                    for w in (*app.query(StaticAiMessage), *app.query(StreamAiMessage))
+                ))
+            await _pump_until(pilot, lambda: cdi.state is cdi.state.IDLE)
+
+    # Session two: a 3-item initial window, then page the rest in.
+    cfg = _chat_cfg(db, False, script)
+    cfg = dc.replace(cfg, interface=TextualInterfaceConfig(initial_timeline_window=3))
+
+    async with inj.create_async_managed_injector(_els(cfg)) as injector:
+        app = await injector[ChatApp]
+
+        async with app.run_test() as pilot:
+            cdi = app._chat_driver_interface
+
+            await _pump_until(pilot, lambda: len(app.query(StaticAiMessage)) >= 1)
+            n_before = len(app.query('.message')) - len(app.query(WelcomeMessage))
+            assert n_before == 3
+
+            loaded = await cdi.load_older_items(100)
+            assert loaded > 0
+
+            await _pump_until(pilot, lambda: len(app.query(UserMessage)) >= 4)
+
+            # Everything is present, in conversation order, with the prepended history above.
+            user_texts = [str(w._content) for w in app.query(UserMessage)]
+            assert user_texts == [f'question number {i}' for i in range(4)]
+
+            ai_texts = [w.message_content for w in app.query(StaticAiMessage)]
+            assert ai_texts == [f'answer number {i}' for i in range(4)]
+
+            # And history is exhausted now.
+            assert await cdi.load_older_items(100) == 0

@@ -40,6 +40,12 @@ class ChatAppScreen(tx.Screen):
             'app.deny_all_pending_tool_uses',
             'Denies all pending tool uses',
         ),
+
+        tx.Binding(
+            'f3',
+            'app.load_older_messages',
+            'Load older messages',
+        ),
     ]
 
     @classmethod
@@ -191,6 +197,9 @@ class ChatApp(
 
     async def action_allow_all_pending_tool_uses(self) -> None:
         await self._chat_driver_interface.respond_to_all_pending_tool_uses(True)
+
+    async def action_load_older_messages(self) -> None:
+        await self._chat_driver_interface.load_older_items()
 
     async def action_deny_all_pending_tool_uses(self) -> None:
         await self._chat_driver_interface.respond_to_all_pending_tool_uses(False)

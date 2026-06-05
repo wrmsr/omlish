@@ -50,12 +50,19 @@ class _MountWidgetDisplayOp:
 
 
 @dc.dataclass(frozen=True)
+class _MountWidgetsBeforeDisplayOp:
+    widgets: ta.Sequence[Message]
+    anchor: Message | None
+
+
+@dc.dataclass(frozen=True)
 class _UpdateToolDisplayOp:
     item: mc.facades.timelines.ToolUseTimelineItem
 
 
 _DisplayOp: ta.TypeAlias = ta.Union[  # noqa
     _MountWidgetDisplayOp,
+    _MountWidgetsBeforeDisplayOp,
     _UpdateToolDisplayOp,
     StreamMessagePart,
 ]
@@ -252,12 +259,31 @@ class ChatDriverInterface(
 
                 await self._messages_container.mount_messages(op.widget)
 
+            elif isinstance(op, _MountWidgetsBeforeDisplayOp):
+                anchor = op.anchor
+                if anchor is None or not anchor.is_mounted:
+                    anchor = next(
+                        (
+                            ch for ch in self._messages_container.children
+                            if isinstance(ch, Message) and not isinstance(ch, WelcomeMessage)
+                        ),
+                        None,
+                    )
+
+                for w in op.widgets:
+                    self._suppressed_background_terminal_render_set.add(w)
+
+                if anchor is not None and anchor.is_mounted:
+                    await self._messages_container.mount_messages_before(anchor, *op.widgets)
+                else:
+                    await self._messages_container.mount_messages(*op.widgets)
+
             elif isinstance(op, _UpdateToolDisplayOp):
-                w = self._messages_container.get_message_by_uuid(op.item.id)
-                if w is None:
+                tw = self._messages_container.get_message_by_uuid(op.item.id)
+                if tw is None:
                     await self._messages_container.mount_messages(build_tool_message(op.item, self._item_presenters))
                 else:
-                    update_tool_message(check.isinstance(w, ToolMessage), op.item, self._item_presenters)
+                    update_tool_message(check.isinstance(tw, ToolMessage), op.item, self._item_presenters)
 
             else:
                 raise TypeError(op)
@@ -282,6 +308,10 @@ class ChatDriverInterface(
     _timeline_task: asyncio.Task[None] | None = None
     _timeline_attachment: mc.facades.timelines.TimelineAttachment | None = None
 
+    _oldest_cursor: mc.facades.timelines.TimelineCursor | None = None
+    _history_exhausted: bool = False
+    _oldest_item_widget: Message | None = None
+
     @logs.async_exception_logging(alog, BaseException)
     async def _timeline_task_main(self) -> None:
         await self._chat_driver_started.wait()
@@ -289,10 +319,16 @@ class ChatDriverInterface(
         att = await self._timeline.attach(self._initial_timeline_window_limit)
         self._timeline_attachment = att
 
+        self._oldest_cursor = att.window.before_cursor
+        self._history_exhausted = not att.window.has_before
+
         for item in att.window.items:
             self._timeline_items_by_id[item.id] = item
 
             if (w := build_item_message(item, self._item_presenters)) is not None:
+                if self._oldest_item_widget is None:
+                    self._oldest_item_widget = w
+
                 await self._display_op_relay.push(_MountWidgetDisplayOp(
                     w,
                     suppress_background_terminal_render=True,
@@ -358,6 +394,43 @@ class ChatDriverInterface(
                 # An item form this frontend hasn't displayed yet (tolerance path).
                 if self._messages_container.get_message_by_uuid(item.id) is None:
                     await self._display_op_relay.push(_MountWidgetDisplayOp(w))
+
+    async def load_older_items(self, limit: int = 50) -> int:
+        """
+        Lazy scrollback: fetches the next older window and prepends its items above the current oldest. Returns the
+        number of items loaded (0 once history is exhausted or before the attach completes).
+        """
+
+        if self._history_exhausted or (cursor := self._oldest_cursor) is None:
+            return 0
+
+        window = await self._timeline.get_before(cursor, limit)
+
+        if window.before_cursor is not None:
+            self._oldest_cursor = window.before_cursor
+        self._history_exhausted = not window.has_before
+
+        widgets: list[Message] = []
+        for item in window.items:
+            if item.id in self._timeline_items_by_id:
+                continue  # window overlap - already displayed
+
+            self._timeline_items_by_id[item.id] = item
+
+            if (w := build_item_message(item, self._item_presenters)) is not None:
+                widgets.append(w)
+
+        if not widgets:
+            return 0
+
+        await self._display_op_relay.push(_MountWidgetsBeforeDisplayOp(
+            tuple(widgets),
+            self._oldest_item_widget,
+        ))
+
+        self._oldest_item_widget = widgets[0]
+
+        return len(widgets)
 
     ##
     # Chat actions
