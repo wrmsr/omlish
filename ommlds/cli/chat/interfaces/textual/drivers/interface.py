@@ -91,6 +91,7 @@ class ChatDriverInterface(
             welcome_message: WelcomeMessage | None = None,
             chat_id: mc.drivers.ChatId,
             initial_timeline_window_limit: InitialTimelineWindowLimit | None = None,
+            item_presenters: mc.facades.timelines.TimelineItemPresenters | None = None,
     ) -> None:
         super().__init__()
 
@@ -108,6 +109,7 @@ class ChatDriverInterface(
             if initial_timeline_window_limit is not None
             else InitialTimelineWindowLimit(200)
         )
+        self._item_presenters = item_presenters
 
         #
 
@@ -253,9 +255,9 @@ class ChatDriverInterface(
             elif isinstance(op, _UpdateToolDisplayOp):
                 w = self._messages_container.get_message_by_uuid(op.item.id)
                 if w is None:
-                    await self._messages_container.mount_messages(build_tool_message(op.item))
+                    await self._messages_container.mount_messages(build_tool_message(op.item, self._item_presenters))
                 else:
-                    update_tool_message(check.isinstance(w, ToolMessage), op.item)
+                    update_tool_message(check.isinstance(w, ToolMessage), op.item, self._item_presenters)
 
             else:
                 raise TypeError(op)
@@ -290,7 +292,7 @@ class ChatDriverInterface(
         for item in att.window.items:
             self._timeline_items_by_id[item.id] = item
 
-            if (w := build_item_message(item)) is not None:
+            if (w := build_item_message(item, self._item_presenters)) is not None:
                 await self._display_op_relay.push(_MountWidgetDisplayOp(
                     w,
                     suppress_background_terminal_render=True,
@@ -314,7 +316,7 @@ class ChatDriverInterface(
                 else:
                     return
 
-            if (w := build_item_message(item)) is not None:
+            if (w := build_item_message(item, self._item_presenters)) is not None:
                 await self._display_op_relay.push(_MountWidgetDisplayOp(w))
 
         elif isinstance(ev, mc.facades.timelines.TimelineItemDeltaEvent):
@@ -352,7 +354,7 @@ class ChatDriverInterface(
                         item.id,
                     ))
 
-            elif (w := build_item_message(item)) is not None and item.finalized:
+            elif (w := build_item_message(item, self._item_presenters)) is not None and item.finalized:
                 # An item form this frontend hasn't displayed yet (tolerance path).
                 if self._messages_container.get_message_by_uuid(item.id) is None:
                     await self._display_op_relay.push(_MountWidgetDisplayOp(w))

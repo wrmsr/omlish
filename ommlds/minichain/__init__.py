@@ -32,6 +32,7 @@ with _lang.auto_proxy_init(
 
     from .backends.scripted.chat import (  # noqa
         ScriptedChatScript,
+        ScriptedChatCursor,
         ScriptedChatChoicesService,
         ScriptedChatChoicesStreamService,
     )

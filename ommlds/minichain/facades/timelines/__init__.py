@@ -68,6 +68,12 @@ with _lang.auto_proxy_init(globals()):
         TimelineManager,
     )
 
+    from .presenting import (  # noqa
+        TimelineItemPresenter,
+        TimelineItemPresenters,
+        present_timeline_item,
+    )
+
     from .projection import (  # noqa
         grow_streaming_item,
 
@@ -103,3 +109,4 @@ with _lang.auto_proxy_init(globals()):
     ##
 
     from . import inject  # noqa
+    from . import injection  # noqa

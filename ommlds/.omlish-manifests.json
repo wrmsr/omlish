@@ -690,7 +690,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 115,
+    "line": 130,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.scripted.chat",
@@ -705,7 +705,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 141,
+    "line": 156,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.scripted.chat",
@@ -720,7 +720,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 171,
+    "line": 186,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [

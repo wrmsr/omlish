@@ -49,6 +49,7 @@ _TOOL_MESSAGE_STATES_BY_ITEM_STATE: ta.Mapping[mc.facades.timelines.ToolUseTimel
 
 def build_tool_message_contents(
         item: mc.facades.timelines.ToolUseTimelineItem,
+        presenters: mc.facades.timelines.TimelineItemPresenters | None = None,
 ) -> tuple[tx.VisualType, tx.VisualType | None, ToolMessage.State]:
     """(outer, inner, state) for a tool card, from its item - used for both creation and update."""
 
@@ -60,9 +61,13 @@ def build_tool_message_contents(
         (str(item.state.value), 'dim'),
     )
 
-    inner_parts: list[str] = []
+    inner_parts: list[tx.Text] = []
 
-    if item.use is not None:
+    # Tool-specific presenters (e.g. the fs module's edit-as-diff) take the place of the generic args rendering.
+    if (pt := mc.facades.timelines.present_timeline_item(presenters, item)) is not None:
+        inner_parts.append(mc.ui_text_to_rich_text(pt))
+
+    elif item.use is not None:
         tr_uit = mc.render_obj_json_ui_text(
             dict(
                 id=item.use.id,
@@ -75,24 +80,27 @@ def build_tool_message_contents(
                 multiline_strings=True,
             ),
         )
-        inner_parts.append(str(tr_uit))
+        inner_parts.append(tx.Text(str(tr_uit)))
 
     elif item.partial_raw_args:
-        inner_parts.append(item.partial_raw_args)
+        inner_parts.append(tx.Text(item.partial_raw_args))
 
     if item.result is not None:
-        inner_parts.append(render_item_content_str(item.result.c))
+        inner_parts.append(tx.Text(render_item_content_str(item.result.c)))
 
     if item.error is not None:
-        inner_parts.append(repr(item.error))
+        inner_parts.append(tx.Text(repr(item.error)))
 
-    inner: tx.VisualType | None = '\n\n'.join(inner_parts) if inner_parts else None
+    inner: tx.VisualType | None = tx.Text('\n\n').join(inner_parts) if inner_parts else None
 
     return (outer, inner, _TOOL_MESSAGE_STATES_BY_ITEM_STATE[item.state])
 
 
-def build_tool_message(item: mc.facades.timelines.ToolUseTimelineItem) -> ToolMessage:
-    outer, inner, state = build_tool_message_contents(item)
+def build_tool_message(
+        item: mc.facades.timelines.ToolUseTimelineItem,
+        presenters: mc.facades.timelines.TimelineItemPresenters | None = None,
+) -> ToolMessage:
+    outer, inner, state = build_tool_message_contents(item, presenters)
 
     return ToolMessage(
         outer,
@@ -102,8 +110,12 @@ def build_tool_message(item: mc.facades.timelines.ToolUseTimelineItem) -> ToolMe
     )
 
 
-def update_tool_message(widget: ToolMessage, item: mc.facades.timelines.ToolUseTimelineItem) -> None:
-    widget.update_tool(*build_tool_message_contents(item))
+def update_tool_message(
+        widget: ToolMessage,
+        item: mc.facades.timelines.ToolUseTimelineItem,
+        presenters: mc.facades.timelines.TimelineItemPresenters | None = None,
+) -> None:
+    widget.update_tool(*build_tool_message_contents(item, presenters))
 
 
 ##
@@ -119,7 +131,10 @@ def stream_message_cls_for_item(item: mc.facades.timelines.TimelineItem) -> type
     return None
 
 
-def build_item_message(item: mc.facades.timelines.TimelineItem) -> Message | None:
+def build_item_message(
+        item: mc.facades.timelines.TimelineItem,
+        presenters: mc.facades.timelines.TimelineItemPresenters | None = None,
+) -> Message | None:
     """The widget for a timeline item, or None for items this frontend does not display."""
 
     if isinstance(item, mc.facades.timelines.UserMessageTimelineItem):
@@ -154,7 +169,7 @@ def build_item_message(item: mc.facades.timelines.TimelineItem) -> Message | Non
         )
 
     elif isinstance(item, mc.facades.timelines.ToolUseTimelineItem):
-        return build_tool_message(item)
+        return build_tool_message(item, presenters)
 
     elif isinstance(item, mc.facades.timelines.UiMessageTimelineItem):
         return UiMessage(

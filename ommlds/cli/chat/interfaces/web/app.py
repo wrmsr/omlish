@@ -4,6 +4,8 @@ from .chat.handler import ChatCompletionsHandler
 from .serving import serve_data_cache_url
 from .serving import serve_not_found
 from .serving import serve_resource
+from .timelines import TimelineSseHandler
+from .timelines import UserInputHandler
 
 
 ##
@@ -30,10 +32,14 @@ class ChatApp:
             self,
             *,
             chat_completions_handler: ChatCompletionsHandler,
+            timeline_sse_handler: TimelineSseHandler,
+            user_input_handler: UserInputHandler,
     ) -> None:
         super().__init__()
 
         self._chat_completions_handler = chat_completions_handler
+        self._timeline_sse_handler = timeline_sse_handler
+        self._user_input_handler = user_input_handler
 
     async def handle(self, scope, receive, send):
         if scope['type'] != 'http':
@@ -50,6 +56,15 @@ class ChatApp:
 
         elif (method, path) == ('POST', '/v1/chat/completions'):
             await self._chat_completions_handler.handle(receive, send)
+
+        elif (method, path) == ('GET', '/timeline'):
+            await self._timeline_sse_handler.handle_attach(scope, receive, send)
+
+        elif (method, path) == ('GET', '/timeline/before'):
+            await self._timeline_sse_handler.handle_before(scope, receive, send)
+
+        elif (method, path) == ('POST', '/input'):
+            await self._user_input_handler.handle(scope, receive, send)
 
         else:
             await serve_not_found(send)

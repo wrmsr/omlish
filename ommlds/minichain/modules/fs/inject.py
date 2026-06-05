@@ -4,6 +4,7 @@ from omlish import lang
 from ...drivers.injection import system_message_providers
 from ...drivers.preparing.types import ProvidedSystemMessage
 from ...drivers.preparing.types import StaticSystemMessageProvider
+from ...facades.timelines.injection import timeline_item_presenters
 from ...tools.execution.injection import bind_tool_context_provider_to_key
 from ...tools.execution.injection import tool_catalog_entries
 from .configs import FsConfig
@@ -11,6 +12,7 @@ from .configs import FsConfig
 
 with lang.auto_proxy_import(globals()):
     from . import context as _context
+    from . import presenting as _presenting
     from . import prompts as _prompts
     from .tools import edit as _edit
     from .tools import ls as _ls
@@ -56,6 +58,11 @@ def bind_fs(cfg: FsConfig = FsConfig()) -> inj.Elements:
             system_message_providers().bind_item_consts(StaticSystemMessageProvider([ProvidedSystemMessage(
                 _prompts.WRITE_SYSTEM_PROMPT,
             )])),
+
+            timeline_item_presenters().bind_item(
+                to_ctor=_presenting.EditFileTimelineItemPresenter,
+                singleton=True,
+            ),
         ])
 
     #

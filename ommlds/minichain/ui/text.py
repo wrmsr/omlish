@@ -1,11 +1,9 @@
-"""
-TODO:
- - diff?
-"""
 import abc
+import difflib
 import io
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
@@ -287,3 +285,35 @@ class JsonUiText(UiText, lang.Final):
 
     def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
         fn(json.dumps_compact(self.v))
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(cache_hash=True)
+class DiffUiText(UiText, lang.Final):
+    """
+    An old->new text change, displayed as a unified diff. Carries the texts (the honest data); the rendering is
+    derived - plainly here, colorized by capable frontends.
+    """
+
+    old: str
+    new: str
+
+    path: str | None = None
+
+    @cached.property
+    def diff_lines(self) -> ta.Sequence[str]:
+        return tuple(difflib.unified_diff(
+            self.old.splitlines(keepends=True),
+            self.new.splitlines(keepends=True),
+            fromfile=self.path if self.path is not None else 'old',
+            tofile=self.path if self.path is not None else 'new',
+        ))
+
+    #
+
+    def write_str_to(self, fn: ta.Callable[[str], ta.Any]) -> None:
+        for l in self.diff_lines:
+            fn(l if l.endswith('\n') else l + '\n')

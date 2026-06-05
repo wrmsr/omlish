@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from ..... import minichain as mc
 from ...configs import ChatConfig
 from ..base import ChatInterface
 from .configs import WebInterfaceConfig
@@ -8,8 +9,11 @@ from .types import ServerPort
 
 
 with lang.auto_proxy_import(globals()):
+    from ...backends import inject as _backends
+    from ...drivers import inject as _drivers
     from . import app as _app
     from . import interface as _interface
+    from . import timelines as _timelines
     from .chat import inject as _chat
 
 
@@ -26,7 +30,48 @@ def bind_web(
     #
 
     els.extend([
+        _backends.bind_backend(chat_cfg),
+    ])
+
+    #
+
+    els.append(
+        inj.override(
+            _drivers.bind_driver(chat_cfg.driver, chat_cfg=chat_cfg),
+        ),
+    )
+
+    #
+
+    els.append(
+        inj.override(
+            mc.facades.inject.bind_facade(chat_cfg.facade),
+
+            inj.bind(mc.facades.UiQuitSignal(mc.facades.RaiseUiQuitSignal(SystemExit))),
+        ),
+    )
+
+    #
+
+    els.append(mc.facades.timelines.inject.bind_timeline())
+
+    # Facade ui notices flow into the timeline - and thus out to web clients.
+    els.extend([
+        inj.bind(mc.facades.EventEmittingUiMessageDisplayer, singleton=True),
+        inj.bind(mc.facades.UiMessageDisplayer, to_key=mc.facades.EventEmittingUiMessageDisplayer),
+    ])
+
+    #
+
+    els.extend([
         _chat.bind_chat(),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(_timelines.TimelineSseHandler, singleton=True),
+        inj.bind(_timelines.UserInputHandler, singleton=True),
     ])
 
     #

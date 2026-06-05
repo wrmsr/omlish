@@ -41,6 +41,14 @@ class ScriptedChatScript(tv.UniqueScalarTypedValue[ChatScript], Config):
     pass
 
 
+class ScriptedChatCursor(tv.UniqueScalarTypedValue[ChatScriptCursor], Config):
+    """
+    A *shared* consumption cursor. Service-provider machinery may instantiate a fresh backend per invocation (the
+    registry path does); passing a cursor instead of a bare script keeps multi-turn consumption stateful across
+    instantiations.
+    """
+
+
 @lang.cached_function
 def default_demo_chat_script() -> ChatScript:
     return ChatScript(
@@ -82,11 +90,18 @@ class _ScriptedChatChoicesServiceBase:
         super().__init__()
 
         with tv.consume(*configs) as cc:
+            cursor_cfg = cc.pop(ScriptedChatCursor, None)
             script_cfg = cc.pop(ScriptedChatScript, None)
 
-        self._script = script_cfg.v if script_cfg is not None else default_demo_chat_script()
+        if cursor_cfg is not None:
+            check.none(script_cfg)
+            self._cursor = cursor_cfg.v
+            self._script = self._cursor.script
 
-        self._cursor = ChatScriptCursor(self._script)
+        else:
+            self._script = script_cfg.v if script_cfg is not None else default_demo_chat_script()
+            self._cursor = ChatScriptCursor(self._script)
+
         self._invocations = 0
 
     @property

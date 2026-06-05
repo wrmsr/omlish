@@ -8,6 +8,7 @@ with lang.auto_proxy_import(globals()):
     from ...events import manager as _events_manager
     from ...events import types as _events_types
     from . import history as _history
+    from . import injection as _injection
     from . import manager as _manager
     from . import timeline as _timeline
 
@@ -60,6 +61,10 @@ def bind_timeline() -> inj.Elements:
         )
 
     els.append(inj.bind(_provide_timeline_history, singleton=True))
+
+    #
+
+    els.append(_injection.timeline_item_presenters().bind_items_provider(singleton=True))
 
     #
 
