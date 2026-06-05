@@ -1,0 +1,1956 @@
+// @omlish-cext
+#define PY_SSIZE_T_CLEAN
+#include "Python.h"
+
+#include <cassert>
+#include <cstddef>
+
+
+#define _MODULE_NAME "_btreemap"
+#define _PACKAGE_NAME "omlish.collections.btree"
+#define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
+
+
+static constexpr Py_ssize_t MAX_LEAF_LEN = 32;
+static constexpr Py_ssize_t MAX_BRANCH_LEN = 32;
+
+
+typedef struct BtreeNode BtreeNode;
+typedef struct BtreeIter BtreeIter;
+
+
+typedef struct btree_state {
+    PyTypeObject *BtreeNodeType;
+    PyTypeObject *BtreeIterType;
+} btree_state;
+
+
+static btree_state *get_btree_state(PyObject *module) {
+    void *state = PyModule_GetState(module);
+    assert(state != nullptr);
+    return (btree_state *)state;
+}
+
+
+//
+// BtreeNode
+//
+
+struct BtreeNode {
+    PyObject_VAR_HEAD
+
+    Py_ssize_t count;
+    unsigned short len;
+    unsigned char is_leaf;
+
+    // One-element trailing array. The actual allocation has 2 * len PyObject*
+    // slots, arranged as:
+    //
+    //   leaf:   items[0:len] = keys, items[len:2*len] = values
+    //   branch: items[0:len] = child max keys, items[len:2*len] = children
+    //
+    PyObject *items[1];
+};
+
+
+static inline Py_ssize_t node_slots(BtreeNode *n) {
+    return 2 * (Py_ssize_t)n->len;
+}
+
+
+static inline PyObject **node_keys(BtreeNode *n) {
+    return n->items;
+}
+
+
+static inline PyObject **node_second(BtreeNode *n) {
+    return n->items + n->len;
+}
+
+
+static inline PyObject *node_key(BtreeNode *n, Py_ssize_t i) {
+    return node_keys(n)[i];
+}
+
+
+static inline PyObject *node_max(BtreeNode *n) {
+    return node_key(n, n->len - 1);
+}
+
+
+static inline PyObject *leaf_value(BtreeNode *n, Py_ssize_t i) {
+    return node_second(n)[i];
+}
+
+
+static inline BtreeNode *branch_child(BtreeNode *n, Py_ssize_t i) {
+    return (BtreeNode *)node_second(n)[i];
+}
+
+
+static inline int node_is_cleared(BtreeNode *n) {
+    return n->len != 0 && n->items[0] == nullptr;
+}
+
+
+static int check_node_alive(BtreeNode *n) {
+    if (n != nullptr && node_is_cleared(n)) {
+        PyErr_SetString(PyExc_RuntimeError, "BtreeNode has been cleared");
+        return -1;
+    }
+
+    return 0;
+}
+
+
+static int BtreeNode_traverse(BtreeNode *self, visitproc visit, void *arg) {
+    for (Py_ssize_t i = 0; i < node_slots(self); ++i) {
+        Py_VISIT(self->items[i]);
+    }
+
+    return 0;
+}
+
+
+static int BtreeNode_clear(BtreeNode *self) {
+    for (Py_ssize_t i = 0; i < node_slots(self); ++i) {
+        Py_CLEAR(self->items[i]);
+    }
+
+    return 0;
+}
+
+
+static void BtreeNode_dealloc(BtreeNode *self) {
+    PyTypeObject *tp = Py_TYPE(self);
+
+    PyObject_GC_UnTrack(self);
+    BtreeNode_clear(self);
+
+    tp->tp_free((PyObject *)self);
+    Py_DECREF(tp);
+}
+
+
+static PyObject *BtreeNode_repr(BtreeNode *self) {
+    if (node_is_cleared(self)) {
+        return PyUnicode_FromFormat(
+            "BtreeNode(<cleared>, len=%hu, count=%zd)",
+            self->len,
+            self->count
+        );
+    }
+
+    return PyUnicode_FromFormat(
+        "BtreeNode(kind=%s, len=%hu, count=%zd)",
+        self->is_leaf ? "leaf" : "branch",
+        self->len,
+        self->count
+    );
+}
+
+
+static PyObject *BtreeNode_get_count(BtreeNode *self, void *closure) {
+    return PyLong_FromSsize_t(self->count);
+}
+
+
+static PyObject *BtreeNode_get_len(BtreeNode *self, void *closure) {
+    return PyLong_FromSsize_t((Py_ssize_t)self->len);
+}
+
+
+static PyObject *BtreeNode_get_is_leaf(BtreeNode *self, void *closure) {
+    if (self->is_leaf) {
+        Py_RETURN_TRUE;
+    }
+
+    Py_RETURN_FALSE;
+}
+
+
+// Forward declaration - needs BtreeIter type from module state.
+static PyObject *BtreeNode_iter(PyObject *self);
+
+
+static PyGetSetDef BtreeNode_getset[] = {
+    {"count", (getter)BtreeNode_get_count, nullptr, nullptr, nullptr},
+    {"len", (getter)BtreeNode_get_len, nullptr, nullptr, nullptr},
+    {"is_leaf", (getter)BtreeNode_get_is_leaf, nullptr, nullptr, nullptr},
+    {nullptr, nullptr, nullptr, nullptr, nullptr}
+};
+
+
+static PyType_Slot BtreeNode_slots[] = {
+    {Py_tp_dealloc, (void *)BtreeNode_dealloc},
+    {Py_tp_traverse, (void *)BtreeNode_traverse},
+    {Py_tp_clear, (void *)BtreeNode_clear},
+    {Py_tp_repr, (void *)BtreeNode_repr},
+    {Py_tp_iter, (void *)BtreeNode_iter},
+    {Py_tp_getset, (void *)BtreeNode_getset},
+    {0, nullptr}
+};
+
+
+static PyType_Spec BtreeNode_spec = {
+    .name = _MODULE_FULL_NAME ".BtreeNode",
+    .basicsize = (int)offsetof(BtreeNode, items),
+    .itemsize = (int)sizeof(PyObject *),
+    .flags = (
+        Py_TPFLAGS_DEFAULT |
+        Py_TPFLAGS_HAVE_GC |
+        Py_TPFLAGS_DISALLOW_INSTANTIATION |
+        Py_TPFLAGS_ITEMS_AT_END
+    ),
+    .slots = BtreeNode_slots,
+};
+
+
+//
+// BtreeIter
+//
+
+struct BtreeIterFrame {
+    BtreeNode *node;
+    Py_ssize_t idx;
+};
+
+
+struct BtreeIter {
+    PyObject_HEAD
+
+    // Strong ref keeping the whole immutable tree alive.
+    BtreeNode *root;
+
+    // Borrowed refs into root.
+    BtreeIterFrame *stack;
+    Py_ssize_t stack_cap;
+    Py_ssize_t stack_top;
+
+    BtreeNode *leaf;
+    Py_ssize_t idx;
+
+    unsigned char reverse;
+};
+
+
+static int BtreeIter_traverse(BtreeIter *self, visitproc visit, void *arg) {
+    Py_VISIT(self->root);
+    return 0;
+}
+
+
+static int BtreeIter_clear(BtreeIter *self) {
+    Py_CLEAR(self->root);
+
+    self->stack_top = 0;
+    self->leaf = nullptr;
+    self->idx = 0;
+
+    return 0;
+}
+
+
+static void BtreeIter_dealloc(BtreeIter *self) {
+    PyTypeObject *tp = Py_TYPE(self);
+
+    PyObject_GC_UnTrack(self);
+    Py_XDECREF(self->root);
+    PyMem_Free(self->stack);
+
+    tp->tp_free((PyObject *)self);
+    Py_DECREF(tp);
+}
+
+
+static PyObject *BtreeIter_iter(PyObject *self) {
+    return Py_NewRef(self);
+}
+
+
+static int iter_push(BtreeIter *self, BtreeNode *node, Py_ssize_t idx) {
+    if (self->stack_top >= self->stack_cap) {
+        Py_ssize_t new_cap = self->stack_cap * 2;
+
+        BtreeIterFrame *new_stack = (BtreeIterFrame *)PyMem_Realloc(
+            self->stack,
+            (size_t)new_cap * sizeof(BtreeIterFrame)
+        );
+
+        if (new_stack == nullptr) {
+            PyErr_NoMemory();
+            return -1;
+        }
+
+        self->stack = new_stack;
+        self->stack_cap = new_cap;
+    }
+
+    self->stack[self->stack_top++] = BtreeIterFrame{node, idx};
+    return 0;
+}
+
+
+static int iter_descend_first(BtreeIter *self, BtreeNode *n) {
+    while (!n->is_leaf) {
+        if (iter_push(self, n, 0) < 0) {
+            return -1;
+        }
+
+        n = branch_child(n, 0);
+    }
+
+    self->leaf = n;
+    self->idx = 0;
+
+    return 0;
+}
+
+
+static int iter_descend_last(BtreeIter *self, BtreeNode *n) {
+    while (!n->is_leaf) {
+        Py_ssize_t idx = n->len - 1;
+
+        if (iter_push(self, n, idx) < 0) {
+            return -1;
+        }
+
+        n = branch_child(n, idx);
+    }
+
+    self->leaf = n;
+    self->idx = n->len - 1;
+
+    return 0;
+}
+
+
+static int iter_advance_leaf(BtreeIter *self) {
+    while (self->stack_top > 0) {
+        BtreeIterFrame frame = self->stack[--self->stack_top];
+
+        Py_ssize_t idx = frame.idx + 1;
+
+        if (idx < frame.node->len) {
+            BtreeNode *n = branch_child(frame.node, idx);
+
+            if (iter_push(self, frame.node, idx) < 0) {
+                return -1;
+            }
+
+            return iter_descend_first(self, n);
+        }
+    }
+
+    self->leaf = nullptr;
+    self->idx = 0;
+
+    return 0;
+}
+
+
+static int iter_retreat_leaf(BtreeIter *self) {
+    while (self->stack_top > 0) {
+        BtreeIterFrame frame = self->stack[--self->stack_top];
+
+        Py_ssize_t idx = frame.idx - 1;
+
+        if (idx >= 0) {
+            BtreeNode *n = branch_child(frame.node, idx);
+
+            if (iter_push(self, frame.node, idx) < 0) {
+                return -1;
+            }
+
+            return iter_descend_last(self, n);
+        }
+    }
+
+    self->leaf = nullptr;
+    self->idx = -1;
+
+    return 0;
+}
+
+
+static int iter_normalize(BtreeIter *self) {
+    if (self->leaf == nullptr) {
+        return 0;
+    }
+
+    if (self->reverse) {
+        if (self->idx < 0) {
+            return iter_retreat_leaf(self);
+        }
+    }
+    else {
+        if (self->idx >= self->leaf->len) {
+            return iter_advance_leaf(self);
+        }
+    }
+
+    return 0;
+}
+
+
+static PyObject *BtreeIter_next(BtreeIter *self) {
+    if (iter_normalize(self) < 0) {
+        return nullptr;
+    }
+
+    BtreeNode *leaf = self->leaf;
+
+    if (leaf == nullptr) {
+        return nullptr;  // StopIteration
+    }
+
+    if (!leaf->is_leaf || node_is_cleared(leaf)) {
+        PyErr_SetString(PyExc_RuntimeError, "iterated over an invalid BtreeNode");
+        return nullptr;
+    }
+
+    PyObject *key = node_key(leaf, self->idx);
+    PyObject *value = leaf_value(leaf, self->idx);
+
+    if (key == nullptr || value == nullptr) {
+        PyErr_SetString(PyExc_RuntimeError, "iterated over a cleared BtreeNode");
+        return nullptr;
+    }
+
+    PyObject *ret = PyTuple_New(2);
+
+    if (ret == nullptr) {
+        return nullptr;
+    }
+
+    PyTuple_SET_ITEM(ret, 0, Py_NewRef(key));
+    PyTuple_SET_ITEM(ret, 1, Py_NewRef(value));
+
+    if (self->reverse) {
+        --self->idx;
+    }
+    else {
+        ++self->idx;
+    }
+
+    return ret;
+}
+
+
+static PyType_Slot BtreeIter_slots[] = {
+    {Py_tp_dealloc, (void *)BtreeIter_dealloc},
+    {Py_tp_traverse, (void *)BtreeIter_traverse},
+    {Py_tp_clear, (void *)BtreeIter_clear},
+    {Py_tp_iter, (void *)BtreeIter_iter},
+    {Py_tp_iternext, (void *)BtreeIter_next},
+    {0, nullptr}
+};
+
+
+static PyType_Spec BtreeIter_spec = {
+    .name = _MODULE_FULL_NAME ".BtreeIter",
+    .basicsize = sizeof(BtreeIter),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_DISALLOW_INSTANTIATION,
+    .slots = BtreeIter_slots,
+};
+
+
+//
+// Helpers
+//
+
+static int do_cmp(PyObject *cmp, PyObject *a, PyObject *b, int *out) {
+    if (cmp == nullptr) {
+        int gt = PyObject_RichCompareBool(a, b, Py_GT);
+
+        if (gt < 0) {
+            return -1;
+        }
+
+        int lt = PyObject_RichCompareBool(a, b, Py_LT);
+
+        if (lt < 0) {
+            return -1;
+        }
+
+        *out = gt - lt;
+        return 0;
+    }
+
+    PyObject *args[2] = {a, b};
+    PyObject *result = PyObject_Vectorcall(cmp, args, 2, nullptr);
+
+    if (result == nullptr) {
+        return -1;
+    }
+
+    long val = PyLong_AsLong(result);
+    Py_DECREF(result);
+
+    if (val == -1 && PyErr_Occurred()) {
+        return -1;
+    }
+
+    *out = (val > 0) - (val < 0);
+    return 0;
+}
+
+
+static int parse_node_arg(btree_state *state, PyObject *obj, BtreeNode **out) {
+    if (obj == Py_None) {
+        *out = nullptr;
+        return 0;
+    }
+
+    if (Py_TYPE(obj) == state->BtreeNodeType) {
+        BtreeNode *n = (BtreeNode *)obj;
+
+        if (check_node_alive(n) < 0) {
+            return -1;
+        }
+
+        *out = n;
+        return 0;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "expected BtreeNode or None");
+    return -1;
+}
+
+
+static BtreeNode *alloc_node(
+    btree_state *state,
+    int is_leaf,
+    Py_ssize_t len
+) {
+    assert(len > 0);
+    assert(len <= MAX_BRANCH_LEN + 1);
+
+    BtreeNode *node = PyObject_GC_NewVar(
+        BtreeNode,
+        state->BtreeNodeType,
+        2 * len
+    );
+
+    if (node == nullptr) {
+        return nullptr;
+    }
+
+    node->count = 0;
+    node->len = (unsigned short)len;
+    node->is_leaf = (unsigned char)is_leaf;
+
+    for (Py_ssize_t i = 0; i < node_slots(node); ++i) {
+        node->items[i] = nullptr;
+    }
+
+    return node;
+}
+
+
+static BtreeNode *make_leaf(
+    btree_state *state,
+    PyObject **keys,
+    PyObject **values,
+    Py_ssize_t len
+) {
+    assert(len > 0);
+    assert(len <= MAX_LEAF_LEN);
+
+    BtreeNode *node = alloc_node(state, 1, len);
+
+    if (node == nullptr) {
+        return nullptr;
+    }
+
+    PyObject **dst_keys = node_keys(node);
+    PyObject **dst_values = node_second(node);
+
+    for (Py_ssize_t i = 0; i < len; ++i) {
+        dst_keys[i] = Py_NewRef(keys[i]);
+        dst_values[i] = Py_NewRef(values[i]);
+    }
+
+    node->count = len;
+
+    PyObject_GC_Track(node);
+    return node;
+}
+
+
+static BtreeNode *make_branch_direct(
+    btree_state *state,
+    PyObject **keys,
+    BtreeNode **children,
+    Py_ssize_t len,
+    Py_ssize_t count
+) {
+    assert(len > 0);
+    assert(len <= MAX_BRANCH_LEN);
+
+    if (len == 1) {
+        return (BtreeNode *)Py_NewRef((PyObject *)children[0]);
+    }
+
+    BtreeNode *node = alloc_node(state, 0, len);
+
+    if (node == nullptr) {
+        return nullptr;
+    }
+
+    PyObject **dst_keys = node_keys(node);
+    PyObject **dst_children = node_second(node);
+
+    for (Py_ssize_t i = 0; i < len; ++i) {
+        dst_keys[i] = Py_NewRef(keys[i]);
+        dst_children[i] = Py_NewRef((PyObject *)children[i]);
+    }
+
+    node->count = count;
+
+    PyObject_GC_Track(node);
+    return node;
+}
+
+
+static BtreeNode *make_branch(
+    btree_state *state,
+    BtreeNode **children,
+    Py_ssize_t len
+) {
+    assert(len > 0);
+    assert(len <= MAX_BRANCH_LEN);
+
+    if (len == 1) {
+        return (BtreeNode *)Py_NewRef((PyObject *)children[0]);
+    }
+
+    PyObject *keys[MAX_BRANCH_LEN];
+    Py_ssize_t count = 0;
+
+    for (Py_ssize_t i = 0; i < len; ++i) {
+        keys[i] = node_max(children[i]);
+        count += children[i]->count;
+    }
+
+    return make_branch_direct(state, keys, children, len, count);
+}
+
+
+static PyObject *node_to_pyobject(BtreeNode *node) {
+    if (node != nullptr) {
+        return (PyObject *)node;
+    }
+
+    if (PyErr_Occurred()) {
+        return nullptr;
+    }
+
+    Py_RETURN_NONE;
+}
+
+
+static int key_index(
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *cmp,
+    Py_ssize_t *out_idx,
+    int *out_found
+) {
+    Py_ssize_t lo = 0;
+    Py_ssize_t hi = n->len;
+
+    while (lo < hi) {
+        Py_ssize_t mid = (lo + hi) / 2;
+
+        int diff;
+        if (do_cmp(cmp, node_key(n, mid), k, &diff) < 0) {
+            return -1;
+        }
+
+        if (diff < 0) {
+            lo = mid + 1;
+        }
+        else {
+            hi = mid;
+        }
+    }
+
+    int found = 0;
+
+    if (lo < n->len) {
+        int diff;
+        if (do_cmp(cmp, node_key(n, lo), k, &diff) < 0) {
+            return -1;
+        }
+
+        found = diff == 0;
+    }
+
+    *out_idx = lo;
+    *out_found = found;
+
+    return 0;
+}
+
+
+static int child_index(
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *cmp,
+    Py_ssize_t *out_idx
+) {
+    Py_ssize_t lo = 0;
+    Py_ssize_t hi = n->len;
+
+    while (lo < hi) {
+        Py_ssize_t mid = (lo + hi) / 2;
+
+        int diff;
+        if (do_cmp(cmp, node_key(n, mid), k, &diff) < 0) {
+            return -1;
+        }
+
+        if (diff < 0) {
+            lo = mid + 1;
+        }
+        else {
+            hi = mid;
+        }
+    }
+
+    if (lo == n->len) {
+        lo = n->len - 1;
+    }
+
+    *out_idx = lo;
+    return 0;
+}
+
+
+//
+// Owned temporary vector for deletion compaction.
+//
+// Entries are always owned strong refs. This deliberately pays a few INCREFs
+// around deletion to keep the merge/cleanup logic boring and correct.
+//
+
+struct NodeVec {
+    BtreeNode *items[MAX_BRANCH_LEN + 1];
+    Py_ssize_t len;
+};
+
+
+static void node_vec_init(NodeVec *v) {
+    v->len = 0;
+
+    for (Py_ssize_t i = 0; i < MAX_BRANCH_LEN + 1; ++i) {
+        v->items[i] = nullptr;
+    }
+}
+
+
+static void node_vec_clear(NodeVec *v) {
+    for (Py_ssize_t i = 0; i < v->len; ++i) {
+        Py_XDECREF(v->items[i]);
+        v->items[i] = nullptr;
+    }
+
+    v->len = 0;
+}
+
+
+static void node_vec_append_newref(NodeVec *v, BtreeNode *n) {
+    assert(v->len < MAX_BRANCH_LEN + 1);
+
+    v->items[v->len++] = (BtreeNode *)Py_NewRef((PyObject *)n);
+}
+
+
+static void node_vec_append_steal(NodeVec *v, BtreeNode *n) {
+    assert(v->len < MAX_BRANCH_LEN + 1);
+
+    v->items[v->len++] = n;
+}
+
+
+static int can_merge(BtreeNode *a, BtreeNode *b) {
+    if (a->is_leaf != b->is_leaf) {
+        return 0;
+    }
+
+    if (a->is_leaf) {
+        return (Py_ssize_t)a->len + (Py_ssize_t)b->len <= MAX_LEAF_LEN;
+    }
+
+    return (Py_ssize_t)a->len + (Py_ssize_t)b->len <= MAX_BRANCH_LEN;
+}
+
+
+static BtreeNode *merge_nodes(
+    btree_state *state,
+    BtreeNode *a,
+    BtreeNode *b
+) {
+    assert(a->is_leaf == b->is_leaf);
+
+    Py_ssize_t len = (Py_ssize_t)a->len + (Py_ssize_t)b->len;
+
+    if (a->is_leaf) {
+        PyObject *keys[MAX_LEAF_LEN];
+        PyObject *values[MAX_LEAF_LEN];
+
+        for (Py_ssize_t i = 0; i < a->len; ++i) {
+            keys[i] = node_key(a, i);
+            values[i] = leaf_value(a, i);
+        }
+
+        for (Py_ssize_t i = 0; i < b->len; ++i) {
+            keys[a->len + i] = node_key(b, i);
+            values[a->len + i] = leaf_value(b, i);
+        }
+
+        return make_leaf(state, keys, values, len);
+    }
+
+    PyObject *keys[MAX_BRANCH_LEN];
+    BtreeNode *children[MAX_BRANCH_LEN];
+
+    for (Py_ssize_t i = 0; i < a->len; ++i) {
+        keys[i] = node_key(a, i);
+        children[i] = branch_child(a, i);
+    }
+
+    for (Py_ssize_t i = 0; i < b->len; ++i) {
+        keys[a->len + i] = node_key(b, i);
+        children[a->len + i] = branch_child(b, i);
+    }
+
+    return make_branch_direct(state, keys, children, len, a->count + b->count);
+}
+
+
+static int compact_owned_children(
+    btree_state *state,
+    NodeVec *src,
+    NodeVec *out
+) {
+    node_vec_init(out);
+
+    for (Py_ssize_t i = 0; i < src->len; ++i) {
+        BtreeNode *child = src->items[i];
+        src->items[i] = nullptr;
+
+        if (out->len > 0 && can_merge(out->items[out->len - 1], child)) {
+            BtreeNode *prev = out->items[out->len - 1];
+            out->items[out->len - 1] = nullptr;
+            --out->len;
+
+            BtreeNode *merged = merge_nodes(state, prev, child);
+
+            Py_DECREF(prev);
+            Py_DECREF(child);
+
+            if (merged == nullptr) {
+                node_vec_clear(out);
+                node_vec_clear(src);
+                return -1;
+            }
+
+            node_vec_append_steal(out, merged);
+        }
+        else {
+            node_vec_append_steal(out, child);
+        }
+    }
+
+    src->len = 0;
+    return 0;
+}
+
+
+//
+// Core B+ tree algorithms
+//
+
+struct InsertResult {
+    int split;
+    BtreeNode *node;
+    BtreeNode *left;
+    BtreeNode *right;
+};
+
+
+static void insert_result_init(InsertResult *r) {
+    r->split = 0;
+    r->node = nullptr;
+    r->left = nullptr;
+    r->right = nullptr;
+}
+
+
+static void insert_result_clear(InsertResult *r) {
+    Py_XDECREF(r->node);
+    Py_XDECREF(r->left);
+    Py_XDECREF(r->right);
+
+    insert_result_init(r);
+}
+
+
+static int btree_insert_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *v,
+    PyObject *cmp,
+    InsertResult *out
+);
+
+
+static int leaf_insert_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *v,
+    PyObject *cmp,
+    InsertResult *out
+) {
+    assert(n->is_leaf);
+
+    Py_ssize_t idx;
+    int found;
+
+    if (key_index(n, k, cmp, &idx, &found) < 0) {
+        return -1;
+    }
+
+    Py_ssize_t len = n->len + (found ? 0 : 1);
+
+    PyObject *keys[MAX_LEAF_LEN + 1];
+    PyObject *values[MAX_LEAF_LEN + 1];
+
+    if (found) {
+        for (Py_ssize_t i = 0; i < n->len; ++i) {
+            keys[i] = node_key(n, i);
+            values[i] = (i == idx) ? v : leaf_value(n, i);
+        }
+    }
+    else {
+        for (Py_ssize_t i = 0; i < idx; ++i) {
+            keys[i] = node_key(n, i);
+            values[i] = leaf_value(n, i);
+        }
+
+        keys[idx] = k;
+        values[idx] = v;
+
+        for (Py_ssize_t i = idx; i < n->len; ++i) {
+            keys[i + 1] = node_key(n, i);
+            values[i + 1] = leaf_value(n, i);
+        }
+    }
+
+    if (len <= MAX_LEAF_LEN) {
+        out->split = 0;
+        out->node = make_leaf(state, keys, values, len);
+        return out->node == nullptr ? -1 : 0;
+    }
+
+    Py_ssize_t mid = len / 2;
+
+    BtreeNode *left = make_leaf(state, keys, values, mid);
+
+    if (left == nullptr) {
+        return -1;
+    }
+
+    BtreeNode *right = make_leaf(state, keys + mid, values + mid, len - mid);
+
+    if (right == nullptr) {
+        Py_DECREF(left);
+        return -1;
+    }
+
+    out->split = 1;
+    out->left = left;
+    out->right = right;
+
+    return 0;
+}
+
+
+static BtreeNode *replace_child(
+    btree_state *state,
+    BtreeNode *b,
+    Py_ssize_t idx,
+    BtreeNode *new_child
+) {
+    BtreeNode *old_child = branch_child(b, idx);
+    PyObject *keys[MAX_BRANCH_LEN];
+    BtreeNode *children[MAX_BRANCH_LEN];
+
+    PyObject *new_max = node_max(new_child);
+
+    for (Py_ssize_t i = 0; i < b->len; ++i) {
+        keys[i] = (i == idx) ? new_max : node_key(b, i);
+        children[i] = (i == idx) ? new_child : branch_child(b, i);
+    }
+
+    return make_branch_direct(
+        state,
+        keys,
+        children,
+        b->len,
+        b->count - old_child->count + new_child->count
+    );
+}
+
+
+static int branch_insert_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *v,
+    PyObject *cmp,
+    InsertResult *out
+) {
+    assert(!n->is_leaf);
+
+    Py_ssize_t idx;
+
+    if (child_index(n, k, cmp, &idx) < 0) {
+        return -1;
+    }
+
+    BtreeNode *old_child = branch_child(n, idx);
+
+    InsertResult res;
+    insert_result_init(&res);
+
+    if (btree_insert_impl(state, old_child, k, v, cmp, &res) < 0) {
+        return -1;
+    }
+
+    if (!res.split) {
+        out->split = 0;
+        out->node = replace_child(state, n, idx, res.node);
+
+        insert_result_clear(&res);
+        return out->node == nullptr ? -1 : 0;
+    }
+
+    Py_ssize_t len = n->len + 1;
+    BtreeNode *children[MAX_BRANCH_LEN + 1];
+
+    for (Py_ssize_t i = 0; i < idx; ++i) {
+        children[i] = branch_child(n, i);
+    }
+
+    children[idx] = res.left;
+    children[idx + 1] = res.right;
+
+    for (Py_ssize_t i = idx + 1; i < n->len; ++i) {
+        children[i + 1] = branch_child(n, i);
+    }
+
+    if (len > MAX_BRANCH_LEN) {
+        Py_ssize_t mid = len / 2;
+
+        BtreeNode *left = make_branch(state, children, mid);
+
+        if (left == nullptr) {
+            insert_result_clear(&res);
+            return -1;
+        }
+
+        BtreeNode *right = make_branch(state, children + mid, len - mid);
+
+        if (right == nullptr) {
+            Py_DECREF(left);
+            insert_result_clear(&res);
+            return -1;
+        }
+
+        out->split = 1;
+        out->left = left;
+        out->right = right;
+
+        insert_result_clear(&res);
+        return 0;
+    }
+
+    PyObject *keys[MAX_BRANCH_LEN];
+
+    for (Py_ssize_t i = 0; i < idx; ++i) {
+        keys[i] = node_key(n, i);
+    }
+
+    keys[idx] = node_max(res.left);
+    keys[idx + 1] = node_max(res.right);
+
+    for (Py_ssize_t i = idx + 1; i < n->len; ++i) {
+        keys[i + 1] = node_key(n, i);
+    }
+
+    out->split = 0;
+    out->node = make_branch_direct(
+        state,
+        keys,
+        children,
+        len,
+        n->count - old_child->count + res.left->count + res.right->count
+    );
+
+    insert_result_clear(&res);
+    return out->node == nullptr ? -1 : 0;
+}
+
+
+static int btree_insert_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *v,
+    PyObject *cmp,
+    InsertResult *out
+) {
+    if (n->is_leaf) {
+        return leaf_insert_impl(state, n, k, v, cmp, out);
+    }
+
+    return branch_insert_impl(state, n, k, v, cmp, out);
+}
+
+
+struct DeleteResult {
+    int changed;
+    BtreeNode *node;
+};
+
+
+static void delete_result_init(DeleteResult *r) {
+    r->changed = 0;
+    r->node = nullptr;
+}
+
+
+static void delete_result_clear(DeleteResult *r) {
+    Py_XDECREF(r->node);
+    delete_result_init(r);
+}
+
+
+static int btree_delete_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *cmp,
+    DeleteResult *out
+);
+
+
+static int leaf_delete_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *cmp,
+    DeleteResult *out
+) {
+    assert(n->is_leaf);
+
+    Py_ssize_t idx;
+    int found;
+
+    if (key_index(n, k, cmp, &idx, &found) < 0) {
+        return -1;
+    }
+
+    if (!found) {
+        out->changed = 0;
+        return 0;
+    }
+
+    Py_ssize_t len = n->len - 1;
+
+    out->changed = 1;
+
+    if (len == 0) {
+        out->node = nullptr;
+        return 0;
+    }
+
+    PyObject *keys[MAX_LEAF_LEN];
+    PyObject *values[MAX_LEAF_LEN];
+
+    for (Py_ssize_t i = 0; i < idx; ++i) {
+        keys[i] = node_key(n, i);
+        values[i] = leaf_value(n, i);
+    }
+
+    for (Py_ssize_t i = idx + 1; i < n->len; ++i) {
+        keys[i - 1] = node_key(n, i);
+        values[i - 1] = leaf_value(n, i);
+    }
+
+    out->node = make_leaf(state, keys, values, len);
+    return out->node == nullptr ? -1 : 0;
+}
+
+
+static int branch_delete_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *cmp,
+    DeleteResult *out
+) {
+    assert(!n->is_leaf);
+
+    Py_ssize_t idx;
+
+    if (child_index(n, k, cmp, &idx) < 0) {
+        return -1;
+    }
+
+    BtreeNode *old_child = branch_child(n, idx);
+
+    DeleteResult res;
+    delete_result_init(&res);
+
+    if (btree_delete_impl(state, old_child, k, cmp, &res) < 0) {
+        return -1;
+    }
+
+    if (!res.changed) {
+        out->changed = 0;
+        return 0;
+    }
+
+    NodeVec children;
+    node_vec_init(&children);
+
+    for (Py_ssize_t i = 0; i < idx; ++i) {
+        node_vec_append_newref(&children, branch_child(n, i));
+    }
+
+    if (res.node != nullptr) {
+        node_vec_append_steal(&children, res.node);
+        res.node = nullptr;
+    }
+
+    for (Py_ssize_t i = idx + 1; i < n->len; ++i) {
+        node_vec_append_newref(&children, branch_child(n, i));
+    }
+
+    delete_result_clear(&res);
+
+    out->changed = 1;
+
+    if (children.len == 0) {
+        out->node = nullptr;
+        return 0;
+    }
+
+    Py_ssize_t before_compact_len = children.len;
+
+    NodeVec compacted;
+
+    if (compact_owned_children(state, &children, &compacted) < 0) {
+        return -1;
+    }
+
+    if (compacted.len != before_compact_len) {
+        out->node = make_branch(state, compacted.items, compacted.len);
+        node_vec_clear(&compacted);
+
+        return out->node == nullptr ? -1 : 0;
+    }
+
+    if (compacted.len == 1) {
+        out->node = (BtreeNode *)Py_NewRef((PyObject *)compacted.items[0]);
+        node_vec_clear(&compacted);
+
+        return 0;
+    }
+
+    PyObject *keys[MAX_BRANCH_LEN];
+
+    if (res.node == nullptr) {
+        // Child was removed. Keep all old max keys except the deleted slot.
+        for (Py_ssize_t i = 0; i < idx; ++i) {
+            keys[i] = node_key(n, i);
+        }
+
+        for (Py_ssize_t i = idx + 1; i < n->len; ++i) {
+            keys[i - 1] = node_key(n, i);
+        }
+    }
+    else {
+        // Unreachable because res.node was stolen/cleared above, but keep the
+        // branch explicit to document the intended shape.
+        PyErr_SetString(PyExc_RuntimeError, "unexpected retained delete result");
+        node_vec_clear(&compacted);
+        return -1;
+    }
+
+    if (before_compact_len == n->len) {
+        // Replacement, not removal. Rebuild keys from current children so the
+        // replaced child's max is correct.
+        for (Py_ssize_t i = 0; i < compacted.len; ++i) {
+            keys[i] = (i == idx) ? node_max(compacted.items[i]) : node_key(n, i);
+        }
+    }
+
+    out->node = make_branch_direct(
+        state,
+        keys,
+        compacted.items,
+        compacted.len,
+        n->count - 1
+    );
+
+    node_vec_clear(&compacted);
+    return out->node == nullptr ? -1 : 0;
+}
+
+
+static int btree_delete_impl(
+    btree_state *state,
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *cmp,
+    DeleteResult *out
+) {
+    if (n->is_leaf) {
+        return leaf_delete_impl(state, n, k, cmp, out);
+    }
+
+    return branch_delete_impl(state, n, k, cmp, out);
+}
+
+
+static PyObject *btree_find_impl(
+    BtreeNode *n,
+    PyObject *k,
+    PyObject *cmp
+) {
+    while (n != nullptr) {
+        if (check_node_alive(n) < 0) {
+            return nullptr;
+        }
+
+        if (n->is_leaf) {
+            Py_ssize_t idx;
+            int found;
+
+            if (key_index(n, k, cmp, &idx, &found) < 0) {
+                return nullptr;
+            }
+
+            if (!found) {
+                return nullptr;
+            }
+
+            return Py_NewRef(leaf_value(n, idx));
+        }
+
+        Py_ssize_t idx;
+
+        if (child_index(n, k, cmp, &idx) < 0) {
+            return nullptr;
+        }
+
+        n = branch_child(n, idx);
+    }
+
+    return nullptr;
+}
+
+
+//
+// Iterator creation
+//
+
+static BtreeIter *make_iter(
+    btree_state *state,
+    BtreeNode *root,
+    int reverse
+) {
+    BtreeIter *iter = PyObject_GC_New(BtreeIter, state->BtreeIterType);
+
+    if (iter == nullptr) {
+        return nullptr;
+    }
+
+    iter->root = nullptr;
+    iter->stack = nullptr;
+    iter->stack_cap = 64;
+    iter->stack_top = 0;
+    iter->leaf = nullptr;
+    iter->idx = 0;
+    iter->reverse = (unsigned char)reverse;
+
+    iter->stack = (BtreeIterFrame *)PyMem_Malloc(
+        (size_t)iter->stack_cap * sizeof(BtreeIterFrame)
+    );
+
+    if (iter->stack == nullptr) {
+        Py_DECREF(iter);
+        PyErr_NoMemory();
+        return nullptr;
+    }
+
+    if (root != nullptr) {
+        iter->root = (BtreeNode *)Py_NewRef((PyObject *)root);
+    }
+
+    PyObject_GC_Track(iter);
+    return iter;
+}
+
+
+static PyObject *make_first_iter(
+    btree_state *state,
+    BtreeNode *root
+) {
+    BtreeIter *iter = make_iter(state, root, 0);
+
+    if (iter == nullptr) {
+        return nullptr;
+    }
+
+    if (root != nullptr && iter_descend_first(iter, root) < 0) {
+        Py_DECREF(iter);
+        return nullptr;
+    }
+
+    return (PyObject *)iter;
+}
+
+
+static PyObject *make_last_iter(
+    btree_state *state,
+    BtreeNode *root
+) {
+    BtreeIter *iter = make_iter(state, root, 1);
+
+    if (iter == nullptr) {
+        return nullptr;
+    }
+
+    if (root != nullptr && iter_descend_last(iter, root) < 0) {
+        Py_DECREF(iter);
+        return nullptr;
+    }
+
+    return (PyObject *)iter;
+}
+
+
+static PyObject *make_from_iter(
+    btree_state *state,
+    BtreeNode *root,
+    PyObject *k,
+    PyObject *cmp
+) {
+    BtreeIter *iter = make_iter(state, root, 0);
+
+    if (iter == nullptr) {
+        return nullptr;
+    }
+
+    if (root == nullptr) {
+        return (PyObject *)iter;
+    }
+
+    int max_diff;
+
+    if (do_cmp(cmp, k, node_max(root), &max_diff) < 0) {
+        Py_DECREF(iter);
+        return nullptr;
+    }
+
+    if (max_diff > 0) {
+        return (PyObject *)iter;
+    }
+
+    BtreeNode *n = root;
+
+    while (!n->is_leaf) {
+        Py_ssize_t idx;
+
+        if (child_index(n, k, cmp, &idx) < 0) {
+            Py_DECREF(iter);
+            return nullptr;
+        }
+
+        if (iter_push(iter, n, idx) < 0) {
+            Py_DECREF(iter);
+            return nullptr;
+        }
+
+        n = branch_child(n, idx);
+    }
+
+    Py_ssize_t idx;
+    int found;
+
+    if (key_index(n, k, cmp, &idx, &found) < 0) {
+        Py_DECREF(iter);
+        return nullptr;
+    }
+
+    iter->leaf = n;
+    iter->idx = idx;
+
+    return (PyObject *)iter;
+}
+
+
+static PyObject *make_from_reverse_iter(
+    btree_state *state,
+    BtreeNode *root,
+    PyObject *k,
+    PyObject *cmp
+) {
+    BtreeIter *iter = make_iter(state, root, 1);
+
+    if (iter == nullptr) {
+        return nullptr;
+    }
+
+    if (root == nullptr) {
+        return (PyObject *)iter;
+    }
+
+    BtreeNode *n = root;
+
+    while (!n->is_leaf) {
+        Py_ssize_t idx;
+
+        if (child_index(n, k, cmp, &idx) < 0) {
+            Py_DECREF(iter);
+            return nullptr;
+        }
+
+        if (iter_push(iter, n, idx) < 0) {
+            Py_DECREF(iter);
+            return nullptr;
+        }
+
+        n = branch_child(n, idx);
+    }
+
+    Py_ssize_t idx;
+    int found;
+
+    if (key_index(n, k, cmp, &idx, &found) < 0) {
+        Py_DECREF(iter);
+        return nullptr;
+    }
+
+    if (!found) {
+        --idx;
+    }
+
+    iter->leaf = n;
+    iter->idx = idx;
+
+    if (iter_normalize(iter) < 0) {
+        Py_DECREF(iter);
+        return nullptr;
+    }
+
+    return (PyObject *)iter;
+}
+
+
+static PyObject *BtreeNode_iter(PyObject *self) {
+    BtreeNode *node = (BtreeNode *)self;
+
+    if (check_node_alive(node) < 0) {
+        return nullptr;
+    }
+
+    PyObject *module = PyType_GetModule(Py_TYPE(self));
+
+    if (module == nullptr) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    return make_first_iter(state, node);
+}
+
+
+//
+// Module-level Python functions
+//
+
+static PyObject *btree_new_func(PyObject *module, PyObject *args) {
+    PyObject *key;
+    PyObject *value;
+
+    if (!PyArg_ParseTuple(args, "OO:new", &key, &value)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    PyObject *keys[1] = {key};
+    PyObject *values[1] = {value};
+
+    return (PyObject *)make_leaf(state, keys, values, 1);
+}
+
+
+static PyObject *btree_find_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+    PyObject *key;
+    PyObject *c_obj;
+
+    if (!PyArg_ParseTuple(args, "OOO:find", &n_obj, &key, &c_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    PyObject *cmp = (c_obj == Py_None) ? nullptr : c_obj;
+
+    PyObject *ret = btree_find_impl(n, key, cmp);
+
+    if (ret != nullptr) {
+        return ret;
+    }
+
+    if (PyErr_Occurred()) {
+        return nullptr;
+    }
+
+    PyErr_SetObject(PyExc_KeyError, key);
+    return nullptr;
+}
+
+
+static PyObject *btree_insert_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+    PyObject *key;
+    PyObject *value;
+    PyObject *c_obj;
+
+    if (!PyArg_ParseTuple(args, "OOOO:insert", &n_obj, &key, &value, &c_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    if (n == nullptr) {
+        PyObject *keys[1] = {key};
+        PyObject *values[1] = {value};
+
+        return (PyObject *)make_leaf(state, keys, values, 1);
+    }
+
+    PyObject *cmp = (c_obj == Py_None) ? nullptr : c_obj;
+
+    InsertResult res;
+    insert_result_init(&res);
+
+    if (btree_insert_impl(state, n, key, value, cmp, &res) < 0) {
+        return nullptr;
+    }
+
+    if (res.split) {
+        BtreeNode *children[2] = {res.left, res.right};
+        BtreeNode *root = make_branch(state, children, 2);
+
+        insert_result_clear(&res);
+
+        return node_to_pyobject(root);
+    }
+
+    BtreeNode *root = res.node;
+    res.node = nullptr;
+    insert_result_clear(&res);
+
+    return node_to_pyobject(root);
+}
+
+
+static PyObject *btree_delete_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+    PyObject *key;
+    PyObject *c_obj;
+
+    if (!PyArg_ParseTuple(args, "OOO:delete", &n_obj, &key, &c_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    if (n == nullptr) {
+        Py_RETURN_NONE;
+    }
+
+    PyObject *cmp = (c_obj == Py_None) ? nullptr : c_obj;
+
+    DeleteResult res;
+    delete_result_init(&res);
+
+    if (btree_delete_impl(state, n, key, cmp, &res) < 0) {
+        return nullptr;
+    }
+
+    if (!res.changed) {
+        return Py_NewRef((PyObject *)n);
+    }
+
+    BtreeNode *root = res.node;
+    res.node = nullptr;
+    delete_result_clear(&res);
+
+    return node_to_pyobject(root);
+}
+
+
+static PyObject *btree_len_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+
+    if (!PyArg_ParseTuple(args, "O:len", &n_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    return PyLong_FromSsize_t(n == nullptr ? 0 : n->count);
+}
+
+
+static PyObject *btree_iter_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+
+    if (!PyArg_ParseTuple(args, "O:iter", &n_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    return make_first_iter(state, n);
+}
+
+
+static PyObject *btree_riter_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+
+    if (!PyArg_ParseTuple(args, "O:riter", &n_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    return make_last_iter(state, n);
+}
+
+
+static PyObject *btree_iter_from_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+    PyObject *key;
+    PyObject *c_obj;
+
+    if (!PyArg_ParseTuple(args, "OOO:iter_from", &n_obj, &key, &c_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    PyObject *cmp = (c_obj == Py_None) ? nullptr : c_obj;
+
+    return make_from_iter(state, n, key, cmp);
+}
+
+
+static PyObject *btree_riter_from_func(PyObject *module, PyObject *args) {
+    PyObject *n_obj;
+    PyObject *key;
+    PyObject *c_obj;
+
+    if (!PyArg_ParseTuple(args, "OOO:riter_from", &n_obj, &key, &c_obj)) {
+        return nullptr;
+    }
+
+    btree_state *state = get_btree_state(module);
+
+    BtreeNode *n;
+
+    if (parse_node_arg(state, n_obj, &n) < 0) {
+        return nullptr;
+    }
+
+    PyObject *cmp = (c_obj == Py_None) ? nullptr : c_obj;
+
+    return make_from_reverse_iter(state, n, key, cmp);
+}
+
+
+//
+// Module definition
+//
+
+PyDoc_STRVAR(btree_doc, "Native C++ implementation of persistent B+ tree map operations.");
+
+
+static PyMethodDef btree_methods[] = {
+    {"new", (PyCFunction)btree_new_func, METH_VARARGS, "new(key, value)"},
+    {"find", (PyCFunction)btree_find_func, METH_VARARGS, "find(root, key, cmp)"},
+    {"insert", (PyCFunction)btree_insert_func, METH_VARARGS, "insert(root, key, value, cmp)"},
+    {"delete", (PyCFunction)btree_delete_func, METH_VARARGS, "delete(root, key, cmp)"},
+    {"len", (PyCFunction)btree_len_func, METH_VARARGS, "len(root)"},
+    {"iter", (PyCFunction)btree_iter_func, METH_VARARGS, "iter(root)"},
+    {"riter", (PyCFunction)btree_riter_func, METH_VARARGS, "riter(root)"},
+    {"iter_from", (PyCFunction)btree_iter_from_func, METH_VARARGS, "iter_from(root, key, cmp)"},
+    {"riter_from", (PyCFunction)btree_riter_from_func, METH_VARARGS, "riter_from(root, key, cmp)"},
+    {nullptr, nullptr, 0, nullptr}
+};
+
+
+static int btree_exec(PyObject *module) {
+    btree_state *state = get_btree_state(module);
+
+    state->BtreeNodeType = (PyTypeObject *)PyType_FromModuleAndSpec(
+        module,
+        &BtreeNode_spec,
+        nullptr
+    );
+
+    if (state->BtreeNodeType == nullptr) {
+        return -1;
+    }
+
+    if (PyModule_AddType(module, state->BtreeNodeType) < 0) {
+        return -1;
+    }
+
+    state->BtreeIterType = (PyTypeObject *)PyType_FromModuleAndSpec(
+        module,
+        &BtreeIter_spec,
+        nullptr
+    );
+
+    if (state->BtreeIterType == nullptr) {
+        return -1;
+    }
+
+    if (PyModule_AddType(module, state->BtreeIterType) < 0) {
+        return -1;
+    }
+
+    if (PyModule_AddIntConstant(module, "MAX_LEAF_LEN", MAX_LEAF_LEN) < 0) {
+        return -1;
+    }
+
+    if (PyModule_AddIntConstant(module, "MAX_BRANCH_LEN", MAX_BRANCH_LEN) < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+static int btree_traverse(PyObject *module, visitproc visit, void *arg) {
+    btree_state *state = get_btree_state(module);
+
+    Py_VISIT(state->BtreeNodeType);
+    Py_VISIT(state->BtreeIterType);
+
+    return 0;
+}
+
+
+static int btree_clear(PyObject *module) {
+    btree_state *state = get_btree_state(module);
+
+    Py_CLEAR(state->BtreeNodeType);
+    Py_CLEAR(state->BtreeIterType);
+
+    return 0;
+}
+
+
+static void btree_free(void *module) {
+    btree_clear((PyObject *)module);
+}
+
+
+static struct PyModuleDef_Slot btree_slots[] = {
+    {Py_mod_exec, (void *)btree_exec},
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+    {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED},
+    {0, nullptr}
+};
+
+
+static struct PyModuleDef btree_module = {
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = _MODULE_NAME,
+    .m_doc = btree_doc,
+    .m_size = sizeof(btree_state),
+    .m_methods = btree_methods,
+    .m_slots = btree_slots,
+    .m_traverse = btree_traverse,
+    .m_clear = btree_clear,
+    .m_free = btree_free,
+};
+
+
+extern "C" {
+
+PyMODINIT_FUNC PyInit__btreemap(void) {
+    return PyModuleDef_Init(&btree_module);
+}
+
+}
