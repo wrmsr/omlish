@@ -10,6 +10,7 @@ from .models import OrmDriver
 from .models import OrmMessage
 from .types import ChatId
 from .types import ChatPage
+from .types import StoredMessage
 
 
 ##
@@ -77,19 +78,10 @@ class DriverStorageManagerImpl(DriverStorageManager):
             has_before: bool = False,
             has_after: bool = False,
     ) -> ChatPage:
-        before_seq: int | None = None
-        after_seq: int | None = None
-
-        if orm_messages:
-            before_seq = orm_messages[0].seq
-            after_seq = orm_messages[-1].seq
-
         return ChatPage(
-            messages=tuple(orm_m.message for orm_m in orm_messages),
+            rows=tuple(StoredMessage(orm_m.seq, orm_m.message) for orm_m in orm_messages),
             has_before=has_before,
             has_after=has_after,
-            before_seq=before_seq,
-            after_seq=after_seq,
         )
 
     async def _get_chat_page_by_seq(

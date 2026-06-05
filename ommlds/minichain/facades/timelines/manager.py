@@ -1,32 +1,58 @@
+"""
+The translation pass from driver events to timeline state: an event-bus subscriber that owns a `TimelineState`, folds
+every relevant event into it, and emits the resulting watermark-stamped `TimelineEvent`s back through the bus (where
+subscription fan-out - and, incidentally, the JSONL event logger - pick them up).
+
+The central move is *reconciliation*, exploiting the bus's event-ordering contract (streamy-talks-down: a successful
+stream is always followed by an `AiMessagesEvent(streamed=True)` carrying the joined canonical messages, before any
+tool execution events):
+
+ - Stream deltas carry `MessageUuid`s, so in-flight items are created with ids equal to those uuids.
+ - When the joined messages arrive, each one *replaces* its in-flight item - same id, advanced revision, canonical
+   message-derived shape - converging live state onto exactly what later replay translation produces.
+ - Joined `ToolUseMessage`s additionally record their tool-call-id -> item-id mapping, so the subsequent
+   `ToolUseEvent`/`ToolUseResultEvent`s advance the *same* item through RUNNING to COMPLETE.
+
+Stream items are deliberately *not* finalized on clean stream end - their replacement finalizes them. A stream end
+carrying an exception is terminal (no canonical messages are coming): the in-flight item is finalized as-is with the
+error (and a STREAMING tool item moves to FAILED).
+"""
 import uuid
 
+from omlish import check
 from omlish import dataclasses as dc
 
 from ...chat.events import AiMessagesEvent
 from ...chat.events import UserMessagesEvent
 from ...chat.messages import Message
 from ...chat.messages import ToolUseMessage
-from ...chat.stream.events import AiStreamBeginEvent
 from ...chat.stream.events import AiStreamDeltaEvent
 from ...chat.stream.events import AiStreamEndEvent
 from ...chat.stream.types import ContentAiDelta
+from ...chat.stream.types import PartialToolUseAiDelta
+from ...chat.stream.types import ThinkingAiDelta
+from ...chat.stream.types import ToolUseAiDelta
 from ...content.content import Content
 from ...events.manager import EventsManager
+from ...events.types import ErrorEvent
 from ...events.types import Event
 from ...tools.execution.events import ToolUseEvent
 from ...tools.execution.events import ToolUseResultEvent
+from ...tools.types import ToolUse
+from ..ui import UiMessageEvent
 from .events import TimelineEvent
-from .history import StateTimelineHistory
-from .history import TimelineHistory
 from .items import AiStreamTimelineItem
+from .items import ErrorTimelineItem
+from .items import ThinkingStreamTimelineItem
 from .items import TimelineId
 from .items import TimelineItem
 from .items import TimelineItemId
 from .items import ToolUseTimelineItem
 from .items import ToolUseTimelineItemState
-from .messages import timeline_item_from_message
+from .items import UiMessageTimelineItem
 from .state import TimelineState
-from .views import TimelineView
+from .translate import timeline_item_id_for_message
+from .translate import translate_message
 
 
 ##
@@ -39,19 +65,20 @@ class TimelineManager:
             events: EventsManager,
             timeline_id: TimelineId | None = None,
             state: TimelineState | None = None,
-            history: TimelineHistory | None = None,
     ) -> None:
         super().__init__()
 
-        if timeline_id is None:
-            timeline_id = TimelineId(uuid.uuid7())
+        if state is None:
+            state = TimelineState(
+                timeline_id=timeline_id if timeline_id is not None else TimelineId(uuid.uuid7()),
+            )
+        elif timeline_id is not None:
+            check.arg(state.timeline_id == timeline_id)
 
         self._events = events
-        self._state = state if state is not None else TimelineState(timeline_id=timeline_id)
-        self._view = TimelineView(history=history if history is not None else StateTimelineHistory(state=self._state))
+        self._state = state
 
-        self._stream_items_by_message_uuid: dict[uuid.UUID, TimelineItemId] = {}
-        self._tool_items_by_use_key: dict[str, TimelineItemId] = {}
+        self._tool_item_ids_by_use_key: dict[str, TimelineItemId] = {}
 
     @property
     def timeline_id(self) -> TimelineId:
@@ -61,29 +88,15 @@ class TimelineManager:
     def state(self) -> TimelineState:
         return self._state
 
-    @property
-    def view(self) -> TimelineView:
-        return self._view
-
-    #
+    ##
+    # Internals
 
     async def _emit(self, event: TimelineEvent) -> None:
         await self._events.emit_event(event)
 
-    async def _append_item(self, item: TimelineItem) -> None:
-        await self._emit(self._state.append_item(item))
-
-    async def _update_item(self, item: TimelineItem) -> None:
-        await self._emit(self._state.update_item(item))
-
-    async def _finalize_item(self, item_id: TimelineItemId) -> None:
-        await self._emit(self._state.finalize_item(item_id))
-
-    #
-
     @staticmethod
-    def _tool_use_key(ev: ToolUseEvent | ToolUseResultEvent) -> str:
-        return ev.use.id or ev.use.name
+    def _tool_use_key(use: ToolUse) -> str:
+        return use.id or use.name
 
     @staticmethod
     def _append_content(old: Content | None, new: Content) -> Content:
@@ -101,15 +114,33 @@ class TimelineManager:
 
         return [old, new]
 
-    async def _append_message(self, message: Message) -> None:
-        item = timeline_item_from_message(message)
+    async def _append_canonical_message(self, message: Message) -> None:
+        item = translate_message(message)
 
         if isinstance(message, ToolUseMessage):
-            self._tool_items_by_use_key[message.tu.id or message.tu.name] = item.id
+            self._tool_item_ids_by_use_key[self._tool_use_key(message.tu)] = item.id
 
-        await self._append_item(item)
+        await self._emit(self._state.append_item(item))
 
-    #
+    async def _reconcile_canonical_message(self, message: Message) -> None:
+        item_id = timeline_item_id_for_message(message)
+
+        canonical = translate_message(message)
+
+        if isinstance(message, ToolUseMessage):
+            self._tool_item_ids_by_use_key[self._tool_use_key(message.tu)] = canonical.id
+
+        if (existing := self._state.get_item(item_id)) is None:
+            await self._emit(self._state.append_item(canonical))
+
+        else:
+            await self._emit(self._state.update_item(dc.replace(
+                canonical,
+                revision=existing.revision + 1,
+            )))
+
+    ##
+    # Event handling
 
     async def handle_event(self, event: Event) -> None:
         if isinstance(event, TimelineEvent):
@@ -117,21 +148,16 @@ class TimelineManager:
 
         if isinstance(event, UserMessagesEvent):
             for user_msg in event.chat:
-                await self._append_message(user_msg)
+                await self._append_canonical_message(user_msg)
 
         elif isinstance(event, AiMessagesEvent):
-            if not event.streamed:
+            if event.streamed:
                 for ai_msg in event.chat:
-                    await self._append_message(ai_msg)
+                    await self._reconcile_canonical_message(ai_msg)
 
-        elif isinstance(event, AiStreamBeginEvent):
-            if event.message_uuid is not None:
-                item = AiStreamTimelineItem(
-                    message_uuid=event.message_uuid,
-                )
-
-                self._stream_items_by_message_uuid[event.message_uuid] = item.id
-                await self._append_item(item)
+            else:
+                for ai_msg in event.chat:
+                    await self._append_canonical_message(ai_msg)
 
         elif isinstance(event, AiStreamDeltaEvent):
             await self._handle_ai_stream_delta_event(event)
@@ -145,101 +171,212 @@ class TimelineManager:
         elif isinstance(event, ToolUseResultEvent):
             await self._handle_tool_use_result_event(event)
 
+        elif isinstance(event, UiMessageEvent):
+            await self._emit(self._state.append_item(UiMessageTimelineItem(
+                text=event.text,
+                finalized=True,
+            )))
+
+        elif isinstance(event, ErrorEvent):
+            await self._emit(self._state.append_item(ErrorTimelineItem(
+                message=event.message,
+                error=event.error,
+                finalized=True,
+            )))
+
+    ##
+    # Streaming
+
     async def _handle_ai_stream_delta_event(self, event: AiStreamDeltaEvent) -> None:
-        if event.message_uuid is None:
+        if (mu := event.message_uuid) is None:
             return
 
-        item_id = self._stream_items_by_message_uuid.get(event.message_uuid)
-        if item_id is None:
-            new_item = AiStreamTimelineItem(
-                message_uuid=event.message_uuid,
-            )
+        item_id = TimelineItemId(mu)
+        existing = self._state.get_item(item_id)
+        delta = event.delta
 
-            self._stream_items_by_message_uuid[event.message_uuid] = new_item.id
-            await self._append_item(new_item)
+        if isinstance(delta, ContentAiDelta):
+            if existing is None:
+                await self._emit(self._state.append_item(AiStreamTimelineItem(
+                    id=item_id,
+                    message_uuid=mu,
+                    content=delta.c,
+                )))
 
-            item_id = new_item.id
+            elif isinstance(existing, AiStreamTimelineItem) and not existing.finalized:
+                await self._emit(self._state.apply_item_delta(
+                    dc.replace(
+                        existing,
+                        revision=existing.revision + 1,
+                        content=self._append_content(existing.content, delta.c),
+                    ),
+                    delta.c,
+                ))
 
-        item = self._state.get_item(item_id)
-        if not isinstance(item, AiStreamTimelineItem):
-            return
+        elif isinstance(delta, ThinkingAiDelta):
+            if existing is None:
+                await self._emit(self._state.append_item(ThinkingStreamTimelineItem(
+                    id=item_id,
+                    message_uuid=mu,
+                    text=delta.c,
+                )))
 
-        if isinstance(event.delta, ContentAiDelta):
-            await self._update_item(dc.replace(
-                item,
-                revision=item.revision + 1,
-                content=self._append_content(item.content, event.delta.c),
-            ))
+            elif isinstance(existing, ThinkingStreamTimelineItem) and not existing.finalized:
+                await self._emit(self._state.apply_item_delta(
+                    dc.replace(
+                        existing,
+                        revision=existing.revision + 1,
+                        text=existing.text + delta.c,
+                    ),
+                    delta.c,
+                ))
+
+        elif isinstance(delta, PartialToolUseAiDelta):
+            if existing is None:
+                item = ToolUseTimelineItem(
+                    id=item_id,
+                    state=ToolUseTimelineItemState.STREAMING,
+                    partial_name=delta.name,
+                    partial_raw_args=delta.raw_args or None,
+                )
+
+                if delta.id is not None:
+                    self._tool_item_ids_by_use_key[delta.id] = item_id
+
+                await self._emit(self._state.append_item(item))
+
+            elif (
+                    isinstance(existing, ToolUseTimelineItem) and
+                    existing.state is ToolUseTimelineItemState.STREAMING
+            ):
+                if delta.raw_args:
+                    await self._emit(self._state.apply_item_delta(
+                        dc.replace(
+                            existing,
+                            revision=existing.revision + 1,
+                            partial_raw_args=(existing.partial_raw_args or '') + delta.raw_args,
+                        ),
+                        delta.raw_args,
+                    ))
+
+        elif isinstance(delta, ToolUseAiDelta):
+            if existing is None:
+                use = ToolUse(
+                    id=delta.id,
+                    name=check.non_empty_str(delta.name),
+                    args=delta.args or {},
+                )
+
+                item = ToolUseTimelineItem(
+                    id=item_id,
+                    state=ToolUseTimelineItemState.PENDING,
+                    use=use,
+                )
+
+                self._tool_item_ids_by_use_key[self._tool_use_key(use)] = item_id
+
+                await self._emit(self._state.append_item(item))
 
     async def _handle_ai_stream_end_event(self, event: AiStreamEndEvent) -> None:
-        if event.message_uuid is None:
+        if (mu := event.message_uuid) is None:
             return
 
-        item_id = self._stream_items_by_message_uuid.get(event.message_uuid)
-        if item_id is None:
+        if event.exception is None:
+            # Clean stream ends don't finalize in-flight items: the joined messages event that follows replaces (and
+            # finalizes) them.
             return
 
-        item = self._state.get_item(item_id)
-        if not isinstance(item, AiStreamTimelineItem):
+        item = self._state.get_item(TimelineItemId(mu))
+        if item is None or item.finalized:
             return
 
-        if event.exception is not None:
-            await self._update_item(dc.replace(
+        new: TimelineItem
+
+        if isinstance(item, (AiStreamTimelineItem, ThinkingStreamTimelineItem)):
+            new = dc.replace(
                 item,
                 revision=item.revision + 1,
                 error=event.exception,
-            ))
-
-        await self._finalize_item(item_id)
-
-    async def _handle_tool_use_event(self, event: ToolUseEvent) -> None:
-        key = self._tool_use_key(event)
-
-        item_id = self._tool_items_by_use_key.get(key)
-        if item_id is not None and isinstance(item := self._state.get_item(item_id), ToolUseTimelineItem):
-            await self._update_item(dc.replace(
-                item,
-                revision=item.revision + 1,
-                state=ToolUseTimelineItemState.RUNNING,
-                execution=event.tue,
-            ))
-            return
-
-        item = ToolUseTimelineItem(
-            use=event.use,
-            state=ToolUseTimelineItemState.RUNNING,
-            execution=event.tue,
-        )
-
-        self._tool_items_by_use_key[key] = item.id
-        await self._append_item(item)
-
-    async def _handle_tool_use_result_event(self, event: ToolUseResultEvent) -> None:
-        key = self._tool_use_key(event)
-
-        item_id = self._tool_items_by_use_key.get(key)
-        if item_id is None:
-            new_item = ToolUseTimelineItem(
-                use=event.use,
-                state=ToolUseTimelineItemState.COMPLETE,
-                result=event.tur,
-                execution=event.tue,
                 finalized=True,
             )
 
-            self._tool_items_by_use_key[key] = new_item.id
-            await self._append_item(new_item)
+        elif isinstance(item, ToolUseTimelineItem) and item.state is ToolUseTimelineItemState.STREAMING:
+            new = dc.replace(
+                item,
+                revision=item.revision + 1,
+                state=ToolUseTimelineItemState.FAILED,
+                error=event.exception,
+                finalized=True,
+            )
+
+        else:
             return
 
-        item = self._state.get_item(item_id)
-        if not isinstance(item, ToolUseTimelineItem):
+        await self._emit(self._state.update_item(new))
+
+    ##
+    # Tool execution
+
+    def _get_tool_item(self, use: ToolUse) -> ToolUseTimelineItem | None:
+        if (item_id := self._tool_item_ids_by_use_key.get(self._tool_use_key(use))) is None:
+            return None
+
+        if not isinstance(item := self._state.get_item(item_id), ToolUseTimelineItem):
+            return None
+
+        return item
+
+    async def _handle_tool_use_event(self, event: ToolUseEvent) -> None:
+        if (existing := self._get_tool_item(event.use)) is not None:
+            if existing.finalized:
+                return
+
+            await self._emit(self._state.update_item(dc.replace(
+                existing,
+                revision=existing.revision + 1,
+                state=ToolUseTimelineItemState.RUNNING,
+                # The message-derived use is kept where present - it is what replay translation will reproduce.
+                use=existing.use if existing.use is not None else event.use,
+                execution=event.tue,
+            )))
+
             return
 
-        await self._update_item(dc.replace(
-            item,
-            revision=item.revision + 1,
+        item = ToolUseTimelineItem(
+            state=ToolUseTimelineItemState.RUNNING,
+            use=event.use,
+            execution=event.tue,
+        )
+
+        self._tool_item_ids_by_use_key[self._tool_use_key(event.use)] = item.id
+
+        await self._emit(self._state.append_item(item))
+
+    async def _handle_tool_use_result_event(self, event: ToolUseResultEvent) -> None:
+        if (existing := self._get_tool_item(event.use)) is not None:
+            if existing.finalized:
+                return
+
+            await self._emit(self._state.update_item(dc.replace(
+                existing,
+                revision=existing.revision + 1,
+                state=ToolUseTimelineItemState.COMPLETE,
+                use=existing.use if existing.use is not None else event.use,
+                result=event.tur,
+                execution=event.tue if event.tue is not None else existing.execution,
+                finalized=True,
+            )))
+
+            return
+
+        item = ToolUseTimelineItem(
             state=ToolUseTimelineItemState.COMPLETE,
+            use=event.use,
             result=event.tur,
             execution=event.tue,
             finalized=True,
-        ))
+        )
+
+        self._tool_item_ids_by_use_key[self._tool_use_key(event.use)] = item.id
+
+        await self._emit(self._state.append_item(item))

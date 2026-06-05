@@ -51,6 +51,9 @@ with _lang.auto_proxy_init(globals()):
         UiMessageDisplayer,
         NopUiMessageDisplayer,
         PrintMessageDisplayer,
+        EventEmittingUiMessageDisplayer,
+
+        UiMessageEvent,
 
         UiQuitSignal,
         RaiseUiQuitSignal,
@@ -60,3 +63,4 @@ with _lang.auto_proxy_init(globals()):
 
     from . import inject  # noqa
     from . import injection  # noqa
+    from . import timelines  # noqa

@@ -3,18 +3,14 @@ Offline end-to-end driver tests over the scripted backend: full streaming genera
 no network and no mocks. This is the wiring to crib from when writing driver-level tests.
 """
 import typing as ta
-import uuid
 
 import pytest
 
 from omlish import check
 from omlish import inject as inj
 
-from ...backends.scripted.chat import ScriptedChatChoicesStreamService
-from ...backends.scripted.chat import ScriptedChatScript
 from ...backends.scripted.scripts import ChatScript
 from ...backends.scripted.scripts import ChatScriptTurn
-from ...chat.choices.stream.services import ChatChoicesStreamService
 from ...chat.events import AiMessagesEvent
 from ...chat.events import UserMessagesEvent
 from ...chat.messages import AiMessage
@@ -32,51 +28,13 @@ from ...events.types import Event
 from ...modules.weathertest.inject import bind_weather_test
 from ...tools.execution.events import ToolUseEvent
 from ...tools.execution.events import ToolUseResultEvent
-from ...tools.execution.permissions import DecidedToolPermissionState
-from ...tools.execution.permissions import ToolPermissionDecider
-from ...tools.permissions.types import ToolPermissionState
-from ...tools.permissions.types import ToolPermissionTarget
 from ...tools.types import ToolUse
 from ..actions import SendUserMessagesAction
 from ..ai.configs import AiConfig
 from ..configs import DriverConfig
-from ..inject import bind_driver
 from ..storage.manager import DriverStorageManager
-from ..storage.types import ChatId
+from ..testing import bind_scripted_driver
 from ..types import Driver
-
-
-##
-
-
-class _AllowAllToolPermissionDecider(ToolPermissionDecider):
-    async def decide(self, target: ToolPermissionTarget) -> DecidedToolPermissionState:
-        return ToolPermissionState.ALLOW
-
-
-def bind_scripted_driver(
-        script: ChatScript,
-        cfg: DriverConfig = DriverConfig(),
-) -> inj.Elements:
-    return inj.as_elements(
-        inj.bind(_AllowAllToolPermissionDecider, singleton=True),
-
-        inj.override(
-            inj.as_elements(
-                bind_driver(cfg),
-
-                inj.bind(
-                    ScriptedChatChoicesStreamService,
-                    to_const=ScriptedChatChoicesStreamService(ScriptedChatScript(script)),
-                ),
-                inj.bind(ChatChoicesStreamService, to_key=ScriptedChatChoicesStreamService),
-            ),
-
-            inj.bind(ToolPermissionDecider, to_key=_AllowAllToolPermissionDecider),
-        ),
-
-        inj.bind(ChatId(uuid.uuid7())),
-    )
 
 
 ##

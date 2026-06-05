@@ -1,235 +1,290 @@
-import uuid
+"""
+TimelineManager behavior, exercised through real scripted driver runs (real injector, event bus, ORM, tools) rather
+than hand-synthesized event sequences. The convergence check here is the heart: the live item sequence must equal what
+replay translation reconstructs from storage.
+"""
+import typing as ta
 
 import pytest
 
-from ....chat.events import AiMessagesEvent
-from ....chat.events import UserMessagesEvent
+from omlish import check
+from omlish import dataclasses as dc
+from omlish import marshal as msh
+
+from ....backends.scripted.scripts import ChatScript
+from ....backends.scripted.scripts import ChatScriptTurn
 from ....chat.messages import AiMessage
-from ....chat.messages import UserMessage
-from ....chat.metadata import MessageUuid
-from ....chat.stream.events import AiStreamBeginEvent
-from ....chat.stream.events import AiStreamDeltaEvent
-from ....chat.stream.events import AiStreamEndEvent
-from ....chat.stream.types import ContentAiDelta
-from ....events.manager import EventsManager
-from ....events.types import Event
-from ....events.types import EventCallback
-from ....events.types import EventCallbacks
-from ....tools.execution.events import ToolUseEvent
-from ....tools.execution.events import ToolUseResultEvent
+from ....chat.messages import ThinkingMessage
+from ....chat.messages import ToolUseMessage
+from ....modules.weathertest.inject import bind_weather_test
 from ....tools.types import ToolUse
-from ....tools.types import ToolUseResult
-from ...timelines.events import TimelineItemAppendedEvent
-from ...timelines.events import TimelineItemFinalizedEvent
-from ...timelines.events import TimelineItemUpdatedEvent
-from ...timelines.events import TimelineResetEvent
-from ...timelines.items import AiMessageTimelineItem
-from ...timelines.items import AiStreamTimelineItem
-from ...timelines.items import TimelineId
-from ...timelines.items import ToolUseTimelineItem
-from ...timelines.items import ToolUseTimelineItemState
-from ...timelines.items import UserMessageTimelineItem
-from ...timelines.manager import TimelineManager
+from ..events import TimelineEvent
+from ..events import TimelineItemAppendedEvent
+from ..events import TimelineItemDeltaEvent
+from ..events import TimelineItemUpdatedEvent
+from ..items import AiMessageTimelineItem
+from ..items import AiStreamTimelineItem
+from ..items import ThinkingStreamTimelineItem
+from ..items import ThinkingTimelineItem
+from ..items import TimelineItem
+from ..items import ToolUseTimelineItem
+from ..items import ToolUseTimelineItemState
+from ..items import UserMessageTimelineItem
+from ..translate import translate_chat
+from .harness import timeline_driver_harness
 
 
-def _manager() -> tuple[TimelineManager, list[Event]]:
-    seen: list[Event] = []
-
-    return (
-        TimelineManager(events=_events_manager(seen)),
-        seen,
-    )
+##
 
 
-def _events_manager(seen: list[Event] | None = None) -> EventsManager:
-    if seen is None:
-        seen = []
+def canon_items(items: ta.Iterable[TimelineItem]) -> list[ta.Any]:
+    """Marshaled forms modulo revision and live-only fields - the shape the convergence invariant is stated over."""
 
-    async def cb(event: Event) -> None:
-        seen.append(event)
-
-    return EventsManager(EventCallbacks([EventCallback(cb)]))
-
-
-def _user_message(s: str) -> UserMessage:
-    return UserMessage(s).with_metadata(MessageUuid(uuid.uuid7()))
+    out = []
+    for it in items:
+        it = dc.replace(it, revision=0)
+        if isinstance(it, ToolUseTimelineItem):
+            it = dc.replace(it, execution=None)
+        out.append(msh.marshal(it, TimelineItem))
+    return out
 
 
-def _ai_message(s: str) -> AiMessage:
-    return AiMessage(s).with_metadata(MessageUuid(uuid.uuid7()))
+def _weather_script() -> ChatScript:
+    return ChatScript([
+        ChatScriptTurn.of(
+            AiMessage('Let me check the weather.'),
+            ToolUseMessage(ToolUse(
+                id='call_1',
+                name='weather',
+                args={'location': 'Tokyo'},
+            )),
+        ),
+        ChatScriptTurn.of(
+            AiMessage('It is foggy in Tokyo.'),
+        ),
+    ])
 
 
-@pytest.mark.asyncs('asyncio')
-async def test_user_messages_event_appends_user_items() -> None:
-    manager, seen = _manager()
-
-    msg = _user_message('hi')
-    await manager.handle_event(UserMessagesEvent([msg]))
-
-    assert len(seen) == 1
-    ev = seen[0]
-    assert isinstance(ev, TimelineItemAppendedEvent)
-    assert isinstance(ev.item, UserMessageTimelineItem)
-    assert ev.item.message is msg
-    assert ev.item.finalized
-    assert manager.state.get_items() == (ev.item,)
+##
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_non_streamed_ai_messages_event_appends_ai_items() -> None:
-    manager, seen = _manager()
+async def test_streaming_prose_and_thinking_lifecycle():
+    script = ChatScript([
+        ChatScriptTurn.of(
+            ThinkingMessage('thinking it over carefully'),
+            AiMessage('a considered response to your question'),
+        ),
+    ])
 
-    msg = _ai_message('hello')
-    await manager.handle_event(AiMessagesEvent([msg]))
+    async with timeline_driver_harness(script) as h:
+        await h.send_user_text('hi there')
 
-    assert len(seen) == 1
-    ev = seen[0]
-    assert isinstance(ev, TimelineItemAppendedEvent)
-    assert isinstance(ev.item, AiMessageTimelineItem)
-    assert ev.item.message is msg
-    assert ev.item.finalized
-    assert manager.state.get_items() == (ev.item,)
+        items = h.manager.state.get_items()
+
+        assert [type(it) for it in items] == [
+            UserMessageTimelineItem,
+            ThinkingTimelineItem,
+            AiMessageTimelineItem,
+        ]
+        assert all(it.finalized for it in items)
+
+        thinking = check.isinstance(items[1], ThinkingTimelineItem)
+        assert thinking.message.c == 'thinking it over carefully'
+
+        ai = check.isinstance(items[2], AiMessageTimelineItem)
+        assert ai.message.c == 'a considered response to your question'
+
+        # The lifecycle ran through in-flight stream items: appended as stream types, grown by deltas, then
+        # *replaced* (same id) by their canonical forms.
+        tl_events = [e for e in h.events if isinstance(e, TimelineEvent)]
+
+        thinking_evs = [
+            e for e in tl_events
+            if (isinstance(e, (TimelineItemAppendedEvent, TimelineItemUpdatedEvent)) and e.item.id == thinking.id)
+            or (isinstance(e, TimelineItemDeltaEvent) and e.item_id == thinking.id)
+        ]
+        assert isinstance(thinking_evs[0], TimelineItemAppendedEvent)
+        assert isinstance(thinking_evs[0].item, ThinkingStreamTimelineItem)
+        assert all(isinstance(e, TimelineItemDeltaEvent) for e in thinking_evs[1:-1])
+        assert isinstance(thinking_evs[-1], TimelineItemUpdatedEvent)
+        assert isinstance(thinking_evs[-1].item, ThinkingTimelineItem)
+        assert thinking_evs[-1].item.finalized
+
+        ai_evs = [
+            e for e in tl_events
+            if (isinstance(e, (TimelineItemAppendedEvent, TimelineItemUpdatedEvent)) and e.item.id == ai.id)
+            or (isinstance(e, TimelineItemDeltaEvent) and e.item_id == ai.id)
+        ]
+        assert isinstance(ai_evs[0], TimelineItemAppendedEvent)
+        assert isinstance(ai_evs[0].item, AiStreamTimelineItem)
+        deltas = [e for e in ai_evs if isinstance(e, TimelineItemDeltaEvent)]
+        assert len(deltas) > 1  # chunked
+        assert [e.revision for e in deltas] == list(range(1, len(deltas) + 1))
+        assert isinstance(ai_evs[-1], TimelineItemUpdatedEvent)
+        assert isinstance(ai_evs[-1].item, AiMessageTimelineItem)
+
+        # Watermarks strictly increase across all timeline events.
+        wms = [e.watermark for e in tl_events]
+        assert wms == sorted(wms)
+        assert len(set(wms)) == len(wms)
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_streamed_ai_messages_event_does_not_append_final_chat() -> None:
-    manager, seen = _manager()
+async def test_tool_loop_lifecycle():
+    async with timeline_driver_harness(
+        _weather_script(),
+        enable_tools=True,
+        extra_elements=[bind_weather_test()],
+    ) as h:
+        await h.send_user_text('weather in tokyo?')
 
-    await manager.handle_event(AiMessagesEvent([_ai_message('hello')], streamed=True))
+        items = h.manager.state.get_items()
 
-    assert seen == []
-    assert manager.state.get_items() == ()
+        assert [type(it) for it in items] == [
+            UserMessageTimelineItem,
+            AiMessageTimelineItem,
+            ToolUseTimelineItem,
+            AiMessageTimelineItem,
+        ]
+
+        tool = check.isinstance(items[2], ToolUseTimelineItem)
+        assert tool.state is ToolUseTimelineItemState.COMPLETE
+        assert tool.finalized
+        assert check.not_none(tool.use).name == 'weather'
+        assert tool.result is not None
+        assert tool.partial_name is None  # cleared by canonical replacement
+        assert tool.partial_raw_args is None
+        assert tool.execution is not None  # live-only extra
+
+        # One tool item all the way through: STREAMING -> PENDING (canonical) -> RUNNING -> COMPLETE.
+        tool_evs = [
+            e for e in h.events
+            if (isinstance(e, (TimelineItemAppendedEvent, TimelineItemUpdatedEvent)) and e.item.id == tool.id)
+        ]
+        states = [check.isinstance(e.item, ToolUseTimelineItem).state for e in tool_evs]
+        assert states == [
+            ToolUseTimelineItemState.STREAMING,
+            ToolUseTimelineItemState.PENDING,
+            ToolUseTimelineItemState.RUNNING,
+            ToolUseTimelineItemState.COMPLETE,
+        ]
+        assert isinstance(tool_evs[0], TimelineItemAppendedEvent)
+
+        # And the streamed partial args grew through delta events on the same item.
+        arg_deltas = [e for e in h.events if isinstance(e, TimelineItemDeltaEvent) and e.item_id == tool.id]
+        assert ''.join(check.isinstance(e.appended, str) for e in arg_deltas) == '{"location":"Tokyo"}'
+
+        # The persisted tool use message's uuid is the item's id - identity is stable into replay.
+        chat = await h.storage.get_chat()
+        tums = [m for m in chat if isinstance(m, ToolUseMessage)]
+        assert len(tums) == 1
+        from ..translate import timeline_item_id_for_message
+        assert timeline_item_id_for_message(tums[0]) == tool.id
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_stream_events_create_update_and_finalize_one_item() -> None:
-    manager, seen = _manager()
-
-    message_uuid = uuid.uuid7()
-
-    await manager.handle_event(AiStreamBeginEvent(message_uuid=message_uuid))
-    await manager.handle_event(AiStreamDeltaEvent(ContentAiDelta('hi'), message_uuid=message_uuid))
-    await manager.handle_event(AiStreamDeltaEvent(ContentAiDelta(' there'), message_uuid=message_uuid))
-    await manager.handle_event(AiStreamEndEvent(message_uuid=message_uuid))
-
-    assert [type(ev) for ev in seen] == [
-        TimelineItemAppendedEvent,
-        TimelineItemUpdatedEvent,
-        TimelineItemUpdatedEvent,
-        TimelineItemFinalizedEvent,
+async def test_live_replay_convergence():
+    scripts = [
+        ChatScript([
+            ChatScriptTurn.of(
+                ThinkingMessage('pondering'),
+                AiMessage('the answer is **42**, naturally'),
+            ),
+        ]),
+        _weather_script(),
     ]
 
-    item = manager.state.get_items()[0]
-    assert isinstance(item, AiStreamTimelineItem)
-    assert item.message_uuid == message_uuid
-    assert item.content == 'hi there'
-    assert item.finalized
+    for i, script in enumerate(scripts):
+        async with timeline_driver_harness(
+            script,
+            enable_tools=(i == 1),
+            extra_elements=[bind_weather_test()] if i == 1 else [],
+        ) as h:
+            await h.send_user_text('go')
+
+            live_items = h.manager.state.get_items()
+            replayed_items = translate_chat(await h.storage.get_chat())
+
+            assert canon_items(live_items) == canon_items(replayed_items)
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_stream_delta_without_begin_creates_item() -> None:
-    manager, seen = _manager()
+async def test_non_stream_path():
+    script = ChatScript([
+        ChatScriptTurn.of(
+            AiMessage('a non-streamed response'),
+        ),
+    ])
 
-    message_uuid = uuid.uuid7()
+    async with timeline_driver_harness(script, stream=False) as h:
+        await h.send_user_text('hi')
 
-    await manager.handle_event(AiStreamDeltaEvent(ContentAiDelta('hi'), message_uuid=message_uuid))
+        items = h.manager.state.get_items()
+        assert [type(it) for it in items] == [
+            UserMessageTimelineItem,
+            AiMessageTimelineItem,
+        ]
+        assert all(it.finalized for it in items)
 
-    assert [type(ev) for ev in seen] == [
-        TimelineItemAppendedEvent,
-        TimelineItemUpdatedEvent,
-    ]
+        # The talks-down path: no in-flight stream items, no delta events - just canonical appends.
+        assert not any(isinstance(e, TimelineItemDeltaEvent) for e in h.events)
+        appended = [e for e in h.events if isinstance(e, TimelineItemAppendedEvent)]
+        assert all(not isinstance(e.item, AiStreamTimelineItem) for e in appended)
 
-    item = manager.state.get_items()[0]
-    assert isinstance(item, AiStreamTimelineItem)
-    assert item.message_uuid == message_uuid
-    assert item.content == 'hi'
-
-
-@pytest.mark.asyncs('asyncio')
-async def test_timeline_event_is_ignored() -> None:
-    manager, seen = _manager()
-
-    await manager.handle_event(TimelineResetEvent(timeline_id=TimelineId(uuid.uuid7())))
-
-    assert seen == []
-    assert manager.state.get_items() == ()
+        # And convergence holds here too.
+        assert canon_items(items) == canon_items(translate_chat(await h.storage.get_chat()))
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_tool_use_event_appends_running_item() -> None:
-    manager, seen = _manager()
+async def test_stream_error_finalizes_in_flight_item():
+    fail_at = 3
 
-    use = ToolUse(
-        id='tu-1',
-        name='thing',
-        args={'x': 1},
+    async def gate(pt):
+        if pt.emission_index == fail_at:
+            raise RuntimeError('scripted stream failure')
+
+    script = ChatScript(
+        [ChatScriptTurn.of(AiMessage('this stream will not survive to the end'))],
+        gate=gate,
     )
 
-    await manager.handle_event(ToolUseEvent(use))
+    async with timeline_driver_harness(script) as h:
+        with pytest.raises(RuntimeError):
+            await h.send_user_text('hi')
 
-    assert len(seen) == 1
-    ev = seen[0]
-    assert isinstance(ev, TimelineItemAppendedEvent)
-    assert isinstance(ev.item, ToolUseTimelineItem)
-    assert ev.item.use is use
-    assert ev.item.state is ToolUseTimelineItemState.RUNNING
-    assert not ev.item.finalized
+        items = h.manager.state.get_items()
+        assert [type(it) for it in items] == [
+            UserMessageTimelineItem,
+            AiStreamTimelineItem,
+        ]
+
+        stream = check.isinstance(items[1], AiStreamTimelineItem)
+        assert stream.finalized
+        assert stream.error is not None
+        assert stream.content  # the deltas that made it through
+
+        # Nothing was persisted - the turn never completed.
+        assert await h.storage.get_chat() == []
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_tool_use_result_event_updates_same_item_to_complete() -> None:
-    manager, seen = _manager()
+async def test_message_sequence_across_multiple_actions():
+    script = ChatScript([
+        ChatScriptTurn.of(AiMessage('first answer')),
+        ChatScriptTurn.of(AiMessage('second answer')),
+    ])
 
-    use = ToolUse(
-        id='tu-1',
-        name='thing',
-        args={'x': 1},
-    )
-    result = ToolUseResult(
-        id='tu-1',
-        name='thing',
-        c='ok',
-    )
+    async with timeline_driver_harness(script) as h:
+        await h.send_user_text('one')
+        await h.send_user_text('two')
 
-    await manager.handle_event(ToolUseEvent(use))
-    await manager.handle_event(ToolUseResultEvent(use, result))
+        items = h.manager.state.get_items()
+        assert [type(it) for it in items] == [
+            UserMessageTimelineItem,
+            AiMessageTimelineItem,
+            UserMessageTimelineItem,
+            AiMessageTimelineItem,
+        ]
 
-    assert [type(ev) for ev in seen] == [
-        TimelineItemAppendedEvent,
-        TimelineItemUpdatedEvent,
-    ]
-
-    item = manager.state.get_items()[0]
-    assert isinstance(item, ToolUseTimelineItem)
-    assert item.id == seen[0].item.id  # type: ignore[attr-defined]
-    assert item.use is use
-    assert item.result is result
-    assert item.state is ToolUseTimelineItemState.COMPLETE
-    assert item.finalized
-
-
-@pytest.mark.asyncs('asyncio')
-async def test_tool_use_result_before_use_appends_finalized_complete_item() -> None:
-    manager, seen = _manager()
-
-    use = ToolUse(
-        id='tu-1',
-        name='thing',
-        args={'x': 1},
-    )
-    result = ToolUseResult(
-        id='tu-1',
-        name='thing',
-        c='ok',
-    )
-
-    await manager.handle_event(ToolUseResultEvent(use, result))
-
-    assert len(seen) == 1
-    ev = seen[0]
-    assert isinstance(ev, TimelineItemAppendedEvent)
-    assert isinstance(ev.item, ToolUseTimelineItem)
-    assert ev.item.use is use
-    assert ev.item.result is result
-    assert ev.item.state is ToolUseTimelineItemState.COMPLETE
-    assert ev.item.finalized
+        assert canon_items(items) == canon_items(translate_chat(await h.storage.get_chat()))

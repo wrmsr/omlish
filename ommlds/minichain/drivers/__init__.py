@@ -86,6 +86,9 @@ with _lang.auto_proxy_init(globals()):
 
     from .storage.types import (  # noqa
         ChatId,
+
+        StoredMessage,
+        ChatPage,
     )
 
     #

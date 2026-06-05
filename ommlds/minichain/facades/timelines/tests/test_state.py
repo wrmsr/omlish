@@ -2,87 +2,111 @@ import uuid
 
 import pytest
 
-from omlish import dataclasses as dc
-
+from ....chat.messages import AiMessage
 from ....chat.messages import UserMessage
-from ...timelines.events import TimelineItemAppendedEvent
-from ...timelines.events import TimelineItemFinalizedEvent
-from ...timelines.events import TimelineItemUpdatedEvent
-from ...timelines.items import TimelineId
-from ...timelines.items import TimelineItemId
-from ...timelines.items import UserMessageTimelineItem
-from ...timelines.state import TimelineState
+from ..events import TimelineItemAppendedEvent
+from ..events import TimelineItemDeltaEvent
+from ..events import TimelineItemUpdatedEvent
+from ..items import AiMessageTimelineItem
+from ..items import AiStreamTimelineItem
+from ..items import TimelineId
+from ..items import TimelineItemId
+from ..items import UserMessageTimelineItem
+from ..state import TimelineState
 
 
-def _item(s: str) -> UserMessageTimelineItem:
-    return UserMessageTimelineItem(
-        id=TimelineItemId(uuid.uuid7()),
-        message=UserMessage(s),
+def _state() -> TimelineState:
+    return TimelineState(timeline_id=TimelineId(uuid.uuid7()))
+
+
+def _user_item(s: str) -> UserMessageTimelineItem:
+    return UserMessageTimelineItem(message=UserMessage(s), finalized=True)
+
+
+def test_append_positions_and_watermark():
+    st = _state()
+    assert st.watermark == 0
+    assert len(st) == 0
+
+    evs = [st.append_item(_user_item(str(i))) for i in range(3)]
+
+    assert [ev.position for ev in evs] == [0, 1, 2]
+    assert [ev.watermark for ev in evs] == [1, 2, 3]
+    assert st.watermark == 3
+    assert len(st) == 3
+
+    for i, item in enumerate(st.get_items()):
+        assert st.get_position(item.id) == i
+        assert st.get_item(item.id) is item
+        assert st.get_item_at_position(i) is item
+
+    assert st.get_item_at_position(3) is None
+    assert st.get_item(TimelineItemId(uuid.uuid7())) is None
+
+
+def test_duplicate_append_rejected():
+    st = _state()
+    item = _user_item('hi')
+    st.append_item(item)
+
+    with pytest.raises(Exception):  # noqa
+        st.append_item(item)
+
+
+def test_update_advances_revision_and_allows_type_change():
+    st = _state()
+
+    mu = uuid.uuid7()
+    stream = AiStreamTimelineItem(id=TimelineItemId(mu), message_uuid=mu, content='hel')
+    st.append_item(stream)
+
+    # Stale revision rejected.
+    with pytest.raises(Exception):  # noqa
+        st.update_item(AiStreamTimelineItem(id=stream.id, message_uuid=mu, content='x', revision=0))
+
+    # Live -> canonical replacement: same id, advanced revision, different type.
+    canonical = AiMessageTimelineItem(
+        id=stream.id,
+        revision=1,
+        message=AiMessage('hello'),
+        finalized=True,
     )
-
-
-def test_append_preserves_order() -> None:
-    state = TimelineState(timeline_id=TimelineId(uuid.uuid7()))
-
-    a = _item('a')
-    b = _item('b')
-
-    ev_a = state.append_item(a)
-    ev_b = state.append_item(b)
-
-    assert isinstance(ev_a, TimelineItemAppendedEvent)
-    assert ev_a.item is a
-    assert isinstance(ev_b, TimelineItemAppendedEvent)
-    assert ev_b.item is b
-
-    assert state.get_items() == (a, b)
-    assert state.get_item(a.id) is a
-    assert state.get_item(b.id) is b
-    assert state.get_item_ordinal(a.id) == 0
-    assert state.get_item_ordinal(b.id) == 1
-
-
-def test_update_requires_increasing_revision() -> None:
-    state = TimelineState(timeline_id=TimelineId(uuid.uuid7()))
-
-    item = _item('a')
-    state.append_item(item)
-
-    with pytest.raises(Exception):  # noqa: B017, PT011
-        state.update_item(item)
-
-    updated = dc.replace(item, revision=item.revision + 1)
-    ev = state.update_item(updated)
+    ev = st.update_item(canonical)
 
     assert isinstance(ev, TimelineItemUpdatedEvent)
-    assert ev.item is updated
-    assert state.get_items() == (updated,)
-    assert state.get_item(item.id) is updated
+    assert ev.item is canonical
+    assert st.get_item(stream.id) is canonical
+    assert st.get_position(stream.id) == 0
+    assert st.watermark == 2
 
 
-def test_finalize_carries_full_updated_item() -> None:
-    state = TimelineState(timeline_id=TimelineId(uuid.uuid7()))
+def test_delta_requires_exact_revision_advance():
+    st = _state()
 
-    item = _item('a')
-    state.append_item(item)
+    mu = uuid.uuid7()
+    stream = AiStreamTimelineItem(id=TimelineItemId(mu), message_uuid=mu, content='a')
+    st.append_item(stream)
 
-    ev = state.finalize_item(item.id)
+    ev = st.apply_item_delta(
+        AiStreamTimelineItem(id=stream.id, message_uuid=mu, content='ab', revision=1),
+        'b',
+    )
+    assert isinstance(ev, TimelineItemDeltaEvent)
+    assert ev.item_id == stream.id
+    assert ev.revision == 1
+    assert ev.appended == 'b'
 
-    assert isinstance(ev, TimelineItemFinalizedEvent)
-    assert ev.item.id == item.id
-    assert ev.item.revision == item.revision + 1
-    assert ev.item.finalized
-    assert ev.item == state.get_item(item.id)
+    # Skipping a revision is rejected.
+    with pytest.raises(Exception):  # noqa
+        st.apply_item_delta(
+            AiStreamTimelineItem(id=stream.id, message_uuid=mu, content='abcd', revision=3),
+            'cd',
+        )
 
 
-def test_finalize_already_finalized_item_is_stable() -> None:
-    state = TimelineState(timeline_id=TimelineId(uuid.uuid7()))
+def test_events_carry_timeline_id():
+    st = _state()
+    ev = st.append_item(_user_item('hi'))
 
-    item = dc.replace(_item('a'), finalized=True)
-    state.append_item(item)
-
-    ev = state.finalize_item(item.id)
-
-    assert isinstance(ev, TimelineItemFinalizedEvent)
-    assert ev.item is item
-    assert state.get_item(item.id) is item
+    assert isinstance(ev, TimelineItemAppendedEvent)
+    assert ev.timeline_id == st.timeline_id
