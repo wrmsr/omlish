@@ -4,8 +4,61 @@ import typing as ta
 from .. import lang
 
 
+T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
+
+
+##
+
+
+class PersistentSequence(ta.Sequence[T], lang.Abstract, ta.Generic[T]):
+    @abc.abstractmethod
+    def __len__(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __iter__(self) -> ta.Iterator[T]:
+        raise NotImplementedError
+
+    @ta.overload
+    @abc.abstractmethod
+    def __getitem__(self, item: int) -> T:
+        raise NotImplementedError
+
+    @ta.overload
+    @abc.abstractmethod
+    def __getitem__(self, item: slice) -> ta.Self:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def __getitem__(self, item):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def splice(
+            self,
+            start: int | None,
+            stop: int | None,
+            items: ta.Iterable[T],
+    ) -> ta.Self:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def with_(self, idx: int, item: T) -> ta.Self:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def without(self, item: int | slice) -> ta.Self:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def append(self, item: T) -> ta.Self:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def extend(self, items: ta.Iterable[T]) -> ta.Self:
+        raise NotImplementedError
 
 
 ##

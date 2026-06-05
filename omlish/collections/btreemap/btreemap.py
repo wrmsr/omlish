@@ -2,6 +2,7 @@
 import typing as ta
 
 from ..intersections import PersistentSortedMapping
+from ..iterators import HasNextIterator
 from ..mappings import IterItemsViewMapping
 from ..mappings import IterValuesViewMapping
 from ..mappings import iteritems_itervalues
@@ -17,20 +18,11 @@ else:
     _backend = _btreemap  # noqa
 
 
-T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
 ##
-
-
-class HasNextIterator(ta.Protocol[T]):
-    def __iter__(self) -> HasNextIterator[T]: ...
-
-    def __next__(self) -> T: ...
-
-    def has_next(self) -> bool: ...
 
 
 class BtreeMap(

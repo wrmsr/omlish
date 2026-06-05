@@ -86,8 +86,12 @@ with _lang.auto_proxy_init(globals()):
         new_persistent_sorted_map,
     )
 
-    from . intersections import (  # noqa
+    from .intersections import (  # noqa
         PersistentSortedMapping,
+    )
+
+    from .iterators import (  # noqa
+        HasNextIterator,
     )
 
     from . import kv  # noqa
