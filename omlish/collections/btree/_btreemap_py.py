@@ -601,7 +601,7 @@ def find(
         root: Node | None,
         k: K,
         cmp: Comparator[K] | None,
-) -> V:
+) -> V:  # type: ignore[type-var]  # FIXME: lol
     v = _find(root, k, cmp if cmp is not None else _default_cmp)
 
     if v is _EMPTY:

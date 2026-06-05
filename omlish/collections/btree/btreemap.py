@@ -64,7 +64,7 @@ class BtreeMap(
     def __getitem__(self, item: K) -> V:
         return _backend.find(self._root, item, self._cmp)
 
-    def __iter__(self) -> HasNextIterator[K]:
+    def __iter__(self) -> ta.Iterator[K]:
         for k, _ in self.iteritems():
             yield k
 
