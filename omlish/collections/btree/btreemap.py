@@ -42,6 +42,23 @@ class _Leaf(ta.Generic[K, V]):
 
 @dc.dataclass(frozen=True, slots=True)
 class _Branch(ta.Generic[K, V]):
+    # Invariants, relied on non-locally:
+    #
+    #  - len(children) >= 2. Unary branches are always collapsed into their child - by _make_branch, and reimplemented
+    #    by the fast path in _branch_delete, which bypasses it. Collapse is also the sole source of mixed-height
+    #    siblings (below), and is what keeps height <= log2(n) even in degenerate shapes.
+    #
+    #  - keys[i] is _node_max(children[i]) - the same *object*, not merely cmp-equal. Every construction path threads
+    #    key objects by identity: tuple slices and concats preserve element identity, _leaf_insert reuses l.keys on
+    #    value replacement, and _make_branch reads the live objects. This makes the 'is'-based "subtree max unchanged"
+    #    checks in _replace_child / _branch_delete exact: same object trivially means same max, and a
+    #    stale-but-cmp-equal new max would require two cmp-equal key objects coexisting, which insert-replace semantics
+    #    forbid. (A miss would merely fall through to a splice anyway.)
+    #
+    #  - count == sum(c.count for c in children), exact - safe to drive rank/select.
+    #
+    #  - children may be of mixed kind and mixed height: deletes' unary collapse can hoist a leaf beside branches. All
+    #    consumers must stay isinstance- and cmp-driven; nothing may assume uniform leaf depth or do height arithmetic.
     keys: tuple[K, ...]
     children: tuple[Node, ...]
     count: int
@@ -69,6 +86,8 @@ def _make_leaf(
 
 
 def _make_branch(children: tuple[Node, ...]) -> Node:
+    # Unary collapse: maintains the >= 2-children invariant. Anything constructing _Branch directly (the _branch_delete
+    # fast path) must reimplement this.
     if len(children) == 1:
         return children[0]
 
@@ -128,6 +147,9 @@ def _leaf_insert(
     idx, found = _key_index(l.keys, k, cmp)
 
     if found:
+        # Value replacement keeps the *old* key object (dict semantics) and reuses l.keys outright. Identity is
+        # load-bearing here: unchanged leaf keys means every ancestor's 'is' check sees "max unchanged" and reuses its
+        # own keys tuple too, so the whole keys spine is shared across versions.
         keys = l.keys
         values = (*l.values[:idx], v, *l.values[idx + 1:])
     else:
@@ -153,6 +175,8 @@ def _replace_child(
     old = b.children[idx]
     nm = _node_max(new)
 
+    # 'is' is exact, not heuristic - see the key-identity invariant on _Branch. Same object <=> subtree max unchanged
+    # <=> b.keys is still correct and can be shared wholesale with the new version.
     return _Branch(
         keys=b.keys if b.keys[idx] is nm else (*b.keys[:idx], nm, *b.keys[idx + 1:]),
         children=(*b.children[:idx], new, *b.children[idx + 1:]),
@@ -210,6 +234,8 @@ def _can_merge(a: Node, b: Node) -> bool:
     if isinstance(a, _Branch) and isinstance(b, _Branch):
         return len(a.children) + len(b.children) <= _MAX_BRANCH_LEN
 
+    # Mixed leaf/branch siblings exist (see _Branch) and are deliberately unmergeable - consequence: a hoisted leaf has
+    # no legal merge partner and may sit at 1 key indefinitely. Adjacent-occupancy arguments hold per-kind only.
     return False
 
 
@@ -227,6 +253,8 @@ def _merge(a: Node, b: Node) -> Node:
 
 
 def _compact_children(children: tuple[Node, ...]) -> tuple[Node, ...]:
+    # Output length <= input length, with equality iff no merge happened - in which case the output is element-wise
+    # identical to the input. _branch_delete's fast-path gate depends on exactly this.
     out: list[Node] = []
 
     for child in children:
@@ -246,6 +274,9 @@ def _leaf_delete(
     idx, found = _key_index(l.keys, k, cmp)
 
     if not found:
+        # No-op by identity. Every level above short-circuits on 'res is old', so by induction 'res is not old' means
+        # exactly one key was removed - which is what licenses count=b.count - 1 in _branch_delete (and the 'res is
+        # self._root' no-op check in BtreeMap.without).
         return l
 
     keys = l.keys[:idx] + l.keys[idx + 1:]
@@ -276,6 +307,8 @@ def _branch_delete(
         children = (*b.children[:idx], *b.children[idx + 1:])
 
         if not children:
+            # Unreachable while the >= 2-children invariant holds (a sibling always survives). Kept as defense against
+            # hand-built trees.
             return _EMPTY
 
     else:
@@ -284,9 +317,15 @@ def _branch_delete(
     compacted = _compact_children(children)
 
     if len(compacted) != len(children):
+        # Compaction only shrinks, so unequal length <=> at least one merge happened; equal length <=> 'compacted' is
+        # element-wise identical, which is why the fast path below may keep using 'children'. The sweep is deliberately
+        # over *all* children, not just pairs adjacent to idx: inserts never compact and splits leave half-full
+        # siblings, so distant mergeable pairs accumulate and this is the only place they're caught.
         return _make_branch(compacted)
 
     if len(children) == 1:
+        # Reimplements _make_branch's unary collapse - mandatory, since the fast path below constructs _Branch directly
+        # and would otherwise mint unary branches, breaking the >= 2-children invariant (and with it the height bound).
         return children[0]
 
     if res is _EMPTY:
@@ -295,6 +334,9 @@ def _branch_delete(
     else:
         nr = ta.cast(Node, res)
         nm = _node_max(nr)
+        # 'res is not old' guarantees exactly one key was removed (the identity chain rooted in _leaf_delete). Holds for
+        # the _EMPTY arm too: only a 1-key leaf yields _EMPTY in practice (a branch only via the unreachable path
+        # above), so dropping it is also net -1.
         keys = b.keys if b.keys[idx] is nm else (*b.keys[:idx], nm, *b.keys[idx + 1:])
 
     return _Branch(
@@ -515,6 +557,9 @@ class BtreeMapIterator(BaseBtreeMapIterator[K, V]):
         n = root
 
         if n is None or cmp(k, _node_max(n)) > 0:
+            # The k > tree-max early-out is load-bearing: it establishes the descent invariant k <= subtree max (so
+            # _child_index's end-clamp never engages), which is what guarantees _key_index below yields idx <
+            # len(leaf.keys).
             return cls(_st=st, _leaf=None, _idx=0)
 
         while isinstance(n, _Branch):
@@ -614,6 +659,10 @@ class BtreeMapReverseIterator(BaseBtreeMapIterator[K, V]):
         idx, found = _key_index(leaf.keys, k, cmp)
 
         if not found:
+            # Greatest key < k within this leaf. k > tree max needs no special case: _child_index clamps onto the
+            # rightmost spine and this lands on the global max. idx may reach -1 when k precedes the whole leaf (k falls
+            # between leaves, or k < tree min) - the predecessor then lives in the previous leaf, found by _retreat_leaf
+            # below (or exhausted to empty).
             idx -= 1
 
         ret = cls(

@@ -1228,6 +1228,8 @@ static int branch_delete_impl(
         return 0;
     }
 
+    int removed_child = res.node == nullptr;
+
     NodeVec children;
     node_vec_init(&children);
 
@@ -1277,8 +1279,7 @@ static int branch_delete_impl(
 
     PyObject *keys[MAX_BRANCH_LEN];
 
-    if (res.node == nullptr) {
-        // Child was removed. Keep all old max keys except the deleted slot.
+    if (removed_child) {
         for (Py_ssize_t i = 0; i < idx; ++i) {
             keys[i] = node_key(n, i);
         }
@@ -1288,16 +1289,6 @@ static int branch_delete_impl(
         }
     }
     else {
-        // Unreachable because res.node was stolen/cleared above, but keep the
-        // branch explicit to document the intended shape.
-        PyErr_SetString(PyExc_RuntimeError, "unexpected retained delete result");
-        node_vec_clear(&compacted);
-        return -1;
-    }
-
-    if (before_compact_len == n->len) {
-        // Replacement, not removal. Rebuild keys from current children so the
-        // replaced child's max is correct.
         for (Py_ssize_t i = 0; i < compacted.len; ++i) {
             keys[i] = (i == idx) ? node_max(compacted.items[i]) : node_key(n, i);
         }

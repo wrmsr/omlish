@@ -9,6 +9,11 @@ st.setup(
             extra_compile_args=['-std=c++20'],
         ),
         st.Extension(
+            name='omlish.collections.btree._btreemap',
+            sources=['omlish/collections/btree/_btreemap.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
+        st.Extension(
             name='omlish.collections.fixed._fixedmap',
             sources=['omlish/collections/fixed/_fixedmap.cc'],
             extra_compile_args=['-std=c++20'],
