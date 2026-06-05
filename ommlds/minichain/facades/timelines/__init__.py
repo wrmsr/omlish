@@ -68,6 +68,16 @@ with _lang.auto_proxy_init(globals()):
         TimelineManager,
     )
 
+    from .projection import (  # noqa
+        grow_streaming_item,
+
+        TimelineProjectionError,
+        UnknownProjectionItemError,
+        StaleProjectionRevisionError,
+
+        TimelineProjection,
+    )
+
     from .state import (  # noqa
         TimelineState,
     )

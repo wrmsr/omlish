@@ -85,6 +85,25 @@ class TimelineSubscription:
 
         return event
 
+    def drain_pending(self) -> list[TimelineEvent]:
+        """All currently-buffered events, without waiting - for poll-style consumers (and tests)."""
+
+        out: list[TimelineEvent] = []
+
+        while True:
+            try:
+                event = self._queue.get_nowait()
+            except asyncio.QueueEmpty:
+                break
+
+            if event is None:
+                self._queue.put_nowait(None)
+                break
+
+            out.append(event)
+
+        return out
+
     def __aiter__(self) -> ta.AsyncIterator[TimelineEvent]:
         return self
 

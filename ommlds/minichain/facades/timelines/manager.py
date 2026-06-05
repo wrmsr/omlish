@@ -32,7 +32,6 @@ from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import PartialToolUseAiDelta
 from ...chat.stream.types import ThinkingAiDelta
 from ...chat.stream.types import ToolUseAiDelta
-from ...content.content import Content
 from ...events.manager import EventsManager
 from ...events.types import ErrorEvent
 from ...events.types import Event
@@ -50,6 +49,7 @@ from .items import TimelineItemId
 from .items import ToolUseTimelineItem
 from .items import ToolUseTimelineItemState
 from .items import UiMessageTimelineItem
+from .projection import grow_streaming_item
 from .state import TimelineState
 from .translate import timeline_item_id_for_message
 from .translate import translate_message
@@ -97,22 +97,6 @@ class TimelineManager:
     @staticmethod
     def _tool_use_key(use: ToolUse) -> str:
         return use.id or use.name
-
-    @staticmethod
-    def _append_content(old: Content | None, new: Content) -> Content:
-        if old is None:
-            return new
-
-        # FIXME:
-        #  - lazy, collapse-on-access, linked-listy box thingy
-        #  - also, like, resolve the fact deltas are only really defined for string concat'd markdown lol - non-lifted
-        #    list content is intentionally undefined, configurably lifted to containers in
-        #    LiftToStandardContentTransform
-
-        if isinstance(old, str) and isinstance(new, str):
-            return old + new
-
-        return [old, new]
 
     async def _append_canonical_message(self, message: Message) -> None:
         item = translate_message(message)
@@ -205,11 +189,7 @@ class TimelineManager:
 
             elif isinstance(existing, AiStreamTimelineItem) and not existing.finalized:
                 await self._emit(self._state.apply_item_delta(
-                    dc.replace(
-                        existing,
-                        revision=existing.revision + 1,
-                        content=self._append_content(existing.content, delta.c),
-                    ),
+                    grow_streaming_item(existing, delta.c),
                     delta.c,
                 ))
 
@@ -223,11 +203,7 @@ class TimelineManager:
 
             elif isinstance(existing, ThinkingStreamTimelineItem) and not existing.finalized:
                 await self._emit(self._state.apply_item_delta(
-                    dc.replace(
-                        existing,
-                        revision=existing.revision + 1,
-                        text=existing.text + delta.c,
-                    ),
+                    grow_streaming_item(existing, delta.c),
                     delta.c,
                 ))
 
@@ -251,11 +227,7 @@ class TimelineManager:
             ):
                 if delta.raw_args:
                     await self._emit(self._state.apply_item_delta(
-                        dc.replace(
-                            existing,
-                            revision=existing.revision + 1,
-                            partial_raw_args=(existing.partial_raw_args or '') + delta.raw_args,
-                        ),
+                        grow_streaming_item(existing, delta.raw_args),
                         delta.raw_args,
                     ))
 

@@ -3,6 +3,7 @@ The shared harness for timeline tests: a fully-wired scripted driver with a `Tim
 recorder, and direct access to the live pieces. Everything real - injector, event bus, ORM (in-memory store), tool
 catalog - per the no-mocks house testing style.
 """
+import asyncio
 import contextlib
 import typing as ta
 import uuid
@@ -33,6 +34,45 @@ from ..timeline import Timeline
 
 def user_message(s: str) -> UserMessage:
     return UserMessage(s).with_metadata(MessageUuid(uuid.uuid7()))
+
+
+##
+
+
+class PausingGate:
+    """
+    A `ChatScriptGate` that parks the scripted stream at selected gate points until resumed - the lock-step lever for
+    choreographing test actions (attaching, snapshotting, paging) at exact mid-stream moments. No sleeps, fully
+    deterministic: `wait_paused` completes only once the stream is actually parked, at which point every prior
+    emission has been fully processed by all event-bus callbacks.
+    """
+
+    def __init__(self, pause_at: ta.Callable[[ta.Any], bool]) -> None:
+        super().__init__()
+
+        self._pause_at = pause_at
+
+        self._paused: asyncio.Event = asyncio.Event()
+        self._resume: asyncio.Event = asyncio.Event()
+
+        self.points: list[ta.Any] = []
+
+    async def __call__(self, pt: ta.Any) -> None:
+        self.points.append(pt)
+
+        if not self._pause_at(pt):
+            return
+
+        self._paused.set()
+        await self._resume.wait()
+        self._resume.clear()
+        self._paused.clear()
+
+    async def wait_paused(self) -> None:
+        await self._paused.wait()
+
+    def resume(self) -> None:
+        self._resume.set()
 
 
 ##
