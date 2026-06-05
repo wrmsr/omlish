@@ -4,20 +4,50 @@ import typing as ta
 
 import pytest
 
+from .... import lang
 from .. import _btreemap_py
 from ..btreemap import BtreeMap
-from ..btreemap import new_btree_map
+
+
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 class _BaseBtreeMapTests:
     impl: ta.Any
+
+    @lang.cached_function
+    @classmethod
+    def btree_map_cls(cls) -> type[BtreeMap]:
+        class ImplBtreeMap(BtreeMap[K, V]):
+            _backend = cls.impl  # noqa
+
+        return ImplBtreeMap
+
+    @classmethod
+    def new_btree_map(
+            cls,
+            items: ta.Iterable[tuple[K, V]] | None = None,
+            *,
+            cmp: ta.Callable[[K, K], int] | None = None,
+    ) -> BtreeMap[K, V]:
+        m: BtreeMap[K, V] = cls.btree_map_cls()(
+            _root=None,
+            _cmp=cmp,
+        )
+
+        if items is not None:
+            for k, v in items:
+                m = m.with_(k, v)
+
+        return m
 
     @classmethod
     def _check_map(cls, m: BtreeMap, expected: ta.Mapping, *, cmp=None):
         pass
 
     def test_empty(self):
-        m: BtreeMap = new_btree_map()
+        m: BtreeMap = self.new_btree_map()
 
         assert len(m) == 0
         assert list(m) == []
@@ -33,7 +63,7 @@ class _BaseBtreeMapTests:
             m[0]
 
     def test_insert_and_get(self):
-        m: BtreeMap = new_btree_map()
+        m: BtreeMap = self.new_btree_map()
 
         for i in [5, 1, 3, 2, 4]:
             m = m.with_(i, str(i))
@@ -47,7 +77,7 @@ class _BaseBtreeMapTests:
         self._check_map(m, {i: str(i) for i in range(1, 6)})
 
     def test_replace(self):
-        m = new_btree_map([
+        m = self.new_btree_map([
             (1, 'a'),
             (2, 'b'),
         ])
@@ -62,7 +92,7 @@ class _BaseBtreeMapTests:
         ]
 
     def test_default(self):
-        m = new_btree_map([
+        m = self.new_btree_map([
             (1, 'a'),
         ])
 
@@ -77,7 +107,7 @@ class _BaseBtreeMapTests:
 
     def test_persistence(self):
         versions = []
-        m: BtreeMap = new_btree_map()
+        m: BtreeMap = self.new_btree_map()
 
         for i in range(100):
             versions.append(m)
@@ -97,7 +127,7 @@ class _BaseBtreeMapTests:
         assert list(m.iteritems()) == [(i, str(i)) for i in range(50, 100)]
 
     def test_delete(self):
-        m = new_btree_map((i, str(i)) for i in range(100))
+        m = self.new_btree_map((i, str(i)) for i in range(100))
 
         for i in range(0, 100, 2):
             m = m.without(i)
@@ -116,7 +146,7 @@ class _BaseBtreeMapTests:
         assert list(m.iteritems()) == []
 
     def test_items_from(self):
-        m = new_btree_map((i, str(i)) for i in range(10))
+        m = self.new_btree_map((i, str(i)) for i in range(10))
 
         assert list(m.items_from(-1)) == [(i, str(i)) for i in range(10)]
         assert list(m.items_from(0)) == [(i, str(i)) for i in range(10)]
@@ -124,7 +154,7 @@ class _BaseBtreeMapTests:
         assert list(m.items_from(45)) == []
 
     def test_items_from_desc(self):
-        m = new_btree_map((i, str(i)) for i in range(10))
+        m = self.new_btree_map((i, str(i)) for i in range(10))
 
         assert list(m.items_from_desc(-1)) == []
         assert list(m.items_from_desc(0)) == [(0, '0')]
@@ -132,7 +162,7 @@ class _BaseBtreeMapTests:
         assert list(m.items_from_desc(45)) == [(i, str(i)) for i in range(9, -1, -1)]
 
     def test_iterator_has_next_and_next(self):
-        m = new_btree_map((i, str(i)) for i in range(3))
+        m = self.new_btree_map((i, str(i)) for i in range(3))
 
         it = m.iteritems()
 
@@ -163,7 +193,7 @@ class _BaseBtreeMapTests:
         return (a.value > b.value) - (a.value < b.value)
 
     def test_custom_comparator_with_unhashable_keys(self):
-        m: BtreeMap = new_btree_map(cmp=self._key_cmp)
+        m: BtreeMap = self.new_btree_map(cmp=self._key_cmp)
 
         k1a = self._Key(1)
         k1b = self._Key(1)
@@ -180,7 +210,7 @@ class _BaseBtreeMapTests:
         assert [v for _, v in m.iteritems()] == ['aa', 'b']
 
     def test_large_sequential(self):
-        m: BtreeMap = new_btree_map()
+        m: BtreeMap = self.new_btree_map()
 
         for i in range(2000):
             m = m.with_(i, str(i))
@@ -196,7 +226,7 @@ class _BaseBtreeMapTests:
     def test_random_against_dict(self):
         rng = random.Random(0)
 
-        m: BtreeMap = new_btree_map()
+        m: BtreeMap = self.new_btree_map()
         d = {}
 
         for step in range(5000):
@@ -221,7 +251,7 @@ class _BaseBtreeMapTests:
                 self._check_map(m, d)
 
     def test_insert_non_split_preserves_branch_count_by_arithmetic(self):
-        m = new_btree_map((i, str(i)) for i in range(500))
+        m = self.new_btree_map((i, str(i)) for i in range(500))
 
         m2 = m.with_(2500, '2500')
 
@@ -230,7 +260,7 @@ class _BaseBtreeMapTests:
         self._check_map(m2, {**{i: str(i) for i in range(500)}, 2500: '2500'})
 
     def test_delete_non_merge_preserves_branch_count_by_arithmetic(self):
-        m = new_btree_map((i, str(i)) for i in range(500))
+        m = self.new_btree_map((i, str(i)) for i in range(500))
 
         m2 = m.without(123)
 
@@ -329,7 +359,7 @@ class TestPyBtreeMap(_BaseBtreeMapTests):
         keys = list(range(5000))
         rng.shuffle(keys)
 
-        m = new_btree_map((i, str(i)) for i in keys)
+        m = self.new_btree_map((i, str(i)) for i in keys)
 
         expected = {
             i: str(i)
@@ -351,7 +381,7 @@ class TestPyBtreeMap(_BaseBtreeMapTests):
         self._check_map(m, expected)
 
     def test_update_reuses_unchanged_branch_keys_tuple(self):
-        m = new_btree_map((i, str(i)) for i in range(500))
+        m = self.new_btree_map((i, str(i)) for i in range(500))
 
         branches = self._branch_nodes(m)
         assert branches
@@ -388,7 +418,7 @@ class TestPyBtreeMap(_BaseBtreeMapTests):
         self._check_map(m2, {**{i: str(i) for i in range(500)}, 123: 'updated'})
 
     def test_no_unary_branches_after_many_deletes(self):
-        m = new_btree_map((i, str(i)) for i in range(3000))
+        m = self.new_btree_map((i, str(i)) for i in range(3000))
 
         for i in range(0, 3000, 2):
             m = m.without(i)
@@ -413,7 +443,7 @@ class TestPyBtreeMap(_BaseBtreeMapTests):
         self._check_map(m, expected)
 
     def test_delete_compacts_height_eventually(self):
-        m = new_btree_map((i, str(i)) for i in range(5000))
+        m = self.new_btree_map((i, str(i)) for i in range(5000))
 
         assert m._root is not None
         initial_depth = self._max_depth(m._root)
