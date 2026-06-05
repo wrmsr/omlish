@@ -104,6 +104,7 @@ static int check_node_alive(BtreeNode *n) {
 
 
 static int BtreeNode_traverse(BtreeNode *self, visitproc visit, void *arg) {
+    Py_VISIT(Py_TYPE(self));
     for (Py_ssize_t i = 0; i < node_slots(self); ++i) {
         Py_VISIT(self->items[i]);
     }
@@ -235,6 +236,7 @@ struct BtreeIter {
 
 
 static int BtreeIter_traverse(BtreeIter *self, visitproc visit, void *arg) {
+    Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->root);
     return 0;
 }
@@ -1920,7 +1922,7 @@ static void btree_free(void *module) {
 static struct PyModuleDef_Slot btree_slots[] = {
     {Py_mod_exec, (void *)btree_exec},
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
-    {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED},
+    {Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},
     {0, nullptr}
 };
 

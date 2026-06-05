@@ -1554,7 +1554,7 @@ static PyMethodDef stl_methods[] = {
 static struct PyModuleDef_Slot stl_slots[] = {
     {Py_mod_exec, (void *)stl_exec},
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
-    {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED},
+    {Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},
     {0, nullptr},
 };
 
