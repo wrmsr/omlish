@@ -11,12 +11,13 @@ with lang.auto_proxy_import(globals()):
     from ....interfaces.bare.inputs import asyncs as _inputs_asyncs
     from ....interfaces.bare.inputs import sync as _inputs_sync
     from ....interfaces.bare.printing import inject as _printing2
+    from ....interfaces.bare.printing import types as _printing_types
     from ...backends import inject as _backends
     from ...drivers import inject as _drivers
     from . import chat as _chat
     from . import interactive as _interactive
     from . import oneshot as _oneshot
-    from . import printing as _printing
+    from . import timelines as _timelines
     from . import tools as _tools
 
 
@@ -108,31 +109,25 @@ def bind_bare(
 
     #
 
-    if cfg.print_ai_responses:
-        if chat_cfg.driver.ai.stream:
-            els.extend([
-                inj.bind(_printing.AiStreamEventPrinter, singleton=True),
-
-                mc.injection.event_callbacks().bind_item(
-                    to_fn=inj.target(o=_printing.AiStreamEventPrinter)(lambda o: o.handle_event),
-                ),
-            ])
-
-        else:
-            els.extend([
-                inj.bind(_printing.AiMessagesEventPrinter, singleton=True),
-
-                mc.injection.event_callbacks().bind_item(
-                    to_fn=inj.target(o=_printing.AiMessagesEventPrinter)(lambda o: o.handle_event),
-                ),
-            ])
-
-    if cfg.print_tool_use:
+    if cfg.print_ai_responses or cfg.print_tool_use:
         els.extend([
-            inj.bind(_printing.ToolUseEventsPrinter, singleton=True),
+            mc.facades.timelines.inject.bind_timeline(),
+
+            inj.bind(
+                _timelines.TimelineEventPrinter,
+                to_fn=inj.target(
+                    printer=_printing_types.ContentPrinting,
+                    stream_printer=_printing_types.StreamContentPrinting,
+                )(lambda printer, stream_printer: _timelines.TimelineEventPrinter(
+                    printer=printer,
+                    stream_printer=stream_printer,
+                    print_tool_use=cfg.print_tool_use,
+                )),
+                singleton=True,
+            ),
 
             mc.injection.event_callbacks().bind_item(
-                to_fn=inj.target(o=_printing.ToolUseEventsPrinter)(lambda o: o.handle_event),
+                to_fn=inj.target(o=_timelines.TimelineEventPrinter)(lambda o: o.handle_event),
             ),
         ])
 

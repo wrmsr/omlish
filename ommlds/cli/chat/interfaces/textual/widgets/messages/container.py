@@ -47,6 +47,9 @@ class MessagesContainer(
     def chat_uuid(self) -> uuid.UUID | None:
         return self._chat_uuid
 
+    def get_message_by_uuid(self, message_uuid: uuid.UUID) -> Message | None:
+        return self._messages_by_uuid.get(message_uuid)
+
     #
 
     def _compose_once(self) -> tx.ComposeResult:

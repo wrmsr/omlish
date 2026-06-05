@@ -131,6 +131,43 @@
 }
 
 
+/* Thinking Message */
+
+.thinking-message {
+    color: $text-muted;
+}
+
+.thinking-message-divider-container {
+}
+
+.thinking-message-outer {
+}
+
+.thinking-message-glyph {
+    color: $text-muted;
+}
+
+.thinking-message-inner {
+    padding: 0;
+
+    Static {
+        color: $text-muted;
+        text-style: italic;
+    }
+
+    Markdown {
+        width: 100%;
+        height: auto;
+
+        margin: 0;
+        padding: 0;
+
+        color: $text-muted;
+        text-style: italic;
+    }
+}
+
+
 /* Tool Message */
 
 .tool-message {

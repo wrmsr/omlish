@@ -18,6 +18,12 @@ class ChatDriverInterfaceGetter(lang.AsyncCachedFunc0['ChatDriverInterface']):
 ##
 
 
+InitialTimelineWindowLimit = ta.NewType('InitialTimelineWindowLimit', int)
+
+
+##
+
+
 class ChatDriverInterfaceState(enum.StrEnum):
     IDLE = 'idle'
     ACTIVE = 'active'

@@ -45,6 +45,9 @@ def bind_driver(
 
     els.append(backend_configs().bind_items_provider(singleton=True))
 
+    if (bcs := chat_cfg.driver.backend.configs):
+        els.append(backend_configs().bind_item_consts(*bcs))
+
     #
 
     els.extend([

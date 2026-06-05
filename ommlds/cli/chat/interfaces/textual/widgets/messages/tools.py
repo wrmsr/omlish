@@ -15,14 +15,28 @@ from .divider import MessageDivider
 
 
 class ToolMessage(Message):
+    """
+    The updatable tool card: follows one tool use through its whole lifecycle. `update_tool` may be called any number
+    of times as the underlying timeline item advances (args streaming in, running, result arriving); it posts
+    `MessageFinalized` once on reaching a terminal state.
+    """
+
     init_add_class = 'tool-message'
 
     class State(enum.StrEnum):
+        STREAMING = 'streaming'
+        PENDING = 'pending'
         RUNNING = 'running'
         COMPLETE = 'complete'
         CONFIRMING = 'confirming'
         DENIED = 'denied'
         FAILED = 'failed'
+
+    _TERMINAL_STATES: ta.ClassVar[frozenset[State]] = frozenset([
+        State.COMPLETE,
+        State.DENIED,
+        State.FAILED,
+    ])
 
     def __init__(
             self,
@@ -38,6 +52,8 @@ class ToolMessage(Message):
         self._state = state
 
         self._has_rendered = False
+        self._has_finalized = False
+        self._inner_expanded = False
 
     @property
     def message_content(self) -> None:
@@ -59,13 +75,14 @@ class ToolMessage(Message):
                 yield tx.Static('* ', classes='tool-message-glyph message-glyph')
                 with tx.Vertical(classes='tool-message-inner message-inner'):
                     with tx.Horizontal(classes='tool-message-summary-row'):
-                        if self._inner_content is not None:
-                            yield tx.Static(tx.Text('[+]'), classes='tool-message-expand-button')
+                        xb = tx.Static(tx.Text('[+]'), classes='tool-message-expand-button')
+                        xb.display = self._inner_content is not None
+                        yield xb
 
                         yield tx.Static(self._outer_content, classes='tool-message-outer-content')
 
-                    if self._inner_content is not None:
-                        yield tx.Static(self._inner_content, classes='tool-message-inner-content')
+                    ic = tx.Static(self._inner_content or '', classes='tool-message-inner-content')
+                    yield ic
 
     def on_mount(self) -> None:
         def inner():
@@ -73,13 +90,48 @@ class ToolMessage(Message):
 
         self.call_after_refresh(inner)
 
+        self._maybe_finalize()
+
+    #
+
+    def _maybe_finalize(self) -> None:
+        if self._state in self._TERMINAL_STATES and not self._has_finalized:
+            self._has_finalized = True
+            self.post_message(MessageFinalized(self))
+
+    def update_tool(
+            self,
+            outer_content: tx.VisualType,
+            inner_content: tx.VisualType | None,
+            state: State,
+    ) -> None:
+        self._outer_content = outer_content
+        self._inner_content = inner_content
+        self._state = state
+
+        if self.is_mounted:
+            oc = check.isinstance(self.query_one('.tool-message-outer-content'), tx.Static)
+            oc.update(outer_content)
+
+            ic = check.isinstance(self.query_one('.tool-message-inner-content'), tx.Static)
+            ic.update(inner_content or '')
+
+            xb = check.isinstance(self.query_one('.tool-message-expand-button'), tx.Static)
+            xb.display = inner_content is not None
+
+        self._maybe_finalize()
+
+    #
+
     def toggle_inner_content(self) -> None:
         xb = check.isinstance(self.query_one('.tool-message-expand-button'), tx.Static)
         ic = check.isinstance(self.query_one('.tool-message-inner-content'), tx.Static)
-        if ic.styles.display == 'none':
+        if not self._inner_expanded:
+            self._inner_expanded = True
             xb.content = tx.Text('[-]')
             ic.styles.display = 'block'
         else:
+            self._inner_expanded = False
             xb.content = tx.Text('[+]')
             ic.styles.display = 'none'
 

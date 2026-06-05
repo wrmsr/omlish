@@ -14,8 +14,6 @@ from omlish.logs import all as logs
 
 from ...... import minichain as mc
 from ..termrender import BackgroundTerminalRenderer
-from ..widgets.messages.ai import StaticAiMessage
-from ..widgets.messages.ai import StreamAiMessage
 from ..widgets.messages.base import Message
 from ..widgets.messages.base import MessageFinalized
 from ..widgets.messages.container import MessagesContainer
@@ -25,10 +23,15 @@ from ..widgets.messages.stream import StreamMessagePart
 from ..widgets.messages.tools import ToolConfirmationMessage
 from ..widgets.messages.tools import ToolMessage
 from ..widgets.messages.ui import UiMessage
-from ..widgets.messages.user import UserMessage
 from ..widgets.messages.welcome import WelcomeMessage
+from .timelines import build_item_message
+from .timelines import build_tool_message
+from .timelines import render_item_content_str
+from .timelines import stream_message_cls_for_item
+from .timelines import update_tool_message
 from .types import ChatDriverInterfaceState
 from .types import ChatDriverInterfaceStateListener
+from .types import InitialTimelineWindowLimit
 
 
 log, alog = logs.get_module_loggers(globals())
@@ -37,7 +40,28 @@ log, alog = logs.get_module_loggers(globals())
 ##
 
 
-ChatEventQueue = ta.NewType('ChatEventQueue', asyncio.Queue)
+@dc.dataclass(frozen=True)
+class _MountWidgetDisplayOp:
+    widget: Message
+
+    _: dc.KW_ONLY
+
+    suppress_background_terminal_render: bool = False
+
+
+@dc.dataclass(frozen=True)
+class _UpdateToolDisplayOp:
+    item: mc.facades.timelines.ToolUseTimelineItem
+
+
+_DisplayOp: ta.TypeAlias = ta.Union[  # noqa
+    _MountWidgetDisplayOp,
+    _UpdateToolDisplayOp,
+    StreamMessagePart,
+]
+
+
+##
 
 
 class ChatDriverInterface(
@@ -45,6 +69,13 @@ class ChatDriverInterface(
     tx.InitAddClass,
     tx.Widget,
 ):
+    """
+    The per-driver chat surface: composes the messages container, consumes the driver's `Timeline` (initial window +
+    live events) into widgets, and routes user input back to the facade. All display mutation funnels through one
+    ordered, batched display-op relay; everything this widget renders comes from timeline items - it never interprets
+    raw driver events.
+    """
+
     init_add_class = 'chat-driver-interface'
 
     def __init__(
@@ -53,36 +84,49 @@ class ChatDriverInterface(
             chat_facade: mc.facades.Facade,
             chat_driver: mc.drivers.Driver,
             commands_manager: mc.facades.CommandsManager,
-            chat_event_queue: ChatEventQueue,
+            timeline: mc.facades.timelines.Timeline,
             background_terminal_renderer: BackgroundTerminalRenderer,
             clipboard: cpb.Clipboard | None = None,
             state_listener: ChatDriverInterfaceStateListener | None = None,
             welcome_message: WelcomeMessage | None = None,
             chat_id: mc.drivers.ChatId,
+            initial_timeline_window_limit: InitialTimelineWindowLimit | None = None,
     ) -> None:
         super().__init__()
 
         self._chat_facade = chat_facade
         self._chat_driver = chat_driver
         self._commands_manager = commands_manager
-        self._chat_event_queue = chat_event_queue
+        self._timeline = timeline
         self._background_terminal_renderer = background_terminal_renderer
         self._clipboard = clipboard
         self._state_listener = state_listener
         self._welcome_message = welcome_message
         self._chat_id = chat_id
+        self._initial_timeline_window_limit = (
+            initial_timeline_window_limit
+            if initial_timeline_window_limit is not None
+            else InitialTimelineWindowLimit(200)
+        )
 
         #
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
+        self._chat_driver_started: asyncio.Event = asyncio.Event()
 
         self._pending_tool_confirmations: set[ToolConfirmationMessage] = set()
 
-        self._append_stream_message_buffer: SchedulingAsyncBufferRelay[StreamMessagePart] = SchedulingAsyncBufferRelay(
-            lang.as_async(lambda: self.call_next(self._drain_append_stream_message_buffer)),
+        self._display_ops_pending: asyncio.Event = asyncio.Event()
+        self._display_op_relay: SchedulingAsyncBufferRelay[_DisplayOp] = SchedulingAsyncBufferRelay(
+            lang.as_async(self._display_ops_pending.set),
         )
 
         self._suppressed_background_terminal_render_set: ta.MutableSet[tx.Widget] = weakref.WeakSet()
+
+        #
+
+        self._timeline_items_by_id: dict[mc.facades.timelines.TimelineItemId, mc.facades.timelines.TimelineItem] = {}
+        self._no_echo_input_uuids: set[uuid.UUID] = set()
 
         #
 
@@ -118,16 +162,27 @@ class ChatDriverInterface(
     # Mounting
 
     async def on_mount(self) -> None:
-        check.state(self._chat_event_queue_task is None)
-        self._chat_event_queue_task = asyncio.create_task(self._chat_event_queue_task_main())
-
         check.state(self._chat_action_queue_task is None)
         self._chat_action_queue_task = asyncio.create_task(self._chat_action_queue_task_main())
+
+        check.state(self._display_ops_task is None)
+        self._display_ops_task = asyncio.create_task(self._display_ops_task_main())
+
+        check.state(self._timeline_task is None)
+        self._timeline_task = asyncio.create_task(self._timeline_task_main())
 
         if (wm := self._welcome_message) is not None:
             await self._messages_container.mount_messages(wm)
 
-        self.call_after_refresh(self._chat_driver.start)
+        async def start_driver() -> None:
+            # The timeline attaches only once the driver has fully started: startup phase callbacks perform storage
+            # *writes* (e.g. last-chat-id), and overlapping them with the attach's storage reads trips sqlite's
+            # no-retry deferred-transaction write-upgrade conflicts (SQLITE_BUSY_SNAPSHOT) in the current
+            # session-per-connection orm setup.
+            await self._chat_driver.start()
+            self._chat_driver_started.set()
+
+        self.call_after_refresh(start_driver)
 
     async def on_unmount(self) -> None:
         if (cat := self._chat_action_queue_task) is not None:
@@ -136,12 +191,28 @@ class ChatDriverInterface(
 
         await self._chat_driver.stop()
 
-        if (cet := self._chat_event_queue_task) is not None:
-            await self._chat_event_queue.put(None)
-            await cet
+        if (tt := self._timeline_task) is not None:
+            if (att := self._timeline_attachment) is not None:
+                await att.subscription.aclose()
+                await tt
+
+            else:
+                # Unmounted before the attach ever happened (the task may still be waiting on driver start).
+                tt.cancel()
+                try:
+                    await tt
+                except asyncio.CancelledError:
+                    pass
+
+        if (dot := self._display_ops_task) is not None:
+            dot.cancel()
+            try:
+                await dot
+            except asyncio.CancelledError:
+                pass
 
     ##
-    # Messages
+    # Display ops - the single ordered funnel from timeline consumption to widget mutation.
 
     @tx.on(MessageFinalized)
     async def _on_message_finalized(self, event: MessageFinalized) -> None:
@@ -158,126 +229,133 @@ class ChatDriverInterface(
         self.refresh(layout=True)
         self.call_after_refresh(inner)
 
-    async def _drain_append_stream_message_buffer(self) -> None:
-        parts = await self._append_stream_message_buffer.swap()
-        await self._messages_container.append_stream_message_content(parts)
+    async def _apply_display_ops(self, ops: ta.Sequence[_DisplayOp]) -> None:
+        stream_parts: list[StreamMessagePart] = []
 
-    async def mount_messages(
-            self,
-            chat: mc.Chat,
-            *,
-            suppress_background_terminal_render: bool = False,
-    ) -> None:
-        wx: list[Message] = []
+        async def flush_stream_parts() -> None:
+            if stream_parts:
+                await self._messages_container.append_stream_message_content(stream_parts)
+                stream_parts.clear()
 
-        for msg in chat:
-            if isinstance(msg, mc.AiMessage):
-                wx.append(
-                    StaticAiMessage(
-                        check.isinstance(msg.c, str),
-                        markdown=True,
-                        message_uuid=msg.metadata[mc.MessageUuid].v,
-                    ),
-                )
+        for op in ops:
+            if isinstance(op, StreamMessagePart):
+                stream_parts.append(op)
+                continue
 
-            elif isinstance(msg, mc.UserMessage):
-                wx.append(UserMessage(
-                    check.isinstance(msg.c, str),
-                    message_uuid=msg.metadata[mc.MessageUuid].v,
-                ))
+            await flush_stream_parts()
 
-        if not wx:
-            return
+            if isinstance(op, _MountWidgetDisplayOp):
+                if op.suppress_background_terminal_render:
+                    self._suppressed_background_terminal_render_set.add(op.widget)
 
-        if suppress_background_terminal_render:
-            for w in wx:
-                self._suppressed_background_terminal_render_set.add(w)
+                await self._messages_container.mount_messages(op.widget)
 
-        self.call_later(self._messages_container.mount_messages, *wx)
+            elif isinstance(op, _UpdateToolDisplayOp):
+                w = self._messages_container.get_message_by_uuid(op.item.id)
+                if w is None:
+                    await self._messages_container.mount_messages(build_tool_message(op.item))
+                else:
+                    update_tool_message(check.isinstance(w, ToolMessage), op.item)
 
-    ##
-    # Chat events
+            else:
+                raise TypeError(op)
 
-    _chat_event_queue_task: asyncio.Task[None] | None = None
+        await flush_stream_parts()
 
-    async def _handle_chat_queue_event(self, ev: ta.Any) -> None:
-        if isinstance(ev, mc.AiMessagesEvent):
-            if not ev.streamed:
-                ai_msgs = [
-                    msg
-                    for msg in ev.chat
-                    if isinstance(msg, mc.AiMessage)
-                ]
-
-                if ai_msgs:
-                    await self.mount_messages(ai_msgs)
-
-        elif isinstance(ev, mc.AiStreamBeginEvent):
-            # self.call_later(self._messages_container.mount_messages, StreamAiMessage(message_uuid=ev.message_uuid))  # noqa
-            pass
-
-        elif isinstance(ev, mc.AiStreamDeltaEvent):
-            if isinstance(ev.delta, mc.ContentAiDelta):
-                await self._append_stream_message_buffer.push(
-                    ContentStreamMessagePart(
-                        StreamAiMessage,
-                        check.not_none(ev.message_uuid),
-                        check.isinstance(ev.delta.c, str),
-                    ),
-                )
-
-            elif isinstance(ev.delta, mc.ToolUseAiDelta):
-                pass
-
-        elif isinstance(ev, mc.AiStreamEndEvent):
-            await self._append_stream_message_buffer.push(
-                FinalStreamMessagePart(
-                    StreamAiMessage,
-                    check.not_none(ev.message_uuid),
-                ),
-            )
-
-        elif isinstance(ev, mc.ToolUseEvent):
-            tr_dct = dict(
-                id=ev.use.id,
-                name=check.not_none(check.not_none(ev.tue).catalog_entry).spec.name,
-                args=ev.use.args,
-                # spec=msh.marshal(tce.spec),
-            )
-
-            tr_uit = mc.render_obj_json_ui_text(
-                tr_dct,
-                mc.JsonUiTextRendering(
-                    'pretty',
-                    five=True,
-                    multiline_strings=True,
-                ),
-            )
-
-            tr_rt = mc.ui_text_to_rich_text(tr_uit)
-
-            tm = ToolMessage(
-                tx.Text(ev.use.name),
-                tr_rt,
-                ToolMessage.State.RUNNING,
-            )
-
-            self._suppressed_background_terminal_render_set.add(tm)
-            self.call_later(self._messages_container.mount_messages, tm)
-
-        elif isinstance(ev, mc.ToolUseResultEvent):
-            pass
+    _display_ops_task: asyncio.Task[None] | None = None
 
     @logs.async_exception_logging(alog, BaseException)
-    async def _chat_event_queue_task_main(self) -> None:
+    async def _display_ops_task_main(self) -> None:
+        # A dedicated consumer rather than pump-scheduled draining: display ops can be pushed before the app is fully
+        # ready (e.g. window items right after attach), when pump-relative scheduling silently drops callbacks.
         while True:
-            ev = await self._chat_event_queue.get()
-            if ev is None:
-                break
+            await self._display_ops_pending.wait()
+            self._display_ops_pending.clear()
 
-            await alog.debug(lambda: f'Got chat event: {ev!r}')
+            await self._apply_display_ops(await self._display_op_relay.swap())
 
-            await self._handle_chat_queue_event(ev)
+    ##
+    # Timeline consumption
+
+    _timeline_task: asyncio.Task[None] | None = None
+    _timeline_attachment: mc.facades.timelines.TimelineAttachment | None = None
+
+    @logs.async_exception_logging(alog, BaseException)
+    async def _timeline_task_main(self) -> None:
+        await self._chat_driver_started.wait()
+
+        att = await self._timeline.attach(self._initial_timeline_window_limit)
+        self._timeline_attachment = att
+
+        for item in att.window.items:
+            self._timeline_items_by_id[item.id] = item
+
+            if (w := build_item_message(item)) is not None:
+                await self._display_op_relay.push(_MountWidgetDisplayOp(
+                    w,
+                    suppress_background_terminal_render=True,
+                ))
+
+        async for ev in att.subscription:
+            await alog.debug(lambda: f'Got timeline event: {ev!r}')  # noqa
+
+            await self._handle_timeline_event(ev)
+
+    async def _handle_timeline_event(self, ev: mc.facades.timelines.TimelineEvent) -> None:
+        if isinstance(ev, mc.facades.timelines.TimelineItemAppendedEvent):
+            item = ev.item
+            self._timeline_items_by_id[item.id] = item
+
+            if isinstance(item, mc.facades.timelines.UserMessageTimelineItem):
+                try:
+                    self._no_echo_input_uuids.remove(item.id)
+                except KeyError:
+                    pass
+                else:
+                    return
+
+            if (w := build_item_message(item)) is not None:
+                await self._display_op_relay.push(_MountWidgetDisplayOp(w))
+
+        elif isinstance(ev, mc.facades.timelines.TimelineItemDeltaEvent):
+            old = self._timeline_items_by_id.get(ev.item_id)
+            if old is None:
+                return
+
+            new = mc.facades.timelines.grow_streaming_item(old, ev.appended)
+            self._timeline_items_by_id[ev.item_id] = new
+
+            if isinstance(new, mc.facades.timelines.ToolUseTimelineItem):
+                await self._display_op_relay.push(_UpdateToolDisplayOp(new))
+
+            elif (cls := stream_message_cls_for_item(new)) is not None:
+                await self._display_op_relay.push(ContentStreamMessagePart(
+                    cls,
+                    ev.item_id,
+                    render_item_content_str(ev.appended),
+                ))
+
+        elif isinstance(ev, mc.facades.timelines.TimelineItemUpdatedEvent):
+            item = ev.item
+            old = self._timeline_items_by_id.get(item.id)
+            self._timeline_items_by_id[item.id] = item
+
+            if isinstance(item, mc.facades.timelines.ToolUseTimelineItem):
+                await self._display_op_relay.push(_UpdateToolDisplayOp(item))
+
+            elif old is not None and (old_cls := stream_message_cls_for_item(old)) is not None:
+                # The canonical replacement (or errored finalization) of an in-flight stream item: its content has
+                # already streamed into the widget - just finalize it.
+                if item.finalized:
+                    await self._display_op_relay.push(FinalStreamMessagePart(
+                        old_cls,
+                        item.id,
+                    ))
+
+            elif (w := build_item_message(item)) is not None and item.finalized:
+                # An item form this frontend hasn't displayed yet (tolerance path).
+                if self._messages_container.get_message_by_uuid(item.id) is None:
+                    await self._display_op_relay.push(_MountWidgetDisplayOp(w))
 
     ##
     # Chat actions
@@ -317,6 +395,10 @@ class ChatDriverInterface(
     _cur_chat_action: asyncio.Task[None] | None = None
 
     async def _execute_chat_action(self, fn: ta.Callable[[], ta.Any]) -> None:
+        # Actions wait for driver startup: startup phase callbacks write storage, and concurrent write-bearing orm
+        # sessions conflict under sqlite (see the start_driver note in on_mount).
+        await self._chat_driver_started.wait()
+
         check.state(self._cur_chat_action is None)
         check.state(self._state == ChatDriverInterfaceState.IDLE)
 
@@ -357,10 +439,10 @@ class ChatDriverInterface(
             if ac is None:
                 break
 
-            await alog.debug(lambda: f'Got chat action: {ac!r}')
+            await alog.debug(lambda: f'Got chat action: {ac!r}')  # noqa
 
             if isinstance(ac, ChatDriverInterface.UserInput):
-                await self._execute_chat_action(lambda: self.execute_user_input(ac))
+                await self._execute_chat_action(lambda: self.execute_user_input(ac))  # noqa
 
             else:
                 raise TypeError(ac)  # noqa
@@ -371,13 +453,10 @@ class ChatDriverInterface(
     async def send_user_input(self, s: str, *, no_echo: bool = False) -> None:
         input_uuid = uuid.uuid7()
 
-        if not no_echo:
-            await self._messages_container.mount_messages(
-                UserMessage(
-                    tx.Text(s),
-                    message_uuid=input_uuid,
-                ),
-            )
+        # The user message is *not* mounted here: it arrives as a timeline item (same uuid - the facade stamps it)
+        # when the action begins. no_echo just marks that item to be skipped.
+        if no_echo:
+            self._no_echo_input_uuids.add(input_uuid)
 
         await self._chat_action_queue.put(
             ChatDriverInterface.UserInput(

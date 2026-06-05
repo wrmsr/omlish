@@ -68,6 +68,10 @@ class PausingGate:
         self._resume.clear()
         self._paused.clear()
 
+    @property
+    def paused(self) -> bool:
+        return self._paused.is_set()
+
     async def wait_paused(self) -> None:
         await self._paused.wait()
 
