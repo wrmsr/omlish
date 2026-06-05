@@ -198,15 +198,15 @@ def test_iterator_has_next_and_next():
     it = m.iteritems()
 
     assert it.has_next()
-    assert it.next() == (0, '0')
+    assert next(it) == (0, '0')
     assert it.has_next()
-    assert it.next() == (1, '1')
+    assert next(it) == (1, '1')
     assert it.has_next()
-    assert it.next() == (2, '2')
+    assert next(it) == (2, '2')
     assert not it.has_next()
 
     with pytest.raises(StopIteration):
-        it.next()
+        next(it)
 
 
 class _Key:

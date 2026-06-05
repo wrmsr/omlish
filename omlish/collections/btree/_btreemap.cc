@@ -391,6 +391,46 @@ static int iter_normalize(BtreeIter *self) {
 }
 
 
+// Read-only exhaustion test; caller must hold the iterator's critical section (or be its sole owner, as during
+// construction). Computes what iter_normalize would conclude without doing the work: an out-of-range idx is
+// recoverable iff some stack frame still has a sibling in the iteration direction, and any sibling's subtree is
+// non-empty (every node has len >= 1), so a sibling's existence guarantees an element's. Deliberately does *not*
+// normalize -- that can allocate via iter_push, and a boolean peek should be infallible and non-mutating. This is
+// what restores parity with the pure-python has_next contract: there, eager normalization at the end of next()
+// makes the bare leaf check exact; here next() normalizes lazily, so `leaf != nullptr` alone would report a
+// phantom element after the last item of the final leaf is consumed.
+static int iter_has_next(BtreeIter *self) {
+    if (self->leaf == nullptr) {
+        return 0;
+    }
+
+    if (self->reverse) {
+        if (self->idx >= 0) {
+            return 1;
+        }
+
+        for (Py_ssize_t i = 0; i < self->stack_top; ++i) {
+            if (self->stack[i].idx > 0) {
+                return 1;
+            }
+        }
+    }
+    else {
+        if (self->idx < self->leaf->len) {
+            return 1;
+        }
+
+        for (Py_ssize_t i = 0; i < self->stack_top; ++i) {
+            if (self->stack[i].idx + 1 < self->stack[i].node->len) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
 static PyObject *BtreeIter_next(BtreeIter *self) {
     // Allocated speculatively, *outside* the critical section: PyTuple_New can trigger GC and run arbitrary Python
     // code, which must never happen while the lock is held. Nothing inside the section below can re-enter Python:
@@ -433,12 +473,32 @@ static PyObject *BtreeIter_next(BtreeIter *self) {
 }
 
 
+static PyObject *BtreeIter_has_next(BtreeIter *self, PyObject *Py_UNUSED(ignored)) {
+    int has = 0;
+
+    Py_BEGIN_CRITICAL_SECTION((PyObject *)self);
+
+    has = iter_has_next(self);
+
+    Py_END_CRITICAL_SECTION();
+
+    return PyBool_FromLong(has);
+}
+
+
+static PyMethodDef BtreeIter_methods[] = {
+    {"has_next", (PyCFunction)BtreeIter_has_next, METH_NOARGS, "has_next() -> bool"},
+    {nullptr, nullptr, 0, nullptr}
+};
+
+
 static PyType_Slot BtreeIter_slots[] = {
     {Py_tp_dealloc, (void *)BtreeIter_dealloc},
     {Py_tp_traverse, (void *)BtreeIter_traverse},
     {Py_tp_clear, (void *)BtreeIter_clear},
     {Py_tp_iter, (void *)BtreeIter_iter},
     {Py_tp_iternext, (void *)BtreeIter_next},
+    {Py_tp_methods, (void *)BtreeIter_methods},
     {0, nullptr}
 };
 
@@ -1218,8 +1278,6 @@ static int branch_delete_impl(
         return 0;
     }
 
-    int removed_child = res.node == nullptr;
-
     NodeVec children;
     node_vec_init(&children);
 
@@ -1245,54 +1303,18 @@ static int branch_delete_impl(
         return 0;
     }
 
-    Py_ssize_t before_compact_len = children.len;
-
     NodeVec compacted;
 
     if (compact_owned_children(state, &children, &compacted) < 0) {
         return -1;
     }
 
-    if (compacted.len != before_compact_len) {
-        out->node = make_branch(state, compacted.items, compacted.len);
-        node_vec_clear(&compacted);
-
-        return out->node == nullptr ? -1 : 0;
-    }
-
-    if (compacted.len == 1) {
-        out->node = (BtreeNode *)Py_NewRef((PyObject *)compacted.items[0]);
-        node_vec_clear(&compacted);
-
-        return 0;
-    }
-
-    PyObject *keys[MAX_BRANCH_LEN];
-
-    if (removed_child) {
-        for (Py_ssize_t i = 0; i < idx; ++i) {
-            keys[i] = node_key(n, i);
-        }
-
-        for (Py_ssize_t i = idx + 1; i < n->len; ++i) {
-            keys[i - 1] = node_key(n, i);
-        }
-    }
-    else {
-        for (Py_ssize_t i = 0; i < compacted.len; ++i) {
-            keys[i] = (i == idx) ? node_max(compacted.items[i]) : node_key(n, i);
-        }
-    }
-
-    out->node = make_branch_direct(
-        state,
-        keys,
-        compacted.items,
-        compacted.len,
-        n->count - 1
-    );
-
+    // make_branch recomputes keys/count from the children (O(1) node_max per child, all warm from the can_merge sweep)
+    // and performs the unary collapse itself, so no delete-side fast path earns its weight. Contrast replace_child on
+    // the insert path, which is hot and whose manual key copy avoids touching the children at all.
+    out->node = make_branch(state, compacted.items, compacted.len);
     node_vec_clear(&compacted);
+
     return out->node == nullptr ? -1 : 0;
 }
 

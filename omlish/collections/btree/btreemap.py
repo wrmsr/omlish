@@ -17,11 +17,20 @@ else:
     _backend = _btreemap  # noqa
 
 
+T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
 ##
+
+
+class HasNextIterator(ta.Protocol[T]):
+    def __iter__(self) -> HasNextIterator[T]: ...
+
+    def __next__(self) -> T: ...
+
+    def has_next(self) -> bool: ...
 
 
 @ta.final
@@ -55,7 +64,7 @@ class BtreeMap(
     def __getitem__(self, item: K) -> V:
         return _backend.find(self._root, item, self._cmp)
 
-    def __iter__(self) -> ta.Iterator[K]:
+    def __iter__(self) -> HasNextIterator[K]:
         for k, _ in self.iteritems():
             yield k
 
@@ -63,16 +72,16 @@ class BtreeMap(
 
     itervalues = iteritems_itervalues
 
-    def iteritems(self) -> ta.Iterator[tuple[K, V]]:
+    def iteritems(self) -> HasNextIterator[tuple[K, V]]:
         return _backend.iter(self._root)
 
-    def items_desc(self) -> ta.Iterator[tuple[K, V]]:
+    def items_desc(self) -> HasNextIterator[tuple[K, V]]:
         return _backend.riter(self._root)
 
-    def items_from(self, k: K) -> ta.Iterator[tuple[K, V]]:
+    def items_from(self, k: K) -> HasNextIterator[tuple[K, V]]:
         return _backend.iter_from(self._root, k, self._cmp)
 
-    def items_from_desc(self, k: K) -> ta.Iterator[tuple[K, V]]:
+    def items_from_desc(self, k: K) -> HasNextIterator[tuple[K, V]]:
         return _backend.riter_from(self._root, k, self._cmp)
 
     def with_(self, k: K, v: V) -> ta.Self:
