@@ -147,16 +147,12 @@ exclude = [
     '*.abnf',
     '*.g4',
     '.omlish-manifests.json',
+    '*.md',
     'README',
-    'README.md',
     'README.rst',
     'LICENSE',
     'LICENSE.txt',
     'AUTHORS',
-    'DESIGN.md',
-]
-'omlish' = [
-    'CODESTYLE.md',
 ]
 'omlish.cexts' = [
     'include/omlish/*',
