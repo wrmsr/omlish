@@ -26,77 +26,92 @@ def _register(**kwargs):
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_fingerprint"
-        "', 'usage', 'obfuscation')), EqPlan(fields=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'sy"
-        "stem_fingerprint', 'usage', 'obfuscation')), FrozenPlan(fields=('id', 'choices', 'created', 'model', 'object',"
-        " 'service_tier', 'system_fingerprint', 'usage', 'obfuscation'), allow_dynamic_dunder_attrs=False), HashPlan(ac"
-        "tion='add', fields=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_fingerprint', 'usag"
-        "e', 'obfuscation'), cache=False), InitPlan(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init.field"
-        "s.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='choices', annotation=OpRef(name='init.fie"
-        "lds.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
-        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='created', annotation=OpRef(name='init.f"
-        "ields.2.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='model', annotation=OpRef(name='init.f"
-        "ields.3.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='object', annotation=OpRef(name='init."
-        "fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override="
-        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='servi"
-        "ce_tier', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='system_fingerprint', annotation=OpRef(name='init.fields.6.annotation'), defau"
-        "lt=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='usage', annotation=OpRef(name='in"
-        "it.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ob"
-        "fuscation', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None)), self_param='self', std_params=(), kw_only_params=('id', 'choices', 'created', 'model', 'object'"
-        ", 'service_tier', 'system_fingerprint', 'usage', 'obfuscation'), frozen=True, slots=False, post_init_params=No"
-        "ne, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='choices', kw_only=True, fn=None), ReprPlan.Field(name='created', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='model', kw_only=True, fn=None), ReprPlan.Field(name='service_tier', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='system_fingerprint', kw_only=True, fn=None), ReprPlan.Field(name='usage', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='obfuscation', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "', 'usage', 'obfuscation', 'time_info', 'x_groq')), EqPlan(fields=('id', 'choices', 'created', 'model', 'objec"
+        "t', 'service_tier', 'system_fingerprint', 'usage', 'obfuscation', 'time_info', 'x_groq')), FrozenPlan(fields=("
+        "'id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_fingerprint', 'usage', 'obfuscation', '"
+        "time_info', 'x_groq'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('id', 'choices', 'cre"
+        "ated', 'model', 'object', 'service_tier', 'system_fingerprint', 'usage', 'obfuscation', 'time_info', 'x_groq')"
+        ", cache=False), InitPlan(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init.fields.00.annotation'),"
+        " default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='choices', annotation=OpRef(name='init.fields.01.annotation"
+        "'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='created', annotation=OpRef(name='init.fields.02.annotat"
+        "ion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='model', annotation=OpRef(name='init.fields.03.annota"
+        "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='object', annotation=OpRef(name='init.fields.04.anno"
+        "tation'), default=OpRef(name='init.fields.04.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='service_tier', an"
+        "notation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='system_fingerprint', annotation=OpRef(name='init.fields.06.annotation'), default=OpRef("
+        "name='init.fields.06.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='usage', annotation=OpRef(name='init.field"
+        "s.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='obfuscat"
+        "ion', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='time_info', annotation=OpRef(name='init.fields.09.annotation'), default=OpRef(n"
+        "ame='init.fields.09.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='x_groq', annotation=OpRef(name='init.field"
+        "s.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_param"
+        "s=(), kw_only_params=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_fingerprint', 'us"
+        "age', 'obfuscation', 'time_info', 'x_groq'), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
+        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), ReprPlan.Field(name='choices"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='created', kw_only=True, fn=None), ReprPlan.Field(name='model',"
+        " kw_only=True, fn=None), ReprPlan.Field(name='service_tier', kw_only=True, fn=None), ReprPlan.Field(name='syst"
+        "em_fingerprint', kw_only=True, fn=None), ReprPlan.Field(name='usage', kw_only=True, fn=None), ReprPlan.Field(n"
+        "ame='obfuscation', kw_only=True, fn=None), ReprPlan.Field(name='time_info', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='x_groq', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='1528694c451d444dbd9a99d7712a716f1a99dbd1',
+    plan_repr_sha1='3d73ba1f5de270521bf16efc58111adcf69bc48e',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
+        '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
     ),
     cls_names=(
         ('ommlds.backends.openai.protocol.chatcompletion.chunk', 'ChatCompletionChunk'),
     ),
 )
-def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
+def _process_dataclass__3d73ba1f5de270521bf16efc58111adcf69bc48e():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
+        __dataclass__init__fields__10__annotation,
+        __dataclass__init__fields__10__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -124,6 +139,8 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
                 system_fingerprint=self.system_fingerprint,
                 usage=self.usage,
                 obfuscation=self.obfuscation,
+                time_info=self.time_info,
+                x_groq=self.x_groq,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -145,7 +162,9 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
                 self.service_tier == other.service_tier and
                 self.system_fingerprint == other.system_fingerprint and
                 self.usage == other.usage and
-                self.obfuscation == other.obfuscation
+                self.obfuscation == other.obfuscation and
+                self.time_info == other.time_info and
+                self.x_groq == other.x_groq
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -163,6 +182,8 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
             'system_fingerprint',
             'usage',
             'obfuscation',
+            'time_info',
+            'x_groq',
         }
 
         def __setattr__(self, name, value):
@@ -188,6 +209,8 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
             'system_fingerprint',
             'usage',
             'obfuscation',
+            'time_info',
+            'x_groq',
         }
 
         def __delattr__(self, name):
@@ -214,6 +237,8 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
                 self.system_fingerprint,
                 self.usage,
                 self.obfuscation,
+                self.time_info,
+                self.x_groq,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -222,15 +247,17 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
         def __init__(
             self,
             *,
-            id: __dataclass__init__fields__0__annotation,
-            choices: __dataclass__init__fields__1__annotation,
-            created: __dataclass__init__fields__2__annotation,
-            model: __dataclass__init__fields__3__annotation,
-            object: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            service_tier: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            system_fingerprint: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            usage: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            obfuscation: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
+            id: __dataclass__init__fields__00__annotation,
+            choices: __dataclass__init__fields__01__annotation,
+            created: __dataclass__init__fields__02__annotation,
+            model: __dataclass__init__fields__03__annotation,
+            object: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            service_tier: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            system_fingerprint: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            usage: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            obfuscation: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            time_info: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
+            x_groq: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'id', id)
             __dataclass__object_setattr(self, 'choices', choices)
@@ -241,6 +268,8 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
             __dataclass__object_setattr(self, 'system_fingerprint', system_fingerprint)
             __dataclass__object_setattr(self, 'usage', usage)
             __dataclass__object_setattr(self, 'obfuscation', obfuscation)
+            __dataclass__object_setattr(self, 'time_info', time_info)
+            __dataclass__object_setattr(self, 'x_groq', x_groq)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -258,6 +287,8 @@ def _process_dataclass__1528694c451d444dbd9a99d7712a716f1a99dbd1():
             parts.append(f"system_fingerprint={self.system_fingerprint!r}")
             parts.append(f"usage={self.usage!r}")
             parts.append(f"obfuscation={self.obfuscation!r}")
+            parts.append(f"time_info={self.time_info!r}")
+            parts.append(f"x_groq={self.x_groq!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -606,28 +637,32 @@ def _process_dataclass__a784a12ebcb916e633672bf2c35c6579e020ff31():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('content', 'refusal', 'channel', 'role', 'tool_calls')), EqPlan(fields=('content',"
-        " 'refusal', 'channel', 'role', 'tool_calls')), FrozenPlan(fields=('content', 'refusal', 'channel', 'role', 'to"
-        "ol_calls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('content', 'refusal', 'channel',"
-        " 'role', 'tool_calls'), cache=False), InitPlan(fields=(InitPlan.Field(name='content', annotation=OpRef(name='i"
-        "nit.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='r"
-        "efusal', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='channel', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(nam"
-        "e='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='role', annotation=OpRef(name='init.fields.3.a"
-        "nnotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tool_calls', an"
-        "notation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory="
-        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)),"
-        " self_param='self', std_params=(), kw_only_params=('content', 'refusal', 'channel', 'role', 'tool_calls'), fro"
-        "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
-        "ame='content', kw_only=True, fn=None), ReprPlan.Field(name='refusal', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='channel', kw_only=True, fn=None), ReprPlan.Field(name='role', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='tool_calls', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('content', 'refusal', 'channel', 'reasoning', 'role', 'tool_calls')), EqPlan(field"
+        "s=('content', 'refusal', 'channel', 'reasoning', 'role', 'tool_calls')), FrozenPlan(fields=('content', 'refusa"
+        "l', 'channel', 'reasoning', 'role', 'tool_calls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', f"
+        "ields=('content', 'refusal', 'channel', 'reasoning', 'role', 'tool_calls'), cache=False), InitPlan(fields=(Ini"
+        "tPlan.Field(name='content', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields"
+        ".0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='refusal', annotation=OpRef(name='init.fields.1.annotation')"
+        ", default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='channel', annotation=OpRef"
+        "(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='reasoning', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='role', annotation=OpRef(name='init.fields.4.annotation'), default=Op"
+        "Ref(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
+        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tool_calls', annotation=OpRef(name='in"
+        "it.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std"
+        "_params=(), kw_only_params=('content', 'refusal', 'channel', 'reasoning', 'role', 'tool_calls'), frozen=True, "
+        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='conte"
+        "nt', kw_only=True, fn=None), ReprPlan.Field(name='refusal', kw_only=True, fn=None), ReprPlan.Field(name='chann"
+        "el', kw_only=True, fn=None), ReprPlan.Field(name='reasoning', kw_only=True, fn=None), ReprPlan.Field(name='rol"
+        "e', kw_only=True, fn=None), ReprPlan.Field(name='tool_calls', kw_only=True, fn=None)), id=False, terse=False, "
+        "default_fn=None)))"
     ),
-    plan_repr_sha1='aa76a085715c704bda9c0731aa3769f95d66c826',
+    plan_repr_sha1='e0dd6733c70afd63e62d3d1f56e946a61b8abd4b',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -639,12 +674,14 @@ def _process_dataclass__a784a12ebcb916e633672bf2c35c6579e020ff31():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
     ),
     cls_names=(
         ('ommlds.backends.openai.protocol.chatcompletion.chunk', 'ChatCompletionChunkChoiceDelta'),
     ),
 )
-def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
+def _process_dataclass__e0dd6733c70afd63e62d3d1f56e946a61b8abd4b():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -658,6 +695,8 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__5__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -679,6 +718,7 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
                 content=self.content,
                 refusal=self.refusal,
                 channel=self.channel,
+                reasoning=self.reasoning,
                 role=self.role,
                 tool_calls=self.tool_calls,
             )
@@ -697,6 +737,7 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
                 self.content == other.content and
                 self.refusal == other.refusal and
                 self.channel == other.channel and
+                self.reasoning == other.reasoning and
                 self.role == other.role and
                 self.tool_calls == other.tool_calls
             )
@@ -710,6 +751,7 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
             'content',
             'refusal',
             'channel',
+            'reasoning',
             'role',
             'tool_calls',
         }
@@ -731,6 +773,7 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
             'content',
             'refusal',
             'channel',
+            'reasoning',
             'role',
             'tool_calls',
         }
@@ -753,6 +796,7 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
                 self.content,
                 self.refusal,
                 self.channel,
+                self.reasoning,
                 self.role,
                 self.tool_calls,
             ))
@@ -766,12 +810,14 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
             content: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             refusal: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             channel: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            role: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            tool_calls: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            reasoning: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            role: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            tool_calls: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'content', content)
             __dataclass__object_setattr(self, 'refusal', refusal)
             __dataclass__object_setattr(self, 'channel', channel)
+            __dataclass__object_setattr(self, 'reasoning', reasoning)
             __dataclass__object_setattr(self, 'role', role)
             __dataclass__object_setattr(self, 'tool_calls', tool_calls)
 
@@ -786,6 +832,7 @@ def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
             parts.append(f"content={self.content!r}")
             parts.append(f"refusal={self.refusal!r}")
             parts.append(f"channel={self.channel!r}")
+            parts.append(f"reasoning={self.reasoning!r}")
             parts.append(f"role={self.role!r}")
             parts.append(f"tool_calls={self.tool_calls!r}")
             return (
@@ -5324,70 +5371,93 @@ def _process_dataclass__57f153c4c546fa5429d79eedff004cd245c9ba6f():
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_fingerprint"
-        "', 'usage')), EqPlan(fields=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_fingerprin"
-        "t', 'usage')), FrozenPlan(fields=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_finge"
-        "rprint', 'usage'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('id', 'choices', 'created"
-        "', 'model', 'object', 'service_tier', 'system_fingerprint', 'usage'), cache=False), InitPlan(fields=(InitPlan."
-        "Field(name='id', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='choices', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='created', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='model', annotation=OpRef(name='init.fields.3.annotation'), default=None, default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='object', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.def"
+        "', 'usage', 'time_info', 'usage_breakdown', 'x_groq')), EqPlan(fields=('id', 'choices', 'created', 'model', 'o"
+        "bject', 'service_tier', 'system_fingerprint', 'usage', 'time_info', 'usage_breakdown', 'x_groq')), FrozenPlan("
+        "fields=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'system_fingerprint', 'usage', 'time_in"
+        "fo', 'usage_breakdown', 'x_groq'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('id', 'ch"
+        "oices', 'created', 'model', 'object', 'service_tier', 'system_fingerprint', 'usage', 'time_info', 'usage_break"
+        "down', 'x_groq'), cache=False), InitPlan(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init.fields."
+        "00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='choices', annotation=OpRef(name='init.fiel"
+        "ds.01.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='created', annotation=OpRef(name='init.f"
+        "ields.02.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='model', annotation=OpRef(name='init."
+        "fields.03.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='object', annotation=OpRef(name='ini"
+        "t.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='s"
+        "ervice_tier', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='system_fingerprint', annotation=OpRef(name='init.fields.06.annotation')"
+        ", default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='usage', annotation=OpRef("
+        "name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='time_info', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.def"
         "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='service_tier', annotation=OpRef(name='init.fields.5.annotation'),"
-        " default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='system_fingerprint', annota"
-        "tion=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='usage', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('id', 'choices', 'created', 'mod"
-        "el', 'object', 'service_tier', 'system_fingerprint', 'usage'), frozen=True, slots=False, post_init_params=None"
-        ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='choices', kw_only=True, fn=None), ReprPlan.Field(name='created', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='model', kw_only=True, fn=None), ReprPlan.Field(name='service_tier', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='system_fingerprint', kw_only=True, fn=None), ReprPlan.Field(name='usage', kw_only=True, fn=None)"
-        "), id=False, terse=False, default_fn=None)))"
+        "None, check_type=None), InitPlan.Field(name='usage_breakdown', annotation=OpRef(name='init.fields.09.annotatio"
+        "n'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='x_groq', annotation=Op"
+        "Ref(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_par"
+        "am='self', std_params=(), kw_only_params=('id', 'choices', 'created', 'model', 'object', 'service_tier', 'syst"
+        "em_fingerprint', 'usage', 'time_info', 'usage_breakdown', 'x_groq'), frozen=True, slots=False, post_init_param"
+        "s=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='choices', kw_only=True, fn=None), ReprPlan.Field(name='created', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='model', kw_only=True, fn=None), ReprPlan.Field(name='service_tier', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='system_fingerprint', kw_only=True, fn=None), ReprPlan.Field(name='usage', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='time_info', kw_only=True, fn=None), ReprPlan.Field(name='usage_breakdown', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='x_groq', kw_only=True, fn=None)), id=False, terse=False, default_fn=Non"
+        "e)))"
     ),
-    plan_repr_sha1='b602fb539c3c1ecfe31a941173b179f373b5dade',
+    plan_repr_sha1='9b9f91ead43692c95f1eab73fc3ba8716cc9a6a6',
     op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__00__annotation',
+        '__dataclass__init__fields__01__annotation',
+        '__dataclass__init__fields__02__annotation',
+        '__dataclass__init__fields__03__annotation',
+        '__dataclass__init__fields__04__annotation',
+        '__dataclass__init__fields__04__default',
+        '__dataclass__init__fields__05__annotation',
+        '__dataclass__init__fields__05__default',
+        '__dataclass__init__fields__06__annotation',
+        '__dataclass__init__fields__06__default',
+        '__dataclass__init__fields__07__annotation',
+        '__dataclass__init__fields__07__default',
+        '__dataclass__init__fields__08__annotation',
+        '__dataclass__init__fields__08__default',
+        '__dataclass__init__fields__09__annotation',
+        '__dataclass__init__fields__09__default',
+        '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
     ),
     cls_names=(
         ('ommlds.backends.openai.protocol.chatcompletion.response', 'ChatCompletionResponse'),
     ),
 )
-def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
+def _process_dataclass__9b9f91ead43692c95f1eab73fc3ba8716cc9a6a6():
     def _process_dataclass(
         *,
         __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
+        __dataclass__init__fields__00__annotation,
+        __dataclass__init__fields__01__annotation,
+        __dataclass__init__fields__02__annotation,
+        __dataclass__init__fields__03__annotation,
+        __dataclass__init__fields__04__annotation,
+        __dataclass__init__fields__04__default,
+        __dataclass__init__fields__05__annotation,
+        __dataclass__init__fields__05__default,
+        __dataclass__init__fields__06__annotation,
+        __dataclass__init__fields__06__default,
+        __dataclass__init__fields__07__annotation,
+        __dataclass__init__fields__07__default,
+        __dataclass__init__fields__08__annotation,
+        __dataclass__init__fields__08__default,
+        __dataclass__init__fields__09__annotation,
+        __dataclass__init__fields__09__default,
+        __dataclass__init__fields__10__annotation,
+        __dataclass__init__fields__10__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5414,6 +5484,9 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
                 service_tier=self.service_tier,
                 system_fingerprint=self.system_fingerprint,
                 usage=self.usage,
+                time_info=self.time_info,
+                usage_breakdown=self.usage_breakdown,
+                x_groq=self.x_groq,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -5434,7 +5507,10 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
                 self.object == other.object and
                 self.service_tier == other.service_tier and
                 self.system_fingerprint == other.system_fingerprint and
-                self.usage == other.usage
+                self.usage == other.usage and
+                self.time_info == other.time_info and
+                self.usage_breakdown == other.usage_breakdown and
+                self.x_groq == other.x_groq
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -5451,6 +5527,9 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
             'service_tier',
             'system_fingerprint',
             'usage',
+            'time_info',
+            'usage_breakdown',
+            'x_groq',
         }
 
         def __setattr__(self, name, value):
@@ -5475,6 +5554,9 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
             'service_tier',
             'system_fingerprint',
             'usage',
+            'time_info',
+            'usage_breakdown',
+            'x_groq',
         }
 
         def __delattr__(self, name):
@@ -5500,6 +5582,9 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
                 self.service_tier,
                 self.system_fingerprint,
                 self.usage,
+                self.time_info,
+                self.usage_breakdown,
+                self.x_groq,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -5508,14 +5593,17 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
         def __init__(
             self,
             *,
-            id: __dataclass__init__fields__0__annotation,
-            choices: __dataclass__init__fields__1__annotation,
-            created: __dataclass__init__fields__2__annotation,
-            model: __dataclass__init__fields__3__annotation,
-            object: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            service_tier: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            system_fingerprint: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            usage: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            id: __dataclass__init__fields__00__annotation,
+            choices: __dataclass__init__fields__01__annotation,
+            created: __dataclass__init__fields__02__annotation,
+            model: __dataclass__init__fields__03__annotation,
+            object: __dataclass__init__fields__04__annotation = __dataclass__init__fields__04__default,
+            service_tier: __dataclass__init__fields__05__annotation = __dataclass__init__fields__05__default,
+            system_fingerprint: __dataclass__init__fields__06__annotation = __dataclass__init__fields__06__default,
+            usage: __dataclass__init__fields__07__annotation = __dataclass__init__fields__07__default,
+            time_info: __dataclass__init__fields__08__annotation = __dataclass__init__fields__08__default,
+            usage_breakdown: __dataclass__init__fields__09__annotation = __dataclass__init__fields__09__default,
+            x_groq: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'id', id)
             __dataclass__object_setattr(self, 'choices', choices)
@@ -5525,6 +5613,9 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
             __dataclass__object_setattr(self, 'service_tier', service_tier)
             __dataclass__object_setattr(self, 'system_fingerprint', system_fingerprint)
             __dataclass__object_setattr(self, 'usage', usage)
+            __dataclass__object_setattr(self, 'time_info', time_info)
+            __dataclass__object_setattr(self, 'usage_breakdown', usage_breakdown)
+            __dataclass__object_setattr(self, 'x_groq', x_groq)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -5541,6 +5632,9 @@ def _process_dataclass__b602fb539c3c1ecfe31a941173b179f373b5dade():
             parts.append(f"service_tier={self.service_tier!r}")
             parts.append(f"system_fingerprint={self.system_fingerprint!r}")
             parts.append(f"usage={self.usage!r}")
+            parts.append(f"time_info={self.time_info!r}")
+            parts.append(f"usage_breakdown={self.usage_breakdown!r}")
+            parts.append(f"x_groq={self.x_groq!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -7225,30 +7319,44 @@ def _process_dataclass__e1af9be7f64c4eea692034674c3d64de8d125f04():
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('completion_tokens', 'prompt_tokens', 'total_tokens', 'completion_tokens_details',"
-        " 'prompt_tokens_details')), EqPlan(fields=('completion_tokens', 'prompt_tokens', 'total_tokens', 'completion_t"
-        "okens_details', 'prompt_tokens_details')), FrozenPlan(fields=('completion_tokens', 'prompt_tokens', 'total_tok"
-        "ens', 'completion_tokens_details', 'prompt_tokens_details'), allow_dynamic_dunder_attrs=False), HashPlan(actio"
-        "n='add', fields=('completion_tokens', 'prompt_tokens', 'total_tokens', 'completion_tokens_details', 'prompt_to"
-        "kens_details'), cache=False), InitPlan(fields=(InitPlan.Field(name='completion_tokens', annotation=OpRef(name="
-        "'init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldTy"
-        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='prompt_tokens', annotation=OpR"
-        "ef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type"
-        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='total_tokens', annotat"
-        "ion=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='completion_toke"
-        "ns_details', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='prompt_tokens_details', annotation=OpRef(name='init.fields.4.annotation'),"
-        " default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_param"
-        "s=('completion_tokens', 'prompt_tokens', 'total_tokens', 'completion_tokens_details', 'prompt_tokens_details')"
-        ", frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Fi"
-        "eld(name='completion_tokens', kw_only=True, fn=None), ReprPlan.Field(name='prompt_tokens', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='total_tokens', kw_only=True, fn=None), ReprPlan.Field(name='completion_tokens_detail"
-        "s', kw_only=True, fn=None), ReprPlan.Field(name='prompt_tokens_details', kw_only=True, fn=None)), id=False, te"
-        "rse=False, default_fn=None)))"
+        " 'prompt_tokens_details', 'queue_time', 'completion_time', 'prompt_time', 'total_time')), EqPlan(fields=('comp"
+        "letion_tokens', 'prompt_tokens', 'total_tokens', 'completion_tokens_details', 'prompt_tokens_details', 'queue_"
+        "time', 'completion_time', 'prompt_time', 'total_time')), FrozenPlan(fields=('completion_tokens', 'prompt_token"
+        "s', 'total_tokens', 'completion_tokens_details', 'prompt_tokens_details', 'queue_time', 'completion_time', 'pr"
+        "ompt_time', 'total_time'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('completion_token"
+        "s', 'prompt_tokens', 'total_tokens', 'completion_tokens_details', 'prompt_tokens_details', 'queue_time', 'comp"
+        "letion_time', 'prompt_time', 'total_time'), cache=False), InitPlan(fields=(InitPlan.Field(name='completion_tok"
+        "ens', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='pr"
+        "ompt_tokens', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='total_tokens', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='completion_tokens_details', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name"
+        "='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='prompt_tokens_details', annotation=OpRef(name="
+        "'init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'queue_time', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None), InitPlan.Field(name='completion_time', annotation=OpRef(name='init.fields.6.annotation'), defa"
+        "ult=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='prompt_time', annotation=OpRef(n"
+        "ame='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='total_time', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None)), self_param='self', std_params=(), kw_only_params=('completion_tokens', 'prompt_tokens', '"
+        "total_tokens', 'completion_tokens_details', 'prompt_tokens_details', 'queue_time', 'completion_time', 'prompt_"
+        "time', 'total_time'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan"
+        "(fields=(ReprPlan.Field(name='completion_tokens', kw_only=True, fn=None), ReprPlan.Field(name='prompt_tokens',"
+        " kw_only=True, fn=None), ReprPlan.Field(name='total_tokens', kw_only=True, fn=None), ReprPlan.Field(name='comp"
+        "letion_tokens_details', kw_only=True, fn=None), ReprPlan.Field(name='prompt_tokens_details', kw_only=True, fn="
+        "None), ReprPlan.Field(name='queue_time', kw_only=True, fn=None), ReprPlan.Field(name='completion_time', kw_onl"
+        "y=True, fn=None), ReprPlan.Field(name='prompt_time', kw_only=True, fn=None), ReprPlan.Field(name='total_time',"
+        " kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5',
+    plan_repr_sha1='e65adc32d0c705444e369f54f57f27cdd23202a4',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -7257,12 +7365,20 @@ def _process_dataclass__e1af9be7f64c4eea692034674c3d64de8d125f04():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
     ),
     cls_names=(
         ('ommlds.backends.openai.protocol.completionusage', 'CompletionUsage'),
     ),
 )
-def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
+def _process_dataclass__e65adc32d0c705444e369f54f57f27cdd23202a4():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -7273,6 +7389,14 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
+        __dataclass__init__fields__7__annotation,
+        __dataclass__init__fields__7__default,
+        __dataclass__init__fields__8__annotation,
+        __dataclass__init__fields__8__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -7296,6 +7420,10 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
                 total_tokens=self.total_tokens,
                 completion_tokens_details=self.completion_tokens_details,
                 prompt_tokens_details=self.prompt_tokens_details,
+                queue_time=self.queue_time,
+                completion_time=self.completion_time,
+                prompt_time=self.prompt_time,
+                total_time=self.total_time,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -7313,7 +7441,11 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
                 self.prompt_tokens == other.prompt_tokens and
                 self.total_tokens == other.total_tokens and
                 self.completion_tokens_details == other.completion_tokens_details and
-                self.prompt_tokens_details == other.prompt_tokens_details
+                self.prompt_tokens_details == other.prompt_tokens_details and
+                self.queue_time == other.queue_time and
+                self.completion_time == other.completion_time and
+                self.prompt_time == other.prompt_time and
+                self.total_time == other.total_time
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -7327,6 +7459,10 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
             'total_tokens',
             'completion_tokens_details',
             'prompt_tokens_details',
+            'queue_time',
+            'completion_time',
+            'prompt_time',
+            'total_time',
         }
 
         def __setattr__(self, name, value):
@@ -7348,6 +7484,10 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
             'total_tokens',
             'completion_tokens_details',
             'prompt_tokens_details',
+            'queue_time',
+            'completion_time',
+            'prompt_time',
+            'total_time',
         }
 
         def __delattr__(self, name):
@@ -7370,6 +7510,10 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
                 self.total_tokens,
                 self.completion_tokens_details,
                 self.prompt_tokens_details,
+                self.queue_time,
+                self.completion_time,
+                self.prompt_time,
+                self.total_time,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -7383,12 +7527,20 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
             total_tokens: __dataclass__init__fields__2__annotation,
             completion_tokens_details: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             prompt_tokens_details: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            queue_time: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            completion_time: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            prompt_time: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            total_time: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'completion_tokens', completion_tokens)
             __dataclass__object_setattr(self, 'prompt_tokens', prompt_tokens)
             __dataclass__object_setattr(self, 'total_tokens', total_tokens)
             __dataclass__object_setattr(self, 'completion_tokens_details', completion_tokens_details)
             __dataclass__object_setattr(self, 'prompt_tokens_details', prompt_tokens_details)
+            __dataclass__object_setattr(self, 'queue_time', queue_time)
+            __dataclass__object_setattr(self, 'completion_time', completion_time)
+            __dataclass__object_setattr(self, 'prompt_time', prompt_time)
+            __dataclass__object_setattr(self, 'total_time', total_time)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -7403,6 +7555,10 @@ def _process_dataclass__defe4c6ebb95ab53b9b74a4c2ebfec018c761bd5():
             parts.append(f"total_tokens={self.total_tokens!r}")
             parts.append(f"completion_tokens_details={self.completion_tokens_details!r}")
             parts.append(f"prompt_tokens_details={self.prompt_tokens_details!r}")
+            parts.append(f"queue_time={self.queue_time!r}")
+            parts.append(f"completion_time={self.completion_time!r}")
+            parts.append(f"prompt_time={self.prompt_time!r}")
+            parts.append(f"total_time={self.total_time!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

@@ -38,6 +38,9 @@ _EMPTY_OPTIONS: Options = Options()
 class DefaultOptions(tv.UniqueTypedValue, Config, lang.Final):
     v: Options
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.v!r})'
+
     def __post_init__(self) -> None:
         check.isinstance(self.v, tv.TypedValues)
         check.not_in(IgnoreDefaultOptions, self.v)

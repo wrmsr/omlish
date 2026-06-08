@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -31,3 +33,9 @@ class CompletionUsage(lang.Final):
         cached_tokens: int | None = None
 
     prompt_tokens_details: PromptTokensDetails | None = None
+
+    # openai-compat dialect extension (groq)
+    queue_time: ta.Any | None = None
+    completion_time: ta.Any | None = None
+    prompt_time: ta.Any | None = None
+    total_time: ta.Any | None = None

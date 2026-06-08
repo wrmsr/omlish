@@ -114,8 +114,15 @@ class ChatCompletionResponse(lang.Final):
         'auto',
         'default',
         'flex',
+        'on_demand',  # groq
     ] | None = None
 
     system_fingerprint: str | None = None
 
     usage: CompletionUsage | None = None
+
+    # openai-compat dialect extension (cerebras)
+    time_info: ta.Any | None = None
+    # openai-compat dialect extension (groq)
+    usage_breakdown: ta.Any | None = None
+    x_groq: ta.Any | None = None

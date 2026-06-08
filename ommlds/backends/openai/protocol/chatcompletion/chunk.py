@@ -21,6 +21,7 @@ class ChatCompletionChunkChoiceDelta(lang.Final):
     # openai-compat dialect extension (groq/cerebras gpt-oss): 'analysis' / 'commentary' reasoning channels. Never
     # set by openai itself.
     channel: str | None = None
+    reasoning: str | None = None
 
     role: ta.Literal[
         'developer',
@@ -93,6 +94,7 @@ class ChatCompletionChunk(lang.Final):
         'auto',
         'default',
         'flex',
+        'on_demand',  # groq
     ] | None = None
 
     system_fingerprint: str | None = None
@@ -100,3 +102,8 @@ class ChatCompletionChunk(lang.Final):
     usage: CompletionUsage | None = None
 
     obfuscation: str | None = None
+
+    # openai-compat dialect extension (cerebras)
+    time_info: ta.Any | None = None
+    # openai-compat dialect extension (groq)
+    x_groq: ta.Any | None = None
