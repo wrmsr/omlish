@@ -38,7 +38,7 @@ cramjam==2.11.0
 cryptography==48.0.0
 cycler==0.12.1
 Cython==3.2.5
-datasets==4.8.5
+datasets==5.0.0
 ddgs==9.14.4
 debugpy==1.8.21
 decorator==5.3.1
@@ -58,7 +58,7 @@ Flake8-pyproject==1.2.4
 flatbuffers==25.12.19
 fonttools==4.63.0
 frozenlist==1.8.0
-fsspec==2026.2.0
+fsspec==2026.4.0
 gguf==0.19.0
 google-api-core==2.31.0
 google-api-python-client==2.197.0
@@ -78,7 +78,7 @@ hpack==4.1.0
 httpcore==1.0.9
 httplib2==0.31.2
 httpx==0.28.1
-huggingface_hub==1.17.0
+huggingface_hub==1.18.0
 hyperframe==6.1.0
 id==1.6.1
 idna==3.18
@@ -171,7 +171,7 @@ pyclipper==1.4.0
 pycodestyle==2.14.0
 pycparser==3.0
 pycryptodomex==3.23.0
-pydantic-monty==0.0.17
+pydantic-monty==0.0.18
 pyee==13.0.1
 pyflakes==3.4.0
 Pygments==2.20.0
@@ -211,7 +211,7 @@ scikit-learn==1.9.0
 scipy==1.17.1
 scramp==1.4.8
 segno==1.6.6
-sentence-transformers==5.4.1
+sentence-transformers==5.5.1
 sentencepiece==0.2.1
 setuptools==81.0.0
 shapely==2.1.2
@@ -240,7 +240,7 @@ torch==2.12.0
 torchvision==0.27.0
 tqdm==4.68.1
 traitlets==5.15.1
-transformers==5.7.0
+transformers==5.10.2
 tree-sitter==0.25.2
 tree-sitter-bash==0.25.1
 tree-sitter-css==0.25.0

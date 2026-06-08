@@ -37,13 +37,13 @@ class Project(ProjectBase):
 
             'torch ~= 2.12',
 
-            'transformers ~= 5.7',
-            'sentence-transformers ~= 5.4',
+            'transformers ~= 5.10',
+            'sentence-transformers ~= 5.5',
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 1.17',
-            'datasets ~= 4.8',
+            'huggingface-hub ~= 1.18',
+            'datasets ~= 5.0',
         ],
 
         'nanochat': [

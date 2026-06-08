@@ -19,7 +19,7 @@ from omlish import check
 def timestep_embedding(timesteps: Tensor, dim: int, max_period: int = 10000):
     half = dim // 2
     freqs = (
-        -math.log(max_period) * Tensor.arange(half, device=timesteps.device) / half
+        -math.log(max_period) * Tensor.arange(half) / half
     ).exp()
     args = timesteps.unsqueeze(1) * freqs.unsqueeze(0)
     out = Tensor.cat(args.cos(), args.sin(), dim=-1)

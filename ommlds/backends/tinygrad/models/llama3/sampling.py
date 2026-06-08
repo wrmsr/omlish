@@ -49,8 +49,8 @@ def sample(
     t = (logits / temp).softmax()
 
     counter, counter2 = (
-        Tensor.arange(t.numel(), device=logits.device).contiguous(),
-        Tensor.arange(t.numel() - 1, -1, -1, device=logits.device).contiguous(),
+        Tensor.arange(t.numel()).contiguous(),
+        Tensor.arange(t.numel() - 1, -1, -1).contiguous(),
     )
     # top k
     if k:
