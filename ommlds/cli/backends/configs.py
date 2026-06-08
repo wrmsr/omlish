@@ -13,6 +13,4 @@ with lang.auto_proxy_import(globals()):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class BackendConfig:
-    backend: str | None = None
-
-    configs: ta.Sequence[mc.Config] | None = None
+    backend: ta.Union[str, mc.BackendSpec, None] = None

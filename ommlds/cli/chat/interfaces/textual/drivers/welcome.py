@@ -9,6 +9,15 @@ from ..widgets.messages.welcome import WelcomeMessage
 ##
 
 
+def _render_backend_spec(spec: mc.BackendSpec) -> str:
+    # Specs may legitimately carry in-process-only configs (ConfigBackendSpec takes ta.Any) - display must not die
+    # on them.
+    try:
+        return spec.as_json()
+    except Exception:  # noqa
+        return repr(spec)
+
+
 async def build_welcome_message(
         *,
         backend: BackendSpecGetter | None = None,
@@ -25,7 +34,7 @@ async def build_welcome_message(
             f'Chat Id: {chat_id.v}',
             f'Chat Length: {len(chat)}',
             f'Driver Id: {driver_id.v}',
-            f'Backend: {(await backend()).as_json() if backend is not None else "?"}',
+            f'Backend: {_render_backend_spec(await backend()) if backend is not None else "?"}',
             f'Working Dir: {os.getcwd()}',
         ]),
         copy_contents={

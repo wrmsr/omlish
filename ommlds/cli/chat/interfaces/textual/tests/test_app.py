@@ -50,11 +50,13 @@ def _chat_cfg(db: str | None, new: bool, script: mc.ChatScript) -> ChatConfig:
     return ChatConfig(
         driver=DriverConfig(
             ai=mc.drivers.AiConfig(stream=True),
-            # The script rides the real backend-config path into the registry-instantiated scripted backend - as a
+            # The script rides the real backend-spec path into the registry-instantiated scripted backend - as a
             # shared cursor, since that path instantiates a fresh backend per invocation.
             backend=BackendConfig(
-                backend='scripted',
-                configs=[mc.ScriptedChatCursor(mc.ChatScriptCursor(script))],
+                backend=mc.ConfigBackendSpec(
+                    'scripted',
+                    [mc.ScriptedChatCursor(mc.ChatScriptCursor(script))],
+                ),
             ),
             state=StateConfig(new=new),
             **(dict(orm=mc.drivers.OrmConfig(file_path=db)) if db is not None else {}),  # type: ignore[arg-type]

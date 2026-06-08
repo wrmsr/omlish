@@ -124,11 +124,9 @@ class InjectorBackendSpecInstantiator:
 
             cur_args.extend(cur.configs or ())
 
-            # Like the default instantiator, caller-passed args flow to leaf ctors.
             ctor = functools.partial(
                 cur.ctor,
                 *cur_args,
-                *(args if ch is None else ()),
             )
 
             kt = inj.build_kwargs_target(

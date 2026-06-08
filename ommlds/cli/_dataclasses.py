@@ -25,36 +25,29 @@ def _register(**kwargs):
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('backend', 'configs')), EqPlan(fields=('backend', 'configs')), FrozenPlan(fields=("
-        "'backend', 'configs'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('backend', 'configs')"
-        ", cache=False), InitPlan(fields=(InitPlan.Field(name='backend', annotation=OpRef(name='init.fields.0.annotatio"
-        "n'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type="
-        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='configs', annotation=Op"
-        "Ref(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param"
-        "='self', std_params=(), kw_only_params=('backend', 'configs'), frozen=True, slots=False, post_init_params=None"
-        ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='backend', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='configs', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('backend',)), EqPlan(fields=('backend',)), FrozenPlan(fields=('backend',), allow_d"
+        "ynamic_dunder_attrs=False), HashPlan(action='add', fields=('backend',), cache=False), InitPlan(fields=(InitPla"
+        "n.Field(name='backend', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None),), self_param='self', std_params=(), kw_only_params=('backend',), frozen=True, slots="
+        "False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='backend', k"
+        "w_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='a2565f3250f85188ca0484cd876ee7dfead89218',
+    plan_repr_sha1='fa5665ecddac4bdf52a6a47db3b5b5362a8b3c7a',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
     ),
     cls_names=(
         ('ommlds.cli.backends.configs', 'BackendConfig'),
     ),
 )
-def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
+def _process_dataclass__fa5665ecddac4bdf52a6a47db3b5b5362a8b3c7a():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -74,7 +67,6 @@ def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 backend=self.backend,
-                configs=self.configs,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -88,8 +80,7 @@ def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.backend == other.backend and
-                self.configs == other.configs
+                self.backend == other.backend
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -99,7 +90,6 @@ def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
 
         __dataclass___setattr_frozen_fields = {
             'backend',
-            'configs',
         }
 
         def __setattr__(self, name, value):
@@ -117,7 +107,6 @@ def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
 
         __dataclass___delattr_frozen_fields = {
             'backend',
-            'configs',
         }
 
         def __delattr__(self, name):
@@ -136,7 +125,6 @@ def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
         def __hash__(self):
             return hash((
                 self.backend,
-                self.configs,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -146,10 +134,8 @@ def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
             self,
             *,
             backend: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            configs: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'backend', backend)
-            __dataclass__object_setattr(self, 'configs', configs)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -160,7 +146,6 @@ def _process_dataclass__a2565f3250f85188ca0484cd876ee7dfead89218():
         def __repr__(self):
             parts = []
             parts.append(f"backend={self.backend!r}")
-            parts.append(f"configs={self.configs!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3164,40 +3149,34 @@ def _process_dataclass__eec261fc7183d7eac72390ec16a7bdf778198fde():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('modules', 'backend', 'configs', 'content')), EqPlan(fields=('modules', 'backend',"
-        " 'configs', 'content')), FrozenPlan(fields=('modules', 'backend', 'configs', 'content'), allow_dynamic_dunder_"
-        "attrs=False), HashPlan(action='add', fields=('modules', 'backend', 'configs', 'content'), cache=False), InitPl"
-        "an(fields=(InitPlan.Field(name='modules', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(nam"
-        "e='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='backend', annotation=OpRef(name='init.fields."
-        "1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='configs', an"
-        "notation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory="
+        "Plans(tup=(CopyPlan(fields=('modules', 'backend', 'content')), EqPlan(fields=('modules', 'backend', 'content')"
+        "), FrozenPlan(fields=('modules', 'backend', 'content'), allow_dynamic_dunder_attrs=False), HashPlan(action='ad"
+        "d', fields=('modules', 'backend', 'content'), cache=False), InitPlan(fields=(InitPlan.Field(name='modules', an"
+        "notation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory="
         "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='content', annotation=OpRef(name='init.fields.3.annotation'), default=None, default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        "), self_param='self', std_params=(), kw_only_params=('modules', 'backend', 'configs', 'content'), frozen=True,"
-        " slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='modu"
-        "les', kw_only=True, fn=None), ReprPlan.Field(name='backend', kw_only=True, fn=None), ReprPlan.Field(name='conf"
-        "igs', kw_only=True, fn=None), ReprPlan.Field(name='content', kw_only=True, fn=None)), id=False, terse=False, d"
-        "efault_fn=None)))"
+        "InitPlan.Field(name='backend', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fie"
+        "lds.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='content', annotation=OpRef(name='init.fields.2.annotatio"
+        "n'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('modules', 'backend', 'c"
+        "ontent'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Rep"
+        "rPlan.Field(name='modules', kw_only=True, fn=None), ReprPlan.Field(name='backend', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='content', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99',
+    plan_repr_sha1='d081083bc028fb9729b8423fbe45bb996d3e439f',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
     ),
     cls_names=(
         ('ommlds.cli.completion.configs', 'CompletionConfig'),
         ('ommlds.cli.embedding.configs', 'EmbeddingConfig'),
     ),
 )
-def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
+def _process_dataclass__d081083bc028fb9729b8423fbe45bb996d3e439f():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3206,8 +3185,6 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3228,7 +3205,6 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
             return __dataclass__cls(  # noqa
                 modules=self.modules,
                 backend=self.backend,
-                configs=self.configs,
                 content=self.content,
             )
 
@@ -3245,7 +3221,6 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
             return (
                 self.modules == other.modules and
                 self.backend == other.backend and
-                self.configs == other.configs and
                 self.content == other.content
             )
 
@@ -3257,7 +3232,6 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
         __dataclass___setattr_frozen_fields = {
             'modules',
             'backend',
-            'configs',
             'content',
         }
 
@@ -3277,7 +3251,6 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
         __dataclass___delattr_frozen_fields = {
             'modules',
             'backend',
-            'configs',
             'content',
         }
 
@@ -3298,7 +3271,6 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
             return hash((
                 self.modules,
                 self.backend,
-                self.configs,
                 self.content,
             ))
 
@@ -3310,12 +3282,10 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
             *,
             modules: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             backend: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            configs: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            content: __dataclass__init__fields__3__annotation,
+            content: __dataclass__init__fields__2__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'modules', modules)
             __dataclass__object_setattr(self, 'backend', backend)
-            __dataclass__object_setattr(self, 'configs', configs)
             __dataclass__object_setattr(self, 'content', content)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -3328,7 +3298,6 @@ def _process_dataclass__dbe1cb3c67d0a74b891f2ebbac2943bc3a288a99():
             parts = []
             parts.append(f"modules={self.modules!r}")
             parts.append(f"backend={self.backend!r}")
-            parts.append(f"configs={self.configs!r}")
             parts.append(f"content={self.content!r}")
             return (
                 f"{self.__class__.__qualname__}("
