@@ -1,0 +1,85 @@
+"""Online smokes for the openai Responses backend (skipped without an api key), mirroring the chat-completions ones."""
+import pytest
+
+from omlish import lang
+from omlish.http import all as http
+from omlish.secrets.tests.harness import HarnessSecrets
+
+from .....chat.choices.services import ChatChoicesRequest
+from .....chat.choices.stream.services import ChatChoicesStreamRequest
+from .....chat.messages import SystemMessage
+from .....chat.messages import UserMessage
+from .....chat.tools.types import Tool
+from .....standard import ApiKey
+from .....tools.types import ToolDtype
+from .....tools.types import ToolParam
+from .....tools.types import ToolSpec
+from ..chat import OpenaiResponsesChatChoicesService
+from ..stream import OpenaiResponsesChatChoicesStreamService
+
+
+@pytest.mark.online
+def test_responses_chat(harness):
+    llm = OpenaiResponsesChatChoicesService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )
+
+    resp = lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('what is 2 + 2?')])))
+    print(resp.v)
+    print(resp.outputs)
+
+
+@pytest.mark.online
+def test_responses_stream(harness):
+    llm = OpenaiResponsesChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )
+
+    foo_req: ChatChoicesStreamRequest
+    for foo_req in [
+        ChatChoicesStreamRequest([UserMessage('Is water dry?')]),
+        ChatChoicesStreamRequest([UserMessage('Is air wet?')]),
+    ]:
+        print(foo_req)
+
+        with lang.sync_async_with(lang.sync_await(llm.invoke(foo_req)).v) as it:
+            for o in lang.sync_aiter(it):
+                print(o)
+            print(it.outputs)
+
+
+@pytest.mark.asyncs('asyncio')
+@pytest.mark.online
+async def test_responses_stream_tools(harness):
+    tool_spec = ToolSpec(
+        'get_weather',
+        params=[
+            ToolParam(
+                'location',
+                type=ToolDtype.of(str),
+                desc='The location to get the weather for.',
+            ),
+        ],
+        desc='Gets the weather in the given location.',
+    )
+
+    llm = OpenaiResponsesChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+    )
+
+    foo_req = ChatChoicesStreamRequest(
+        [
+            SystemMessage("You are a helpful agent. Use any tools available to you to answer the user's questions."),
+            UserMessage('What is the weather in Seattle?'),
+        ],
+        [
+            Tool(tool_spec),
+        ],
+    )
+
+    async with (await llm.invoke(foo_req)).v as it:
+        async for o in it:
+            print(o)
+        print(it.outputs)
