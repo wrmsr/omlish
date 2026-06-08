@@ -40,7 +40,6 @@ class MessagesContainer(
         self._mount_message_buffer: SchedulingAsyncBufferRelay[Message] = SchedulingAsyncBufferRelay(  # noqa
             lang.as_async(lambda: self.call_next(self._drain_mount_message_buffer)),
         )
-        self._scroll_to_bottom_after_mount_messages = False
         self._refresh_after_mount_messages = False
 
     @property
@@ -61,13 +60,25 @@ class MessagesContainer(
     def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
         return self.scroll_y >= (self.max_scroll_y - threshold)
 
+    def _scroll_messages_to_bottom(self) -> None:
+        self.scroll_end(animate=False)
+
     def _anchor_messages(self) -> None:
         if self.max_scroll_y:
             self.anchor()
 
+    def _scroll_messages_to_bottom_and_anchor(self) -> None:
+        self._scroll_messages_to_bottom()
+        self._anchor_messages()
+
     #
 
     async def append_stream_message_content(self, parts: ta.Sequence[StreamMessagePart]) -> None:
+        # Live-tailing: if the view is pinned to the bottom when a streaming delta arrives, follow it down as the
+        # message grows. The at-bottom check must happen *before* the append - growing the widget moves scroll_y off
+        # the bottom, so checking after would always read as "not at bottom".
+        scroll_to_bottom = False
+
         for part in parts:
             if isinstance(part, ContentStreamMessagePart):
                 message_uuid = part.message_uuid
@@ -84,8 +95,8 @@ class MessagesContainer(
                 else:
                     aim = check.isinstance(msg, part.message_cls)
 
-                    if aim.is_mounted:
-                        self._scroll_to_bottom_after_mount_messages |= self._is_messages_at_bottom()
+                    if aim.is_mounted and self._is_messages_at_bottom():
+                        scroll_to_bottom = True
 
                     await aim.append_stream_content(content)
 
@@ -99,6 +110,9 @@ class MessagesContainer(
 
             else:
                 raise TypeError(part)
+
+        if scroll_to_bottom:
+            self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
 
     #
 
@@ -138,9 +152,8 @@ class MessagesContainer(
             if isinstance(msg, StreamMessage):
                 await msg.start_stream()
 
-        if before is None and (was_at_bottom or self._scroll_to_bottom_after_mount_messages):
-            self._scroll_to_bottom_after_mount_messages = False
-            self.call_after_refresh(self._anchor_messages)
+        if before is None and was_at_bottom:
+            self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
 
         if self._refresh_after_mount_messages:
             self._refresh_after_mount_messages = False

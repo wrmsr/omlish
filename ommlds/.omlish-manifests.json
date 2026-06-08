@@ -102,7 +102,7 @@
     "module": ".minichain.backends.cerebras.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/cerebras/chat.py",
-    "line": 29,
+    "line": 34,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.cerebras.chat",
@@ -498,7 +498,7 @@
     "module": ".minichain.backends.ollama.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/ollama/chat.py",
-    "line": 43,
+    "line": 63,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -514,7 +514,7 @@
     "module": ".minichain.backends.ollama.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/ollama/chat.py",
-    "line": 115,
+    "line": 135,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.ollama.chat",

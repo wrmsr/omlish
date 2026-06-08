@@ -20,6 +20,7 @@ class ChatCompletionResponseMessage(lang.Final):
     # openai-compat dialect extension (groq/cerebras): reasoning text emitted by reasoning models. Never set by
     # openai itself.
     reasoning: str | None = None
+
     role: ta.Literal['assistant'] = dc.xfield('assistant', repr=False)
 
     @dc.dataclass(frozen=True, kw_only=True)

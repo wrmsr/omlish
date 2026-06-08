@@ -15,6 +15,11 @@ from . import names
 
 
 class CerebrasChatChoicesServiceBase(OpenaiCompatChatChoicesServiceBase):
+    # TODO: headers:
+    #  - CF-RAY
+    #  - X-Amz-Cf-Id
+    #  - X-delay-time
+
     URL: ta.ClassVar[str] = 'https://api.cerebras.ai/v1/chat/completions'
     API_KEY_ENV: ta.ClassVar[str | None] = 'CEREBRAS_API_KEY'
     EXTRA_HEADERS: ta.ClassVar[ta.Mapping[ta.Any, ta.Any]] = REQUIRED_HTTP_HEADERS
