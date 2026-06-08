@@ -72,9 +72,7 @@ class Int8Embedding:
 
     def __call__(self, idx: Tensor) -> Tensor:
         if not hasattr(self, 'arange'):
-            self.arange = Tensor.arange(
-                self.vocab_sz, device=self.weight.device,
-            ).unsqueeze(-1)
+            self.arange = Tensor.arange(self.vocab_sz).unsqueeze(-1)
         big_shp = (*idx.shape, self.vocab_sz, self.embed_sz)
         arange, idx, vals = (
             self.arange.expand(big_shp),
@@ -123,7 +121,7 @@ def nf4_linear(block_size):
         def __call__(self, x: Tensor) -> Tensor:
             high_bits = self.weight
             low_bits = (self.weight * 2**4).contiguous()
-            unpacked = Tensor.stack(high_bits, low_bits, dim=-1).idiv(2**4)
+            unpacked = Tensor.stack(high_bits, low_bits, dim=-1).div(2 ** 4, rounding_mode='trunc')
             unscaled = code[unpacked].to(x.device).reshape(-1, block_size) * self.scale
             return x.linear(unscaled.reshape(self.out_features, self.in_features).T)
 

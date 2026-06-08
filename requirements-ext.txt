@@ -26,7 +26,7 @@ torchvision==0.27.0
 diffusers==0.37.1  # @omlish-venv !14t !14dt !15t
 
 scipy==1.17.1
-scikit-learn==1.8.0
+scikit-learn==1.9.0
 scikit-image==0.26.0
 
 safetensors==0.7.0
@@ -53,7 +53,7 @@ tree-sitter-python==0.25.0
 
 watchdog==6.0.0
 
-pyright[nodejs]==1.1.409
+pyright[nodejs]==1.1.410
 basedpyright==1.39.6
 
 blobfile==3.2.0
@@ -64,7 +64,7 @@ pydantic-monty==0.0.17
 ##
 # bins
 
-deno==2.8.1
+deno==2.8.2
 playwright==1.60.0
 ripgrep==15.1.0
 
@@ -75,7 +75,7 @@ ripgrep==15.1.0
 yappi==1.7.6
 pyinstrument==5.1.2
 
-debugpy==1.8.20
+debugpy==1.8.21
 
 
 ##

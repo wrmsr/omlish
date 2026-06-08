@@ -10,7 +10,7 @@ from tinygrad import Tensor
 from tinygrad import dtypes
 from tinygrad import nn
 from tinygrad.helpers import getenv
-from tinygrad.nn.state import gguf_load
+from tinygrad.llm.gguf import gguf_load
 from tinygrad.nn.state import load_state_dict
 from tinygrad.nn.state import safe_load
 from tinygrad.nn.state import torch_load
