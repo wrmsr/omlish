@@ -102,7 +102,7 @@
     "module": ".minichain.backends.cerebras.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/cerebras/chat.py",
-    "line": 26,
+    "line": 29,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.cerebras.chat",
@@ -147,7 +147,7 @@
     "module": ".minichain.backends.cerebras.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/cerebras/stream.py",
-    "line": 32,
+    "line": 9,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.cerebras.stream",
@@ -291,7 +291,7 @@
     "module": ".minichain.backends.groq.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/groq/chat.py",
-    "line": 26,
+    "line": 29,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.groq.chat",
@@ -330,7 +330,7 @@
     "module": ".minichain.backends.groq.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/groq/stream.py",
-    "line": 32,
+    "line": 9,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.groq.stream",
@@ -544,7 +544,7 @@
     "module": ".minichain.backends.openai.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/chat.py",
-    "line": 36,
+    "line": 8,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.openai.chat",
@@ -675,7 +675,7 @@
     "module": ".minichain.backends.openai.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/stream.py",
-    "line": 36,
+    "line": 9,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.openai.stream",

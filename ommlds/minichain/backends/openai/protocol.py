@@ -148,6 +148,10 @@ def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoice
 
 
 def build_mc_ai_deltas(delta: pt.ChatCompletionChunkChoiceDelta) -> AiDeltas:
+    # openai-compat dialect (groq/cerebras gpt-oss): reasoning-channel deltas are not (currently) surfaced.
+    if delta.channel in ('analysis', 'commentary'):
+        return []
+
     if delta.content is not None:
         check.state(not delta.tool_calls)
         return [ContentAiDelta(delta.content)]

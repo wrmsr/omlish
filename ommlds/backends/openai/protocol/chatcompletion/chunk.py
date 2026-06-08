@@ -18,6 +18,10 @@ class ChatCompletionChunkChoiceDelta(lang.Final):
 
     refusal: str | None = None
 
+    # openai-compat dialect extension (groq/cerebras gpt-oss): 'analysis' / 'commentary' reasoning channels. Never
+    # set by openai itself.
+    channel: str | None = None
+
     role: ta.Literal[
         'developer',
         'system',

@@ -27,8 +27,8 @@ from ....tools.types import ToolUse
 from ....tools.types import ToolUseResult
 from ....wrappers.updateoptions import UpdateOptionsService
 from ..chat import OpenaiChatChoicesService
-from ..format import OpenaiChatRequestHandler
-from ..format import build_oai_request_msgs
+from ..protocol import OpenaiChatRequestHandler
+from ..protocol import build_oai_request_msgs
 
 
 def test_openai_parallel_tool_call_request_messages():

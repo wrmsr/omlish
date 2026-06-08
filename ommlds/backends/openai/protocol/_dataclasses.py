@@ -606,25 +606,28 @@ def _process_dataclass__a784a12ebcb916e633672bf2c35c6579e020ff31():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('content', 'refusal', 'role', 'tool_calls')), EqPlan(fields=('content', 'refusal',"
-        " 'role', 'tool_calls')), FrozenPlan(fields=('content', 'refusal', 'role', 'tool_calls'), allow_dynamic_dunder_"
-        "attrs=False), HashPlan(action='add', fields=('content', 'refusal', 'role', 'tool_calls'), cache=False), InitPl"
-        "an(fields=(InitPlan.Field(name='content', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(nam"
-        "e='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='refusal', annotation=OpRef(name='init.fields."
-        "1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='role', annot"
-        "ation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='tool_calls', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fie"
-        "lds.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('content', 'refusal', 'rol"
-        "e', 'tool_calls'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fi"
-        "elds=(ReprPlan.Field(name='content', kw_only=True, fn=None), ReprPlan.Field(name='refusal', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='role', kw_only=True, fn=None), ReprPlan.Field(name='tool_calls', kw_only=True, fn=N"
-        "one)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('content', 'refusal', 'channel', 'role', 'tool_calls')), EqPlan(fields=('content',"
+        " 'refusal', 'channel', 'role', 'tool_calls')), FrozenPlan(fields=('content', 'refusal', 'channel', 'role', 'to"
+        "ol_calls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('content', 'refusal', 'channel',"
+        " 'role', 'tool_calls'), cache=False), InitPlan(fields=(InitPlan.Field(name='content', annotation=OpRef(name='i"
+        "nit.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='r"
+        "efusal', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='channel', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(nam"
+        "e='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='role', annotation=OpRef(name='init.fields.3.a"
+        "nnotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tool_calls', an"
+        "notation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)),"
+        " self_param='self', std_params=(), kw_only_params=('content', 'refusal', 'channel', 'role', 'tool_calls'), fro"
+        "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
+        "ame='content', kw_only=True, fn=None), ReprPlan.Field(name='refusal', kw_only=True, fn=None), ReprPlan.Field(n"
+        "ame='channel', kw_only=True, fn=None), ReprPlan.Field(name='role', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='tool_calls', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f6f7c802a5caaef02bf989376272a0585b57fa73',
+    plan_repr_sha1='aa76a085715c704bda9c0731aa3769f95d66c826',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -634,12 +637,14 @@ def _process_dataclass__a784a12ebcb916e633672bf2c35c6579e020ff31():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
     ),
     cls_names=(
         ('ommlds.backends.openai.protocol.chatcompletion.chunk', 'ChatCompletionChunkChoiceDelta'),
     ),
 )
-def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
+def _process_dataclass__aa76a085715c704bda9c0731aa3769f95d66c826():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -651,6 +656,8 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -671,6 +678,7 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
             return __dataclass__cls(  # noqa
                 content=self.content,
                 refusal=self.refusal,
+                channel=self.channel,
                 role=self.role,
                 tool_calls=self.tool_calls,
             )
@@ -688,6 +696,7 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
             return (
                 self.content == other.content and
                 self.refusal == other.refusal and
+                self.channel == other.channel and
                 self.role == other.role and
                 self.tool_calls == other.tool_calls
             )
@@ -700,6 +709,7 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
         __dataclass___setattr_frozen_fields = {
             'content',
             'refusal',
+            'channel',
             'role',
             'tool_calls',
         }
@@ -720,6 +730,7 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
         __dataclass___delattr_frozen_fields = {
             'content',
             'refusal',
+            'channel',
             'role',
             'tool_calls',
         }
@@ -741,6 +752,7 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
             return hash((
                 self.content,
                 self.refusal,
+                self.channel,
                 self.role,
                 self.tool_calls,
             ))
@@ -753,11 +765,13 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
             *,
             content: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             refusal: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            role: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            tool_calls: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            channel: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            role: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            tool_calls: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'content', content)
             __dataclass__object_setattr(self, 'refusal', refusal)
+            __dataclass__object_setattr(self, 'channel', channel)
             __dataclass__object_setattr(self, 'role', role)
             __dataclass__object_setattr(self, 'tool_calls', tool_calls)
 
@@ -771,6 +785,7 @@ def _process_dataclass__f6f7c802a5caaef02bf989376272a0585b57fa73():
             parts = []
             parts.append(f"content={self.content!r}")
             parts.append(f"refusal={self.refusal!r}")
+            parts.append(f"channel={self.channel!r}")
             parts.append(f"role={self.role!r}")
             parts.append(f"tool_calls={self.tool_calls!r}")
             return (
@@ -2251,28 +2266,32 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('audio', 'content', 'name', 'refusal', 'tool_calls')), EqPlan(fields=('audio', 'co"
-        "ntent', 'name', 'refusal', 'tool_calls')), FrozenPlan(fields=('audio', 'content', 'name', 'refusal', 'tool_cal"
-        "ls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('audio', 'content', 'name', 'refusal',"
-        " 'tool_calls'), cache=False), InitPlan(fields=(InitPlan.Field(name='audio', annotation=OpRef(name='init.fields"
-        ".0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content', a"
-        "nnotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='name', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.field"
-        "s.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='refusal', annotation=OpRef(name='init.fields.3.annotation'"
-        "), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=Fi"
-        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tool_calls', annotation=O"
-        "pRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_para"
-        "m='self', std_params=(), kw_only_params=('audio', 'content', 'name', 'refusal', 'tool_calls'), frozen=True, sl"
-        "ots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='audio',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='content', kw_only=True, fn=None), ReprPlan.Field(name='name', kw"
-        "_only=True, fn=None), ReprPlan.Field(name='refusal', kw_only=True, fn=None), ReprPlan.Field(name='tool_calls',"
-        " kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('reasoning', 'audio', 'content', 'name', 'refusal', 'tool_calls')), EqPlan(fields="
+        "('reasoning', 'audio', 'content', 'name', 'refusal', 'tool_calls')), FrozenPlan(fields=('reasoning', 'audio', "
+        "'content', 'name', 'refusal', 'tool_calls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields="
+        "('reasoning', 'audio', 'content', 'name', 'refusal', 'tool_calls'), cache=False), InitPlan(fields=(InitPlan.Fi"
+        "eld(name='reasoning', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='audio', annotation=OpRef(name='init.fields.1.annotation'), defaul"
+        "t=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='content', annotation=OpRef(name='i"
+        "nit.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='n"
+        "ame', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='refusal', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='"
+        "init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='tool_calls', annotation=OpRef(name='init.fields."
+        "5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=()"
+        ", kw_only_params=('reasoning', 'audio', 'content', 'name', 'refusal', 'tool_calls'), frozen=True, slots=False,"
+        " post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='reasoning', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='audio', kw_only=True, fn=None), ReprPlan.Field(name='content', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='refusal', kw_only=Tr"
+        "ue, fn=None), ReprPlan.Field(name='tool_calls', kw_only=True, fn=None)), id=False, terse=False, default_fn=Non"
+        "e)))"
     ),
-    plan_repr_sha1='fa5ab2362664bd890de650f497d8422953b41e06',
+    plan_repr_sha1='52ca6f1ee19ff4580236cf91b4d8dc7744bbbea3',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2284,12 +2303,14 @@ def _process_dataclass__ce2a4c81e0f66e62a54ea3adfdc532902daece78():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
     ),
     cls_names=(
         ('ommlds.backends.openai.protocol.chatcompletion.message', 'AssistantChatCompletionMessage'),
     ),
 )
-def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
+def _process_dataclass__52ca6f1ee19ff4580236cf91b4d8dc7744bbbea3():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2303,6 +2324,8 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__5__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2321,6 +2344,7 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
+                reasoning=self.reasoning,
                 audio=self.audio,
                 content=self.content,
                 name=self.name,
@@ -2339,6 +2363,7 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
+                self.reasoning == other.reasoning and
                 self.audio == other.audio and
                 self.content == other.content and
                 self.name == other.name and
@@ -2352,6 +2377,7 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
+            'reasoning',
             'audio',
             'content',
             'name',
@@ -2373,6 +2399,7 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
+            'reasoning',
             'audio',
             'content',
             'name',
@@ -2395,6 +2422,7 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
 
         def __hash__(self):
             return hash((
+                self.reasoning,
                 self.audio,
                 self.content,
                 self.name,
@@ -2408,12 +2436,14 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
         def __init__(
             self,
             *,
-            audio: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            content: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            name: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            refusal: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            tool_calls: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            reasoning: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            audio: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            content: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            name: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            refusal: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            tool_calls: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
         ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'reasoning', reasoning)
             __dataclass__object_setattr(self, 'audio', audio)
             __dataclass__object_setattr(self, 'content', content)
             __dataclass__object_setattr(self, 'name', name)
@@ -2428,6 +2458,7 @@ def _process_dataclass__fa5ab2362664bd890de650f497d8422953b41e06():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
+            parts.append(f"reasoning={self.reasoning!r}")
             parts.append(f"audio={self.audio!r}")
             parts.append(f"content={self.content!r}")
             parts.append(f"name={self.name!r}")
@@ -5701,31 +5732,35 @@ def _process_dataclass__44b10f936c3932df17be0708f2449a883036da63():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('content', 'refusal', 'role', 'annotations', 'audio', 'tool_calls')), EqPlan(field"
-        "s=('content', 'refusal', 'role', 'annotations', 'audio', 'tool_calls')), FrozenPlan(fields=('content', 'refusa"
-        "l', 'role', 'annotations', 'audio', 'tool_calls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', f"
-        "ields=('content', 'refusal', 'role', 'annotations', 'audio', 'tool_calls'), cache=False), InitPlan(fields=(Ini"
-        "tPlan.Field(name='content', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields"
-        ".0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='refusal', annotation=OpRef(name='init.fields.1.annotation')"
-        ", default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='role', annotation=OpRef(na"
-        "me='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='annotations', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None), InitPlan.Field(name='audio', annotation=OpRef(name='init.fields.4.annotation'), default=Op"
-        "Ref(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tool_calls', annotation=OpRef(name='in"
-        "it.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std"
-        "_params=(), kw_only_params=('content', 'refusal', 'role', 'annotations', 'audio', 'tool_calls'), frozen=True, "
-        "slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='conte"
-        "nt', kw_only=True, fn=None), ReprPlan.Field(name='refusal', kw_only=True, fn=None), ReprPlan.Field(name='annot"
-        "ations', kw_only=True, fn=None), ReprPlan.Field(name='audio', kw_only=True, fn=None), ReprPlan.Field(name='too"
-        "l_calls', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('content', 'refusal', 'reasoning', 'role', 'annotations', 'audio', 'tool_calls')),"
+        " EqPlan(fields=('content', 'refusal', 'reasoning', 'role', 'annotations', 'audio', 'tool_calls')), FrozenPlan("
+        "fields=('content', 'refusal', 'reasoning', 'role', 'annotations', 'audio', 'tool_calls'), allow_dynamic_dunder"
+        "_attrs=False), HashPlan(action='add', fields=('content', 'refusal', 'reasoning', 'role', 'annotations', 'audio"
+        "', 'tool_calls'), cache=False), InitPlan(fields=(InitPlan.Field(name='content', annotation=OpRef(name='init.fi"
+        "elds.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='refusal"
+        "', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='reasoning', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='i"
+        "nit.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='role', annotation=OpRef(name='init.fields.3.annot"
+        "ation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='annotations', annot"
+        "ation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='audio', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='tool_calls', annotation=OpRef(name='init.fields.6.annotation'"
+        "), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_par"
+        "ams=('content', 'refusal', 'reasoning', 'role', 'annotations', 'audio', 'tool_calls'), frozen=True, slots=Fals"
+        "e, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='content', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='refusal', kw_only=True, fn=None), ReprPlan.Field(name='reasoning', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='annotations', kw_only=True, fn=None), ReprPlan.Field(name='audio', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='tool_calls', kw_only=True, fn=None)), id=False, terse=False, defau"
+        "lt_fn=None)))"
     ),
-    plan_repr_sha1='db4dc44fa11e72679ccf39b4ff9951be441da2fc',
+    plan_repr_sha1='e20169c11dfa5f0256c063c8677513b9785fd428',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -5739,12 +5774,14 @@ def _process_dataclass__44b10f936c3932df17be0708f2449a883036da63():
         '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
     cls_names=(
         ('ommlds.backends.openai.protocol.chatcompletion.response', 'ChatCompletionResponseMessage'),
     ),
 )
-def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
+def _process_dataclass__e20169c11dfa5f0256c063c8677513b9785fd428():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -5760,6 +5797,8 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -5780,6 +5819,7 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
             return __dataclass__cls(  # noqa
                 content=self.content,
                 refusal=self.refusal,
+                reasoning=self.reasoning,
                 role=self.role,
                 annotations=self.annotations,
                 audio=self.audio,
@@ -5799,6 +5839,7 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
             return (
                 self.content == other.content and
                 self.refusal == other.refusal and
+                self.reasoning == other.reasoning and
                 self.role == other.role and
                 self.annotations == other.annotations and
                 self.audio == other.audio and
@@ -5813,6 +5854,7 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
         __dataclass___setattr_frozen_fields = {
             'content',
             'refusal',
+            'reasoning',
             'role',
             'annotations',
             'audio',
@@ -5835,6 +5877,7 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
         __dataclass___delattr_frozen_fields = {
             'content',
             'refusal',
+            'reasoning',
             'role',
             'annotations',
             'audio',
@@ -5858,6 +5901,7 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
             return hash((
                 self.content,
                 self.refusal,
+                self.reasoning,
                 self.role,
                 self.annotations,
                 self.audio,
@@ -5872,13 +5916,15 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
             *,
             content: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             refusal: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            role: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            annotations: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            audio: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            tool_calls: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            reasoning: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            role: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            annotations: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            audio: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            tool_calls: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'content', content)
             __dataclass__object_setattr(self, 'refusal', refusal)
+            __dataclass__object_setattr(self, 'reasoning', reasoning)
             __dataclass__object_setattr(self, 'role', role)
             __dataclass__object_setattr(self, 'annotations', annotations)
             __dataclass__object_setattr(self, 'audio', audio)
@@ -5894,6 +5940,7 @@ def _process_dataclass__db4dc44fa11e72679ccf39b4ff9951be441da2fc():
             parts = []
             parts.append(f"content={self.content!r}")
             parts.append(f"refusal={self.refusal!r}")
+            parts.append(f"reasoning={self.reasoning!r}")
             parts.append(f"annotations={self.annotations!r}")
             parts.append(f"audio={self.audio!r}")
             parts.append(f"tool_calls={self.tool_calls!r}")

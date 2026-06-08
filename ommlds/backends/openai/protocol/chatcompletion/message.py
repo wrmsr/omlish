@@ -52,6 +52,10 @@ class UserChatCompletionMessage(ChatCompletionMessage, lang.Final):
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
 class AssistantChatCompletionMessage(ChatCompletionMessage, lang.Final):
+    # openai-compat dialect extension (groq/cerebras): reasoning text for reasoning models. Never set by openai
+    # itself.
+    reasoning: str | None = None
+
     @dc.dataclass(frozen=True, kw_only=True)
     @_set_class_marshal_options
     class Audio(lang.Final):
