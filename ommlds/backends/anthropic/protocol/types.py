@@ -118,8 +118,15 @@ class Message:
 
     stop_reason: str | None = None
     stop_sequence: str | None = None
+    stop_details: ta.Any | None = None
 
     usage: Usage | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class MessageWithTypeTag(Message):
+    type: ta.Literal['message'] = 'message'
 
 
 ##

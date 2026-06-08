@@ -155,4 +155,4 @@ class AnthropicChatChoicesService(AnthropicChatChoicesServiceBase):
                 response=raw_response,
             ))
 
-        return build_mc_choices_response(msh.unmarshal(raw_response, pt.Message))
+        return build_mc_choices_response(msh.unmarshal(raw_response, pt.MessageWithTypeTag))
