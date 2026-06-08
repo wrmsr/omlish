@@ -1,4 +1,9 @@
+"""
+Offline coverage of the anthropic streaming translation: the real captured event story (`story.txt`) and a
+hand-authored tool-use sequence, each driven through `AnthropicSseDeltaTranslator` and the real `AiDeltaJoiner`.
+"""
 import os.path
+import typing as ta
 
 from omlish import check
 from omlish import marshal as msh
@@ -8,86 +13,103 @@ from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecode
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
-from ....chat.choices.stream.types import AiChoiceDeltas
-from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.stream.types import ContentAiDelta
+from ....chat.messages import AiMessage
+from ....chat.messages import ToolUseMessage
+from ....chat.stream.joining import AiDeltaJoiner
+from ..protocol import AnthropicSseDeltaTranslator
 
 
-def test_assemble():
+##
+
+
+def _decode_events(src: bytes) -> list[AnthropicSseDecoderEvents.Event]:
+    buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+    frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
+    sd = sse.SseDecoder()
+
+    out: list[AnthropicSseDecoderEvents.Event] = []
+    for b in [src, b'']:
+        buf.write(b)
+        for l in frm.decode(buf, final=not b):
+            for so in sd.process_line(l.tobytes()):
+                if isinstance(so, sse.SseEvent):
+                    dct = json.loads(so.data.decode('utf-8'))
+                    check.equal(dct['type'], so.type.decode('utf-8'))
+                    out.append(msh.unmarshal(dct, AnthropicSseDecoderEvents.Event))
+    return out
+
+
+def test_translate_story():
     with open(os.path.join(
             os.path.dirname(__file__),
-            '../../../../backends/anthropic/protocol/sse/tests/story.txt',  # >_<
+            '../../../../backends/anthropic/protocol/sse/tests/story.txt',
     ), 'rb') as f:
         src_b = f.read()
 
-    def run(bs):
-        msg_start: AnthropicSseDecoderEvents.MessageStart | None = None
-        cbk_start: AnthropicSseDecoderEvents.ContentBlockStart | None = None
-        msg_stop: AnthropicSseDecoderEvents.MessageStop | None = None
+    translator = AnthropicSseDeltaTranslator()
+    joiner = AiDeltaJoiner()
+    done = False
+    for ev in _decode_events(src_b):
+        res = translator.translate(ev)
+        if res.deltas:
+            joiner.add(res.deltas)
+        if res.done:
+            done = True
 
-        buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
-        frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
+    assert done
+    translator.finish()
 
-        sd = sse.SseDecoder()
-        for b in bs:
-            buf.write(b)
-            for l in frm.decode(buf, final=not b):
-                # FIXME: https://docs.anthropic.com/en/docs/build-with-claude/streaming
-                for so in sd.process_line(l.tobytes()):
-                    if isinstance(so, sse.SseEvent):
-                        ss = so.data.decode('utf-8')
-                        if ss == '[DONE]':
-                            return []
+    joined = joiner.build()
+    assert [type(m) for m in joined] == [AiMessage]
+    text = check.isinstance(joined[0], AiMessage).c
+    assert isinstance(text, str)
+    assert text.startswith('## The Backpack at the Yard Sale')
+    assert len(text) > 100
 
-                        dct = json.loads(ss)
-                        check.equal(dct['type'], so.type.decode('utf-8'))
-                        ae = msh.unmarshal(dct, AnthropicSseDecoderEvents.Event)
 
-                        match ae:
-                            case AnthropicSseDecoderEvents.MessageStart():
-                                check.none(msg_start)
-                                msg_start = ae
-                                if msg_start.message.content:
-                                    raise NotImplementedError
+##
 
-                            case AnthropicSseDecoderEvents.ContentBlockStart():
-                                check.not_none(msg_start)
-                                check.none(cbk_start)
-                                cbk_start = ae
-                                if isinstance(ae.content_block, AnthropicSseDecoderEvents.ContentBlockStart.Text):
-                                    yield AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(
-                                        ae.content_block.text,
-                                    )])])
-                                else:
-                                    raise TypeError(ae.content_block)
 
-                            case AnthropicSseDecoderEvents.ContentBlockDelta():
-                                check.not_none(cbk_start)
-                                if isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.TextDelta):
-                                    yield AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(
-                                        ae.delta.text,
-                                    )])])
-                                else:
-                                    raise TypeError(ae.delta)
+def _event(dct: dict[str, ta.Any]) -> AnthropicSseDecoderEvents.Event:
+    return msh.unmarshal(dct, AnthropicSseDecoderEvents.Event)
 
-                            case AnthropicSseDecoderEvents.ContentBlockStop():
-                                check.not_none(cbk_start)
-                                cbk_start = None
 
-                            case AnthropicSseDecoderEvents.MessageDelta():
-                                check.not_none(msg_start)
-                                check.none(cbk_start)
+def test_translate_tool_use():
+    events = [
+        _event({'type': 'message_start', 'message': {
+            'id': 'msg_1', 'role': 'assistant', 'model': 'claude', 'content': [],
+        }}),
+        _event({'type': 'content_block_start', 'index': 0, 'content_block': {
+            'type': 'tool_use', 'id': 'toolu_1', 'name': 'get_weather', 'input': {},
+        }}),
+        _event({'type': 'content_block_delta', 'index': 0, 'delta': {
+            'type': 'input_json_delta', 'partial_json': '{"location":',
+        }}),
+        _event({'type': 'content_block_delta', 'index': 0, 'delta': {
+            'type': 'input_json_delta', 'partial_json': '"Tokyo"}',
+        }}),
+        _event({'type': 'content_block_stop', 'index': 0}),
+        _event({'type': 'message_delta', 'delta': {'stop_reason': 'tool_use', 'stop_sequence': None},
+                'usage': {'output_tokens': 5}}),
+        _event({'type': 'message_stop'}),
+    ]
 
-                            case AnthropicSseDecoderEvents.MessageStop():
-                                check.not_none(msg_start)
-                                check.none(msg_stop)
-                                msg_stop = ae
+    translator = AnthropicSseDeltaTranslator()
+    joiner = AiDeltaJoiner()
+    done = False
+    for ev in events:
+        res = translator.translate(ev)
+        if res.deltas:
+            joiner.add(res.deltas)
+        if res.done:
+            done = True
 
-                            case AnthropicSseDecoderEvents.Ping():
-                                pass
+    assert done
+    translator.finish()
 
-                            case _:
-                                raise TypeError(ae)
-
-    for m in run([src_b]):
-        print(m)
+    joined = joiner.build()
+    assert [type(m) for m in joined] == [ToolUseMessage]
+    tu = check.isinstance(joined[0], ToolUseMessage).tu
+    assert tu.id == 'toolu_1'
+    assert tu.name == 'get_weather'
+    assert tu.args == {'location': 'Tokyo'}
