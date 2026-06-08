@@ -10,4 +10,4 @@ from ..configs import InterfaceConfig
 class TextualInterfaceConfig(InterfaceConfig):
     input_history_file: str | None = None
 
-    initial_timeline_window: int = 200
+    initial_timeline_window: int | None = None

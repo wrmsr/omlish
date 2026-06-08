@@ -76,12 +76,11 @@ def bind_driver_internal(
 
     els.append(mc.facades.timelines.inject.bind_timeline())
 
-    initial_window_limit = (
-        chat_cfg.interface.initial_timeline_window
-        if isinstance(chat_cfg.interface, TextualInterfaceConfig)
-        else 200
-    )
-    els.append(inj.bind(InitialTimelineWindowLimit, to_const=InitialTimelineWindowLimit(initial_window_limit)))
+    if (
+            isinstance(tic := chat_cfg.interface, TextualInterfaceConfig) and  # FIXME: ew
+            (iwl := tic.initial_timeline_window) is not None
+    ):
+        els.append(inj.bind(InitialTimelineWindowLimit, to_const=InitialTimelineWindowLimit(iwl)))
 
     #
 

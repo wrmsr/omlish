@@ -97,7 +97,7 @@ class ChatDriverInterface(
             state_listener: ChatDriverInterfaceStateListener | None = None,
             welcome_message: WelcomeMessage | None = None,
             chat_id: mc.drivers.ChatId,
-            initial_timeline_window_limit: InitialTimelineWindowLimit | None = None,
+            initial_timeline_window_limit: InitialTimelineWindowLimit = InitialTimelineWindowLimit(200),
             item_presenters: mc.facades.timelines.TimelineItemPresenters | None = None,
     ) -> None:
         super().__init__()
@@ -111,11 +111,7 @@ class ChatDriverInterface(
         self._state_listener = state_listener
         self._welcome_message = welcome_message
         self._chat_id = chat_id
-        self._initial_timeline_window_limit = (
-            initial_timeline_window_limit
-            if initial_timeline_window_limit is not None
-            else InitialTimelineWindowLimit(200)
-        )
+        self._initial_timeline_window_limit = initial_timeline_window_limit
         self._item_presenters = item_presenters
 
         #
