@@ -19,7 +19,7 @@ from ..items import AiStreamTimelineItem
 from ..items import ToolUseTimelineItem
 from ..items import ToolUseTimelineItemState
 from ..items import UserMessageTimelineItem
-from ..translate import translate_chat
+from ..translate import timeline_translate_chat
 from .harness import timeline_driver_harness
 from .test_manager import canon_items
 
@@ -54,7 +54,7 @@ async def test_parallel_tool_calls_converge():
         assert all(t.state is ToolUseTimelineItemState.COMPLETE for t in tools)
         assert all(t.result is not None for t in tools)
 
-        assert canon_items(items) == canon_items(translate_chat(await h.storage.get_chat()))
+        assert canon_items(items) == canon_items(timeline_translate_chat(await h.storage.get_chat()))
 
 
 @pytest.mark.asyncs('asyncio')
@@ -85,7 +85,7 @@ async def test_multi_action_tool_loops_converge():
             AiMessageTimelineItem,
         ]
 
-        assert canon_items(items) == canon_items(translate_chat(await h.storage.get_chat()))
+        assert canon_items(items) == canon_items(timeline_translate_chat(await h.storage.get_chat()))
 
 
 @pytest.mark.asyncs('asyncio')
@@ -127,5 +127,5 @@ async def test_recovery_after_failed_stream():
 
         # Storage holds only the completed turn (the failed turn persisted nothing, its user message included);
         # replay equals live minus the entire failed turn.
-        replayed = translate_chat(await h.storage.get_chat())
+        replayed = timeline_translate_chat(await h.storage.get_chat())
         assert canon_items(replayed) == canon_items([items[2], items[3]])

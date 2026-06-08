@@ -30,7 +30,7 @@ from ..items import TimelineItem
 from ..items import ToolUseTimelineItem
 from ..items import ToolUseTimelineItemState
 from ..items import UserMessageTimelineItem
-from ..translate import translate_chat
+from ..translate import timeline_translate_chat
 from .harness import timeline_driver_harness
 
 
@@ -204,7 +204,7 @@ async def test_live_replay_convergence():
             await h.send_user_text('go')
 
             live_items = h.manager.state.get_items()
-            replayed_items = translate_chat(await h.storage.get_chat())
+            replayed_items = timeline_translate_chat(await h.storage.get_chat())
 
             assert canon_items(live_items) == canon_items(replayed_items)
 
@@ -233,7 +233,7 @@ async def test_non_stream_path():
         assert all(not isinstance(e.item, AiStreamTimelineItem) for e in appended)
 
         # And convergence holds here too.
-        assert canon_items(items) == canon_items(translate_chat(await h.storage.get_chat()))
+        assert canon_items(items) == canon_items(timeline_translate_chat(await h.storage.get_chat()))
 
 
 @pytest.mark.asyncs('asyncio')
@@ -287,4 +287,4 @@ async def test_message_sequence_across_multiple_actions():
             AiMessageTimelineItem,
         ]
 
-        assert canon_items(items) == canon_items(translate_chat(await h.storage.get_chat()))
+        assert canon_items(items) == canon_items(timeline_translate_chat(await h.storage.get_chat()))

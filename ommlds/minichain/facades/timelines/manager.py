@@ -52,7 +52,7 @@ from .items import UiMessageTimelineItem
 from .projection import grow_streaming_item
 from .state import TimelineState
 from .translate import timeline_item_id_for_message
-from .translate import translate_message
+from .translate import timeline_translate_message
 
 
 ##
@@ -99,7 +99,7 @@ class TimelineManager:
         return use.id or use.name
 
     async def _append_canonical_message(self, message: Message) -> None:
-        item = translate_message(message)
+        item = timeline_translate_message(message)
 
         if isinstance(message, ToolUseMessage):
             self._tool_item_ids_by_use_key[self._tool_use_key(message.tu)] = item.id
@@ -109,7 +109,7 @@ class TimelineManager:
     async def _reconcile_canonical_message(self, message: Message) -> None:
         item_id = timeline_item_id_for_message(message)
 
-        canonical = translate_message(message)
+        canonical = timeline_translate_message(message)
 
         if isinstance(message, ToolUseMessage):
             self._tool_item_ids_by_use_key[self._tool_use_key(message.tu)] = canonical.id

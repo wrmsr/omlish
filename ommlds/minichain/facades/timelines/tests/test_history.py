@@ -33,7 +33,7 @@ from ..items import ToolUseTimelineItem
 from ..items import ToolUseTimelineItemState
 from ..items import UserMessageTimelineItem
 from ..state import TimelineState
-from ..translate import translate_message
+from ..translate import timeline_translate_message
 from .harness import timeline_driver_harness
 from .harness import user_message
 
@@ -65,7 +65,7 @@ async def test_state_history_windows_and_cursors():
     hist = StateTimelineHistory(state=state)
 
     for i in range(7):
-        state.append_item(translate_message(user_message(str(i))))
+        state.append_item(timeline_translate_message(user_message(str(i))))
 
     latest = await hist.get_latest(3)
     assert [it.message.c for it in latest.items] == ['4', '5', '6']  # type: ignore[attr-defined]

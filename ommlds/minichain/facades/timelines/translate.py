@@ -43,7 +43,7 @@ def timeline_item_id_for_message(message: Message) -> TimelineItemId:
     return TimelineItemId(uuid.uuid7())
 
 
-def translate_message(message: Message) -> TimelineItem:
+def timeline_translate_message(message: Message) -> TimelineItem:
     """
     Translates a single canonical message, without tool result pairing - a `ToolUseMessage` becomes a PENDING
     (unfinalized) tool item, and a `ToolUseResultMessage` an orphan-result one. Prefer `translate_chat` (or anchored
@@ -107,7 +107,7 @@ class AnchoredTimelineItem(ta.Generic[T]):
     item: TimelineItem
 
 
-def translate_anchored_chat(rows: ta.Iterable[tuple[T, Message]]) -> list[AnchoredTimelineItem[T]]:
+def timeline_translate_anchored_chat(rows: ta.Iterable[tuple[T, Message]]) -> list[AnchoredTimelineItem[T]]:
     """
     Translates a contiguous chat slice, pairing tool results into their uses' items (anchored at the *use*). A
     `ToolUseResultMessage` whose use lies outside the slice becomes an orphan-result tool item at its own anchor; a
@@ -158,13 +158,13 @@ def translate_anchored_chat(rows: ta.Iterable[tuple[T, Message]]) -> list[Anchor
             if i in paired_result_idxs:
                 continue
 
-            out.append(AnchoredTimelineItem(anchor, translate_message(m)))
+            out.append(AnchoredTimelineItem(anchor, timeline_translate_message(m)))
 
         else:
-            out.append(AnchoredTimelineItem(anchor, translate_message(m)))
+            out.append(AnchoredTimelineItem(anchor, timeline_translate_message(m)))
 
     return out
 
 
-def translate_chat(chat: Chat) -> list[TimelineItem]:
-    return [at.item for at in translate_anchored_chat(enumerate(chat))]
+def timeline_translate_chat(chat: Chat) -> list[TimelineItem]:
+    return [at.item for at in timeline_translate_anchored_chat(enumerate(chat))]

@@ -6,67 +6,20 @@ events' - zero translation beyond the marshal system.
   per marshaled TimelineEvent, until the client disconnects.
 - GET /timeline/before?item_id=&realm=&key=&limit= -> one marshaled window (lazy scrollback over the wire; the cursor
   fields round-trip a marshaled TimelineCursor).
-- POST /input ({"text": ...}) -> feeds the facade exactly as a local frontend would (slash commands included); responds
-  after the action completes.
 
 A browser holding a `TimelineProjection`-equivalent (apply window, apply events, upsert by id) renders this exactly as
 the TUI does - which is what the tests assert, projection included.
 """
 import asyncio
-import json
 import typing as ta
-import urllib.parse
-import uuid
 
-from omlish import check
 from omlish import marshal as msh
 
 from ..... import minichain as mc
-
-
-##
-
-
-def _sse_bytes(event: str, data: ta.Any) -> bytes:
-    return ''.join([
-        f'event: {event}\n',
-        f'data: {json.dumps(data, separators=(",", ":"))}\n',
-        '\n',
-    ]).encode('utf-8')
-
-
-async def _send_sse_headers(send: ta.Any) -> None:
-    await send({
-        'type': 'http.response.start',
-        'status': 200,
-        'headers': [
-            (b'content-type', b'text/event-stream'),
-            (b'cache-control', b'no-cache'),
-            (b'x-accel-buffering', b'no'),
-        ],
-    })
-
-
-async def _send_json(send: ta.Any, obj: ta.Any, *, status: int = 200) -> None:
-    body = json.dumps(obj).encode('utf-8')
-
-    await send({
-        'type': 'http.response.start',
-        'status': status,
-        'headers': [
-            (b'content-type', b'application/json'),
-            (b'content-length', str(len(body)).encode('ascii')),
-        ],
-    })
-
-    await send({
-        'type': 'http.response.body',
-        'body': body,
-    })
-
-
-def _parse_query(scope: ta.Any) -> dict[str, str]:
-    return dict(urllib.parse.parse_qsl((scope.get('query_string') or b'').decode('utf-8')))
+from .helpers import parse_query
+from .helpers import send_json
+from .helpers import send_sse_headers
+from .helpers import sse_bytes
 
 
 ##
@@ -87,17 +40,17 @@ class TimelineSseHandler:
         self._timeline = timeline
 
     async def handle_attach(self, scope: ta.Any, receive: ta.Any, send: ta.Any) -> None:
-        qs = _parse_query(scope)
+        qs = parse_query(scope)
         limit = int(qs.get('limit', self.DEFAULT_ATTACH_LIMIT))
 
         att = await self._timeline.attach(limit)
 
         async with att:
-            await _send_sse_headers(send)
+            await send_sse_headers(send)
 
             await send({
                 'type': 'http.response.body',
-                'body': _sse_bytes('window', {
+                'body': sse_bytes('window', {
                     'timeline_id': str(self._timeline.timeline_id),
                     'watermark': att.watermark,
                     'window': msh.marshal(att.window, mc.facades.timelines.TimelineWindow),
@@ -130,7 +83,7 @@ class TimelineSseHandler:
 
                         await send({
                             'type': 'http.response.body',
-                            'body': _sse_bytes('timeline', msh.marshal(tl_ev, mc.Event)),
+                            'body': sse_bytes('timeline', msh.marshal(tl_ev, mc.Event)),
                             'more_body': True,
                         })
 
@@ -155,7 +108,7 @@ class TimelineSseHandler:
             })
 
     async def handle_before(self, scope: ta.Any, receive: ta.Any, send: ta.Any) -> None:
-        qs = _parse_query(scope)
+        qs = parse_query(scope)
 
         cursor = msh.unmarshal(
             {
@@ -168,36 +121,4 @@ class TimelineSseHandler:
 
         window = await self._timeline.get_before(cursor, int(qs.get('limit', '50')))
 
-        await _send_json(send, msh.marshal(window, mc.facades.timelines.TimelineWindow))
-
-
-##
-
-
-class UserInputHandler:
-    def __init__(
-            self,
-            *,
-            facade: mc.facades.Facade,
-    ) -> None:
-        super().__init__()
-
-        self._facade = facade
-
-    async def handle(self, scope: ta.Any, receive: ta.Any, send: ta.Any) -> None:
-        ev = await receive()
-        check.state(ev['type'] == 'http.request')
-
-        body = ev['body']
-        while ev.get('more_body'):
-            ev = await receive()
-            body += ev['body']
-
-        d = json.loads(body.decode('utf-8'))
-        text = check.non_empty_str(d['text'])
-
-        input_uuid = uuid.uuid7()
-
-        await self._facade.handle_user_input(text, input_uuid=input_uuid)
-
-        await _send_json(send, {'ok': True, 'input_uuid': str(input_uuid)})
+        await send_json(send, msh.marshal(window, mc.facades.timelines.TimelineWindow))

@@ -5,7 +5,7 @@ from .serving import serve_data_cache_url
 from .serving import serve_not_found
 from .serving import serve_resource
 from .timelines import TimelineSseHandler
-from .timelines import UserInputHandler
+from .userinput import UserInputHandler
 
 
 ##

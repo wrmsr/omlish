@@ -99,11 +99,11 @@ with _lang.auto_proxy_init(globals()):
 
     from .translate import (  # noqa
         timeline_item_id_for_message,
-        translate_message,
+        timeline_translate_message,
 
         AnchoredTimelineItem,
-        translate_anchored_chat,
-        translate_chat,
+        timeline_translate_anchored_chat,
+        timeline_translate_chat,
     )
 
     ##

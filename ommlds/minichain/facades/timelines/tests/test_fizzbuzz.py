@@ -29,7 +29,7 @@ from ..items import ToolUseTimelineItemState
 from ..items import UserMessageTimelineItem
 from ..presenting import TimelineItemPresenters
 from ..presenting import present_timeline_item
-from ..translate import translate_chat
+from ..translate import timeline_translate_chat
 from .harness import timeline_driver_harness
 from .test_manager import canon_items
 
@@ -127,7 +127,7 @@ async def test_fizzbuzz_offline(tmp_path):
         assert 'edited successfully' in render_content_str(check.not_none(edit_tool.result).c)
 
         # And, of course, convergence.
-        assert canon_items(items) == canon_items(translate_chat(await h.storage.get_chat()))
+        assert canon_items(items) == canon_items(timeline_translate_chat(await h.storage.get_chat()))
 
         # The fs module contributed an item presenter: the edit tool card presents as a unified diff.
         presenters = await h.injector[TimelineItemPresenters]

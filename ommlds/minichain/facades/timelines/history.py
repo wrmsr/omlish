@@ -37,7 +37,7 @@ from .items import TimelineItem
 from .items import TimelineItemId
 from .items import ToolUseTimelineItem
 from .state import TimelineState
-from .translate import translate_anchored_chat
+from .translate import timeline_translate_anchored_chat
 
 
 ##
@@ -196,7 +196,7 @@ def _stored_message_uuids(rows: ta.Iterable[StoredMessage]) -> ta.Iterator[ta.An
 
 
 def _translate_rows(rows: ta.Sequence[StoredMessage]) -> ta.Sequence[TimelineItem]:
-    return [at.item for at in translate_anchored_chat((r.seq, r.message) for r in rows)]
+    return [at.item for at in timeline_translate_anchored_chat((r.seq, r.message) for r in rows)]
 
 
 def _is_leading_orphan_result(items: ta.Sequence[TimelineItem]) -> bool:

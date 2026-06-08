@@ -14,6 +14,7 @@ with lang.auto_proxy_import(globals()):
     from . import app as _app
     from . import interface as _interface
     from . import timelines as _timelines
+    from . import userinput as _userinput
     from .chat import inject as _chat
 
 
@@ -71,7 +72,7 @@ def bind_web(
 
     els.extend([
         inj.bind(_timelines.TimelineSseHandler, singleton=True),
-        inj.bind(_timelines.UserInputHandler, singleton=True),
+        inj.bind(_userinput.UserInputHandler, singleton=True),
     ])
 
     #
