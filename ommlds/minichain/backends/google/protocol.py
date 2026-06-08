@@ -1,20 +1,39 @@
+"""
+Translation passes between the mc chat IR and the google generativelanguage (gemini) API IR
+(`ommlds/backends/google/protocol`).
+
+Google is a genuinely distinct API (not an openai-compat dialect): `contents` of typed `parts`, a hoisted
+`system_instruction`, function-call/response parts, thought signatures. Only the http/sse transport is shared.
+"""
 import typing as ta
 
 from omlish import check
 from omlish.formats.json import all as json
 
 from ....backends.google.protocol import types as pt
+from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.stream.types import AiChoiceDeltas
+from ...chat.choices.stream.types import AiChoicesDeltas
+from ...chat.choices.types import AiChoice
 from ...chat.messages import AiMessage
+from ...chat.messages import AnyAiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
 from ...chat.metadata import ThoughtSignature
+from ...chat.stream.types import AiDelta
+from ...chat.stream.types import ContentAiDelta
+from ...chat.stream.types import ToolUseAiDelta
+from ...chat.tools.types import Tool
 from ...content.json import JsonContent
+from ...tools.types import ToolUse
+from .tools import build_tool_spec_schema
 
 
 ##
+# Requests
 
 
 ROLES_MAP: ta.Mapping[type[Message], pt.ContentRole | None] = {  # noqa
@@ -41,7 +60,7 @@ def make_str_content(
     )
 
 
-def make_msg_content(m: Message) -> pt.Content:
+def build_g_request_content(m: Message) -> pt.Content:
     if isinstance(m, (AiMessage, SystemMessage, UserMessage)):
         return check.not_none(make_str_content(
             check.isinstance(m.c, str),
@@ -91,24 +110,83 @@ def make_msg_content(m: Message) -> pt.Content:
         raise TypeError(m)
 
 
-def pop_system_instructions(msgs: list[Message]) -> pt.Content | None:
+def pop_g_system_instruction(msgs: list[Message]) -> pt.Content | None:
     if not msgs:
         return None
 
-    m0 = msgs[0]
     if not isinstance(m0 := msgs[0], SystemMessage):
         return None
 
     msgs.pop(0)
-    return make_msg_content(m0)
+    return build_g_request_content(m0)
 
 
-def get_msg_content(m: Message) -> str | None:
-    if isinstance(m, AiMessage):
-        return check.isinstance(m.c, str)
+def build_g_request_tool(t: Tool) -> pt.Tool:
+    return pt.Tool(
+        function_declarations=[build_tool_spec_schema(t.spec)],
+    )
 
-    elif isinstance(m, (SystemMessage, UserMessage)):
-        return check.isinstance(m.c, str)
+
+##
+# Responses
+
+
+def _build_mc_part_message(part: pt.Part) -> AnyAiMessage:
+    if (txt := part.text) is not None:
+        return AiMessage(txt)
+    elif (fc := part.function_call) is not None:
+        return ToolUseMessage(ToolUse(
+            id=fc.id,
+            name=fc.name,
+            args=fc.args or {},
+        ))
+    else:
+        raise TypeError(part)
+
+
+def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesResponse:
+    ai_choices: list[AiChoice] = []
+    for c in resp.candidates or []:
+        out: list[AnyAiMessage] = []
+        for part in check.not_none(check.not_none(c.content).parts):
+            out.append(_build_mc_part_message(part))
+        ai_choices.append(AiChoice(out))
+
+    return ChatChoicesResponse(ai_choices)
+
+
+##
+# Streaming
+
+
+def build_mc_part_ai_delta(part: pt.Part) -> AiDelta:
+    ai_delta: AiDelta
+
+    if (txt := part.text) is not None:
+        check.none(part.function_call)
+        ai_delta = ContentAiDelta(check.not_none(txt))
+
+    elif (fc := part.function_call) is not None:
+        check.none(part.text)
+        ai_delta = ToolUseAiDelta(
+            id=fc.id,
+            name=fc.name,
+            args=fc.args,
+        )
 
     else:
-        raise TypeError(m)
+        raise ValueError(part)
+
+    if part.thought_signature is not None:
+        ai_delta = ai_delta.with_metadata(ThoughtSignature(part.thought_signature))
+
+    return ai_delta
+
+
+def build_mc_ai_choices_deltas(resp: pt.GenerateContentResponse) -> list[AiChoicesDeltas]:
+    cnd = check.single(check.not_none(resp.candidates))
+
+    return [
+        AiChoicesDeltas([AiChoiceDeltas([build_mc_part_ai_delta(part)])])
+        for part in check.not_none(cnd.content).parts or []
+    ]
