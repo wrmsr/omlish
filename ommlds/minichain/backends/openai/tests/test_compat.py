@@ -45,7 +45,7 @@ def test_request_handler_honors_options():
     assert req.temperature == .25
     assert req.max_tokens == 123
     assert req.model == 'gpt-whatever'
-    assert check.isinstance(list(req.messages)[0], pt.UserChatCompletionMessage).content == 'hi'
+    assert check.isinstance(next(iter(req.messages)), pt.UserChatCompletionMessage).content == 'hi'
 
 
 ##

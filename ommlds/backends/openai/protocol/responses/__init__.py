@@ -1,7 +1,5 @@
 # ruff: noqa: I001
-"""
-https://platform.openai.com/docs/api-reference/responses
-"""
+"""https://platform.openai.com/docs/api-reference/responses"""
 from .request import (  # noqa
     ResponsesInputContentPart,
     InputTextResponsesInputContentPart,
