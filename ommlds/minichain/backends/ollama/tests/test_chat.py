@@ -6,7 +6,7 @@ from omlish.http import all as http
 from ....chat.messages import UserMessage
 from ....services import Request
 from ..chat import OllamaChatChoicesService
-from ..chat import OllamaChatChoicesStreamService
+from ..stream import OllamaChatChoicesStreamService
 
 
 @pytest.mark.not_docker_guest

@@ -168,6 +168,19 @@ class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
         return await self._handler.finish()
 
 
+#
+
+
+class SimpleLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
+    def __init__(self, fn: ta.Callable[[lang.Bytes], ta.Awaitable[ta.Sequence[ta.Any]]]) -> None:
+        super().__init__()
+
+        self._fn = fn
+
+    async def process_line(self, line: lang.Bytes) -> ta.Sequence[ta.Any]:
+        return await self._fn(line)
+
+
 ##
 
 
