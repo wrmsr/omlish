@@ -40,6 +40,18 @@ async def test_pg8000(harness):
         async with adb.connect() as conn:
             print(await qf.query_all(conn, Q.select([1])))
 
+            # FIXME: :|||
+            # print(await qf.query_all(
+            #     conn,
+            #     qf.as_query(
+            #         Q.select([Q.p.barf]),
+            #         adapter=DbapiAdapter(
+            #             param_style=ParamStyle.FORMAT,
+            #         ),
+            #     ),
+            #     {Q.p.barf: 420},
+            # ))
+
         print(await qf.query_all(adb, Q.select([1])))
 
 
@@ -73,5 +85,8 @@ async def test_asyncpg(harness):
 
     async with adb.connect() as conn:
         print(await qf.query_all(conn, Q.select([1])))
+
+        # FIXME: :|||
+        # print(await qf.query_all(conn, Q.select([Q.p.barf]), {Q.p.barf: 420}))
 
     print(await qf.query_all(adb, Q.select([1])))

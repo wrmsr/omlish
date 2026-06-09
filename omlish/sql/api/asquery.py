@@ -64,7 +64,7 @@ def as_query_(
 
 
 @as_query_.register
-def _(
+def _as_query_queryable(
         q: Queryable,
         params: ta.Any = None,
         /,
@@ -81,7 +81,7 @@ def _(
 
 
 @as_query_.register
-def _(
+def _as_query_str(
         s: str,
         params: ta.Any = None,
         /,
