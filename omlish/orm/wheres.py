@@ -32,7 +32,7 @@ WhereOpGlyph: ta.TypeAlias = ta.Literal[
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(terse_repr=True)
 class WhereItem(lang.Final):
-    field: str
+    name: str
     op: WhereOp
     value: ta.Any
 
@@ -43,12 +43,12 @@ class WhereItem(lang.Final):
     @classmethod
     def of(
             cls,
-            field: str,
+            name: str,
             op: WhereOp | WhereOpGlyph,
             value: ta.Any,
     ) -> WhereItem:
         return cls(
-            field,
+            name,
             WhereOp(op),
             value,
         )
@@ -63,36 +63,36 @@ class Where(ta.Sequence[WhereItem], lang.Final):
         super().__init__()
 
         self._items = items
-        by_field: dict[str, list[WhereItem]] = {}
+        by_name: dict[str, list[WhereItem]] = {}
         eq_values: dict[str, ta.Any] = {}
         is_all_eq = True
         for item in self._items:
-            check.not_in(item.field, by_field)
+            check.not_in(item.name, by_name)
             try:
-                lst = by_field[item.field]
+                lst = by_name[item.name]
             except KeyError:
-                by_field[item.field] = [item]
+                by_name[item.name] = [item]
             else:
                 lst.append(item)
             if item.op is WhereOp.EQ:
                 try:
-                    xeq = eq_values[item.field]
+                    xeq = eq_values[item.name]
                 except KeyError:
-                    eq_values[item.field] = item.value
+                    eq_values[item.name] = item.value
                 else:
                     # FIXME: not, like, illegal lol, just no results
                     check.equal(xeq, item.value)
             else:
                 is_all_eq = False
-        self._by_field = by_field
+        self._by_name = by_name
         self._eq_values = eq_values
         self._is_all_eq = is_all_eq
 
     @classmethod
-    def of_eq(cls, **field_values: ta.Any) -> Where:
+    def of_eq(cls, **name_values: ta.Any) -> Where:
         return cls(*(
             WhereItem(k, WhereOp.EQ, v)
-            for k, v in field_values.items()
+            for k, v in name_values.items()
         ))
 
     def __repr__(self) -> str:
@@ -103,8 +103,8 @@ class Where(ta.Sequence[WhereItem], lang.Final):
         ])
 
     @property
-    def by_field(self) -> ta.Mapping[str, ta.Sequence[WhereItem]]:
-        return self._by_field
+    def by_name(self) -> ta.Mapping[str, ta.Sequence[WhereItem]]:
+        return self._by_name
 
     @property
     def is_all_eq(self) -> bool:
@@ -128,7 +128,7 @@ class Where(ta.Sequence[WhereItem], lang.Final):
 
     def __getitem__(self, index):
         if isinstance(index, str):
-            return self._by_field[index]
+            return self._by_name[index]
         else:
             return self._items[index]
 

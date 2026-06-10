@@ -199,10 +199,10 @@ if cfg.enable_tools:
 els.append(inj.bind(AiChatGenerator, to_key=stack.top))
 ```
 
-Each pushed class takes `wrapped: AiChatGenerator` (the layer below) as a constructor kwarg. Composition lives
-*here*, declaratively — not in constructors behind a `strategy: ta.Literal[...]` kwarg. Order matters and is
-*semantic* (e.g. event emitters sit outside metadata stampers so emitted values are the canonical ones); when you
-reorder a stack, say why in a comment.
+Each pushed class takes an `AiChatGenerator` (the layer below) as a constructor kwarg. Composition lives *here*,
+declaratively — not in constructors behind a `strategy: ta.Literal[...]` kwarg. Order matters and is *semantic* (e.g.
+event emitters sit outside metadata stampers so emitted values are the canonical ones); when you reorder a stack, say
+why in a comment.
 
 `push_bind(..., with_=[...])` rebinds keys for that layer's construction only — e.g. handing a wrapper a specific
 inner key under the public interface name.

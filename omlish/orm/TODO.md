@@ -1,3 +1,5 @@
+- ** wire up names.py **
+  - AnyWhereItem[, StoreWhere, Where
 - ** sqlite timestamps need microseconds **
 - marshal interop
   - options? for ref expansion/id replacement

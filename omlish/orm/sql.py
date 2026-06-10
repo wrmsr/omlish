@@ -361,7 +361,7 @@ class SqlStore(Store):
             if (luw := lu.where):
                 fes = sm.field_encoders
                 for wi in luw:
-                    fk = wi.field
+                    fk = wi.name
                     fv = wi.value
                     if (fe := fes.get(fk)) is not None:
                         fv = fe(fv)
@@ -374,7 +374,7 @@ class SqlStore(Store):
 
             sfx: list[str] = []
             if lu.order_by:
-                sfx.append(f'order by {", ".join(f"{obi.field} {obi.dir}" for obi in lu.order_by)}')
+                sfx.append(f'order by {", ".join(f"{obi.name} {obi.dir}" for obi in lu.order_by)}')
             if lu.limit is not None:
                 sfx.append(f'limit {lu.limit}')  # FIXME: param
 

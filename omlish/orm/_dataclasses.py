@@ -1243,17 +1243,17 @@ def _process_dataclass__98ea4a5cb052ab1a4f4c5b9e186fd37f46ccc130():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('field', 'dir')), EqPlan(fields=('field', 'dir')), FrozenPlan(fields=('field', 'di"
-        "r'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('field', 'dir'), cache=False), InitPlan"
-        "(fields=(InitPlan.Field(name='field', annotation=OpRef(name='init.fields.0.annotation'), default=None, default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='dir', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None)), self_param='self', std_params=('field', 'dir'), kw_only_params=(), frozen=True, slots=False, post_init"
-        "_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='field', kw_only=False, fn=Non"
-        "e), ReprPlan.Field(name='dir', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('name', 'dir')), EqPlan(fields=('name', 'dir')), FrozenPlan(fields=('name', 'dir')"
+        ", allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('name', 'dir'), cache=False), InitPlan(fie"
+        "lds=(InitPlan.Field(name='name', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='dir', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        "), self_param='self', std_params=('name', 'dir'), kw_only_params=(), frozen=True, slots=False, post_init_param"
+        "s=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_only=False, fn=None), Rep"
+        "rPlan.Field(name='dir', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='ce425ca59e771582dad28be264d65025830fd6e3',
+    plan_repr_sha1='3cd8ca6a1f5381f251f51b5884b3918a7798b30d',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -1262,7 +1262,7 @@ def _process_dataclass__98ea4a5cb052ab1a4f4c5b9e186fd37f46ccc130():
         ('omlish.orm.ordering', 'OrderByItem'),
     ),
 )
-def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
+def _process_dataclass__3cd8ca6a1f5381f251f51b5884b3918a7798b30d():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1286,7 +1286,7 @@ def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                field=self.field,
+                name=self.name,
                 dir=self.dir,
             )
 
@@ -1301,7 +1301,7 @@ def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.field == other.field and
+                self.name == other.name and
                 self.dir == other.dir
             )
 
@@ -1311,7 +1311,7 @@ def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'field',
+            'name',
             'dir',
         }
 
@@ -1329,7 +1329,7 @@ def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'field',
+            'name',
             'dir',
         }
 
@@ -1348,7 +1348,7 @@ def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
 
         def __hash__(self):
             return hash((
-                self.field,
+                self.name,
                 self.dir,
             ))
 
@@ -1357,10 +1357,10 @@ def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
 
         def __init__(
             self,
-            field: __dataclass__init__fields__0__annotation,
+            name: __dataclass__init__fields__0__annotation,
             dir: __dataclass__init__fields__1__annotation,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'field', field)
+            __dataclass__object_setattr(self, 'name', name)
             __dataclass__object_setattr(self, 'dir', dir)
             self.__post_init__()
 
@@ -1372,7 +1372,7 @@ def _process_dataclass__ce425ca59e771582dad28be264d65025830fd6e3():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"{self.field!r}")
+            parts.append(f"{self.name!r}")
             parts.append(f"{self.dir!r}")
             return (
                 f"{self.__class__.__qualname__}("
@@ -1703,20 +1703,20 @@ def _process_dataclass__9bcadc6b485436dde22f785cd523e64b41ba962f():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('field', 'op', 'value')), EqPlan(fields=('field', 'op', 'value')), FrozenPlan(fiel"
-        "ds=('field', 'op', 'value'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('field', 'op', "
-        "'value'), cache=False), InitPlan(fields=(InitPlan.Field(name='field', annotation=OpRef(name='init.fields.0.ann"
-        "otation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='op', annotation=OpRef(name='init.fields.1.annota"
-        "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='value', annotation=OpRef(name='init.fields.2.annota"
-        "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None)), self_param='self', std_params=('field', 'op', 'value'), kw_only_params="
-        "(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan."
-        "Field(name='field', kw_only=False, fn=None), ReprPlan.Field(name='op', kw_only=False, fn=None), ReprPlan.Field"
-        "(name='value', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('name', 'op', 'value')), EqPlan(fields=('name', 'op', 'value')), FrozenPlan(fields"
+        "=('name', 'op', 'value'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('name', 'op', 'val"
+        "ue'), cache=False), InitPlan(fields=(InitPlan.Field(name='name', annotation=OpRef(name='init.fields.0.annotati"
+        "on'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='op', annotation=OpRef(name='init.fields.1.annotation'"
+        "), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='value', annotation=OpRef(name='init.fields.2.annotation'"
+        "), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None)), self_param='self', std_params=('name', 'op', 'value'), kw_only_params=(), fr"
+        "ozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field("
+        "name='name', kw_only=False, fn=None), ReprPlan.Field(name='op', kw_only=False, fn=None), ReprPlan.Field(name='"
+        "value', kw_only=False, fn=None)), id=False, terse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='3ab05ea17c713f5290931aaba77e1199cc4cdcc7',
+    plan_repr_sha1='4e0614568e3fda967c56f177ac864d8d0f5142a6',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -1726,7 +1726,7 @@ def _process_dataclass__9bcadc6b485436dde22f785cd523e64b41ba962f():
         ('omlish.orm.wheres', 'WhereItem'),
     ),
 )
-def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
+def _process_dataclass__4e0614568e3fda967c56f177ac864d8d0f5142a6():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1751,7 +1751,7 @@ def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                field=self.field,
+                name=self.name,
                 op=self.op,
                 value=self.value,
             )
@@ -1767,7 +1767,7 @@ def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.field == other.field and
+                self.name == other.name and
                 self.op == other.op and
                 self.value == other.value
             )
@@ -1778,7 +1778,7 @@ def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'field',
+            'name',
             'op',
             'value',
         }
@@ -1797,7 +1797,7 @@ def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'field',
+            'name',
             'op',
             'value',
         }
@@ -1817,7 +1817,7 @@ def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
 
         def __hash__(self):
             return hash((
-                self.field,
+                self.name,
                 self.op,
                 self.value,
             ))
@@ -1827,11 +1827,11 @@ def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
 
         def __init__(
             self,
-            field: __dataclass__init__fields__0__annotation,
+            name: __dataclass__init__fields__0__annotation,
             op: __dataclass__init__fields__1__annotation,
             value: __dataclass__init__fields__2__annotation,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'field', field)
+            __dataclass__object_setattr(self, 'name', name)
             __dataclass__object_setattr(self, 'op', op)
             __dataclass__object_setattr(self, 'value', value)
 
@@ -1843,7 +1843,7 @@ def _process_dataclass__3ab05ea17c713f5290931aaba77e1199cc4cdcc7():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"{self.field!r}")
+            parts.append(f"{self.name!r}")
             parts.append(f"{self.op!r}")
             parts.append(f"{self.value!r}")
             return (

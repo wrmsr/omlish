@@ -31,9 +31,9 @@ class Query(lang.Final, ta.Generic[T]):
         self._limit = limit
 
         if order_by:
-            wh_bf = check.not_none(where)._by_field
+            wh_bf = check.not_none(where)._by_name
             for obi in order_by:
-                check.in_(obi.field, wh_bf)
+                check.in_(obi.name, wh_bf)
 
     def __repr__(self) -> str:
         return ''.join([

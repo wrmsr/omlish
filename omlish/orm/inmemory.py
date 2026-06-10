@@ -216,7 +216,7 @@ class InMemoryStore(Store):
     def _postprocess_lookup_candidates(self, st: _State, lu: Store.Lookup, lst: list[Snap]) -> list[Snap]:
         if luw := lu.where:
             op_tups: list[tuple[str, ta.Callable[[ta.Any, ta.Any], bool], ta.Any]] = [
-                (wi.field, self._OP_FN_BY_OP[wi.op], wi.value)
+                (wi.name, self._OP_FN_BY_OP[wi.op], wi.value)
                 for wi in luw._items
             ]
             lst2: list[Snap] = []
@@ -228,7 +228,7 @@ class InMemoryStore(Store):
         if lu.order_by:
             for obi in reversed(lu.order_by):
                 lst.sort(
-                    key=operator.itemgetter(obi.field),
+                    key=operator.itemgetter(obi.name),
                     reverse=(obi.dir == 'desc'),
                 )
 

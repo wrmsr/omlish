@@ -434,7 +434,7 @@ class Session:
         if (qwh := q.where):
             wis: list[WhereItem] = []
             for qwi in qwh:
-                f = m._fields_by_name[qwi.field]
+                f = m._fields_by_name[qwi.name]
                 wis.append(WhereItem(
                     f._store_name,
                     qwi.op,
@@ -446,7 +446,7 @@ class Session:
         if (qoi := q.order_by):
             oi = [
                 OrderByItem(
-                    m._fields_by_name[obi.field]._store_name,
+                    m._fields_by_name[obi.name]._store_name,
                     obi.dir,
                 )
                 for obi in qoi

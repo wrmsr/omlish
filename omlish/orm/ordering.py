@@ -18,7 +18,7 @@ ORDER_BY_DIR_VALUES: tuple[str, ...] = ('asc', 'desc')
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(terse_repr=True)
 class OrderByItem(lang.Final):
-    field: str
+    name: str
     dir: OrderByDir
 
     def __post_init__(self) -> None:
