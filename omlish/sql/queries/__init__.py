@@ -10,6 +10,10 @@ _dc.init_package(
 ##
 
 
+from .adapters import (  # noqa
+    Adapter,
+)
+
 from .base import (  # noqa
     Builder,
     HasQn,

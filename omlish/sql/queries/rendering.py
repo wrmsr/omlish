@@ -13,9 +13,9 @@ from ... import lang
 from ...text import parts as tp
 from ..params import ParamKey
 from ..params import ParamsPreparer
-from ..params import ParamStyle
 from ..params import make_params_preparer
 from ..params import substitute_params
+from .adapters import Adapter
 from .base import Node
 from .binary import Binary
 from .binary import BinaryOp
@@ -72,16 +72,12 @@ class RenderedQuery(lang.Final):
 
 
 class Renderer(lang.Abstract):
-    def __init__(
-            self,
-            *,
-            param_style: ParamStyle | None = None,
-            literal_style: ta.Literal['param_all', 'safe_only'] = 'safe_only',
-    ) -> None:
+    def __init__(self, adapter: Adapter | None = None) -> None:
         super().__init__()
 
-        self._param_style = param_style
-        self._literal_style = literal_style
+        if adapter is None:
+            adapter = Adapter()
+        self._adapter = adapter
 
         self._seen_params: dict[Param, int] = {}
         self._literal_params: dict[Param, ta.Any] = {}
@@ -96,7 +92,7 @@ class Renderer(lang.Abstract):
         except AttributeError:
             pass
 
-        if (ps := self._param_style) is None:
+        if (ps := self._adapter.param_style) is None:
             raise ValueError('param_style is not set')
 
         self._params_preparer_ = pp = make_params_preparer(ps)
@@ -109,7 +105,7 @@ class Renderer(lang.Abstract):
         return p.n if p.n is not None else id(p)
 
     def rendered_params(self) -> RenderedQueryParams | None:
-        if self._param_style is None:
+        if self._adapter.param_style is None:
             check.empty(self._seen_params)
             return None
 
@@ -214,15 +210,15 @@ class StdRenderer(Renderer):
 
     @Renderer.render.register
     def render_literal(self, o: Literal) -> tp.Part:
-        if self._literal_style == 'param_all':
+        if self._adapter.literal_style == 'param_all':
             pass
 
-        elif self._literal_style == 'safe_only':
+        elif self._adapter.literal_style == 'safe_only':
             if isinstance(o.v, self.SAFE_LITERAL_TYPES):
                 return str(o.v)
 
         else:
-            raise ValueError(self._literal_style)
+            raise ValueError(self._adapter.literal_style)
 
         return self.render(self._make_literal_param(o.v))
 
@@ -253,7 +249,7 @@ class StdRenderer(Renderer):
 
     @Renderer.render.register
     def render_ident(self, o: Ident) -> tp.Part:
-        return f'"{o.s}"'
+        return self._adapter.quote_style.quote(o.s)
 
     # inserts
 
@@ -427,9 +423,17 @@ class StdRenderer(Renderer):
         ]
 
 
-def render_parts(n: Node, **kwargs: ta.Any) -> RenderedQueryParts:
-    return StdRenderer.render_query_parts(n, **kwargs)
+def render_parts(n: Node, *, adapter: Adapter | None = None, **kwargs: ta.Any) -> RenderedQueryParts:
+    if adapter is None:
+        adapter = Adapter(**kwargs)
+    elif kwargs:
+        raise TypeError('Provide adapter or individual config kwargs, not both')
+    return StdRenderer.render_query_parts(n, adapter)
 
 
-def render(n: Node, **kwargs: ta.Any) -> RenderedQuery:
-    return StdRenderer.render_query(n, **kwargs)
+def render(n: Node, *, adapter: Adapter | None = None, **kwargs: ta.Any) -> RenderedQuery:
+    if adapter is None:
+        adapter = Adapter(**kwargs)
+    elif kwargs:
+        raise TypeError('Provide adapter or individual config kwargs, not both')
+    return StdRenderer.render_query(n, adapter)
