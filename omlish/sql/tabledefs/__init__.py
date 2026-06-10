@@ -10,7 +10,7 @@ _dc.init_package(
 ##
 
 
-from .dtypes import (  # noqa
+from ..dtypes import (  # noqa
     Dtype,
     Integer,
     String,

@@ -1,7 +1,7 @@
 import contextlib
 import sqlite3
 
-from ....tabledefs.dtypes import String
+from ....dtypes import String
 from ....tabledefs.elements import Column
 from ....tabledefs.elements import CreatedAtUpdatedAt
 from ....tabledefs.elements import Elements

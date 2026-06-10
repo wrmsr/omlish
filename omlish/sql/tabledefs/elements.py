@@ -4,7 +4,7 @@ from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
 from ... import typedvalues as tv
-from .dtypes import Dtype
+from ..dtypes import Dtype
 from .values import SimpleValue
 
 

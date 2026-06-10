@@ -1,7 +1,7 @@
 from ... import dataclasses as dc
 from ... import lang
-from .dtypes import Datetime
-from .dtypes import Integer
+from ..dtypes import Datetime
+from ..dtypes import Integer
 from .elements import Column
 from .elements import CreatedAt
 from .elements import CreatedAtUpdatedAt

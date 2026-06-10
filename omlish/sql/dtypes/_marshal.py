@@ -1,6 +1,5 @@
 from ... import marshal as msh
-from .elements import Element
-from .values import SpecialValue
+from .dtypes import Dtype
 
 
 ##
@@ -17,5 +16,4 @@ def _install_poly(cfgs: msh.ConfigRegistry, cls: type) -> None:
 
 @msh.register_global_lazy_init
 def _install_standard_marshaling(cfgs: msh.ConfigRegistry) -> None:
-    _install_poly(cfgs, Element)
-    _install_poly(cfgs, SpecialValue)
+    _install_poly(cfgs, Dtype)
