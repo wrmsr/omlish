@@ -29,6 +29,7 @@ class RenderColumn:
     not_null: bool = False
     default: str | None = None
     identity: str = ''
+    extra: ta.Sequence[str] = ()
 
 
 class StatementRenderer(lang.Abstract):
@@ -52,6 +53,17 @@ class StatementRenderer(lang.Abstract):
     def column_identity_sql(self, c: Column) -> str:
         return ''
 
+    def column_option_sql(self, c: Column) -> list[str]:
+        # Base supports no column options; any present trips the fail-closed consumer.
+        with c.options.consume():
+            pass
+        return []
+
+    def consume_table_options(self, tbl: TableDef) -> None:
+        # Base supports no table options.
+        with tbl.options.consume():
+            pass
+
     def render_default(self, v: SimpleValue) -> str:
         if isinstance(v, Now):
             return 'current_timestamp'
@@ -69,6 +81,9 @@ class StatementRenderer(lang.Abstract):
     def index_statement(self, tbl: TableDef, e: Index, opts: CreateOptions) -> str:
         if (idx_name := e.name) is None:
             idx_name = '__'.join([tbl.name, 'index', *e.columns])
+
+        with e.options.consume():
+            pass  # base supports no index options
 
         return self.CREATE_INDEX_SRC.format(
             preamble='if not exists' if opts.if_not_exists else '',
@@ -103,6 +118,8 @@ class StatementRenderer(lang.Abstract):
         if opts is None:
             opts = self.CreateOptions()
 
+        self.consume_table_options(tbl)
+
         cols: ta.Mapping[str, Column] = col.make_map_by(
             lambda c: c.name,
             tbl.elements[Column],
@@ -128,6 +145,7 @@ class StatementRenderer(lang.Abstract):
                 not_null=not c.nullable,
                 default=dfl,
                 identity=self.column_identity_sql(c) if is_identity else '',
+                extra=self.column_option_sql(c),
             )
 
         constraints: list[str] = []
@@ -169,6 +187,9 @@ class StatementRenderer(lang.Abstract):
 
             if rc.default is not None:
                 cts.write(f' default {rc.default}')
+
+            for x in rc.extra:
+                cts.write(f' {x}')
 
             if constraints or i < len(r_cols) - 1:
                 cts.write(',')

@@ -37,6 +37,19 @@ from .elements import (  # noqa
 
 from .lower import (  # noqa
     lower_table_elements,
+    select_backend_options,
+)
+
+from .options import (  # noqa
+    BackendOption,
+
+    ColumnOption,
+    IndexOption,
+    TableOption,
+
+    ColumnOptions,
+    IndexOptions,
+    TableOptions,
 )
 
 from .rendering import (  # noqa

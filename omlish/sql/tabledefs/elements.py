@@ -3,8 +3,11 @@ import typing as ta
 from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
+from ... import marshal as msh
 from ... import typedvalues as tv
 from ..dtypes import Dtype
+from .options import ColumnOptions
+from .options import IndexOptions
 from .values import SimpleValue
 
 
@@ -28,6 +31,12 @@ class Column(Element, lang.Final):
     nullable: bool = False
     default: lang.Maybe[SimpleValue] = lang.empty()
 
+    # TODO: marshal once concrete (backend) option types exist - open families have no poly impls yet.
+    options: ColumnOptions = (
+        dc.xfield(default_factory=tv.TypedValues, coerce=tv.as_collection) |
+        msh.dc_field_options(no_marshal=True, no_unmarshal=True)
+    )
+
 
 @dc.dataclass(frozen=True)
 class PrimaryKey(Element, tv.UniqueTypedValue, lang.Final):
@@ -44,6 +53,11 @@ class Index(Element, lang.Final):
 
     unique: bool = False
     where: str | None = None
+
+    options: IndexOptions = (
+        dc.xfield(default_factory=tv.TypedValues, coerce=tv.as_collection) |
+        msh.dc_field_options(no_marshal=True, no_unmarshal=True)
+    )
 
 
 ##
