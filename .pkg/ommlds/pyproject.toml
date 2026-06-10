@@ -38,7 +38,7 @@ all = [
     'tinygrad ~= 0.13',
     'tokenizers ~= 0.22',
     'torch ~= 2.12',
-    'transformers ~= 5.10',
+    'transformers ~= 5.11',
     'sentence-transformers ~= 5.5',
     'huggingface-hub ~= 1.18',
     'datasets ~= 5.0',
@@ -65,7 +65,7 @@ backends = [
     'tinygrad ~= 0.13',
     'tokenizers ~= 0.22',
     'torch ~= 2.12',
-    'transformers ~= 5.10',
+    'transformers ~= 5.11',
     'sentence-transformers ~= 5.5',
 ]
 huggingface = [

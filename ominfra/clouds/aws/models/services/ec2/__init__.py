@@ -3113,6 +3113,42 @@ ImageIdStringList: _ta.TypeAlias = _ta.Sequence[ImageId]
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
+class ImageWatermark(
+    _base.Shape,
+    shape_name='ImageWatermark',
+):
+    watermark_key: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='WatermarkKey',
+        serialization_name='watermarkKey',
+        shape_name='String',
+    ))
+
+    source_image_region: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SourceImageRegion',
+        serialization_name='sourceImageRegion',
+        shape_name='String',
+    ))
+
+    source_image_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SourceImageId',
+        serialization_name='sourceImageId',
+        shape_name='String',
+    ))
+
+    source_image_creation_time: _base.MillisecondDateTime | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SourceImageCreationTime',
+        serialization_name='sourceImageCreationTime',
+        shape_name='MillisecondDateTime',
+    ))
+
+    watermark_creation_time: _base.MillisecondDateTime | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='WatermarkCreationTime',
+        serialization_name='watermarkCreationTime',
+        shape_name='MillisecondDateTime',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
 class InferenceDeviceMemoryInfo(
     _base.Shape,
     shape_name='InferenceDeviceMemoryInfo',
@@ -4717,6 +4753,8 @@ class GpuDeviceInfo(
 
 
 GroupIdentifierList: _ta.TypeAlias = _ta.Sequence[GroupIdentifier]
+
+ImageWatermarkList: _ta.TypeAlias = _ta.Sequence[ImageWatermark]
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
@@ -6892,6 +6930,13 @@ class Image(
         shape_name='Boolean',
     ))
 
+    image_watermarks: ImageWatermarkList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ImageWatermarks',
+        serialization_name='imageWatermarkSet',
+        value_type=_base.ListValueType(ImageWatermark),
+        shape_name='ImageWatermarkList',
+    ))
+
     image_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ImageId',
         serialization_name='imageId',
@@ -8920,6 +8965,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     IamInstanceProfile,
     IamInstanceProfileSpecification,
     Image,
+    ImageWatermark,
     InferenceAcceleratorInfo,
     InferenceDeviceInfo,
     InferenceDeviceMemoryInfo,

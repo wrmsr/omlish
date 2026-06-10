@@ -71,7 +71,7 @@ class Where(ta.Sequence[WhereItem], lang.Final):
             try:
                 lst = by_field[item.field]
             except KeyError:
-                lst = by_field[item.field] = [item]
+                by_field[item.field] = [item]
             else:
                 lst.append(item)
             if item.op is WhereOp.EQ:

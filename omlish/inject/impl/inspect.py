@@ -7,6 +7,7 @@ from ... import check
 from ... import reflect as rfl
 from ..errors import ConflictingKeyError
 from ..inspect import Kwarg
+from ..inspect import Kwargs
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..types import Tag
@@ -134,5 +135,5 @@ def build_kwargs_target(
 
     return KwargsTarget(
         obj,
-        tuple(kws),
+        Kwargs.of(*kws),
     )

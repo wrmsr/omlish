@@ -101,8 +101,10 @@ Things to notice, all deliberate:
 ## The provider-function pattern
 
 Binding a class directly (`inj.bind(FooImpl, singleton=True)`) constructor-injects **every annotated parameter** —
-including optional ones, which it will try to resolve. When a constructor has params the injector shouldn't touch
-(tuning knobs, `| None = None` extras), bind a provider function instead; its *return annotation* is the key:
+including optional ones, which it will try to resolve. If the injector cannot resolve a param with a default, that is
+not an injection failure - the param will not be included in the instantiation kwargs, and thus the default will take
+effect. When a constructor has params the injector shouldn't touch (tuning knobs, `| None = None` extras), bind a
+provider function instead; its *return annotation* is the key:
 
 ```python
 def _provide_timeline_manager(events: EventsManager) -> TimelineManager:
@@ -111,7 +113,7 @@ def _provide_timeline_manager(events: EventsManager) -> TimelineManager:
 els.append(inj.bind(_provide_timeline_manager, singleton=True))
 ```
 
-For one-liners there's `inj.target`, which names the dependencies and wraps a lambda:
+For one-liners there's `inj.target`, which names the dependencies and wraps a callable:
 
 ```python
 els.append(inj.bind(

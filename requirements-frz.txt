@@ -22,8 +22,8 @@ bcrypt==5.0.0
 bitsandbytes==0.49.2
 black==26.5.1
 blobfile==3.2.0
-boto3==1.43.24
-botocore==1.43.24
+boto3==1.43.27
+botocore==1.43.27
 botocore-stubs==1.43.14
 brotli==1.2.0
 build==1.5.0
@@ -52,7 +52,7 @@ duckdb==1.5.3
 execnet==2.1.2
 executing==2.2.1
 fake-useragent==2.2.0
-filelock==3.29.1
+filelock==3.29.3
 flake8==7.3.0
 Flake8-pyproject==1.2.4
 flatbuffers==25.12.19
@@ -196,7 +196,7 @@ pytokens==0.4.1
 pytz==2026.2
 PyYAML==6.0.3
 rapidocr-onnxruntime==1.4.4
-readme_renderer==44.0
+readme_renderer==45.0
 regex==2026.5.9
 requests==2.34.2
 requests-toolbelt==1.0.0
@@ -205,7 +205,7 @@ rich==15.0.0
 ripgrep==15.1.0
 ruff==0.15.16
 s3transfer==0.18.0
-safetensors==0.7.0
+safetensors==0.8.0
 scikit-image==0.26.0
 scikit-learn==1.9.0
 scipy==1.17.1
@@ -238,9 +238,9 @@ tokenizers==0.22.2
 tomlkit==0.15.0
 torch==2.12.0
 torchvision==0.27.0
-tqdm==4.68.1
+tqdm==4.68.2
 traitlets==5.15.1
-transformers==5.10.2
+transformers==5.11.0
 tree-sitter==0.25.2
 tree-sitter-bash==0.25.1
 tree-sitter-css==0.25.0
@@ -262,7 +262,7 @@ trio==0.33.0
 twine==6.2.0
 typer==0.25.1
 types-awscrt==0.34.1
-types-boto3==1.43.24
+types-boto3==1.43.27
 types-docutils==0.22.3.20260518
 types-greenlet==3.5.0.20260518
 types-paramiko==4.0.0.20260518
@@ -282,7 +282,7 @@ uritemplate==4.2.0
 urllib3==2.7.0
 urwid==4.0.2
 urwid_readline==0.15.1
-uv==0.11.19
+uv==0.11.20
 uvicorn==0.49.0
 watchdog==6.0.0
 wcwidth==0.8.1

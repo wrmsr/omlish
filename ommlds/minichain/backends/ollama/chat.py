@@ -81,7 +81,7 @@ class BaseOllamaChatChoicesService(lang.Abstract):
     """
 
     DEFAULT_API_URL: ta.ClassVar[ApiUrl] = ApiUrl('http://localhost:11434/api')
-    DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName('llama3.2')
+    DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName('gemma4:12b-mlx')  # FIXME: they broke non-mlx models lol
 
     def __init__(
             self,

@@ -99,6 +99,7 @@ with _lang.auto_proxy_init(globals()):
 
     from .inspect import (  # noqa
         Kwarg,
+        Kwargs,
         KwargsTarget,
         build_kwargs_target,
         tag,

@@ -37,7 +37,7 @@ class Project(ProjectBase):
 
             'torch ~= 2.12',
 
-            'transformers ~= 5.10',
+            'transformers ~= 5.11',
             'sentence-transformers ~= 5.5',
         ],
 

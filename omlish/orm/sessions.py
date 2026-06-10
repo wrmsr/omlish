@@ -13,6 +13,8 @@ from .keys import Key
 from .keys import _AutoKey
 from .keys import _ValKey
 from .mappers import Mapper
+from .ordering import OrderByItem
+from .ordering import Ordering
 from .queries import Query
 from .refs import _KeyRef
 from .refs import _ObjRef
@@ -440,10 +442,20 @@ class Session:
                 ))
             wh = Where(*wis)
 
+        oi: Ordering | None = None
+        if (qoi := q.order_by):
+            oi = [
+                OrderByItem(
+                    m._fields_by_name[obi.field]._store_name,
+                    obi.dir,
+                )
+                for obi in qoi
+            ]
+
         lu = Store.Lookup(
             m,
             wh,
-            order_by=q.order_by,
+            order_by=oi,
             limit=q.limit,
         )
 

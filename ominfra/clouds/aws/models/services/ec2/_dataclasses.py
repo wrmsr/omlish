@@ -12109,147 +12109,151 @@ def _process_dataclass__393cef70a0276465bcd054e4c1e3f3361f57d405():
         "a_support', 'hypervisor', 'image_owner_alias', 'name', 'root_device_name', 'root_device_type', 'sriov_net_supp"
         "ort', 'state_reason', 'tags', 'virtualization_type', 'boot_mode', 'tpm_support', 'deprecation_time', 'imds_sup"
         "port', 'source_instance_id', 'deregistration_protection', 'last_launched_time', 'image_allowed', 'source_image"
-        "_id', 'source_image_region', 'free_tier_eligible', 'image_id', 'image_location', 'state', 'owner_id', 'creatio"
-        "n_date', 'public', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id', 'platform')), EqP"
-        "lan(fields=('platform_details', 'usage_operation', 'block_device_mappings', 'description', 'ena_support', 'hyp"
-        "ervisor', 'image_owner_alias', 'name', 'root_device_name', 'root_device_type', 'sriov_net_support', 'state_rea"
-        "son', 'tags', 'virtualization_type', 'boot_mode', 'tpm_support', 'deprecation_time', 'imds_support', 'source_i"
-        "nstance_id', 'deregistration_protection', 'last_launched_time', 'image_allowed', 'source_image_id', 'source_im"
-        "age_region', 'free_tier_eligible', 'image_id', 'image_location', 'state', 'owner_id', 'creation_date', 'public"
-        "', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id', 'platform')), FrozenPlan(fields=("
-        "'__shape__', 'platform_details', 'usage_operation', 'block_device_mappings', 'description', 'ena_support', 'hy"
-        "pervisor', 'image_owner_alias', 'name', 'root_device_name', 'root_device_type', 'sriov_net_support', 'state_re"
-        "ason', 'tags', 'virtualization_type', 'boot_mode', 'tpm_support', 'deprecation_time', 'imds_support', 'source_"
-        "instance_id', 'deregistration_protection', 'last_launched_time', 'image_allowed', 'source_image_id', 'source_i"
-        "mage_region', 'free_tier_eligible', 'image_id', 'image_location', 'state', 'owner_id', 'creation_date', 'publi"
-        "c', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id', 'platform'), allow_dynamic_dunde"
-        "r_attrs=False), HashPlan(action='add', fields=('platform_details', 'usage_operation', 'block_device_mappings',"
-        " 'description', 'ena_support', 'hypervisor', 'image_owner_alias', 'name', 'root_device_name', 'root_device_typ"
-        "e', 'sriov_net_support', 'state_reason', 'tags', 'virtualization_type', 'boot_mode', 'tpm_support', 'deprecati"
-        "on_time', 'imds_support', 'source_instance_id', 'deregistration_protection', 'last_launched_time', 'image_allo"
-        "wed', 'source_image_id', 'source_image_region', 'free_tier_eligible', 'image_id', 'image_location', 'state', '"
-        "owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id'"
-        ", 'platform'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fie"
-        "lds.00.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS"
-        "_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='platform_details', annotation=OpRef(n"
-        "ame='init.fields.01.annotation'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='usage_operation', annotation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.0"
-        "2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='block_device_mappings', annotation=OpRef(name='init.fields.0"
-        "3.annotation'), default=OpRef(name='init.fields.03.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='description"
-        "', annotation=OpRef(name='init.fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='ena_support', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(na"
-        "me='init.fields.05.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
-        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fi"
-        "elds.06.annotation'), default=OpRef(name='init.fields.06.default'), default_factory=None, init=True, override="
-        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image"
-        "_owner_alias', annotation=OpRef(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.08.annotation'), default=OpR"
-        "ef(name='init.fields.08.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='root_device_name', annotation=OpRef(na"
-        "me='init.fields.09.annotation'), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='root_device_type', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.1"
-        "0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='sriov_net_support', annotation=OpRef(name='init.fields.11.an"
-        "notation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='state_reason', "
-        "annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='tags', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.f"
-        "ields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='virtualization_type', annotation=OpRef(name='init.fie"
-        "lds.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='boot_m"
-        "ode', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None), InitPlan.Field(name='tpm_support', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef"
-        "(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
-        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='deprecation_time', annotation=OpRef(name"
-        "='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='imds_support', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.defa"
-        "ult'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=N"
-        "one, check_type=None), InitPlan.Field(name='source_instance_id', annotation=OpRef(name='init.fields.19.annotat"
-        "ion'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='deregistration_prote"
-        "ction', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), defa"
-        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
-        "type=None), InitPlan.Field(name='last_launched_time', annotation=OpRef(name='init.fields.21.annotation'), defa"
-        "ult=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_allowed', annotation=OpRe"
-        "f(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=None, init="
-        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
-        "eld(name='source_image_id', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.field"
-        "s.23.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='source_image_region', annotation=OpRef(name='init.fields."
-        "24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='free_tier_"
-        "eligible', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='image_id', annotation=OpRef(name='init.fields.26.annotation'), default=OpR"
-        "ef(name='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_location', annotation=OpRef(name"
-        "='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='state', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), "
+        "_id', 'source_image_region', 'free_tier_eligible', 'image_watermarks', 'image_id', 'image_location', 'state', "
+        "'owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id"
+        "', 'platform')), EqPlan(fields=('platform_details', 'usage_operation', 'block_device_mappings', 'description',"
+        " 'ena_support', 'hypervisor', 'image_owner_alias', 'name', 'root_device_name', 'root_device_type', 'sriov_net_"
+        "support', 'state_reason', 'tags', 'virtualization_type', 'boot_mode', 'tpm_support', 'deprecation_time', 'imds"
+        "_support', 'source_instance_id', 'deregistration_protection', 'last_launched_time', 'image_allowed', 'source_i"
+        "mage_id', 'source_image_region', 'free_tier_eligible', 'image_watermarks', 'image_id', 'image_location', 'stat"
+        "e', 'owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdis"
+        "k_id', 'platform')), FrozenPlan(fields=('__shape__', 'platform_details', 'usage_operation', 'block_device_mapp"
+        "ings', 'description', 'ena_support', 'hypervisor', 'image_owner_alias', 'name', 'root_device_name', 'root_devi"
+        "ce_type', 'sriov_net_support', 'state_reason', 'tags', 'virtualization_type', 'boot_mode', 'tpm_support', 'dep"
+        "recation_time', 'imds_support', 'source_instance_id', 'deregistration_protection', 'last_launched_time', 'imag"
+        "e_allowed', 'source_image_id', 'source_image_region', 'free_tier_eligible', 'image_watermarks', 'image_id', 'i"
+        "mage_location', 'state', 'owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_type',"
+        " 'kernel_id', 'ramdisk_id', 'platform'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('pl"
+        "atform_details', 'usage_operation', 'block_device_mappings', 'description', 'ena_support', 'hypervisor', 'imag"
+        "e_owner_alias', 'name', 'root_device_name', 'root_device_type', 'sriov_net_support', 'state_reason', 'tags', '"
+        "virtualization_type', 'boot_mode', 'tpm_support', 'deprecation_time', 'imds_support', 'source_instance_id', 'd"
+        "eregistration_protection', 'last_launched_time', 'image_allowed', 'source_image_id', 'source_image_region', 'f"
+        "ree_tier_eligible', 'image_watermarks', 'image_id', 'image_location', 'state', 'owner_id', 'creation_date', 'p"
+        "ublic', 'product_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id', 'platform'), cache=False), I"
+        "nitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.00.annotation'), default=N"
+        "one, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='platform_details', annotation=OpRef(name='init.fields.01.annotation"
+        "'), default=OpRef(name='init.fields.01.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='usage_operation', annot"
+        "ation=OpRef(name='init.fields.02.annotation'), default=OpRef(name='init.fields.02.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='block_device_mappings', annotation=OpRef(name='init.fields.03.annotation'), default=OpRef("
+        "name='init.fields.03.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='description', annotation=OpRef(name='init"
+        ".fields.04.annotation'), default=OpRef(name='init.fields.04.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='en"
+        "a_support', annotation=OpRef(name='init.fields.05.annotation'), default=OpRef(name='init.fields.05.default'), "
         "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
-        "eck_type=None), InitPlan.Field(name='owner_id', annotation=OpRef(name='init.fields.29.annotation'), default=Op"
-        "Ref(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='creation_date', annotation=OpRef(name"
-        "='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='public', annotation=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='product_codes', annotation=OpRef(name='init.fields.32.annotation'), defa"
-        "ult=OpRef(name='init.fields.32.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='architecture', annotation=OpRef"
-        "(name='init.fields.33.annotation'), default=OpRef(name='init.fields.33.default'), default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='image_type', annotation=OpRef(name='init.fields.34.annotation'), default=OpRef(name='init.fields.34.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='kernel_id', annotation=OpRef(name='init.fields.35.annotation'),"
-        " default=OpRef(name='init.fields.35.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ramdisk_id', annotation=Op"
-        "Ref(name='init.fields.36.annotation'), default=OpRef(name='init.fields.36.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='platform', annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('platform_details', 'usage_opera"
-        "tion', 'block_device_mappings', 'description', 'ena_support', 'hypervisor', 'image_owner_alias', 'name', 'root"
-        "_device_name', 'root_device_type', 'sriov_net_support', 'state_reason', 'tags', 'virtualization_type', 'boot_m"
-        "ode', 'tpm_support', 'deprecation_time', 'imds_support', 'source_instance_id', 'deregistration_protection', 'l"
-        "ast_launched_time', 'image_allowed', 'source_image_id', 'source_image_region', 'free_tier_eligible', 'image_id"
-        "', 'image_location', 'state', 'owner_id', 'creation_date', 'public', 'product_codes', 'architecture', 'image_t"
-        "ype', 'kernel_id', 'ramdisk_id', 'platform'), frozen=True, slots=False, post_init_params=None, init_fns=(), va"
-        "lidate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='platform_details', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='usage_operation', kw_only=True, fn=None), ReprPlan.Field(name='block_device_mappings', kw_only=True, f"
-        "n=None), ReprPlan.Field(name='description', kw_only=True, fn=None), ReprPlan.Field(name='ena_support', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, fn=None), ReprPlan.Field(name='image_owner_al"
-        "ias', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='root_de"
-        "vice_name', kw_only=True, fn=None), ReprPlan.Field(name='root_device_type', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='sriov_net_support', kw_only=True, fn=None), ReprPlan.Field(name='state_reason', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name='virtualization_type', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='boot_mode', kw_only=True, fn=None), ReprPlan.Field(name='tpm_support', kw_o"
-        "nly=True, fn=None), ReprPlan.Field(name='deprecation_time', kw_only=True, fn=None), ReprPlan.Field(name='imds_"
-        "support', kw_only=True, fn=None), ReprPlan.Field(name='source_instance_id', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='deregistration_protection', kw_only=True, fn=None), ReprPlan.Field(name='last_launched_time', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='image_allowed', kw_only=True, fn=None), ReprPlan.Field(name='source_im"
-        "age_id', kw_only=True, fn=None), ReprPlan.Field(name='source_image_region', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name='image_id', kw_only=True, fn=None)"
-        ", ReprPlan.Field(name='image_location', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn="
-        "None), ReprPlan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='creation_date', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='public', kw_only=True, fn=None), ReprPlan.Field(name='product_codes', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='architecture', kw_only=True, fn=None), ReprPlan.Field(name='image_type"
-        "', kw_only=True, fn=None), ReprPlan.Field(name='kernel_id', kw_only=True, fn=None), ReprPlan.Field(name='ramdi"
-        "sk_id', kw_only=True, fn=None), ReprPlan.Field(name='platform', kw_only=True, fn=None)), id=False, terse=False"
-        ", default_fn=None)))"
+        "eck_type=None), InitPlan.Field(name='hypervisor', annotation=OpRef(name='init.fields.06.annotation'), default="
+        "OpRef(name='init.fields.06.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_owner_alias', annotation=OpRe"
+        "f(name='init.fields.07.annotation'), default=OpRef(name='init.fields.07.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='name', annotation=OpRef(name='init.fields.08.annotation'), default=OpRef(name='init.fields.08.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='root_device_name', annotation=OpRef(name='init.fields.09.annotation'"
+        "), default=OpRef(name='init.fields.09.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='root_device_type', annot"
+        "ation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='sriov_net_support', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name"
+        "='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='state_reason', annotation=OpRef(name='init.fi"
+        "elds.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags'"
+        ", annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one), InitPlan.Field(name='virtualization_type', annotation=OpRef(name='init.fields.14.annotation'), default=O"
+        "pRef(name='init.fields.14.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='boot_mode', annotation=OpRef(name='i"
+        "nit.fields.15.annotation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'tpm_support', annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None), InitPlan.Field(name='deprecation_time', annotation=OpRef(name='init.fields.17.annotation'),"
+        " default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='imds_support', annotation="
+        "OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='source_instance_id', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef(name='ini"
+        "t.fields.19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='deregistration_protection', annotation=OpRef(name="
+        "'init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='last_launched_time', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='image_allowed', annotation=OpRef(name='init.fields.22.annotat"
+        "ion'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='source_image_id', an"
+        "notation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='source_image_region', annotation=OpRef(name='init.fields.24.annotation'), default=OpRef"
+        "(name='init.fields.24.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='free_tier_eligible', annotation=OpRef(na"
+        "me='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='image_watermarks', annotation=OpRef(name='init.fields.26.annotation'), default=OpRef(name='init.fields.2"
+        "6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='image_id', annotation=OpRef(name='init.fields.27.annotation'"
+        "), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, override=False, field_type=F"
+        "ieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='image_location', annotat"
+        "ion=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='state', annotation=OpRef(name='init.fields.29.annotation'), default=OpRef(name='init.fields."
+        "29.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='owner_id', annotation=OpRef(name='init.fields.30.annotation"
+        "'), default=OpRef(name='init.fields.30.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='creation_date', annotat"
+        "ion=OpRef(name='init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='public', annotation=OpRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields"
+        ".32.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='product_codes', annotation=OpRef(name='init.fields.33.anno"
+        "tation'), default=OpRef(name='init.fields.33.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='architecture', an"
+        "notation=OpRef(name='init.fields.34.annotation'), default=OpRef(name='init.fields.34.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='image_type', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='in"
+        "it.fields.35.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='kernel_id', annotation=OpRef(name='init.fields.36"
+        ".annotation'), default=OpRef(name='init.fields.36.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ramdisk_id',"
+        " annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne), InitPlan.Field(name='platform', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(name='i"
+        "nit.fields.38.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('platform_details'"
+        ", 'usage_operation', 'block_device_mappings', 'description', 'ena_support', 'hypervisor', 'image_owner_alias',"
+        " 'name', 'root_device_name', 'root_device_type', 'sriov_net_support', 'state_reason', 'tags', 'virtualization_"
+        "type', 'boot_mode', 'tpm_support', 'deprecation_time', 'imds_support', 'source_instance_id', 'deregistration_p"
+        "rotection', 'last_launched_time', 'image_allowed', 'source_image_id', 'source_image_region', 'free_tier_eligib"
+        "le', 'image_watermarks', 'image_id', 'image_location', 'state', 'owner_id', 'creation_date', 'public', 'produc"
+        "t_codes', 'architecture', 'image_type', 'kernel_id', 'ramdisk_id', 'platform'), frozen=True, slots=False, post"
+        "_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='platform_details', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='usage_operation', kw_only=True, fn=None), ReprPlan.Field(name='block"
+        "_device_mappings', kw_only=True, fn=None), ReprPlan.Field(name='description', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='ena_support', kw_only=True, fn=None), ReprPlan.Field(name='hypervisor', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='image_owner_alias', kw_only=True, fn=None), ReprPlan.Field(name='name', kw_only=True, fn=N"
+        "one), ReprPlan.Field(name='root_device_name', kw_only=True, fn=None), ReprPlan.Field(name='root_device_type', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='sriov_net_support', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "state_reason', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='virtualization_type', kw_only=True, fn=None), ReprPlan.Field(name='boot_mode', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='tpm_support', kw_only=True, fn=None), ReprPlan.Field(name='deprecation_time', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='imds_support', kw_only=True, fn=None), ReprPlan.Field(name='source_instance_id', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='deregistration_protection', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='last_launched_time', kw_only=True, fn=None), ReprPlan.Field(name='image_allowed', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='source_image_id', kw_only=True, fn=None), ReprPlan.Field(name='source_image_region', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='free_tier_eligible', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'image_watermarks', kw_only=True, fn=None), ReprPlan.Field(name='image_id', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='image_location', kw_only=True, fn=None), ReprPlan.Field(name='state', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='owner_id', kw_only=True, fn=None), ReprPlan.Field(name='creation_date', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='public', kw_only=True, fn=None), ReprPlan.Field(name='product_codes', kw_only=True, fn="
+        "None), ReprPlan.Field(name='architecture', kw_only=True, fn=None), ReprPlan.Field(name='image_type', kw_only=T"
+        "rue, fn=None), ReprPlan.Field(name='kernel_id', kw_only=True, fn=None), ReprPlan.Field(name='ramdisk_id', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='platform', kw_only=True, fn=None)), id=False, terse=False, default_fn"
+        "=None)))"
     ),
-    plan_repr_sha1='686db45689f78c950d397254b6871732b8943f49',
+    plan_repr_sha1='939f1033d12b53976d29da39fca300e79a4c5014',
     op_ref_idents=(
         '__dataclass__init__fields__01__annotation',
         '__dataclass__init__fields__01__default',
@@ -12325,12 +12329,14 @@ def _process_dataclass__393cef70a0276465bcd054e4c1e3f3361f57d405():
         '__dataclass__init__fields__36__default',
         '__dataclass__init__fields__37__annotation',
         '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'Image'),
     ),
 )
-def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
+def _process_dataclass__939f1033d12b53976d29da39fca300e79a4c5014():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -12408,6 +12414,8 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
         __dataclass__init__fields__36__default,
         __dataclass__init__fields__37__annotation,
         __dataclass__init__fields__37__default,
+        __dataclass__init__fields__38__annotation,
+        __dataclass__init__fields__38__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -12451,6 +12459,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
                 source_image_id=self.source_image_id,
                 source_image_region=self.source_image_region,
                 free_tier_eligible=self.free_tier_eligible,
+                image_watermarks=self.image_watermarks,
                 image_id=self.image_id,
                 image_location=self.image_location,
                 state=self.state,
@@ -12501,6 +12510,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
                 self.source_image_id == other.source_image_id and
                 self.source_image_region == other.source_image_region and
                 self.free_tier_eligible == other.free_tier_eligible and
+                self.image_watermarks == other.image_watermarks and
                 self.image_id == other.image_id and
                 self.image_location == other.image_location and
                 self.state == other.state and
@@ -12547,6 +12557,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
             'source_image_id',
             'source_image_region',
             'free_tier_eligible',
+            'image_watermarks',
             'image_id',
             'image_location',
             'state',
@@ -12601,6 +12612,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
             'source_image_id',
             'source_image_region',
             'free_tier_eligible',
+            'image_watermarks',
             'image_id',
             'image_location',
             'state',
@@ -12655,6 +12667,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
                 self.source_image_id,
                 self.source_image_region,
                 self.free_tier_eligible,
+                self.image_watermarks,
                 self.image_id,
                 self.image_location,
                 self.state,
@@ -12700,18 +12713,19 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
             source_image_id: __dataclass__init__fields__23__annotation = __dataclass__init__fields__23__default,
             source_image_region: __dataclass__init__fields__24__annotation = __dataclass__init__fields__24__default,
             free_tier_eligible: __dataclass__init__fields__25__annotation = __dataclass__init__fields__25__default,
-            image_id: __dataclass__init__fields__26__annotation = __dataclass__init__fields__26__default,
-            image_location: __dataclass__init__fields__27__annotation = __dataclass__init__fields__27__default,
-            state: __dataclass__init__fields__28__annotation = __dataclass__init__fields__28__default,
-            owner_id: __dataclass__init__fields__29__annotation = __dataclass__init__fields__29__default,
-            creation_date: __dataclass__init__fields__30__annotation = __dataclass__init__fields__30__default,
-            public: __dataclass__init__fields__31__annotation = __dataclass__init__fields__31__default,
-            product_codes: __dataclass__init__fields__32__annotation = __dataclass__init__fields__32__default,
-            architecture: __dataclass__init__fields__33__annotation = __dataclass__init__fields__33__default,
-            image_type: __dataclass__init__fields__34__annotation = __dataclass__init__fields__34__default,
-            kernel_id: __dataclass__init__fields__35__annotation = __dataclass__init__fields__35__default,
-            ramdisk_id: __dataclass__init__fields__36__annotation = __dataclass__init__fields__36__default,
-            platform: __dataclass__init__fields__37__annotation = __dataclass__init__fields__37__default,
+            image_watermarks: __dataclass__init__fields__26__annotation = __dataclass__init__fields__26__default,
+            image_id: __dataclass__init__fields__27__annotation = __dataclass__init__fields__27__default,
+            image_location: __dataclass__init__fields__28__annotation = __dataclass__init__fields__28__default,
+            state: __dataclass__init__fields__29__annotation = __dataclass__init__fields__29__default,
+            owner_id: __dataclass__init__fields__30__annotation = __dataclass__init__fields__30__default,
+            creation_date: __dataclass__init__fields__31__annotation = __dataclass__init__fields__31__default,
+            public: __dataclass__init__fields__32__annotation = __dataclass__init__fields__32__default,
+            product_codes: __dataclass__init__fields__33__annotation = __dataclass__init__fields__33__default,
+            architecture: __dataclass__init__fields__34__annotation = __dataclass__init__fields__34__default,
+            image_type: __dataclass__init__fields__35__annotation = __dataclass__init__fields__35__default,
+            kernel_id: __dataclass__init__fields__36__annotation = __dataclass__init__fields__36__default,
+            ramdisk_id: __dataclass__init__fields__37__annotation = __dataclass__init__fields__37__default,
+            platform: __dataclass__init__fields__38__annotation = __dataclass__init__fields__38__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'platform_details', platform_details)
             __dataclass__object_setattr(self, 'usage_operation', usage_operation)
@@ -12738,6 +12752,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
             __dataclass__object_setattr(self, 'source_image_id', source_image_id)
             __dataclass__object_setattr(self, 'source_image_region', source_image_region)
             __dataclass__object_setattr(self, 'free_tier_eligible', free_tier_eligible)
+            __dataclass__object_setattr(self, 'image_watermarks', image_watermarks)
             __dataclass__object_setattr(self, 'image_id', image_id)
             __dataclass__object_setattr(self, 'image_location', image_location)
             __dataclass__object_setattr(self, 'state', state)
@@ -12784,6 +12799,7 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
             parts.append(f"source_image_id={self.source_image_id!r}")
             parts.append(f"source_image_region={self.source_image_region!r}")
             parts.append(f"free_tier_eligible={self.free_tier_eligible!r}")
+            parts.append(f"image_watermarks={self.image_watermarks!r}")
             parts.append(f"image_id={self.image_id!r}")
             parts.append(f"image_location={self.image_location!r}")
             parts.append(f"state={self.state!r}")
@@ -12796,6 +12812,212 @@ def _process_dataclass__686db45689f78c950d397254b6871732b8943f49():
             parts.append(f"kernel_id={self.kernel_id!r}")
             parts.append(f"ramdisk_id={self.ramdisk_id!r}")
             parts.append(f"platform={self.platform!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('watermark_key', 'source_image_region', 'source_image_id', 'source_image_creation_"
+        "time', 'watermark_creation_time')), EqPlan(fields=('watermark_key', 'source_image_region', 'source_image_id', "
+        "'source_image_creation_time', 'watermark_creation_time')), FrozenPlan(fields=('__shape__', 'watermark_key', 's"
+        "ource_image_region', 'source_image_id', 'source_image_creation_time', 'watermark_creation_time'), allow_dynami"
+        "c_dunder_attrs=False), HashPlan(action='add', fields=('watermark_key', 'source_image_region', 'source_image_id"
+        "', 'source_image_creation_time', 'watermark_creation_time'), cache=False), InitPlan(fields=(InitPlan.Field(nam"
+        "e='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='watermark_key', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='source_image_region', annotation=OpRef(name='init.fields.2.anno"
+        "tation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='source_image_id', "
+        "annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='source_image_creation_time', annotation=OpRef(name='init.fields.4.annotation'), default"
+        "=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='watermark_creation_time', annotatio"
+        "n=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_p"
+        "aram='self', std_params=(), kw_only_params=('watermark_key', 'source_image_region', 'source_image_id', 'source"
+        "_image_creation_time', 'watermark_creation_time'), frozen=True, slots=False, post_init_params=None, init_fns=("
+        "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='watermark_key', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='source_image_region', kw_only=True, fn=None), ReprPlan.Field(name='source_image_id', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='source_image_creation_time', kw_only=True, fn=None), ReprPlan.Field(name='waterm"
+        "ark_creation_time', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='e5aebfa968d78dca8efc81a6ee349da87d17b8c6',
+    op_ref_idents=(
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+    ),
+    cls_names=(
+        ('ominfra.clouds.aws.models.services.ec2', 'ImageWatermark'),
+    ),
+)
+def _process_dataclass__e5aebfa968d78dca8efc81a6ee349da87d17b8c6():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__5__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                watermark_key=self.watermark_key,
+                source_image_region=self.source_image_region,
+                source_image_id=self.source_image_id,
+                source_image_creation_time=self.source_image_creation_time,
+                watermark_creation_time=self.watermark_creation_time,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.watermark_key == other.watermark_key and
+                self.source_image_region == other.source_image_region and
+                self.source_image_id == other.source_image_id and
+                self.source_image_creation_time == other.source_image_creation_time and
+                self.watermark_creation_time == other.watermark_creation_time
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__shape__',
+            'watermark_key',
+            'source_image_region',
+            'source_image_id',
+            'source_image_creation_time',
+            'watermark_creation_time',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__shape__',
+            'watermark_key',
+            'source_image_region',
+            'source_image_id',
+            'source_image_creation_time',
+            'watermark_creation_time',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.watermark_key,
+                self.source_image_region,
+                self.source_image_id,
+                self.source_image_creation_time,
+                self.watermark_creation_time,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            watermark_key: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            source_image_region: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            source_image_id: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            source_image_creation_time: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            watermark_creation_time: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'watermark_key', watermark_key)
+            __dataclass__object_setattr(self, 'source_image_region', source_image_region)
+            __dataclass__object_setattr(self, 'source_image_id', source_image_id)
+            __dataclass__object_setattr(self, 'source_image_creation_time', source_image_creation_time)
+            __dataclass__object_setattr(self, 'watermark_creation_time', watermark_creation_time)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"watermark_key={self.watermark_key!r}")
+            parts.append(f"source_image_region={self.source_image_region!r}")
+            parts.append(f"source_image_id={self.source_image_id!r}")
+            parts.append(f"source_image_creation_time={self.source_image_creation_time!r}")
+            parts.append(f"watermark_creation_time={self.watermark_creation_time!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
