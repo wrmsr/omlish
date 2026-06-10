@@ -5,6 +5,8 @@ from .... import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from . import adapters  # noqa
+
     from . import backend  # noqa
 
     from . import dialect  # noqa
