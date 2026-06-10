@@ -66,7 +66,10 @@ async def test_orm_in_memory():
 async def test_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
-        db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(db_path)))
+        db = sql.api.DbapiDb(
+            lambda: contextlib.closing(sqlite3.connect(db_path)),
+            adapter=sql.be.sqlite.adapters.sqlite_adapter(),
+        )
         adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToExecutor(exe))), db)
         store = orm.SqlStore(registry(), adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
         await _test_timestamps(store)

@@ -22,4 +22,8 @@ class MysqlDialect(Dialect):
     def query_renderer(self) -> type[Renderer] | None:
         return MysqlRenderer
 
-    # supports_returning stays False - mysql has no RETURNING.
+    # supports_returning stays False - mysql has no RETURNING; auto keys come from last_insert_id() instead.
+
+    @property
+    def last_insert_id_query(self) -> str | None:
+        return 'select last_insert_id()'

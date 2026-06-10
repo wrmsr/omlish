@@ -100,6 +100,8 @@ class SqlStore(Store):
         if param_style is None:
             param_style = sql.ParamStyle.QMARK
         self._param_style = param_style
+        self._supports_returning = db.adapter.supports_returning
+        self._last_insert_id_query = db.adapter.last_insert_id_query
 
         self._tabledef_renderer = tabledef_renderer
         if tabledef_create_options is None:
@@ -420,7 +422,7 @@ class SqlStore(Store):
                     ]),
                     ')',
                 ]),
-                *(['returning id'] if auto_key else []),
+                *(['returning id'] if auto_key and self._o._supports_returning else []),
             ])
 
         async def auto_key_insert(self, m: Mapper, snaps: ta.Sequence[Snap]) -> ta.Mapping[ta.Any, ta.Any]:
@@ -443,7 +445,16 @@ class SqlStore(Store):
                     if f is not m._key_field and f not in m._auto_value_fields
                 ]
                 qp = sql.params.substitute_params(px, dict(enumerate(params)), strict=True)  # type: ignore
-                vk = await sql.query_scalar(check.not_none(self._q), stmt, qp)
+                if self._o._supports_returning:
+                    vk = await sql.query_scalar(check.not_none(self._q), stmt, qp)
+                elif (liq := self._o._last_insert_id_query) is not None:
+                    # No RETURNING: run the insert, then read the connection's last auto-generated id.
+                    await sql.exec(check.not_none(self._q), stmt, qp)
+                    vk = await sql.query_scalar(check.not_none(self._q), liq)
+                else:
+                    raise RuntimeError(
+                        'backend declares neither RETURNING support nor a last-insert-id query for auto keys',
+                    )
                 iak[ak] = sm.decode_key(vk)
 
             return iak

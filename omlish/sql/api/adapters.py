@@ -38,6 +38,10 @@ class Adapter(lang.Abstract):
     def supports_returning(self) -> bool:
         return self.dialect.supports_returning
 
+    @property
+    def last_insert_id_query(self) -> str | None:
+        return self.dialect.last_insert_id_query
+
     @abc.abstractmethod
     def scan_type(self, c: Column) -> type:
         raise NotImplementedError

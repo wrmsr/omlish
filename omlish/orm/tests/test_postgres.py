@@ -20,13 +20,16 @@ def test_pg8000(harness, exit_stack) -> None:
 
     import pg8000
 
-    db = sql.api.DbapiDb(sql.api.ClosingDbapiConnector(
-        pg8000.connect,
-        p_u.username,
-        host=p_u.hostname,
-        port=p_u.port,
-        password=p_u.password,
-    ))
+    db = sql.api.DbapiDb(
+        sql.api.ClosingDbapiConnector(
+            pg8000.connect,
+            p_u.username,
+            host=p_u.hostname,
+            port=p_u.port,
+            password=p_u.password,
+        ),
+        adapter=sql.be.postgres.adapters.postgres_adapter(),
+    )
 
     adb = sql.api.SyncToAsyncDb(sql.api.ImmediateSyncToAsyncRunner, db)
 
@@ -34,7 +37,6 @@ def test_pg8000(harness, exit_stack) -> None:
     store = SqlStore(
         registry,
         adb,
-        param_style=sql.ParamStyle.FORMAT,
         tabledef_renderer=sql.be.postgres.td.PostgresStatementRenderer(),
         tabledef_create_options=sql.td.StatementRenderer.CreateOptions(
             drop_if_exists=True,

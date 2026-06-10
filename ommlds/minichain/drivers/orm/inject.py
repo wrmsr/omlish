@@ -60,7 +60,10 @@ async def _provide_sql_store(
             conn.close()
             raise
 
-    db = sql.api.DbapiDb(lambda: contextlib.closing(connect()))
+    db = sql.api.DbapiDb(
+        lambda: contextlib.closing(connect()),
+        adapter=sql.be.sqlite.adapters.sqlite_adapter(),
+    )
 
     adb = sql.api.SyncToAsyncDb(
         executor,

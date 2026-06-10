@@ -136,7 +136,10 @@ async def test_async_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     registry = build_registry()
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
-        db = sql.api.DbapiDb(sql.api.ClosingDbapiConnector(sqlite3.connect, db_path))
+        db = sql.api.DbapiDb(
+            sql.api.ClosingDbapiConnector(sqlite3.connect, db_path),
+            adapter=sql.be.sqlite.adapters.sqlite_adapter(),
+        )
         adb = sql.api.SyncToAsyncDb(sql.api.AsyncioToExecutorSyncToAsyncRunner.factory(exe), db)
         store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
         await _test_orm(store, registry)
@@ -145,7 +148,10 @@ async def test_async_orm_sql():
 def test_sync_await_orm_sql():
     db_path = os.path.join(tempfile.mkdtemp(), 'orm.db')
     registry = build_registry()
-    db = sql.api.DbapiDb(sql.api.ClosingDbapiConnector(sqlite3.connect, db_path))
+    db = sql.api.DbapiDb(
+        sql.api.ClosingDbapiConnector(sqlite3.connect, db_path),
+        adapter=sql.be.sqlite.adapters.sqlite_adapter(),
+    )
     adb = sql.api.SyncToAsyncDb(sql.api.ImmediateSyncToAsyncRunner, db)
     store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
     lang.sync_await(_test_orm(store, registry))

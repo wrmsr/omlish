@@ -31,6 +31,11 @@ class Dialect(lang.Abstract):
     def supports_returning(self) -> bool:
         return False
 
+    @property
+    def last_insert_id_query(self) -> str | None:
+        # A self-contained query returning the connection's last auto-generated id, for backends without RETURNING.
+        return None
+
 
 class StandardDialect(Dialect, lang.Final):
     pass
