@@ -10,8 +10,10 @@ from ....api.core import AsyncConn
 from ....api.core import AsyncDb
 from ....api.core import AsyncRows
 from ....api.core import AsyncTxn
+from ....api.queries import ManyParams
 from ....api.queries import Query
 from ....api.queries import Queryable
+from ....api.queries import RowParams
 from ....api.rows import Row
 from ....params import ParamStyle
 
@@ -36,6 +38,17 @@ def build_asyncpg_columns(
         ))
 
     return Columns(*cols)
+
+
+#
+
+
+class _NullAsyncpgCursor:
+    async def fetchrow(self) -> None:
+        return None
+
+
+_NULL_ASYNCPG_CURSOR = _NullAsyncpgCursor()
 
 
 #
@@ -119,12 +132,22 @@ class AsyncpgTxn(AsyncTxn):
         @contextlib.asynccontextmanager
         async def inner():
             q = check.isinstance(query, Query)
+            p = q.params
 
-            stmt = await self._conn._conn.prepare(q.text)  # noqa
-            columns = build_asyncpg_columns(stmt.get_attributes())
-            cursor = await stmt.cursor(*q.args)
+            if isinstance(p, ManyParams):
+                await self._conn._conn.executemany(  # noqa
+                    q.text,
+                    ta.cast('ta.Sequence[ta.Sequence[ta.Any]]', p.rows),
+                )
+                yield AsyncpgRows(_NULL_ASYNCPG_CURSOR, Columns.empty())
 
-            yield AsyncpgRows(cursor, columns)
+            else:
+                values = p.values if isinstance(p, RowParams) else ()
+                stmt = await self._conn._conn.prepare(q.text)  # noqa
+                columns = build_asyncpg_columns(stmt.get_attributes())
+                cursor = await stmt.cursor(*values)
+
+                yield AsyncpgRows(cursor, columns)
 
         return inner()
 
@@ -160,15 +183,25 @@ class AsyncpgConn(AsyncConn):
         @contextlib.asynccontextmanager
         async def inner():
             q = check.isinstance(query, Query)
+            p = q.params
 
             tr = self._conn.transaction()
             await tr.start()
             try:
-                stmt = await self._conn.prepare(q.text)
-                columns = build_asyncpg_columns(stmt.get_attributes())
-                cursor = await stmt.cursor(*q.args)
+                if isinstance(p, ManyParams):
+                    await self._conn.executemany(
+                        q.text,
+                        ta.cast('ta.Sequence[ta.Sequence[ta.Any]]', p.rows),
+                    )
+                    yield AsyncpgRows(_NULL_ASYNCPG_CURSOR, Columns.empty())
 
-                yield AsyncpgRows(cursor, columns)
+                else:
+                    values = p.values if isinstance(p, RowParams) else ()
+                    stmt = await self._conn.prepare(q.text)
+                    columns = build_asyncpg_columns(stmt.get_attributes())
+                    cursor = await stmt.cursor(*values)
+
+                    yield AsyncpgRows(cursor, columns)
 
             except BaseException:
                 await tr.rollback()

@@ -60,7 +60,7 @@ class DbapiCursor(ta.Protocol):
     def executemany(
         self,
         operation: str,
-        seq_of_parameters: ta.Sequence[ta.Sequence[ta.Any]],
+        seq_of_parameters: ta.Sequence[ta.Sequence[ta.Any] | ta.Mapping[str, ta.Any]],
     ) -> object: ...
 
     def fetchone(self) -> ta.Sequence[ta.Any] | None: ...

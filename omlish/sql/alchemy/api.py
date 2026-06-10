@@ -81,10 +81,21 @@ class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
 
     def query(self, query: api.Queryable) -> ta.ContextManager[api.Rows]:
         query = check.isinstance(query, api.Query)
+
+        p = query.params
+        if isinstance(p, api.NoParams):
+            ex_args: tuple = ()
+        elif isinstance(p, api.RowParams):
+            ex_args = (p.values,)
+        elif isinstance(p, api.ManyParams):
+            ex_args = (list(p.rows),)
+        else:
+            raise TypeError(p)
+
         result: sa.engine.cursor.CursorResult
         with self._u.execute(
                 sa.text(query.text),
-                *query.args,
+                *ex_args,
         ) as result:
             cols = build_dbapi_columns(result.cursor.description)
             sa_rows = result.fetchall()

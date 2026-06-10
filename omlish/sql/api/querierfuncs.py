@@ -3,6 +3,7 @@ import typing as ta
 from ... import check
 from ... import lang
 from .asquery import as_query
+from .asquery import as_query_many
 from .core import AsyncRows
 from .core import Rows
 from .queriers import AsyncQuerier
@@ -37,11 +38,11 @@ def _sync_async_query_func(sync_fn, async_fn):
 def sync_exec(  # noqa
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> None:
     q = as_query(
         obj,
-        *args,
+        params,
         mode=QueryMode.EXEC,
         adapter=querier.adapter,
     )
@@ -53,11 +54,11 @@ def sync_exec(  # noqa
 async def async_exec(  # noqa
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> None:
     q = as_query(
         obj,
-        *args,
+        params,
         mode=QueryMode.EXEC,
         adapter=querier.adapter,
     )
@@ -70,7 +71,7 @@ async def async_exec(  # noqa
 def exec(  # noqa
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> None:
     ...
 
@@ -79,7 +80,7 @@ def exec(  # noqa
 def exec(  # noqa
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[None]:
     ...
 
@@ -92,14 +93,72 @@ def exec(*args, **kwargs):  # noqa
 ##
 
 
+def sync_exec_many(
+        querier: Querier,
+        obj: ta.Any,
+        rows: ta.Iterable[ta.Any],
+) -> None:
+    q = as_query_many(
+        obj,
+        rows,
+        mode=QueryMode.EXEC,
+        adapter=querier.adapter,
+    )
+
+    with querier.query(q):
+        pass
+
+
+async def async_exec_many(
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        rows: ta.Iterable[ta.Any],
+) -> None:
+    q = as_query_many(
+        obj,
+        rows,
+        mode=QueryMode.EXEC,
+        adapter=querier.adapter,
+    )
+
+    async with querier.query(q):
+        pass
+
+
+@ta.overload
+def exec_many(
+        querier: Querier,
+        obj: ta.Any,
+        rows: ta.Iterable[ta.Any],
+) -> None:
+    ...
+
+
+@ta.overload
+def exec_many(
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        rows: ta.Iterable[ta.Any],
+) -> ta.Awaitable[None]:
+    ...
+
+
+@_sync_async_query_func(sync_exec_many, async_exec_many)
+def exec_many(*args, **kwargs):
+    raise RuntimeError
+
+
+##
+
+
 def sync_query(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.ContextManager[Rows]:
     q = as_query(
         obj,
-        *args,
+        params,
         mode=QueryMode.QUERY,
         adapter=querier.adapter,
     )
@@ -110,11 +169,11 @@ def sync_query(
 def async_query(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.AsyncContextManager[AsyncRows]:
     q = as_query(
         obj,
-        *args,
+        params,
         mode=QueryMode.QUERY,
         adapter=querier.adapter,
     )
@@ -126,7 +185,7 @@ def async_query(
 def query(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.ContextManager[Rows]:
     ...
 
@@ -135,7 +194,7 @@ def query(
 def query(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.AsyncContextManager[AsyncRows]:
     ...
 
@@ -151,18 +210,18 @@ def query(*args, **kwargs):
 def sync_query_all(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> list[Row]:
-    with sync_query(querier, obj, *args) as rows:
+    with sync_query(querier, obj, params) as rows:
         return list(rows)
 
 
 async def async_query_all(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> list[Row]:
-    async with async_query(querier, obj, *args) as rows:
+    async with async_query(querier, obj, params) as rows:
         return await lang.async_list(rows)
 
 
@@ -170,7 +229,7 @@ async def async_query_all(
 def query_all(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> list[Row]:
     ...
 
@@ -179,7 +238,7 @@ def query_all(
 def query_all(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[list[Row]]:
     ...
 
@@ -195,18 +254,18 @@ def query_all(*args, **kwargs):
 def sync_query_first(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row:
-    with sync_query(querier, obj, *args) as rows:
+    with sync_query(querier, obj, params) as rows:
         return next(rows)
 
 
 async def async_query_first(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row:
-    async with async_query(querier, obj, *args) as rows:
+    async with async_query(querier, obj, params) as rows:
         return await anext(rows)
 
 
@@ -214,7 +273,7 @@ async def async_query_first(
 def query_first(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row:
     ...
 
@@ -223,7 +282,7 @@ def query_first(
 def query_first(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[Row]:
     ...
 
@@ -239,18 +298,18 @@ def query_first(*args, **kwargs):
 def sync_query_opt_first(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row | None:
-    with sync_query(querier, obj, *args) as rows:
+    with sync_query(querier, obj, params) as rows:
         return next(rows, None)
 
 
 async def async_query_opt_first(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row | None:
-    async with async_query(querier, obj, *args) as rows:
+    async with async_query(querier, obj, params) as rows:
         return await anext(rows, None)
 
 
@@ -258,7 +317,7 @@ async def async_query_opt_first(
 def query_opt_first(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row | None:
     ...
 
@@ -267,7 +326,7 @@ def query_opt_first(
 def query_opt_first(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[Row | None]:
     ...
 
@@ -283,18 +342,18 @@ def query_opt_first(*args, **kwargs):
 def sync_query_one(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row:
-    with sync_query(querier, obj, *args) as rows:
+    with sync_query(querier, obj, params) as rows:
         return check.single(rows)
 
 
 async def async_query_one(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row:
-    async with async_query(querier, obj, *args) as rows:
+    async with async_query(querier, obj, params) as rows:
         return await check.async_single(rows)
 
 
@@ -302,7 +361,7 @@ async def async_query_one(
 def query_one(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row:
     ...
 
@@ -311,7 +370,7 @@ def query_one(
 def query_one(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[Row]:
     ...
 
@@ -327,18 +386,18 @@ def query_one(*args, **kwargs):
 def sync_query_opt_one(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row | None:
-    with sync_query(querier, obj, *args) as rows:
+    with sync_query(querier, obj, params) as rows:
         return check.opt_single(rows)
 
 
 async def async_query_opt_one(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row | None:
-    async with async_query(querier, obj, *args) as rows:
+    async with async_query(querier, obj, params) as rows:
         return await check.async_opt_single(rows)
 
 
@@ -346,7 +405,7 @@ async def async_query_opt_one(
 def query_opt_one(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> Row | None:
     ...
 
@@ -355,7 +414,7 @@ def query_opt_one(
 def query_opt_one(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[Row | None]:
     ...
 
@@ -371,18 +430,18 @@ def query_opt_one(*args, **kwargs):
 def sync_query_scalar(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Any:
-    row = sync_query_one(querier, obj, *args)
+    row = sync_query_one(querier, obj, params)
     return check.single(row.values)
 
 
 async def async_query_scalar(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Any:
-    row = await async_query_one(querier, obj, *args)
+    row = await async_query_one(querier, obj, params)
     return check.single(row.values)
 
 
@@ -390,7 +449,7 @@ async def async_query_scalar(
 def query_scalar(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Any:
     ...
 
@@ -399,7 +458,7 @@ def query_scalar(
 def query_scalar(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[ta.Any]:
     ...
 
@@ -415,9 +474,9 @@ def query_scalar(*args, **kwargs):
 def sync_query_maybe_scalar(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> lang.Maybe[ta.Any]:
-    row = sync_query_opt_one(querier, obj, *args)
+    row = sync_query_opt_one(querier, obj, params)
     if row is not None:
         return lang.just(check.single(row.values))
     else:
@@ -427,9 +486,9 @@ def sync_query_maybe_scalar(
 async def async_query_maybe_scalar(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> lang.Maybe[ta.Any]:
-    row = await async_query_opt_one(querier, obj, *args)
+    row = await async_query_opt_one(querier, obj, params)
     if row is not None:
         return lang.just(check.single(row.values))
     else:
@@ -440,7 +499,7 @@ async def async_query_maybe_scalar(
 def query_maybe_scalar(
         querier: Querier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> lang.Maybe[ta.Any]:
     ...
 
@@ -449,7 +508,7 @@ def query_maybe_scalar(
 def query_maybe_scalar(
         querier: AsyncQuerier,
         obj: ta.Any,
-        *args: ta.Any,
+        params: ta.Any = None,
 ) -> ta.Awaitable[lang.Maybe[ta.Any]]:
     ...
 

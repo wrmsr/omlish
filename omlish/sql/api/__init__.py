@@ -96,6 +96,10 @@ from .querierfuncs import (  # noqa
     async_exec,
     exec,  # noqa
 
+    sync_exec_many,
+    async_exec_many,
+    exec_many,
+
     sync_query,
     async_query,
     query,
@@ -131,6 +135,11 @@ from .querierfuncs import (  # noqa
 
 from .queries import (  # noqa
     QueryMode,
+
+    QueryParams,
+    NoParams,
+    RowParams,
+    ManyParams,
 
     Queryable,
     Query,

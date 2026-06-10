@@ -14,8 +14,11 @@ from .core import Conn
 from .core import Db
 from .core import Rows
 from .core import Txn
+from .queries import ManyParams
+from .queries import NoParams
 from .queries import Query
 from .queries import Queryable
+from .queries import RowParams
 from .rows import Row
 
 
@@ -63,6 +66,21 @@ def build_dbapi_columns(desc: ta.Sequence[dbapi_abc.DbapiColumnDescription] | No
         ))
 
     return Columns(*cols)
+
+
+#
+
+
+def execute_dbapi_query(cursor: dbapi_abc.DbapiCursor, query: Query) -> None:
+    p = query.params
+    if isinstance(p, NoParams):
+        cursor.execute(query.text)
+    elif isinstance(p, RowParams):
+        cursor.execute(query.text, p.values)
+    elif isinstance(p, ManyParams):
+        cursor.executemany(query.text, p.rows)
+    else:
+        raise TypeError(p)
 
 
 #
@@ -174,7 +192,7 @@ class DbapiConn(Conn):
         cursor = self._conn.cursor()
         es.enter_context(contextlib.closing(cursor))
 
-        cursor.execute(query.text, *query.args)
+        execute_dbapi_query(cursor, query)
         columns = build_dbapi_columns(cursor.description)
 
         return DbapiRows(cursor, columns)

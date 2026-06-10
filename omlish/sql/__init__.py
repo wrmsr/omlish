@@ -28,6 +28,7 @@ with _lang.auto_proxy_init(globals()):
         connect,
 
         exec,  # noqa
+        exec_many,
 
         query,
         query_all,
@@ -40,6 +41,10 @@ with _lang.auto_proxy_init(globals()):
 
         QueryMode,
         Query,
+        QueryParams,
+        NoParams,
+        RowParams,
+        ManyParams,
 
         Row,
     )

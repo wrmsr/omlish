@@ -32,6 +32,32 @@ class QueryMode(enum.Enum):
 ##
 
 
+@dc.dataclass(frozen=True)
+class QueryParams(lang.Abstract, lang.Sealed):
+    """
+    Normalized, driver-agnostic bound parameters for a Query. Positional-vs-named shape follows the param style; each
+    backend interprets these per its own driver call convention (execute vs executemany, spread vs not).
+    """
+
+
+@dc.dataclass(frozen=True)
+class NoParams(QueryParams, lang.Singleton):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class RowParams(QueryParams, lang.Final):
+    values: ta.Sequence[ta.Any] | ta.Mapping[str, ta.Any]
+
+
+@dc.dataclass(frozen=True)
+class ManyParams(QueryParams, lang.Final):
+    rows: ta.Sequence[ta.Sequence[ta.Any] | ta.Mapping[str, ta.Any]]
+
+
+##
+
+
 class Queryable(lang.Abstract, lang.Sealed):
     pass
 
@@ -41,4 +67,4 @@ class Queryable(lang.Abstract, lang.Sealed):
 class Query(Queryable, lang.Final):
     mode: QueryMode
     text: str
-    args: ta.Sequence[ta.Any]
+    params: QueryParams = NoParams()
