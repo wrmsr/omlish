@@ -5,6 +5,10 @@ from .dtypes import (  # noqa
     String,
     Datetime,
     Uuid,
+
+    Boolean,
+    Float,
+    Bytes,
 )
 
 

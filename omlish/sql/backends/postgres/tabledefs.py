@@ -1,4 +1,7 @@
+from ...dtypes import Boolean
+from ...dtypes import Bytes
 from ...dtypes import Datetime
+from ...dtypes import Float
 from ...dtypes import Integer
 from ...dtypes import String
 from ...dtypes import Uuid
@@ -65,6 +68,12 @@ class PostgresStatementRenderer(StatementRenderer):
             return 'bigint' if is_identity else 'integer'
         elif isinstance(c.type, Datetime):
             return 'timestamp with time zone'
+        elif isinstance(c.type, Boolean):
+            return 'boolean'
+        elif isinstance(c.type, Float):
+            return 'double precision'
+        elif isinstance(c.type, Bytes):
+            return 'bytea'
         else:
             raise TypeError(c.type)
 

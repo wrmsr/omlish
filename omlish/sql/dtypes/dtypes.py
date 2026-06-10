@@ -28,3 +28,18 @@ class Datetime(Dtype, lang.Singleton):
 @dc.dataclass(frozen=True)
 class Uuid(Dtype, lang.Singleton):
     pass
+
+
+@dc.dataclass(frozen=True)
+class Boolean(Dtype, lang.Singleton):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Float(Dtype, lang.Singleton):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Bytes(Dtype, lang.Singleton):
+    pass

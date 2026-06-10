@@ -1,5 +1,8 @@
 from .... import check
+from ...dtypes import Boolean
+from ...dtypes import Bytes
 from ...dtypes import Datetime
+from ...dtypes import Float
 from ...dtypes import Integer
 from ...dtypes import String
 from ...dtypes import Uuid
@@ -34,6 +37,12 @@ class SqliteStatementRenderer(StatementRenderer):
             return 'integer'
         elif isinstance(c.type, Datetime):
             return 'datetime'
+        elif isinstance(c.type, Boolean):
+            return 'boolean'
+        elif isinstance(c.type, Float):
+            return 'real'
+        elif isinstance(c.type, Bytes):
+            return 'blob'
         else:
             raise TypeError(c.type)
 
