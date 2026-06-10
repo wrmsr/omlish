@@ -1,19 +1,19 @@
 """
-TODO:
- - dialect lol - WS-1d routes the full renderer (not just param_style) via the adapter
+The sole bridge from api to queries: renders a queries Stmt into an api Query, routing the dialect renderer via the
+api Adapter (param style + quote style as config, plus an optional Renderer subclass for structural divergence).
 """
 import collections.abc
 import typing as ta
 
 from ... import check
 from ... import lang
-from ..params import ParamStyle
 from ..params import UnconsumedParamsError
 from ..params import substitute_params
+from ..queries import Adapter as QueriesAdapter
 from ..queries import Stmt
 from ..queries.params import Param
 from ..queries.rendering import RenderedQuery
-from ..queries.rendering import render
+from ..queries.rendering import StdRenderer
 from .asquery import AsQueryContext
 from .asquery import as_query_
 from .asquery import as_query_many_
@@ -30,14 +30,18 @@ from .queries import RowParams
 
 
 def _render_stmt(stmt: Stmt, ctx: AsQueryContext) -> RenderedQuery:
-    ps: ParamStyle | None = None
-    if ctx.adapter is not None:
-        ps = ctx.adapter.param_style
+    a = ctx.adapter
+    if a is not None:
+        qa = QueriesAdapter(
+            param_style=a.param_style,
+            quote_style=a.quote_style,
+        )
+        renderer_cls = a.query_renderer or StdRenderer
+    else:
+        qa = QueriesAdapter()
+        renderer_cls = StdRenderer
 
-    return render(
-        stmt,
-        param_style=ps,
-    )
+    return renderer_cls.render_query(stmt, qa)
 
 
 def _bind_row(rq: RenderedQuery, param_values: ta.Mapping[Param, ta.Any] | None) -> ta.Any | None:

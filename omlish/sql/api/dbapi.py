@@ -6,6 +6,8 @@ from ... import check
 from ...resources import SimpleResource
 from ..dbapi import abc as dbapi_abc
 from ..params import ParamStyle
+from ..syntax import QuoteStyle
+from ..syntax import QuoteStyles
 from . import querierfuncs as qf
 from .adapters import Adapter
 from .columns import Column
@@ -20,6 +22,10 @@ from .queries import Query
 from .queries import Queryable
 from .queries import RowParams
 from .rows import Row
+
+
+if ta.TYPE_CHECKING:
+    from ..queries.rendering import Renderer
 
 
 T = ta.TypeVar('T')
@@ -263,14 +269,26 @@ class DbapiAdapter(Adapter):
             self,
             *,
             param_style: ParamStyle | None = None,
+            quote_style: QuoteStyle = QuoteStyles.DOUBLE,
+            query_renderer: type[Renderer] | None = None,
     ) -> None:
         super().__init__()
 
         self._param_style = param_style
+        self._quote_style = quote_style
+        self._query_renderer = query_renderer
 
     @property
     def param_style(self) -> ParamStyle | None:
         return self._param_style
+
+    @property
+    def quote_style(self) -> QuoteStyle:
+        return self._quote_style
+
+    @property
+    def query_renderer(self) -> type[Renderer] | None:
+        return self._query_renderer
 
     def scan_type(self, c: Column) -> type:
         raise NotImplementedError
