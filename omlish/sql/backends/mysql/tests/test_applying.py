@@ -17,6 +17,7 @@ from ....params import ParamStyle
 from ....tabledefs.diffing import AddColumn
 from ....tabledefs.elements import Column
 from ....tabledefs.elements import Elements
+from ....tabledefs.elements import Index
 from ....tabledefs.elements import PrimaryKey
 from ....tabledefs.tabledefs import TableDef
 from ....tests.harness import HarnessDbs
@@ -74,6 +75,53 @@ def test_migrate_table(harness) -> None:
             m3 = await migrate_table(conn, grown, inspector=insp, renderer=r)
             assert not m3.created
             assert not m3.ops
+
+            await qf.exec(conn, f'drop table if exists {tn}')
+
+    lang.sync_await(inner())
+
+
+@ptu.skip.if_cant_import('pymysql')
+def test_migrate_table_with_index(harness) -> None:
+    url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
+    pu = urllib.parse.urlparse(url)
+
+    db = DbapiDb(
+        ClosingDbapiConnector(
+            ta.cast(ta.Any, pymysql.connect),  # typed pymysql.connect won't unify with the connector ParamSpec
+            host=pu.hostname,
+            port=check.not_none(pu.port),
+            user=pu.username,
+            password=check.not_none(pu.password),
+            autocommit=True,
+        ),
+        param_style=ParamStyle.PYFORMAT,
+    )
+    adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
+    r = MysqlStatementRenderer()
+    insp = MysqlInspector()
+    tn = 'test_migrate_table_with_index'
+
+    async def inner() -> None:
+        async with adb.connect() as conn:
+            await qf.exec(conn, 'create database if not exists omlish_test')
+            await qf.exec(conn, 'use omlish_test')
+            await qf.exec(conn, f'drop table if exists {tn}')
+
+            # mysql can't index a String (-> TEXT) column without a key length, so index an integer column here
+            td = TableDef(tn, Elements(
+                Column('id', Integer()),
+                PrimaryKey(['id']),
+                Column('qty', Integer(), nullable=True),
+                Index(['qty']),
+            ))
+            m1 = await migrate_table(conn, td, inspector=insp, renderer=r)
+            assert m1.created
+
+            # the index reflects + lifts, so a second run is a true no-op (no spurious index re-create)
+            m2 = await migrate_table(conn, td, inspector=insp, renderer=r)
+            assert not m2.created
+            assert not m2.ops
 
             await qf.exec(conn, f'drop table if exists {tn}')
 
