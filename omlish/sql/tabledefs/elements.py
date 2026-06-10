@@ -65,6 +65,16 @@ class Index(Element, lang.Final):
     )
 
 
+def index_name(table_name: str, e: Index) -> str:
+    """
+    The effective name an index is created under: its explicit `name`, or the deterministic auto-name derived from the
+    table and columns. Shared by the DDL renderer and the differ so an unnamed in-code index matches its reflected,
+    db-named counterpart (otherwise diffing would drop-and-recreate it on every run).
+    """
+
+    return e.name if e.name is not None else '__'.join([table_name, 'index', *e.columns])
+
+
 ##
 
 

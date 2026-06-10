@@ -3,6 +3,7 @@ from ... import lang
 from .elements import Column
 from .elements import Index
 from .elements import PrimaryKey
+from .elements import index_name
 from .lower import normalize_table
 from .tabledefs import TableDef
 
@@ -77,14 +78,20 @@ def diff_table(current: TableDef, existing: TableDef) -> list[MigrationOp]:
         if name not in cur_cols:
             ops.append(DropColumn(current.name, name))
 
-    cur_idx = {i.name: i for i in current.elements.get(Index, ()) if i.name is not None}
-    ex_idx = {i.name: i for i in existing.elements.get(Index, ()) if i.name is not None}
+    cur_idx = {index_name(current.name, i): i for i in current.elements.get(Index, ())}
+    ex_idx = {index_name(existing.name, i): i for i in existing.elements.get(Index, ())}
 
-    for name, i in cur_idx.items():
-        if name not in ex_idx:
+    for nm, i in cur_idx.items():
+        ex = ex_idx.get(nm)
+        if ex is None:
             ops.append(AddIndex(current.name, i))
-    for name in ex_idx:
-        if name not in cur_idx:
-            ops.append(DropIndex(current.name, name))
+        elif (list(i.columns), i.unique) != (list(ex.columns), ex.unique):
+            # Same name, changed definition - drop and recreate. The where-clause is intentionally not compared:
+            # partial-index reflection is lossy, so doing so would diff forever.
+            ops.append(DropIndex(current.name, nm))
+            ops.append(AddIndex(current.name, i))
+    for nm in ex_idx:
+        if nm not in cur_idx:
+            ops.append(DropIndex(current.name, nm))
 
     return ops

@@ -11,6 +11,7 @@ from ...inspect.reflected import ReflectedTable
 from ...tabledefs.elements import Column
 from ...tabledefs.elements import Element
 from ...tabledefs.elements import Elements
+from ...tabledefs.elements import Index
 from ...tabledefs.elements import PrimaryKey
 from ...tabledefs.tabledefs import TableDef
 
@@ -37,6 +38,8 @@ class SqliteInspector(Inspector):
         idxs: list[ReflectedIndex] = []
         for irow in await query_all(querier, f'pragma index_list({name})'):
             idd = irow.to_dict()
+            if idd.get('origin') != 'c':
+                continue  # only explicit CREATE INDEXes are modeled; skip pk- and unique-constraint-backed indexes
             iname = idd['name']
             icols = [r.to_dict()['name'] for r in await query_all(querier, f'pragma index_info({iname})')]
             idxs.append(ReflectedIndex(iname, icols, unique=bool(idd['unique'])))
@@ -52,6 +55,8 @@ class SqliteInspector(Inspector):
                 pk.append(rc.name)
         if pk:
             els.append(PrimaryKey(pk))
+        for ri in reflected.indexes:
+            els.append(Index(ri.columns, name=ri.name, unique=ri.unique))
         return TableDef(reflected.name, Elements(*els))
 
     def _lift_dtype(self, t: str) -> Dtype:

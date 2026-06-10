@@ -12,6 +12,7 @@ from ....params import ParamStyle
 from ....tabledefs.diffing import AddColumn
 from ....tabledefs.elements import Column
 from ....tabledefs.elements import Elements
+from ....tabledefs.elements import Index
 from ....tabledefs.elements import PrimaryKey
 from ....tabledefs.tabledefs import TableDef
 from ..inspect import SqliteInspector
@@ -48,5 +49,32 @@ def test_migrate_table() -> None:
             m3 = await migrate_table(conn, grown, inspector=insp, renderer=r)
             assert not m3.created
             assert not m3.ops
+
+    lang.sync_await(inner())
+
+
+def test_migrate_table_with_index() -> None:
+    async def inner() -> None:
+        db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:', autocommit=True), param_style=ParamStyle.QMARK)
+        adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
+        r = SqliteStatementRenderer()
+        insp = SqliteInspector()
+        tn = 'widget'
+
+        async with adb.connect() as conn:
+            td = TableDef(tn, Elements(
+                Column('id', Integer()),
+                PrimaryKey(['id']),
+                Column('email', String(), nullable=True),
+                Index(['email']),
+            ))
+
+            m1 = await migrate_table(conn, td, inspector=insp, renderer=r)
+            assert m1.created
+
+            # the index reflects + lifts now, so a second run is a true no-op (no spurious index re-create)
+            m2 = await migrate_table(conn, td, inspector=insp, renderer=r)
+            assert not m2.created
+            assert not m2.ops
 
     lang.sync_await(inner())

@@ -56,3 +56,16 @@ def test_name_mismatch_raises():
             TableDef('a', Elements(Column('x', Integer()))),
             TableDef('b', Elements(Column('x', Integer()))),
         )
+
+
+def test_unnamed_index_idempotent():
+    # an unnamed in-code index vs its reflected, auto-named counterpart -> no diff
+    code = _td(Column('id', Integer()), Column('email', String()), Index(['email']))
+    reflected = _td(Column('id', Integer()), Column('email', String()), Index(['email'], name='t__index__email'))
+    assert diff_table(code, reflected) == []
+
+
+def test_changed_named_index_recreates():
+    a = _td(Column('id', Integer()), Column('x', Integer()), Index(['id'], name='ix'))
+    b = _td(Column('id', Integer()), Column('x', Integer()), Index(['x'], name='ix'))
+    assert [type(o) for o in diff_table(a, b)] == [DropIndex, AddIndex]

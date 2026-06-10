@@ -16,6 +16,7 @@ from .elements import Column
 from .elements import Index
 from .elements import PrimaryKey
 from .elements import UpdatedAtTrigger
+from .elements import index_name
 from .predicates import And
 from .predicates import Compare
 from .predicates import IsNull
@@ -90,8 +91,7 @@ class StatementRenderer(lang.Abstract):
         return f'drop table if exists {tbl.name}'
 
     def index_statement(self, table_name: str, e: Index, opts: CreateOptions) -> str:
-        if (idx_name := e.name) is None:
-            idx_name = '__'.join([table_name, 'index', *e.columns])
+        idx_name = index_name(table_name, e)
 
         with e.options.consume():
             pass  # base supports no index options
