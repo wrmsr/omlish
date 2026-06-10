@@ -91,3 +91,50 @@ def select_backend_options(td: TableDef, keep: type[BackendOption]) -> TableDef:
         elements=Elements(*new_elements),
         options=filt(td.options),
     )
+
+
+##
+
+
+def _sort_options(opts: tv.TypedValues) -> tv.TypedValues:
+    if len(opts) <= 1:
+        return opts
+    return tv.TypedValues(*sorted(opts, key=lambda o: type(o).__qualname__))
+
+
+def _element_sort_key(e: Element) -> tuple[int, str]:
+    if isinstance(e, PrimaryKey):
+        return (0, '')
+    elif isinstance(e, Index):
+        return (1, e.name or '__'.join(e.columns))
+    elif isinstance(e, UpdatedAtTrigger):
+        return (2, e.column)
+    else:
+        return (3, type(e).__qualname__)
+
+
+def normalize_table(td: TableDef) -> TableDef:
+    """
+    Canonicalize element and option order: columns keep their declared order (which is significant), while everything
+    else - constraints, indexes, triggers, options - is order-insensitive and sorted deterministically. Two tabledefs
+    that differ only in the order of non-column elements normalize to equal values; this is the basis for
+    order-insensitive ddl diffing.
+    """
+
+    cols = [e for e in td.elements if isinstance(e, Column)]
+    rest = sorted((e for e in td.elements if not isinstance(e, Column)), key=_element_sort_key)
+
+    out: list[Element] = []
+    for c in cols:
+        out.append(dc.replace(c, options=_sort_options(c.options)))
+    for e in rest:
+        if isinstance(e, Index):
+            out.append(dc.replace(e, options=_sort_options(e.options)))
+        else:
+            out.append(e)
+
+    return dc.replace(
+        td,
+        elements=Elements(*out),
+        options=_sort_options(td.options),
+    )

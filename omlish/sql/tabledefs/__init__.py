@@ -37,6 +37,7 @@ from .elements import (  # noqa
 
 from .lower import (  # noqa
     lower_table_elements,
+    normalize_table,
     select_backend_options,
 )
 
