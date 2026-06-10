@@ -16,6 +16,12 @@ from .adapters import (  # noqa
     HasAdapter,
 )
 
+from .dialects import (  # noqa
+    Dialect,
+    StandardDialect,
+    STANDARD_DIALECT,
+)
+
 from .api import (  # noqa
     sync_connect,
     async_connect,

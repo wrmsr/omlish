@@ -4,8 +4,9 @@ import typing as ta
 from ... import lang
 from ..params import ParamStyle
 from ..syntax import QuoteStyle
-from ..syntax import QuoteStyles
 from .columns import Column
+from .dialects import STANDARD_DIALECT
+from .dialects import Dialect
 
 
 if ta.TYPE_CHECKING:
@@ -22,14 +23,20 @@ class Adapter(lang.Abstract):
         raise NotImplementedError
 
     @property
+    def dialect(self) -> Dialect:
+        return STANDARD_DIALECT
+
+    @property
     def quote_style(self) -> QuoteStyle:
-        return QuoteStyles.DOUBLE
+        return self.dialect.quote_style
 
     @property
     def query_renderer(self) -> type[Renderer] | None:
-        """A queries.Renderer subclass for structural dialect divergence, or None to use the standard renderer."""
+        return self.dialect.query_renderer
 
-        return None
+    @property
+    def supports_returning(self) -> bool:
+        return self.dialect.supports_returning
 
     @abc.abstractmethod
     def scan_type(self, c: Column) -> type:

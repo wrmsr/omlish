@@ -21,6 +21,7 @@ with _lang.auto_proxy_init(globals()):
         Db,
 
         Adapter,
+        Dialect,
 
         Column,
         Columns,

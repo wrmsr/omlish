@@ -1,7 +1,6 @@
 from ...api.dbapi import DbapiAdapter
 from ...params import ParamStyle
-from ...syntax import QuoteStyles
-from .queries import MysqlRenderer
+from .dialect import MysqlDialect
 
 
 ##
@@ -13,6 +12,5 @@ def mysql_adapter(
 ) -> DbapiAdapter:
     return DbapiAdapter(
         param_style=param_style,
-        quote_style=QuoteStyles.BACKTICK,
-        query_renderer=MysqlRenderer,
+        dialect=MysqlDialect(),
     )

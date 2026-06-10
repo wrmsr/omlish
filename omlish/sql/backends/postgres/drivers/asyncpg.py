@@ -10,12 +10,14 @@ from ....api.core import AsyncConn
 from ....api.core import AsyncDb
 from ....api.core import AsyncRows
 from ....api.core import AsyncTxn
+from ....api.dialects import Dialect
 from ....api.queries import ManyParams
 from ....api.queries import Query
 from ....api.queries import Queryable
 from ....api.queries import RowParams
 from ....api.rows import Row
 from ....params import ParamStyle
+from ..dialect import PostgresDialect
 
 
 if ta.TYPE_CHECKING:
@@ -271,6 +273,10 @@ class AsyncpgAdapter(Adapter):
     @property
     def param_style(self) -> ParamStyle | None:
         return ParamStyle.DOLLAR_NUMERIC
+
+    @property
+    def dialect(self) -> Dialect:
+        return PostgresDialect()
 
     def scan_type(self, c: Column) -> type:
         raise NotImplementedError
