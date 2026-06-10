@@ -1,20 +1,13 @@
-import io
-import typing as ta
-
 from .... import check
-from .... import collections as col
-from .... import dataclasses as dc
 from ...dtypes import Datetime
 from ...dtypes import Integer
 from ...dtypes import String
 from ...dtypes import Uuid
 from ...tabledefs.elements import Column
-from ...tabledefs.elements import Index
 from ...tabledefs.elements import PrimaryKey
 from ...tabledefs.elements import UpdatedAtTrigger
 from ...tabledefs.rendering import StatementRenderer
 from ...tabledefs.tabledefs import TableDef
-from ...tabledefs.values import Now
 
 
 ##
@@ -33,172 +26,37 @@ end\
 """
 
 
-CREATE_INDEX_SRC = """\
-create index {preamble} {index_name} on {table_name} ({columns})
-"""
-
-
-@dc.dataclass()
-class RenderColumn:
-    name: str
-    type: str
-
-    _: dc.KW_ONLY
-
-    not_null: bool = False
-    default: str | None = None
-
-
 class SqliteStatementRenderer(StatementRenderer):
-    def render_create_statements(
+    def column_type(self, c: Column, *, is_identity: bool) -> str:
+        if isinstance(c.type, (String, Uuid)):
+            return 'string'
+        elif isinstance(c.type, Integer):
+            return 'integer'
+        elif isinstance(c.type, Datetime):
+            return 'datetime'
+        else:
+            raise TypeError(c.type)
+
+    def table_suffixes(self, tbl: TableDef, identity_column: str | None) -> list[str]:
+        # A single integer-pk column is sqlite's implicit rowid; otherwise the table is WITHOUT ROWID.
+        return [] if identity_column is not None else ['without rowid']
+
+    def updated_at_trigger_statements(
             self,
             tbl: TableDef,
-            opts: StatementRenderer.CreateOptions | None = None,
+            e: UpdatedAtTrigger,
+            pk: PrimaryKey | None,
+            opts: StatementRenderer.CreateOptions,
     ) -> list[str]:
-        if opts is None:
-            opts = self.CreateOptions()
-
-        #
-
-        cols: ta.Mapping[str, Column] = col.make_map_by(
-            lambda c: c.name,
-            tbl.elements[Column],
-            strict=True,
-        )
-
-        #
-
-        r_cols: dict[str, RenderColumn] = {}
-
-        for c in cols.values():
-            ct: str
-            if isinstance(c.type, (String, Uuid)):
-                ct = 'string'
-            elif isinstance(c.type, Integer):
-                ct = 'integer'
-            elif isinstance(c.type, Datetime):
-                ct = 'datetime'
-            else:
-                raise TypeError(c.type)
-
-            dfl: str | None = None
-            if c.default.present:
-                dv = c.default.must()
-
-                if isinstance(dv, Now):
-                    dfl = 'current_timestamp'
-                else:
-                    raise TypeError(dv)
-
-            r_cols[c.name] = RenderColumn(
-                c.name,
-                ct,
-                not_null=not c.nullable,
-                default=dfl,
-            )
-
-        #
-
-        constraints: list[str] = []
-        options: list[str] = []
-
-        indexes: list[str] = []
-        triggers: list[str] = []
-
-        if (pk := tbl.elements.get(PrimaryKey)) is not None:
-            has_rowid = len(pk.columns) == 1 and isinstance(cols[pk.columns[0]].type, Integer)
+        if pk is not None:
+            pk_cols = check.not_empty(pk.columns)
         else:
-            has_rowid = False
-        if not has_rowid:
-            options.append('without rowid')
+            pk_cols = ['rowid']
 
-        for e in tbl.elements:
-            if isinstance(e, Column):
-                pass  # Already handled
-
-            elif isinstance(e, PrimaryKey):
-                check.not_empty(e.columns)
-                constraints.append(f'primary key ({", ".join(e.columns)})')
-
-            elif isinstance(e, UpdatedAtTrigger):
-                if pk is not None:
-                    pk_cols = check.not_empty(pk.columns)
-                else:
-                    pk_cols = ['rowid']
-                triggers.append(CREATE_UPDATED_AT_TRIGGER_SRC.format(
-                    preamble='if not exists' if opts.if_not_exists else '',
-                    trigger_name=f'{tbl.name}__trigger__updated_at__{e.column}',
-                    table_name=tbl.name,
-                    column_name=e.column,
-                    where=' and '.join(f'{c} = new.{c}' for c in pk_cols),
-                ))
-
-            elif isinstance(e, Index):
-                if (idx_name := e.name) is None:
-                    idx_name = '__'.join([
-                        tbl.name,
-                        'index',
-                        *e.columns,
-                    ])
-
-                indexes.append(CREATE_INDEX_SRC.format(
-                    preamble='if not exists' if opts.if_not_exists else '',
-                    index_name=idx_name,
-                    table_name=tbl.name,
-                    columns=', '.join(e.columns),
-                ))
-
-            else:
-                raise TypeError(e)
-
-        #
-
-        cts = io.StringIO()
-
-        cts.write(f'create table')
-        if opts.if_not_exists:
-            cts.write(' if not exists')
-        cts.write(f' {tbl.name} (\n')
-
-        for i, rc in enumerate(r_cols.values()):
-            cts.write(f'  {rc.name} {rc.type}')
-
-            if rc.not_null:
-                cts.write(' not null')
-
-            if rc.default is not None:
-                cts.write(f' default {rc.default}')
-
-            if constraints or i < len(r_cols) - 1:
-                cts.write(',')
-
-            cts.write('\n')
-
-        for i, cs in enumerate(constraints):
-            cts.write(f'  {cs}')
-
-            if i < len(constraints) - 1:
-                cts.write(',')
-
-            cts.write('\n')
-
-        cts.write(')')
-
-        for opt in options:
-            cts.write('\n')
-
-            cts.write(opt)
-
-        #
-
-        stmts: list[str] = []
-
-        if opts.drop_if_exists:
-            stmts.append(f'drop table if exists {tbl.name}')
-
-        stmts.append(cts.getvalue())
-
-        stmts.extend(indexes)
-        stmts.extend(triggers)
-
-        return stmts
+        return [CREATE_UPDATED_AT_TRIGGER_SRC.format(
+            preamble='if not exists' if opts.if_not_exists else '',
+            trigger_name=f'{tbl.name}__trigger__updated_at__{e.column}',
+            table_name=tbl.name,
+            column_name=e.column,
+            where=' and '.join(f'{c} = new.{c}' for c in pk_cols),
+        )]
