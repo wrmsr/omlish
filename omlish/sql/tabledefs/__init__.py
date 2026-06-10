@@ -35,6 +35,19 @@ from .elements import (  # noqa
     Elements,
 )
 
+from .diffing import (  # noqa
+    MigrationOp,
+
+    AddColumn,
+    DropColumn,
+    AddIndex,
+    DropIndex,
+
+    UnsupportedDiffError,
+
+    diff_table,
+)
+
 from .lower import (  # noqa
     lower_table_elements,
     normalize_table,

@@ -7,6 +7,11 @@ from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
 from ..dtypes import Integer
+from .diffing import AddColumn
+from .diffing import AddIndex
+from .diffing import DropColumn
+from .diffing import DropIndex
+from .diffing import MigrationOp
 from .elements import Column
 from .elements import Index
 from .elements import PrimaryKey
@@ -84,9 +89,9 @@ class StatementRenderer(lang.Abstract):
     def drop_statement(self, tbl: TableDef) -> str:
         return f'drop table if exists {tbl.name}'
 
-    def index_statement(self, tbl: TableDef, e: Index, opts: CreateOptions) -> str:
+    def index_statement(self, table_name: str, e: Index, opts: CreateOptions) -> str:
         if (idx_name := e.name) is None:
-            idx_name = '__'.join([tbl.name, 'index', *e.columns])
+            idx_name = '__'.join([table_name, 'index', *e.columns])
 
         with e.options.consume():
             pass  # base supports no index options
@@ -98,7 +103,7 @@ class StatementRenderer(lang.Abstract):
         out.write('index ')
         if opts.if_not_exists:
             out.write('if not exists ')
-        out.write(f'{idx_name} on {tbl.name} ({", ".join(e.columns)})')
+        out.write(f'{idx_name} on {table_name} ({", ".join(e.columns)})')
         if e.where is not None:
             out.write(f' where {self.render_predicate(e.where)}')
         out.write('\n')
@@ -150,6 +155,35 @@ class StatementRenderer(lang.Abstract):
             return pk.columns[0]
         return None
 
+    def _build_render_column(self, c: Column, *, is_identity: bool) -> RenderColumn:
+        dfl: str | None = None
+        if c.default.present:
+            if is_identity:
+                raise TypeError(c)
+            dfl = self.render_default(c.default.must())
+
+        return RenderColumn(
+            c.name,
+            self.column_type(c, is_identity=is_identity),
+            not_null=not c.nullable,
+            default=dfl,
+            identity=self.column_identity_sql(c) if is_identity else '',
+            extra=self.column_option_sql(c),
+        )
+
+    def _render_column(self, rc: RenderColumn) -> str:
+        out = io.StringIO()
+        out.write(f'{rc.name} {rc.type}')
+        if rc.identity:
+            out.write(f' {rc.identity}')
+        if rc.not_null:
+            out.write(' not null')
+        if rc.default is not None:
+            out.write(f' default {rc.default}')
+        for x in rc.extra:
+            out.write(f' {x}')
+        return out.getvalue()
+
     def render_create_statements(
             self,
             tbl: TableDef,
@@ -169,24 +203,10 @@ class StatementRenderer(lang.Abstract):
         pk = tbl.elements.get(PrimaryKey)
         identity_column = self._identity_column(cols, pk)
 
-        r_cols: dict[str, RenderColumn] = {}
-        for c in cols.values():
-            is_identity = c.name == identity_column
-
-            dfl: str | None = None
-            if c.default.present:
-                if is_identity:
-                    raise TypeError(c)
-                dfl = self.render_default(c.default.must())
-
-            r_cols[c.name] = RenderColumn(
-                c.name,
-                self.column_type(c, is_identity=is_identity),
-                not_null=not c.nullable,
-                default=dfl,
-                identity=self.column_identity_sql(c) if is_identity else '',
-                extra=self.column_option_sql(c),
-            )
+        r_cols: dict[str, RenderColumn] = {
+            c.name: self._build_render_column(c, is_identity=(c.name == identity_column))
+            for c in cols.values()
+        }
 
         constraints: list[str] = []
         indexes: list[str] = []
@@ -204,7 +224,7 @@ class StatementRenderer(lang.Abstract):
                 triggers.extend(self.updated_at_trigger_statements(tbl, e, pk, opts))
 
             elif isinstance(e, Index):
-                indexes.append(self.index_statement(tbl, e, opts))
+                indexes.append(self.index_statement(tbl.name, e, opts))
 
             else:
                 raise TypeError(e)
@@ -217,19 +237,7 @@ class StatementRenderer(lang.Abstract):
         cts.write(f' {tbl.name} (\n')
 
         for i, rc in enumerate(r_cols.values()):
-            cts.write(f'  {rc.name} {rc.type}')
-
-            if rc.identity:
-                cts.write(f' {rc.identity}')
-
-            if rc.not_null:
-                cts.write(' not null')
-
-            if rc.default is not None:
-                cts.write(f' default {rc.default}')
-
-            for x in rc.extra:
-                cts.write(f' {x}')
+            cts.write(f'  {self._render_column(rc)}')
 
             if constraints or i < len(r_cols) - 1:
                 cts.write(',')
@@ -261,3 +269,21 @@ class StatementRenderer(lang.Abstract):
         stmts.extend(triggers)
 
         return stmts
+
+    ##
+    # migrations
+
+    def render_migration(self, op: MigrationOp, opts: CreateOptions | None = None) -> list[str]:
+        if opts is None:
+            opts = self.CreateOptions()
+
+        if isinstance(op, AddColumn):
+            return [f'alter table {op.table} add column {self._render_column(self._build_render_column(op.column, is_identity=False))}']  # noqa
+        elif isinstance(op, DropColumn):
+            return [f'alter table {op.table} drop column {op.name}']
+        elif isinstance(op, AddIndex):
+            return [self.index_statement(op.table, op.index, opts)]
+        elif isinstance(op, DropIndex):
+            return [f'drop index {op.name}']
+        else:
+            raise TypeError(op)
