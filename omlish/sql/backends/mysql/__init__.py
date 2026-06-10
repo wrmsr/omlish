@@ -7,7 +7,11 @@ with _lang.auto_proxy_init(globals()):
 
     from . import adapters  # noqa
 
+    from . import backend  # noqa
+
     from . import dialect  # noqa
+
+    from . import inspect  # noqa
 
     from . import queries  # noqa
     from . import queries as q  # noqa
