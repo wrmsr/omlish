@@ -11,6 +11,14 @@ from .elements import Column
 from .elements import Index
 from .elements import PrimaryKey
 from .elements import UpdatedAtTrigger
+from .predicates import And
+from .predicates import Compare
+from .predicates import IsNull
+from .predicates import Not
+from .predicates import Or
+from .predicates import Predicate
+from .predicates import RawPredicate
+from .predicates import SimplePredicateValue
 from .tabledefs import TableDef
 from .values import Now
 from .values import SimpleValue
@@ -76,8 +84,6 @@ class StatementRenderer(lang.Abstract):
     def drop_statement(self, tbl: TableDef) -> str:
         return f'drop table if exists {tbl.name}'
 
-    CREATE_INDEX_SRC = 'create index {preamble} {index_name} on {table_name} ({columns})\n'
-
     def index_statement(self, tbl: TableDef, e: Index, opts: CreateOptions) -> str:
         if (idx_name := e.name) is None:
             idx_name = '__'.join([tbl.name, 'index', *e.columns])
@@ -85,12 +91,46 @@ class StatementRenderer(lang.Abstract):
         with e.options.consume():
             pass  # base supports no index options
 
-        return self.CREATE_INDEX_SRC.format(
-            preamble='if not exists' if opts.if_not_exists else '',
-            index_name=idx_name,
-            table_name=tbl.name,
-            columns=', '.join(e.columns),
-        )
+        out = io.StringIO()
+        out.write('create ')
+        if e.unique:
+            out.write('unique ')
+        out.write('index ')
+        if opts.if_not_exists:
+            out.write('if not exists ')
+        out.write(f'{idx_name} on {tbl.name} ({", ".join(e.columns)})')
+        if e.where is not None:
+            out.write(f' where {self.render_predicate(e.where)}')
+        out.write('\n')
+        return out.getvalue()
+
+    def render_predicate(self, p: Predicate) -> str:
+        if isinstance(p, RawPredicate):
+            return p.s
+        elif isinstance(p, Compare):
+            return f'{p.column} {p.op.value} {self.render_predicate_value(p.value)}'
+        elif isinstance(p, IsNull):
+            return f'{p.column} is not null' if p.negated else f'{p.column} is null'
+        elif isinstance(p, Not):
+            return f'not ({self.render_predicate(p.predicate)})'
+        elif isinstance(p, And):
+            return ' and '.join(f'({self.render_predicate(c)})' for c in p.predicates)
+        elif isinstance(p, Or):
+            return ' or '.join(f'({self.render_predicate(c)})' for c in p.predicates)
+        else:
+            raise TypeError(p)  # fail-closed: backend predicate nodes are handled by the backend's override
+
+    def render_predicate_value(self, v: SimplePredicateValue) -> str:
+        if v is None:
+            return 'null'
+        elif isinstance(v, bool):
+            return 'true' if v else 'false'
+        elif isinstance(v, (int, float)):
+            return str(v)
+        elif isinstance(v, str):
+            return "'" + v.replace("'", "''") + "'"
+        else:
+            raise TypeError(v)
 
     @abc.abstractmethod
     def updated_at_trigger_statements(

@@ -27,7 +27,7 @@ def test_render_golden():
             '  primary key (id)\n'
             ')'
         ),
-        'create index  users__index__name on users (name)\n',
+        'create index users__index__name on users (name)\n',
         (
             'create or replace function users__function__updated_at__updated_at()\n'
             'returns trigger\n'

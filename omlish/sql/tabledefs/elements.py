@@ -8,6 +8,8 @@ from ... import typedvalues as tv
 from ..dtypes import Dtype
 from .options import ColumnOptions
 from .options import IndexOptions
+from .predicates import Predicate
+from .predicates import as_opt_predicate
 from .values import SimpleValue
 
 
@@ -52,7 +54,10 @@ class Index(Element, lang.Final):
     name: str | None = None
 
     unique: bool = False
-    where: str | None = None
+    where: Predicate | None = (
+        dc.xfield(None, coerce=as_opt_predicate) |
+        msh.dc_field_options(no_marshal=True, no_unmarshal=True)
+    )
 
     options: IndexOptions = (
         dc.xfield(default_factory=tv.TypedValues, coerce=tv.as_collection) |

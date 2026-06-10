@@ -52,6 +52,23 @@ from .options import (  # noqa
     TableOptions,
 )
 
+from ..syntax import (  # noqa
+    CompareOp,
+)
+
+from .predicates import (  # noqa
+    And,
+    CanPredicate,
+    Compare,
+    IsNull,
+    Not,
+    Or,
+    Predicate,
+    RawPredicate,
+
+    as_predicate,
+)
+
 from .rendering import (  # noqa
     StatementRenderer,
 )
