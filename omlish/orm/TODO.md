@@ -1,5 +1,5 @@
 - ** wire up names.py **
-  - AnyWhereItem[, StoreWhere, Where
+  - `AnyWhereItem[AttributeNameT], StoreWhereItem:AnyWhereItem[ColumnName], WhereItem:AnyWhereItem[FieldName]`
 - ** sqlite timestamps need microseconds **
 - marshal interop
   - options? for ref expansion/id replacement
