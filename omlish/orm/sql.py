@@ -84,8 +84,8 @@ class SqlStore(Store):
             registry: Registry,
             db: sql.AsyncDb | sql.AsyncConn,
             *,
-            param_style: sql.ParamStyle = sql.ParamStyle.QMARK,
-            tabledef_renderer: sql.td.StatementRenderer | None = None,
+            param_style: sql.ParamStyle | None = None,
+            tabledef_renderer: sql.td.StatementRenderer,
             tabledef_create_options: sql.td.StatementRenderer.CreateOptions | None = None,
     ) -> None:
         super().__init__()
@@ -93,9 +93,14 @@ class SqlStore(Store):
         self._registry = registry
         self._db = db
 
+        # The dialect facets are injected, not chosen here - the orm stays backend-agnostic. param_style is taken from
+        # the connection's adapter when it declares one, falling back to qmark; the tabledef renderer is required.
+        if param_style is None:
+            param_style = db.adapter.param_style
+        if param_style is None:
+            param_style = sql.ParamStyle.QMARK
         self._param_style = param_style
-        if tabledef_renderer is None:
-            tabledef_renderer = sql.be.sqlite.td.SqliteStatementRenderer()
+
         self._tabledef_renderer = tabledef_renderer
         if tabledef_create_options is None:
             tabledef_create_options = sql.td.StatementRenderer.CreateOptions(

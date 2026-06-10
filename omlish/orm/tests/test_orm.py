@@ -138,7 +138,7 @@ async def test_async_orm_sql():
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
         db = sql.api.DbapiDb(sql.api.ClosingDbapiConnector(sqlite3.connect, db_path))
         adb = sql.api.SyncToAsyncDb(sql.api.AsyncioToExecutorSyncToAsyncRunner.factory(exe), db)
-        store = SqlStore(registry, adb)
+        store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
         await _test_orm(store, registry)
 
 
@@ -147,5 +147,5 @@ def test_sync_await_orm_sql():
     registry = build_registry()
     db = sql.api.DbapiDb(sql.api.ClosingDbapiConnector(sqlite3.connect, db_path))
     adb = sql.api.SyncToAsyncDb(sql.api.ImmediateSyncToAsyncRunner, db)
-    store = SqlStore(registry, adb)
+    store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
     lang.sync_await(_test_orm(store, registry))
