@@ -1,6 +1,6 @@
 # ruff: noqa: S608
 from ...api.querierfuncs import query_all
-from ...api.queriers import Querier
+from ...api.queriers import AsyncQuerier
 from ...dtypes import Datetime
 from ...dtypes import Dtype
 from ...dtypes import Integer
@@ -27,8 +27,8 @@ class PostgresInspector(Inspector):
     user input, and is reflection-only.
     """
 
-    def reflect_table(self, querier: Querier, name: str) -> ReflectedTable | None:
-        cols_rows = query_all(querier, (
+    async def reflect_table(self, querier: AsyncQuerier, name: str) -> ReflectedTable | None:
+        cols_rows = await query_all(querier, (
             "select column_name, data_type, is_nullable "
             "from information_schema.columns "
             f"where table_schema = 'public' and table_name = '{name}' "
@@ -39,7 +39,7 @@ class PostgresInspector(Inspector):
 
         pk_cols = {
             r.to_dict()['column_name']
-            for r in query_all(querier, (
+            for r in await query_all(querier, (
                 "select kcu.column_name "
                 "from information_schema.table_constraints tc "
                 "join information_schema.key_column_usage kcu on kcu.constraint_name = tc.constraint_name "

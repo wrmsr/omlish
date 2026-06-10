@@ -1,6 +1,6 @@
 # ruff: noqa: S608
 from ...api.querierfuncs import query_all
-from ...api.queriers import Querier
+from ...api.queriers import AsyncQuerier
 from ...dtypes import Datetime
 from ...dtypes import Dtype
 from ...dtypes import Integer
@@ -24,8 +24,8 @@ class MysqlInspector(Inspector):
     primary key, ignoring the rest); table name interpolated as it is code-defined reflection, not user input.
     """
 
-    def reflect_table(self, querier: Querier, name: str) -> ReflectedTable | None:
-        rows = query_all(querier, (
+    async def reflect_table(self, querier: AsyncQuerier, name: str) -> ReflectedTable | None:
+        rows = await query_all(querier, (
             'select column_name as name, data_type as type, is_nullable as nullable, column_key as ckey '
             'from information_schema.columns '
             f"where table_schema = database() and table_name = '{name}' "

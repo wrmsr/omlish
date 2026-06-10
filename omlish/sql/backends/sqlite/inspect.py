@@ -1,5 +1,5 @@
 from ...api.querierfuncs import query_all
-from ...api.queriers import Querier
+from ...api.queriers import AsyncQuerier
 from ...dtypes import Datetime
 from ...dtypes import Dtype
 from ...dtypes import Integer
@@ -19,8 +19,8 @@ from ...tabledefs.tabledefs import TableDef
 
 
 class SqliteInspector(Inspector):
-    def reflect_table(self, querier: Querier, name: str) -> ReflectedTable | None:
-        info = query_all(querier, f'pragma table_info({name})')
+    async def reflect_table(self, querier: AsyncQuerier, name: str) -> ReflectedTable | None:
+        info = await query_all(querier, f'pragma table_info({name})')
         if not info:
             return None
 
@@ -35,10 +35,10 @@ class SqliteInspector(Inspector):
             ))
 
         idxs: list[ReflectedIndex] = []
-        for irow in query_all(querier, f'pragma index_list({name})'):
+        for irow in await query_all(querier, f'pragma index_list({name})'):
             idd = irow.to_dict()
             iname = idd['name']
-            icols = [r.to_dict()['name'] for r in query_all(querier, f'pragma index_info({iname})')]
+            icols = [r.to_dict()['name'] for r in await query_all(querier, f'pragma index_info({iname})')]
             idxs.append(ReflectedIndex(iname, icols, unique=bool(idd['unique'])))
 
         return ReflectedTable(name, cols, indexes=idxs)
