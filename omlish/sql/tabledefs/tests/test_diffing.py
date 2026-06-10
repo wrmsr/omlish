@@ -43,6 +43,13 @@ def test_order_insensitive_no_change():
     assert diff_table(a, b) == []
 
 
+def test_pk_change_raises():
+    a = _td(Column('id', Integer()), Column('k', Integer()), PrimaryKey(['id']))
+    b = _td(Column('id', Integer()), Column('k', Integer()), PrimaryKey(['k']))
+    with pytest.raises(UnsupportedDiffError):
+        diff_table(a, b)
+
+
 def test_name_mismatch_raises():
     with pytest.raises(UnsupportedDiffError):
         diff_table(

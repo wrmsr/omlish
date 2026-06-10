@@ -2,6 +2,7 @@ from ... import dataclasses as dc
 from ... import lang
 from .elements import Column
 from .elements import Index
+from .elements import PrimaryKey
 from .lower import normalize_table
 from .tabledefs import TableDef
 
@@ -58,6 +59,11 @@ def diff_table(current: TableDef, existing: TableDef) -> list[MigrationOp]:
 
     current = normalize_table(current)
     existing = normalize_table(existing)
+
+    cur_pk = current.elements.get(PrimaryKey)
+    ex_pk = existing.elements.get(PrimaryKey)
+    if frozenset(cur_pk.columns if cur_pk is not None else ()) != frozenset(ex_pk.columns if ex_pk is not None else ()):
+        raise UnsupportedDiffError(f'primary-key change is not supported: {ex_pk!r} -> {cur_pk!r}')
 
     ops: list[MigrationOp] = []
 
