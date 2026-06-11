@@ -2,6 +2,7 @@ import pytest
 
 from ...dtypes import Integer
 from ...dtypes import String
+from ...dtypes import Uuid
 from ..diffing import AddColumn
 from ..diffing import AddIndex
 from ..diffing import DropColumn
@@ -69,3 +70,24 @@ def test_changed_named_index_recreates():
     a = _td(Column('id', Integer()), Column('x', Integer()), Index(['id'], name='ix'))
     b = _td(Column('id', Integer()), Column('x', Integer()), Index(['x'], name='ix'))
     assert [type(o) for o in diff_table(a, b)] == [DropIndex, AddIndex]
+
+
+def test_type_change_raises():
+    a = _td(Column('id', Integer()), Column('v', String()), PrimaryKey(['id']))
+    b = _td(Column('id', Integer()), Column('v', Integer()), PrimaryKey(['id']))
+    with pytest.raises(UnsupportedDiffError):
+        diff_table(a, b)
+
+
+def test_nullability_change_raises():
+    a = _td(Column('id', Integer()), Column('v', String(), nullable=True), PrimaryKey(['id']))
+    b = _td(Column('id', Integer()), Column('v', String()), PrimaryKey(['id']))
+    with pytest.raises(UnsupportedDiffError):
+        diff_table(a, b)
+
+
+def test_lossy_type_change_ignored():
+    # Uuid is not faithfully reflected on every backend, so a Uuid-vs-String difference is left alone (no false refusal)
+    a = _td(Column('id', Integer()), Column('v', Uuid()), PrimaryKey(['id']))
+    b = _td(Column('id', Integer()), Column('v', String()), PrimaryKey(['id']))
+    assert diff_table(a, b) == []

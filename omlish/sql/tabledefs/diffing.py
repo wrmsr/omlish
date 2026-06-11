@@ -1,5 +1,8 @@
 from ... import dataclasses as dc
 from ... import lang
+from ..dtypes import Datetime
+from ..dtypes import Integer
+from ..dtypes import String
 from .elements import Column
 from .elements import Index
 from .elements import PrimaryKey
@@ -46,13 +49,19 @@ class UnsupportedDiffError(Exception):
     pass
 
 
+# The dtypes every backend reflects faithfully and unambiguously, so a change between two of them is a real, confident
+# change worth refusing. Lossier types (Uuid/Boolean/Float/Bytes, which some backends' reflection collapses to
+# String/Integer) are deliberately not compared, to avoid spurious churn.
+_DIFFABLE_DTYPES = (Integer, String, Datetime)
+
+
 def diff_table(current: TableDef, existing: TableDef) -> list[MigrationOp]:
     """
     Produce the migration ops that bring `existing` (e.g. a table reflected from a live db) up to `current` (the
-    in-code definition). Deliberately limited: added/dropped columns and added/dropped *named* indexes - the common
-    forward-only evolution. Column type/nullability changes, primary-key changes, triggers, and options are outside the
-    supported subset and are left untouched for now (a richer differ, with a confident "I don't understand this"
-    report, is future work). Operates on the order-normal-form, so element order is insignificant.
+    in-code definition). Limited to forward-only column and named-index add/drop. Changes it cannot safely apply -
+    primary-key changes, column nullability changes, and column type changes among the faithfully-reflected dtypes -
+    are refused with `UnsupportedDiffError` rather than silently ignored or mis-migrated; triggers, options, and
+    lossier type changes are still left untouched. Operates on the order-normal-form, so element order is insignificant.
     """
 
     if current.name != existing.name:
@@ -66,14 +75,36 @@ def diff_table(current: TableDef, existing: TableDef) -> list[MigrationOp]:
     if frozenset(cur_pk.columns if cur_pk is not None else ()) != frozenset(ex_pk.columns if ex_pk is not None else ()):
         raise UnsupportedDiffError(f'primary-key change is not supported: {ex_pk!r} -> {cur_pk!r}')
 
+    cur_pk_cols = frozenset(cur_pk.columns if cur_pk is not None else ())
+
     ops: list[MigrationOp] = []
 
     cur_cols = {c.name: c for c in current.elements.get(Column, ())}
     ex_cols = {c.name: c for c in existing.elements.get(Column, ())}
 
     for name, c in cur_cols.items():
-        if name not in ex_cols:
+        ex_col = ex_cols.get(name)
+        if ex_col is None:
             ops.append(AddColumn(current.name, c))
+            continue
+
+        # A column on both sides: detect the changes we can see faithfully and refuse them, rather than silently
+        # leaving a schema/code mismatch. Nullability reflects accurately everywhere except on pk columns (implicitly
+        # not-null however they were declared). Type changes are judged only among the dtypes every backend reflects
+        # unambiguously; anything lossier is left alone.
+        if name not in cur_pk_cols and c.nullable != ex_col.nullable:
+            raise UnsupportedDiffError(
+                f'column {name!r} nullability change is not supported: {ex_col.nullable} -> {c.nullable}',
+            )
+        if (
+                isinstance(c.type, _DIFFABLE_DTYPES) and
+                isinstance(ex_col.type, _DIFFABLE_DTYPES) and
+                type(c.type) is not type(ex_col.type)
+        ):
+            raise UnsupportedDiffError(
+                f'column {name!r} type change is not supported: {ex_col.type!r} -> {c.type!r}',
+            )
+
     for name in ex_cols:
         if name not in cur_cols:
             ops.append(DropColumn(current.name, name))
