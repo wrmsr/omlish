@@ -22,7 +22,7 @@ from ..tabledefs import TableDef
 
 
 class _R(StatementRenderer):
-    def column_type(self, c, *, is_identity):
+    def column_type(self, c, *, is_identity, indexed=False):
         return 'integer' if isinstance(c.type, Integer) else 'text'
 
     def updated_at_trigger_statements(self, tbl, e, pk, opts):

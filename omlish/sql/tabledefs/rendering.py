@@ -61,7 +61,7 @@ class StatementRenderer(lang.Abstract):
     # hooks
 
     @abc.abstractmethod
-    def column_type(self, c: Column, *, is_identity: bool) -> str:
+    def column_type(self, c: Column, *, is_identity: bool, indexed: bool = False) -> str:
         raise NotImplementedError
 
     def column_identity_sql(self, c: Column) -> str:
@@ -155,7 +155,7 @@ class StatementRenderer(lang.Abstract):
             return pk.columns[0]
         return None
 
-    def _build_render_column(self, c: Column, *, is_identity: bool) -> RenderColumn:
+    def _build_render_column(self, c: Column, *, is_identity: bool, indexed: bool = False) -> RenderColumn:
         dfl: str | None = None
         if c.default.present:
             if is_identity:
@@ -164,7 +164,7 @@ class StatementRenderer(lang.Abstract):
 
         return RenderColumn(
             c.name,
-            self.column_type(c, is_identity=is_identity),
+            self.column_type(c, is_identity=is_identity, indexed=indexed),
             not_null=not c.nullable,
             default=dfl,
             identity=self.column_identity_sql(c) if is_identity else '',
@@ -203,8 +203,18 @@ class StatementRenderer(lang.Abstract):
         pk = tbl.elements.get(PrimaryKey)
         identity_column = self._identity_column(cols, pk)
 
+        # Columns participating in an index or the primary key - some backends (mysql) must give an indexed string a
+        # bounded varchar length rather than an un-indexable text type.
+        indexed_cols = {cn for i in tbl.elements.get(Index, ()) for cn in i.columns}
+        if pk is not None:
+            indexed_cols.update(pk.columns)
+
         r_cols: dict[str, RenderColumn] = {
-            c.name: self._build_render_column(c, is_identity=(c.name == identity_column))
+            c.name: self._build_render_column(
+                c,
+                is_identity=(c.name == identity_column),
+                indexed=(c.name in indexed_cols),
+            )
             for c in cols.values()
         }
 

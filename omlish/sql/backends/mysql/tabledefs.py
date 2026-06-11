@@ -25,9 +25,10 @@ set new.{column_name} = current_timestamp\
 
 
 class MysqlStatementRenderer(StatementRenderer):
-    def column_type(self, c: Column, *, is_identity: bool) -> str:
+    def column_type(self, c: Column, *, is_identity: bool, indexed: bool = False) -> str:
         if isinstance(c.type, String):
-            return 'text'
+            # mysql cannot index a TEXT column without a key length, so an indexed string becomes a bounded varchar.
+            return 'varchar(255)' if indexed else 'text'
         elif isinstance(c.type, Uuid):
             return 'char(36)'
         elif isinstance(c.type, Integer):

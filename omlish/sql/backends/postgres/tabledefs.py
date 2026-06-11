@@ -59,7 +59,7 @@ $$\
 
 
 class PostgresStatementRenderer(StatementRenderer):
-    def column_type(self, c: Column, *, is_identity: bool) -> str:
+    def column_type(self, c: Column, *, is_identity: bool, indexed: bool = False) -> str:
         if isinstance(c.type, String):
             return 'text'
         elif isinstance(c.type, Uuid):
