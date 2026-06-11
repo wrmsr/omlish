@@ -5,6 +5,7 @@ from ...dtypes import Float
 from ...dtypes import Integer
 from ...dtypes import String
 from ...dtypes import Uuid
+from ...tabledefs.diffing import AlterColumn
 from ...tabledefs.elements import Column
 from ...tabledefs.elements import PrimaryKey
 from ...tabledefs.elements import UpdatedAtTrigger
@@ -82,6 +83,14 @@ class PostgresStatementRenderer(StatementRenderer):
 
     def drop_statement(self, tbl: TableDef) -> str:
         return f'drop table if exists {tbl.name} cascade'
+
+    def alter_column_statements(self, op: AlterColumn) -> list[str]:
+        c = op.column
+        nn = 'set' if not c.nullable else 'drop'
+        return [
+            f'alter table {op.table} alter column {c.name} type {self.column_type(c, is_identity=False)}',
+            f'alter table {op.table} alter column {c.name} {nn} not null',
+        ]
 
     def updated_at_trigger_statements(
             self,

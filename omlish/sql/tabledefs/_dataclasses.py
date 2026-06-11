@@ -43,6 +43,7 @@ def _register(**kwargs):
     ),
     cls_names=(
         ('omlish.sql.tabledefs.diffing', 'AddColumn'),
+        ('omlish.sql.tabledefs.diffing', 'AlterColumn'),
     ),
 )
 def _process_dataclass__7bbc53157847f1f2172110a2a499f81f87f3ac50():

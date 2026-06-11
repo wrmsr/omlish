@@ -12,11 +12,11 @@ from ....dtypes import String
 from ....inspect.migrating import migrate_table
 from ....params import ParamStyle
 from ....tabledefs.diffing import AddColumn
-from ....tabledefs.diffing import UnsupportedDiffError
 from ....tabledefs.elements import Column
 from ....tabledefs.elements import Elements
 from ....tabledefs.elements import Index
 from ....tabledefs.elements import PrimaryKey
+from ....tabledefs.rendering import UnsupportedMigrationError
 from ....tabledefs.tabledefs import TableDef
 from ..inspect import SqliteInspector
 from ..tabledefs import SqliteStatementRenderer
@@ -98,8 +98,8 @@ def test_migrate_table_type_change_refused() -> None:
                 Column('val', Integer(), nullable=True),
             )), inspector=insp, renderer=r)
 
-            # the in-code column type changed Integer -> String; the differ refuses rather than mis-migrating
-            with pytest.raises(UnsupportedDiffError):
+            # the in-code column type changed Integer -> String; sqlite cannot alter a column in place, so it refuses
+            with pytest.raises(UnsupportedMigrationError):
                 await migrate_table(conn, TableDef(tn, Elements(
                     Column('id', Integer()),
                     PrimaryKey(['id']),

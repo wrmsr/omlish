@@ -15,6 +15,7 @@ from ....dtypes import String
 from ....inspect.migrating import migrate_table
 from ....params import ParamStyle
 from ....tabledefs.diffing import AddColumn
+from ....tabledefs.diffing import AlterColumn
 from ....tabledefs.elements import Column
 from ....tabledefs.elements import Elements
 from ....tabledefs.elements import Index
@@ -116,6 +117,54 @@ def test_migrate_table_with_index(harness) -> None:
             # the index reflects + lifts, so a second run is a true no-op (no spurious index re-create)
             m2 = await migrate_table(conn, td, inspector=insp, renderer=r)
             assert not m2.created
+            assert not m2.ops
+
+            await qf.exec(conn, f'drop table if exists {tn} cascade')
+
+    lang.sync_await(inner())
+
+
+@ptu.skip.if_cant_import('pg8000')
+def test_migrate_table_alter_column(harness) -> None:
+    url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
+    pu = urllib.parse.urlparse(url)
+
+    db = DbapiDb(
+        ClosingDbapiConnector(
+            pg8000.connect,
+            pu.username,
+            host=pu.hostname,
+            port=pu.port,
+            password=pu.password,
+            database='postgres',
+        ),
+        param_style=ParamStyle.FORMAT,
+    )
+    adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
+    r = PostgresStatementRenderer()
+    insp = PostgresInspector()
+    tn = 'test_migrate_table_alter_column'
+
+    async def inner() -> None:
+        async with adb.connect() as conn:
+            await qf.exec(conn, f'drop table if exists {tn} cascade')
+
+            await migrate_table(conn, TableDef(tn, Elements(
+                Column('id', Integer()),
+                PrimaryKey(['id']),
+                Column('val', Integer(), nullable=True),
+            )), inspector=insp, renderer=r)
+
+            # change val's type Integer -> String; the alter is applied, then a re-run is a no-op
+            grown = TableDef(tn, Elements(
+                Column('id', Integer()),
+                PrimaryKey(['id']),
+                Column('val', String(), nullable=True),
+            ))
+            m = await migrate_table(conn, grown, inspector=insp, renderer=r)
+            assert [type(o) for o in m.ops] == [AlterColumn]
+
+            m2 = await migrate_table(conn, grown, inspector=insp, renderer=r)
             assert not m2.ops
 
             await qf.exec(conn, f'drop table if exists {tn} cascade')

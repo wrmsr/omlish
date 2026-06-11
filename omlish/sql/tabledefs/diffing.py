@@ -31,6 +31,12 @@ class DropColumn(MigrationOp, lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class AlterColumn(MigrationOp, lang.Final):
+    table: str
+    column: Column  # the desired end state; the backend renders the alter to reach it (type and/or nullability)
+
+
+@dc.dataclass(frozen=True)
 class AddIndex(MigrationOp, lang.Final):
     table: str
     index: Index
@@ -50,7 +56,7 @@ class UnsupportedDiffError(Exception):
 
 
 # The dtypes every backend reflects faithfully and unambiguously, so a change between two of them is a real, confident
-# change worth refusing. Lossier types (Uuid/Boolean/Float/Bytes, which some backends' reflection collapses to
+# change worth acting on. Lossier types (Uuid/Boolean/Float/Bytes, which some backends' reflection collapses to
 # String/Integer) are deliberately not compared, to avoid spurious churn.
 _DIFFABLE_DTYPES = (Integer, String, Datetime)
 
@@ -58,10 +64,12 @@ _DIFFABLE_DTYPES = (Integer, String, Datetime)
 def diff_table(current: TableDef, existing: TableDef) -> list[MigrationOp]:
     """
     Produce the migration ops that bring `existing` (e.g. a table reflected from a live db) up to `current` (the
-    in-code definition). Limited to forward-only column and named-index add/drop. Changes it cannot safely apply -
-    primary-key changes, column nullability changes, and column type changes among the faithfully-reflected dtypes -
-    are refused with `UnsupportedDiffError` rather than silently ignored or mis-migrated; triggers, options, and
-    lossier type changes are still left untouched. Operates on the order-normal-form, so element order is insignificant.
+    in-code definition): column add/drop/alter and named-index add/drop. A column's nullability change, or a type
+    change among the faithfully-reflected dtypes (Integer/String/Datetime), becomes an in-place `AlterColumn`; lossier
+    type differences are left untouched (reflection can't tell them apart). Primary-key changes are refused outright
+    (`UnsupportedDiffError`); triggers and options are left untouched. Whether an `AlterColumn` can actually be applied
+    is the backend's call - sqlite, lacking ALTER COLUMN, refuses it at render time. Operates on the order-normal-form,
+    so element order is insignificant.
     """
 
     if current.name != existing.name:
@@ -88,22 +96,18 @@ def diff_table(current: TableDef, existing: TableDef) -> list[MigrationOp]:
             ops.append(AddColumn(current.name, c))
             continue
 
-        # A column on both sides: detect the changes we can see faithfully and refuse them, rather than silently
-        # leaving a schema/code mismatch. Nullability reflects accurately everywhere except on pk columns (implicitly
-        # not-null however they were declared). Type changes are judged only among the dtypes every backend reflects
-        # unambiguously; anything lossier is left alone.
-        if name not in cur_pk_cols and c.nullable != ex_col.nullable:
-            raise UnsupportedDiffError(
-                f'column {name!r} nullability change is not supported: {ex_col.nullable} -> {c.nullable}',
-            )
-        if (
-                isinstance(c.type, _DIFFABLE_DTYPES) and
-                isinstance(ex_col.type, _DIFFABLE_DTYPES) and
-                type(c.type) is not type(ex_col.type)
-        ):
-            raise UnsupportedDiffError(
-                f'column {name!r} type change is not supported: {ex_col.type!r} -> {c.type!r}',
-            )
+        # A column on both sides: emit an in-place AlterColumn for the changes we can see faithfully - a nullability
+        # change (reflected accurately everywhere except on pk columns, which are implicitly not-null however declared)
+        # or a type change among the dtypes every backend reflects unambiguously. Lossier type differences are left
+        # alone, since reflection can't tell them apart.
+        nullability_changed = name not in cur_pk_cols and c.nullable != ex_col.nullable
+        type_changed = (
+            isinstance(c.type, _DIFFABLE_DTYPES) and
+            isinstance(ex_col.type, _DIFFABLE_DTYPES) and
+            type(c.type) is not type(ex_col.type)
+        )
+        if nullability_changed or type_changed:
+            ops.append(AlterColumn(current.name, c))
 
     for name in ex_cols:
         if name not in cur_cols:

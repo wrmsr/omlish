@@ -9,6 +9,7 @@ from ... import lang
 from ..dtypes import Integer
 from .diffing import AddColumn
 from .diffing import AddIndex
+from .diffing import AlterColumn
 from .diffing import DropColumn
 from .diffing import DropIndex
 from .diffing import MigrationOp
@@ -31,6 +32,10 @@ from .values import SimpleValue
 
 
 ##
+
+
+class UnsupportedMigrationError(Exception):
+    pass
 
 
 @dc.dataclass()
@@ -283,6 +288,13 @@ class StatementRenderer(lang.Abstract):
     ##
     # migrations
 
+    def alter_column_statements(self, op: AlterColumn) -> list[str]:
+        # In-place column alteration is backend-specific (and impossible on sqlite without a table rebuild); backends
+        # that can do it override this.
+        raise UnsupportedMigrationError(
+            f'{type(self).__name__} cannot alter column {op.column.name!r} of table {op.table!r} in place',
+        )
+
     def render_migration(self, op: MigrationOp, opts: CreateOptions | None = None) -> list[str]:
         if opts is None:
             opts = self.CreateOptions()
@@ -291,6 +303,8 @@ class StatementRenderer(lang.Abstract):
             return [f'alter table {op.table} add column {self._render_column(self._build_render_column(op.column, is_identity=False))}']  # noqa
         elif isinstance(op, DropColumn):
             return [f'alter table {op.table} drop column {op.name}']
+        elif isinstance(op, AlterColumn):
+            return self.alter_column_statements(op)
         elif isinstance(op, AddIndex):
             return [self.index_statement(op.table, op.index, opts)]
         elif isinstance(op, DropIndex):

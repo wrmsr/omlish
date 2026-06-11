@@ -5,6 +5,7 @@ from ...dtypes import Float
 from ...dtypes import Integer
 from ...dtypes import String
 from ...dtypes import Uuid
+from ...tabledefs.diffing import AlterColumn
 from ...tabledefs.elements import Column
 from ...tabledefs.elements import PrimaryKey
 from ...tabledefs.elements import UpdatedAtTrigger
@@ -60,6 +61,10 @@ class MysqlStatementRenderer(StatementRenderer):
             parts.append(rc.identity)
         parts.extend(rc.extra)
         return ' '.join(parts)
+
+    def alter_column_statements(self, op: AlterColumn) -> list[str]:
+        rc = self._render_column(self._build_render_column(op.column, is_identity=False))
+        return [f'alter table {op.table} modify column {rc}']
 
     def updated_at_trigger_statements(
             self,

@@ -15,6 +15,7 @@ from ....dtypes import String
 from ....inspect.migrating import migrate_table
 from ....params import ParamStyle
 from ....tabledefs.diffing import AddColumn
+from ....tabledefs.diffing import AlterColumn
 from ....tabledefs.elements import Column
 from ....tabledefs.elements import Elements
 from ....tabledefs.elements import Index
@@ -121,6 +122,56 @@ def test_migrate_table_with_index(harness) -> None:
             # the index reflects + lifts, so a second run is a true no-op (no spurious index re-create)
             m2 = await migrate_table(conn, td, inspector=insp, renderer=r)
             assert not m2.created
+            assert not m2.ops
+
+            await qf.exec(conn, f'drop table if exists {tn}')
+
+    lang.sync_await(inner())
+
+
+@ptu.skip.if_cant_import('pymysql')
+def test_migrate_table_alter_column(harness) -> None:
+    url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['mysql'].loc, UrlDbLoc).url, str)
+    pu = urllib.parse.urlparse(url)
+
+    db = DbapiDb(
+        ClosingDbapiConnector(
+            ta.cast(ta.Any, pymysql.connect),  # typed pymysql.connect won't unify with the connector ParamSpec
+            host=pu.hostname,
+            port=check.not_none(pu.port),
+            user=pu.username,
+            password=check.not_none(pu.password),
+            autocommit=True,
+        ),
+        param_style=ParamStyle.PYFORMAT,
+    )
+    adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
+    r = MysqlStatementRenderer()
+    insp = MysqlInspector()
+    tn = 'test_migrate_table_alter_column'
+
+    async def inner() -> None:
+        async with adb.connect() as conn:
+            await qf.exec(conn, 'create database if not exists omlish_test')
+            await qf.exec(conn, 'use omlish_test')
+            await qf.exec(conn, f'drop table if exists {tn}')
+
+            await migrate_table(conn, TableDef(tn, Elements(
+                Column('id', Integer()),
+                PrimaryKey(['id']),
+                Column('val', Integer(), nullable=True),
+            )), inspector=insp, renderer=r)
+
+            # change val's type Integer -> String; mysql applies the alter via MODIFY, then a re-run is a no-op
+            grown = TableDef(tn, Elements(
+                Column('id', Integer()),
+                PrimaryKey(['id']),
+                Column('val', String(), nullable=True),
+            ))
+            m = await migrate_table(conn, grown, inspector=insp, renderer=r)
+            assert [type(o) for o in m.ops] == [AlterColumn]
+
+            m2 = await migrate_table(conn, grown, inspector=insp, renderer=r)
             assert not m2.ops
 
             await qf.exec(conn, f'drop table if exists {tn}')
