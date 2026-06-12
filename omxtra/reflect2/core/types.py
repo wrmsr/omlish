@@ -1,0 +1,1082 @@
+# ruff: noqa: A002 SLF001 UP007
+"""
+Unlike in mypy these types are part of the public api - internal code *should* access private fields, but for external
+code it is hidden behind properties.
+"""
+import enum
+import typing as ta
+
+from ..errors import ReflectionValueError
+from .symbols import ArgKind
+from .symbols import TypeAlias
+from .symbols import TypeInfo
+from .symbols import VarianceKind
+
+
+if ta.TYPE_CHECKING:
+    from .typevisitor import TypeVisitor
+
+
+T = ta.TypeVar('T')
+
+LiteralValue: ta.TypeAlias = ta.Union[
+    int,
+    str,
+    bool,
+    float,
+    bytes,
+    None,
+]
+
+
+##
+
+
+def is_literal_value(value: object) -> bool:
+    return (
+        value is None
+        or type(value) in (bool, int, str, float, bytes)
+    )
+
+
+##
+
+
+class Type:
+    __slots__ = ()
+
+    def __str__(self) -> str:
+        from .strconv import type_str
+
+        return type_str(self)
+
+    def __repr__(self) -> str:
+        from .strconv import type_str
+
+        return type_str(self)
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        raise NotImplementedError
+
+
+@ta.final
+class TypeAliasType(Type):
+    __slots__ = (
+        '_alias',
+        '_args',
+    )
+
+    def __init__(
+            self,
+            alias: TypeAlias | None,
+            args: list[Type],
+    ) -> None:
+        super().__init__()
+
+        self._alias = alias
+        self._args = args
+
+    @property
+    def alias(self) -> TypeAlias | None:
+        return self._alias
+
+    @property
+    def args(self) -> ta.Sequence[Type]:
+        return self._args
+
+    @property
+    def is_recursive(self) -> bool:
+        if self._alias is None:
+            return False
+
+        if self._alias._is_recursive is None:
+            from .typeops import is_recursive_alias
+
+            self._alias._is_recursive = is_recursive_alias(self._alias)
+
+        return self._alias._is_recursive
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_type_alias_type(self)
+
+
+@ta.final
+class TypeGuardedType(Type):
+    __slots__ = (
+        '_type_guard',
+    )
+
+    def __init__(self, type_guard: Type) -> None:
+        super().__init__()
+
+        self._type_guard = type_guard
+
+    @property
+    def type_guard(self) -> Type:
+        return self._type_guard
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_type_guarded_type(self)
+
+
+@ta.final
+class AnnotatedType(Type):
+    __slots__ = (
+        '_item',
+        '_metadata',
+    )
+
+    def __init__(
+            self,
+            item: Type,
+            metadata: tuple[object, ...],
+    ) -> None:
+        super().__init__()
+
+        if not metadata:
+            raise ReflectionValueError('AnnotatedType metadata must be non-empty')
+
+        self._item = item
+        self._metadata = metadata
+
+    @property
+    def item(self) -> Type:
+        return self._item
+
+    @property
+    def metadata(self) -> tuple[object, ...]:
+        return self._metadata
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_annotated_type(self)
+
+
+@ta.final
+class RequiredType(Type):
+    __slots__ = (
+        '_item',
+        '_required',
+    )
+
+    def __init__(
+            self,
+            item: Type,
+            *,
+            required: bool = True,
+    ) -> None:
+        super().__init__()
+
+        self._item = item
+        self._required = required
+
+    @property
+    def item(self) -> Type:
+        return self._item
+
+    @property
+    def required(self) -> bool:
+        return self._required
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_required_type(self)
+
+
+@ta.final
+class ReadOnlyType(Type):
+    __slots__ = (
+        '_item',
+    )
+
+    def __init__(self, item: Type) -> None:
+        super().__init__()
+
+        self._item = item
+
+    @property
+    def item(self) -> Type:
+        return self._item
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_read_only_type(self)
+
+
+class ProperType(Type):
+    __slots__ = ()
+
+
+class TypeVarId:
+    __slots__ = (
+        '_raw_id',
+        '_meta_level',
+        '_namespace',
+    )
+
+    def __init__(
+            self,
+            raw_id: int,
+            meta_level: int = 0,
+            namespace: str = '',
+    ) -> None:
+        super().__init__()
+
+        self._raw_id = raw_id
+        self._meta_level = meta_level
+        self._namespace = namespace
+
+    @property
+    def raw_id(self) -> int:
+        return self._raw_id
+
+    @property
+    def meta_level(self) -> int:
+        return self._meta_level
+
+    @property
+    def namespace(self) -> str:
+        return self._namespace
+
+
+class TypeVarLikeType(ProperType):
+    __slots__ = (
+        '_name',
+        '_fullname',
+        '_id',
+        '_upper_bound',
+        '_default',
+    )
+
+    def __init__(
+            self,
+            name: str,
+            fullname: str,
+            id: TypeVarId,
+            upper_bound: Type,
+            default: Type,
+    ) -> None:
+        super().__init__()
+
+        self._name = name
+        self._fullname = fullname
+        self._id = id
+        self._upper_bound = upper_bound
+        self._default = default
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def fullname(self) -> str:
+        return self._fullname
+
+    @property
+    def id(self) -> TypeVarId:
+        return self._id
+
+    @property
+    def upper_bound(self) -> Type:
+        return self._upper_bound
+
+    @property
+    def default(self) -> Type:
+        return self._default
+
+
+class TypeVarType(TypeVarLikeType):
+    __slots__ = (
+        '_values',
+        '_variance',
+    )
+
+    def __init__(
+            self,
+            name: str,
+            fullname: str,
+            id: TypeVarId,
+            values: list[Type],
+            upper_bound: Type,
+            default: Type,
+            variance: VarianceKind = VarianceKind.IN,
+    ) -> None:
+        super().__init__(
+            name,
+            fullname,
+            id,
+            upper_bound,
+            default,
+        )
+
+        self._values = values
+        self._variance = variance
+
+    @property
+    def values(self) -> ta.Sequence[Type]:
+        return self._values
+
+    @property
+    def variance(self) -> VarianceKind:
+        return self._variance
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_type_var(self)
+
+
+@ta.final
+class ParamSpecType(TypeVarLikeType):
+    __slots__ = (
+        '_flavor',
+    )
+
+    def __init__(
+            self,
+            name: str,
+            fullname: str,
+            id: TypeVarId,
+            upper_bound: Type,
+            default: Type,
+            flavor: int = 0,
+    ) -> None:
+        super().__init__(
+            name,
+            fullname,
+            id,
+            upper_bound,
+            default,
+        )
+
+        self._flavor = flavor
+
+    @property
+    def flavor(self) -> int:
+        return self._flavor
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_param_spec(self)
+
+
+@ta.final
+class TypeVarTupleType(TypeVarLikeType):
+    __slots__ = (
+        '_tuple_fallback',
+    )
+
+    def __init__(
+            self,
+            name: str,
+            fullname: str,
+            id: TypeVarId,
+            upper_bound: Type,
+            default: Type,
+            tuple_fallback: Type,
+    ) -> None:
+        super().__init__(
+            name,
+            fullname,
+            id,
+            upper_bound,
+            default,
+        )
+
+        self._tuple_fallback = tuple_fallback
+
+    @property
+    def tuple_fallback(self) -> Type:
+        return self._tuple_fallback
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_type_var_tuple(self)
+
+
+@ta.final
+class UnboundType(ProperType):
+    __slots__ = (
+        '_name',
+        '_args',
+    )
+
+    def __init__(
+            self,
+            name: str,
+            args: list[Type] | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._name = name
+        self._args = [] if args is None else args
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def args(self) -> ta.Sequence[Type]:
+        return self._args
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_unbound_type(self)
+
+
+@ta.final
+class CallableArgument(ProperType):
+    __slots__ = (
+        '_typ',
+        '_name',
+        '_constructor',
+    )
+
+    def __init__(
+            self,
+            typ: Type,
+            name: str | None,
+            constructor: str | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._typ = typ
+        self._name = name
+        self._constructor = constructor
+
+    @property
+    def typ(self) -> Type:
+        return self._typ
+
+    @property
+    def name(self) -> str | None:
+        return self._name
+
+    @property
+    def constructor(self) -> str | None:
+        return self._constructor
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_callable_argument(self)
+
+
+@ta.final
+class TypeList(ProperType):
+    __slots__ = (
+        '_items',
+    )
+
+    def __init__(self, items: list[Type]) -> None:
+        super().__init__()
+
+        self._items = items
+
+    @property
+    def items(self) -> ta.Sequence[Type]:
+        return self._items
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_type_list(self)
+
+
+@ta.final
+class UnpackType(ProperType):
+    __slots__ = (
+        '_type',
+    )
+
+    def __init__(self, typ: Type) -> None:
+        super().__init__()
+
+        self._type = typ
+
+    @property
+    def type(self) -> Type:
+        return self._type
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_unpack_type(self)
+
+
+class TypeOfAny(enum.Enum):
+    UNANNOTATED = 1
+    EXPLICIT = 2
+    FROM_UNIMPORTED_TYPE = 3
+    FROM_OMITTED_GENERICS = 4
+    FROM_ERROR = 5
+    SPECIAL_FORM = 6
+    FROM_ANOTHER_ANY = 7
+    IMPLEMENTATION_ARTIFACT = 8
+    SUGGESTION_ENGINE = 9
+
+
+@ta.final
+class AnyType(ProperType):
+    __slots__ = (
+        '_type_of_any',
+    )
+
+    def __init__(self, type_of_any: TypeOfAny) -> None:
+        super().__init__()
+
+        self._type_of_any = type_of_any
+
+    @property
+    def type_of_any(self) -> TypeOfAny:
+        return self._type_of_any
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_any(self)
+
+
+_ANY_TYPES: ta.Final[dict[TypeOfAny, AnyType]] = {
+    toa: AnyType(toa)
+    for toa in TypeOfAny
+}
+
+
+def any_type(type_of_any: TypeOfAny) -> AnyType:
+    return _ANY_TYPES[type_of_any]
+
+
+@ta.final
+class UninhabitedType(ProperType):
+    __slots__ = ()
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_uninhabited_type(self)
+
+
+_UNINHABITED_TYPE: ta.Final = UninhabitedType()
+
+
+def uninhabited_type() -> UninhabitedType:
+    return _UNINHABITED_TYPE
+
+
+@ta.final
+class NoneType(ProperType):
+    __slots__ = ()
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_none_type(self)
+
+
+_NONE_TYPE: ta.Final = NoneType()
+
+
+def none_type() -> NoneType:
+    return _NONE_TYPE
+
+
+@ta.final
+class ErasedType(ProperType):
+    __slots__ = ()
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_erased_type(self)
+
+
+_ERASED_TYPE: ta.Final = ErasedType()
+
+
+def erased_type() -> ErasedType:
+    return _ERASED_TYPE
+
+
+@ta.final
+class DeletedType(ProperType):
+    __slots__ = (
+        '_source',
+    )
+
+    def __init__(self, source: str | None = None) -> None:
+        super().__init__()
+
+        self._source = source
+
+    @property
+    def source(self) -> str | None:
+        return self._source
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_deleted_type(self)
+
+
+class ExtraAttrs:
+    __slots__ = (
+        '_attrs',
+    )
+
+    def __init__(self, attrs: dict[str, Type]) -> None:
+        super().__init__()
+
+        self._attrs = attrs
+
+    @property
+    def attrs(self) -> ta.Mapping[str, Type]:
+        return self._attrs
+
+
+@ta.final
+class Instance(ProperType):
+    __slots__ = (
+        '_type',
+        '_args',
+        '_last_known_value',
+        '_extra_attrs',
+    )
+
+    def __init__(
+            self,
+            typ: TypeInfo,
+            args: list[Type],
+            *,
+            last_known_value: LiteralType | None = None,
+            extra_attrs: ExtraAttrs | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._type = typ
+        self._args = args
+        self._last_known_value = last_known_value
+        self._extra_attrs = extra_attrs
+
+    @property
+    def type(self) -> TypeInfo:
+        return self._type
+
+    @property
+    def args(self) -> ta.Sequence[Type]:
+        return self._args
+
+    @property
+    def last_known_value(self) -> LiteralType | None:
+        return self._last_known_value
+
+    @property
+    def extra_attrs(self) -> ExtraAttrs | None:
+        return self._extra_attrs
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_instance(self)
+
+
+class FunctionLike(ProperType):
+    __slots__ = (
+        '_fallback',
+    )
+
+    def __init__(self, fallback: Instance) -> None:
+        super().__init__()
+
+        self._fallback = fallback
+
+    @property
+    def fallback(self) -> Instance:
+        return self._fallback
+
+
+class FormalArgument:
+    __slots__ = (
+        '_name',
+        '_pos',
+        '_typ',
+        '_required',
+    )
+
+    def __init__(
+            self,
+            name: str | None,
+            pos: int | None,
+            typ: Type,
+            required: bool,
+    ) -> None:
+        super().__init__()
+
+        self._name = name
+        self._pos = pos
+        self._typ = typ
+        self._required = required
+
+    @property
+    def name(self) -> str | None:
+        return self._name
+
+    @property
+    def pos(self) -> int | None:
+        return self._pos
+
+    @property
+    def typ(self) -> Type:
+        return self._typ
+
+    @property
+    def required(self) -> bool:
+        return self._required
+
+
+@ta.final
+class Parameters(ProperType):
+    __slots__ = (
+        '_arg_types',
+        '_arg_kinds',
+        '_arg_names',
+    )
+
+    def __init__(
+            self,
+            arg_types: list[Type],
+            arg_kinds: list[ArgKind],
+            arg_names: list[str | None],
+    ) -> None:
+        super().__init__()
+
+        self._arg_types = arg_types
+        self._arg_kinds = arg_kinds
+        self._arg_names = arg_names
+
+    @property
+    def arg_types(self) -> ta.Sequence[Type]:
+        return self._arg_types
+
+    @property
+    def arg_kinds(self) -> ta.Sequence[ArgKind]:
+        return self._arg_kinds
+
+    @property
+    def arg_names(self) -> ta.Sequence[str | None]:
+        return self._arg_names
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_parameters(self)
+
+
+@ta.final
+class CallableType(FunctionLike):
+    __slots__ = (
+        '_arg_types',
+        '_arg_kinds',
+        '_arg_names',
+        '_ret_type',
+        '_variables',
+        '_is_ellipsis_args',
+    )
+
+    def __init__(
+            self,
+            arg_types: list[Type],
+            arg_kinds: list[ArgKind],
+            arg_names: list[str | None],
+            ret_type: Type,
+            fallback: Instance,
+            *,
+            variables: list[TypeVarLikeType] | None = None,
+            is_ellipsis_args: bool = False,
+    ) -> None:
+        super().__init__(fallback)
+
+        self._arg_types = arg_types
+        self._arg_kinds = arg_kinds
+        self._arg_names = arg_names
+        self._ret_type = ret_type
+        self._variables = [] if variables is None else variables
+        self._is_ellipsis_args = is_ellipsis_args
+
+    @property
+    def arg_types(self) -> ta.Sequence[Type]:
+        return self._arg_types
+
+    @property
+    def arg_kinds(self) -> ta.Sequence[ArgKind]:
+        return self._arg_kinds
+
+    @property
+    def arg_names(self) -> ta.Sequence[str | None]:
+        return self._arg_names
+
+    @property
+    def ret_type(self) -> Type:
+        return self._ret_type
+
+    @property
+    def variables(self) -> ta.Sequence[TypeVarLikeType]:
+        return self._variables
+
+    @property
+    def is_ellipsis_args(self) -> bool:
+        return self._is_ellipsis_args
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_callable_type(self)
+
+
+@ta.final
+class Overloaded(FunctionLike):
+    __slots__ = (
+        '_items',
+    )
+
+    def __init__(self, items: list[CallableType]) -> None:
+        if not items:
+            raise ReflectionValueError('Overloaded requires at least one item')
+
+        super().__init__(items[0].fallback)
+
+        self._items = items
+
+    @property
+    def items(self) -> ta.Sequence[CallableType]:
+        return self._items
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_overloaded(self)
+
+
+@ta.final
+class TupleType(ProperType):
+    __slots__ = (
+        '_items',
+        '_partial_fallback',
+    )
+
+    def __init__(
+            self,
+            items: list[Type],
+            partial_fallback: Instance,
+    ) -> None:
+        super().__init__()
+
+        self._items = items
+        self._partial_fallback = partial_fallback
+
+    @property
+    def items(self) -> ta.Sequence[Type]:
+        return self._items
+
+    @property
+    def partial_fallback(self) -> Instance:
+        return self._partial_fallback
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_tuple_type(self)
+
+
+@ta.final
+class TypedDictType(ProperType):
+    __slots__ = (
+        '_items',
+        '_required_keys',
+        '_readonly_keys',
+        '_fallback',
+    )
+
+    def __init__(
+            self,
+            items: dict[str, Type],
+            required_keys: set[str],
+            readonly_keys: set[str],
+            fallback: Instance,
+    ) -> None:
+        super().__init__()
+
+        self._items = items
+        self._required_keys = required_keys
+        self._readonly_keys = readonly_keys
+        self._fallback = fallback
+
+    @property
+    def items(self) -> ta.Mapping[str, Type]:
+        return self._items
+
+    @property
+    def required_keys(self) -> ta.AbstractSet[str]:
+        return self._required_keys
+
+    @property
+    def readonly_keys(self) -> ta.AbstractSet[str]:
+        return self._readonly_keys
+
+    @property
+    def fallback(self) -> Instance:
+        return self._fallback
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_typeddict_type(self)
+
+
+@ta.final
+class RawExpressionType(ProperType):
+    __slots__ = (
+        '_literal_value',
+        '_base_type_name',
+    )
+
+    def __init__(
+            self,
+            literal_value: LiteralValue | None,
+            base_type_name: str,
+    ) -> None:
+        super().__init__()
+
+        self._literal_value = literal_value
+        self._base_type_name = base_type_name
+
+    @property
+    def literal_value(self) -> LiteralValue | None:
+        return self._literal_value
+
+    @property
+    def base_type_name(self) -> str:
+        return self._base_type_name
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_raw_expression_type(self)
+
+
+@ta.final
+class LiteralType(ProperType):
+    __slots__ = (
+        '_value',
+        '_fallback',
+    )
+
+    def __init__(
+            self,
+            value: LiteralValue,
+            fallback: Instance,
+    ) -> None:
+        super().__init__()
+
+        self._value = value
+        self._fallback = fallback
+
+    @property
+    def value(self) -> LiteralValue:
+        return self._value
+
+    @property
+    def fallback(self) -> Instance:
+        return self._fallback
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_literal_type(self)
+
+
+@ta.final
+class UnionType(ProperType):
+    __slots__ = (
+        '_items',
+    )
+
+    def __init__(self, items: list[Type]) -> None:
+        super().__init__()
+
+        from .typeops import flatten_nested_unions
+
+        self._items = flatten_nested_unions(items, handle_type_alias_type=False)
+
+    @property
+    def items(self) -> ta.Sequence[Type]:
+        return self._items
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_union_type(self)
+
+
+@ta.final
+class PartialType(ProperType):
+    __slots__ = (
+        '_type',
+        '_var',
+        '_value_type',
+    )
+
+    def __init__(
+            self,
+            typ: TypeInfo | None,
+            var: object | None,
+            value_type: Type | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._type = typ
+        self._var = var
+        self._value_type = value_type
+
+    @property
+    def type(self) -> TypeInfo | None:
+        return self._type
+
+    @property
+    def var(self) -> object | None:
+        return self._var
+
+    @property
+    def value_type(self) -> Type | None:
+        return self._value_type
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_partial_type(self)
+
+
+@ta.final
+class EllipsisType(ProperType):
+    __slots__ = ()
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_ellipsis_type(self)
+
+
+_ELLIPSIS_TYPE: ta.Final = EllipsisType()
+
+
+def ellipsis_type() -> EllipsisType:
+    return _ELLIPSIS_TYPE
+
+
+@ta.final
+class TypeType(ProperType):
+    __slots__ = (
+        '_item',
+    )
+
+    def __init__(self, item: Type) -> None:
+        super().__init__()
+
+        self._item = item
+
+    @property
+    def item(self) -> Type:
+        return self._item
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_type_type(self)
+
+
+@ta.final
+class PlaceholderType(ProperType):
+    __slots__ = (
+        '_fullname',
+        '_args',
+    )
+
+    def __init__(
+            self,
+            fullname: str,
+            args: list[Type] | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._fullname = fullname
+        self._args = [] if args is None else args
+
+    @property
+    def fullname(self) -> str:
+        return self._fullname
+
+    @property
+    def args(self) -> ta.Sequence[Type]:
+        return self._args
+
+    def accept(self, visitor: TypeVisitor[T]) -> T:
+        return visitor.visit_placeholder_type(self)
+
+
+@ta.final
+class _TestingUnknownType(Type):
+    """Exists for testing."""
+
+    __slots__ = ()
