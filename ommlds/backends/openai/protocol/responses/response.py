@@ -145,3 +145,10 @@ class ResponsesResponse(lang.Final):
     service_tier: str | None = None
     billing: ta.Any | None = None
     output_text: str | None = None
+
+    # FIXME: lol
+    presence_penalty: ta.Any | None = None
+    frequency_penalty: ta.Any | None = None
+    prompt_cache_retention: ta.Any | None = None
+    moderation: ta.Any | None = None
+    completed_at: ta.Any | None = None
