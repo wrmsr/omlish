@@ -23,6 +23,7 @@ with _lang.auto_proxy_init(globals()):
     from .fs.configs import FsConfig  # noqa
     from .skills.configs import SkillsConfig  # noqa
     from .todo.configs import TodoConfig  # noqa
+    from .web.configs import WebConfig  # noqa
 
     #
 

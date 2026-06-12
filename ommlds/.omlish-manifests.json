@@ -1096,6 +1096,21 @@
     }
   },
   {
+    "module": ".minichain.modules.web.descriptors",
+    "attr": null,
+    "file": "ommlds/minichain/modules/web/descriptors.py",
+    "line": 14,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.modules.web.descriptors",
+        "attr": "WEB_MODULE",
+        "name": "web",
+        "aliases": null,
+        "type": "ModuleDescriptor"
+      }
+    }
+  },
+  {
     "module": ".minichain.search",
     "attr": null,
     "file": "ommlds/minichain/search.py",

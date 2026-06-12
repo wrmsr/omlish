@@ -224,6 +224,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                     mc.modules.CodeConfig(),
                     mc.modules.FsConfig(),
                     mc.modules.TodoConfig(),
+                    # mc.modules.WebConfig(),
                 ],
                 driver=dc.replace(
                     cfg.driver,
