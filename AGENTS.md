@@ -46,6 +46,11 @@
   'working' state. Fix all reported issues before committing.
 - Run `make gen` to run various code generation steps. This is generally not necessary unless modifying `codegen=True`
   dataclasses.
+  - **Note**: you do **NOT** need to run `make gen` or `make gen-dataclass` *every time* you modify a dataclass
+    definition: if a matching codegen'd body is not found for a given dataclass (such as after adding or removing a
+    field, or any other relevant modification) the machinery falls back to just a jit-generating and exec'ing the
+    necessary methods like the regualr stdlib dataclass decorator. `make gen` / `make gen-dataclass` is only strictly
+    necessary before a git commit.
 - Before committing, run `make fix gen check` and ensure that succeeds, then rerun relevant pytests and ensure they
   pass.
 - As mentioned in `CODESTYLE.md` C/C++ extensions should have a `// @omlish-cext` header line, and otherwise need no

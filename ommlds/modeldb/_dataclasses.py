@@ -85,8 +85,8 @@ def _register(**kwargs):
         '__dataclass__init__fields__09__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'AuthoredCost'),
-        ('ommlds.models.types', 'OutputCost'),
+        ('ommlds.modeldb.types', 'AuthoredCost'),
+        ('ommlds.modeldb.types', 'OutputCost'),
     ),
 )
 def _process_dataclass__61498cf644d82dfe1fc2c93b44484d966059aebf():
@@ -401,8 +401,8 @@ def _process_dataclass__61498cf644d82dfe1fc2c93b44484d966059aebf():
         '__dataclass__init__fields__19__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'AuthoredModel'),
-        ('ommlds.models.types', 'Model'),
+        ('ommlds.modeldb.types', 'AuthoredModel'),
+        ('ommlds.modeldb.types', 'Model'),
     ),
 )
 def _process_dataclass__96d40ba793c0b985e7bdccf131eb50377264de9c():
@@ -754,7 +754,7 @@ def _process_dataclass__96d40ba793c0b985e7bdccf131eb50377264de9c():
         '__dataclass__init__fields__7__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'Cost'),
+        ('ommlds.modeldb.types', 'Cost'),
     ),
 )
 def _process_dataclass__64f89442bfd33e1438b2681bfdab9337ee7c2477():
@@ -998,7 +998,7 @@ def _process_dataclass__64f89442bfd33e1438b2681bfdab9337ee7c2477():
         '__dataclass__init__fields__8__annotation',
     ),
     cls_names=(
-        ('ommlds.models.types', 'CostTier'),
+        ('ommlds.modeldb.types', 'CostTier'),
     ),
 )
 def _process_dataclass__7ec1e3d9c4cc2cf01c46d8e5290bb64a7e065e13():
@@ -1221,7 +1221,7 @@ def _process_dataclass__7ec1e3d9c4cc2cf01c46d8e5290bb64a7e065e13():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'CostTierTier'),
+        ('ommlds.modeldb.types', 'CostTierTier'),
     ),
 )
 def _process_dataclass__abb0d290b2c97ca669a2f9ca5aa3ecb68302f6dd():
@@ -1382,7 +1382,7 @@ def _process_dataclass__abb0d290b2c97ca669a2f9ca5aa3ecb68302f6dd():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'Experimental'),
+        ('ommlds.modeldb.types', 'Experimental'),
     ),
 )
 def _process_dataclass__8a8240cd6f4d13bab2dd761fd7aa774036fa1dc9():
@@ -1539,7 +1539,7 @@ def _process_dataclass__8a8240cd6f4d13bab2dd761fd7aa774036fa1dc9():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'ExperimentalMode'),
+        ('ommlds.modeldb.types', 'ExperimentalMode'),
     ),
 )
 def _process_dataclass__578691179d0b5f27fc9f73ed1a4711e2ba97310f():
@@ -1706,7 +1706,7 @@ def _process_dataclass__578691179d0b5f27fc9f73ed1a4711e2ba97310f():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'ExperimentalModeProvider'),
+        ('ommlds.modeldb.types', 'ExperimentalModeProvider'),
     ),
 )
 def _process_dataclass__5bca72421d06a9eead64a5df90e3d7f793cade1c():
@@ -1867,7 +1867,7 @@ def _process_dataclass__5bca72421d06a9eead64a5df90e3d7f793cade1c():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'Interleaved'),
+        ('ommlds.modeldb.types', 'Interleaved'),
     ),
 )
 def _process_dataclass__11739faa37f665b4304128938db3eafd7a7ca0ce():
@@ -2026,7 +2026,7 @@ def _process_dataclass__11739faa37f665b4304128938db3eafd7a7ca0ce():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'Limit'),
+        ('ommlds.modeldb.types', 'Limit'),
     ),
 )
 def _process_dataclass__6e1be5172133ea88a1c54f987967e78890eaab91():
@@ -2198,7 +2198,7 @@ def _process_dataclass__6e1be5172133ea88a1c54f987967e78890eaab91():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'Modalities'),
+        ('ommlds.modeldb.types', 'Modalities'),
     ),
 )
 def _process_dataclass__0474babc2a319e1f5b6ea8ccbb0d38d418c74e8a():
@@ -2433,7 +2433,7 @@ def _process_dataclass__0474babc2a319e1f5b6ea8ccbb0d38d418c74e8a():
         '__dataclass__init__fields__17__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'ModelBase'),
+        ('ommlds.modeldb.types', 'ModelBase'),
     ),
 )
 def _process_dataclass__362664056191c441c1d0eaf1f28189295d01b0d6():
@@ -2755,7 +2755,7 @@ def _process_dataclass__362664056191c441c1d0eaf1f28189295d01b0d6():
         '__dataclass__init__fields__5__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'ModelProvider'),
+        ('ommlds.modeldb.types', 'ModelProvider'),
     ),
 )
 def _process_dataclass__ac4c1e23253918eaca953d4b4b84de7546192c6c():
@@ -2969,7 +2969,7 @@ def _process_dataclass__ac4c1e23253918eaca953d4b4b84de7546192c6c():
         '__dataclass__init__fields__7__default',
     ),
     cls_names=(
-        ('ommlds.models.types', 'Provider'),
+        ('ommlds.modeldb.types', 'Provider'),
     ),
 )
 def _process_dataclass__356396990ceb6d70e1f855edf834fc9410df483a():

@@ -135,6 +135,6 @@ exclude = [
 'ommlds.cli.chat.interfaces.web' = [
     'resources/*',
 ]
-'ommlds.models' = [
+'ommlds.modeldb' = [
     'cache.json.bz2',
 ]
