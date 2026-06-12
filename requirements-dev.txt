@@ -117,7 +117,7 @@ snowflake-connector-python[secure-local-storage]==4.6.0  # @omlish-venv !15t
 trino==0.337.0  # @omlish-venv !14t !14dt !15t  # orjson
 
 huggingface-hub==1.18.0  # @omlish-venv !15t
-hf-xet==1.5.0  # @omlish-venv !15t
+hf-xet==1.5.1  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
