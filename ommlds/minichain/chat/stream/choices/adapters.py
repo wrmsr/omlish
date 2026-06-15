@@ -2,10 +2,10 @@ from omlish import dataclasses as dc
 
 from ....services import Response
 from ...generations import ChatGeneration
-from ..services import ChatChoicesRequest
-from ..services import ChatChoicesServiceOutputs
-from ..services import static_check_is_chat_choices_service
-from ..types import ChatChoices
+from ..choices.services import ChatChoicesRequest
+from ..choices.services import ChatChoicesServiceOutputs
+from ..choices.services import static_check_is_chat_choices_service
+from ..choices.types import ChatChoices
 from .joining import AiChoicesDeltaJoiner
 from .services import ChatChoicesStreamOutputs
 from .services import ChatChoicesStreamService

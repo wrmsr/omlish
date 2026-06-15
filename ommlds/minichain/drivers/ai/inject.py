@@ -3,7 +3,7 @@ import typing as ta
 from omlish import inject as inj
 
 from ...chat.choices.services import ChatChoicesService
-from ...chat.choices.stream.services import ChatChoicesStreamService
+from ...chat.stream.choices.services import ChatChoicesStreamService
 from ...chat.tools.types import Tool
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
 from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform

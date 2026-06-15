@@ -3,7 +3,7 @@ import pytest
 from omlish import check
 
 from ....chat.choices.services import ChatChoicesRequest
-from ....chat.choices.stream.services import ChatChoicesStreamRequest
+from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.messages import AiMessage
 from ....chat.messages import ThinkingMessage
 from ....chat.messages import ToolUseMessage

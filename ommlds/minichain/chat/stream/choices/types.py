@@ -6,8 +6,8 @@ from omlish import lang
 from ....services import StreamOptions
 from ....types import Option
 from ....types import Output
-from ...stream.types import AiDeltas
-from ..types import ChatChoicesOptions
+from ..types import AiDeltas
+from ...choices.types import ChatChoicesOptions
 
 
 ##

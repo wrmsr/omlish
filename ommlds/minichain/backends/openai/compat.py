@@ -24,11 +24,11 @@ from omlish.http import sse
 from ....backends.openai import protocol as pt
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.stream.services import ChatChoicesStreamRequest
-from ...chat.choices.stream.services import ChatChoicesStreamResponse
-from ...chat.choices.stream.types import AiChoiceDeltas
-from ...chat.choices.stream.types import AiChoicesDeltas
-from ...chat.choices.stream.types import ChatChoicesStreamOption
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
+from ...chat.stream.choices.types import ChatChoicesStreamOption
 from ...events.types import EventCallback
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceResponseEvent

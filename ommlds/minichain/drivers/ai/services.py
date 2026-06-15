@@ -5,8 +5,8 @@ from omlish import lang
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesService
-from ...chat.choices.stream.services import ChatChoicesStreamRequest
-from ...chat.choices.stream.services import ChatChoicesStreamService
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamService
 from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiChat
 from ...chat.messages import Chat

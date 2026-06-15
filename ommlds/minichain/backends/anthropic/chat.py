@@ -16,8 +16,8 @@ from ....backends.anthropic.protocol import types as pt
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.choices.stream.services import ChatChoicesStreamRequest
-from ...chat.choices.stream.types import ChatChoicesStreamOption
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.types import ChatChoicesStreamOption
 from ...chat.tools.types import Tool
 from ...events.types import EventCallback
 from ...external import ExternalServiceRequestEvent

@@ -11,11 +11,11 @@ from ..choices.services import ChatChoicesOutputs
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import ChatChoicesResponse
 from ..choices.services import static_check_is_chat_choices_service
-from ..choices.stream.services import ChatChoicesStreamRequest
-from ..choices.stream.services import ChatChoicesStreamResponse
-from ..choices.stream.services import static_check_is_chat_choices_stream_service
-from ..choices.stream.types import AiChoiceDeltas
-from ..choices.stream.types import AiChoicesDeltas
+from ..stream.choices.services import ChatChoicesStreamRequest
+from ..stream.choices.services import ChatChoicesStreamResponse
+from ..stream.choices.services import static_check_is_chat_choices_stream_service
+from ..stream.choices.types import AiChoiceDeltas
+from ..stream.choices.types import AiChoicesDeltas
 from ..generations import ChatGeneration
 from ..messages import AiMessage
 from ..messages import Chat

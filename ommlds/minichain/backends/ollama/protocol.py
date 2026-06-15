@@ -6,7 +6,7 @@ from omlish.formats.json import all as json
 
 from ....backends.ollama import protocol as pt
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.stream.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage

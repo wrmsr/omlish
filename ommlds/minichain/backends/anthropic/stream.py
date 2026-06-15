@@ -7,11 +7,11 @@ from omlish.http import all as http
 from omlish.http import sse
 
 from ....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
-from ...chat.choices.stream.services import ChatChoicesStreamRequest
-from ...chat.choices.stream.services import ChatChoicesStreamResponse
-from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ...chat.choices.stream.types import AiChoiceDeltas
-from ...chat.choices.stream.types import AiChoicesDeltas
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder

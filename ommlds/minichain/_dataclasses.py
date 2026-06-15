@@ -1962,7 +1962,7 @@ def _process_dataclass__e0ff7c202a797a3e06b7033215fcd322272d42ec():
     ),
     cls_names=(
         ('ommlds.minichain.chat.choices.adapters', 'ChatChoicesServiceChatService'),
-        ('ommlds.minichain.chat.choices.stream.adapters', 'ChatChoicesStreamServiceChatChoicesService'),
+        ('ommlds.minichain.chat.stream.choices.adapters', 'ChatChoicesStreamServiceChatChoicesService'),
     ),
 )
 def _process_dataclass__e8c5e181501fac7b5abbf4cd74b1e97ce7051392():
@@ -2096,7 +2096,7 @@ def _process_dataclass__e8c5e181501fac7b5abbf4cd74b1e97ce7051392():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.choices.stream.types', 'AiChoiceDeltas'),
+        ('ommlds.minichain.chat.stream.choices.types', 'AiChoiceDeltas'),
     ),
 )
 def _process_dataclass__1003b02dad553d007500114656708fbdf6d2db2e():
@@ -2230,7 +2230,7 @@ def _process_dataclass__1003b02dad553d007500114656708fbdf6d2db2e():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.choices.stream.types', 'AiChoicesDeltas'),
+        ('ommlds.minichain.chat.stream.choices.types', 'AiChoicesDeltas'),
     ),
 )
 def _process_dataclass__4f63c0632d5deeaaca3a2cac8b16c190d46387cd():

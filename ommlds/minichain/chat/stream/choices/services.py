@@ -8,7 +8,7 @@ from ....services import Request
 from ....services import Service
 from ....services import StreamResponse
 from ...messages import Chat
-from ..types import ChatChoicesOutputs
+from ...choices.types import ChatChoicesOutputs
 from .types import AiChoicesDeltas
 from .types import ChatChoicesStreamOptions
 from .types import ChatChoicesStreamOutputs

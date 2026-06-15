@@ -1,5 +1,5 @@
 """https://platform.openai.com/docs/api-reference/chat-streaming"""
-from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from .compat import OpenaiCompatChatChoicesStreamService
 
 

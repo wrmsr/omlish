@@ -1,7 +1,7 @@
 from omlish import lang
 
 from ....chat.choices.services import ChatChoicesRequest
-from ....chat.choices.stream.services import ChatChoicesStreamRequest
+from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.messages import Message
 from ....chat.messages import UserMessage
 from ..chat import DummyChatChoicesService

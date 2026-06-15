@@ -13,8 +13,8 @@ from omlish.formats.json import all as json
 
 from ....backends.google.protocol import types as pt
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.stream.types import AiChoiceDeltas
-from ...chat.choices.stream.types import AiChoicesDeltas
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.generations import ChatGeneration
 from ...chat.choices.types import ChatChoices
 from ...chat.messages import AiMessage

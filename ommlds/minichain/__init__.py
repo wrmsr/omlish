@@ -54,33 +54,6 @@ with _lang.auto_proxy_init(
 
     ##
 
-    from .chat.choices.stream.adapters import (  # noqa
-        ChatChoicesStreamServiceChatChoicesService,
-    )
-
-    from .chat.choices.stream.joining import (  # noqa
-        AiChoicesDeltaJoiner,
-    )
-
-    from .chat.choices.stream.services import (  # noqa
-        ChatChoicesStreamRequest,
-        ChatChoicesStreamResponse,
-        ChatChoicesStreamService,
-        AbstractChatChoicesStreamService,
-        static_check_is_chat_choices_stream_service,
-    )
-
-    from .chat.choices.stream.types import (  # noqa
-        ChatChoicesStreamOption,
-        ChatChoicesStreamOptions,
-
-        ChatChoicesStreamOutput,
-        ChatChoicesStreamOutputs,
-
-        AiChoiceDeltas,
-        AiChoicesDeltas,
-    )
-
     from .chat.choices.adapters import (  # noqa
         ChatChoicesServiceChatService,
     )
@@ -104,6 +77,33 @@ with _lang.auto_proxy_init(
         ChatChoicesOutputs,
 
         ChatChoices,
+    )
+
+    from .chat.stream.choices.adapters import (  # noqa
+        ChatChoicesStreamServiceChatChoicesService,
+    )
+
+    from .chat.stream.choices.joining import (  # noqa
+        AiChoicesDeltaJoiner,
+    )
+
+    from .chat.stream.choices.services import (  # noqa
+        ChatChoicesStreamRequest,
+        ChatChoicesStreamResponse,
+        ChatChoicesStreamService,
+        AbstractChatChoicesStreamService,
+        static_check_is_chat_choices_stream_service,
+    )
+
+    from .chat.stream.choices.types import (  # noqa
+        ChatChoicesStreamOption,
+        ChatChoicesStreamOptions,
+
+        ChatChoicesStreamOutput,
+        ChatChoicesStreamOutputs,
+
+        AiChoiceDeltas,
+        AiChoicesDeltas,
     )
 
     from .chat.stream.events import (  # noqa

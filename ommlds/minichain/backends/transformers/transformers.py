@@ -16,11 +16,11 @@ from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.types import ChatChoices
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.choices.stream.services import ChatChoicesStreamRequest
-from ...chat.choices.stream.services import ChatChoicesStreamResponse
-from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ...chat.choices.stream.types import AiChoiceDeltas  # noqa
-from ...chat.choices.stream.types import AiChoicesDeltas  # noqa
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.types import AiChoiceDeltas  # noqa
+from ...chat.stream.choices.types import AiChoicesDeltas  # noqa
 from ...chat.choices.types import ChatChoicesOutputs
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage

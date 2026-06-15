@@ -6,10 +6,10 @@ from omlish.formats.json import all as json
 from omlish.http import all as http
 
 from ....backends.ollama import protocol as pt
-from ...chat.choices.stream.services import ChatChoicesStreamRequest
-from ...chat.choices.stream.services import ChatChoicesStreamResponse
-from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ...chat.choices.stream.types import AiChoicesDeltas
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.types import AiChoicesDeltas
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder

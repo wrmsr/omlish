@@ -8,12 +8,12 @@ from ...chat.choices.services import ChatChoicesOptions
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.choices.stream.services import ChatChoicesStreamRequest
-from ...chat.choices.stream.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.choices.types import ChatChoices
-from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ...chat.choices.stream.types import AiChoiceDeltas
-from ...chat.choices.stream.types import AiChoicesDeltas
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.choices.types import ChatChoicesOutputs
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage

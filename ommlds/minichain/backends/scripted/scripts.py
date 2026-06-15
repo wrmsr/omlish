@@ -15,8 +15,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.formats.json import all as json
 
-from ...chat.choices.stream.types import AiChoiceDeltas
-from ...chat.choices.stream.types import AiChoicesDeltas
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.choices.types import ChatChoicesOutputs
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage

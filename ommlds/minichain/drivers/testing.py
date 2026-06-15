@@ -13,7 +13,7 @@ from ..backends.scripted.chat import ScriptedChatChoicesStreamService
 from ..backends.scripted.chat import ScriptedChatScript
 from ..backends.scripted.scripts import ChatScript
 from ..chat.choices.services import ChatChoicesService
-from ..chat.choices.stream.services import ChatChoicesStreamService
+from ..chat.stream.choices.services import ChatChoicesStreamService
 from ..tools.execution.permissions import DecidedToolPermissionState
 from ..tools.execution.permissions import ToolPermissionDecider
 from ..tools.permissions.types import ToolPermissionState
