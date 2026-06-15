@@ -6,7 +6,7 @@ wheel>=0.47.0
 
 uv>=0.11.20
 
-pytest==9.0.3
+pytest==9.1.0
 pytest-benchmark==5.2.3
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.4
-ruff==0.15.16
+ruff==0.15.17
 
 asyncpg-stubs==0.31.2
 docutils-stubs==0.0.22
@@ -116,7 +116,7 @@ snowflake-connector-python[secure-local-storage]==4.6.0  # @omlish-venv !15t
 
 trino==0.337.0  # @omlish-venv !14t !14dt !15t  # orjson
 
-huggingface-hub==1.18.0  # @omlish-venv !15t
+huggingface-hub==1.19.0  # @omlish-venv !15t
 hf-xet==1.5.1  # @omlish-venv !15t
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.43.27
-types-boto3>=1.43.27
+boto3>=1.43.28
+types-boto3>=1.43.28
 botocore-stubs>=1.43.14
 
 antlr4-python3-runtime==4.13.2

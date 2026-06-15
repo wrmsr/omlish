@@ -106,6 +106,7 @@ exclude = [
     '*.abnf',
     '*.g4',
     '.omlish-manifests.json',
+    'py.typed',
     '*.md',
     'README',
     'README.rst',

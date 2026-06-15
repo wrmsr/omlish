@@ -79,7 +79,7 @@ class Project(ProjectBase):
         ],
 
         'secrets': [
-            'cryptography ~= 48.0',
+            'cryptography ~= 49.0',
         ],
 
         'sqlalchemy': [
@@ -115,7 +115,7 @@ class Project(ProjectBase):
         ],
 
         'testing': [
-            'pytest ~= 9.0',
+            'pytest ~= 9.1',
         ],
     }
 
@@ -175,6 +175,8 @@ class SetuptoolsBase:
             '*.g4',
 
             '.omlish-manifests.json',
+
+            'py.typed',
 
             '*.md',
 

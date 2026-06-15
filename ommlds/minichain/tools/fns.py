@@ -34,7 +34,7 @@ class ToolFn(lang.Final):
 
         def __post_init__(self) -> None:
             if self.s is None and self.a is None:
-                raise TypeError(f'one of s or a must be specified')
+                raise TypeError('one of s or a must be specified')
 
     @dc.dataclass(frozen=True)
     class MaysyncImpl(Impl):

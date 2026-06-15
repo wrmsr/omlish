@@ -40,7 +40,7 @@ all = [
     'torch ~= 2.12',
     'transformers ~= 5.11',
     'sentence-transformers ~= 5.5',
-    'huggingface-hub ~= 1.18',
+    'huggingface-hub ~= 1.19',
     'datasets ~= 5.0',
     'regex >= 2026.5',
     'numpy >= 2.4',
@@ -69,7 +69,7 @@ backends = [
     'sentence-transformers ~= 5.5',
 ]
 huggingface = [
-    'huggingface-hub ~= 1.18',
+    'huggingface-hub ~= 1.19',
     'datasets ~= 5.0',
 ]
 nanochat = [
@@ -122,6 +122,7 @@ exclude = [
     '*.abnf',
     '*.g4',
     '.omlish-manifests.json',
+    'py.typed',
     '*.md',
     'README',
     'README.rst',

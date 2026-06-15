@@ -31,7 +31,7 @@ scikit-image==0.26.0
 
 safetensors==0.8.0
 
-tavily-python==0.7.25
+tavily-python==0.7.26
 
 sqlite-vec==0.1.9
 
@@ -64,7 +64,7 @@ pydantic-monty==0.0.18
 ##
 # bins
 
-deno==2.8.2
+deno==2.8.3
 playwright==1.60.0
 ripgrep==15.1.0
 
