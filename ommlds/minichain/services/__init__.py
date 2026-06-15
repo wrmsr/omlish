@@ -66,7 +66,8 @@ from .wrappers import (  # noqa
     WrappedOptionT,
     WrappedResponseV,
     WrappedOutputT,
-    WrappedStreamOutputT,
+    WrappedStreamResponseEV,
+    WrappedStreamResponseRV,
 
     WrappedRequest,
     WrappedResponse,

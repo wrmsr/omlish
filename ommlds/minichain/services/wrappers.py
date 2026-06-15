@@ -24,7 +24,8 @@ WrappedOptionT = ta.TypeVar('WrappedOptionT', bound=Option)
 WrappedResponseV = ta.TypeVar('WrappedResponseV')
 WrappedOutputT = ta.TypeVar('WrappedOutputT', bound=Output)
 
-WrappedStreamOutputT = ta.TypeVar('WrappedStreamOutputT', bound=Output)
+WrappedStreamResponseEV = ta.TypeVar('WrappedStreamResponseEV')
+WrappedStreamResponseRV = ta.TypeVar('WrappedStreamResponseRV')
 
 #
 
@@ -53,9 +54,9 @@ WrappedStreamRequest: ta.TypeAlias = Request[
 ]
 
 WrappedStreamResponse: ta.TypeAlias = StreamResponse[
-    WrappedResponseV,
+    WrappedStreamResponseEV,
+    WrappedStreamResponseRV,
     WrappedOutputT,
-    WrappedStreamOutputT,
 ]
 
 WrappedStreamService: ta.TypeAlias = Service[
@@ -131,9 +132,9 @@ class WrapperStreamService(
     ta.Generic[
         WrappedRequestV,
         WrappedOptionT,
-        WrappedResponseV,
+        WrappedStreamResponseEV,
+        WrappedStreamResponseRV,
         WrappedOutputT,
-        WrappedStreamOutputT,
     ],
 ):
     def __init__(
@@ -159,9 +160,9 @@ class MultiWrapperStreamService(
     ta.Generic[
         WrappedRequestV,
         WrappedOptionT,
-        WrappedResponseV,
+        WrappedStreamResponseEV,
+        WrappedStreamResponseRV,
         WrappedOutputT,
-        WrappedStreamOutputT,
     ],
 ):
     def __init__(

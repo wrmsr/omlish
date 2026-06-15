@@ -15,7 +15,8 @@ from ..services import WrappedRequestV
 from ..services import WrappedResponse
 from ..services import WrappedResponseV
 from ..services import WrappedService
-from ..services import WrappedStreamOutputT
+from ..services import WrappedStreamResponseEV
+from ..services import WrappedStreamResponseRV
 from ..services import WrappedStreamResponse
 from ..services import WrappedStreamService
 from ..services import WrapperService
@@ -105,9 +106,9 @@ class InstrumentedStreamService(
     WrapperStreamService[
         WrappedRequestV,
         WrappedOptionT,
-        WrappedResponseV,
+        WrappedStreamResponseEV,
+        WrappedStreamResponseRV,
         WrappedOutputT,
-        WrappedStreamOutputT,
     ],
 ):
     def __init__(
@@ -140,6 +141,8 @@ class InstrumentedStreamService(
                     await self._sink(InstrumentedServiceEvent(req=request, resp=resp, stream_v=v))
 
                     await sink(v)
+
+            return st.returned.must()
 
         # return resp.with_v(inner())
 

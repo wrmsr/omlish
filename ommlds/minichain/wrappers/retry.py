@@ -27,7 +27,8 @@ from ..services import WrappedRequestV
 from ..services import WrappedResponse
 from ..services import WrappedResponseV
 from ..services import WrappedService
-from ..services import WrappedStreamOutputT
+from ..services import WrappedStreamResponseEV
+from ..services import WrappedStreamResponseRV
 from ..services import WrappedStreamResponse
 from ..services import WrappedStreamService
 from ..services import WrapperService
@@ -105,9 +106,9 @@ class RetryStreamService(
     WrapperStreamService[
         WrappedRequestV,
         WrappedOptionT,
-        WrappedResponseV,
+        WrappedStreamResponseEV,
+        WrappedStreamResponseRV,
         WrappedOutputT,
-        WrappedStreamOutputT,
     ],
 ):
     DEFAULT_MAX_RETRIES: ta.ClassVar[int] = 3
@@ -133,11 +134,11 @@ class RetryStreamService(
                     in_resp = await self._child.invoke(request)
                     in_vs = await rs.enter_async_context(in_resp.v)
 
-                    async def inner(sink: StreamResponseSink[WrappedResponseV]) -> ta.Sequence[WrappedOutputT] | None:
+                    async def inner(sink: StreamResponseSink[WrappedStreamResponseEV]) -> WrappedStreamResponseRV:
                         async for v in in_vs:
                             await sink.emit(v)
 
-                        return in_vs.outputs
+                        return in_vs.returned.must()
 
                     # FIXME: ??
                     # if (ur := tv.as_collection(request.options).get(UseResources)) is not None:

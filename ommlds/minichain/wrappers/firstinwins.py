@@ -16,7 +16,8 @@ from ..services import WrappedRequest
 from ..services import WrappedRequestV
 from ..services import WrappedResponse
 from ..services import WrappedResponseV
-from ..services import WrappedStreamOutputT
+from ..services import WrappedStreamResponseEV
+from ..services import WrappedStreamResponseRV
 from ..services import WrapperStreamService
 from ..types import Output
 
@@ -72,9 +73,9 @@ class FirstInWinsStreamService(
     WrapperStreamService[
         WrappedRequestV,
         WrappedOptionT,
-        WrappedResponseV,
+        WrappedStreamResponseEV,
+        WrappedStreamResponseRV,
         WrappedOutputT,
-        WrappedStreamOutputT,
     ],
     lang.Abstract,
 ):

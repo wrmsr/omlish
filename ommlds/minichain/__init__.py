@@ -644,7 +644,8 @@ with _lang.auto_proxy_init(
         WrappedOptionT,
         WrappedResponseV,
         WrappedOutputT,
-        WrappedStreamOutputT,
+        WrappedStreamResponseEV,
+        WrappedStreamResponseRV,
 
         WrappedRequest,
         WrappedResponse,
