@@ -173,6 +173,13 @@ with _lang.auto_proxy_init(
         TextResponseFormat,
     )
 
+    from .chat.generations import (  # Noqa
+        ChatGenerationMetadata,
+        ChatGenerationMetadatas,
+
+        ChatGeneration,
+    )
+
     from .chat.history import (  # noqa
         ChatHistory,
         ListChatHistory,

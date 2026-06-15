@@ -1,0 +1,114 @@
+"""
+Not really sure how this'll work out - the first decoupling of 'Outputs' from 'Services', and some weird midpoint
+inheriting part of the complexity of 'Response' and part of the complexity of 'Message', but the whole chat api is
+currently broken and has to be fixed somehow. Let's see if this sticks :|
+
+TODO:
+ - originals?
+  - generalized 'Original' system now? 3 cvars..
+  - drop this whole thing?
+"""
+import typing as ta
+
+from omlish import check
+from omlish import dataclasses as dc
+from omlish import lang
+from omlish import typedvalues as tv
+
+from .._typedvalues import _tv_field_metadata
+from ..metadata import CommonMetadata
+from ..metadata import Metadata
+from ..metadata import MetadataContainerDataclass
+from ..registries.globals import register_type
+from .messages import AiChat
+from .types import ChatOutputs
+
+
+##
+
+
+# @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
+class ChatGenerationMetadata(Metadata, lang.Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.state(cls.__name__.endswith('ChatGenerationMetadata'))
+
+
+register_type(ChatGenerationMetadata, module=__name__)
+
+
+ChatGenerationMetadatas: ta.TypeAlias = ChatGenerationMetadata | CommonMetadata
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ChatGeneration(MetadataContainerDataclass[ChatGenerationMetadatas], lang.Final):
+    chat: AiChat
+
+    #
+
+    _outputs: ta.Sequence[ChatOutputs] = dc.field(
+        default=(),
+        metadata=_tv_field_metadata(
+            ChatOutputs,
+            marshal_name='outputs',
+        ),
+    )
+
+    @property
+    def outputs(self) -> tv.TypedValues[ChatOutputs]:
+        return check.isinstance(self._outputs, tv.TypedValues)
+
+    def with_outputs(
+            self,
+            *add: ChatOutputs,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
+            # no_original: bool = False,
+    ) -> ta.Self:
+        new = (old := self.outputs).update(
+            *add,
+            discard=discard,
+            mode=mode,
+        )
+
+        if new is old:
+            return self
+
+        # if not no_original:
+        #     return self.replace(self, _outputs=new)
+        return dc.replace(self, _outputs=new)
+
+    #
+
+    _metadata: ta.Sequence[ChatGenerationMetadatas] = dc.field(
+        default=(),
+        kw_only=True,
+        repr=False,
+    )
+
+    MetadataContainerDataclass._configure_metadata_field(_metadata, ChatGenerationMetadatas)  # noqa
+
+    def with_metadata(
+            self,
+            *add: ChatGenerationMetadatas,
+            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
+            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
+            # no_original: bool = False,
+    ) -> ta.Self:
+        return self._with_metadata(
+            *add,
+            discard=discard,
+            mode=mode,
+            # _replace=type(self).replace if not no_original else None,
+        )
+
+    #
+
+    # def replace(self, **kwargs: ta.Any) -> ta.Self:
+    #     if (n := dc.replace_is_not(self, **kwargs)) is self:
+    #         return self
+    #     return with_chat_generation_original(n, original=self)
