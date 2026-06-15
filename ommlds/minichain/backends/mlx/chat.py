@@ -22,6 +22,7 @@ from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
 from ...chat.stream.types import ContentAiDelta
 from ...configs import Config
+from ...chat.choices.types import ChatChoices
 from ...llms.types import MaxTokens
 from ...models.configs import ModelPath
 from ...models.configs import ModelRepo
@@ -157,9 +158,9 @@ class MlxChatChoicesService(BaseMlxChatChoicesService):
             # verbose=True,
         )
 
-        return ChatChoicesResponse([
+        return ChatChoicesResponse(ChatChoices([
             ChatGeneration([AiMessage(response)])  # noqa
-        ])
+        ]))
 
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(

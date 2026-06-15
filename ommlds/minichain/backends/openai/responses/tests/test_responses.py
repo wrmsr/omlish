@@ -130,7 +130,7 @@ def test_build_choices_response():
 
     out = build_mc_choices_response(rsp)
 
-    chat = check.single(out.v).chat
+    chat = check.single(out.v.gs).chat
     assert [type(m) for m in chat] == [ThinkingMessage, AiMessage, ToolUseMessage]
     assert check.isinstance(chat[0], ThinkingMessage).c == 'thinking'
     assert check.isinstance(chat[1], AiMessage).c == 'hello there'

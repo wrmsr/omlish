@@ -94,7 +94,7 @@ def test_build_choices_response():
 
     out = build_mc_choices_response(msg)
 
-    chat = check.single(out.v).chat
+    chat = check.single(out.v.gs).chat
     assert [type(m) for m in chat] == [AiMessage, ToolUseMessage]
     assert check.isinstance(chat[0], AiMessage).c == 'hello there'
     tu = check.isinstance(chat[1], ToolUseMessage).tu

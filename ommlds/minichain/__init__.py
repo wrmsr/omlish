@@ -86,6 +86,9 @@ with _lang.auto_proxy_init(
     )
 
     from .chat.choices.services import (  # noqa
+        ChatChoicesServiceOutput,
+        ChatChoicesServiceOutputs,
+
         ChatChoicesRequest,
         ChatChoicesResponse,
         ChatChoicesService,
@@ -229,6 +232,9 @@ with _lang.auto_proxy_init(
     )
 
     from .chat.services import (  # noqa
+        ChatServiceOutput,
+        ChatServiceOutputs,
+
         ChatRequest,
         ChatResponse,
         ChatService,

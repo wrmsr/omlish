@@ -10,6 +10,7 @@ from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import ChatChoicesOptions
+from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import ToolUseMessage
@@ -157,4 +158,4 @@ class LlamacppChatChoicesService:
                 m = c['message']
                 out.append(ChatGeneration([AiMessage(m['content'])]))
 
-            return ChatChoicesResponse(out)
+            return ChatChoicesResponse(ChatChoices(out))

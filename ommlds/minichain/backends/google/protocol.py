@@ -16,6 +16,7 @@ from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.choices.stream.types import AiChoicesDeltas
 from ...chat.generations import ChatGeneration
+from ...chat.choices.types import ChatChoices
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Message
@@ -176,7 +177,7 @@ def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesRe
         sr = build_mc_stop_reason(resp.candidates[0].finish_reason)
 
     return ChatChoicesResponse(
-        ai_choices,
+        ChatChoices(ai_choices),
 
         tv.collect(
             *([StopReasonOutput(sr)] if sr is not None else []),

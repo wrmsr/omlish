@@ -134,10 +134,10 @@ def build_mc_ai_choice(oai_choice: pt.ChatCompletionResponseChoice) -> ChatGener
 
 
 def build_mc_ai_choices(oai_resp: pt.ChatCompletionResponse) -> ChatChoices:
-    return [
+    return ChatChoices([
         build_mc_ai_choice(oai_choice)
         for oai_choice in oai_resp.choices
-    ]
+    ])
 
 
 def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:

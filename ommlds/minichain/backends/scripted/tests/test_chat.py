@@ -35,10 +35,10 @@ async def test_non_stream_turn_consumption():
     svc = ScriptedChatChoicesService(ScriptedChatScript(_two_turn_script()))
 
     resp = await svc.invoke(ChatChoicesRequest([UserMessage('hi')]))
-    assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v).chat] == ['first response']
+    assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v.gs).chat] == ['first response']
 
     resp = await svc.invoke(ChatChoicesRequest([UserMessage('again')]))
-    assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v).chat] == ['second response']
+    assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v.gs).chat] == ['second response']
 
     with pytest.raises(ChatScriptExhaustedError):
         await svc.invoke(ChatChoicesRequest([UserMessage('one more')]))
@@ -50,7 +50,7 @@ async def test_exhaustion_repeat_last():
 
     for expected in ['first response', 'second response', 'second response', 'second response']:
         resp = await svc.invoke(ChatChoicesRequest([UserMessage('hi')]))
-        assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v).chat] == [expected]
+        assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v.gs).chat] == [expected]
 
 
 @pytest.mark.asyncs('asyncio')
@@ -59,7 +59,7 @@ async def test_exhaustion_restart():
 
     for expected in ['first response', 'second response', 'first response', 'second response']:
         resp = await svc.invoke(ChatChoicesRequest([UserMessage('hi')]))
-        assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v).chat] == [expected]
+        assert [check.isinstance(m, AiMessage).c for m in check.single(resp.v.gs).chat] == [expected]
 
 
 @pytest.mark.asyncs('asyncio')
@@ -68,7 +68,7 @@ async def test_default_demo_script():
 
     for _ in range(3):
         resp = await svc.invoke(ChatChoicesRequest([UserMessage('hi')]))
-        assert check.single(resp.v).chat
+        assert check.single(resp.v.gs).chat
 
 
 @pytest.mark.asyncs('asyncio')

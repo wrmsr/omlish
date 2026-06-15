@@ -6,6 +6,7 @@ from omlish import check
 from ...resources import UseResources
 from ...services import StreamResponseSink
 from ...services import new_stream_response
+from ..choices.types import ChatChoices
 from ..choices.services import ChatChoicesOutputs
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import ChatChoicesResponse
@@ -68,7 +69,7 @@ class DummyChatService(DummyFnService):
 @static_check_is_chat_choices_service
 class DummyChatChoicesService(DummyFnService):
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
-        return ChatChoicesResponse([self.fn(request.v)])
+        return ChatChoicesResponse(ChatChoices([self.fn(request.v)]))
 
 
 ##

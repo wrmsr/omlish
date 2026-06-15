@@ -9,6 +9,7 @@ from omlish.http import all as http
 from ..chat.choices.services import ChatChoicesRequest
 from ..chat.choices.services import ChatChoicesResponse
 from ..chat.choices.services import static_check_is_chat_choices_service
+from ..chat.choices.types import ChatChoices
 from ..chat.generations import ChatGeneration
 from ..chat.messages import AiMessage
 from ..chat.messages import Message
@@ -94,7 +95,7 @@ class MistralChatChoicesService:
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
-        return ChatChoicesResponse([
+        return ChatChoicesResponse(ChatChoices([
             ChatGeneration([AiMessage(c['message']['content'])])
             for c in resp_dct['choices']
-        ])
+        ]))

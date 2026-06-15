@@ -10,6 +10,7 @@ from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
+from ...chat.choices.types import ChatChoices
 from ...chat.messages import Chat
 from ...chat.messages import SystemMessage
 from ...chat.messages import ThinkingMessage
@@ -154,7 +155,7 @@ def build_mc_choices_response(ol_resp: pt.ChatResponse) -> ChatChoicesResponse:
         raise ValueError(ol_msg)
 
     return ChatChoicesResponse(
-        [ChatGeneration(lst)],
+        ChatChoices([ChatGeneration(lst)]),
 
         tv.collect(
             *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(ol_resp.done_reason)) is not None else []),

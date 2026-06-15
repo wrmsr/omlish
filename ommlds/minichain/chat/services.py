@@ -7,10 +7,20 @@ from ..registries.globals import register_type
 from ..services import Request
 from ..services import Response
 from ..services import Service
+from ..types import Output
 from .generations import ChatGeneration
 from .messages import Chat
 from .types import ChatOptions
-from .types import ChatOutputs
+
+
+##
+
+
+class ChatServiceOutput(Output, lang.Abstract, lang.Sealed):
+    pass
+
+
+ChatServiceOutputs: ta.TypeAlias = ChatServiceOutput
 
 
 ##
@@ -18,7 +28,7 @@ from .types import ChatOutputs
 
 ChatRequest: ta.TypeAlias = Request[Chat, ChatOptions]
 
-ChatResponse: ta.TypeAlias = Response[ChatGeneration, ChatOutputs]
+ChatResponse: ta.TypeAlias = Response[ChatGeneration, ChatServiceOutputs]
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]

@@ -13,6 +13,7 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats.json import all as json
 
+from ...chat.choices.types import ChatChoices
 from ....backends.anthropic.protocol import types as pt
 from ....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ...chat.choices.services import ChatChoicesResponse
@@ -165,7 +166,7 @@ def build_mc_choices_response(msg: pt.Message) -> ChatChoicesResponse:
                 raise TypeError(c)
 
     return ChatChoicesResponse(
-        [ChatGeneration(out)],
+        ChatChoices([ChatGeneration(out)]),
 
         tv.collect(
             *([TokenUsageOutput(TokenUsage(
