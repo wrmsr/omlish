@@ -102,6 +102,8 @@ with _lang.auto_proxy_init(
         ChatChoicesStreamOutput,
         ChatChoicesStreamOutputs,
 
+        ChatChoicesStreamResult,
+
         AiChoiceDeltas,
         AiChoicesDeltas,
     )
@@ -126,6 +128,14 @@ with _lang.auto_proxy_init(
     )
 
     from .chat.stream.types import (  # noqa
+        ChatStreamOption,
+        ChatStreamOptions,
+
+        ChatStreamOutput,
+        ChatStreamOutputs,
+
+        ChatStreamResult,
+
         AiDelta,
         AiDeltas,
 

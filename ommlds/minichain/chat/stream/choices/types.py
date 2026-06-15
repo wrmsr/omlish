@@ -1,8 +1,11 @@
 import typing as ta
 
+from omlish import check
+from omlish import typedvalues as tv
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ...._typedvalues import _tv_field_metadata
 from ....services import StreamOptions
 from ....types import Option
 from ....types import Output
@@ -28,6 +31,24 @@ class ChatChoicesStreamOutput(Output, lang.Abstract, lang.PackageSealed):
 
 
 ChatChoicesStreamOutputs: ta.TypeAlias = ChatChoicesStreamOutput
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ChatChoicesStreamResult:
+    _outputs: ta.Sequence[ChatChoicesStreamOutputs] = dc.field(
+        default=(),
+        metadata=_tv_field_metadata(
+            ChatChoicesStreamOutputs,
+            marshal_name='outputs',
+        ),
+    )
+
+    @property
+    def outputs(self) -> tv.TypedValues[ChatChoicesStreamOutputs]:
+        return check.isinstance(self._outputs, tv.TypedValues)
 
 
 ##

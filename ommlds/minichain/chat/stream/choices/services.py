@@ -8,10 +8,10 @@ from ....services import Request
 from ....services import Service
 from ....services import StreamResponse
 from ....types import Output
-from ...choices.types import ChatChoicesOutputs
 from ...messages import Chat
 from .types import AiChoicesDeltas
 from .types import ChatChoicesStreamOptions
+from .types import ChatChoicesStreamResult
 
 
 ##
@@ -31,7 +31,7 @@ ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamOptions]
 
 ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
     AiChoicesDeltas,
-    ChatChoicesOutputs,
+    ChatChoicesStreamResult,
     ChatChoicesStreamServiceOutputs,
 ]
 

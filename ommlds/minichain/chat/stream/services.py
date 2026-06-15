@@ -12,6 +12,7 @@ from ..messages import Chat
 from ..types import ChatOutputs
 from .types import AiDeltas
 from .types import ChatStreamOptions
+from .types import ChatStreamResult
 
 
 ##
@@ -31,7 +32,7 @@ ChatStreamRequest: ta.TypeAlias = Request[Chat, ChatStreamOptions]
 
 ChatStreamResponse: ta.TypeAlias = StreamResponse[
     AiDeltas,
-    ChatOutputs,
+    ChatStreamResult,
     ChatStreamServiceOutputs,
 ]
 
