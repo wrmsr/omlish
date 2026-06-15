@@ -15,7 +15,7 @@ from ....backends.google.protocol import types as pt
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.choices.stream.types import AiChoicesDeltas
-from ...chat.choices.types import ChatChoice
+from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Message
@@ -164,12 +164,12 @@ def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:
 
 
 def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesResponse:
-    ai_choices: list[ChatChoice] = []
+    ai_choices: list[ChatGeneration] = []
     for c in resp.candidates or []:
         out: list[AnyAiMessage] = []
         for part in check.not_none(check.not_none(c.content).parts):
             out.append(_build_mc_part_message(part))
-        ai_choices.append(ChatChoice(out))
+        ai_choices.append(ChatGeneration(out))
 
     sr: StopReason | None = None
     if resp.candidates:

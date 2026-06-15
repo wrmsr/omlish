@@ -100,7 +100,6 @@ with _lang.auto_proxy_init(
         ChatChoicesOutput,
         ChatChoicesOutputs,
 
-        ChatChoice,
         ChatChoices,
     )
 

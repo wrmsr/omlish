@@ -14,8 +14,8 @@ from ...chat.choices.stream.services import ChatChoicesStreamResponse
 from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.choices.stream.types import AiChoicesDeltas
-from ...chat.choices.types import ChatChoice
 from ...chat.choices.types import ChatChoicesOptions
+from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
@@ -158,7 +158,7 @@ class MlxChatChoicesService(BaseMlxChatChoicesService):
         )
 
         return ChatChoicesResponse([
-            ChatChoice([AiMessage(response)])  # noqa
+            ChatGeneration([AiMessage(response)])  # noqa
         ])
 
 

@@ -13,9 +13,9 @@ from ...chat.choices.stream.services import ChatChoicesStreamResponse
 from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.choices.stream.types import AiChoicesDeltas
-from ...chat.choices.types import ChatChoice
 from ...chat.choices.types import ChatChoices
 from ...chat.choices.types import ChatChoicesOutputs
+from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.stream.types import ContentAiDelta
 from ...configs import Config
@@ -53,7 +53,7 @@ class DummyChatChoicesService:
 
     @classmethod
     def make_string_response_choices(cls, strs: ta.Sequence[str]) -> ChatChoices:
-        return [ChatChoice([AiMessage(s)]) for s in check.not_isinstance(strs, str)]
+        return [ChatGeneration([AiMessage(s)]) for s in check.not_isinstance(strs, str)]
 
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         return ChatChoicesResponse(self._resp)

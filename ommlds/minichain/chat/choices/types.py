@@ -4,12 +4,11 @@ TODO:
 """
 import typing as ta
 
-from omlish import dataclasses as dc
 from omlish import lang
 
 from ...types import Option
 from ...types import Output
-from ..messages import AiChat
+from ..generations import ChatGeneration
 from ..types import ChatOptions
 from ..types import ChatOutputs
 
@@ -37,9 +36,4 @@ ChatChoicesOutputs: ta.TypeAlias = ChatChoicesOutput | ChatOutputs
 ##
 
 
-@dc.dataclass(frozen=True)
-class ChatChoice(lang.Final):
-    chat: AiChat
-
-
-ChatChoices: ta.TypeAlias = ta.Sequence[ChatChoice]
+ChatChoices: ta.TypeAlias = ta.Sequence[ChatGeneration]

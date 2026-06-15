@@ -9,8 +9,8 @@ from omlish import typedvalues as tv
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.choices.types import ChatChoice
 from ...chat.choices.types import ChatChoicesOptions
+from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
@@ -152,9 +152,9 @@ class LlamacppChatChoicesService:
                 **kwargs,
             )
 
-            out: list[ChatChoice] = []
+            out: list[ChatGeneration] = []
             for c in ta.cast(ta.Any, output)['choices']:
                 m = c['message']
-                out.append(ChatChoice([AiMessage(m['content'])]))
+                out.append(ChatGeneration([AiMessage(m['content'])]))
 
             return ChatChoicesResponse(out)

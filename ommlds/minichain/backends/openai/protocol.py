@@ -8,9 +8,9 @@ from omlish.formats.json import all as json
 
 from ....backends.openai import protocol as pt
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.types import ChatChoice
 from ...chat.choices.types import ChatChoices
 from ...chat.choices.types import ChatChoicesOptions
+from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Chat
@@ -114,7 +114,7 @@ def build_oai_request_msgs(mc_chat: Chat) -> ta.Sequence[pt.ChatCompletionMessag
 #
 
 
-def build_mc_ai_choice(oai_choice: pt.ChatCompletionResponseChoice) -> ChatChoice:
+def build_mc_ai_choice(oai_choice: pt.ChatCompletionResponseChoice) -> ChatGeneration:
     cur: list[AnyAiMessage] = []
 
     oai_msg = oai_choice.message
@@ -130,7 +130,7 @@ def build_mc_ai_choice(oai_choice: pt.ChatCompletionResponseChoice) -> ChatChoic
             raw_args=oai_tc.function.arguments,
         )))
 
-    return ChatChoice(cur)
+    return ChatGeneration(cur)
 
 
 def build_mc_ai_choices(oai_resp: pt.ChatCompletionResponse) -> ChatChoices:
