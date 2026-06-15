@@ -1,5 +1,4 @@
 import asyncio
-import typing as ta
 
 import pytest
 
@@ -22,16 +21,18 @@ class FooStreamService:
         self.num_sleeps = 0
         self.ran_finally = False
 
-    async def invoke(self, request: Request[str, StreamOptions]) -> StreamResponse[str, Output, Output]:
+    async def invoke(self, request: Request[str, StreamOptions]) -> StreamResponse[str, int, Output]:
         async with UseResources.or_new(request.options) as rs:
-            async def inner(sink: StreamResponseSink[str]) -> ta.Sequence[Output] | None:
+            async def inner(sink: StreamResponseSink[str]) -> int:
                 try:
+                    i = 0
                     for c in request.v:
+                        i += 1
                         await sink.emit(c + '!')
                         if self.do_sleep:
                             await asyncio.sleep(.1)
                             self.num_sleeps += 1
-                    return []
+                    return i
                 finally:
                     if self.do_sleep:
                         await asyncio.sleep(.1)
@@ -49,6 +50,7 @@ async def test_foo_stream_service():
     assert svc.num_sleeps == 10
     assert svc.ran_finally
     assert lst == [c + '!' for c in 'hi there!']
+    assert it.returned.must() == 9
 
 
 @pytest.mark.asyncs('asyncio')

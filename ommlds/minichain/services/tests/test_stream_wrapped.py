@@ -17,18 +17,18 @@ from .test_stream import FooStreamService
 
 
 StreamRequestT = ta.TypeVar('StreamRequestT', bound=Request)
-V = ta.TypeVar('V')
+EV = ta.TypeVar('EV')
+RV = ta.TypeVar('RV')
 OutputT = ta.TypeVar('OutputT', bound=Output)
-StreamOutputT = ta.TypeVar('StreamOutputT', bound=Output)
 
 
 ##
 
 
-class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]):
+class WrappedStreamService(ta.Generic[StreamRequestT, EV, RV, OutputT]):
     """Only handles simple, non-type-modifying usecases."""
 
-    def __init__(self, inner: Service[StreamRequestT, StreamResponse[V, OutputT, StreamOutputT]]) -> None:
+    def __init__(self, inner: Service[StreamRequestT, StreamResponse[EV, RV, OutputT]]) -> None:
         super().__init__()
 
         self._inner = inner
@@ -38,33 +38,33 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
     async def _process_request(self, request: StreamRequestT) -> StreamRequestT:
         return request
 
-    async def _process_stream_outputs(self, outputs: ta.Sequence[StreamOutputT]) -> ta.Sequence[StreamOutputT]:
-        return outputs
-
-    async def _process_value(self, v: V) -> ta.Iterable[V]:
-        return [v]
-
     async def _process_outputs(self, outputs: ta.Sequence[OutputT]) -> ta.Sequence[OutputT]:
         return outputs
 
+    async def _process_emitted_value(self, ev: EV) -> ta.Iterable[EV]:
+        return [ev]
+
+    async def _process_returned_value(self, rv: RV) -> RV:
+        return rv
+
     #
 
-    async def invoke(self, request: StreamRequestT) -> StreamResponse[V, OutputT, StreamOutputT]:
+    async def invoke(self, request: StreamRequestT) -> StreamResponse[EV, RV, OutputT]:
         async with UseResources.or_new(request.options) as rs:  # noqa
             in_resp = await self._inner.invoke(await self._process_request(request))
             in_vs = await rs.enter_async_context(in_resp.v)
 
-            async def inner(sink: StreamResponseSink[V]) -> ta.Sequence[OutputT] | None:
+            async def inner(sink: StreamResponseSink[EV]) -> RV:
                 async for in_v in in_vs:
-                    for out_v in (await self._process_value(in_v)):
+                    for out_v in (await self._process_emitted_value(in_v)):
                         await sink.emit(out_v)
 
-                return await self._process_outputs(in_vs.outputs)
+                return await self._process_returned_value(in_vs.returned.must())
 
             return await new_stream_response(
                 rs,
                 inner,
-                await self._process_stream_outputs(in_resp.outputs),
+                await self._process_outputs(in_resp.outputs),
             )
 
 
@@ -73,7 +73,7 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
 
 class WrappedFooStreamService(WrappedStreamService):
     @ta.override
-    async def _process_value(self, v: str) -> ta.Iterable[str]:
+    async def _process_emitted_value(self, v: str) -> ta.Iterable[str]:
         return [v + '?']
 
 
