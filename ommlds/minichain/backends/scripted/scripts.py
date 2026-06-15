@@ -17,7 +17,7 @@ from omlish.formats.json import all as json
 
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
-from ...chat.choices.types import ChatChoicesOutputs
+from ...chat.choices.services import ChatChoicesServiceOutputs
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Chat
@@ -145,7 +145,7 @@ class ChatScriptTurn(lang.Final):
 
     _: dc.KW_ONLY
 
-    outputs: ta.Sequence[ChatChoicesOutputs] = ()
+    outputs: ta.Sequence[ChatChoicesServiceOutputs] = ()
 
     expect: ChatScriptTurnExpectation | None = dc.field(default=None, repr=False)
 
@@ -155,7 +155,7 @@ class ChatScriptTurn(lang.Final):
             *messages: AnyAiMessage,
             chunk_size: int | None = DEFAULT_CHAT_SCRIPT_CHUNK_SIZE,
             indexed_tool_uses: bool = False,
-            outputs: ta.Sequence[ChatChoicesOutputs] = (),
+            outputs: ta.Sequence[ChatChoicesServiceOutputs] = (),
             expect: ChatScriptTurnExpectation | None = None,
     ) -> ChatScriptTurn:
         """

@@ -16,13 +16,15 @@ from omlish import typedvalues as tv
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.stream.choices.services import ChatChoicesStreamRequest
-from ...chat.stream.choices.services import ChatChoicesStreamResponse
-from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
-from ...chat.choices.types import ChatChoicesOutputs
+from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import ThinkingMessage
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.types import AiChoicesDeltas
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.stream.joining import AiDeltaJoiner
 from ...configs import Config
 from ...resources import UseResources
@@ -145,7 +147,7 @@ class ScriptedChatChoicesService(_ScriptedChatChoicesServiceBase):
                 joiner.add(acd.deltas)
 
         return ChatChoicesResponse(
-            [ChatGeneration(joiner.build()) for joiner in joiners],
+            ChatChoices([ChatGeneration(joiner.build()) for joiner in joiners]),
             turn.outputs,
         )
 
@@ -165,7 +167,7 @@ class ScriptedChatChoicesStreamService(_ScriptedChatChoicesServiceBase):
         gate = self._script.gate
 
         async with UseResources.or_new(request.options) as rs:
-            async def inner(sink: StreamResponseSink) -> ta.Sequence[ChatChoicesOutputs]:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 for i, em in enumerate(turn.emissions):
                     if gate is not None:
                         await gate(ChatScriptGatePoint(invocation_index, i))
@@ -175,7 +177,7 @@ class ScriptedChatChoicesStreamService(_ScriptedChatChoicesServiceBase):
                 if gate is not None:
                     await gate(ChatScriptGatePoint(invocation_index, len(turn.emissions)))
 
-                return list(turn.outputs)
+                return ChatChoicesStreamResult()
 
             return await new_stream_response(rs, inner)
 

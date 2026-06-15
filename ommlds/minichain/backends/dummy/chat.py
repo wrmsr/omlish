@@ -13,6 +13,7 @@ from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.choices.types import ChatChoices
 from ...chat.choices.types import ChatChoicesOutputs
 from ...chat.generations import ChatGeneration
@@ -99,11 +100,11 @@ class DummyChatChoicesStreamService:
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         async with UseResources.or_new(request.options) as rs:
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 for x in self._resp:
                     await sink.emit(x)
 
-                return []
+                return ChatChoicesStreamResult()
 
             return await new_stream_response(rs, inner)
 
