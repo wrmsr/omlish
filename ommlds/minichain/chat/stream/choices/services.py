@@ -7,11 +7,21 @@ from ....registries.globals import register_type
 from ....services import Request
 from ....services import Service
 from ....services import StreamResponse
-from ...messages import Chat
+from ....types import Output
 from ...choices.types import ChatChoicesOutputs
+from ...messages import Chat
 from .types import AiChoicesDeltas
 from .types import ChatChoicesStreamOptions
-from .types import ChatChoicesStreamOutputs
+
+
+##
+
+
+class ChatChoicesStreamServiceOutput(Output, lang.Abstract, lang.Sealed):
+    pass
+
+
+ChatChoicesStreamServiceOutputs: ta.TypeAlias = ChatChoicesStreamServiceOutput
 
 
 ##
@@ -22,7 +32,7 @@ ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamOptions]
 ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
     AiChoicesDeltas,
     ChatChoicesOutputs,
-    ChatChoicesStreamOutputs,
+    ChatChoicesStreamServiceOutputs,
 ]
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest

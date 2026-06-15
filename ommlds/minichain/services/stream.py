@@ -9,7 +9,6 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import typedvalues as tv
 
 from ..resources import ResourceManaged
 from ..resources import Resources
@@ -20,11 +19,14 @@ from ..types import Option
 from ..types import Output
 
 
+EV = ta.TypeVar('EV')
+RV = ta.TypeVar('RV')
+
+EV2 = ta.TypeVar('EV2')
+
 V = ta.TypeVar('V')
-V2 = ta.TypeVar('V2')
 
 OutputT = ta.TypeVar('OutputT', bound=Output)
-StreamOutputT = ta.TypeVar('StreamOutputT', bound=Output)
 
 
 ##
@@ -40,28 +42,28 @@ StreamOptions: ta.TypeAlias = StreamOption | ResourcesOption
 ##
 
 
-class StreamResponseSink(lang.Abstract, ta.Generic[V]):
+class StreamResponseSink(lang.Abstract, ta.Generic[EV]):
     @abc.abstractmethod
-    def emit(self, value: V) -> ta.Awaitable[None]:
+    def emit(self, value: EV) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
 class StreamResponseIterator(
-    ta.AsyncContextManager['StreamResponseIterator[V, OutputT]'],
+    ta.AsyncContextManager['StreamResponseIterator[EV, RV]'],
     lang.Abstract,
-    ta.Generic[V, OutputT],
+    ta.Generic[EV, RV],
 ):
     @property
     @abc.abstractmethod
-    def outputs(self) -> tv.TypedValues[OutputT]:
+    def returned(self) -> lang.Maybe[RV]:
         raise NotImplementedError
 
     @ta.final
-    def __aiter__(self) -> ta.AsyncIterator[V]:
+    def __aiter__(self) -> ta.AsyncIterator[EV]:
         return self
 
     @abc.abstractmethod
-    def __anext__(self) -> ta.Awaitable[V]:
+    def __anext__(self) -> ta.Awaitable[EV]:
         raise NotImplementedError
 
 
@@ -76,41 +78,41 @@ class StreamServiceNotAwaitedError(Exception):
     pass
 
 
-class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
+class _StreamServiceResponse(StreamResponseIterator[EV, RV]):
     def __init__(
             self,
-            fn: ta.Callable[[StreamResponseSink[V]], ta.Awaitable[ta.Sequence[OutputT] | None]],
+            fn: ta.Callable[[StreamResponseSink[EV]], ta.Awaitable[RV]],
     ) -> None:
         super().__init__()
 
         self._fn = fn
 
     @ta.final
-    class _Emit(ta.Generic[V2]):
-        def __init__(self, ssr: _StreamServiceResponse, value: V2) -> None:
+    class _Emit(ta.Generic[EV2]):
+        def __init__(self, ssr: _StreamServiceResponse, value: EV2) -> None:
             self.ssr, self.value = ssr, value
 
         done: bool = False
 
-        def __await__(self) -> ta.Generator[_StreamServiceResponse._Emit[V2]]:
+        def __await__(self) -> ta.Generator[_StreamServiceResponse._Emit[EV2]]:
             if not self.done:
                 yield self
             if not self.done:
                 raise StreamServiceNotAwaitedError
 
     @ta.final
-    class _Sink(StreamResponseSink[V2]):
+    class _Sink(StreamResponseSink[EV2]):
         def __init__(self, ssr: _StreamServiceResponse) -> None:
             super().__init__()
 
             self._ssr = ssr
 
-        def emit(self, item: V2) -> ta.Awaitable[None]:
+        def emit(self, item: EV2) -> ta.Awaitable[None]:
             return _StreamServiceResponse._Emit(self._ssr, item)
 
     _state: ta.Literal['new', 'running', 'closed'] = 'new'
 
-    _sink: _Sink[V]
+    _sink: _Sink[EV]
 
     _cr: ta.Any
     _a: ta.Any
@@ -165,11 +167,11 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return await self._aexit(exc_type, exc_val, exc_tb)
 
-    _outputs: tv.TypedValues[OutputT]
+    _returned: lang.Maybe[RV] = lang.empty()
 
     @property
-    def outputs(self) -> tv.TypedValues[OutputT]:
-        return self._outputs
+    def returned(self) -> lang.Maybe[RV]:
+        return self._returned
 
     @types.coroutine
     def _anext(self):
@@ -181,10 +183,7 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
                 x = self._g.send(i)
 
             except StopIteration as e:
-                if e.value is not None:
-                    self._outputs = tv.TypedValues(*check.isinstance(e.value, ta.Sequence))
-                else:
-                    self._outputs = tv.TypedValues()
+                self._returned = lang.just(e.value)
 
                 raise StopAsyncIteration from None
 
@@ -195,31 +194,23 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
 
             i = yield x
 
-    async def __anext__(self) -> V:
+    async def __anext__(self) -> EV:
         return await self._anext()
 
 
 ##
 
 
-StreamResponse: ta.TypeAlias = Response[
-    ResourceManaged[
-        StreamResponseIterator[
-            V,
-            OutputT,
-        ],
-    ],
-    StreamOutputT,
-]
+StreamResponse: ta.TypeAlias = Response[ResourceManaged[StreamResponseIterator[EV, RV]], OutputT]
 
 
 async def new_stream_response(
         rs: Resources,
-        fn: ta.Callable[[StreamResponseSink[V]], ta.Awaitable[ta.Sequence[OutputT] | None]],
-        outputs: ta.Sequence[StreamOutputT] | None = None,
+        fn: ta.Callable[[StreamResponseSink[EV]], ta.Awaitable[RV]],
+        outputs: ta.Sequence[OutputT] | None = None,
         *,
         metadata: ta.Sequence[ResponseMetadatas] | None = None,
-) -> StreamResponse[V, OutputT, StreamOutputT]:
+) -> StreamResponse[EV, RV, OutputT]:
     ssr = _StreamServiceResponse(fn)
 
     v = rs.new_managed(await rs.enter_async_context(ssr))
