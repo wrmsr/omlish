@@ -53,7 +53,7 @@ class DummyChatChoicesService:
 
     @classmethod
     def make_string_response_choices(cls, strs: ta.Sequence[str]) -> ChatChoices:
-        return [ChatGeneration([AiMessage(s)]) for s in check.not_isinstance(strs, str)]
+        return ChatChoices([ChatGeneration([AiMessage(s)]) for s in check.not_isinstance(strs, str)])
 
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         return ChatChoicesResponse(self._resp)

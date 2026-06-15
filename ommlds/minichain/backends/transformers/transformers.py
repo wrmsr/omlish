@@ -13,6 +13,7 @@ from omlish import typedvalues as tv
 from omlish.asyncs.asyncio.relays import AsyncioSyncToAsyncBufferRelay
 
 from ...chat.choices.services import ChatChoicesRequest
+from ...chat.choices.types import ChatChoices
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.stream.services import ChatChoicesStreamRequest
@@ -220,7 +221,7 @@ class TransformersChatChoicesService(BaseTransformersChatChoicesService):
         check.state(ugt['role'] == 'user')
         check.state(agt['role'] == 'assistant')
 
-        return ChatChoicesResponse([ChatGeneration([AiMessage(agt['content'])])])
+        return ChatChoicesResponse(ChatChoices([ChatGeneration([AiMessage(agt['content'])])]))
 
 
 ##
