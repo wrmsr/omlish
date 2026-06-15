@@ -1,6 +1,7 @@
 """https://platform.openai.com/docs/api-reference/responses-streaming"""
 import typing as ta
 
+from omlish import lang
 from omlish import marshal as msh
 from omlish.formats.json import all as json
 from omlish.http import all as http
@@ -9,6 +10,7 @@ from omlish.http import sse
 from .....backends.openai.protocol import responses as pt
 from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.stream.choices.services import ChatChoicesStreamResponse
+from ....chat.stream.choices.types import ChatChoicesStreamResult
 from ....chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.choices.types import AiChoiceDeltas
 from ....chat.stream.choices.types import AiChoicesDeltas
@@ -81,6 +83,7 @@ class OpenaiResponsesChatChoicesStreamService(OpenaiResponsesServiceBase):
             self._http_client,
             lambda http_response: SimpleSseLinesHttpStreamResponseHandler(
                 lambda so: self._process_sse(translator, so),
+                lang.as_async(lambda: ChatChoicesStreamResult()),
             ).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,

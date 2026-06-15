@@ -6,7 +6,7 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ...chat.choices.services import ChatChoicesOutputs
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -87,7 +87,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
 
             rs.enter_context(lang.defer(close_output))
 
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 last_role: ta.Any = None
 
                 for chunk in output:
@@ -107,6 +107,6 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                     if (content := delta.get('content', '')):
                         await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(content)])]))
 
-                return None
+                return ChatChoicesStreamResult()
 
             return await new_stream_response(rs, inner)

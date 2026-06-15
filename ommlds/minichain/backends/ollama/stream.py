@@ -10,6 +10,7 @@ from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoicesDeltas
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
@@ -64,7 +65,10 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
 
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: SimpleLinesHttpStreamResponseHandler(self._process_line).as_bytes(),
+            lambda http_response: SimpleLinesHttpStreamResponseHandler(
+                self._process_line,
+                lang.as_async(lambda: ChatChoicesStreamResult()),
+            ).as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,
         ).new_stream_response(

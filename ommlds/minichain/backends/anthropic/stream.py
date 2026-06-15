@@ -12,6 +12,7 @@ from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
@@ -105,6 +106,6 @@ class _AnthropicSseHandler(SseHttpStreamResponseHandler):
     async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[ta.Any]:
         return await self._service._process_sse(self._translator, so)  # noqa
 
-    async def finish(self) -> ta.Sequence[ta.Any]:
+    async def finish(self) -> ta.Any:
         self._translator.finish()
-        return ()
+        return ChatChoicesStreamResult()  # FIXME: outputs lol

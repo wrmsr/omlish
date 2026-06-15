@@ -13,6 +13,7 @@ from omlish.formats.json import all as json
 from .....backends.openai.protocol import responses as pt
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.generations import ChatGeneration
+from ....chat.choices.types import ChatChoices
 from ....chat.messages import AiMessage
 from ....chat.messages import AnyAiMessage
 from ....chat.messages import Chat
@@ -136,7 +137,7 @@ def build_mc_choices_response(rsp: pt.ResponsesResponse) -> ChatChoicesResponse:
         msgs.extend(build_mc_messages_from_output_item(item))
 
     return ChatChoicesResponse(
-        [ChatGeneration(msgs)],
+        ChatChoices([ChatGeneration(msgs)]),
 
         tv.collect(
             *([TokenUsageOutput(TokenUsage(

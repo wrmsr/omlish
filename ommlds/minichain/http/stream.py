@@ -2,6 +2,7 @@
 TODO:
  - better pipeline composition lol
 """
+import abc
 import typing as ta
 
 from omlish import check
@@ -57,8 +58,9 @@ class HttpStreamResponseHandler(lang.Abstract):
     async def start(self) -> ta.Sequence[Output]:
         return ()
 
-    async def finish(self) -> ta.Sequence[Output]:
-        return ()
+    @abc.abstractmethod
+    async def finish(self) -> ta.Any:
+        raise NotImplementedError
 
 
 ##
@@ -99,7 +101,7 @@ class BytesHttpStreamResponseBuilder:
 
             handler = self._handling(http_response)
 
-            async def inner(sink: StreamResponseSink) -> ta.Sequence | None:
+            async def inner(sink: StreamResponseSink) -> ta.Any:
                 while True:
                     b = await http_response.stream.read1(self._read_chunk_size)
 
@@ -162,7 +164,7 @@ class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
 
         return out
 
-    async def finish(self) -> ta.Sequence[Output]:
+    async def finish(self) -> ta.Any:
         check.state(self._seen_eof)
 
         return await self._handler.finish()
@@ -172,13 +174,21 @@ class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
 
 
 class SimpleLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
-    def __init__(self, fn: ta.Callable[[lang.Bytes], ta.Awaitable[ta.Sequence[ta.Any]]]) -> None:
+    def __init__(
+            self,
+            fn: ta.Callable[[lang.Bytes], ta.Awaitable[ta.Sequence[ta.Any]]],
+            finish_fn: ta.Callable[[], ta.Awaitable[ta.Any]],
+    ) -> None:
         super().__init__()
 
         self._fn = fn
+        self._finish_fn = finish_fn
 
     async def process_line(self, line: lang.Bytes) -> ta.Sequence[ta.Any]:
         return await self._fn(line)
+
+    async def finish(self) -> ta.Any:
+        return await self._finish_fn()
 
 
 ##
@@ -210,7 +220,7 @@ class SseLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
                 out.append(x)  # noqa
         return out
 
-    async def finish(self) -> ta.Sequence[Output]:
+    async def finish(self) -> ta.Any:
         return await self._handler.finish()
 
 
@@ -218,10 +228,18 @@ class SseLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
 
 
 class SimpleSseLinesHttpStreamResponseHandler(SseHttpStreamResponseHandler):
-    def __init__(self, fn: ta.Callable[[sse.SseDecoderOutput], ta.Awaitable[ta.Sequence[ta.Any]]]) -> None:
+    def __init__(
+            self,
+            fn: ta.Callable[[sse.SseDecoderOutput], ta.Awaitable[ta.Sequence[ta.Any]]],
+            finish_fn: ta.Callable[[], ta.Awaitable[ta.Any]],
+    ) -> None:
         super().__init__()
 
         self._fn = fn
+        self._finish_fn = finish_fn
 
     async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[ta.Any]:
         return await self._fn(so)
+
+    async def finish(self) -> ta.Any:
+        return await self._finish_fn()

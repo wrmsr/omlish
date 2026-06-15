@@ -38,7 +38,7 @@ async def test_openai_chat_stream_model_async(harness):
         async with (await llm.invoke(foo_req)).v as it:
             async for o in it:
                 print(o)
-            print(it.outputs)
+            print(it.returned)
 
 
 @pytest.mark.online
@@ -58,7 +58,7 @@ def test_openai_chat_stream_model(harness):
         with lang.sync_async_with(lang.sync_await(llm.invoke(foo_req)).v) as it:
             for o in lang.sync_aiter(it):
                 print(o)
-            print(it.outputs)
+            print(it.returned)
 
 
 @pytest.mark.asyncs('asyncio')
@@ -94,7 +94,7 @@ async def test_openai_stream_tools(harness):
     async with (await llm.invoke(foo_req)).v as it:
         async for o in it:
             print(o)
-        print(it.outputs)
+        print(it.returned)
 
 
 @pytest.mark.asyncs('asyncio')
@@ -133,7 +133,7 @@ async def test_openai_stream_parallel_tools(harness):
     async with (await llm.invoke(foo_req)).v as it:
         async for o in it:
             print(o)
-        print(it.outputs)
+        print(it.returned)
 
 
 @pytest.mark.online
@@ -154,7 +154,7 @@ def test_use_resources(harness):
             with lang.sync_async_with(lang.sync_await(llm.invoke(foo_req.with_options(UseResources(rs)))).v) as it:  # noqa
                 for o in lang.sync_aiter(it):
                     print(o)
-                print(it.outputs)
+                print(it.returned)
 
 
 @pytest.mark.online

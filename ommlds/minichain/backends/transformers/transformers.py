@@ -21,7 +21,7 @@ from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoiceDeltas  # noqa
 from ...chat.stream.choices.types import AiChoicesDeltas  # noqa
-from ...chat.choices.types import ChatChoicesOutputs
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
@@ -275,7 +275,7 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
 
             thread.start()
 
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 while True:
                     await relay.wait()
                     got = relay.swap()
@@ -296,6 +296,6 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
                     if end:
                         break
 
-                return []
+                return ChatChoicesStreamResult()
 
             return await new_stream_response(rs, inner)

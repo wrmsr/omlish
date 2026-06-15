@@ -5,7 +5,7 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ...chat.choices.services import ChatChoicesOutputs
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
@@ -203,13 +203,13 @@ class MlxChatChoicesStreamService(BaseMlxChatChoicesService):
                 # verbose=True,
             )))
 
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 for go in gen:
                     if go.text:
                         await sink.emit(AiChoicesDeltas([AiChoiceDeltas([
                             ContentAiDelta(go.text),
                         ])]))
 
-                return []
+                return ChatChoicesStreamResult()
 
             return await new_stream_response(rs, inner)

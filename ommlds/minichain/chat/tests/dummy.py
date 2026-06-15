@@ -7,7 +7,7 @@ from ...resources import UseResources
 from ...services import StreamResponseSink
 from ...services import new_stream_response
 from ..choices.types import ChatChoices
-from ..choices.services import ChatChoicesOutputs
+from ..stream.choices.types import ChatChoicesStreamResult
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import ChatChoicesResponse
 from ..choices.services import static_check_is_chat_choices_service
@@ -79,7 +79,7 @@ class DummyChatChoicesService(DummyFnService):
 class DummyChatChoicesStreamService(DummyFnService):
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         async with UseResources.or_new(request.options) as rs:
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 acg = self.fn(request.v)
                 await sink.emit(AiChoicesDeltas([
                     AiChoiceDeltas([
@@ -89,5 +89,5 @@ class DummyChatChoicesStreamService(DummyFnService):
                         for am in acg.chat
                     ]),
                 ]))
-                return []
+                return ChatChoicesStreamResult()
             return await new_stream_response(rs, inner)

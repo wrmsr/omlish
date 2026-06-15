@@ -14,7 +14,7 @@ from ...chat.choices.types import ChatChoices
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
-from ...chat.choices.types import ChatChoicesOutputs
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat
@@ -151,7 +151,7 @@ class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
                 request.options.get_any((ChatOption, LlmOption)),  # FIXME  # noqa
             )
 
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 for s in tgl3.run_llm(llm, toks):
                     await sink.emit(AiChoicesDeltas([
                         AiChoiceDeltas([
@@ -159,7 +159,7 @@ class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
                         ]),
                     ]))
 
-                return []
+                return ChatChoicesStreamResult()
 
             return await new_stream_response(rs, inner)
 

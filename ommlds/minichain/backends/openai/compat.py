@@ -30,6 +30,7 @@ from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamOption
 from ...events.types import EventCallback
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceResponseEvent
 from ...external import ExternalServiceStreamResponseDataEvent
@@ -207,7 +208,10 @@ class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, l
 
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(self._process_sse).as_lines().as_bytes(),
+            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(
+                self._process_sse,
+                lang.as_async(lambda: ChatChoicesStreamResult()),
+            ).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,
         ).new_stream_response(

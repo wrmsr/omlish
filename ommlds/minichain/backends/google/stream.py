@@ -1,6 +1,7 @@
 """https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models"""
 import typing as ta
 
+from omlish import lang
 from omlish import marshal as msh
 from omlish.formats.json import all as json
 from omlish.http import all as http
@@ -15,6 +16,7 @@ from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
 from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from .chat import BaseGoogleChatChoicesService
 from .protocol import build_mc_ai_choices_deltas
 
@@ -64,7 +66,10 @@ class GoogleChatChoicesStreamService(BaseGoogleChatChoicesService):
 
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(self._process_sse).as_lines().as_bytes(),
+            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(
+                self._process_sse,
+                lang.as_async(lambda: ChatChoicesStreamResult()),
+            ).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,
         ).new_stream_response(
