@@ -38,8 +38,8 @@ ChatChoicesOutputs: ta.TypeAlias = ChatChoicesOutput | ChatOutputs
 
 
 @dc.dataclass(frozen=True)
-class AiChoice(lang.Final):
+class ChatChoice(lang.Final):
     chat: AiChat
 
 
-AiChoices: ta.TypeAlias = ta.Sequence[AiChoice]
+ChatChoices: ta.TypeAlias = ta.Sequence[ChatChoice]

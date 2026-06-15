@@ -20,7 +20,7 @@ from ...chat.choices.stream.services import ChatChoicesStreamResponse
 from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.choices.stream.types import AiChoiceDeltas  # noqa
 from ...chat.choices.stream.types import AiChoicesDeltas  # noqa
-from ...chat.choices.types import AiChoice
+from ...chat.choices.types import ChatChoice
 from ...chat.choices.types import ChatChoicesOutputs
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
@@ -220,7 +220,7 @@ class TransformersChatChoicesService(BaseTransformersChatChoicesService):
         check.state(ugt['role'] == 'user')
         check.state(agt['role'] == 'assistant')
 
-        return ChatChoicesResponse([AiChoice([AiMessage(agt['content'])])])
+        return ChatChoicesResponse([ChatChoice([AiMessage(agt['content'])])])
 
 
 ##

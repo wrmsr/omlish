@@ -13,8 +13,8 @@ from ...chat.choices.stream.services import ChatChoicesStreamResponse
 from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ...chat.choices.stream.types import AiChoiceDeltas
 from ...chat.choices.stream.types import AiChoicesDeltas
-from ...chat.choices.types import AiChoice
-from ...chat.choices.types import AiChoices
+from ...chat.choices.types import ChatChoice
+from ...chat.choices.types import ChatChoices
 from ...chat.choices.types import ChatChoicesOutputs
 from ...chat.messages import AiMessage
 from ...chat.stream.types import ContentAiDelta
@@ -27,7 +27,7 @@ from ...services import new_stream_response
 ##
 
 
-class DummyChatChoicesResponse(tv.UniqueScalarTypedValue[AiChoices], Config):
+class DummyChatChoicesResponse(tv.UniqueScalarTypedValue[ChatChoices], Config):
     pass
 
 
@@ -52,8 +52,8 @@ class DummyChatChoicesService:
             self._resp = self.make_string_response_choices([LOREM])
 
     @classmethod
-    def make_string_response_choices(cls, strs: ta.Sequence[str]) -> AiChoices:
-        return [AiChoice([AiMessage(s)]) for s in check.not_isinstance(strs, str)]
+    def make_string_response_choices(cls, strs: ta.Sequence[str]) -> ChatChoices:
+        return [ChatChoice([AiMessage(s)]) for s in check.not_isinstance(strs, str)]
 
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         return ChatChoicesResponse(self._resp)

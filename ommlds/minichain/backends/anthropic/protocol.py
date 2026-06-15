@@ -16,7 +16,7 @@ from omlish.formats.json import all as json
 from ....backends.anthropic.protocol import types as pt
 from ....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.choices.types import AiChoice
+from ...chat.choices.types import ChatChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Message
@@ -165,7 +165,7 @@ def build_mc_choices_response(msg: pt.Message) -> ChatChoicesResponse:
                 raise TypeError(c)
 
     return ChatChoicesResponse(
-        [AiChoice(out)],
+        [ChatChoice(out)],
 
         tv.collect(
             *([TokenUsageOutput(TokenUsage(

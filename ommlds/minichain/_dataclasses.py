@@ -2364,7 +2364,7 @@ def _process_dataclass__4f63c0632d5deeaaca3a2cac8b16c190d46387cd():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.choices.types', 'AiChoice'),
+        ('ommlds.minichain.chat.choices.types', 'ChatChoice'),
     ),
 )
 def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():

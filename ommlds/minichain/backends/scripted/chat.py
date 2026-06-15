@@ -19,7 +19,7 @@ from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.stream.services import ChatChoicesStreamRequest
 from ...chat.choices.stream.services import ChatChoicesStreamResponse
 from ...chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ...chat.choices.types import AiChoice
+from ...chat.choices.types import ChatChoice
 from ...chat.choices.types import ChatChoicesOutputs
 from ...chat.messages import AiMessage
 from ...chat.messages import ThinkingMessage
@@ -145,7 +145,7 @@ class ScriptedChatChoicesService(_ScriptedChatChoicesServiceBase):
                 joiner.add(acd.deltas)
 
         return ChatChoicesResponse(
-            [AiChoice(joiner.build()) for joiner in joiners],
+            [ChatChoice(joiner.build()) for joiner in joiners],
             turn.outputs,
         )
 

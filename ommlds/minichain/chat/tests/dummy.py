@@ -15,7 +15,7 @@ from ..choices.stream.services import ChatChoicesStreamResponse
 from ..choices.stream.services import static_check_is_chat_choices_stream_service
 from ..choices.stream.types import AiChoiceDeltas
 from ..choices.stream.types import AiChoicesDeltas
-from ..choices.types import AiChoice
+from ..choices.types import ChatChoice
 from ..messages import AiChat
 from ..messages import AiMessage
 from ..messages import Chat
@@ -63,7 +63,7 @@ class DummyChatService(DummyFnService):
 @static_check_is_chat_choices_service
 class DummyChatChoicesService(DummyFnService):
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
-        return ChatChoicesResponse([AiChoice(self.fn(request.v))])
+        return ChatChoicesResponse([ChatChoice(self.fn(request.v))])
 
 
 ##

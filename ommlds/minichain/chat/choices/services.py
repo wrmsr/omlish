@@ -8,7 +8,7 @@ from ...services import Request
 from ...services import Response
 from ...services import Service
 from ..messages import Chat
-from .types import AiChoices
+from .types import ChatChoices
 from .types import ChatChoicesOptions
 from .types import ChatChoicesOutputs
 
@@ -18,7 +18,7 @@ from .types import ChatChoicesOutputs
 
 ChatChoicesRequest: ta.TypeAlias = Request[Chat, ChatChoicesOptions]
 
-ChatChoicesResponse: ta.TypeAlias = Response[AiChoices, ChatChoicesOutputs]
+ChatChoicesResponse: ta.TypeAlias = Response[ChatChoices, ChatChoicesOutputs]
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 ChatChoicesService: ta.TypeAlias = Service[ChatChoicesRequest, ChatChoicesResponse]

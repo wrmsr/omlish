@@ -100,8 +100,8 @@ with _lang.auto_proxy_init(
         ChatChoicesOutput,
         ChatChoicesOutputs,
 
-        AiChoice,
-        AiChoices,
+        ChatChoice,
+        ChatChoices,
     )
 
     from .chat.stream.events import (  # noqa

@@ -10,7 +10,7 @@ from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.choices.types import AiChoice
+from ...chat.choices.types import ChatChoice
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat
 from ...chat.messages import ToolUseMessage
@@ -38,7 +38,7 @@ from ..user.configs import UserConfig
 @static_check_is_chat_choices_service
 class DummyChatChoicesService:
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
-        return ChatChoicesResponse([AiChoice([AiMessage(f'*Ai Message {len(request.v) + 1}*')])])
+        return ChatChoicesResponse([ChatChoice([AiMessage(f'*Ai Message {len(request.v) + 1}*')])])
 
 
 class _NoopToolInvoker(ToolInvoker):

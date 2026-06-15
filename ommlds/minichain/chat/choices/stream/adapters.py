@@ -3,8 +3,8 @@ from omlish import dataclasses as dc
 from ....services import Response
 from ..services import ChatChoicesRequest
 from ..services import static_check_is_chat_choices_service
-from ..types import AiChoice
-from ..types import AiChoices
+from ..types import ChatChoice
+from ..types import ChatChoices
 from .joining import AiChoicesDeltaJoiner
 from .services import ChatChoicesOutputs
 from .services import ChatChoicesStreamOutputs
@@ -20,7 +20,7 @@ class ChatChoicesStreamServiceChatChoicesService:
     service: ChatChoicesStreamService
 
     async def invoke(self, request: ChatChoicesRequest) -> Response[
-        AiChoices,
+        ChatChoices,
         ChatChoicesOutputs | ChatChoicesStreamOutputs,
     ]:
         joiner = AiChoicesDeltaJoiner()
@@ -32,4 +32,4 @@ class ChatChoicesStreamServiceChatChoicesService:
         # check.state(resp_v.is_done)
 
         # FIXME: outputs lol
-        return Response([AiChoice(ms) for ms in joiner.build()])
+        return Response([ChatChoice(ms) for ms in joiner.build()])
