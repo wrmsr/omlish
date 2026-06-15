@@ -14,10 +14,13 @@ from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.joining import AiDeltaJoiner
 from ....chat.tools.types import Tool
+from ....llms.stopreasons import EndTurnStopReason
+from ....llms.stopreasons import MaxTokensStopReason
 from ....tools.types import ToolSpec
 from ....tools.types import ToolUse
 from ....tools.types import ToolUseResult
 from ..protocol import build_mc_choices_response
+from ..protocol import build_mc_stop_reason
 from ..protocol import build_ol_request_messages
 from ..protocol import build_ol_request_tool
 from ..stream import OllamaChatChoicesStreamService
@@ -114,3 +117,9 @@ async def test_stream_join():
     assert tu.id == 'call_1'
     assert tu.name == 'weather'
     assert tu.args == {'location': 'Tokyo'}
+
+
+def test_stop_reason_mapping():
+    assert build_mc_stop_reason(None) is None
+    assert isinstance(build_mc_stop_reason('stop'), EndTurnStopReason)
+    assert isinstance(build_mc_stop_reason('length'), MaxTokensStopReason)

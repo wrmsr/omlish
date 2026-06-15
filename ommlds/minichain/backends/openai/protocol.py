@@ -24,8 +24,15 @@ from ...chat.stream.types import PartialToolUseAiDelta
 from ...chat.tools.types import Tool
 from ...content.json import JsonContent
 from ...content.render.standard import render_content_str
+from ...llms.stopreasons import ContentFilterStopReason
+from ...llms.stopreasons import EndTurnStopReason
+from ...llms.stopreasons import MaxTokensStopReason
+from ...llms.stopreasons import OtherStopReason
+from ...llms.stopreasons import StopReason
+from ...llms.stopreasons import ToolUseStopReason
 from ...llms.types import MaxCompletionTokens
 from ...llms.types import MaxTokens
+from ...llms.types import StopReasonOutput
 from ...llms.types import Temperature
 from ...llms.types import TokenUsage
 from ...llms.types import TokenUsageOutput
@@ -133,6 +140,22 @@ def build_mc_ai_choices(oai_resp: pt.ChatCompletionResponse) -> AiChoices:
     ]
 
 
+def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:
+    # openai-compat chat-completions finish reasons.
+    if finish_reason is None:
+        return None
+    elif finish_reason == 'stop':
+        return EndTurnStopReason()
+    elif finish_reason == 'length':
+        return MaxTokensStopReason()
+    elif finish_reason in ('tool_calls', 'function_call'):
+        return ToolUseStopReason()
+    elif finish_reason == 'content_filter':
+        return ContentFilterStopReason()
+    else:
+        return OtherStopReason(finish_reason)
+
+
 def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoicesResponse:
     return ChatChoicesResponse(
         build_mc_ai_choices(oai_resp),
@@ -143,6 +166,11 @@ def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoice
                 output=tu.completion_tokens,
                 total=tu.total_tokens,
             ))] if (tu := oai_resp.usage) is not None else []),
+
+            *([StopReasonOutput(sr)] if (
+                oai_resp.choices and
+                (sr := build_mc_stop_reason(oai_resp.choices[0].finish_reason)) is not None
+            ) else []),
         ),
     )
 

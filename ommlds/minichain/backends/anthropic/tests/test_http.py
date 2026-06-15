@@ -55,7 +55,7 @@ def test_anthropic_chat_model_name(harness):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
     svc = AnthropicChatChoicesService(
         ApiKey(key.reveal()),
-        ModelName('claude-sonnet-4-20250514'),
+        ModelName('claude-sonnet-4-6'),
         http_client=http.SyncAsyncHttpClient(http.client()),
     )
     resp = lang.sync_await(svc.invoke(Request([UserMessage('hi')])))

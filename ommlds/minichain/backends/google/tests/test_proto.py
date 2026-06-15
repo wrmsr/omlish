@@ -12,6 +12,9 @@ from ....chat.messages import UserMessage
 from ....chat.metadata import ThoughtSignature
 from ....chat.stream.joining import AiDeltaJoiner
 from ....chat.tools.types import Tool
+from ....llms.stopreasons import ContentFilterStopReason
+from ....llms.stopreasons import EndTurnStopReason
+from ....llms.stopreasons import MaxTokensStopReason
 from ....standard import ApiKey
 from ....tools.types import ToolSpec
 from ..chat import GoogleChatChoicesService
@@ -19,6 +22,7 @@ from ..protocol import build_g_request_content
 from ..protocol import build_g_request_tool
 from ..protocol import build_mc_ai_choices_deltas
 from ..protocol import build_mc_choices_response
+from ..protocol import build_mc_stop_reason
 from ..protocol import pop_g_system_instruction
 
 
@@ -102,3 +106,10 @@ def test_stream_join_and_thought_signature():
     assert tum.tu.name == 'weather'
     # The thought signature on the function-call part rides through to the joined message's metadata.
     assert check.not_none(tum.metadata.get(ThoughtSignature)).v == 'sig123'
+
+
+def test_stop_reason_mapping():
+    assert build_mc_stop_reason(None) is None
+    assert isinstance(build_mc_stop_reason('STOP'), EndTurnStopReason)
+    assert isinstance(build_mc_stop_reason('MAX_TOKENS'), MaxTokensStopReason)
+    assert isinstance(build_mc_stop_reason('SAFETY'), ContentFilterStopReason)

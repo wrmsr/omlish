@@ -218,6 +218,8 @@ with _lang.auto_proxy_init(
         TurnUuid,
 
         ThoughtSignature,
+
+        MessageStopReason,
     )
 
     from .chat.services import (  # noqa
@@ -483,6 +485,20 @@ with _lang.auto_proxy_init(
         Tokens,
     )
 
+    from .llms.stopreasons import (  # noqa
+        StopReason,
+        EndTurnStopReason,
+        ToolUseStopReason,
+        MaxTokensStopReason,
+        StopSequenceStopReason,
+        ContentFilterStopReason,
+        OtherStopReason,
+    )
+
+    from .llms.tokens import (  # noqa
+        TokenUsage,
+    )
+
     from .llms.types import (  # noqa
         LlmOption,
 
@@ -493,10 +509,8 @@ with _lang.auto_proxy_init(
 
         LlmOutput,
 
-        FinishReason,
-        FinishReasonOutput,
-
-        TokenUsage,
+        StopReasonOutput,
+        InputTokenUsageOutput,
         TokenUsageOutput,
     )
 

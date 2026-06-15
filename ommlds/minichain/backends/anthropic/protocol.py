@@ -29,6 +29,13 @@ from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import PartialToolUseAiDelta
 from ...chat.tools.types import Tool
 from ...content.render.standard import render_content_str
+from ...llms.stopreasons import EndTurnStopReason
+from ...llms.stopreasons import MaxTokensStopReason
+from ...llms.stopreasons import OtherStopReason
+from ...llms.stopreasons import StopReason
+from ...llms.stopreasons import StopSequenceStopReason
+from ...llms.stopreasons import ToolUseStopReason
+from ...llms.types import StopReasonOutput
 from ...llms.types import TokenUsage
 from ...llms.types import TokenUsageOutput
 from ...tools.jsonschema import build_tool_spec_params_json_schema
@@ -123,6 +130,21 @@ def build_ant_request_tool(t: Tool) -> pt.ToolSpec:
 # Responses
 
 
+def build_mc_stop_reason(stop_reason: str | None) -> StopReason | None:
+    if stop_reason is None:
+        return None
+    elif stop_reason == 'end_turn':
+        return EndTurnStopReason()
+    elif stop_reason == 'max_tokens':
+        return MaxTokensStopReason()
+    elif stop_reason == 'tool_use':
+        return ToolUseStopReason()
+    elif stop_reason == 'stop_sequence':
+        return StopSequenceStopReason()
+    else:
+        return OtherStopReason(stop_reason)
+
+
 def build_mc_choices_response(msg: pt.Message) -> ChatChoicesResponse:
     out: list[AnyAiMessage] = []
 
@@ -151,6 +173,8 @@ def build_mc_choices_response(msg: pt.Message) -> ChatChoicesResponse:
                 output=u.output_tokens or 0,
                 total=(u.input_tokens or 0) + (u.output_tokens or 0),
             ))] if (u := msg.usage) is not None else []),
+
+            *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(msg.stop_reason)) is not None else []),
         ),
     )
 

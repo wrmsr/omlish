@@ -4,6 +4,7 @@ import uuid
 from omlish import lang
 from omlish import typedvalues as tv
 
+from ..llms.stopreasons import StopReason
 from ..metadata import CommonMetadata
 from ..metadata import Metadata
 
@@ -33,4 +34,15 @@ class TurnUuid(tv.UniqueScalarTypedValue[uuid.UUID], MessageMetadata, lang.Final
 
 
 class ThoughtSignature(tv.UniqueScalarTypedValue[str], MessageMetadata, lang.Final):
+    pass
+
+
+##
+
+
+class MessageTokenUsage(tv.UniqueScalarTypedValue[int], MessageMetadata, lang.Final):
+    pass
+
+
+class MessageStopReason(tv.UniqueScalarTypedValue[StopReason], MessageMetadata, lang.Final):
     pass

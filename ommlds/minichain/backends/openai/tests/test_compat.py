@@ -18,6 +18,11 @@ from ....chat.messages import AiMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.joining import AiDeltaJoiner
+from ....llms.stopreasons import ContentFilterStopReason
+from ....llms.stopreasons import EndTurnStopReason
+from ....llms.stopreasons import MaxTokensStopReason
+from ....llms.stopreasons import OtherStopReason
+from ....llms.stopreasons import ToolUseStopReason
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
 from ....standard import ApiKey
@@ -27,6 +32,7 @@ from ...groq.chat import GroqChatChoicesService
 from ...groq.stream import GroqChatChoicesStreamService
 from ..compat import OpenaiCompatChatChoicesServiceBase
 from ..protocol import OpenaiChatRequestHandler
+from ..protocol import build_mc_stop_reason
 from ..stream import OpenaiChatChoicesStreamService
 
 
@@ -163,3 +169,12 @@ def test_vendor_knobs(svc_cls, url_part, env):
     svc = svc_cls(ApiKey('k'))
     hdrs = svc._build_headers()
     assert any(b'Bearer k' in (v if isinstance(v, bytes) else str(v).encode()) for v in hdrs.values())
+
+
+def test_stop_reason_mapping():
+    assert build_mc_stop_reason(None) is None
+    assert isinstance(build_mc_stop_reason('stop'), EndTurnStopReason)
+    assert isinstance(build_mc_stop_reason('length'), MaxTokensStopReason)
+    assert isinstance(build_mc_stop_reason('tool_calls'), ToolUseStopReason)
+    assert isinstance(build_mc_stop_reason('content_filter'), ContentFilterStopReason)
+    assert check.isinstance(build_mc_stop_reason('weird'), OtherStopReason).raw == 'weird'

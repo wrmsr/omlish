@@ -8,6 +8,7 @@ Google is a genuinely distinct API (not an openai-compat dialect): `contents` of
 import typing as ta
 
 from omlish import check
+from omlish import typedvalues as tv
 from omlish.formats.json import all as json
 
 from ....backends.google.protocol import types as pt
@@ -28,6 +29,12 @@ from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import ToolUseAiDelta
 from ...chat.tools.types import Tool
 from ...content.json import JsonContent
+from ...llms.stopreasons import ContentFilterStopReason
+from ...llms.stopreasons import EndTurnStopReason
+from ...llms.stopreasons import MaxTokensStopReason
+from ...llms.stopreasons import OtherStopReason
+from ...llms.stopreasons import StopReason
+from ...llms.types import StopReasonOutput
 from ...tools.types import ToolUse
 from .tools import build_tool_spec_schema
 
@@ -144,6 +151,18 @@ def _build_mc_part_message(part: pt.Part) -> AnyAiMessage:
         raise TypeError(part)
 
 
+def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:
+    # Google reports 'STOP' even on tool-calling turns; the driver's structural override corrects that.
+    if finish_reason is None or finish_reason in ('FINISH_REASON_UNSPECIFIED', 'STOP'):
+        return EndTurnStopReason() if finish_reason == 'STOP' else None
+    elif finish_reason == 'MAX_TOKENS':
+        return MaxTokensStopReason()
+    elif finish_reason in ('SAFETY', 'RECITATION', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'SPII'):
+        return ContentFilterStopReason()
+    else:
+        return OtherStopReason(finish_reason)
+
+
 def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesResponse:
     ai_choices: list[AiChoice] = []
     for c in resp.candidates or []:
@@ -152,7 +171,17 @@ def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesRe
             out.append(_build_mc_part_message(part))
         ai_choices.append(AiChoice(out))
 
-    return ChatChoicesResponse(ai_choices)
+    sr: StopReason | None = None
+    if resp.candidates:
+        sr = build_mc_stop_reason(resp.candidates[0].finish_reason)
+
+    return ChatChoicesResponse(
+        ai_choices,
+
+        tv.collect(
+            *([StopReasonOutput(sr)] if sr is not None else []),
+        ),
+    )
 
 
 ##

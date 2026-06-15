@@ -1,6 +1,7 @@
 import itertools
 
 from omlish import check
+from omlish import typedvalues as tv
 from omlish.formats.json import all as json
 
 from ....backends.ollama import protocol as pt
@@ -23,6 +24,11 @@ from ...chat.tools.types import Tool
 from ...content.json import JsonContent
 from ...content.render.standard import render_content_str
 from ...content.text import TextContent
+from ...llms.stopreasons import EndTurnStopReason
+from ...llms.stopreasons import MaxTokensStopReason
+from ...llms.stopreasons import OtherStopReason
+from ...llms.stopreasons import StopReason
+from ...llms.types import StopReasonOutput
 from ...tools.jsonschema import build_tool_spec_params_json_schema
 from ...tools.types import ToolUse
 
@@ -147,7 +153,25 @@ def build_mc_choices_response(ol_resp: pt.ChatResponse) -> ChatChoicesResponse:
     else:
         raise ValueError(ol_msg)
 
-    return ChatChoicesResponse([AiChoice(lst)])
+    return ChatChoicesResponse(
+        [AiChoice(lst)],
+
+        tv.collect(
+            *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(ol_resp.done_reason)) is not None else []),
+        ),
+    )
+
+
+def build_mc_stop_reason(done_reason: str | None) -> StopReason | None:
+    # Ollama reports 'stop' even on tool-calling turns; the driver's structural override corrects that.
+    if done_reason is None:
+        return None
+    elif done_reason == 'stop':
+        return EndTurnStopReason()
+    elif done_reason == 'length':
+        return MaxTokensStopReason()
+    else:
+        return OtherStopReason(done_reason)
 
 
 def build_mc_ai_choice_deltas(ol_resp: pt.ChatResponse) -> AiChoiceDeltas:

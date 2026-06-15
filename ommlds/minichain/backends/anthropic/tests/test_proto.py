@@ -10,6 +10,10 @@ from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
+from ....llms.stopreasons import EndTurnStopReason
+from ....llms.stopreasons import MaxTokensStopReason
+from ....llms.stopreasons import StopSequenceStopReason
+from ....llms.stopreasons import ToolUseStopReason
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
 from ....llms.types import TokenUsageOutput
@@ -21,6 +25,7 @@ from ..chat import AnthropicChatChoicesService
 from ..protocol import build_ant_request_messages
 from ..protocol import build_ant_request_tool
 from ..protocol import build_mc_choices_response
+from ..protocol import build_mc_stop_reason
 
 
 ##
@@ -101,3 +106,11 @@ def test_build_choices_response():
     assert tuo.v.input == 11
     assert tuo.v.output == 22
     assert tuo.v.total == 33
+
+
+def test_stop_reason_mapping():
+    assert build_mc_stop_reason(None) is None
+    assert isinstance(build_mc_stop_reason('end_turn'), EndTurnStopReason)
+    assert isinstance(build_mc_stop_reason('max_tokens'), MaxTokensStopReason)
+    assert isinstance(build_mc_stop_reason('tool_use'), ToolUseStopReason)
+    assert isinstance(build_mc_stop_reason('stop_sequence'), StopSequenceStopReason)
