@@ -130,7 +130,7 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
     print(resp)
     assert resp.v
 
-    tum = check.isinstance(resp.v[-1], ToolUseMessage)
+    tum = check.isinstance(resp.v.chat[-1], ToolUseMessage)
     chat.append(tum)
 
     tem = ToolUseResultMessage(ToolUseResult(

@@ -2,6 +2,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ...generations import ChatGeneration
 from ...messages import AiMessage
 from ...messages import UserMessage
 from ...services import ChatRequest
@@ -16,7 +17,7 @@ from ..types import MessageTransformChatTransform
 class DummyChatService:
     async def invoke(self, request: ChatRequest) -> ChatResponse:
         um = check.isinstance(request.v[-1], UserMessage)
-        return ChatResponse([AiMessage(check.isinstance(um.c, str) + '!')])
+        return ChatResponse(ChatGeneration([AiMessage(check.isinstance(um.c, str) + '!')]))
 
 
 def test_response_message_transforming_chat_service():

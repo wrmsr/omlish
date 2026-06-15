@@ -3,6 +3,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ....text.toolparsing.dumb import DumbToolExecParser
+from ...generations import ChatGeneration
 from ...messages import AiMessage
 from ...messages import UserMessage
 from ...services import ChatRequest
@@ -21,7 +22,15 @@ class DummyChatService:
 
     async def invoke(self, request: ChatRequest) -> ChatResponse:
         um = check.isinstance(request.v[-1], UserMessage)
-        return ChatResponse([AiMessage(''.join([self.prefix, check.isinstance(um.c, str), self.suffix]))])
+        return ChatResponse(
+            ChatGeneration([
+                AiMessage(''.join([
+                    self.prefix,
+                    check.isinstance(um.c, str),
+                    self.suffix,
+                ])),
+            ]),
+        )
 
 
 TOOL_RESPONSE = """\

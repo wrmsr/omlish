@@ -16,7 +16,6 @@ from ..choices.stream.services import static_check_is_chat_choices_stream_servic
 from ..choices.stream.types import AiChoiceDeltas
 from ..choices.stream.types import AiChoicesDeltas
 from ..generations import ChatGeneration
-from ..messages import AiChat
 from ..messages import AiMessage
 from ..messages import Chat
 from ..messages import UserMessage
@@ -29,13 +28,19 @@ from ..stream.types import ContentAiDelta
 ##
 
 
-DummyFn: ta.TypeAlias = ta.Callable[[Chat], AiChat]
+DummyFn: ta.TypeAlias = ta.Callable[[Chat], ChatGeneration]
 SimpleDummyFn: ta.TypeAlias = ta.Callable[[str], str]
 
 
 def simple_dummy_fn(simple_fn: SimpleDummyFn) -> DummyFn:
-    def inner(chat: Chat) -> AiChat:
-        return [AiMessage(simple_fn(check.isinstance(check.isinstance(chat[-1], UserMessage).c, str)))]
+    def inner(chat: Chat) -> ChatGeneration:
+        return ChatGeneration([
+            AiMessage(
+                simple_fn(
+                    check.isinstance(check.isinstance(chat[-1], UserMessage).c, str),
+                ),
+            ),
+        ])
     return inner
 
 
@@ -63,7 +68,7 @@ class DummyChatService(DummyFnService):
 @static_check_is_chat_choices_service
 class DummyChatChoicesService(DummyFnService):
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
-        return ChatChoicesResponse([ChatGeneration(self.fn(request.v))])
+        return ChatChoicesResponse([self.fn(request.v)])
 
 
 ##
@@ -74,13 +79,13 @@ class DummyChatChoicesStreamService(DummyFnService):
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         async with UseResources.or_new(request.options) as rs:
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
-                ac = self.fn(request.v)
+                acg = self.fn(request.v)
                 await sink.emit(AiChoicesDeltas([
                     AiChoiceDeltas([
                         ContentAiDelta(
                             check.isinstance(am, AiMessage).c,
                         )
-                        for am in ac
+                        for am in acg.chat
                     ]),
                 ]))
                 return []

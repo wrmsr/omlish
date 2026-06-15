@@ -9,4 +9,4 @@ from .dummy import DummyChatService
 
 def test_dummy():
     resp = lang.sync_await(DummyChatService.simple(lambda s: s + '!').invoke(ChatRequest([UserMessage('hi')])))
-    assert check.isinstance(check.single(resp.v), AiMessage).c == 'hi!'  # noqa
+    assert check.isinstance(check.single(resp.v.chat), AiMessage).c == 'hi!'  # noqa
