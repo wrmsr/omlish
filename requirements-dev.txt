@@ -70,7 +70,7 @@ psycopg==3.3.4
 mysql-connector-python==9.7.0
 mysqlclient==2.2.8; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
-ujson==5.12.1  # https://github.com/ultrajson/ultrajson/issues/684
+ujson==5.13.0
 
 markupsafe==3.0.3
 
@@ -96,7 +96,7 @@ mdit-py-plugins==0.6.1
 pygments==2.20.0
 
 mwparserfromhell==0.7.2
-wikitextparser==0.56.4  # !! GPL
+wikitextparser==1.0.0  # !! GPL
 
 executing==2.2.1
 asttokens==3.0.1
@@ -135,8 +135,8 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.43.28
-types-boto3>=1.43.28
+boto3>=1.43.30
+types-boto3>=1.43.30
 botocore-stubs>=1.43.14
 
 antlr4-python3-runtime==4.13.2

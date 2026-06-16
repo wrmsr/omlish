@@ -50,7 +50,7 @@ all = [
     'ddgs ~= 9.14',
     'tavily-python ~= 0.7',
     'mwparserfromhell ~= 0.7',
-    'wikitextparser ~= 0.56',
+    'wikitextparser ~= 1.0',
     'lxml >= 6.1',
 ]
 omdev = [
@@ -91,7 +91,7 @@ search = [
 ]
 wiki = [
     'mwparserfromhell ~= 0.7',
-    'wikitextparser ~= 0.56',
+    'wikitextparser ~= 1.0',
 ]
 xml = [
     'lxml >= 6.1',

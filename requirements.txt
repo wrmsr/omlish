@@ -26,11 +26,11 @@ sqlalchemy[asyncio]==2.0.50
 ## sql
 
 pg8000==1.31.5
-#> psycopg2==2.9.10
-#> psycopg==3.2.2
+#> psycopg2
+#> psycopg
 
-#> mysql-connector-python==9.7.0
-#> mysqlclient==2.2.5; sys_platform == "darwin"  # brew install mysql pkg-config
+#> mysql-connector-python
+#> mysqlclient
 pymysql==1.2.0
 
 # pyhive
@@ -45,7 +45,7 @@ psutil==7.2.2
 
 ## json
 
-#> ujson==5.10.0
+#> ujson
 orjson==3.11.9  # @omlish-venv !14t !14dt !15t
 
 ## pickle

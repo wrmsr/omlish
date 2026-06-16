@@ -17,7 +17,7 @@ google-cloud-compute==1.48.0
 ##
 # ml
 
-matplotlib==3.10.9
+matplotlib==3.11.0
 
 torch==2.12.0
 torchvision==0.27.0
@@ -59,6 +59,14 @@ basedpyright==1.39.7
 blobfile==3.2.0
 
 pydantic-monty==0.0.18
+
+# TODO: quickjs
+
+
+##
+# emu
+
+unicorn==2.1.4
 
 
 ##

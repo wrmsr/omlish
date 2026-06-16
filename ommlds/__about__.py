@@ -73,7 +73,7 @@ class Project(ProjectBase):
         'wiki': [
             'mwparserfromhell ~= 0.7',
 
-            'wikitextparser ~= 0.56',  # !! GPL
+            'wikitextparser ~= 1.0',  # !! GPL
         ],
 
         'xml': [
