@@ -10,8 +10,8 @@ from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....backends.openai.stream import OpenaiChatChoicesStreamService
-from .....chat.stream.choices.services import ChatChoicesStreamService
 from .....chat.messages import UserMessage
+from .....chat.stream.choices.services import ChatChoicesStreamService
 from .....events.injection import event_callbacks
 from .....events.types import Event
 from .....fs import FsRoot

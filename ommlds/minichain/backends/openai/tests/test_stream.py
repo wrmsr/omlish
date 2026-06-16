@@ -5,11 +5,11 @@ from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.choices.adapters import ChatChoicesServiceChatService
-from ....chat.stream.choices.adapters import ChatChoicesStreamServiceChatChoicesService
-from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
 from ....chat.services import ChatService
+from ....chat.stream.choices.adapters import ChatChoicesStreamServiceChatChoicesService
+from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.tools.types import Tool
 from ....resources import Resources
 from ....resources import UseResources

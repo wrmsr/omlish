@@ -6,16 +6,10 @@ from omlish import check
 from ...resources import UseResources
 from ...services import StreamResponseSink
 from ...services import new_stream_response
-from ..choices.types import ChatChoices
-from ..stream.choices.types import ChatChoicesStreamResult
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import ChatChoicesResponse
 from ..choices.services import static_check_is_chat_choices_service
-from ..stream.choices.services import ChatChoicesStreamRequest
-from ..stream.choices.services import ChatChoicesStreamResponse
-from ..stream.choices.services import static_check_is_chat_choices_stream_service
-from ..stream.choices.types import AiChoiceDeltas
-from ..stream.choices.types import AiChoicesDeltas
+from ..choices.types import ChatChoices
 from ..generations import ChatGeneration
 from ..messages import AiMessage
 from ..messages import Chat
@@ -23,6 +17,12 @@ from ..messages import UserMessage
 from ..services import ChatRequest
 from ..services import ChatResponse
 from ..services import static_check_is_chat_service
+from ..stream.choices.services import ChatChoicesStreamRequest
+from ..stream.choices.services import ChatChoicesStreamResponse
+from ..stream.choices.services import static_check_is_chat_choices_stream_service
+from ..stream.choices.types import AiChoiceDeltas
+from ..stream.choices.types import AiChoicesDeltas
+from ..stream.choices.types import ChatChoicesStreamResult
 from ..stream.types import ContentAiDelta
 
 

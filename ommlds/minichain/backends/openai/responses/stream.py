@@ -10,10 +10,10 @@ from omlish.http import sse
 from .....backends.openai.protocol import responses as pt
 from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.stream.choices.services import ChatChoicesStreamResponse
-from ....chat.stream.choices.types import ChatChoicesStreamResult
 from ....chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.choices.types import AiChoiceDeltas
 from ....chat.stream.choices.types import AiChoicesDeltas
+from ....chat.stream.choices.types import ChatChoicesStreamResult
 from ....external import ExternalServiceRequestEvent
 from ....external import ExternalServiceStreamResponseDataEvent
 from ....http.stream import BytesHttpStreamResponseBuilder

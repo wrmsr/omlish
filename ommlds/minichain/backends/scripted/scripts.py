@@ -15,14 +15,14 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.formats.json import all as json
 
-from ...chat.stream.choices.types import AiChoiceDeltas
-from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.choices.services import ChatChoicesServiceOutputs
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Chat
 from ...chat.messages import ThinkingMessage
 from ...chat.messages import ToolUseMessage
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.types import AiDelta
 from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import PartialToolUseAiDelta

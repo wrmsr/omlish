@@ -27,9 +27,9 @@ from ..services import WrappedRequestV
 from ..services import WrappedResponse
 from ..services import WrappedResponseV
 from ..services import WrappedService
+from ..services import WrappedStreamResponse
 from ..services import WrappedStreamResponseEV
 from ..services import WrappedStreamResponseRV
-from ..services import WrappedStreamResponse
 from ..services import WrappedStreamService
 from ..services import WrapperService
 from ..services import WrapperStreamService

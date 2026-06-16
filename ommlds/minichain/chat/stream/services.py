@@ -9,7 +9,6 @@ from ...services import Service
 from ...services import StreamResponse
 from ...types import Output
 from ..messages import Chat
-from ..types import ChatOutputs
 from .types import AiDeltas
 from .types import ChatStreamOptions
 from .types import ChatStreamResult

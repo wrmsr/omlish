@@ -29,8 +29,8 @@ from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.choices.types import ChatChoicesStreamOption
-from ...events.types import EventCallback
 from ...chat.stream.choices.types import ChatChoicesStreamResult
+from ...events.types import EventCallback
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceResponseEvent
 from ...external import ExternalServiceStreamResponseDataEvent

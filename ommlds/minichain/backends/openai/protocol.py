@@ -130,14 +130,32 @@ def build_mc_ai_choice(oai_choice: pt.ChatCompletionResponseChoice) -> ChatGener
             raw_args=oai_tc.function.arguments,
         )))
 
-    return ChatGeneration(cur)
+    return ChatGeneration(
+        cur,
+
+        tv.collect(
+            *([StopReasonOutput(sr)] if (
+                (sr := build_mc_stop_reason(oai_choice.finish_reason)) is not None
+            ) else []),
+        ),
+    )
 
 
 def build_mc_ai_choices(oai_resp: pt.ChatCompletionResponse) -> ChatChoices:
-    return ChatChoices([
-        build_mc_ai_choice(oai_choice)
-        for oai_choice in oai_resp.choices
-    ])
+    return ChatChoices(
+        [
+            build_mc_ai_choice(oai_choice)
+            for oai_choice in oai_resp.choices
+        ],
+
+        tv.collect(
+            *([TokenUsageOutput(TokenUsage(
+                input=tu.prompt_tokens,
+                output=tu.completion_tokens,
+                total=tu.total_tokens,
+            ))] if (tu := oai_resp.usage) is not None else []),
+        ),
+    )
 
 
 def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:
@@ -159,19 +177,6 @@ def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:
 def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoicesResponse:
     return ChatChoicesResponse(
         build_mc_ai_choices(oai_resp),
-
-        tv.collect(
-            *([TokenUsageOutput(TokenUsage(
-                input=tu.prompt_tokens,
-                output=tu.completion_tokens,
-                total=tu.total_tokens,
-            ))] if (tu := oai_resp.usage) is not None else []),
-
-            *([StopReasonOutput(sr)] if (
-                oai_resp.choices and
-                (sr := build_mc_stop_reason(oai_resp.choices[0].finish_reason)) is not None
-            ) else []),
-        ),
     )
 
 

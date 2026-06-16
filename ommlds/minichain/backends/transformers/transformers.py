@@ -13,15 +13,9 @@ from omlish import typedvalues as tv
 from omlish.asyncs.asyncio.relays import AsyncioSyncToAsyncBufferRelay
 
 from ...chat.choices.services import ChatChoicesRequest
-from ...chat.choices.types import ChatChoices
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.stream.choices.services import ChatChoicesStreamRequest
-from ...chat.stream.choices.services import ChatChoicesStreamResponse
-from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
-from ...chat.stream.choices.types import AiChoiceDeltas  # noqa
-from ...chat.stream.choices.types import AiChoicesDeltas  # noqa
-from ...chat.stream.choices.types import ChatChoicesStreamResult
+from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
@@ -29,6 +23,12 @@ from ...chat.messages import SystemMessage
 from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.types import AiChoiceDeltas  # noqa
+from ...chat.stream.choices.types import AiChoicesDeltas  # noqa
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.stream.types import ContentAiDelta  # noqa
 from ...completion import CompletionRequest
 from ...completion import CompletionResponse

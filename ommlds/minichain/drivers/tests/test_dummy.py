@@ -6,11 +6,11 @@ import pytest  # noqa
 from omlish import check
 from omlish import inject as inj
 
-from ...chat.choices.types import ChatChoices
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import ChatChoicesService
 from ...chat.choices.services import static_check_is_chat_choices_service
+from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import Chat

@@ -13,10 +13,10 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats.json import all as json
 
-from ...chat.choices.types import ChatChoices
 from ....backends.anthropic.protocol import types as pt
 from ....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
@@ -166,17 +166,21 @@ def build_mc_choices_response(msg: pt.Message) -> ChatChoicesResponse:
                 raise TypeError(c)
 
     return ChatChoicesResponse(
-        ChatChoices([ChatGeneration(out)]),
+        ChatChoices([
+            ChatGeneration(
+                out,
 
-        tv.collect(
-            *([TokenUsageOutput(TokenUsage(
-                input=u.input_tokens or 0,
-                output=u.output_tokens or 0,
-                total=(u.input_tokens or 0) + (u.output_tokens or 0),
-            ))] if (u := msg.usage) is not None else []),
+                tv.collect(
+                    *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(msg.stop_reason)) is not None else []),
 
-            *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(msg.stop_reason)) is not None else []),
-        ),
+                    *([TokenUsageOutput(TokenUsage(
+                        input=u.input_tokens or 0,
+                        output=u.output_tokens or 0,
+                        total=(u.input_tokens or 0) + (u.output_tokens or 0),
+                    ))] if (u := msg.usage) is not None else []),
+                ),
+            ),
+        ]),
     )
 
 

@@ -1,10 +1,10 @@
 import typing as ta
 
-from omlish import marshal as msh
 from omlish import check
-from omlish import typedvalues as tv
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
+from omlish import typedvalues as tv
 
 from ..._typedvalues import _tv_field_metadata
 from ...content.content import Content

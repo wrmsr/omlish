@@ -5,24 +5,24 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
 from ...chat.choices.services import static_check_is_chat_choices_service
-from ...chat.stream.choices.services import ChatChoicesStreamRequest
-from ...chat.stream.choices.services import ChatChoicesStreamResponse
-from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
-from ...chat.stream.choices.types import AiChoiceDeltas
-from ...chat.stream.choices.types import AiChoicesDeltas
+from ...chat.choices.types import ChatChoices
 from ...chat.choices.types import ChatChoicesOptions
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamResponse
+from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
+from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...chat.stream.types import ContentAiDelta
 from ...configs import Config
-from ...chat.choices.types import ChatChoices
 from ...llms.types import MaxTokens
 from ...models.configs import ModelPath
 from ...models.configs import ModelRepo

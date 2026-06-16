@@ -1,16 +1,16 @@
 import typing as ta
 
 from omlish import check
-from omlish import typedvalues as tv
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ...._typedvalues import _tv_field_metadata
 from ....services import StreamOptions
 from ....types import Option
 from ....types import Output
-from ..types import AiDeltas
 from ...choices.types import ChatChoicesOptions
+from ..types import AiDeltas
 
 
 ##

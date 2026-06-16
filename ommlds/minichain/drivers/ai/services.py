@@ -5,12 +5,12 @@ from omlish import lang
 
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesService
-from ...chat.stream.choices.services import ChatChoicesStreamRequest
-from ...chat.stream.choices.services import ChatChoicesStreamService
 from ...chat.choices.types import ChatChoicesOptions
 from ...chat.messages import AiChat
 from ...chat.messages import Chat
 from ...chat.metadata import MessageUuid
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.services import ChatChoicesStreamService
 from ...chat.stream.joining import AiDeltaJoiner
 from ...chat.stream.transform.types import AiDeltaTransformAiDeltasTransform
 from ...chat.stream.transform.uuids import TypeSequentialMessageUuidAddingAiDeltaTransform

@@ -6,17 +6,17 @@ from omlish.formats.json import all as json
 
 from ....backends.ollama import protocol as pt
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
-from ...chat.choices.types import ChatChoices
 from ...chat.messages import Chat
 from ...chat.messages import SystemMessage
 from ...chat.messages import ThinkingMessage
 from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
+from ...chat.stream.choices.types import AiChoiceDeltas
 from ...chat.stream.types import AiDelta
 from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import ThinkingAiDelta
@@ -155,11 +155,16 @@ def build_mc_choices_response(ol_resp: pt.ChatResponse) -> ChatChoicesResponse:
         raise ValueError(ol_msg)
 
     return ChatChoicesResponse(
-        ChatChoices([ChatGeneration(lst)]),
+        ChatChoices([
+            ChatGeneration(
+                lst,
 
-        tv.collect(
-            *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(ol_resp.done_reason)) is not None else []),
-        ),
+                tv.collect(
+                    *([StopReasonOutput(sr)] if (sr := build_mc_stop_reason(ol_resp.done_reason)) is not None else []),
+                ),
+            ),
+        ]),
+
     )
 
 

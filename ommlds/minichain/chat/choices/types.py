@@ -1,11 +1,12 @@
 import typing as ta
 
 from omlish import check
-from omlish import typedvalues as tv
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ..._typedvalues import _tv_field_metadata
+from ...llms.types import LlmOutput
 from ...types import Option
 from ...types import Output
 from ..generations import ChatGeneration
@@ -29,7 +30,7 @@ class ChatChoicesOutput(Output, lang.Abstract, lang.Sealed):
     pass
 
 
-ChatChoicesOutputs: ta.TypeAlias = ChatChoicesOutput
+ChatChoicesOutputs: ta.TypeAlias = ChatChoicesOutput | LlmOutput
 
 
 ##

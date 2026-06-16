@@ -13,10 +13,8 @@ from omlish.formats.json import all as json
 
 from ....backends.google.protocol import types as pt
 from ...chat.choices.services import ChatChoicesResponse
-from ...chat.stream.choices.types import AiChoiceDeltas
-from ...chat.stream.choices.types import AiChoicesDeltas
-from ...chat.generations import ChatGeneration
 from ...chat.choices.types import ChatChoices
+from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import AnyAiMessage
 from ...chat.messages import Message
@@ -25,6 +23,8 @@ from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
 from ...chat.metadata import ThoughtSignature
+from ...chat.stream.choices.types import AiChoiceDeltas
+from ...chat.stream.choices.types import AiChoicesDeltas
 from ...chat.stream.types import AiDelta
 from ...chat.stream.types import ContentAiDelta
 from ...chat.stream.types import ToolUseAiDelta
@@ -170,18 +170,21 @@ def build_mc_choices_response(resp: pt.GenerateContentResponse) -> ChatChoicesRe
         out: list[AnyAiMessage] = []
         for part in check.not_none(check.not_none(c.content).parts):
             out.append(_build_mc_part_message(part))
-        ai_choices.append(ChatGeneration(out))
 
-    sr: StopReason | None = None
-    if resp.candidates:
-        sr = build_mc_stop_reason(resp.candidates[0].finish_reason)
+        ai_choices.append(ChatGeneration(
+            out,
+
+            tv.collect(
+                *(
+                    [StopReasonOutput(sr)]
+                    if (fr := c.finish_reason) is not None and (sr := build_mc_stop_reason(fr)) is not None
+                    else []
+                ),
+            ),
+        ))
 
     return ChatChoicesResponse(
         ChatChoices(ai_choices),
-
-        tv.collect(
-            *([StopReasonOutput(sr)] if sr is not None else []),
-        ),
     )
 
 

@@ -87,7 +87,7 @@
     "module": ".minichain.backends.anthropic.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/anthropic/stream.py",
-    "line": 26,
+    "line": 27,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.anthropic.stream",
@@ -276,7 +276,7 @@
     "module": ".minichain.backends.google.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/google/stream.py",
-    "line": 25,
+    "line": 27,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.google.stream",
@@ -362,7 +362,7 @@
     "module": ".minichain.backends.llamacpp.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/chat.py",
-    "line": 36,
+    "line": 37,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -377,7 +377,7 @@
     "module": ".minichain.backends.llamacpp.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/chat.py",
-    "line": 45,
+    "line": 46,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.llamacpp.chat",
@@ -437,7 +437,7 @@
     "module": ".minichain.backends.mistral",
     "attr": null,
     "file": "ommlds/minichain/backends/mistral.py",
-    "line": 27,
+    "line": 28,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mistral",
@@ -452,7 +452,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 41,
+    "line": 42,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -468,7 +468,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 135,
+    "line": 136,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mlx.chat",
@@ -483,7 +483,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 165,
+    "line": 166,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mlx.chat",
@@ -529,7 +529,7 @@
     "module": ".minichain.backends.ollama.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/ollama/stream.py",
-    "line": 24,
+    "line": 25,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.ollama.stream",
@@ -706,7 +706,7 @@
     "module": ".minichain.backends.openai.responses.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/responses/stream.py",
-    "line": 26,
+    "line": 28,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.openai.responses.stream",
@@ -736,7 +736,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 130,
+    "line": 132,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.scripted.chat",
@@ -751,7 +751,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 156,
+    "line": 158,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.scripted.chat",
@@ -766,7 +766,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 186,
+    "line": 188,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -797,7 +797,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 118,
+    "line": 119,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.tinygrad.chat",
@@ -812,7 +812,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 138,
+    "line": 139,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.tinygrad.chat",
@@ -827,7 +827,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 169,
+    "line": 170,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -860,7 +860,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 52,
+    "line": 53,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -876,7 +876,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 68,
+    "line": 69,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.transformers.transformers",
@@ -893,7 +893,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 199,
+    "line": 200,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.transformers.transformers",
@@ -910,7 +910,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 229,
+    "line": 230,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.transformers.transformers",
@@ -925,23 +925,11 @@
     "module": ".minichain.chat.choices.services",
     "attr": null,
     "file": "ommlds/minichain/chat/choices/services.py",
-    "line": 23,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.chat.choices.services",
         "attr": "ChatChoicesService"
-      }
-    }
-  },
-  {
-    "module": ".minichain.chat.choices.stream.services",
-    "attr": null,
-    "file": "ommlds/minichain/chat/choices/stream/services.py",
-    "line": 28,
-    "value": {
-      "!.minichain.registries.manifests.RegistryTypeManifest": {
-        "module": "ommlds.minichain.chat.choices.stream.services",
-        "attr": "ChatChoicesStreamService"
       }
     }
   },
@@ -961,7 +949,7 @@
     "module": ".minichain.chat.services",
     "attr": null,
     "file": "ommlds/minichain/chat/services.py",
-    "line": 23,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.chat.services",
@@ -970,10 +958,22 @@
     }
   },
   {
+    "module": ".minichain.chat.stream.choices.services",
+    "attr": null,
+    "file": "ommlds/minichain/chat/stream/choices/services.py",
+    "line": 38,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "ommlds.minichain.chat.stream.choices.services",
+        "attr": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.chat.stream.services",
     "attr": null,
     "file": "ommlds/minichain/chat/stream/services.py",
-    "line": 28,
+    "line": 38,
     "value": {
       "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.chat.stream.services",

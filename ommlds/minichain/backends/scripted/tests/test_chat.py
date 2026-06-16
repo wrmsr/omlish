@@ -3,11 +3,11 @@ import pytest
 from omlish import check
 
 from ....chat.choices.services import ChatChoicesRequest
-from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.messages import AiMessage
 from ....chat.messages import ThinkingMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.choices.services import ChatChoicesStreamRequest
 from ....chat.stream.joining import AiDeltaJoiner
 from ....chat.stream.types import ContentAiDelta
 from ....chat.stream.types import PartialToolUseAiDelta

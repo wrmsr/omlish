@@ -4,9 +4,9 @@ from omlish import dataclasses as dc
 from ...services import Response
 from ..generations import ChatGeneration
 from ..services import ChatRequest
+from ..services import ChatServiceOutputs
 from ..services import static_check_is_chat_service
 from .services import ChatChoicesService
-from ..services import ChatServiceOutputs
 
 
 ##
