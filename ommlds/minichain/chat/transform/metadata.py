@@ -9,23 +9,10 @@ from omlish import typedvalues as tv
 from ...transform.metadata import CreatedAtAddingGeneralTransform
 from ..messages import Chat
 from ..messages import Message
-from ..messages import MessageOriginal
 from ..metadata import MessageMetadata
 from ..metadata import MessageUuid
 from ..metadata import TurnUuid
 from .types import MessageTransform
-
-
-##
-
-
-class OriginalMetadataStrippingMessageTransform(MessageTransform):
-    def transform(self, m: Message) -> ta.Sequence[Message]:
-        return [m._with_metadata(discard=[MessageOriginal])]  # noqa
-
-
-def strip_message_original_metadata(c: Message) -> Message:
-    return check.single(OriginalMetadataStrippingMessageTransform().transform(c))
 
 
 ##

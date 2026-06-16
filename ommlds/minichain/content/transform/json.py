@@ -5,7 +5,6 @@ from omlish.formats.json import all as json
 from ..code import BlockCodeContent
 from ..code import InlineCodeContent
 from ..json import JsonContent
-from ..metadata import with_content_original
 from ..standard import StandardContent
 from ..text import TextContent
 from .visitors import VisitorContentTransform
@@ -52,4 +51,4 @@ class JsonContentRenderer(VisitorContentTransform):
             case _:
                 raise ValueError(self._code)
 
-        return with_content_original(nc, original=c)
+        return nc

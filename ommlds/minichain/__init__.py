@@ -203,10 +203,6 @@ with _lang.auto_proxy_init(
         Message,
         Chat,
 
-        MessageOriginal,
-        suppress_message_originals,
-        with_message_original,
-
         AnyUserMessage,
         UserChat,
         check_user_chat,
@@ -390,10 +386,6 @@ with _lang.auto_proxy_init(
         ContentMetadatas,
 
         ContentUuid,
-
-        ContentOriginal,
-        suppress_content_originals,
-        with_content_original,
     )
 
     from .content.namespaces import (  # noqa

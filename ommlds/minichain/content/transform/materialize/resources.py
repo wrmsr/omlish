@@ -1,7 +1,6 @@
 from omlish import lang
 
 from ...content import Content
-from ...metadata import with_content_original
 from ...resources import ResourceContent
 from ...standard import StandardContent
 from ...text import TextContent
@@ -54,5 +53,4 @@ class ResourceContentMaterializer(VisitorContentTransform):
         self._content_cache = content_cache
 
     def visit_resource_content(self, c: ResourceContent, ctx: None) -> Content:
-        nc = self._content_cache.get(c)
-        return with_content_original(nc, original=c)
+        return self._content_cache.get(c)

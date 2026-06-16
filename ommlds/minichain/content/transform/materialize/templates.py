@@ -2,7 +2,6 @@ from omlish import check
 from omlish.text import templating as tpl
 
 from ...content import Content
-from ...metadata import with_content_original
 from ...templates import TemplateContent
 from ...text import TextContent
 from ..visitors import VisitorContentTransform
@@ -22,4 +21,4 @@ class TemplateContentMaterializer(VisitorContentTransform):
 
     def visit_template_content(self, c: TemplateContent, ctx: None) -> Content:
         s = c.t.render(check.not_none(self._templater_context))
-        return with_content_original(TextContent(s), original=c)
+        return TextContent(s)

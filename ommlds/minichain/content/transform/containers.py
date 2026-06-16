@@ -10,7 +10,6 @@ from ..containers import ConcatContent
 from ..containers import ContainerContent
 from ..containers import FlowContent
 from ..content import Content
-from ..metadata import with_content_original
 from ..standard import StandardContent
 from ..text import TextContent  # noqa
 from ..visitors import StandardContentVisitor
@@ -61,8 +60,7 @@ class UnwrapContainersTransform(StandardContentVisitor[None, Content], VisitorCo
         if len(children) != 1:
             return nc
 
-        single_child = check.isinstance(check.single(children), StandardContent)
-        return with_content_original(single_child, original=nc)
+        return check.isinstance(check.single(children), StandardContent)
 
 
 ##
@@ -85,7 +83,7 @@ class JoinContainerContentsTransform(StandardContentVisitor[None, Content], Visi
         def flush_span() -> None:
             if len(current_span) > 1:
                 joined_text = joiner(current_span)
-                joined_node = with_content_original(TextContent(joined_text), original=list(current_span))
+                joined_node = TextContent(joined_text)
                 new_children.append(joined_node)
             elif len(current_span) == 1:
                 new_children.append(current_span[0])

@@ -6,7 +6,6 @@ from ...chat.choices.services import ChatChoicesService
 from ...chat.stream.choices.services import ChatChoicesStreamService
 from ...chat.tools.types import Tool
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
-from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
 from ...chat.transform.types import CompositeMessageTransform
 from ...chat.transform.types import MessageTransformChatTransform
 from ...tools.execution.catalog import ToolCatalog
@@ -53,7 +52,6 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
     els.append(inj.bind(AiChatChatTransform, to_const=MessageTransformChatTransform(
         CompositeMessageTransform([
             CreatedAtAddingMessageTransform(),
-            OriginalMetadataStrippingMessageTransform(),
         ]),
     )))
 

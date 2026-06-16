@@ -4,7 +4,6 @@ from omlish import inject as inj
 from ...chat.messages import UserMessage
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
 from ...chat.transform.metadata import MessageUuidAddingMessageTransform
-from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
 from ...chat.transform.types import CompositeMessageTransform
 from ...chat.transform.types import MessageTransformChatTransform
 from ..actions import SendUserMessagesAction
@@ -30,7 +29,6 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
         CompositeMessageTransform([
             MessageUuidAddingMessageTransform(),
             CreatedAtAddingMessageTransform(),
-            OriginalMetadataStrippingMessageTransform(),
         ]),
     )))
 

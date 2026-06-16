@@ -7,7 +7,6 @@ from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.transform.metadata import CreatedAtAddingMessageTransform
 from ...chat.transform.metadata import MessageUuidAddingMessageTransform
-from ...chat.transform.metadata import OriginalMetadataStrippingMessageTransform
 from ...chat.transform.types import CompositeMessageTransform
 from ...tools.execution.catalog import ToolCatalog
 from ...tools.execution.execution import ToolUseExecution
@@ -36,7 +35,6 @@ class ToolExecutingAiChatGenerator(AiChatGenerator):
         self._mt = CompositeMessageTransform([
             CreatedAtAddingMessageTransform(),
             MessageUuidAddingMessageTransform(),
-            OriginalMetadataStrippingMessageTransform(),
         ])
 
     async def generate_ai_chat(self, args: GenerateAiChatArgs) -> Chat:

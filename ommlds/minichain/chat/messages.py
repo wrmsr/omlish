@@ -2,7 +2,6 @@
 TODO:
  - channel? reasoning / thinking?
 """
-import contextvars
 import operator
 import typing as ta
 
@@ -15,7 +14,6 @@ from ..content.content import Content
 from ..metadata import MetadataContainerDataclass
 from ..tools.types import ToolUse
 from ..tools.types import ToolUseResult
-from .metadata import MessageMetadata
 from .metadata import MessageMetadatas
 
 
@@ -40,58 +38,20 @@ class Message(MetadataContainerDataclass[MessageMetadatas], lang.Abstract, lang.
             *add: MessageMetadatas,
             discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
             mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-            no_original: bool = False,
     ) -> ta.Self:
         return self._with_metadata(
             *add,
             discard=discard,
             mode=mode,
-            _replace=type(self).replace if not no_original else None,
         )
 
     #
 
     def replace(self, **kwargs: ta.Any) -> ta.Self:
-        if (n := dc.replace_is_not(self, **kwargs)) is self:
-            return self
-        return with_message_original(n, original=self)
+        return dc.replace_is_not(self, **kwargs)
 
 
 Chat: ta.TypeAlias = ta.Sequence[Message]
-
-
-##
-# Notable asymmetry: ContentOriginal is in content.metadata, but this has to be here due to marshaling constraints:
-# putting it in chat.metadata requires a `if ta.TYPE_CHECKING` import of Message, which omlish.marshal can't handle.
-
-
-@dc.dataclass(frozen=True)
-class MessageOriginal(MessageMetadata, lang.Final):
-    c: ta.Sequence[Message]
-
-
-SUPPRESS_MESSAGE_ORIGINALS_CV: contextvars.ContextVar[bool] = contextvars.ContextVar(
-    f'{__name__}.SUPPRESS_MESSAGE_ORIGINALS_CV',
-    default=False,
-)
-
-
-def suppress_message_originals(st: bool = True) -> ta.ContextManager[None]:
-    return SUPPRESS_MESSAGE_ORIGINALS_CV.set(st)  # type: ignore[return-value]
-
-
-def with_message_original(m: MessageT, *, original: Message | ta.Sequence[Message]) -> MessageT:
-    if SUPPRESS_MESSAGE_ORIGINALS_CV.get():
-        return m
-
-    if not isinstance(original, ta.Sequence):
-        original = [original]
-
-    return m._with_metadata(  # noqa
-        MessageOriginal(original),
-        discard=[MessageOriginal],
-        mode='override',
-    )
 
 
 ##

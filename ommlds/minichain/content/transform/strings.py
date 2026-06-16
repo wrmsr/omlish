@@ -4,7 +4,6 @@ from omlish import dataclasses as dc
 
 from ..content import Content
 from ..emphasis import EmphasisContent
-from ..metadata import with_content_original
 from ..text import TextContent
 from .visitors import VisitorContentTransform
 
@@ -20,7 +19,7 @@ class StringFnContentTransform(VisitorContentTransform):
     fn: ta.Callable[[str], str]
 
     def visit_str(self, c: str, ctx: None) -> TextContent:
-        return with_content_original(TextContent(self.fn(c)), original=c)
+        return TextContent(self.fn(c))
 
     def visit_text_content(self, c: TextContent, ctx: None) -> TextContent:
         return c.replace(s=self.fn(c.s))
