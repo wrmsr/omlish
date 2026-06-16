@@ -19,7 +19,7 @@ from ....chat.messages import Message
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....content.render.standard import render_content_str
-from ....fs import FsRoot
+from ....fs.types import FsRoot
 from ....modules.fs.configs import FsConfig
 from ....modules.inject import bind_module
 from ....tools.types import ToolUse

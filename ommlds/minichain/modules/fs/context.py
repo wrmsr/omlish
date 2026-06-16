@@ -3,18 +3,18 @@ import stat
 
 from omlish import check
 
-from ...fs import FsRoot
+from ...fs.binfiles import has_binary_file_extension
+from ...fs.binfiles import is_binary_file
+from ...fs.suggestions import get_path_suggestions
+from ...fs.types import FsRoot
 from ...tools.execution.permissions import DENY_TOOL_PERMISSION_DECIDER
 from ...tools.execution.permissions import ToolPermissionDecider
 from ...tools.permissions.fs import FsToolPermissionTarget
-from .binfiles import has_binary_file_extension
-from .binfiles import is_binary_file
 from .errors import RequestedPathAlreadyExistsError
 from .errors import RequestedPathDoesNotExistError
 from .errors import RequestedPathOutsideRootDirError
 from .errors import RequestedPathWriteNotPermittedError
 from .errors import RequestedPathWrongTypeError
-from .suggestions import get_path_suggestions
 
 
 ##

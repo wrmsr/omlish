@@ -9,7 +9,7 @@ from ...drivers.preparing.types import PlaceholderContents
 from ...drivers.preparing.types import PlaceholderContentsProvider
 from ...drivers.preparing.types import ProvidedSystemMessage
 from ...drivers.preparing.types import SystemMessageProvider
-from ...fs import FsRoot
+from ...fs.types import FsRoot
 from .prompts import CODE_AGENT_SYSTEM_PROMPT
 from .prompts import CodeAgentSystemPromptEnvironmentPlaceholder
 from .prompts import build_code_agent_system_prompt_environment

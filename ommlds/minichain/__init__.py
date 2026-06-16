@@ -981,7 +981,7 @@ with _lang.auto_proxy_init(
         ExternalServiceStreamResponseEndEvent,
     )
 
-    from .fs import (  # noqa
+    from .fs.types import (  # noqa
         FsRoot,
     )
 

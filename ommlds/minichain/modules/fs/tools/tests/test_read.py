@@ -2,7 +2,7 @@ import os.path
 
 import pytest
 
-from .....fs import FsRoot
+from .....fs.types import FsRoot
 from .....tools.execution.permissions import StaticToolPermissionDecider
 from .....tools.permissions.types import ToolPermissionState
 from ...context import FsContext

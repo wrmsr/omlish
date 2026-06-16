@@ -4,7 +4,7 @@ import pytest
 
 from omlish import contextual as cxl
 
-from .....fs import FsRoot
+from .....fs.types import FsRoot
 from .....tools.execution.permissions import StaticToolPermissionDecider
 from .....tools.permissions.types import ToolPermissionState
 from ...context import FsContext

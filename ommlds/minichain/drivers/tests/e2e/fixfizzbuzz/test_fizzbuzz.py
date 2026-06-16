@@ -14,7 +14,7 @@ from .....chat.messages import UserMessage
 from .....chat.stream.choices.services import ChatChoicesStreamService
 from .....events.injection import event_callbacks
 from .....events.types import Event
-from .....fs import FsRoot
+from .....fs.types import FsRoot
 from .....modules.code.configs import CodeConfig
 from .....modules.fs.configs import FsConfig
 from .....modules.inject import bind_module

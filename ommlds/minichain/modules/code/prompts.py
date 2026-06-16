@@ -6,7 +6,7 @@ from ...content.content import Content
 from ...content.parse.simple import parse_simple_content
 from ...content.placeholders import ContentPlaceholder
 from ...content.placeholders import PlaceholderContent
-from ...fs import FsRoot
+from ...fs.types import FsRoot
 
 
 ##

@@ -6,7 +6,7 @@ from omlish import check
 from omlish import contextual as cxl
 
 from ......chat.messages import ToolUse
-from ......fs import FsRoot
+from ......fs.types import FsRoot
 from ......tools.execution.execution import execute_tool_use
 from ......tools.execution.invokers import NameSwitchedToolInvoker
 from ......tools.execution.permissions import StaticToolPermissionDecider

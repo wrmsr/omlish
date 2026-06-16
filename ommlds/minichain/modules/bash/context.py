@@ -1,6 +1,6 @@
 import os.path
 
-from ...fs import FsRoot
+from ...fs.types import FsRoot
 from ...tools.execution.permissions import DENY_TOOL_PERMISSION_DECIDER
 from ...tools.execution.permissions import ToolPermissionDecider
 from ...tools.permissions.bash import BashToolPermissionTarget
