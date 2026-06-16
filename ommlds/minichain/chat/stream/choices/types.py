@@ -9,9 +9,9 @@ from ...._typedvalues import _tv_field_metadata
 from ....services import StreamOptions
 from ....types import Option
 from ....types import Output
+from ...choices.types import ChatChoices
 from ...choices.types import ChatChoicesOptions
 from ..types import AiDeltas
-from ...choices.types import ChatChoices
 
 
 ##

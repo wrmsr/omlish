@@ -15,6 +15,7 @@ from ...chat.messages import AiMessage
 from ...chat.messages import Message
 from ...chat.messages import SystemMessage
 from ...chat.messages import UserMessage
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -204,12 +205,25 @@ class MlxChatChoicesStreamService(BaseMlxChatChoicesService):
             )))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
+                joiner = AiChoicesDeltaJoiner()
+
                 for go in gen:
                     if go.text:
-                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([
-                            ContentAiDelta(go.text),
-                        ])]))
+                        cds = AiChoicesDeltas([
+                            AiChoiceDeltas([
+                                ContentAiDelta(go.text),
+                            ]),
+                        ])
 
-                return ChatChoicesStreamResult()
+                        joiner.add(cds.choices)
+
+                        await sink.emit(cds)
+
+                return ChatChoicesStreamResult(
+                    ChatChoices([
+                        ChatGeneration(jc)
+                        for jc in joiner.build()
+                    ]),
+                )
 
             return await new_stream_response(rs, inner)

@@ -20,8 +20,8 @@ from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import ThinkingMessage
-from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
+from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoicesDeltas

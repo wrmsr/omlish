@@ -109,10 +109,10 @@ class DummyChatChoicesStreamService:
                     await sink.emit(x)
 
                 return ChatChoicesStreamResult(
-                   ChatChoices([
-                       ChatGeneration(jc)
-                       for jc in joiner.build()
-                   ]),
+                    ChatChoices([
+                        ChatGeneration(jc)
+                        for jc in joiner.build()
+                    ]),
                 )
 
             return await new_stream_response(rs, inner)

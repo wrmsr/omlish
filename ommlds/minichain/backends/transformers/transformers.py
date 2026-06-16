@@ -23,6 +23,7 @@ from ...chat.messages import SystemMessage
 from ...chat.messages import ToolUseMessage
 from ...chat.messages import ToolUseResultMessage
 from ...chat.messages import UserMessage
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -276,6 +277,8 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
             thread.start()
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
+                joiner = AiChoicesDeltaJoiner()
+
                 while True:
                     await relay.wait()
                     got = relay.swap()
@@ -291,11 +294,24 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
                         end = False
 
                     if out:
-                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(out)])]))
+                        cds = AiChoicesDeltas([
+                            AiChoiceDeltas([
+                                ContentAiDelta(out),
+                            ]),
+                        ])
+
+                        joiner.add(cds.choices)
+
+                        await sink.emit(cds)
 
                     if end:
                         break
 
-                return ChatChoicesStreamResult()
+                return ChatChoicesStreamResult(
+                    ChatChoices([
+                        ChatGeneration(jc)
+                        for jc in joiner.build()
+                    ]),
+                )
 
             return await new_stream_response(rs, inner)

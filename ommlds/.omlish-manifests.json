@@ -179,7 +179,7 @@
     "module": ".minichain.backends.dummy.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/dummy/chat.py",
-    "line": 34,
+    "line": 35,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.dummy.chat",
@@ -194,7 +194,7 @@
     "module": ".minichain.backends.dummy.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/dummy/chat.py",
-    "line": 69,
+    "line": 70,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.dummy.chat",
@@ -209,7 +209,7 @@
     "module": ".minichain.backends.dummy.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/dummy/chat.py",
-    "line": 114,
+    "line": 124,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -452,7 +452,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 42,
+    "line": 43,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -468,7 +468,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 136,
+    "line": 137,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mlx.chat",
@@ -483,7 +483,7 @@
     "module": ".minichain.backends.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/mlx/chat.py",
-    "line": 166,
+    "line": 167,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.mlx.chat",
@@ -736,7 +736,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 132,
+    "line": 133,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.scripted.chat",
@@ -751,7 +751,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 158,
+    "line": 159,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.scripted.chat",
@@ -766,7 +766,7 @@
     "module": ".minichain.backends.scripted.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/scripted/chat.py",
-    "line": 188,
+    "line": 198,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -797,7 +797,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 119,
+    "line": 120,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.tinygrad.chat",
@@ -812,7 +812,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 139,
+    "line": 140,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.tinygrad.chat",
@@ -827,7 +827,7 @@
     "module": ".minichain.backends.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/tinygrad/chat.py",
-    "line": 170,
+    "line": 182,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -860,7 +860,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 53,
+    "line": 54,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -876,7 +876,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 69,
+    "line": 70,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.transformers.transformers",
@@ -893,7 +893,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 200,
+    "line": 201,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.transformers.transformers",
@@ -910,7 +910,7 @@
     "module": ".minichain.backends.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/transformers/transformers.py",
-    "line": 230,
+    "line": 231,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.transformers.transformers",
