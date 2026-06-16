@@ -49,7 +49,6 @@ from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import UnreflectableTypeError
 from .universe import DEFAULT_UNIVERSE
-from .universe import DYNAMIC_TYPE_NAME_ID
 from .universe import DynamicTypeNameSuffix
 from .universe import RuntimeTypeUniverse
 
@@ -974,7 +973,7 @@ DEFAULT_REFLECTOR = RuntimeTypeReflector()
 
 def make_runtime_reflector(
         *,
-        dynamic_type_name_suffix: DynamicTypeNameSuffix = DYNAMIC_TYPE_NAME_ID,
+        dynamic_type_name_suffix: DynamicTypeNameSuffix = 'id',
         forward_ref_resolver: ForwardRefResolver | None = None,
 ) -> RuntimeTypeReflector:
     return RuntimeTypeReflector(

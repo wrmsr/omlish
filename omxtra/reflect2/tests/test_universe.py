@@ -4,7 +4,6 @@ import typing as ta
 
 from ..core import symbols
 from ..core import types
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 from ..universe import get_type_info
 
@@ -130,7 +129,7 @@ def test_runtime_universe_assigns_id_qualified_fullname_for_dynamic_classes() ->
 
 
 def test_runtime_universe_can_assign_deterministic_counter_dynamic_names() -> None:
-    universe = RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)
+    universe = RuntimeTypeUniverse(dynamic_type_name_suffix='counter')
 
     class LocalOne:
         pass
@@ -147,7 +146,7 @@ def test_runtime_universe_can_assign_deterministic_counter_dynamic_names() -> No
 
 
 def test_runtime_universe_keeps_same_name_dynamic_classes_distinct() -> None:
-    universe = RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)
+    universe = RuntimeTypeUniverse(dynamic_type_name_suffix='counter')
 
     left = type('Repeated', (), {'__module__': __name__})
     right = type('Repeated', (), {'__module__': __name__})

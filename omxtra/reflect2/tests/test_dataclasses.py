@@ -24,12 +24,11 @@ from ..ops import reflect_mro_entries
 from ..queries import get_runtime_collection_shape
 from ..queries import get_runtime_type_shape
 from ..reflect import RuntimeTypeReflector
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER))
+    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def test_reflect_dataclass_fields_replaces_inherited_type_var() -> None:
@@ -399,7 +398,7 @@ def test_generic_dataclass_recursive_alias_field_structural_key_survives_substit
         pass
 
     reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER),
+        RuntimeTypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     inspection = inspect_dataclass(NodeBox, reflector)

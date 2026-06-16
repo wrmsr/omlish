@@ -17,12 +17,11 @@ from ..namedtuples import reflect_namedtuple_field_types
 from ..namedtuples import reflect_namedtuple_fields
 from ..queries import get_runtime_type_shape
 from ..reflect import RuntimeTypeReflector
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER))
+    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def test_is_namedtuple_accepts_typing_namedtuple_class() -> None:

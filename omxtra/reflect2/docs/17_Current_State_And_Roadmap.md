@@ -48,7 +48,7 @@ some.module.User@7fabc123
 some.module.User@1
 ```
 
-`RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)` gives
+`RuntimeTypeUniverse(dynamic_type_name_suffix='counter')` gives
 deterministic per-universe suffixes for tests and reproducible diagnostics.
 
 Forward references fail closed by default. A caller can supply an in-memory

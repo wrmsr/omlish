@@ -22,7 +22,6 @@ from ..errors import UnreflectableTypeError
 from ..reflect import RuntimeTypeReflector
 from ..reflect import make_runtime_reflector
 from ..reflect import reflect_type
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 
 
@@ -149,7 +148,7 @@ def test_make_runtime_reflector_accepts_dynamic_name_suffix() -> None:
     class Local:
         pass
 
-    reflector = make_runtime_reflector(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)
+    reflector = make_runtime_reflector(dynamic_type_name_suffix='counter')
 
     typ = reflector.reflect_type(Local)
 
@@ -161,8 +160,8 @@ def test_separate_reflectors_assign_distinct_dynamic_type_infos() -> None:
     class Local:
         pass
 
-    left_reflector = make_runtime_reflector(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)
-    right_reflector = make_runtime_reflector(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)
+    left_reflector = make_runtime_reflector(dynamic_type_name_suffix='counter')
+    right_reflector = make_runtime_reflector(dynamic_type_name_suffix='counter')
 
     left = left_reflector.reflect_type(Local)
     right = right_reflector.reflect_type(Local)
@@ -1344,7 +1343,7 @@ def test_reflected_class_indirect_generic_base_args_participate_in_subtyping() -
 
 
 def test_reflected_class_generic_mro_remaps_type_vars_at_each_layer() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER))
+    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
     a_var = ta.TypeVar('A')  # type: ignore
     b_var = ta.TypeVar('B')  # type: ignore
     x_var = ta.TypeVar('X')  # type: ignore

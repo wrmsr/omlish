@@ -11,12 +11,11 @@ from ..core import types
 from ..dataclasses import reflect_dataclass_field_annotations
 from ..errors import ReflectionError
 from ..reflect import RuntimeTypeReflector
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER))
+    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def _to_annotation(obj: object) -> object:

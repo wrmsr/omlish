@@ -63,7 +63,6 @@ from ..ops import reflect_type_strs
 from ..ops import reflect_typed_dict_literal_values
 from ..queries import reflect_runtime_effective_type_key
 from ..reflect import RuntimeTypeReflector
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 
 
@@ -79,7 +78,7 @@ def test_reflect_join_returns_matching_runtime_generic_base() -> None:
     typ = reflect_join(
         IntBox,
         Box[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert isinstance(typ, types.Instance)
@@ -1476,7 +1475,7 @@ def test_reflect_join_with_different_runtime_generic_base_arg_returns_union() ->
     typ = reflect_join(
         IntBox,
         Box[str],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert isinstance(typ, types.UnionType)
@@ -1498,7 +1497,7 @@ def test_reflect_meet_returns_runtime_generic_subclass() -> None:
     typ = reflect_meet(
         IntBox,
         Box[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert isinstance(typ, types.Instance)
@@ -2415,7 +2414,7 @@ def test_reflect_instance_uses_explicit_dynamic_name_mode() -> None:
 
     typ = reflect_instance(
         Local,
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert typ.type.fullname.endswith('.Local@1')
@@ -2682,7 +2681,7 @@ def test_reflect_mro_instances_remaps_type_vars_at_each_layer() -> None:
 
     mro = reflect_mro_instances(
         Child[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert [type_str(item) for item in mro] == [
@@ -2713,7 +2712,7 @@ def test_reflect_mro_instances_or_none_returns_mapped_instances() -> None:
 
     mro = reflect_mro_instances_or_none(
         IntBox,
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert mro is not None
@@ -2765,7 +2764,7 @@ def test_reflect_mro_entries_exposes_info_instance_and_args() -> None:
 
     entries = reflect_mro_entries(
         IntBox,
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert [entry.info.fullname for entry in entries] == [
@@ -2802,7 +2801,7 @@ def test_reflect_mro_entries_structural_keys_handle_recursive_alias_remapping() 
         pass
 
     reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER),
+        RuntimeTypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     entries = reflect_mro_entries(Child, reflector)
@@ -2866,7 +2865,7 @@ def test_reflect_mro_type_strs_formats_mapped_mro_instances() -> None:
 
     assert reflect_mro_type_strs(
         Child[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)),
+        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
     ) == [
         f'{Child.__module__}.{Child.__qualname__}@1[builtins.int]',
         f'{Middle.__module__}.{Middle.__qualname__}@2[builtins.dict[builtins.str, builtins.int]]',

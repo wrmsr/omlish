@@ -274,6 +274,11 @@ build-cext: venv
 		(cd "$$d" && ${PYTHON_ABS} setup.py build_ext --inplace) || exit 1 ; \
 	done
 
+# FIXME: ... also pyproject lol
+.PHONY: build-reflect2
+build-reflect2: venv
+	${PYTHON} -mmypyc omxtra/reflect2/core/*.py
+
 
 ## pre-commit
 

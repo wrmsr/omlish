@@ -28,7 +28,7 @@ The suffix mode is selected when constructing the universe:
 ```python
 RuntimeTypeUniverse()
 RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_ID)
-RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER)
+RuntimeTypeUniverse(dynamic_type_name_suffix='counter')
 ```
 
 `DYNAMIC_TYPE_NAME_ID` is the default. It appends `id(cls)` as lowercase
@@ -38,7 +38,7 @@ hexadecimal:
 some.module.User@7fabc123
 ```
 
-`DYNAMIC_TYPE_NAME_COUNTER` appends a deterministic 1-based counter assigned in
+`'counter'` appends a deterministic 1-based counter assigned in
 first-seen order within that universe:
 
 ```text

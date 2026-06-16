@@ -39,7 +39,6 @@ from ..ops import reflect_type_strs
 from ..reflect import RuntimeTypeReflector
 from ..reflect import make_runtime_reflector
 from ..reflect import reflect_type
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 
 
@@ -54,7 +53,7 @@ def test_factory_entrypoint_wires_universe_and_forward_ref_resolver() -> None:
         pass
 
     reflector = make_runtime_reflector(
-        dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER,
+        dynamic_type_name_suffix='counter',
         forward_ref_resolver=lambda name: {'User': int}[name],
     )
 
@@ -67,7 +66,7 @@ def test_explicit_reflector_state_is_shared_across_convenience_entrypoints() -> 
     class Local:
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER))
+    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
 
     direct = reflector.reflect_type(Local)
 
@@ -86,7 +85,7 @@ def test_runtime_operation_entrypoints_accept_runtime_type_objects() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER))
+    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
 
     assert isinstance(reflect_join(IntBox, Box[int], reflector), types.Instance)  # type: ignore
     assert isinstance(reflect_join_list([IntBox, Box[int]], reflector), types.Instance)  # type: ignore

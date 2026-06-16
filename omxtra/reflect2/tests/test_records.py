@@ -16,12 +16,11 @@ from ..records import RUNTIME_RECORD_KIND_NAMEDTUPLE
 from ..records import inspect_record
 from ..records import inspect_record_or_none
 from ..reflect import RuntimeTypeReflector
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER))
+    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def test_inspect_record_normalizes_dataclass_fields() -> None:

@@ -21,7 +21,6 @@ from ..queries import reflect_runtime_unaliased_type_key
 from ..records import RUNTIME_RECORD_KIND_DATACLASS
 from ..records import inspect_record
 from ..reflect import RuntimeTypeReflector
-from ..universe import DYNAMIC_TYPE_NAME_COUNTER
 from ..universe import RuntimeTypeUniverse
 from ..views import get_runtime_type_view
 from ..views import reflect_runtime_type_view
@@ -32,7 +31,7 @@ def _make_reflector(
         aliases: ta.Mapping[str, object] | None = None,
 ) -> RuntimeTypeReflector:
     return RuntimeTypeReflector(
-        RuntimeTypeUniverse(dynamic_type_name_suffix=DYNAMIC_TYPE_NAME_COUNTER),
+        RuntimeTypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver=None if aliases is None else aliases.__getitem__,
     )
 
