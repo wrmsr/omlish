@@ -30,6 +30,7 @@ from ..items import TimelineItem
 from ..items import ToolUseTimelineItem
 from ..items import ToolUseTimelineItemState
 from ..items import UserMessageTimelineItem
+from ..translate import timeline_item_id_for_message
 from ..translate import timeline_translate_chat
 from .harness import timeline_driver_harness
 
@@ -179,7 +180,6 @@ async def test_tool_loop_lifecycle():
         chat = await h.storage.get_chat()
         tums = [m for m in chat if isinstance(m, ToolUseMessage)]
         assert len(tums) == 1
-        from ..translate import timeline_item_id_for_message
         assert timeline_item_id_for_message(tums[0]) == tool.id
 
 

@@ -21,14 +21,17 @@ from .....chat.messages import ToolUseMessage
 from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import UserMessage
 from .....chat.stream.joining import AiDeltaJoiner
+from .....chat.stream.types import ThinkingAiDelta
 from .....chat.tools.types import Tool
 from .....llms.types import MaxTokens
 from .....llms.types import Temperature
+from .....llms.types import TokenUsageOutput
 from .....standard import ApiKey
 from .....tools.types import ToolSpec
 from .....tools.types import ToolUse
 from .....tools.types import ToolUseResult
 from ..chat import OpenaiResponsesChatChoicesService
+from ..protocol import OpenaiResponsesStreamError
 from ..protocol import ResponsesSseDeltaTranslator
 from ..protocol import build_mc_choices_response
 from ..protocol import build_rsp_input_items
@@ -140,7 +143,6 @@ def test_build_choices_response():
     assert tu.name == 'weather'
     assert tu.args == {'location': 'Tokyo'}
 
-    from .....llms.types import TokenUsageOutput
     tuo = check.not_none(gen.outputs.get(TokenUsageOutput))
     assert tuo.v.input == 11
     assert tuo.v.output == 22
@@ -199,7 +201,6 @@ def test_translate_reasoning():
         'response.reasoning_text.delta',
         item_id='r', output_index=0, content_index=0, delta='hmm',
     ))
-    from .....chat.stream.types import ThinkingAiDelta
     (d,) = res.deltas
     assert check.isinstance(d, ThinkingAiDelta).c == 'hmm'
     assert not res.done
@@ -211,8 +212,6 @@ def test_translate_reasoning():
 
 
 def test_translate_error_raises():
-    from ..protocol import OpenaiResponsesStreamError
-
     translator = ResponsesSseDeltaTranslator()
     with pytest.raises(OpenaiResponsesStreamError):
         translator.translate(_event('error', message='boom'))
