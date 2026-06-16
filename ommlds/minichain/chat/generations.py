@@ -91,24 +91,3 @@ class ChatGeneration(MetadataContainerDataclass[ChatGenerationMetadatas], lang.F
     )
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, ChatGenerationMetadatas)  # noqa
-
-    def with_metadata(
-            self,
-            *add: ChatGenerationMetadatas,
-            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-            # no_original: bool = False,
-    ) -> ta.Self:
-        return self._with_metadata(
-            *add,
-            discard=discard,
-            mode=mode,
-            # _replace=type(self).replace if not no_original else None,
-        )
-
-    #
-
-    # def replace(self, **kwargs: ta.Any) -> ta.Self:
-    #     if (n := dc.replace_is_not(self, **kwargs)) is self:
-    #         return self
-    #     return with_chat_generation_original(n, original=self)

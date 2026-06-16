@@ -71,7 +71,7 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     v: V_co  # type: ignore[misc]  # FIXME: Cannot use a covariant type variable as a parameter
 
     def with_v(self, v: V_co) -> ta.Self:  # type: ignore[misc]
-        return confer_orig_class(self, dc.replace(self, v=v))
+        return self.replace(v=v)
 
     #
 
@@ -97,16 +97,11 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
             discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
             mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> Request[V_co, OptionT_co | OptionU]:
-        new = (old := self.options).update(
+        return self.replace(_options=self.options.update(
             *add,  # type: ignore[arg-type]
             discard=discard,
             mode=mode,
-        )
-
-        if new is old:
-            return self
-
-        return confer_orig_class(self, dc.replace(self, _options=new))
+        ))
 
     #
 
@@ -118,23 +113,17 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, RequestMetadatas)  # noqa
 
-    def with_metadata(
-            self,
-            *add: RequestMetadatas,
-            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-    ) -> ta.Self:
-        return confer_orig_class(self, super().with_metadata(
-            *add,
-            discard=discard,
-            mode=mode,
-        ))
-
     #
 
     def validate(self) -> ta.Self:
         self._check_typed_values()
         return self
+
+    #
+
+    @ta.override
+    def replace(self, **kwargs: ta.Any) -> ta.Self:
+        return confer_orig_class(self, super().replace(**kwargs))
 
 
 RequestT_contra = ta.TypeVar('RequestT_contra', bound=Request, contravariant=True)

@@ -69,7 +69,7 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     v: V_co  # type: ignore[misc]  # FIXME: Cannot use a covariant type variable as a parameter
 
     def with_v(self, v: V_co) -> ta.Self:  # type: ignore[misc]
-        return confer_orig_class(self, dc.replace(self, v=v))
+        return self.replace(v=v)
 
     #
 
@@ -95,16 +95,11 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
             discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
             mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
-        new = (old := self.outputs).update(
+        return self.replace(_outputs=self.outputs.update(
             *add,
             discard=discard,
             mode=mode,
-        )
-
-        if new is old:
-            return self
-
-        return confer_orig_class(self, dc.replace(self, _outputs=new))
+        ))
 
     #
 
@@ -116,23 +111,17 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, ResponseMetadatas)  # noqa
 
-    def with_metadata(
-            self,
-            *add: ResponseMetadatas,
-            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-    ) -> ta.Self:
-        return confer_orig_class(self, super().with_metadata(
-            *add,
-            discard=discard,
-            mode=mode,
-        ))
-
     #
 
     def validate(self) -> ta.Self:
         self._check_typed_values()
         return self
+
+    #
+
+    @ta.override
+    def replace(self, **kwargs: ta.Any) -> ta.Self:
+        return confer_orig_class(self, super().replace(**kwargs))
 
 
 ResponseT_co = ta.TypeVar('ResponseT_co', bound=Response, covariant=True)

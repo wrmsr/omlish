@@ -33,23 +33,6 @@ class Message(MetadataContainerDataclass[MessageMetadatas], lang.Abstract, lang.
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, MessageMetadatas)  # noqa
 
-    def with_metadata(
-            self,
-            *add: MessageMetadatas,
-            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-    ) -> ta.Self:
-        return self._with_metadata(
-            *add,
-            discard=discard,
-            mode=mode,
-        )
-
-    #
-
-    def replace(self, **kwargs: ta.Any) -> ta.Self:
-        return dc.replace_is_not(self, **kwargs)
-
 
 Chat: ta.TypeAlias = ta.Sequence[Message]
 

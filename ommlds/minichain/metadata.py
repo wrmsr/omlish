@@ -9,6 +9,7 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ._typedvalues import _tv_field_metadata
+from .dataclasses import StableDataclass
 
 
 ##
@@ -48,7 +49,11 @@ class MetadataContainer(
 
 
 @dc.dataclass(frozen=True)
-class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
+class MetadataContainerDataclass(
+    MetadataContainer[MetadataT],
+    StableDataclass,
+    lang.Abstract,
+):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
@@ -69,37 +74,17 @@ class MetadataContainerDataclass(MetadataContainer[MetadataT], lang.Abstract):
         return check.isinstance(getattr(self, '_metadata'), tv.TypedValues)
 
     @ta.final
-    def _with_metadata(
-            self,
-            *add: MetadataT,
-            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-            _replace: ta.Callable[..., ta.Any] | None = None,
-    ) -> ta.Self:
-        new = (old := self.metadata).update(
-            *add,
-            discard=discard,
-            mode=mode,
-        )
-
-        if new is old:
-            return self
-
-        if _replace is None:
-            _replace = dc.replace
-        return _replace(self, _metadata=new)
-
     def with_metadata(
             self,
             *add: MetadataT,
             discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
             mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
     ) -> ta.Self:
-        return self._with_metadata(
+        return self.replace(_metadata=self.metadata.update(
             *add,
             discard=discard,
             mode=mode,
-        )
+        ))
 
 
 ##

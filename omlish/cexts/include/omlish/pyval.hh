@@ -7,33 +7,37 @@ FIXME:
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 #include <Python.h>
 
 //
 
-class PyVal {
-    static constexpr std::uintptr_t kTagBit = 1u;
+static_assert(sizeof(void*) == 8);
+static_assert(sizeof(std::uintptr_t) == 8);
+static_assert(sizeof(std::int64_t) == 8);
+static_assert(alignof(PyObject) >= 2);
 
-    // C++20 defines the signed left shift as modular (two's-complement), so we shift the signed value directly — no
-    // unsigned laundering to dodge UB.
-    static constexpr std::uintptr_t encode_(std::int64_t v) noexcept {
+namespace pyval_detail {
+    inline constexpr std::uintptr_t kTagBit = std::uintptr_t{1};
+
+    constexpr std::uintptr_t encode(std::int64_t v) noexcept {
         return static_cast<std::uintptr_t>(v << 1) | kTagBit;
     }
 
-    // C++20: the unsigned->signed conversion is modular and the signed right shift is arithmetic, so this sign-extends
-    // reserved/negative immediates.
-    static constexpr std::int64_t decode_(std::uintptr_t w) noexcept {
+    constexpr std::int64_t decode(std::uintptr_t w) noexcept {
         return static_cast<std::int64_t>(w) >> 1;
     }
+}
 
-    static constexpr std::uintptr_t kTag = kTagBit;
+class PyVal {
+    static constexpr std::uintptr_t kTag = pyval_detail::kTagBit;
 
     static constexpr std::int64_t kMin = -(INT64_C(1) << 62);
     static constexpr std::int64_t kMax =  (INT64_C(1) << 62) - 1;
 
 public:
-    static constexpr std::int64_t kSentinelBase = static_cast<std::int64_t>(0x60250c30220fb0b501c0e4ull);  // 116231831072151376813474020
+    static constexpr std::int64_t kSentinelBase = static_cast<std::int64_t>(0xf879a1f939bfd1a2ull);  // 17904519885375918498
     static constexpr std::int64_t kNoneInt  = kSentinelBase;
     static constexpr std::int64_t kFalseInt = kSentinelBase + 1;
     static constexpr std::int64_t kTrueInt  = kSentinelBase + 2;
@@ -41,9 +45,9 @@ public:
     static constexpr std::int64_t kImmMax   = kMax;
 
 private:
-    static constexpr std::uintptr_t kNone  = encode_(kNoneInt);
-    static constexpr std::uintptr_t kFalse = encode_(kFalseInt);
-    static constexpr std::uintptr_t kTrue  = encode_(kTrueInt);
+    static constexpr std::uintptr_t kNone  = pyval_detail::encode(kNoneInt);
+    static constexpr std::uintptr_t kFalse = pyval_detail::encode(kFalseInt);
+    static constexpr std::uintptr_t kTrue  = pyval_detail::encode(kTrueInt);
 
     static bool      is_ptr_(std::uintptr_t w) noexcept { return (w & kTag) == 0; }
     static PyObject* as_ptr_(std::uintptr_t w) noexcept { return reinterpret_cast<PyObject*>(w); }
@@ -72,10 +76,10 @@ private:
 
     // The round-trip asserts below are the real guard on the integer codec: they fail to compile on any target where
     // encode/decode don't invert.
-    static_assert(decode_(encode_(0))       == 0,       "roundtrip");
-    static_assert(decode_(encode_(-1))      == -1,      "roundtrip");
-    static_assert(decode_(encode_(kImmMin)) == kImmMin, "roundtrip");
-    static_assert(decode_(encode_(kImmMax)) == kImmMax, "roundtrip");
+    static_assert(pyval_detail::decode(pyval_detail::encode(0))       == 0,       "roundtrip");
+    static_assert(pyval_detail::decode(pyval_detail::encode(-1))      == -1,      "roundtrip");
+    static_assert(pyval_detail::decode(pyval_detail::encode(kImmMin)) == kImmMin, "roundtrip");
+    static_assert(pyval_detail::decode(pyval_detail::encode(kImmMax)) == kImmMax, "roundtrip");
 
     static_assert(kNone != kFalse && kFalse != kTrue && kNone != kTrue, "sentinels must be distinct");
 
@@ -86,10 +90,8 @@ public:
 
     PyVal() noexcept = default;  // empty (all-zero word)
 
-    ~PyVal() {
-        if (holds_pointer_()) {
-            Py_XDECREF(ptr_());
-        }
+    ~PyVal() noexcept {
+        clear();
     }
 
     PyVal(const PyVal& o) noexcept : w_(o.w_) {
@@ -98,7 +100,7 @@ public:
         }
     }
 
-    PyVal(PyVal&& o) noexcept : w_(o.w_) { o.w_ = 0; }
+    PyVal(PyVal&& o) noexcept : w_(std::exchange(o.w_, 0)) {}
 
     PyVal& operator=(const PyVal& o) noexcept {
         if (this == &o) {
@@ -120,9 +122,8 @@ public:
         if (this == &o) {
             return *this;
         }
-        std::uintptr_t ow = w_;
-        w_ = o.w_;
-        o.w_ = 0;
+        auto ow = w_;
+        w_ = std::exchange(o.w_, 0);
         if (is_ptr_(ow)) {
             Py_XDECREF(as_ptr_(ow));
         }
@@ -130,9 +131,11 @@ public:
     }
 
     void swap(PyVal& o) noexcept {
-        std::uintptr_t t = w_;
-        w_ = o.w_;
-        o.w_ = t;
+        std::swap(w_, o.w_);
+    }
+
+    friend void swap(PyVal& a, PyVal& b) noexcept {
+        a.swap(b);
     }
 
     // queries
@@ -159,7 +162,7 @@ public:
     // Precondition: is_inline_int(). The decoded C value.
     std::int64_t inline_int() const noexcept {
         assert(is_inline_int());
-        return decode_(w_);
+        return pyval_detail::decode(w_);
     }
 
     // Materialize a NEW strong reference equivalent to the contents:
@@ -167,21 +170,19 @@ public:
     //   None/bool  -> the singleton (new ref)
     //   inline int -> a fresh PyLong (may be NULL + MemoryError on failure)
     // Calling this on an empty val is a logic error: returns NULL + SystemError
-    PyObject* to_object() const {
-        if (holds_pointer_()) {
-            PyObject* p = ptr_();
-            if (p) {
-                Py_INCREF(p);
-                return p;
-            }
+    [[nodiscard]] PyObject* to_object() const {
+        if (is_empty()) {
             PyErr_SetString(PyExc_SystemError, "PyVal::to_object() on empty val");
             return nullptr;
         }
+        if (auto* p = object()) {
+            return Py_NewRef(p);
+        }
         switch (w_) {
-            case kNone:  Py_INCREF(Py_None);  return Py_None;
-            case kFalse: Py_INCREF(Py_False); return Py_False;
-            case kTrue:  Py_INCREF(Py_True);  return Py_True;
-            default:     return PyLong_FromLongLong(static_cast<long long>(decode_(w_)));
+            case kNone:  return Py_NewRef(Py_None);
+            case kFalse: return Py_NewRef(Py_False);
+            case kTrue:  return Py_NewRef(Py_True);
+            default:     return PyLong_FromLongLong(static_cast<long long>(pyval_detail::decode(w_)));
         }
     }
 
@@ -196,9 +197,9 @@ public:
     // Store a C integer. In-range values go inline; anything outside [kImmMin, kImmMax] (including the three reserved
     // sentinels) gracefully falls back to a heap PyLong. Returns false ONLY if that allocation fails (MemoryError is
     // set); the inline path cannot fail.
-    bool set_int(std::int64_t v) {
+    [[nodiscard]] bool set_int(std::int64_t v) {
         if (v >= kImmMin && v <= kImmMax && (v < kNoneInt || v > kTrueInt)) {
-            set_word_(encode_(v));
+            set_word_(pyval_detail::encode(v));
             return true;
         }
         PyObject* o = PyLong_FromLongLong(static_cast<long long>(v));
@@ -212,15 +213,14 @@ public:
     // Store a strong reference to an arbitrary object (INCREFs `o`; NULL ok, in which case this is equivalent to
     // clear()).
     void set_object(PyObject* o) noexcept {
-        Py_XINCREF(o);
-        adopt_(o);
+        adopt_(Py_XNewRef(o));
     }
 
     // Same, but steals the caller's reference (no INCREF). Use for fresh refs.
     void set_object_steal(PyObject* o) noexcept { adopt_(o); }
 
-    // Convenience setter. Always collapses None/True/False into immediates (safe — they are singletons, so identity is
-    // preserved). If absorb_ints is set, also collapses exact, in-range PyLongs into immediates — this does NOT
+    // Convenience setter. Always collapses None/True/False into immediates (safe - they are singletons, so identity is
+    // preserved). If absorb_ints is set, also collapses exact, in-range PyLongs into immediates - this does NOT
     // preserve object identity (`x is y` will differ later), hence opt-in.
     void assign(PyObject* o, bool absorb_ints = false) noexcept {
         if (o == Py_None) {
@@ -238,8 +238,12 @@ public:
         if (absorb_ints && o && PyLong_CheckExact(o)) {
             int ovf = 0;
             long long v = PyLong_AsLongLongAndOverflow(o, &ovf);
-            if (!ovf && v >= kImmMin && v <= kImmMax) {
-                set_word_(encode_(static_cast<std::int64_t>(v)));
+            if (
+                !ovf &&
+                v >= kImmMin && v <= kImmMax &&
+                (v < kNoneInt || v > kTrueInt)
+            ) {
+                set_word_(pyval_detail::encode(static_cast<std::int64_t>(v)));
                 return;
             }
         }
@@ -263,8 +267,8 @@ public:
     // manual relocation (the type is NOT trivially copyable)
 
     // Move the owned bits out, leaving this empty. Use when you relocate a val yourself (e.g. growing your own array):
-    // copy the word to the new slot and treat the old slot as released — do NOT also run a destructor on it.
-    std::uintptr_t release() noexcept {
+    // copy the word to the new slot and treat the old slot as released - do NOT also run a destructor on it.
+    [[nodiscard]] std::uintptr_t release() noexcept {
         std::uintptr_t w = w_;
         w_ = 0;
         return w;

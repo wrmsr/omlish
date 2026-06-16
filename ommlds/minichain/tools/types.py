@@ -202,18 +202,6 @@ class ToolUse(MetadataContainerDataclass[ToolUseMetadatas], lang.Final):
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, ToolUseMetadatas)  # noqa
 
-    def with_metadata(
-            self,
-            *add: ToolUseMetadatas,
-            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-    ) -> ta.Self:
-        return self._with_metadata(
-            *add,
-            discard=discard,
-            mode=mode,
-        )
-
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ToolUseResult(MetadataContainerDataclass[ToolUseResultMetadatas], lang.Final):
@@ -226,15 +214,3 @@ class ToolUseResult(MetadataContainerDataclass[ToolUseResultMetadatas], lang.Fin
     _metadata: ta.Sequence[ToolUseResultMetadatas] = dc.field(default=(), kw_only=True, repr=False)
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, ToolUseResultMetadatas)  # noqa
-
-    def with_metadata(
-            self,
-            *add: ToolUseResultMetadatas,
-            discard: ta.Literal['all'] | ta.Iterable[type] | None = None,
-            mode: ta.Literal['append', 'prepend', 'override', 'default'] = 'append',
-    ) -> ta.Self:
-        return self._with_metadata(
-            *add,
-            discard=discard,
-            mode=mode,
-        )
