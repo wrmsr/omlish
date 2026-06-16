@@ -102,8 +102,11 @@ def _make_unwrapped_cache_key_maker(
     src_params = []
     src_vals = []
     kwargs_name = None
-    for p in ps:
+    for p in ps.with_seps:
         if isinstance(p, ParamSeparator):
+            # Reproduce '/' and '*' so the generated key maker enforces positional-only / keyword-only calling
+            # conventions exactly, raising early on invalid calls rather than passing them through to the value fn (or,
+            # worse, silently hitting a warm cache entry).
             src_params.append(p.value)
             continue
 
@@ -209,7 +212,7 @@ class _CachedFunction(Abstract, ta.Generic[T]):
         self.__fn = x
 
     def reset(self) -> None:
-        self._values = {}
+        self._values = self._opts.map_maker()
 
     def __bool__(self) -> bool:
         raise TypeError
@@ -247,12 +250,13 @@ class _CachedFunction(Abstract, ta.Generic[T]):
 
         if self._lock is not None:
             with self._lock:
+                # NOTE: the in-lock recheck must funnel through the same _CachedException unwrapping below as the
+                # uncontended path - returning self._values[k] directly here would leak the wrapper object when another
+                # thread stored a cached exception while we waited for the lock.
                 try:
-                    return self._values[k]
+                    value = self._values[k]
                 except KeyError:
-                    pass
-
-                self._values[k] = value = call_value_fn()
+                    self._values[k] = value = call_value_fn()
 
         else:
             self._values[k] = value = call_value_fn()
@@ -274,17 +278,37 @@ class _FreeCachedFunction(_CachedFunction[T]):
             opts,
             values,
     ):
-        return cls(
-            fn,
-            opts=opts,
-            values=values,
-        )
+        # Reconstruct the same way cached_function() builds free cached functions, so the key maker (bound vs unbound)
+        # and value fn match the original.
+        if isinstance(fn, types.MethodType):
+            return cls(
+                fn,
+                opts=opts,
+                key_maker=_make_cache_key_maker(fn, bound=True),
+                values=values,
+            )
+
+        elif isinstance(fn, staticmethod):
+            return cls(
+                fn,
+                opts=opts,
+                value_fn=unwrap_func(fn),
+                values=values,
+            )
+
+        else:
+            return cls(
+                fn,
+                opts=opts,
+                values=values,
+            )
 
     def __reduce__(self):
+        fn, = self._fn
         return (
             _FreeCachedFunction._unpickle,
             (
-                self._fn,
+                fn,
                 self._opts,
                 self._values if not self._opts.transient else None,
             ),

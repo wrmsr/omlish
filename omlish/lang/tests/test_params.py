@@ -93,3 +93,44 @@ def test_params_pos_only_and_kw_only() -> None:
         KwOnlyParam('c'),
         KwargsParam('kw'),
     ]
+
+
+def test_params_trailing_pos_only() -> None:
+    def foo(a, b, /):
+        pass
+
+    ps = ParamSpec.of_signature(inspect.signature(foo))
+
+    # A trailing positional-only run must still emit its '/' separator.
+    assert list(ps.with_seps) == [
+        PosOnlyParam('a'),
+        PosOnlyParam('b'),
+        ParamSeparator.POS_ONLY,
+    ]
+
+
+def test_params_var_positional_then_kw_only() -> None:
+    def foo(*args, k):
+        pass
+
+    ps = ParamSpec.of_signature(inspect.signature(foo))
+
+    # *args already forces k to be keyword-only - no bare '*' separator should be inserted after it.
+    assert list(ps.with_seps) == [
+        ArgsParam('args'),
+        KwOnlyParam('k'),
+    ]
+
+
+def test_params_pos_only_then_kw_only_no_args() -> None:
+    def foo(a, /, *, b):
+        pass
+
+    ps = ParamSpec.of_signature(inspect.signature(foo))
+
+    assert list(ps.with_seps) == [
+        PosOnlyParam('a'),
+        ParamSeparator.POS_ONLY,
+        ParamSeparator.KW_ONLY,
+        KwOnlyParam('b'),
+    ]

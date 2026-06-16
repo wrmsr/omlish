@@ -226,10 +226,17 @@ class ParamSpec(ta.Sequence[Param], Final):
             if isinstance(p, KwOnlyParam) and not seen_kw_only:
                 l.append(ParamSeparator.KW_ONLY)
                 seen_kw_only = True
-            elif isinstance(p, KwargsParam):
+            elif isinstance(p, (ArgsParam, KwargsParam)):
+                # A var-positional (*args) already forces any following params to be keyword-only, so no bare '*'
+                # separator must be emitted after it (a var-keyword likewise ends the signature) - in both cases
+                # suppress the kw-only separator.
                 seen_kw_only = True
 
             l.append(p)
+
+        if needs_pos_only:
+            # A trailing run of positional-only params still needs its '/' separator.
+            l.append(ParamSeparator.POS_ONLY)
 
         self._with_seps = ws = tuple(l)
         return ws

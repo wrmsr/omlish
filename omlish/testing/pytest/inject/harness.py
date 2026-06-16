@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import contextlib
 import enum
 import typing as ta
@@ -126,43 +127,32 @@ class HarnessPlugin:
 
         self._harnesses_by_session: dict[ta.Any, Harness] = {}
 
-        for scope in PytestScope:
-            self._install_scope_listener(scope)
-
     #
 
-    def get_session_harness(self, session: ta.Any) -> Harness:
+    def get_session_harness(self, session: pytest.Session) -> Harness:
         return self._harnesses_by_session[session]
 
     @contextlib.contextmanager
     def _activate_scope(self, scope: PytestScope, request: pytest.FixtureRequest) -> ta.Generator[None]:
         if scope is PytestScope.SESSION:
-            with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST))._activate() as harness:  # noqa
+            with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST))._activate() as harness:
                 self._harnesses_by_session[request.session] = harness
                 try:
-                    with harness._pytest_scope_manager(scope, request):  # noqa
+                    with harness._pytest_scope_manager(scope, request):
                         yield
                 finally:
                     del self._harnesses_by_session[request.session]
 
         else:
             harness = self.get_session_harness(request.session)
-            with harness._pytest_scope_manager(scope, request):  # noqa
+            with harness._pytest_scope_manager(scope, request):
                 yield
 
     #
 
-    def _make_scope_listener(self, scope: PytestScope) -> ta.Any:
-        def func(request):
-            with self._activate_scope(scope, request):
-                yield
+    _HAS_REGISTERED_SCOPE_LISTENER_FIXTURES: ta.Final = pytest.StashKey[None]()
 
-        func.__name__ = f'_harness_scope_listener_{scope.value}'
-        func.__qualname__ = func.__name__
-
-        return func
-
-    def _install_scope_listener(self, scope: PytestScope) -> ta.Any:
+    def pytest_collection(self, session: pytest.Session) -> None:
         # Awful workaround for this asinine garbage:
         #  - https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
         #  - https://github.com/pytest-dev/pytest/pull/14071
@@ -171,16 +161,42 @@ class HarnessPlugin:
         #    method, while the fixture runs only once per class on a different instance.
         # This of course doesn't apply to fixtures from bound methods on plugin classes, but they still complain about
         # it anyway.
-        func = self._make_scope_listener(scope)
-        setattr(
-            self,
-            func.__name__,
-            pytest.fixture(
-                name=func.__name__,
-                scope=scope.value,  # noqa
-                autouse=True,
-            )(func),
-        )
+
+        if self._HAS_REGISTERED_SCOPE_LISTENER_FIXTURES in session.stash:
+            return
+        session.stash[self._HAS_REGISTERED_SCOPE_LISTENER_FIXTURES] = None
+
+        for scope in PytestScope:
+            func = self._make_scope_listener(scope)
+
+            if hasattr(pytest, 'register_fixture'):
+                pytest.register_fixture(
+                    name=func.__name__,
+                    func=func,
+                    node=session,
+                    scope=scope.value,  # noqa
+                    autouse=True,
+                )
+
+            else:
+                # Support < 9.1
+                session._fixturemanager._register_fixture(
+                    name=func.__name__,
+                    func=func,
+                    nodeid=None,
+                    scope=scope.value,  # noqa
+                    params=None,
+                    ids=None,
+                    autouse=True,
+                )
+
+    def _make_scope_listener(self, scope: PytestScope) -> ta.Any:
+        def func(request):
+            with self._activate_scope(scope, request):
+                yield
+
+        func.__name__ = f'harness_scope_listener_{scope.value}'
+        func.__qualname__ = func.__name__
 
         return func
 
