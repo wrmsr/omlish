@@ -5,6 +5,7 @@
 template<typename T = PyObject>
 class PyRef {
     T* ptr_;
+
 public:
     explicit PyRef(T* ptr = nullptr) : ptr_(ptr) {}
     ~PyRef() {
