@@ -11,7 +11,7 @@ import typing as ta
 from ......io.pipelines.core import IoPipeline
 from ......io.pipelines.core import IoPipelineHandler
 from ......io.pipelines.core import IoPipelineHandlerContext
-from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
+from ......io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 from ......io.pipelines.flow.stub import StubIoPipelineFlowService
 from ....requests import IoPipelineHttpRequestAborted
 from ....requests import IoPipelineHttpRequestBodyData
@@ -127,13 +127,13 @@ async def serve_sha1(
             reader: asyncio.StreamReader,
             writer: asyncio.StreamWriter,
     ) -> None:
-        drv = LoopAsyncioStreamIoPipelineDriver(
+        drv = PollAsyncioStreamIoPipelineDriver(
             build_http_sha1_spec(),
             reader,
             writer,
         )
 
-        await drv.run()
+        await drv.loop_until_done()
 
     srv = await asyncio.start_server(_handle_client, host, port)
 

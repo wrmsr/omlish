@@ -13,7 +13,7 @@ from omlish.http.pipelines.websockets.objects import IoPipelineWebsocketText
 from omlish.io.pipelines.core import IoPipelineHandler
 from omlish.io.pipelines.core import IoPipelineHandlerContext
 from omlish.io.pipelines.core import IoPipelineMessages
-from omlish.io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
+from omlish.io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 
 from .protocol import DevtoolsWebsocketSend
 from .protocol import decode_message
@@ -197,7 +197,7 @@ class ClientHandler:
         super().__init__()
 
         self.service = service
-        self.driver: LoopAsyncioStreamIoPipelineDriver | None = None
+        self.driver: PollAsyncioStreamIoPipelineDriver | None = None
         self.opened = False
 
     async def send_message(self, message: dict[str, object]) -> None:
@@ -293,10 +293,10 @@ class ClientHandler:
         self.outgoing_queue = asyncio.Queue()
         self.incoming_messages_task = asyncio.create_task(self._consume_incoming())
 
-        self.driver = LoopAsyncioStreamIoPipelineDriver(pipeline_spec, reader, writer)
+        self.driver = PollAsyncioStreamIoPipelineDriver(pipeline_spec, reader, writer)
 
         try:
-            await self.driver.run()
+            await self.driver.loop_until_done()
 
         except Exception as error:  # noqa
             self.service.console.print(DevConsoleNotice(str(error), level='error'))

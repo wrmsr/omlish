@@ -6,7 +6,7 @@ import threading
 import typing as ta
 
 from .....io.pipelines.core import IoPipeline
-from .....io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
+from .....io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 
 
 ##
@@ -88,13 +88,13 @@ class HttpServerRunner:
         """Serve requests until shutdown."""
 
         async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-            drv = LoopAsyncioStreamIoPipelineDriver(
+            drv = PollAsyncioStreamIoPipelineDriver(
                 self._spec_builder(),
                 reader,
                 writer,
             )
 
-            await drv.run()
+            await drv.loop_until_done()
 
         self._server = await asyncio.start_server(
             _handle_client,

@@ -72,8 +72,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='bytes/decoders.py', sha1='e49b17ece8aa2e006a6d92158628e2dc671e21f1'),
             dict(path='../../logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='drivers/asyncio.py', sha1='c19149cfebfd2ca9cbc72b3a2eca63335f266cbe'),
-            dict(path='_amalg.py', sha1='14b67747b1e3b3c1483050a7948a29888d732ed9'),
+            dict(path='drivers/asyncio.py', sha1='3c5e22ffdaad0cea3026c9a10a740d68db1dab88'),
+            dict(path='_amalg.py', sha1='9133c93944973dd6cb229e63162628d519dc5ad4'),
         ],
     )
 
@@ -8190,16 +8190,6 @@ def get_module_loggers(mod_globals: ta.Mapping[str, ta.Any]) -> ta.Tuple[Logger,
 
 ########################################
 # ../drivers/asyncio.py
-"""
-TODO:
- - better driver impl
-   - only ever call create_task at startup, never in inner loops
-     - nothing ever does `asyncio.wait(...)`
-   - dedicated read_task, flush_task, sched_task
-     - read_task toggles back and forth between reading and waiting
-   - main task only reads from command queue
- - asynclite?
-"""
 
 
 log, alog = get_module_loggers(globals())  # noqa
@@ -8208,13 +8198,22 @@ log, alog = get_module_loggers(globals())  # noqa
 ##
 
 
-class AsyncioStreamIoPipelineDriver(Abstract):
+class PollAsyncioStreamIoPipelineDriver:
+    """
+    An asyncio pipeline driver with a poll-based interface mirroring the sync driver's API. Unlike
+    LoopAsyncioStreamIoPipelineDriver which runs its own internal event loop via run(), this driver exposes next() and
+    loop_until_done() methods that let the caller control stepping. Unhandled pipeline output messages are returned from
+    next(), enabling streaming use cases.
+    """
+
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['AsyncioStreamIoPipelineDriver.Config']
+        DEFAULT: ta.ClassVar['PollAsyncioStreamIoPipelineDriver.Config']
 
         read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
+
+        strict_input_flow: bool = False
 
     Config.DEFAULT = Config()
 
@@ -8226,6 +8225,8 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             config: ta.Optional[Config] = None,
+            *,
+            _pipeline_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
     ) -> None:
         super().__init__()
 
@@ -8233,14 +8234,21 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         self._reader = reader
         self._writer = writer
         if config is None:
-            config = AsyncioStreamIoPipelineDriver.Config.DEFAULT
+            config = PollAsyncioStreamIoPipelineDriver.Config.DEFAULT
         self._config = config
+        self._pipeline_kwargs = _pipeline_kwargs
 
         #
 
         self._shutdown_event = asyncio.Event()
+        self._command_queue: asyncio.Queue = asyncio.Queue()
 
-        self._command_queue: asyncio.Queue[AsyncioStreamIoPipelineDriver._Command] = asyncio.Queue()
+        self._want_read = False
+        self._want_read_event = asyncio.Event()
+
+        self._command_queue.put_nowait(PollAsyncioStreamIoPipelineDriver._FeedInCommand([
+            IoPipelineMessages.InitialInput(),
+        ]))
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -8253,23 +8261,34 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     def pipeline(self) -> IoPipeline:
         return self._pipeline
 
+    @property
+    def is_running(self) -> bool:
+        try:
+            pipeline = self._pipeline
+        except AttributeError:
+            return False
+        return pipeline.is_ready
+
     ##
     # init
 
     _has_init = False
 
-    _sched: 'AsyncioStreamIoPipelineDriver._SchedulingService'
+    _sched: 'PollAsyncioStreamIoPipelineDriver._SchedulingService'
 
     _pipeline: IoPipeline
 
     _flow: ta.Optional[IoPipelineFlow]
 
-    _command_handlers: ta.Mapping[ta.Type['AsyncioStreamIoPipelineDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
-    _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
+    _command_handlers: ta.Mapping[ta.Type['PollAsyncioStreamIoPipelineDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
+    _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[ta.Optional[str]]]]
 
-    async def _init(self) -> None:
-        check.state(not self._has_init)
+    async def _ensure_init(self) -> IoPipeline:
+        if self._has_init:
+            return self._pipeline
         self._has_init = True
+
+        self._pending_awaits = set()
 
         self._sched = self._SchedulingService(self)
 
@@ -8281,11 +8300,24 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
         #
 
-        self._pipeline = IoPipeline(dc.replace(
-            self._spec,
-            metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
-            services=(*self._spec.services, self._sched),
-        ))
+        self._pipeline = IoPipeline(
+            dc.replace(
+                self._spec,
+                metadata=(*self._spec.metadata, DriverIoPipelineMetadata(self)),
+                services=(*self._spec.services, self._sched),
+            ),
+            **(self._pipeline_kwargs or {}),
+        )
+
+        #
+
+        self._read_task = asyncio.create_task(self._read_task_main())
+
+        if self._is_auto_read():
+            self._want_read = True
+            self._want_read_event.set()
+
+        return self._pipeline
 
     def _is_auto_read(self) -> bool:
         return (flow := self._flow) is None or flow.is_auto_read()
@@ -8330,7 +8362,6 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             await self._writer.wait_closed()
 
         except Exception:  # noqa
-            # Best effort; transport close errors aren't actionable at this layer.
             pass
 
         self._writer = None
@@ -8353,31 +8384,68 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             return f'{self.__class__.__name__}([{", ".join(map(repr, self.msgs))}])'
 
     async def _handle_command_feed_in(self, cmd: _FeedInCommand) -> None:
-        async def _inner() -> None:
-            self._pipeline.feed_in(*cmd.msgs)  # noqa
-
-        if (fut := cmd.fut) is None:
-            await self._do_with_pipeline(_inner)
-            return
-
         try:
-            await self._do_with_pipeline(_inner)
-            fut.set_result(None)
-        except BaseException as e:  # noqa
-            fut.set_exception(e)
+            self._pipeline.feed_in(*cmd.msgs)
+
+        except BaseException as e:
+            if (fut := cmd.fut) is not None:
+                fut.set_exception(e)
             raise
+
+        else:
+            if (fut := cmd.fut) is not None:
+                fut.set_result(None)
 
     def enqueue_waitable(self, *msgs: ta.Any) -> 'asyncio.Future[None]':
         check.state(not self._shutdown_event.is_set())
 
         fut: asyncio.Future[None] = asyncio.Future()
-        self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs, fut=fut))
+        self._command_queue.put_nowait(PollAsyncioStreamIoPipelineDriver._FeedInCommand(msgs, fut=fut))
         return fut
 
     def enqueue(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
-        self._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._FeedInCommand(msgs))
+        self._command_queue.put_nowait(PollAsyncioStreamIoPipelineDriver._FeedInCommand(msgs))
+
+    ##
+    # read task
+
+    _read_task: ta.Optional[asyncio.Task] = None
+
+    _has_read_eof: bool = False
+
+    async def _read_task_main(self) -> None:
+        try:
+            while not self._shutdown_event.is_set():
+                # In manual flow mode, wait for ReadyForInput to signal via _want_read_event.
+                if not self._is_auto_read():
+                    await self._want_read_event.wait()
+
+                    if self._shutdown_event.is_set():
+                        break
+
+                    self._want_read_event.clear()
+
+                try:
+                    data = await self._reader.read(self._config.read_chunk_size)
+                except asyncio.CancelledError:
+                    raise
+                except Exception:  # noqa
+                    data = b''
+
+                if self._shutdown_event.is_set():
+                    break
+
+                self._command_queue.put_nowait(
+                    PollAsyncioStreamIoPipelineDriver._ReadCompletedCommand(data),
+                )
+
+                if not data:  # EOF
+                    break
+
+        except asyncio.CancelledError:
+            pass
 
     ##
     # read completed
@@ -8389,7 +8457,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         def __repr__(self) -> str:
             return (
                 f'{self.__class__.__name__}@{id(self):x}'
-                f'({"[...]" if isinstance(self._data, list) else "..." if self._data is not None else ""})'
+                f'({"[...]" if isinstance(self._data, list) else "..." if self._data else ""})'
             )
 
         def data(self) -> ta.Sequence[bytes]:
@@ -8400,21 +8468,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             else:
                 raise TypeError(self._data)
 
-    class _ReadCancelledCommand(_Command):
-        pass
-
-    _pending_completed_reads: ta.Optional[ta.List[_ReadCompletedCommand]] = None
-
     async def _handle_command_read_completed(self, cmd: _ReadCompletedCommand) -> None:
-        if not (self._want_read or self._is_auto_read()):
-            if (pl := self._pending_completed_reads) is None:
-                pl = self._pending_completed_reads = []
-
-            pl.append(cmd)
-            return
-
-        #
-
         eof = False
 
         in_msgs: ta.List[ta.Any] = []
@@ -8426,8 +8480,11 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             else:
                 in_msgs.append(b)
 
-        if self._flow is not None:
+        if not eof and self._flow is not None:
             in_msgs.append(IoPipelineFlowMessages.FlushInput())
+
+        if self._flow is not None:
+            self._want_read = False
 
         if eof:
             self._has_read_eof = True
@@ -8436,10 +8493,7 @@ class AsyncioStreamIoPipelineDriver(Abstract):
 
         #
 
-        async def _inner() -> None:
-            self._pipeline.feed_in(*in_msgs)
-
-        await self._do_with_pipeline(_inner)
+        self._pipeline.feed_in(*in_msgs)
 
         #
 
@@ -8449,94 +8503,10 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             await self._close_writer()
 
     ##
-    # update want read
-
-    class _UpdateWantReadCommand(_Command):
-        pass
-
-    _has_sent_update_want_read_command: bool = False
-
-    async def _send_update_want_read_command(self) -> None:
-        if self._has_sent_update_want_read_command:
-            return
-
-        self._has_sent_update_want_read_command = True
-        await self._command_queue.put(AsyncioStreamIoPipelineDriver._UpdateWantReadCommand())
-
-    _want_read = False
-
-    _delay_sending_update_want_read_command = False
-
-    async def _set_want_read(self, want_read: bool) -> None:
-        if self._want_read == want_read:
-            return
-
-        self._want_read = want_read
-
-        if not self._delay_sending_update_want_read_command:
-            await self._send_update_want_read_command()
-
-    async def _handle_command_update_want_read(self, cmd: _UpdateWantReadCommand) -> None:
-        self._sent_update_want_read_command = False
-
-        if self._want_read:
-            if self._pending_completed_reads:
-                in_cmd = AsyncioStreamIoPipelineDriver._ReadCompletedCommand([
-                    b
-                    for pcr_cmd in self._pending_completed_reads
-                    for b in pcr_cmd.data()
-                ])
-                self._command_queue.put_nowait(in_cmd)
-                self._pending_completed_reads = None
-
-            self._ensure_read_task()
-
-    _has_read_eof = False
-
-    def _maybe_ensure_read_task(self) -> None:
-        if not self._has_read_eof and (self._want_read or self._is_auto_read()):
-            self._ensure_read_task()
-
-    _read_task: ta.Optional[asyncio.Task] = None
-
-    def _ensure_read_task(self) -> None:
-        if self._read_task is not None or self._shutdown_event.is_set():
-            return
-
-        self._read_task = asyncio.create_task(self._reader.read(self._config.read_chunk_size))
-
-        def _done(task: 'asyncio.Task[bytes]') -> None:
-            check.state(task is self._read_task)
-            self._read_task = None
-
-            if self._shutdown_event.is_set():
-                return
-
-            cmd: AsyncioStreamIoPipelineDriver._Command
-            eof = False
-            try:
-                data = task.result()
-
-            except asyncio.CancelledError:
-                cmd = AsyncioStreamIoPipelineDriver._ReadCancelledCommand()  # noqa
-
-            else:
-                cmd = AsyncioStreamIoPipelineDriver._ReadCompletedCommand(data)  # noqa
-                eof = not data
-
-            self._command_queue.put_nowait(cmd)
-
-            # FIXME: disable? toggle? this pre-reads till told to stop to try to reduce stalling
-            if not eof:
-                self._maybe_ensure_read_task()
-
-        self._read_task.add_done_callback(_done)
-
-    ##
     # scheduling
 
     class _SchedulingService(IoPipelineScheduling, IoPipelineService):
-        def __init__(self, d: 'AsyncioStreamIoPipelineDriver') -> None:
+        def __init__(self, d: 'PollAsyncioStreamIoPipelineDriver') -> None:
             super().__init__()
 
             self._d = d
@@ -8563,14 +8533,16 @@ class AsyncioStreamIoPipelineDriver(Abstract):
         async def _task_body(self, delay: float, fn: ta.Callable[[], None]) -> None:
             await asyncio.sleep(delay)
 
-            self._d._command_queue.put_nowait(AsyncioStreamIoPipelineDriver._ScheduledCommand(fn))  # noqa
+            self._d._command_queue.put_nowait(PollAsyncioStreamIoPipelineDriver._ScheduledCommand(fn))  # noqa
 
         async def _flush_pending(self) -> None:
             if not (lst := self._pending):
                 return
 
             for delay, fn in lst:
-                self._tasks.add(asyncio.create_task(functools.partial(self._task_body, delay, fn)()))
+                task = asyncio.create_task(functools.partial(self._task_body, delay, fn)())
+                self._tasks.add(task)
+                task.add_done_callback(self._tasks.discard)
 
             self._pending = []
 
@@ -8578,21 +8550,106 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     class _ScheduledCommand(_Command):
         fn: ta.Callable[[], None]
 
-    async def _handle_scheduled_command(self, cmd: _ScheduledCommand) -> None:
-        async def _inner() -> None:
+    async def _handle_command_scheduled(self, cmd: _ScheduledCommand) -> None:
+        with self._pipeline.enter():
+            cmd.fn()
+
+    ##
+    # shutdown
+
+    class _ShutdownCommand(_Command):
+        pass
+
+    ##
+    # awaits
+
+    @dc.dataclass(frozen=True)
+    class _AwaitCompletedCommand(_Command):
+        msg: AsyncIoPipelineMessages.Await
+        fut: ta.Optional[asyncio.Future]
+
+    @dc.dataclass(frozen=True)
+    class _AwaitFailedCommand(_Command):
+        msg: AsyncIoPipelineMessages.Await
+        exc: BaseException
+
+    _pending_awaits: ta.Set[asyncio.Future]
+
+    async def _handle_command_await_completed(self, cmd: _AwaitCompletedCommand) -> None:
+        fut = cmd.fut
+
+        if fut is None:
+            # Bare yield / sleep(0) case.
             with self._pipeline.enter():
-                cmd.fn()
+                cmd.msg.set_succeeded(None)
+            return
 
-        await self._do_with_pipeline(_inner)
+        self._pending_awaits.discard(fut)
 
-    # handlers
+        try:
+            result = fut.result()
+        except BaseException as e:  # noqa
+            with self._pipeline.enter():
+                cmd.msg.set_failed(e)
+        else:
+            with self._pipeline.enter():
+                cmd.msg.set_succeeded(result)
 
-    def _build_command_handlers(self) -> ta.Mapping[ta.Type[_Command], ta.Callable[[ta.Any], ta.Awaitable[None]]]:
+    async def _handle_command_await_failed(self, cmd: _AwaitFailedCommand) -> None:
+        with self._pipeline.enter():
+            cmd.msg.set_failed(cmd.exc)
+
+    async def _handle_output_await(
+            self,
+            msg: AsyncIoPipelineMessages.Await,
+    ) -> ta.Optional[str]:
+        loop = asyncio.get_running_loop()
+
+        try:
+            fut = asyncio.ensure_future(msg.obj)
+        except BaseException as e:  # noqa
+            self._command_queue.put_nowait(
+                PollAsyncioStreamIoPipelineDriver._AwaitFailedCommand(msg, e),
+            )
+            return None
+
+        try:
+            fut_loop = fut.get_loop()
+        except AttributeError:
+            fut_loop = loop
+
+        if fut_loop is not loop:
+            self._command_queue.put_nowait(
+                PollAsyncioStreamIoPipelineDriver._AwaitFailedCommand(
+                    msg,
+                    RuntimeError(f'awaitable {fut!r} is attached to a different event loop'),
+                ),
+            )
+            return None
+
+        self._pending_awaits.add(fut)
+
+        def done_callback(f: asyncio.Future) -> None:
+            self._command_queue.put_nowait(
+                PollAsyncioStreamIoPipelineDriver._AwaitCompletedCommand(msg, f),
+            )
+
+        fut.add_done_callback(done_callback)  # noqa
+        return None
+
+    ##
+    # command handling
+
+    def _build_command_handlers(self) -> ta.Mapping[
+        ta.Type[_Command],
+        ta.Callable[[ta.Any], ta.Awaitable[None]],
+    ]:
         return {
-            AsyncioStreamIoPipelineDriver._FeedInCommand: self._handle_command_feed_in,
-            AsyncioStreamIoPipelineDriver._ReadCompletedCommand: self._handle_command_read_completed,
-            AsyncioStreamIoPipelineDriver._UpdateWantReadCommand: self._handle_command_update_want_read,
-            AsyncioStreamIoPipelineDriver._ScheduledCommand: self._handle_scheduled_command,
+            PollAsyncioStreamIoPipelineDriver._FeedInCommand: self._handle_command_feed_in,
+            PollAsyncioStreamIoPipelineDriver._ReadCompletedCommand: self._handle_command_read_completed,
+            PollAsyncioStreamIoPipelineDriver._ScheduledCommand: self._handle_command_scheduled,
+            PollAsyncioStreamIoPipelineDriver._AwaitCompletedCommand: self._handle_command_await_completed,
+            PollAsyncioStreamIoPipelineDriver._AwaitFailedCommand: self._handle_command_await_failed,
         }
 
     async def _handle_command(self, cmd: _Command) -> None:
@@ -8608,51 +8665,36 @@ class AsyncioStreamIoPipelineDriver(Abstract):
     ##
     # output handling
 
-    # lifecycle
-
-    async def _handle_output_final_output(self, msg: IoPipelineMessages.FinalOutput) -> None:
+    async def _handle_output_final_output(self, msg: IoPipelineMessages.FinalOutput) -> ta.Optional[str]:
         self._shutdown_event.set()
 
         await self._close_writer()
 
-    # defer
+        return 'stop'
 
-    async def _handle_output_defer(self, msg: IoPipelineMessages.Defer) -> None:
+    async def _handle_output_defer(self, msg: IoPipelineMessages.Defer) -> ta.Optional[str]:
         self._pipeline.run_deferred(msg)
-
-    # data (special cased)
+        return None
 
     async def _handle_output_bytes(self, msg: ta.Any) -> None:
         for mv in ByteStreamBuffers.iter_segments(msg):
             if self._writer is not None and mv:
                 self._writer.write(mv)
 
-    # flow
-
-    async def _handle_output_flush_output(self, msg: IoPipelineFlowMessages.FlushOutput) -> None:
+    async def _handle_output_flush_output(self, msg: IoPipelineFlowMessages.FlushOutput) -> ta.Optional[str]:
         if self._writer is not None:
             await self._writer.drain()
+        return None
 
-    async def _handle_output_ready_for_input(self, msg: IoPipelineFlowMessages.ReadyForInput) -> None:
-        await self._set_want_read(True)
+    async def _handle_output_ready_for_input(self, msg: IoPipelineFlowMessages.ReadyForInput) -> ta.Optional[str]:
+        check.state(self._flow is not None)
+        if self._config.strict_input_flow:
+            check.state(not self._want_read)
+        self._want_read = True
+        self._want_read_event.set()
+        return None
 
-    # async
-
-    async def _handle_output_await(self, msg: AsyncIoPipelineMessages.Await) -> None:
-        try:
-            result = await msg.obj
-
-        except BaseException as e:  # noqa  # TODO: whitelist?
-            with self._pipeline.enter():
-                msg.set_failed(e)
-
-        else:
-            with self._pipeline.enter():
-                msg.set_succeeded(result)
-
-    # handlers
-
-    def _build_output_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]:
+    def _build_output_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[ta.Optional[str]]]]:
         return {
             IoPipelineMessages.FinalOutput: self._handle_output_final_output,
             IoPipelineMessages.Defer: self._handle_output_defer,
@@ -8661,132 +8703,131 @@ class AsyncioStreamIoPipelineDriver(Abstract):
             AsyncIoPipelineMessages.Await: self._handle_output_await,
         }
 
-    async def _handle_output(self, msg: ta.Any) -> None:
+    async def _handle_output(self, msg: ta.Any) -> str:
         log.debug(lambda: f'Handling output: {msg!r}')
 
         if ByteStreamBuffers.can_bytes(msg):
             await self._handle_output_bytes(msg)
-            return
+            return 'handled'
 
         try:
             fn = self._output_handlers[msg.__class__]
         except KeyError:
-            raise TypeError(f'Unknown output type: {msg.__class__}') from None
+            return 'unhandled'
 
-        await fn(msg)
-
-    # execution helpers
-
-    async def _do_with_pipeline(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
-        prev_want_read = self._want_read
-        if not self._is_auto_read():
-            self._want_read = False
-
-        self._delay_sending_update_want_read_command = True
-        try:
-            await fn()
-
-            await self._drain_pipeline_output()
-
-        finally:
-            self._delay_sending_update_want_read_command = False
-
-        if self._shutdown_event.is_set():
-            return
-
-        await self._sched._flush_pending()  # noqa
-
-        if self._want_read != prev_want_read:
-            await self._send_update_want_read_command()
-
-        self._maybe_ensure_read_task()
-
-    async def _drain_pipeline_output(self) -> None:
-        while (msg := self._pipeline.output.poll()) is not None:
-            await self._handle_output(msg)
+        ret = await fn(msg)
+        return ret if ret is not None else 'handled'
 
     ##
-    # shutdown
+    # core loop
 
-    _shutdown_task: asyncio.Task
+    def _has_pending_work(self) -> bool:
+        if self._pending_awaits:
+            return True
 
-    async def _shutdown_task_main(self) -> None:
-        await self._shutdown_event.wait()
+        if self._read_task is not None and not self._read_task.done():
+            return True
 
+        if hasattr(self, '_sched') and self._sched._tasks:  # noqa
+            return True
 
-##
+        return False
 
+    async def next(
+            self,
+            *,
+            read: bool = True,
+            raise_on_stall: bool = True,
+    ) -> ta.Optional[ta.Any]:
+        pipeline = await self._ensure_init()
+        check.state(pipeline.is_ready)
 
-class LoopAsyncioStreamIoPipelineDriver(AsyncioStreamIoPipelineDriver):
-    async def _run(self) -> None:
-        self._maybe_ensure_read_task()
+        while True:
+            if (out_msg := pipeline.output.poll()) is not None:
+                handled = await self._handle_output(out_msg)
 
-        #
+                if handled == 'handled':
+                    continue
 
-        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamIoPipelineDriver._Command]] = None
+                elif handled == 'unhandled':
+                    return out_msg
 
-        try:
-            if not self._shutdown_event.is_set():
-                await self._handle_command(AsyncioStreamIoPipelineDriver._FeedInCommand([  # noqa
-                    IoPipelineMessages.InitialInput(),
-                ]))
-
-            while not self._shutdown_event.is_set():
-                if command_queue_task is None:
-                    command_queue_task = asyncio.create_task(self._command_queue.get())
-
-                done, pending = await asyncio.wait(
-                    [command_queue_task, self._shutdown_task],
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-
-                winner = done.pop()
-
-                if self._shutdown_event.is_set() or winner is self._shutdown_task:
+                elif handled == 'stop':
                     break
 
-                elif winner is command_queue_task:
-                    cmd = command_queue_task.result()
-                    command_queue_task = None
-
-                    await self._handle_command(cmd)
-
-                    del cmd
-                    command_queue_task = None
-
                 else:
-                    raise RuntimeError(f'Unexpected task: {winner!r}')
-        #
+                    raise RuntimeError(f'Unknown handled value: {handled!r}')
 
-        finally:
-            await self._cancel_tasks(
-                command_queue_task,
-                self._read_task,
-                check_running=True,
-            )
+            try:
+                cmd = self._command_queue.get_nowait()
+            except asyncio.QueueEmpty:
+                if self._shutdown_event.is_set():
+                    break
+
+                if not read:
+                    return None
+
+                if raise_on_stall and not self._has_pending_work():
+                    raise RuntimeError('Pipeline stalled') from None
+
+                cmd = await self._command_queue.get()
+
+            if isinstance(cmd, PollAsyncioStreamIoPipelineDriver._ShutdownCommand):
+                break
+
+            await self._handle_command(cmd)
+
+            await self._sched._flush_pending()  # noqa
+
+        pipeline.destroy()
+        return None
 
     @async_exception_logging(alog)
-    async def run(self) -> None:
+    async def loop_until_done(self) -> None:
         try:
-            self._shutdown_task  # noqa
-        except AttributeError:
-            pass
-        else:
-            raise RuntimeError('Already running')
+            while True:
+                if (out := await self.next()) is not None:
+                    raise TypeError(out)
 
-        await self._init()
-
-        self._shutdown_task = asyncio.create_task(self._shutdown_task_main())
-
-        try:
-            try:
-                await self._run()
-
-            finally:
-                self._pipeline.destroy()
+                if not self._pipeline.is_ready:
+                    break
 
         finally:
-            await self._cancel_tasks(self._shutdown_task, check_running=True)
+            await self.close()
+
+    ##
+    # lifecycle
+
+    async def close(self) -> None:
+        self._shutdown_event.set()
+
+        self._want_read_event.set()
+
+        await self._cancel_tasks(self._read_task, check_running=True)
+
+        self._command_queue.put_nowait(PollAsyncioStreamIoPipelineDriver._ShutdownCommand())
+
+        await self._close_writer()
+
+        if hasattr(self, '_sched'):
+            for t in list(self._sched._tasks):  # noqa
+                if not t.done():
+                    t.cancel()
+            if self._sched._tasks:  # noqa
+                await asyncio.gather(*self._sched._tasks, return_exceptions=True)  # noqa
+
+        if self._has_init:
+            try:
+                if self._pipeline.is_ready:
+                    self._pipeline.destroy()
+            except AttributeError:
+                pass
+
+    async def __aenter__(self) -> 'PollAsyncioStreamIoPipelineDriver':  # noqa
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self.close()
 
 
 ########################################

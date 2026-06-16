@@ -5,7 +5,11 @@ import typing as ta
 
 from ....io.pipelines.core import IoPipelineHandler
 from ....io.pipelines.core import IoPipelineHandlerContext
+from ....lite.bytes import bytes_like_to_bytes_strict
 from ....lite.namespaces import NamespaceClass
+from ..objects import IoPipelineHttpMessageBodyData
+from ..requests import IoPipelineHttpRequestBodyData
+from ..responses import IoPipelineHttpResponseBodyData
 from .objects import IoPipelineWebsocketBinary
 from .objects import IoPipelineWebsocketClose
 from .objects import IoPipelineWebsocketFrame
@@ -150,16 +154,31 @@ class IoPipelineWebsocketFrameDecoder(IoPipelineHandler):
     None, accepts either.
     """
 
-    def __init__(self, *, expect_masked: bool) -> None:
+    def __init__(
+            self,
+            *,
+            expect_masked: bool,
+            unwrap_message_body_cls: ta.Optional[ta.Type[IoPipelineHttpMessageBodyData]] = None,
+    ) -> None:
         super().__init__()
 
         self._expect_mask = expect_masked
+        self._unwrap_message_body_cls = unwrap_message_body_cls
 
         self._buf = bytearray()
 
-    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+    def _unwrap_message_bytes(self, msg: ta.Any) -> ta.Optional[bytes]:
         if isinstance(msg, (bytes, bytearray, memoryview)):
-            self._buf.extend(bytes(msg))
+            return bytes(msg)
+
+        if (mbc := self._unwrap_message_body_cls) is not None and isinstance(msg, mbc):
+            return bytes_like_to_bytes_strict(msg.data)
+
+        return None
+
+    def inbound(self, ctx: IoPipelineHandlerContext, msg: ta.Any) -> None:
+        if (bs := self._unwrap_message_bytes(msg)) is not None:
+            self._buf.extend(bs)
             self._drain(ctx)
             return
 
@@ -244,9 +263,15 @@ class IoPipelineWebsocketFrameDecoder(IoPipelineHandler):
 
 class IoPipelineWebsocketClientFrameDecoder(IoPipelineWebsocketFrameDecoder):
     def __init__(self) -> None:
-        super().__init__(expect_masked=False)
+        super().__init__(
+            expect_masked=False,
+            unwrap_message_body_cls=IoPipelineHttpResponseBodyData,
+        )
 
 
 class IoPipelineWebsocketServerFrameDecoder(IoPipelineWebsocketFrameDecoder):
     def __init__(self) -> None:
-        super().__init__(expect_masked=True)
+        super().__init__(
+            expect_masked=True,
+            unwrap_message_body_cls=IoPipelineHttpRequestBodyData,
+        )

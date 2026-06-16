@@ -4,7 +4,7 @@ import asyncio
 import typing as ta
 
 from ......io.pipelines.core import IoPipeline
-from ......io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
+from ......io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 from ...apps.wsgi import IoPipelineWsgiSpec
 from ...apps.wsgi import WsgiIoPipelineHandler
 from ...requests import IoPipelineHttpRequestAggregatorDecoder
@@ -26,13 +26,13 @@ def build_wsgi_spec(app: ta.Any) -> IoPipeline.Spec:
 
 async def a_serve_wsgi_pipeline(spec: IoPipelineWsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = LoopAsyncioStreamIoPipelineDriver(
+        drv = PollAsyncioStreamIoPipelineDriver(
             build_wsgi_spec(spec.app),
             reader,
             writer,
         )
 
-        await drv.run()
+        await drv.loop_until_done()
 
     srv = await asyncio.start_server(_handle_client, spec.host, spec.port)
     async with srv:

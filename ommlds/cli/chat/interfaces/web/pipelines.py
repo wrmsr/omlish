@@ -6,7 +6,7 @@ from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestAggregat
 from omlish.http.pipelines.servers.requests import IoPipelineHttpRequestDecoder
 from omlish.http.pipelines.servers.responses import IoPipelineHttpResponseEncoder
 from omlish.io.pipelines.core import IoPipeline
-from omlish.io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriver
+from omlish.io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 
 
 ##

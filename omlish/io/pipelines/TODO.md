@@ -1,5 +1,8 @@
 ### immed
 
+- assess cyclic garbage - possible weakrefs:
+  - `IoPipelineHandlerContext._pipeline`
+  - `IoPipelineHandlerContext._context`
 - shutdown sequence / error handling
   - more channel states lol
   - send FinalInput in destroy if it hasn't been?

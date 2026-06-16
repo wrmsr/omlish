@@ -27,7 +27,7 @@ from omlish.io.pipelines.core import IoPipeline
 from omlish.io.pipelines.core import IoPipelineHandler
 from omlish.io.pipelines.core import IoPipelineHandlerContext
 from omlish.io.pipelines.core import IoPipelineMessages
-from omlish.io.pipelines.drivers.asyncio import LoopAsyncioStreamIoPipelineDriver
+from omlish.io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 
 from .protocol import DevtoolsWebsocketSend
 from .protocol import decode_message
@@ -166,7 +166,7 @@ class DevtoolsClient:
         self.socket_path = socket_path or os.environ.get('TEXTUAL_DEVTOOLS_SOCKET_PATH')
         self.log_queue_task: asyncio.Task | None = None
         self.console: DevtoolsConsole = DevtoolsConsole(file=io.StringIO())
-        self.driver: LoopAsyncioStreamIoPipelineDriver | None = None
+        self.driver: PollAsyncioStreamIoPipelineDriver | None = None
         self.driver_task: asyncio.Task | None = None
         self.log_queue: asyncio.Queue[dict[str, ta.Any] | type[ClientShutdown]] | None = None
         self.spillover: int = 0
@@ -192,7 +192,7 @@ class DevtoolsClient:
             raise DevtoolsConnectionError from None
 
         log_queue = self.log_queue
-        self.driver = LoopAsyncioStreamIoPipelineDriver(
+        self.driver = PollAsyncioStreamIoPipelineDriver(
             IoPipeline.Spec([
                 IoPipelineHttpResponseDecoder(),
                 IoPipelineHttpRequestEncoder(),
@@ -229,7 +229,7 @@ class DevtoolsClient:
             except TimeoutError:
                 return
 
-        self.driver_task = asyncio.create_task(self.driver.run())
+        self.driver_task = asyncio.create_task(self.driver.loop_until_done())
         self.log_queue_task = asyncio.create_task(send_queued_logs())
 
         await server_info_received()

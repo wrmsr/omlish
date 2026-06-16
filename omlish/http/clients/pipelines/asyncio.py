@@ -7,7 +7,7 @@ import typing as ta
 
 from ....asyncs.asyncio.timeouts import asyncio_maybe_timeout
 from ....io.pipelines.core import IoPipelineMessages
-from ....io.pipelines.drivers.asyncio2 import PollAsyncioStreamIoPipelineDriver
+from ....io.pipelines.drivers.asyncio import PollAsyncioStreamIoPipelineDriver
 from ....io.readers import AsyncBytesReader
 from ....io.readers import AsyncBytesReaders
 from ....io.streams.utils import ByteStreamBuffers
