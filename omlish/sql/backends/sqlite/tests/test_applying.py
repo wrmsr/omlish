@@ -19,14 +19,14 @@ from ....tabledefs.elements import PrimaryKey
 from ....tabledefs.rendering import UnsupportedMigrationError
 from ....tabledefs.tabledefs import TableDef
 from ..inspect import SqliteInspector
-from ..tabledefs import SqliteStatementRenderer
+from ..tabledefs import SqliteTabledefRenderer
 
 
 def test_migrate_table() -> None:
     async def inner() -> None:
         db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:', autocommit=True), param_style=ParamStyle.QMARK)
         adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-        r = SqliteStatementRenderer()
+        r = SqliteTabledefRenderer()
         insp = SqliteInspector()
         tn = 'users'
 
@@ -60,7 +60,7 @@ def test_migrate_table_with_index() -> None:
     async def inner() -> None:
         db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:', autocommit=True), param_style=ParamStyle.QMARK)
         adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-        r = SqliteStatementRenderer()
+        r = SqliteTabledefRenderer()
         insp = SqliteInspector()
         tn = 'widget'
 
@@ -87,7 +87,7 @@ def test_migrate_table_type_change_refused() -> None:
     async def inner() -> None:
         db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:', autocommit=True), param_style=ParamStyle.QMARK)
         adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-        r = SqliteStatementRenderer()
+        r = SqliteTabledefRenderer()
         insp = SqliteInspector()
         tn = 'gadget'
 

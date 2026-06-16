@@ -2141,7 +2141,7 @@ def _process_dataclass__8748292e9f6a23efe5a4e4086e4514ce0c0ae151():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('omlish.sql.tabledefs.rendering', 'StatementRenderer.CreateOptions'),
+        ('omlish.sql.tabledefs.rendering', 'Renderer.CreateOptions'),
     ),
 )
 def _process_dataclass__40584714544cf8ee4bfbe6e8ffdb79fd74b4d1fa():

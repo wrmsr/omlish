@@ -51,7 +51,7 @@ class RenderColumn:
     extra: ta.Sequence[str] = ()
 
 
-class StatementRenderer(lang.Abstract):
+class Renderer(lang.Abstract):
     """
     Standard CREATE-TABLE assembly shared by all backends. Dialects override only the small set of hooks below; the
     column/constraint/index layout and the identity-column detection are shared so backends do not duplicate them.

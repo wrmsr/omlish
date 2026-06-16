@@ -17,8 +17,8 @@ class SqliteBackend(Backend, lang.Final):
         return _dialect.SqliteDialect()
 
     @property
-    def statement_renderer(self) -> _tabledefs.SqliteStatementRenderer:
-        return _tabledefs.SqliteStatementRenderer()
+    def tabledef_renderer(self) -> _tabledefs.SqliteTabledefRenderer:
+        return _tabledefs.SqliteTabledefRenderer()
 
     @property
     def inspector(self) -> _inspect.SqliteInspector:

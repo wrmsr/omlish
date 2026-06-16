@@ -14,7 +14,7 @@ from ....tabledefs.elements import IdIntegerPrimaryKey
 from ....tabledefs.lower import lower_table_elements
 from ....tabledefs.tabledefs import TableDef
 from ....tests.harness import HarnessDbs
-from ..tabledefs import MysqlStatementRenderer
+from ..tabledefs import MysqlTabledefRenderer
 
 
 if ta.TYPE_CHECKING:
@@ -47,7 +47,7 @@ def test_render_create_table(harness) -> None:
             Column('name', String()),
         )))
 
-        for s in MysqlStatementRenderer().render_create_statements(tbl):
+        for s in MysqlTabledefRenderer().render_create_statements(tbl):
             cursor.execute(s)
 
         conn.commit()

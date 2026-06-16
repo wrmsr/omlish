@@ -17,8 +17,8 @@ class MysqlBackend(Backend, lang.Final):
         return _dialect.MysqlDialect()
 
     @property
-    def statement_renderer(self) -> _tabledefs.MysqlStatementRenderer:
-        return _tabledefs.MysqlStatementRenderer()
+    def tabledef_renderer(self) -> _tabledefs.MysqlTabledefRenderer:
+        return _tabledefs.MysqlTabledefRenderer()
 
     @property
     def inspector(self) -> _inspect.MysqlInspector:

@@ -17,11 +17,11 @@ from ..predicates import Or
 from ..predicates import Predicate
 from ..predicates import RawPredicate
 from ..predicates import as_opt_predicate
-from ..rendering import StatementRenderer
+from ..rendering import Renderer
 from ..tabledefs import TableDef
 
 
-class _R(StatementRenderer):
+class _R(Renderer):
     def column_type(self, c, *, is_identity, indexed=False):
         return 'integer' if isinstance(c.type, Integer) else 'text'
 

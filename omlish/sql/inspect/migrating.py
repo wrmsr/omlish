@@ -7,7 +7,7 @@ from ..api.queriers import AsyncQuerier
 from ..tabledefs.diffing import MigrationOp
 from ..tabledefs.diffing import diff_table
 from ..tabledefs.lower import lower_table_elements
-from ..tabledefs.rendering import StatementRenderer
+from ..tabledefs.rendering import Renderer
 from ..tabledefs.tabledefs import TableDef
 from .inspectors import Inspector
 
@@ -30,7 +30,7 @@ async def migrate_table(
         table: TableDef,
         *,
         inspector: Inspector,
-        renderer: StatementRenderer,
+        renderer: Renderer,
 ) -> TableMigration:
     """
     Bring the live table named by `table` into line with the in-code definition: create it wholesale if absent,

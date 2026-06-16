@@ -85,8 +85,8 @@ class SqlStore(Store):
             db: sql.AsyncDb | sql.AsyncConn,
             *,
             param_style: sql.ParamStyle | None = None,
-            tabledef_renderer: sql.td.StatementRenderer,
-            tabledef_create_options: sql.td.StatementRenderer.CreateOptions | None = None,
+            tabledef_renderer: sql.td.Renderer,
+            tabledef_create_options: sql.td.Renderer.CreateOptions | None = None,
     ) -> None:
         super().__init__()
 
@@ -105,7 +105,7 @@ class SqlStore(Store):
 
         self._tabledef_renderer = tabledef_renderer
         if tabledef_create_options is None:
-            tabledef_create_options = sql.td.StatementRenderer.CreateOptions(
+            tabledef_create_options = sql.td.Renderer.CreateOptions(
                 if_not_exists=True,
             )
         self._tabledef_create_options = tabledef_create_options

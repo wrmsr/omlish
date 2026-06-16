@@ -4,38 +4,38 @@ from ..mysql.adapters import mysql_adapter
 from ..mysql.backend import MysqlBackend
 from ..mysql.dialect import MysqlDialect
 from ..mysql.inspect import MysqlInspector
-from ..mysql.tabledefs import MysqlStatementRenderer
+from ..mysql.tabledefs import MysqlTabledefRenderer
 from ..postgres.adapters import postgres_adapter
 from ..postgres.backend import PostgresBackend
 from ..postgres.dialect import PostgresDialect
 from ..postgres.inspect import PostgresInspector
-from ..postgres.tabledefs import PostgresStatementRenderer
+from ..postgres.tabledefs import PostgresTabledefRenderer
 from ..sqlite.adapters import sqlite_adapter
 from ..sqlite.backend import SqliteBackend
 from ..sqlite.dialect import SqliteDialect
 from ..sqlite.inspect import SqliteInspector
-from ..sqlite.tabledefs import SqliteStatementRenderer
+from ..sqlite.tabledefs import SqliteTabledefRenderer
 
 
 def test_postgres_backend():
     b = PostgresBackend()
     assert isinstance(b, Backend)
     assert isinstance(b.dialect, PostgresDialect)
-    assert isinstance(b.statement_renderer, PostgresStatementRenderer)
+    assert isinstance(b.tabledef_renderer, PostgresTabledefRenderer)
     assert isinstance(b.inspector, PostgresInspector)
 
 
 def test_sqlite_backend():
     b = SqliteBackend()
     assert isinstance(b.dialect, SqliteDialect)
-    assert isinstance(b.statement_renderer, SqliteStatementRenderer)
+    assert isinstance(b.tabledef_renderer, SqliteTabledefRenderer)
     assert isinstance(b.inspector, SqliteInspector)
 
 
 def test_mysql_backend():
     b = MysqlBackend()
     assert isinstance(b.dialect, MysqlDialect)
-    assert isinstance(b.statement_renderer, MysqlStatementRenderer)
+    assert isinstance(b.tabledef_renderer, MysqlTabledefRenderer)
     assert isinstance(b.inspector, MysqlInspector)
 
 

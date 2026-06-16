@@ -84,7 +84,7 @@ from .predicates import (  # noqa
 )
 
 from .rendering import (  # noqa
-    StatementRenderer,
+    Renderer,
 )
 
 from .tabledefs import (  # noqa

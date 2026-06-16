@@ -23,7 +23,7 @@ from ....tabledefs.elements import PrimaryKey
 from ....tabledefs.tabledefs import TableDef
 from ....tests.harness import HarnessDbs
 from ..inspect import PostgresInspector
-from ..tabledefs import PostgresStatementRenderer
+from ..tabledefs import PostgresTabledefRenderer
 
 
 if ta.TYPE_CHECKING:
@@ -49,7 +49,7 @@ def test_migrate_table(harness) -> None:
         param_style=ParamStyle.FORMAT,
     )
     adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-    r = PostgresStatementRenderer()
+    r = PostgresTabledefRenderer()
     insp = PostgresInspector()
     tn = 'test_migrate_table'
 
@@ -97,7 +97,7 @@ def test_migrate_table_with_index(harness) -> None:
         param_style=ParamStyle.FORMAT,
     )
     adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-    r = PostgresStatementRenderer()
+    r = PostgresTabledefRenderer()
     insp = PostgresInspector()
     tn = 'test_migrate_table_with_index'
 
@@ -141,7 +141,7 @@ def test_migrate_table_alter_column(harness) -> None:
         param_style=ParamStyle.FORMAT,
     )
     adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-    r = PostgresStatementRenderer()
+    r = PostgresTabledefRenderer()
     insp = PostgresInspector()
     tn = 'test_migrate_table_alter_column'
 

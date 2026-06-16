@@ -6,7 +6,7 @@ from ....tabledefs.elements import IdIntegerPrimaryKey
 from ....tabledefs.elements import Index
 from ....tabledefs.lower import lower_table_elements
 from ....tabledefs.tabledefs import TableDef
-from ..tabledefs import SqliteStatementRenderer
+from ..tabledefs import SqliteTabledefRenderer
 
 
 def test_render_golden():
@@ -17,7 +17,7 @@ def test_render_golden():
         Index(['name']),
     )))
 
-    assert SqliteStatementRenderer().render_create_statements(tbl) == [
+    assert SqliteTabledefRenderer().render_create_statements(tbl) == [
         (
             'create table users (\n'
             '  id integer not null,\n'

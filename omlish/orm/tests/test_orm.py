@@ -141,7 +141,7 @@ async def test_async_orm_sql():
             adapter=sql.be.sqlite.adapters.sqlite_adapter(),
         )
         adb = sql.api.SyncToAsyncDb(sql.api.AsyncioToExecutorSyncToAsyncRunner.factory(exe), db)
-        store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
+        store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteTabledefRenderer())
         await _test_orm(store, registry)
 
 
@@ -153,5 +153,5 @@ def test_sync_await_orm_sql():
         adapter=sql.be.sqlite.adapters.sqlite_adapter(),
     )
     adb = sql.api.SyncToAsyncDb(sql.api.ImmediateSyncToAsyncRunner, db)
-    store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
+    store = SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteTabledefRenderer())
     lang.sync_await(_test_orm(store, registry))

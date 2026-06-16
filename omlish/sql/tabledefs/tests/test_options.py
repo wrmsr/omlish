@@ -9,7 +9,7 @@ from ..elements import PrimaryKey
 from ..lower import select_backend_options
 from ..options import BackendOption
 from ..options import ColumnOption
-from ..rendering import StatementRenderer
+from ..rendering import Renderer
 from ..tabledefs import TableDef
 
 
@@ -54,7 +54,7 @@ def test_select_backend_options_strips_foreign():
 ##
 
 
-class _MinimalRenderer(StatementRenderer):
+class _MinimalRenderer(Renderer):
     def column_type(self, c, *, is_identity, indexed=False):
         return 'text'
 

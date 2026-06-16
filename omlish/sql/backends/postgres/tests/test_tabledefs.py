@@ -14,7 +14,7 @@ from ....tabledefs.elements import IdIntegerPrimaryKey
 from ....tabledefs.lower import lower_table_elements
 from ....tabledefs.tabledefs import TableDef
 from ....tests.harness import HarnessDbs
-from ..tabledefs import PostgresStatementRenderer
+from ..tabledefs import PostgresTabledefRenderer
 
 
 if ta.TYPE_CHECKING:
@@ -53,7 +53,7 @@ def test_render_create_table(harness):
 
         tbl = lower_table_elements(tbl)
 
-        stmts = PostgresStatementRenderer().render_create_statements(tbl)
+        stmts = PostgresTabledefRenderer().render_create_statements(tbl)
 
         print('\n\n'.join(stmts))
 

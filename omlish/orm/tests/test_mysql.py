@@ -52,8 +52,8 @@ def test_pymysql(harness) -> None:
     store = SqlStore(
         registry,
         adb,
-        tabledef_renderer=sql.be.mysql.td.MysqlStatementRenderer(),
-        tabledef_create_options=sql.td.StatementRenderer.CreateOptions(
+        tabledef_renderer=sql.be.mysql.td.MysqlTabledefRenderer(),
+        tabledef_create_options=sql.td.Renderer.CreateOptions(
             drop_if_exists=True,
         ),
     )

@@ -9,7 +9,7 @@ from ...tabledefs.diffing import AlterColumn
 from ...tabledefs.elements import Column
 from ...tabledefs.elements import PrimaryKey
 from ...tabledefs.elements import UpdatedAtTrigger
-from ...tabledefs.rendering import StatementRenderer
+from ...tabledefs.rendering import Renderer
 from ...tabledefs.tabledefs import TableDef
 
 
@@ -59,7 +59,7 @@ $$\
 """
 
 
-class PostgresStatementRenderer(StatementRenderer):
+class PostgresTabledefRenderer(Renderer):
     def column_type(self, c: Column, *, is_identity: bool, indexed: bool = False) -> str:
         if isinstance(c.type, String):
             return 'text'
@@ -97,7 +97,7 @@ class PostgresStatementRenderer(StatementRenderer):
             tbl: TableDef,
             e: UpdatedAtTrigger,
             pk: PrimaryKey | None,
-            opts: StatementRenderer.CreateOptions,
+            opts: Renderer.CreateOptions,
     ) -> list[str]:
         function_name = f'{tbl.name}__function__updated_at__{e.column}'
         trigger_name = f'{tbl.name}__trigger__updated_at__{e.column}'

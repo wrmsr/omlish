@@ -71,5 +71,5 @@ async def test_orm_sql():
             adapter=sql.be.sqlite.adapters.sqlite_adapter(),
         )
         adb = sql.api.SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToExecutor(exe))), db)
-        store = orm.SqlStore(registry(), adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
+        store = orm.SqlStore(registry(), adb, tabledef_renderer=sql.be.sqlite.td.SqliteTabledefRenderer())
         await _test_timestamps(store)

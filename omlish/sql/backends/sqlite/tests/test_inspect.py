@@ -17,7 +17,7 @@ from ....tabledefs.elements import Elements
 from ....tabledefs.elements import PrimaryKey
 from ....tabledefs.tabledefs import TableDef
 from ..inspect import SqliteInspector
-from ..tabledefs import SqliteStatementRenderer
+from ..tabledefs import SqliteTabledefRenderer
 
 
 def test_inspect_diff_apply() -> None:
@@ -26,7 +26,7 @@ def test_inspect_diff_apply() -> None:
     async def inner() -> None:
         db = DbapiDb(ClosingDbapiConnector(sqlite3.connect, ':memory:', autocommit=True), param_style=ParamStyle.QMARK)
         adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
-        r = SqliteStatementRenderer()
+        r = SqliteTabledefRenderer()
         insp = SqliteInspector()
 
         async with adb.connect() as conn:

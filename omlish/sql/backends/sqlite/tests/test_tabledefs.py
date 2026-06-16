@@ -8,7 +8,7 @@ from ....tabledefs.elements import Elements
 from ....tabledefs.elements import IdIntegerPrimaryKey
 from ....tabledefs.lower import lower_table_elements
 from ....tabledefs.tabledefs import TableDef
-from ..tabledefs import SqliteStatementRenderer
+from ..tabledefs import SqliteTabledefRenderer
 
 
 def test_render_create_table():
@@ -23,7 +23,7 @@ def test_render_create_table():
 
     tbl = lower_table_elements(tbl)
 
-    stmts = SqliteStatementRenderer().render_create_statements(tbl)
+    stmts = SqliteTabledefRenderer().render_create_statements(tbl)
 
     print('\n\n'.join(stmts))
 

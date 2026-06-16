@@ -10,7 +10,7 @@ from ...tabledefs.elements import Column
 from ...tabledefs.elements import PrimaryKey
 from ...tabledefs.elements import UpdatedAtTrigger
 from ...tabledefs.rendering import RenderColumn
-from ...tabledefs.rendering import StatementRenderer
+from ...tabledefs.rendering import Renderer
 from ...tabledefs.tabledefs import TableDef
 
 
@@ -25,7 +25,7 @@ set new.{column_name} = current_timestamp\
 """
 
 
-class MysqlStatementRenderer(StatementRenderer):
+class MysqlTabledefRenderer(Renderer):
     def column_type(self, c: Column, *, is_identity: bool, indexed: bool = False) -> str:
         if isinstance(c.type, String):
             # mysql cannot index a TEXT column without a key length, so an indexed string becomes a bounded varchar.
@@ -71,7 +71,7 @@ class MysqlStatementRenderer(StatementRenderer):
             tbl: TableDef,
             e: UpdatedAtTrigger,
             pk: PrimaryKey | None,
-            opts: StatementRenderer.CreateOptions,
+            opts: Renderer.CreateOptions,
     ) -> list[str]:
         return [CREATE_UPDATED_AT_TRIGGER_SRC.format(
             trigger_name=f'{tbl.name}__trigger__updated_at__{e.column}',

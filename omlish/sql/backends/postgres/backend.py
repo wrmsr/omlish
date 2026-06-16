@@ -17,8 +17,8 @@ class PostgresBackend(Backend, lang.Final):
         return _dialect.PostgresDialect()
 
     @property
-    def statement_renderer(self) -> _tabledefs.PostgresStatementRenderer:
-        return _tabledefs.PostgresStatementRenderer()
+    def tabledef_renderer(self) -> _tabledefs.PostgresTabledefRenderer:
+        return _tabledefs.PostgresTabledefRenderer()
 
     @property
     def inspector(self) -> _inspect.PostgresInspector:

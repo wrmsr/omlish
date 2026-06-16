@@ -70,7 +70,7 @@ async def _provide_sql_store(
         db,
     )
 
-    return orm.SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteStatementRenderer())
+    return orm.SqlStore(registry, adb, tabledef_renderer=sql.be.sqlite.td.SqliteTabledefRenderer())
 
 
 #

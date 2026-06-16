@@ -21,7 +21,7 @@ from ....tabledefs.elements import PrimaryKey
 from ....tabledefs.tabledefs import TableDef
 from ....tests.harness import HarnessDbs
 from ..inspect import PostgresInspector
-from ..tabledefs import PostgresStatementRenderer
+from ..tabledefs import PostgresTabledefRenderer
 
 
 if ta.TYPE_CHECKING:
@@ -48,7 +48,7 @@ def test_inspect_diff_apply(harness) -> None:
     )
     adb = SyncToAsyncDb(ImmediateSyncToAsyncRunner, db)
 
-    r = PostgresStatementRenderer()
+    r = PostgresTabledefRenderer()
     insp = PostgresInspector()
     tn = 'test_inspect_diff_apply'
 

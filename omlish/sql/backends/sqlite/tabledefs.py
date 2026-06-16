@@ -9,7 +9,7 @@ from ...dtypes import Uuid
 from ...tabledefs.elements import Column
 from ...tabledefs.elements import PrimaryKey
 from ...tabledefs.elements import UpdatedAtTrigger
-from ...tabledefs.rendering import StatementRenderer
+from ...tabledefs.rendering import Renderer
 from ...tabledefs.tabledefs import TableDef
 
 
@@ -29,7 +29,7 @@ end\
 """
 
 
-class SqliteStatementRenderer(StatementRenderer):
+class SqliteTabledefRenderer(Renderer):
     def column_type(self, c: Column, *, is_identity: bool, indexed: bool = False) -> str:
         if isinstance(c.type, (String, Uuid)):
             return 'string'
@@ -55,7 +55,7 @@ class SqliteStatementRenderer(StatementRenderer):
             tbl: TableDef,
             e: UpdatedAtTrigger,
             pk: PrimaryKey | None,
-            opts: StatementRenderer.CreateOptions,
+            opts: Renderer.CreateOptions,
     ) -> list[str]:
         if pk is not None:
             pk_cols = check.not_empty(pk.columns)

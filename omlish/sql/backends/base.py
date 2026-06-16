@@ -7,7 +7,7 @@ from ... import lang
 if ta.TYPE_CHECKING:
     from ..api.dialects import Dialect
     from ..inspect.inspectors import Inspector
-    from ..tabledefs.rendering import StatementRenderer
+    from ..tabledefs.rendering import Renderer as TabledefsRenderer
 
 
 ##
@@ -27,7 +27,7 @@ class Backend(lang.Abstract):
 
     @property
     @abc.abstractmethod
-    def statement_renderer(self) -> StatementRenderer:
+    def tabledef_renderer(self) -> TabledefsRenderer:
         raise NotImplementedError
 
     @property
