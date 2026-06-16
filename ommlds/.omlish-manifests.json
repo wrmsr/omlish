@@ -87,7 +87,7 @@
     "module": ".minichain.backends.anthropic.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/anthropic/stream.py",
-    "line": 27,
+    "line": 31,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.anthropic.stream",
@@ -276,7 +276,7 @@
     "module": ".minichain.backends.google.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/google/stream.py",
-    "line": 27,
+    "line": 30,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.google.stream",
@@ -529,7 +529,7 @@
     "module": ".minichain.backends.ollama.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/ollama/stream.py",
-    "line": 25,
+    "line": 29,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.ollama.stream",

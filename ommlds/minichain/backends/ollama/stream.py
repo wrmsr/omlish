@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import typing as ta
 
 from omlish import lang
@@ -6,6 +7,9 @@ from omlish.formats.json import all as json
 from omlish.http import all as http
 
 from ....backends.ollama import protocol as pt
+from ...chat.choices.types import ChatChoices
+from ...chat.generations import ChatGeneration
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -14,7 +18,7 @@ from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
-from ...http.stream import SimpleLinesHttpStreamResponseHandler
+from ...http.stream import LinesHttpStreamResponseHandler
 from .chat import BaseOllamaChatChoicesService
 from .protocol import build_mc_ai_choice_deltas
 
@@ -30,22 +34,44 @@ from .protocol import build_mc_ai_choice_deltas
 class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
-    async def _process_line(self, line: lang.Bytes) -> ta.Sequence[AiChoicesDeltas]:
-        # Ollama's native stream is JSONL: each line is a complete ChatResponse delta (the final one carries `done`
-        # and stats with no content, translating to no deltas).
-        lj = json.loads(bytes(line).decode('utf-8'))
+    class _ResponseHandler(LinesHttpStreamResponseHandler):
+        # Ollama's native stream is JSONL: each line is a complete ChatResponse delta (the final one carries `done` and
+        # stats with no content, translating to no deltas).
 
-        if self._on_event is not None:
-            await self._on_event(ExternalServiceStreamResponseDataEvent(
-                service=self,
-                data=lj,
-            ))
+        def __init__(self, o: OllamaChatChoicesStreamService) -> None:
+            super().__init__()
 
-        lp = msh.unmarshal(lj, pt.ChatResponse)
+            self._o = o
 
-        if (ds := build_mc_ai_choice_deltas(lp)).deltas:
-            return [AiChoicesDeltas([ds])]
-        return []
+            self._joiner = AiChoicesDeltaJoiner()
+
+        async def process_line(self, line: lang.Bytes) -> ta.Sequence[AiChoicesDeltas]:
+            lj = json.loads(bytes(line).decode('utf-8'))
+
+            if self._o._on_event is not None:
+                await self._o._on_event(ExternalServiceStreamResponseDataEvent(
+                    service=self,
+                    data=lj,
+                ))
+
+            lp = msh.unmarshal(lj, pt.ChatResponse)
+
+            if (ds := build_mc_ai_choice_deltas(lp)).deltas:
+                cds = AiChoicesDeltas([ds])
+
+                self._joiner.add(cds.choices)
+
+                return [cds]
+
+            return []
+
+        async def finish(self) -> ta.Any:
+            return ChatChoicesStreamResult(
+                ChatChoices([
+                    ChatGeneration(jc)
+                    for jc in self._joiner.build()
+                ]),
+            )
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         a_req = self._build_request(request, stream=True)
@@ -65,10 +91,7 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
 
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: SimpleLinesHttpStreamResponseHandler(
-                self._process_line,
-                lang.as_async(lambda: ChatChoicesStreamResult()),
-            ).as_bytes(),
+            lambda http_response: self._ResponseHandler(self).as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,
         ).new_stream_response(

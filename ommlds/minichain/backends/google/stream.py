@@ -1,13 +1,16 @@
+# ruff: noqa: SLF001
 """https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models"""
 import typing as ta
 
-from omlish import lang
 from omlish import marshal as msh
 from omlish.formats.json import all as json
 from omlish.http import all as http
 from omlish.http import sse
 
 from ....backends.google.protocol import types as pt
+from ...chat.choices.types import ChatChoices
+from ...chat.generations import ChatGeneration
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -16,7 +19,7 @@ from ...chat.stream.choices.types import ChatChoicesStreamResult
 from ...external import ExternalServiceRequestEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
-from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
+from ...http.stream import SseHttpStreamResponseHandler
 from .chat import BaseGoogleChatChoicesService
 from .protocol import build_mc_ai_choices_deltas
 
@@ -32,19 +35,40 @@ from .protocol import build_mc_ai_choices_deltas
 class GoogleChatChoicesStreamService(BaseGoogleChatChoicesService):
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
-    async def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
-        if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
-            return []
+    class _ResponseHandler(SseHttpStreamResponseHandler):
+        def __init__(self, o: GoogleChatChoicesStreamService) -> None:
+            super().__init__()
 
-        sj = json.loads(so.data.decode('utf-8'))
+            self._o = o
 
-        if self._on_event is not None:
-            await self._on_event(ExternalServiceStreamResponseDataEvent(
-                service=self,
-                data=sj,
-            ))
+            self._joiner = AiChoicesDeltaJoiner()
 
-        return list(build_mc_ai_choices_deltas(msh.unmarshal(sj, pt.GenerateContentResponse)))
+        async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+            if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
+                return []
+
+            sj = json.loads(so.data.decode('utf-8'))
+
+            if self._o._on_event is not None:
+                await self._o._on_event(ExternalServiceStreamResponseDataEvent(
+                    service=self,
+                    data=sj,
+                ))
+
+            out = list(build_mc_ai_choices_deltas(msh.unmarshal(sj, pt.GenerateContentResponse)))
+
+            for cds in out:
+                self._joiner.add(cds.choices)
+
+            return out
+
+        async def finish(self) -> ta.Any:
+            return ChatChoicesStreamResult(
+                ChatChoices([
+                    ChatGeneration(jc)
+                    for jc in self._joiner.build()
+                ]),
+            )
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         g_req = self._build_request(request)
@@ -66,10 +90,7 @@ class GoogleChatChoicesStreamService(BaseGoogleChatChoicesService):
 
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(
-                self._process_sse,
-                lang.as_async(lambda: ChatChoicesStreamResult()),
-            ).as_lines().as_bytes(),
+            lambda http_response: self._ResponseHandler(self).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,
         ).new_stream_response(

@@ -94,6 +94,7 @@ def _line(message: dict, **kwargs) -> bytes:
 @pytest.mark.asyncs('asyncio')
 async def test_stream_join():
     svc = OllamaChatChoicesStreamService()
+    rh = svc._ResponseHandler(svc)
 
     # Ollama's native stream is JSONL; tool calls arrive complete (not as partial-arg deltas).
     raw: list[bytes] = [
@@ -107,7 +108,7 @@ async def test_stream_join():
 
     joiner = AiDeltaJoiner()
     for b in raw:
-        for out in await svc._process_line(b):
+        for out in await rh.process_line(b):
             joiner.add(check.single(out.choices).deltas)
 
     joined = joiner.build()

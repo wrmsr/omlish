@@ -1,6 +1,6 @@
 """
 TODO:
- - better pipeline composition lol
+ - better pipeline composition lol WE HAVE NETTY FFS
 """
 import abc
 import typing as ta

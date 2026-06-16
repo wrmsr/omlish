@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import typing as ta
 
 from omlish import check
@@ -6,9 +7,9 @@ from omlish.formats.json import all as json
 from omlish.http import all as http
 from omlish.http import sse
 
+from ....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
-from ....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
