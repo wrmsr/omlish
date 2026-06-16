@@ -78,6 +78,7 @@ def _sse(data: bytes) -> sse.SseEvent:
 @pytest.mark.asyncs('asyncio')
 async def test_stream_envelope_and_join():
     svc = OpenaiChatChoicesStreamService(ApiKey('k'))
+    rh = svc._ResponseHandler(svc)
 
     raw: list[bytes] = [
         _chunk_bytes(choices=[{'index': 0, 'delta': {'role': 'assistant', 'content': ''}}]),
@@ -99,7 +100,7 @@ async def test_stream_envelope_and_join():
     joiner = AiDeltaJoiner()
     done = False
     for b in raw:
-        for out in await svc._process_sse(_sse(b)):
+        for out in await rh.process_sse(_sse(b)):
             if out is None:
                 done = True
                 break
@@ -121,8 +122,9 @@ async def test_stream_envelope_and_join():
 @pytest.mark.asyncs('asyncio')
 async def test_stream_reasoning_channel_skipped():
     svc = GroqChatChoicesStreamService(ApiKey('k'))
+    rh = svc._ResponseHandler(svc)
 
-    out = await svc._process_sse(_sse(_chunk_bytes(choices=[
+    out = await rh.process_sse(_sse(_chunk_bytes(choices=[
         {'index': 0, 'delta': {'channel': 'analysis', 'content': 'thinking out loud'}},
     ])))
 
@@ -131,7 +133,7 @@ async def test_stream_reasoning_channel_skipped():
     assert list(check.single(deltas.choices).deltas) == []
 
     # And non-message sse outputs are ignored entirely.
-    assert await svc._process_sse(sse.SseComment(b'hi')) == []
+    assert await rh.process_sse(sse.SseComment(b'hi')) == []
 
 
 def test_dialect_fields_round_trip():

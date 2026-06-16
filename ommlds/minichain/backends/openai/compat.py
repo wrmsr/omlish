@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 """
 The openai-compat chat-completions dialect service core. OpenAI's chat-completions wire format is a de-facto dialect
 spoken by many vendors (groq, cerebras, ollama's openai endpoint, vllm, llama.cpp's server, ...); this module is the
@@ -24,6 +25,9 @@ from omlish.http import sse
 from ....backends.openai import protocol as pt
 from ...chat.choices.services import ChatChoicesRequest
 from ...chat.choices.services import ChatChoicesResponse
+from ...chat.choices.types import ChatChoices
+from ...chat.generations import ChatGeneration
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.types import AiChoiceDeltas
@@ -36,7 +40,7 @@ from ...external import ExternalServiceResponseEvent
 from ...external import ExternalServiceStreamResponseDataEvent
 from ...http.stream import BytesHttpStreamResponseBuilder
 from ...http.stream import HttpStreamResponseError
-from ...http.stream import SimpleSseLinesHttpStreamResponseHandler
+from ...http.stream import SseHttpStreamResponseHandler
 from ...models.configs import ModelName
 from ...models.names import ModelNameCollection
 from ...resources import ResourcesOption
@@ -156,38 +160,58 @@ class OpenaiCompatChatChoicesService(OpenaiCompatChatChoicesServiceBase, lang.Ab
 class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, lang.Abstract):
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
-    async def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
-        if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
-            return []
+    class _ResponseHandler(SseHttpStreamResponseHandler):
+        def __init__(self, o: OpenaiCompatChatChoicesStreamService) -> None:
+            super().__init__()
 
-        ss = so.data.decode('utf-8')
-        if ss == '[DONE]':
-            return [None]
+            self._o = o
 
-        sj = json.loads(ss)  # ChatCompletionChunk
+            self._joiner = AiChoicesDeltaJoiner()
 
-        if self._on_event is not None:
-            await self._on_event(ExternalServiceStreamResponseDataEvent(
-                service=self,
-                data=sj,
-            ))
+        async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+            if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
+                return []
 
-        check.state(sj['object'] == 'chat.completion.chunk')
+            ss = so.data.decode('utf-8')
+            if ss == '[DONE]':
+                return [None]
 
-        ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
+            sj = json.loads(ss)  # ChatCompletionChunk
 
-        # FIXME: stop reason
-        if not ccc.choices:
-            return []
+            if self._o._on_event is not None:
+                await self._o._on_event(ExternalServiceStreamResponseDataEvent(
+                    service=self,
+                    data=sj,
+                ))
 
-        if any(choice.finish_reason for choice in ccc.choices):
-            check.state(all(choice.finish_reason for choice in ccc.choices))
-            return [None]
+            check.state(sj['object'] == 'chat.completion.chunk')
 
-        return [AiChoicesDeltas([
-            AiChoiceDeltas(build_mc_ai_deltas(choice.delta))
-            for choice in ccc.choices
-        ])]
+            ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
+
+            # FIXME: stop reason
+            if not ccc.choices:
+                return []
+
+            if any(choice.finish_reason for choice in ccc.choices):
+                check.state(all(choice.finish_reason for choice in ccc.choices))
+                return [None]
+
+            cds = AiChoicesDeltas([
+                AiChoiceDeltas(build_mc_ai_deltas(choice.delta))
+                for choice in ccc.choices
+            ])
+
+            self._joiner.add(cds.choices)
+
+            return [cds]
+
+        async def finish(self) -> ChatChoicesStreamResult:
+            return ChatChoicesStreamResult(
+                ChatChoices([
+                    ChatGeneration(jc)
+                    for jc in self._joiner.build()
+                ]),
+            )
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         rh = self._build_request_handler(request, stream=True)
@@ -208,10 +232,7 @@ class OpenaiCompatChatChoicesStreamService(OpenaiCompatChatChoicesServiceBase, l
 
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(
-                self._process_sse,
-                lang.as_async(lambda: ChatChoicesStreamResult()),
-            ).as_lines().as_bytes(),
+            lambda http_response: self._ResponseHandler(self).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,
         ).new_stream_response(

@@ -223,28 +223,27 @@ def test_translate_error_raises():
 @pytest.mark.asyncs('asyncio')
 async def test_stream_process_sse():
     svc = OpenaiResponsesChatChoicesStreamService(ApiKey('k'))
+    rh = svc._ResponseHandler(svc)
 
     def _sse(ev: pt.ResponsesSseEvents.Event) -> sse.SseEvent:
         # Marshal against the polymorphic base so the 'type' tag is emitted (as the real wire data carries it).
         raw = msh.marshal(ev, pt.ResponsesSseEvents.Event)
         return sse.SseEvent(b'message', json.dumps(raw).encode('utf-8'))
 
-    out = await svc._process_sse(
-        ResponsesSseDeltaTranslator(),
+    out = await rh.process_sse(
         _sse(_event('response.output_text.delta', item_id='m', output_index=0, content_index=0, delta='hi')),
     )
     (deltas,) = out
     assert deltas is not None
 
     # The completed event flushes a None terminator.
-    out2 = await svc._process_sse(
-        ResponsesSseDeltaTranslator(),
+    out2 = await rh.process_sse(
         _sse(_event('response.completed', response={'id': 'r', 'object': 'response'})),
     )
     assert out2[-1] is None
 
     # Non-event sse outputs are ignored.
-    assert await svc._process_sse(ResponsesSseDeltaTranslator(), sse.SseComment(b'hi')) == []
+    assert await rh.process_sse(sse.SseComment(b'hi')) == []
 
 
 ##

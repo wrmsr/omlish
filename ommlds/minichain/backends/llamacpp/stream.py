@@ -6,6 +6,9 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
+from ...chat.choices.types import ChatChoices
+from ...chat.generations import ChatGeneration
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -90,6 +93,8 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
                 last_role: ta.Any = None
 
+                joiner = AiChoicesDeltaJoiner()
+
                 for chunk in output:
                     check.state(chunk['object'] == 'chat.completion.chunk')
 
@@ -105,8 +110,21 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                     # FIXME: stop reason
 
                     if (content := delta.get('content', '')):
-                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(content)])]))
+                        cds = AiChoicesDeltas([
+                            AiChoiceDeltas([
+                                ContentAiDelta(content),
+                            ]),
+                        ])
 
-                return ChatChoicesStreamResult()
+                        joiner.add(cds.choices)
+
+                        await sink.emit(cds)
+
+                return ChatChoicesStreamResult(
+                    ChatChoices([
+                        ChatGeneration(jc)
+                        for jc in joiner.build()
+                    ]),
+                )
 
             return await new_stream_response(rs, inner)

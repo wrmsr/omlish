@@ -407,7 +407,7 @@
     "module": ".minichain.backends.llamacpp.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/stream.py",
-    "line": 35,
+    "line": 38,
     "value": {
       "!.minichain.specs.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -422,7 +422,7 @@
     "module": ".minichain.backends.llamacpp.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/llamacpp/stream.py",
-    "line": 44,
+    "line": 47,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.llamacpp.stream",
@@ -706,7 +706,7 @@
     "module": ".minichain.backends.openai.responses.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/openai/responses/stream.py",
-    "line": 28,
+    "line": 31,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.openai.responses.stream",
