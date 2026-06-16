@@ -6,7 +6,10 @@ from omlish.formats.json import all as json
 from omlish.http import all as http
 from omlish.http import sse
 
+from ...chat.choices.types import ChatChoices
+from ...chat.generations import ChatGeneration
 from ....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -32,33 +35,59 @@ from .protocol import AnthropicSseDeltaTranslator
 class AnthropicChatChoicesStreamService(AnthropicChatChoicesServiceBase):
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
-    async def _process_sse(
-            self,
-            translator: AnthropicSseDeltaTranslator,
-            so: sse.SseDecoderOutput,
-    ) -> ta.Sequence[AiChoicesDeltas | None]:
-        if not isinstance(so, sse.SseEvent):
-            return []
+    class _ResponseHandler(SseHttpStreamResponseHandler):
+        """Bridges the shared sse builder to the service's `_process_sse`, validating end-state at stream close."""
 
-        dct = json.loads(so.data.decode('utf-8'))
-        check.equal(dct['type'], so.type.decode('utf-8'))
+        def __init__(self, o: AnthropicChatChoicesStreamService) -> None:
+            super().__init__()
 
-        if self._on_event is not None:
-            await self._on_event(ExternalServiceStreamResponseDataEvent(
-                service=self,
-                data=dct,
-            ))
+            self._o = o
 
-        ev = msh.unmarshal(dct, AnthropicSseDecoderEvents.Event)
+            self._translator = AnthropicSseDeltaTranslator()
+            self._joiner = AiChoicesDeltaJoiner()
 
-        res = translator.translate(ev)
+        async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+            if not isinstance(so, sse.SseEvent):
+                return []
 
-        out: list[AiChoicesDeltas | None] = []
-        if res.deltas:
-            out.append(AiChoicesDeltas([AiChoiceDeltas(res.deltas)]))
-        if res.done:
-            out.append(None)
-        return out
+            dct = json.loads(so.data.decode('utf-8'))
+            check.equal(dct['type'], so.type.decode('utf-8'))
+
+            if self._o._on_event is not None:
+                await self._o._on_event(ExternalServiceStreamResponseDataEvent(
+                    service=self,
+                    data=dct,
+                ))
+
+            ev = msh.unmarshal(dct, AnthropicSseDecoderEvents.Event)
+
+            res = self._translator.translate(ev)
+
+            out: list[AiChoicesDeltas | None] = []
+
+            if res.deltas:
+                cds = AiChoicesDeltas([
+                    AiChoiceDeltas(res.deltas),
+                ])
+
+                self._joiner.add(cds.choices)
+
+                out.append(cds)
+
+            if res.done:
+                out.append(None)
+
+            return out
+
+        async def finish(self) -> ta.Any:
+            self._translator.finish()
+
+            return ChatChoicesStreamResult(
+                ChatChoices([
+                    ChatGeneration(jc)
+                    for jc in self._joiner.build()
+                ]),
+            )
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         a_req = self._build_request(request, stream=True)
@@ -77,35 +106,12 @@ class AnthropicChatChoicesStreamService(AnthropicChatChoicesServiceBase):
             data=json.dumps(raw_request).encode('utf-8'),
         )
 
-        translator = AnthropicSseDeltaTranslator()
-
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: _AnthropicSseHandler(self, translator).as_lines().as_bytes(),
+            lambda http_response: self._ResponseHandler(self).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
             on_event=self._on_event,
         ).new_stream_response(
             http_request,
             request.options,
         )
-
-
-class _AnthropicSseHandler(SseHttpStreamResponseHandler):
-    """Bridges the shared sse builder to the service's `_process_sse`, validating end-state at stream close."""
-
-    def __init__(
-            self,
-            service: AnthropicChatChoicesStreamService,
-            translator: AnthropicSseDeltaTranslator,
-    ) -> None:
-        super().__init__()
-
-        self._service = service
-        self._translator = translator
-
-    async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[ta.Any]:
-        return await self._service._process_sse(self._translator, so)  # noqa
-
-    async def finish(self) -> ta.Any:
-        self._translator.finish()
-        return ChatChoicesStreamResult()  # FIXME: outputs lol

@@ -45,7 +45,7 @@ class OpenaiResponsesChatChoicesStreamService(OpenaiResponsesServiceBase):
             self._translator = ResponsesSseDeltaTranslator()
             self._joiner = AiChoicesDeltaJoiner()
 
-        async def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+        async def process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
             if not isinstance(so, sse.SseEvent):
                 return []
 
