@@ -130,7 +130,8 @@ def test_build_choices_response():
 
     out = build_mc_choices_response(rsp)
 
-    chat = check.single(out.v.gs).chat
+    gen = check.single(out.v.gs)
+    chat = gen.chat
     assert [type(m) for m in chat] == [ThinkingMessage, AiMessage, ToolUseMessage]
     assert check.isinstance(chat[0], ThinkingMessage).c == 'thinking'
     assert check.isinstance(chat[1], AiMessage).c == 'hello there'
@@ -140,7 +141,7 @@ def test_build_choices_response():
     assert tu.args == {'location': 'Tokyo'}
 
     from .....llms.types import TokenUsageOutput
-    tuo = check.not_none(out.outputs.get(TokenUsageOutput))
+    tuo = check.not_none(gen.outputs.get(TokenUsageOutput))
     assert tuo.v.input == 11
     assert tuo.v.output == 22
     assert tuo.v.total == 33
