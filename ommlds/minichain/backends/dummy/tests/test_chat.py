@@ -30,4 +30,4 @@ def test_dummy_chat_stream_model(harness):
     with lang.sync_async_with(lang.sync_await(llm.invoke(foo_req)).v) as it:
         for o in lang.sync_aiter(it):
             print(o)
-        print(it.returned.must())
+        print(it.result.must())

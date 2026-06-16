@@ -36,7 +36,9 @@ ChatChoicesOutputs: ta.TypeAlias = ChatChoicesOutput | LlmOutput
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class ChatChoices(lang.Final):
     gs: ta.Sequence[ChatGeneration]
 

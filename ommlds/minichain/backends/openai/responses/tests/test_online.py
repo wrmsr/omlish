@@ -47,7 +47,7 @@ def test_responses_stream(harness):
         with lang.sync_async_with(lang.sync_await(llm.invoke(foo_req)).v) as it:
             for o in lang.sync_aiter(it):
                 print(o)
-            print(it.returned)
+            print(it.result)
 
 
 @pytest.mark.asyncs('asyncio')
@@ -82,4 +82,4 @@ async def test_responses_stream_tools(harness):
     async with (await llm.invoke(foo_req)).v as it:
         async for o in it:
             print(o)
-        print(it.returned)
+        print(it.result)

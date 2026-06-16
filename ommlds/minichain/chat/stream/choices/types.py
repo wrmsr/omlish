@@ -11,6 +11,7 @@ from ....types import Option
 from ....types import Output
 from ...choices.types import ChatChoicesOptions
 from ..types import AiDeltas
+from ...choices.types import ChatChoices
 
 
 ##
@@ -36,8 +37,14 @@ ChatChoicesStreamOutputs: ta.TypeAlias = ChatChoicesStreamOutput
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class ChatChoicesStreamResult:
+    cs: ChatChoices
+
+    #
+
     _outputs: ta.Sequence[ChatChoicesStreamOutputs] = dc.field(
         default=(),
         metadata=_tv_field_metadata(
@@ -56,11 +63,15 @@ class ChatChoicesStreamResult:
 # propagate choices-level metadata from backends.
 
 
+@ta.final
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class AiChoiceDeltas(lang.Final):
     deltas: AiDeltas
 
 
+@ta.final
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class AiChoicesDeltas(lang.Final):
     choices: ta.Sequence[AiChoiceDeltas]

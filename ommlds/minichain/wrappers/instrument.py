@@ -142,7 +142,7 @@ class InstrumentedStreamService(
 
                     await sink(v)
 
-            return st.returned.must()
+            return st.result.must()
 
         # return resp.with_v(inner())
 

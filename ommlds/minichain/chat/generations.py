@@ -44,7 +44,9 @@ ChatGenerationMetadatas: ta.TypeAlias = ChatGenerationMetadata | CommonMetadata
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class ChatGeneration(MetadataContainerDataclass[ChatGenerationMetadatas], lang.Final):
     chat: AiChat
 

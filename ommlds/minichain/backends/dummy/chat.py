@@ -11,6 +11,7 @@ from ...chat.choices.services import static_check_is_chat_choices_service
 from ...chat.choices.types import ChatChoices
 from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
@@ -100,10 +101,19 @@ class DummyChatChoicesStreamService:
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         async with UseResources.or_new(request.options) as rs:
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
+                joiner = AiChoicesDeltaJoiner()
+
                 for x in self._resp:
+                    joiner.add(x.choices)
+
                     await sink.emit(x)
 
-                return ChatChoicesStreamResult()
+                return ChatChoicesStreamResult(
+                   ChatChoices([
+                       ChatGeneration(jc)
+                       for jc in joiner.build()
+                   ]),
+                )
 
             return await new_stream_response(rs, inner)
 

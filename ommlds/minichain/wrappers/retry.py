@@ -138,7 +138,7 @@ class RetryStreamService(
                         async for v in in_vs:
                             await sink.emit(v)
 
-                        return in_vs.returned.must()
+                        return in_vs.result.must()
 
                     # FIXME: ??
                     # if (ur := tv.as_collection(request.options).get(UseResources)) is not None:

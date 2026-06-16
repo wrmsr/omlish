@@ -55,7 +55,7 @@ class StreamResponseIterator(
 ):
     @property
     @abc.abstractmethod
-    def returned(self) -> lang.Maybe[RV]:
+    def result(self) -> lang.Maybe[RV]:
         raise NotImplementedError
 
     @ta.final
@@ -167,11 +167,11 @@ class _StreamServiceResponse(StreamResponseIterator[EV, RV]):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return await self._aexit(exc_type, exc_val, exc_tb)
 
-    _returned: lang.Maybe[RV] = lang.empty()
+    _result: lang.Maybe[RV] = lang.empty()
 
     @property
-    def returned(self) -> lang.Maybe[RV]:
-        return self._returned
+    def result(self) -> lang.Maybe[RV]:
+        return self._result
 
     @types.coroutine
     def _anext(self):
@@ -183,7 +183,7 @@ class _StreamServiceResponse(StreamResponseIterator[EV, RV]):
                 x = self._g.send(i)
 
             except StopIteration as e:
-                self._returned = lang.just(e.value)
+                self._result = lang.just(e.value)
 
                 raise StopAsyncIteration from None
 

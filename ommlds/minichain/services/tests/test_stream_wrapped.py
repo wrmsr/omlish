@@ -41,10 +41,10 @@ class WrappedStreamService(ta.Generic[StreamRequestT, EV, RV, OutputT]):
     async def _process_outputs(self, outputs: ta.Sequence[OutputT]) -> ta.Sequence[OutputT]:
         return outputs
 
-    async def _process_emitted_value(self, ev: EV) -> ta.Iterable[EV]:
+    async def _process_emit(self, ev: EV) -> ta.Iterable[EV]:
         return [ev]
 
-    async def _process_returned_value(self, rv: RV) -> RV:
+    async def _process_result(self, rv: RV) -> RV:
         return rv
 
     #
@@ -56,10 +56,10 @@ class WrappedStreamService(ta.Generic[StreamRequestT, EV, RV, OutputT]):
 
             async def inner(sink: StreamResponseSink[EV]) -> RV:
                 async for in_v in in_vs:
-                    for out_v in (await self._process_emitted_value(in_v)):
+                    for out_v in (await self._process_emit(in_v)):
                         await sink.emit(out_v)
 
-                return await self._process_returned_value(in_vs.returned.must())
+                return await self._process_result(in_vs.result.must())
 
             return await new_stream_response(
                 rs,
@@ -73,7 +73,7 @@ class WrappedStreamService(ta.Generic[StreamRequestT, EV, RV, OutputT]):
 
 class WrappedFooStreamService(WrappedStreamService):
     @ta.override
-    async def _process_emitted_value(self, v: str) -> ta.Iterable[str]:
+    async def _process_emit(self, v: str) -> ta.Iterable[str]:
         return [v + '?']
 
 

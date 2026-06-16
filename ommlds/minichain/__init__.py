@@ -192,13 +192,6 @@ with _lang.auto_proxy_init(
         ChatGeneration,
     )
 
-    from .chat.history import (  # noqa
-        ChatHistory,
-        ListChatHistory,
-
-        HistoryAddingChatService,
-    )
-
     from .chat.messages import (  # noqa
         Message,
         Chat,

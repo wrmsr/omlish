@@ -21,6 +21,7 @@ from ...chat.generations import ChatGeneration
 from ...chat.messages import AiMessage
 from ...chat.messages import ThinkingMessage
 from ...chat.stream.choices.services import ChatChoicesStreamRequest
+from ...chat.stream.choices.joining import AiChoicesDeltaJoiner
 from ...chat.stream.choices.services import ChatChoicesStreamResponse
 from ...chat.stream.choices.services import static_check_is_chat_choices_stream_service
 from ...chat.stream.choices.types import AiChoicesDeltas
@@ -168,16 +169,25 @@ class ScriptedChatChoicesStreamService(_ScriptedChatChoicesServiceBase):
 
         async with UseResources.or_new(request.options) as rs:
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ChatChoicesStreamResult:
+                joiner = AiChoicesDeltaJoiner()
+
                 for i, em in enumerate(turn.emissions):
                     if gate is not None:
                         await gate(ChatScriptGatePoint(invocation_index, i))
+
+                    joiner.add(em.choices)
 
                     await sink.emit(em)
 
                 if gate is not None:
                     await gate(ChatScriptGatePoint(invocation_index, len(turn.emissions)))
 
-                return ChatChoicesStreamResult()
+                return ChatChoicesStreamResult(
+                    ChatChoices([
+                        ChatGeneration(jc)
+                        for jc in joiner.build()
+                    ]),
+                )
 
             return await new_stream_response(rs, inner)
 

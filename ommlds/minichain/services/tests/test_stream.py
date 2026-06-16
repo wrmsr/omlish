@@ -50,7 +50,7 @@ async def test_foo_stream_service():
     assert svc.num_sleeps == 10
     assert svc.ran_finally
     assert lst == [c + '!' for c in 'hi there!']
-    assert it.returned.must() == 9
+    assert it.result.must() == 9
 
 
 @pytest.mark.asyncs('asyncio')

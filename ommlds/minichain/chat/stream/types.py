@@ -7,6 +7,7 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 from ..._typedvalues import _tv_field_metadata
+from ...chat.generations import ChatGeneration
 from ...content.content import Content
 from ...metadata import MetadataContainerDataclass
 from ...services import StreamOptions
@@ -39,8 +40,14 @@ ChatStreamOutputs: ta.TypeAlias = ChatStreamOutput
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class ChatStreamResult:
+    g: ChatGeneration
+
+    #
+
     _outputs: ta.Sequence[ChatStreamOutputs] = dc.field(
         default=(),
         metadata=_tv_field_metadata(
