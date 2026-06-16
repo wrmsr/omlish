@@ -16,12 +16,12 @@ T = ta.TypeVar('T')
 ##
 
 
-class PytestScope(enum.Enum):
-    SESSION = enum.auto()
-    PACKAGE = enum.auto()
-    MODULE = enum.auto()
-    CLASS = enum.auto()
-    FUNCTION = enum.auto()
+class PytestScope(enum.StrEnum):
+    SESSION = 'session'
+    PACKAGE = 'package'
+    MODULE = 'module'
+    CLASS = 'class'
+    FUNCTION = 'function'
 
 
 class Scopes(lang.Namespace, lang.Final):
@@ -126,42 +126,63 @@ class HarnessPlugin:
 
         self._harnesses_by_session: dict[ta.Any, Harness] = {}
 
+        for scope in PytestScope:
+            self._install_scope_listener(scope)
+
+    #
+
     def get_session_harness(self, session: ta.Any) -> Harness:
         return self._harnesses_by_session[session]
 
-    @pytest.fixture(scope='session', autouse=True)
-    def _harness_scope_listener_session(self, request):
-        with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST))._activate() as harness:  # noqa
-            self._harnesses_by_session[request.session] = harness
-            try:
-                with harness._pytest_scope_manager(PytestScope.SESSION, request):  # noqa
-                    yield
-            finally:
-                del self._harnesses_by_session[request.session]
+    @contextlib.contextmanager
+    def _activate_scope(self, scope: PytestScope, request: pytest.FixtureRequest) -> ta.Generator[None]:
+        if scope is PytestScope.SESSION:
+            with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST))._activate() as harness:  # noqa
+                self._harnesses_by_session[request.session] = harness
+                try:
+                    with harness._pytest_scope_manager(scope, request):  # noqa
+                        yield
+                finally:
+                    del self._harnesses_by_session[request.session]
 
-    @pytest.fixture(scope='package', autouse=True)
-    def _harness_scope_listener_package(self, request):
-        harness = self.get_session_harness(request.session)
-        with harness._pytest_scope_manager(PytestScope.PACKAGE, request):  # noqa
-            yield
+        else:
+            harness = self.get_session_harness(request.session)
+            with harness._pytest_scope_manager(scope, request):  # noqa
+                yield
 
-    @pytest.fixture(scope='module', autouse=True)
-    def _harness_scope_listener_module(self, request):
-        harness = self.get_session_harness(request.session)
-        with harness._pytest_scope_manager(PytestScope.MODULE, request):  # noqa
-            yield
+    #
 
-    @pytest.fixture(scope='class', autouse=True)
-    def _harness_scope_listener_class(self, request):
-        harness = self.get_session_harness(request.session)
-        with harness._pytest_scope_manager(PytestScope.CLASS, request):  # noqa
-            yield
+    def _make_scope_listener(self, scope: PytestScope) -> ta.Any:
+        def func(request):
+            with self._activate_scope(scope, request):
+                yield
 
-    @pytest.fixture(scope='function', autouse=True)  # noqa
-    def _harness_scope_listener_function(self, request):
-        harness = self.get_session_harness(request.session)
-        with harness._pytest_scope_manager(PytestScope.FUNCTION, request):  # noqa
-            yield
+        func.__name__ = f'_harness_scope_listener_{scope.value}'
+        func.__qualname__ = func.__name__
+
+        return func
+
+    def _install_scope_listener(self, scope: PytestScope) -> ta.Any:
+        # Awful workaround for this asinine garbage:
+        #  - https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
+        #  - https://github.com/pytest-dev/pytest/pull/14071
+        #  > When a class-scoped fixture is defined as an instance method, any attributes set on self will not be
+        #    visible to test methods. This happens because pytest creates a new instance of the test class for each test
+        #    method, while the fixture runs only once per class on a different instance.
+        # This of course doesn't apply to fixtures from bound methods on plugin classes, but they still complain about
+        # it anyway.
+        func = self._make_scope_listener(scope)
+        setattr(
+            self,
+            func.__name__,
+            pytest.fixture(
+                name=func.__name__,
+                scope=scope.value,  # noqa
+                autouse=True,
+            )(func),
+        )
+
+        return func
 
 
 ##
