@@ -2,6 +2,7 @@
 import annotationlib
 import collections.abc as cabc
 import enum
+import threading
 import types as pytypes
 import typing as ta
 
@@ -55,6 +56,7 @@ from .universe import RuntimeTypeUniverse
 
 if ta.TYPE_CHECKING:
     from .annotations import TypeAliasAnnotationPolicy
+
 
 ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
 
@@ -147,8 +149,10 @@ class RuntimeTypeReflector:
     ) -> None:
         super().__init__()
 
-        self.universe = DEFAULT_UNIVERSE if universe is None else universe
-        self.forward_ref_resolver = forward_ref_resolver
+        self._universe = DEFAULT_UNIVERSE if universe is None else universe
+        self._forward_ref_resolver = forward_ref_resolver
+
+        self._lock = threading.RLock()
 
         self._cache: dict[object, Type] = {}
 
@@ -176,7 +180,17 @@ class RuntimeTypeReflector:
         self._type_var_namespace = f'runtime:{id(self):x}'
         self._next_type_var_id = 1
 
-    def reflect_type(self, obj: object) -> Type:
+    @property
+    def universe(self) -> RuntimeTypeUniverse:
+        return self._universe
+
+    @property
+    def forward_ref_resolver(self) -> ForwardRefResolver | None:
+        return self._forward_ref_resolver
+
+    #
+
+    def _reflect_type(self, obj: object) -> Type:
         try:
             return self._cache[obj]
         except KeyError:
@@ -193,7 +207,23 @@ class RuntimeTypeReflector:
 
         return typ
 
-    def cached_inspection(self, kind: str, obj: object, factory: ta.Callable[[], object]) -> object:
+    def reflect_type(self, obj: object) -> Type:
+        try:
+            return self._cache[obj]
+        except KeyError:
+            pass
+        except TypeError:
+            pass
+
+        with self._lock:
+            return self._reflect_type(obj)
+
+    def _cached_inspection(
+            self,
+            kind: str,
+            obj: object,
+            factory: ta.Callable[[], object],
+    ) -> object:
         key = (kind, obj)
         try:
             return self._inspection_cache[key]
@@ -209,10 +239,27 @@ class RuntimeTypeReflector:
             pass
         return ret
 
+    def cached_inspection(
+            self,
+            kind: str,
+            obj: object,
+            factory: ta.Callable[[], object],
+    ) -> object:
+        key = (kind, obj)
+        try:
+            return self._inspection_cache[key]
+        except KeyError:
+            pass
+        except TypeError:
+            return factory()
+
+        with self._lock:
+            return self._cached_inspection(kind, obj, factory)
+
     def get_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
         return self._runtime_type_params_by_type.get(typ)
 
-    def to_runtime_annotation(
+    def _to_runtime_annotation(
             self,
             typ: Type,
             *,
@@ -228,14 +275,32 @@ class RuntimeTypeReflector:
 
         annotation = to_runtime_annotation(
             typ,
-            self.universe,
+            self._universe,
             type_var_resolver=self.get_runtime_type_param,
             type_alias_policy=type_alias_policy,
         )
         self._annotation_cache[key] = annotation
         return annotation
 
-    def type_key(self, typ: Type) -> TypeKey:
+    def to_runtime_annotation(
+            self,
+            typ: Type,
+            *,
+            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
+    ) -> object:
+        key = (typ, type_alias_policy)
+        try:
+            return self._annotation_cache[key]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._to_runtime_annotation(
+                typ,
+                type_alias_policy=type_alias_policy,
+            )
+
+    def _type_key(self, typ: Type) -> TypeKey:
         try:
             return self._type_key_cache[typ]
         except KeyError:
@@ -246,7 +311,16 @@ class RuntimeTypeReflector:
         self._type_key_or_none_cache[typ] = key
         return key
 
-    def type_key_or_none(self, typ: Type) -> TypeKey | None:
+    def type_key(self, typ: Type) -> TypeKey:
+        try:
+            return self._type_key_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._type_key(typ)
+
+    def _type_key_or_none(self, typ: Type) -> TypeKey | None:
         try:
             return self._type_key_or_none_cache[typ]
         except KeyError:
@@ -258,7 +332,16 @@ class RuntimeTypeReflector:
             self._type_key_cache[typ] = key
         return key
 
-    def alpha_type_key(self, typ: Type) -> TypeKey:
+    def type_key_or_none(self, typ: Type) -> TypeKey | None:
+        try:
+            return self._type_key_or_none_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._type_key_or_none(typ)
+
+    def _alpha_type_key(self, typ: Type) -> TypeKey:
         try:
             return self._alpha_type_key_cache[typ]
         except KeyError:
@@ -269,7 +352,16 @@ class RuntimeTypeReflector:
         self._alpha_type_key_or_none_cache[typ] = key
         return key
 
-    def alpha_type_key_or_none(self, typ: Type) -> TypeKey | None:
+    def alpha_type_key(self, typ: Type) -> TypeKey:
+        try:
+            return self._alpha_type_key_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._alpha_type_key(typ)
+
+    def _alpha_type_key_or_none(self, typ: Type) -> TypeKey | None:
         try:
             return self._alpha_type_key_or_none_cache[typ]
         except KeyError:
@@ -281,7 +373,16 @@ class RuntimeTypeReflector:
             self._alpha_type_key_cache[typ] = key
         return key
 
-    def structural_type_key(self, typ: Type) -> TypeKey:
+    def alpha_type_key_or_none(self, typ: Type) -> TypeKey | None:
+        try:
+            return self._alpha_type_key_or_none_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._alpha_type_key_or_none(typ)
+
+    def _structural_type_key(self, typ: Type) -> TypeKey:
         try:
             return self._structural_type_key_cache[typ]
         except KeyError:
@@ -292,7 +393,16 @@ class RuntimeTypeReflector:
         self._structural_type_key_or_none_cache[typ] = key
         return key
 
-    def structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
+    def structural_type_key(self, typ: Type) -> TypeKey:
+        try:
+            return self._structural_type_key_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._structural_type_key(typ)
+
+    def _structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
         try:
             return self._structural_type_key_or_none_cache[typ]
         except KeyError:
@@ -304,7 +414,16 @@ class RuntimeTypeReflector:
             self._structural_type_key_cache[typ] = key
         return key
 
-    def alpha_structural_type_key(self, typ: Type) -> TypeKey:
+    def structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
+        try:
+            return self._structural_type_key_or_none_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._structural_type_key_or_none(typ)
+
+    def _alpha_structural_type_key(self, typ: Type) -> TypeKey:
         try:
             return self._alpha_structural_type_key_cache[typ]
         except KeyError:
@@ -315,7 +434,16 @@ class RuntimeTypeReflector:
         self._alpha_structural_type_key_or_none_cache[typ] = key
         return key
 
-    def alpha_structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
+    def alpha_structural_type_key(self, typ: Type) -> TypeKey:
+        try:
+            return self._alpha_structural_type_key_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._alpha_structural_type_key(typ)
+
+    def _alpha_structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
         try:
             return self._alpha_structural_type_key_or_none_cache[typ]
         except KeyError:
@@ -326,6 +454,17 @@ class RuntimeTypeReflector:
         if key is not None:
             self._alpha_structural_type_key_cache[typ] = key
         return key
+
+    def alpha_structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
+        try:
+            return self._alpha_structural_type_key_or_none_cache[typ]
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._alpha_structural_type_key_or_none(typ)
+
+    #
 
     def _reflect_type_uncached(self, obj: object) -> Type:
         if obj is ta.Any:
@@ -365,13 +504,13 @@ class RuntimeTypeReflector:
             if origin is ta.ClassVar or origin is ta.Final:
                 return self._reflect_single_arg_wrapper(origin, args)
 
-            if origin is ta.Required:
+            if origin is ta.Required:  # noqa
                 return self._reflect_required(args, required=True)
 
-            if origin is ta.NotRequired:
+            if origin is ta.NotRequired:  # noqa
                 return self._reflect_required(args, required=False)
 
-            if origin is ta.ReadOnly:
+            if origin is ta.ReadOnly:  # noqa
                 return self._reflect_read_only(args)
 
             if origin is ta.Unpack:
@@ -387,7 +526,7 @@ class RuntimeTypeReflector:
                 return self._reflect_literal(args)
 
             if origin is ta.Union or origin is pytypes.UnionType:
-                return make_union([self.reflect_type(arg) for arg in args])
+                return make_union([self._reflect_type(arg) for arg in args])
 
             if isinstance(origin, ta.TypeAliasType):
                 return self._reflect_type_alias(origin, args, is_subscripted=True)
@@ -426,7 +565,7 @@ class RuntimeTypeReflector:
             if (alias_ref := self._reflect_type_alias_forward_ref(name, alias_obj)) is not None:
                 return alias_ref
 
-        if self.forward_ref_resolver is None:
+        if self._forward_ref_resolver is None:
             raise UnreflectableTypeError(f'Unsupported unresolved forward reference: {obj!r}')
 
         if name in self._resolving_forward_refs:
@@ -434,7 +573,7 @@ class RuntimeTypeReflector:
 
         self._resolving_forward_refs.add(name)
         try:
-            return self.reflect_type(self.forward_ref_resolver(name))
+            return self._reflect_type(self._forward_ref_resolver(name))
         finally:
             self._resolving_forward_refs.remove(name)
 
@@ -468,19 +607,19 @@ class RuntimeTypeReflector:
             parameter_names: ta.Mapping[str, object],
     ) -> Type:
         if not name.startswith('*'):
-            return self.reflect_type(parameter_names[name])
+            return self._reflect_type(parameter_names[name])
 
         parameter = parameter_names[name[1:]]
         if not isinstance(parameter, ta.TypeVarTuple):
             raise KeyError(name)
 
-        type_var_tuple = self.reflect_type(parameter)
+        type_var_tuple = self._reflect_type(parameter)
         if not isinstance(type_var_tuple, TypeVarTupleType):
             raise KeyError(name)
 
         return TupleType(
             [UnpackType(type_var_tuple)],
-            _make_tuple_fallback(self.universe),
+            _make_tuple_fallback(self._universe),
         )
 
     def _reflect_type_alias(
@@ -501,7 +640,7 @@ class RuntimeTypeReflector:
         self._resolving_type_aliases.add(obj)
         self._type_alias_stack.append(obj)
         try:
-            target = self.reflect_type(obj.__value__)
+            target = self._reflect_type(obj.__value__)
         finally:
             self._type_alias_stack.pop()
             self._resolving_type_aliases.remove(obj)
@@ -533,7 +672,7 @@ class RuntimeTypeReflector:
         if not type_var_tuple_indexes:
             if len(args) != len(type_params):
                 raise UnreflectableTypeError(f'Unsupported type alias arguments for {obj!r}: {args!r}')
-            return [self.reflect_type(arg) for arg in args]
+            return [self._reflect_type(arg) for arg in args]
 
         if len(type_var_tuple_indexes) > 1:
             raise UnreflectableTypeError(f'Unsupported type alias with multiple TypeVarTuple parameters: {obj!r}')
@@ -545,17 +684,17 @@ class RuntimeTypeReflector:
             raise UnreflectableTypeError(f'Unsupported type alias arguments for {obj!r}: {args!r}')
 
         reflected_args: list[Type] = []
-        reflected_args.extend(self.reflect_type(arg) for arg in args[:prefix_len])
+        reflected_args.extend(self._reflect_type(arg) for arg in args[:prefix_len])
 
         variadic_start = prefix_len
         variadic_end = len(args) - suffix_len
         reflected_args.append(TupleType(
-            [self.reflect_type(arg) for arg in args[variadic_start:variadic_end]],
-            _make_tuple_fallback(self.universe),
+            [self._reflect_type(arg) for arg in args[variadic_start:variadic_end]],
+            _make_tuple_fallback(self._universe),
         ))
 
         if suffix_len:
-            reflected_args.extend(self.reflect_type(arg) for arg in args[-suffix_len:])
+            reflected_args.extend(self._reflect_type(arg) for arg in args[-suffix_len:])
 
         return reflected_args
 
@@ -590,39 +729,39 @@ class RuntimeTypeReflector:
         return _contains_any_type_alias(typ, active_aliases, set())
 
     def _reflect_new_type(self, obj: object) -> Instance:
-        info = self.universe.get_new_type_info(obj)
-        info._new_type_supertype = self.reflect_type(obj.__supertype__)  # type: ignore[attr-defined]
+        info = self._universe.get_new_type_info(obj)
+        info._new_type_supertype = self._reflect_type(obj.__supertype__)  # type: ignore[attr-defined]
         return Instance(info, [])
 
     def _reflect_annotated(self, args: tuple[object, ...]) -> AnnotatedType:
         if len(args) < 2:
             raise UnreflectableTypeError(f'Unsupported Annotated arguments: {args!r}')
 
-        return AnnotatedType(self.reflect_type(args[0]), tuple(args[1:]))
+        return AnnotatedType(self._reflect_type(args[0]), tuple(args[1:]))
 
     def _reflect_type_guard(self, args: tuple[object, ...]) -> TypeGuardedType:
         if len(args) != 1:
             raise UnreflectableTypeError(f'Unsupported TypeGuard arguments: {args!r}')
 
-        return TypeGuardedType(self.reflect_type(args[0]))
+        return TypeGuardedType(self._reflect_type(args[0]))
 
     def _reflect_required(self, args: tuple[object, ...], *, required: bool) -> RequiredType:
         if len(args) != 1:
             raise UnreflectableTypeError(f'Unsupported Required arguments: {args!r}')
 
-        return RequiredType(self.reflect_type(args[0]), required=required)
+        return RequiredType(self._reflect_type(args[0]), required=required)
 
     def _reflect_read_only(self, args: tuple[object, ...]) -> ReadOnlyType:
         if len(args) != 1:
             raise UnreflectableTypeError(f'Unsupported ReadOnly arguments: {args!r}')
 
-        return ReadOnlyType(self.reflect_type(args[0]))
+        return ReadOnlyType(self._reflect_type(args[0]))
 
     def _reflect_unpack(self, args: tuple[object, ...]) -> UnpackType:
         if len(args) != 1:
             raise UnreflectableTypeError(f'Unsupported Unpack arguments: {args!r}')
 
-        return UnpackType(self.reflect_type(args[0]))
+        return UnpackType(self._reflect_type(args[0]))
 
     def _reflect_typed_dict(self, origin: type, args: tuple[object, ...]) -> TypedDictType:
         parameters = getattr(origin, '__parameters__', ())
@@ -630,7 +769,7 @@ class RuntimeTypeReflector:
             raise UnreflectableTypeError(f'Unsupported TypedDict arguments for {origin!r}: {args!r}')
 
         replacements = {
-            self._reflect_type_var_parameter(parameter): self.reflect_type(arg)
+            self._reflect_type_var_parameter(parameter): self._reflect_type(arg)
             for parameter, arg in zip(parameters, args)
         }
 
@@ -642,7 +781,7 @@ class RuntimeTypeReflector:
 
         items: dict[str, Type] = {}
         for name, annotation in annotations.items():
-            item = self.reflect_type(annotation)
+            item = self._reflect_type(annotation)
             if replacements:
                 item = substitute_type(item, replacements)
             items[name] = self._unwrap_typed_dict_item(item)
@@ -673,7 +812,7 @@ class RuntimeTypeReflector:
         return typ
 
     def _reflect_instance(self, origin: type, args: tuple[object, ...]) -> Instance:
-        info = self.universe.get_type_info(origin)
+        info = self._universe.get_type_info(origin)
         self._prepare_runtime_type_info(origin, info)
         reflected_args = self._reflect_instance_args(origin, info, args)
 
@@ -695,7 +834,7 @@ class RuntimeTypeReflector:
         if not type_var_tuple_indexes:
             if len(args) > len(type_vars):
                 raise UnreflectableTypeError(f'Unsupported generic arguments for {origin!r}: {args!r}')
-            return [self.reflect_type(arg) for arg in args]
+            return [self._reflect_type(arg) for arg in args]
 
         if len(type_var_tuple_indexes) > 1:
             raise UnreflectableTypeError(f'Unsupported generic class with multiple TypeVarTuple parameters: {origin!r}')
@@ -707,17 +846,17 @@ class RuntimeTypeReflector:
             raise UnreflectableTypeError(f'Unsupported generic arguments for {origin!r}: {args!r}')
 
         reflected_args: list[Type] = []
-        reflected_args.extend(self.reflect_type(arg) for arg in args[:prefix_len])
+        reflected_args.extend(self._reflect_type(arg) for arg in args[:prefix_len])
 
         variadic_start = prefix_len
         variadic_end = len(args) - suffix_len
         reflected_args.append(TupleType(
-            [self.reflect_type(arg) for arg in args[variadic_start:variadic_end]],
-            _make_tuple_fallback(self.universe),
+            [self._reflect_type(arg) for arg in args[variadic_start:variadic_end]],
+            _make_tuple_fallback(self._universe),
         ))
 
         if suffix_len:
-            reflected_args.extend(self.reflect_type(arg) for arg in args[-suffix_len:])
+            reflected_args.extend(self._reflect_type(arg) for arg in args[-suffix_len:])
 
         return reflected_args
 
@@ -740,7 +879,7 @@ class RuntimeTypeReflector:
         mro = getattr(origin, '__mro__', None)
         if mro is not None and info._mro == [info]:
             info._mro = [
-                self.universe.get_type_info(cls)
+                self._universe.get_type_info(cls)
                 for cls in mro
                 if isinstance(cls, type)
             ]
@@ -755,19 +894,19 @@ class RuntimeTypeReflector:
         ]
 
     def _reflect_type_var_parameter(self, obj: object) -> TypeVarType:
-        type_var = self.reflect_type(obj)
+        type_var = self._reflect_type(obj)
         if not isinstance(type_var, TypeVarType):
             raise UnreflectableTypeError(f'Unsupported generic parameter: {obj!r}')
         return type_var
 
     def _reflect_type_var_like_parameter(self, obj: object) -> TypeVarLikeType:
-        type_var_like = self.reflect_type(obj)
+        type_var_like = self._reflect_type(obj)
         if not isinstance(type_var_like, TypeVarLikeType):
             raise UnreflectableTypeError(f'Unsupported generic parameter: {obj!r}')
         return type_var_like
 
     def _reflect_param_spec_parameter(self, obj: object) -> ParamSpecType:
-        param_spec = self.reflect_type(obj)
+        param_spec = self._reflect_type(obj)
         if not isinstance(param_spec, ParamSpecType):
             raise UnreflectableTypeError(f'Unsupported ParamSpec parameter: {obj!r}')
         return param_spec
@@ -790,35 +929,35 @@ class RuntimeTypeReflector:
         )
 
     def _reflect_runtime_base(self, obj: object) -> Instance:
-        base = self.reflect_type(obj)
+        base = self._reflect_type(obj)
         if not isinstance(base, Instance):
             raise UnreflectableTypeError(f'Unsupported runtime base: {obj!r}')
         return base
 
     def _reflect_tuple(self, args: tuple[object, ...]) -> Type:
-        info = self.universe.get_type_info(tuple)
+        info = self._universe.get_type_info(tuple)
 
         if len(args) == 2 and args[1] is Ellipsis:
-            return Instance(info, [self.reflect_type(args[0])])
+            return Instance(info, [self._reflect_type(args[0])])
 
         fallback = Instance(info, [_make_any()])
-        return TupleType([self.reflect_type(arg) for arg in args], fallback)
+        return TupleType([self._reflect_type(arg) for arg in args], fallback)
 
     def _reflect_single_arg_wrapper(self, origin: object, args: tuple[object, ...]) -> Type:
         if len(args) != 1:
             raise UnreflectableTypeError(f'Unsupported wrapper arguments for {origin!r}: {args!r}')
 
-        return self.reflect_type(args[0])
+        return self._reflect_type(args[0])
 
     def _reflect_type_type(self, args: tuple[object, ...]) -> TypeType:
         if len(args) != 1:
             raise UnreflectableTypeError(f'Unsupported type arguments: {args!r}')
 
-        return TypeType(self.reflect_type(args[0]))
+        return TypeType(self._reflect_type(args[0]))
 
     def _reflect_callable(self, args: tuple[object, ...]) -> CallableType:
         fallback = Instance(
-            self.universe.get_type_info(cabc.Callable),  # type: ignore[arg-type]
+            self._universe.get_type_info(cabc.Callable),  # type: ignore[arg-type]
             [_make_any()],
         )
 
@@ -831,7 +970,7 @@ class RuntimeTypeReflector:
                 [],
                 [],
                 [],
-                self.reflect_type(ret_type),
+                self._reflect_type(ret_type),
                 fallback,
                 is_ellipsis_args=True,
             )
@@ -842,7 +981,7 @@ class RuntimeTypeReflector:
                 [param_spec, param_spec],
                 [ArgKind.STAR, ArgKind.STAR2],
                 [None, None],
-                self.reflect_type(ret_type),
+                self._reflect_type(ret_type),
                 fallback,
                 variables=[param_spec],
             )
@@ -853,12 +992,12 @@ class RuntimeTypeReflector:
                 raise UnreflectableTypeError(f'Unsupported Concatenate argument specification: {arg_spec!r}')
 
             param_spec = self._reflect_param_spec_parameter(concatenate_args[-1])
-            prefix_types = [self.reflect_type(arg) for arg in concatenate_args[:-1]]
+            prefix_types = [self._reflect_type(arg) for arg in concatenate_args[:-1]]
             return CallableType(
                 [*prefix_types, param_spec, param_spec],
                 [*[ArgKind.POS for _ in prefix_types], ArgKind.STAR, ArgKind.STAR2],
                 [*[None for _ in prefix_types], None, None],
-                self.reflect_type(ret_type),
+                self._reflect_type(ret_type),
                 fallback,
                 variables=[param_spec],
             )
@@ -866,12 +1005,12 @@ class RuntimeTypeReflector:
         if not isinstance(arg_spec, list):
             raise UnreflectableTypeError(f'Unsupported Callable argument specification: {arg_spec!r}')
 
-        arg_types = [self.reflect_type(arg) for arg in arg_spec]
+        arg_types = [self._reflect_type(arg) for arg in arg_spec]
         return CallableType(
             arg_types,
             [ArgKind.POS for _ in arg_types],
             [None for _ in arg_types],
-            self.reflect_type(ret_type),
+            self._reflect_type(ret_type),
             fallback,
         )
 
@@ -883,13 +1022,13 @@ class RuntimeTypeReflector:
 
     def _reflect_literal_value(self, obj: object) -> LiteralType:
         if isinstance(obj, enum.Enum):
-            fallback = Instance(self.universe.get_type_info(obj.__class__), [])
+            fallback = Instance(self._universe.get_type_info(obj.__class__), [])
             return LiteralType(obj.name, fallback)
 
         if not _is_literal_value(obj):
             raise UnreflectableTypeError(f'Unsupported literal value: {obj!r}')
 
-        fallback = Instance(self.universe.get_type_info(type(obj)), [])
+        fallback = Instance(self._universe.get_type_info(type(obj)), [])
         return LiteralType(ta.cast(LiteralValue, obj), fallback)
 
     def _reflect_type_var(self, obj: ta.TypeVar) -> TypeVarType:
@@ -902,21 +1041,21 @@ class RuntimeTypeReflector:
 
         bound = obj.__bound__
         if bound is None:
-            upper_bound: Type = Instance(self.universe.get_type_info(object), [])
+            upper_bound: Type = Instance(self._universe.get_type_info(object), [])
         else:
-            upper_bound = self.reflect_type(bound)
+            upper_bound = self._reflect_type(bound)
 
         default_obj = getattr(obj, '__default__', ta.NoDefault)
         if default_obj is ta.NoDefault:
             default: Type = _make_any()
         else:
-            default = self.reflect_type(default_obj)
+            default = self._reflect_type(default_obj)
 
         type_var = TypeVarType(
             obj.__name__,
             obj.__name__,
             TypeVarId(self._next_type_var_id, namespace=self._type_var_namespace),
-            [self.reflect_type(value) for value in obj.__constraints__],
+            [self._reflect_type(value) for value in obj.__constraints__],
             upper_bound,
             default,
             variance,
@@ -926,13 +1065,13 @@ class RuntimeTypeReflector:
         return type_var
 
     def _reflect_param_spec(self, obj: ta.ParamSpec) -> ParamSpecType:
-        upper_bound = Instance(self.universe.get_type_info(object), [])
+        upper_bound = Instance(self._universe.get_type_info(object), [])
 
         default_obj = getattr(obj, '__default__', ta.NoDefault)
         if default_obj is ta.NoDefault:
             default: Type = _make_any()
         else:
-            default = self.reflect_type(default_obj)
+            default = self._reflect_type(default_obj)
 
         param_spec = ParamSpecType(
             obj.__name__,
@@ -946,15 +1085,15 @@ class RuntimeTypeReflector:
         return param_spec
 
     def _reflect_type_var_tuple(self, obj: ta.TypeVarTuple) -> TypeVarTupleType:
-        upper_bound = Instance(self.universe.get_type_info(object), [])
+        upper_bound = Instance(self._universe.get_type_info(object), [])
 
         default_obj = getattr(obj, '__default__', ta.NoDefault)
         if default_obj is ta.NoDefault:
             default: Type = _make_any()
         else:
-            default = self.reflect_type(default_obj)
+            default = self._reflect_type(default_obj)
 
-        tuple_fallback = Instance(self.universe.get_type_info(tuple), [_make_any()])
+        tuple_fallback = Instance(self._universe.get_type_info(tuple), [_make_any()])
         type_var_tuple = TypeVarTupleType(
             obj.__name__,
             obj.__name__,

@@ -63,11 +63,11 @@ class RuntimeTypeUniverse:
             for obj, fullname in self._fullnames_by_type.items()
         }
 
-    #
-
     @property
     def dynamic_type_name_suffix(self) -> DynamicTypeNameSuffix:
         return self._dynamic_type_name_suffix
+
+    #
 
     def _make_dynamic_type_name_hint(self, obj: type) -> str:
         module = getattr(obj, '__module__', None)
