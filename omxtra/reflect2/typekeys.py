@@ -67,3 +67,18 @@ class TypeKeys(HasLock):
         if key is None:
             raise make_type_key_not_implemented_exception(typ, policy)
         return key
+
+
+##
+
+
+class HasKeys:
+    def __init__(
+            self,
+            *,
+            keys: TypeKeys,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._keys = keys

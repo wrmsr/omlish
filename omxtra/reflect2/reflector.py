@@ -860,7 +860,3 @@ class HasReflector:
         super().__init__(**kwargs)
 
         self._reflector = reflector
-
-    @property
-    def reflector(self) -> TypeReflector:
-        return self._reflector
