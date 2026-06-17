@@ -25,7 +25,6 @@ from .core.types import TypeVarTupleType
 from .core.types import UnionType
 from .core.types import UnpackType
 from .core.typevisitor import DefaultTypeVisitor
-from .core.typevisitor import T
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
 from .locking import HasLock
