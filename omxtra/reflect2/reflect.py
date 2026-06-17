@@ -125,10 +125,10 @@ def _is_forward_ref(obj: object) -> bool:
 
 def _is_typed_dict_class(obj: object) -> bool:
     return (
-        isinstance(obj, type)
-        and hasattr(obj, '__required_keys__')
-        and hasattr(obj, '__optional_keys__')
-        and hasattr(obj, '__annotations__')
+        isinstance(obj, type) and
+        hasattr(obj, '__required_keys__') and
+        hasattr(obj, '__optional_keys__') and
+        hasattr(obj, '__annotations__')
     )
 
 

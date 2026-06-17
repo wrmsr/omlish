@@ -101,9 +101,9 @@ def _to_union_annotation(
 def _to_literal_annotation_value(typ: LiteralType, universe: RuntimeTypeUniverse) -> object:
     cls = universe.get_runtime_type(typ._fallback._type)
     if (
-            isinstance(cls, type)
-            and issubclass(cls, enum.Enum)
-            and isinstance(typ._value, str)
+            isinstance(cls, type) and
+            issubclass(cls, enum.Enum) and
+            isinstance(typ._value, str)
     ):
         try:
             return cls[typ._value]
@@ -164,9 +164,9 @@ def _to_type_var_annotation(
 
 def _same_type_var_like_id(left: TypeVarLikeType, right: TypeVarLikeType) -> bool:
     return (
-        left._id._namespace == right._id._namespace
-        and left._id._raw_id == right._id._raw_id
-        and left._id._meta_level == right._id._meta_level
+        left._id._namespace == right._id._namespace and
+        left._id._raw_id == right._id._raw_id and
+        left._id._meta_level == right._id._meta_level
     )
 
 
