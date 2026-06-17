@@ -17,6 +17,7 @@ from .universe import or_global_universe
 
 
 if ta.TYPE_CHECKING:
+    from .members import MembersInspection
     from .members import MembersReflector
 
 
@@ -141,6 +142,9 @@ class Api:
         except AttributeError:
             pass
         return self._members_()
+
+    def inspect_members(self, obj: object) -> MembersInspection:
+        return self.members.inspect_members(obj)
 
 
 ##
