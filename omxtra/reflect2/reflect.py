@@ -653,6 +653,34 @@ class RuntimeTypeReflector:
             alias._is_recursive = True
         return alias_type
 
+    def _reflect_variadic_type_args(
+            self,
+            obj_kind: str,
+            obj: ta.Any,
+            type_params: ta.Sequence[object],
+            args: ta.Sequence[object],
+            variadic_index: int,
+    ) -> list[Type]:
+        prefix_len = variadic_index
+        suffix_len = len(type_params) - variadic_index - 1
+        if len(args) < prefix_len + suffix_len:
+            raise UnreflectableTypeError(f'Unsupported {obj_kind} arguments for {obj!r}: {args!r}')
+
+        reflected_args: list[Type] = []
+        reflected_args.extend(self._reflect_type(arg) for arg in args[:prefix_len])
+
+        variadic_start = prefix_len
+        variadic_end = len(args) - suffix_len
+        reflected_args.append(TupleType(
+            [self._reflect_type(arg) for arg in args[variadic_start:variadic_end]],
+            _make_tuple_fallback(self._universe),
+        ))
+
+        if suffix_len:
+            reflected_args.extend(self._reflect_type(arg) for arg in args[-suffix_len:])
+
+        return reflected_args
+
     def _reflect_type_alias_args(
             self,
             obj: ta.TypeAliasType,
@@ -678,25 +706,13 @@ class RuntimeTypeReflector:
             raise UnreflectableTypeError(f'Unsupported type alias with multiple TypeVarTuple parameters: {obj!r}')
 
         variadic_index = type_var_tuple_indexes[0]
-        prefix_len = variadic_index
-        suffix_len = len(type_params) - variadic_index - 1
-        if len(args) < prefix_len + suffix_len:
-            raise UnreflectableTypeError(f'Unsupported type alias arguments for {obj!r}: {args!r}')
-
-        reflected_args: list[Type] = []
-        reflected_args.extend(self._reflect_type(arg) for arg in args[:prefix_len])
-
-        variadic_start = prefix_len
-        variadic_end = len(args) - suffix_len
-        reflected_args.append(TupleType(
-            [self._reflect_type(arg) for arg in args[variadic_start:variadic_end]],
-            _make_tuple_fallback(self._universe),
-        ))
-
-        if suffix_len:
-            reflected_args.extend(self._reflect_type(arg) for arg in args[-suffix_len:])
-
-        return reflected_args
+        return self._reflect_variadic_type_args(
+            'type alias',
+            obj,
+            type_params,
+            args,
+            variadic_index,
+        )
 
     def _get_type_alias_symbol(self, obj: ta.TypeAliasType) -> TypeAlias:
         try:
@@ -821,7 +837,12 @@ class RuntimeTypeReflector:
 
         return Instance(info, reflected_args)
 
-    def _reflect_instance_args(self, origin: type, info: TypeInfo, args: tuple[object, ...]) -> list[Type]:
+    def _reflect_instance_args(
+            self,
+            origin: type,
+            info: TypeInfo,
+            args: tuple[object, ...],
+    ) -> list[Type]:
         type_vars = info._type_vars
         if not args:
             return []
@@ -840,25 +861,13 @@ class RuntimeTypeReflector:
             raise UnreflectableTypeError(f'Unsupported generic class with multiple TypeVarTuple parameters: {origin!r}')
 
         variadic_index = type_var_tuple_indexes[0]
-        prefix_len = variadic_index
-        suffix_len = len(type_vars) - variadic_index - 1
-        if len(args) < prefix_len + suffix_len:
-            raise UnreflectableTypeError(f'Unsupported generic arguments for {origin!r}: {args!r}')
-
-        reflected_args: list[Type] = []
-        reflected_args.extend(self._reflect_type(arg) for arg in args[:prefix_len])
-
-        variadic_start = prefix_len
-        variadic_end = len(args) - suffix_len
-        reflected_args.append(TupleType(
-            [self._reflect_type(arg) for arg in args[variadic_start:variadic_end]],
-            _make_tuple_fallback(self._universe),
-        ))
-
-        if suffix_len:
-            reflected_args.extend(self._reflect_type(arg) for arg in args[-suffix_len:])
-
-        return reflected_args
+        return self._reflect_variadic_type_args(
+            'generic',
+            origin,
+            type_vars,
+            args,
+            variadic_index,
+        )
 
     def _prepare_runtime_type_info(self, origin: type, info: TypeInfo) -> None:
         if origin in self._prepared_infos:
