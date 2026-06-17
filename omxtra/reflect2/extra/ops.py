@@ -41,8 +41,8 @@ from ..core.types import TypeVarId
 from ..core.types import TypeVarLikeType
 from ..errors import ReflectionTypeError
 from ..errors import UnsupportedTypeOperationError
-from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import TypeReflector
+from ..reflector import or_default_reflector
+from ..reflector import TypeReflector
 
 
 RuntimeSubstitutionMap: ta.TypeAlias = ta.Mapping[object, object]
@@ -56,7 +56,7 @@ def reflect_join(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return join_types(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -64,7 +64,7 @@ def reflect_join_list(
         items: list[object],
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return join_type_list([rt_reflector.reflect_type(item) for item in items])
 
 
@@ -73,7 +73,7 @@ def reflect_structural_join(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return structural_join_types(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -81,7 +81,7 @@ def reflect_structural_join_list(
         items: list[object],
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return structural_join_type_list([rt_reflector.reflect_type(item) for item in items])
 
 
@@ -90,7 +90,7 @@ def reflect_meet(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return meet_types(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -98,7 +98,7 @@ def reflect_meet_list(
         items: list[object],
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return meet_type_list([rt_reflector.reflect_type(item) for item in items])
 
 
@@ -107,7 +107,7 @@ def reflect_structural_meet(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return structural_meet_types(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -115,7 +115,7 @@ def reflect_structural_meet_list(
         items: list[object],
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return structural_meet_type_list([rt_reflector.reflect_type(item) for item in items])
 
 
@@ -124,7 +124,7 @@ def reflect_is_assignable(
         target: object,
         reflector: TypeReflector | None = None,
 ) -> bool:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return is_assignable(rt_reflector.reflect_type(source), rt_reflector.reflect_type(target))
 
 
@@ -133,7 +133,7 @@ def reflect_is_assignable_or_false(
         target: object,
         reflector: TypeReflector | None = None,
 ) -> bool:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return is_assignable_or_false(rt_reflector.reflect_type(source), rt_reflector.reflect_type(target))
 
 
@@ -142,7 +142,7 @@ def reflect_is_structural_subtype(
         target: object,
         reflector: TypeReflector | None = None,
 ) -> bool:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return is_structural_subtype(rt_reflector.reflect_type(source), rt_reflector.reflect_type(target))
 
 
@@ -162,7 +162,7 @@ def reflect_is_same_type(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> bool:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return is_same_type(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -171,7 +171,7 @@ def reflect_is_alpha_equivalent(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> bool:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return is_alpha_equivalent(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -180,7 +180,7 @@ def reflect_is_structurally_equivalent(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> bool:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return is_structurally_equivalent(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -200,7 +200,7 @@ def reflect_is_alpha_structurally_equivalent(
         right: object,
         reflector: TypeReflector | None = None,
 ) -> bool:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return is_alpha_structurally_equivalent(rt_reflector.reflect_type(left), rt_reflector.reflect_type(right))
 
 
@@ -219,7 +219,7 @@ def reflect_type_str(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> str:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return type_str(rt_reflector.reflect_type(obj))
 
 
@@ -227,7 +227,7 @@ def reflect_type_strs(
         objs: list[object],
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[str]:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return [
         type_str(rt_reflector.reflect_type(obj))
         for obj in objs
@@ -238,7 +238,7 @@ def reflect_type_key(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.type_key(rt_reflector.reflect_type(obj))
 
 
@@ -246,7 +246,7 @@ def reflect_type_key_or_none(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.type_key_or_none(rt_reflector.reflect_type(obj))
 
 
@@ -254,7 +254,7 @@ def reflect_alpha_type_key(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.alpha_type_key(rt_reflector.reflect_type(obj))
 
 
@@ -262,7 +262,7 @@ def reflect_alpha_type_key_or_none(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.alpha_type_key_or_none(rt_reflector.reflect_type(obj))
 
 
@@ -270,7 +270,7 @@ def reflect_structural_type_key(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.structural_type_key(rt_reflector.reflect_type(obj))
 
 
@@ -278,7 +278,7 @@ def reflect_structural_type_key_or_none(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.structural_type_key_or_none(rt_reflector.reflect_type(obj))
 
 
@@ -286,7 +286,7 @@ def reflect_alpha_structural_type_key(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.alpha_structural_type_key(rt_reflector.reflect_type(obj))
 
 
@@ -294,7 +294,7 @@ def reflect_alpha_structural_type_key_or_none(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> TypeKey | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return rt_reflector.alpha_structural_type_key_or_none(rt_reflector.reflect_type(obj))
 
 
@@ -302,7 +302,7 @@ def reflect_literal_values(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[LiteralValue]:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return get_literal_values(rt_reflector.reflect_type(obj))
 
 
@@ -310,7 +310,7 @@ def reflect_literal_values_or_none(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[LiteralValue] | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return get_literal_values_or_none(rt_reflector.reflect_type(obj))
 
 
@@ -318,7 +318,7 @@ def reflect_typed_dict_literal_values(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Mapping[str, list[LiteralValue] | None]:
-    typ = _get_reflector(reflector).reflect_type(obj)
+    typ = or_default_reflector(reflector).reflect_type(obj)
     if not isinstance(typ, TypedDictType):
         raise ReflectionTypeError(f'Unsupported TypedDict type: {typ!r}')
     return {
@@ -331,7 +331,7 @@ def reflect_instance(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> Instance:
-    typ = _get_reflector(reflector).reflect_type(obj)
+    typ = or_default_reflector(reflector).reflect_type(obj)
     if not isinstance(typ, Instance):
         raise ReflectionTypeError(f'Unsupported instance type: {typ!r}')
     return typ
@@ -356,7 +356,7 @@ def reflect_base_args(
         target: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Type] | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return _reflect_base_args(source, target, rt_reflector)
 
 
@@ -365,7 +365,7 @@ def reflect_base_args_or_none(
         target: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Type] | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return _reflect_base_args(source, target, rt_reflector, strict=False)
 
 
@@ -374,7 +374,7 @@ def reflect_base_instance(
         target: object,
         reflector: TypeReflector | None = None,
 ) -> Instance | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     source_type, target_type = _reflect_base_instance_inputs(source, target, rt_reflector)
     return get_base_instance(source_type, target_type._type)
 
@@ -384,7 +384,7 @@ def reflect_base_instance_or_none(
         target: object,
         reflector: TypeReflector | None = None,
 ) -> Instance | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     source_type, target_type = _reflect_base_instance_inputs(source, target, rt_reflector)
     return get_base_instance_or_none(source_type, target_type._type)
 
@@ -393,7 +393,7 @@ def reflect_mro_instances(
         source: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Instance]:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
@@ -404,7 +404,7 @@ def reflect_mro_instances_or_none(
         source: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Instance] | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
@@ -415,7 +415,7 @@ def reflect_mro_entries(
         source: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[MroEntry]:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
@@ -426,7 +426,7 @@ def reflect_mro_entries_or_none(
         source: object,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[MroEntry] | None:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
         raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
@@ -478,7 +478,7 @@ def reflect_substitute_type(
         replacements: RuntimeSubstitutionMap,
         reflector: TypeReflector | None = None,
 ) -> Type:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     reflected_type = rt_reflector.reflect_type(typ)
     return substitute_type(reflected_type, _reflect_replacements(replacements, rt_reflector))
 
@@ -488,18 +488,12 @@ def reflect_substitute_types(
         replacements: RuntimeSubstitutionMap,
         reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Type]:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     reflected_replacements = _reflect_replacements(replacements, rt_reflector)
     return substitute_types(
         [rt_reflector.reflect_type(typ) for typ in typs],
         reflected_replacements,
     )
-
-
-def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
-    if reflector is None:
-        return DEFAULT_REFLECTOR
-    return reflector
 
 
 def _reflect_replacements(

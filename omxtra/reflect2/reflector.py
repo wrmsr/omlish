@@ -292,7 +292,7 @@ class TypeReflector(
 
         for alias_obj in reversed(self._type_alias_stack):
             if name == alias_obj.__name__:
-                return TypeAliasType(self._get_type_alias_symbol(alias_obj), [])
+                return TypeAliasType(self._get_type_alias_symbol(alias_obj), ())
             if (alias_ref := self._reflect_type_alias_forward_ref(name, alias_obj)) is not None:
                 return alias_ref
 
@@ -478,7 +478,7 @@ class TypeReflector(
     def _reflect_new_type(self, obj: object) -> Instance:
         info = self._universe.get_new_type_info(obj)
         info._new_type_supertype = self._reflect_type(obj.__supertype__)  # type: ignore[attr-defined]
-        return Instance(info, [])
+        return Instance(info, ())
 
     def _reflect_annotated(self, args: tuple[object, ...]) -> AnnotatedType:
         if len(args) < 2:
@@ -707,9 +707,9 @@ class TypeReflector(
         arg_spec, ret_type = args
         if arg_spec is Ellipsis:
             return CallableType(
-                [],
-                [],
-                [],
+                (),
+                (),
+                (),
                 self._reflect_type(ret_type),
                 fallback,
                 is_ellipsis_args=True,
@@ -762,13 +762,13 @@ class TypeReflector(
 
     def _reflect_literal_value(self, obj: object) -> LiteralType:
         if isinstance(obj, enum.Enum):
-            fallback = Instance(self._universe.get_type_info(obj.__class__), [])
+            fallback = Instance(self._universe.get_type_info(obj.__class__), ())
             return LiteralType(obj.name, fallback)
 
         if not _is_literal_value(obj):
             raise UnreflectableTypeError(f'Unsupported literal value: {obj!r}')
 
-        fallback = Instance(self._universe.get_type_info(type(obj)), [])
+        fallback = Instance(self._universe.get_type_info(type(obj)), ())
         return LiteralType(ta.cast(LiteralValue, obj), fallback)
 
     def _reflect_type_var(self, obj: ta.TypeVar) -> TypeVarType:
@@ -781,7 +781,7 @@ class TypeReflector(
 
         bound = obj.__bound__
         if bound is None:
-            upper_bound: Type = Instance(self._universe.get_type_info(object), [])
+            upper_bound: Type = Instance(self._universe.get_type_info(object), ())
         else:
             upper_bound = self._reflect_type(bound)
 
@@ -805,7 +805,7 @@ class TypeReflector(
         return type_var
 
     def _reflect_param_spec(self, obj: ta.ParamSpec) -> ParamSpecType:
-        upper_bound = Instance(self._universe.get_type_info(object), [])
+        upper_bound = Instance(self._universe.get_type_info(object), ())
 
         default_obj = getattr(obj, '__default__', ta.NoDefault)
         if default_obj is ta.NoDefault:
@@ -825,7 +825,7 @@ class TypeReflector(
         return param_spec
 
     def _reflect_type_var_tuple(self, obj: ta.TypeVarTuple) -> TypeVarTupleType:
-        upper_bound = Instance(self._universe.get_type_info(object), [])
+        upper_bound = Instance(self._universe.get_type_info(object), ())
 
         default_obj = getattr(obj, '__default__', ta.NoDefault)
         if default_obj is ta.NoDefault:

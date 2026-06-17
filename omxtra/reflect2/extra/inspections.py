@@ -1,6 +1,6 @@
 import typing as ta
 
-from .locking import HasLock
+from ..locking import HasLock
 
 
 ##

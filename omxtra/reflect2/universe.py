@@ -104,14 +104,14 @@ class TypeUniverse:
 
     def _make_type_var(self, fullname: str, index: int, variance: VarianceKind) -> TypeVarType:
         object_info = self._get_type_info('builtins.object')
-        object_type = Instance(object_info, [])
+        object_type = Instance(object_info, ())
         default = _ANY_TYPES[TypeOfAny.FROM_OMITTED_GENERICS]
         name = f'T{index}'
         return TypeVarType(
             name,
             f'{fullname}.{name}',
             TypeVarId(index + 1),
-            [],
+            (),
             object_type,
             default,
             variance,
@@ -148,7 +148,7 @@ class TypeUniverse:
     def _make_known_base_arg(self, info: TypeInfo, arg_spec: _KnownBaseArg) -> Type:
         if isinstance(arg_spec, int):
             return info.type_vars[arg_spec]
-        return Instance(self._get_type_info(arg_spec), [])
+        return Instance(self._get_type_info(arg_spec), ())
 
     def _make_known_mro(self, info: TypeInfo) -> ta.Sequence[TypeInfo] | None:
         tail = _KNOWN_MRO_TAILS.get(info._fullname)
@@ -237,10 +237,10 @@ class TypeUniverse:
         supertype = getattr(obj, '__supertype__')
         if isinstance(supertype, type):
             base_type = self._get_type_info(supertype)
-            info._new_type_supertype = Instance(base_type, [])
+            info._new_type_supertype = Instance(base_type, ())
         else:
             base_type = self._get_type_info('builtins.object')
-        info._bases = (Instance(base_type, []),)
+        info._bases = (Instance(base_type, ()),)
         info._mro = (info, *base_type._mro)
 
         return info

@@ -54,66 +54,14 @@ class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
         self._type_var_resolver = type_var_resolver
         self._type_alias_policy = type_alias_policy
 
+    def visit_type(self, typ: Type) -> object:
+        raise ReflectionTypeError(f'Runtime annotation is not implemented for type: {typ!r}')
+
     def _get_runtime_type(self, info: TypeInfo) -> object:
         cls = self._universe.get_runtime_type(info)
         if cls is None:
             raise ReflectionTypeError(f'Runtime class is unavailable for type info: {info._fullname}')
         return cls
-
-    def _to_instance_annotation(self, typ: Instance) -> object:
-        cls = self._get_runtime_type(typ._type)
-        if not typ._args:
-            return cls
-
-        if not isinstance(cls, type):
-            raise ReflectionTypeError(f'Runtime object is not subscriptable for type info: {typ._type._fullname}')
-
-        args = tuple(arg.accept(self) for arg in typ._args)
-        try:
-            return cls[*args]  # type: ignore[index]
-        except TypeError as e:
-            raise ReflectionTypeError(f'Runtime class is not subscriptable for type info: {typ._type._fullname}') from e
-
-    def _to_union_annotation(self, typ: UnionType) -> object:
-        literal_values: list[object] = []
-        for item in typ._items:
-            if not isinstance(item, LiteralType):
-                break
-            literal_values.append(self._to_literal_annotation_value(item))
-        else:
-            return ta.Literal[*tuple(literal_values)]  # noqa
-
-        return ta.Union[*tuple(  # noqa
-            item.accept(self)
-            for item in typ._items
-        )]
-
-    def _to_literal_annotation_value(self, typ: LiteralType) -> object:
-        cls = self._universe.get_runtime_type(typ._fallback._type)
-        if (
-                isinstance(cls, type) and
-                issubclass(cls, enum.Enum) and
-                isinstance(typ._value, str)
-        ):
-            try:
-                return cls[typ._value]
-            except KeyError as e:
-                raise ReflectionTypeError(f'Runtime enum member is unavailable for literal type: {typ!r}') from e
-
-        return typ._value
-
-    def _to_tuple_annotation(self, typ: TupleType) -> object:
-        return tuple[*tuple(  # type: ignore[misc]
-            item.accept(self)
-            for item in typ._items
-        )]
-
-    def _to_unpack_annotation(self, typ: UnpackType) -> object:
-        item = typ._type
-        if not isinstance(item, (TypeVarTupleType, TupleType)):
-            raise ReflectionTypeError(f'Runtime annotation cannot represent unpack type: {typ!r}')
-
-        return ta.Unpack[item.accept(self)]  # noqa
 
     def _to_type_var_annotation(self, typ: TypeVarLikeType) -> object:
         if self._type_var_resolver is None:
@@ -165,25 +113,6 @@ class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
             param_spec,
         ]
 
-    def _to_callable_annotation(self, typ: CallableType) -> object:
-        ret = typ._ret_type.accept(self)
-        if typ._is_ellipsis_args:
-            return cabc.Callable[..., ret]
-
-        if (param_spec := self._get_callable_param_spec_annotation(typ)) is not None:
-            return cabc.Callable[param_spec, ret]
-
-        if (
-                typ._arg_kinds != tuple(ArgKind.POS for _ in typ._arg_types) or
-                typ._arg_names != tuple(None for _ in typ._arg_types)
-        ):
-            raise ReflectionTypeError(f'Runtime Callable annotation cannot represent callable parameter shape: {typ!r}')
-
-        return cabc.Callable[
-            [arg.accept(self) for arg in typ._arg_types],
-            ret,
-        ]
-
     def _to_preserved_type_alias_annotation(self, typ: TypeAliasType) -> object:
         if typ._alias is None:
             raise ReflectionTypeError(f'Runtime annotation is unavailable for unresolved type alias: {typ!r}')
@@ -218,9 +147,6 @@ class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
         except TypeError as e:
             raise ReflectionTypeError(f'Runtime type alias is not subscriptable: {typ._alias._fullname}') from e
 
-    def visit_type(self, typ: Type) -> object:
-        raise ReflectionTypeError(f'Runtime annotation is not implemented for type: {typ!r}')
-
     def visit_type_alias_type(self, typ: TypeAliasType) -> object:
         if typ._alias is None:
             raise ReflectionTypeError(f'Runtime annotation is unavailable for unresolved type alias: {typ!r}')
@@ -252,7 +178,11 @@ class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
         return self._to_type_var_annotation(typ)
 
     def visit_unpack_type(self, typ: UnpackType) -> object:
-        return self._to_unpack_annotation(typ)
+        item = typ._type
+        if not isinstance(item, (TypeVarTupleType, TupleType)):
+            raise ReflectionTypeError(f'Runtime annotation cannot represent unpack type: {typ!r}')
+
+        return ta.Unpack[item.accept(self)]  # noqa
 
     def visit_any(self, typ: AnyType) -> object:
         return ta.Any
@@ -261,19 +191,74 @@ class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
         return None
 
     def visit_instance(self, typ: Instance) -> object:
-        return self._to_instance_annotation(typ)
+        cls = self._get_runtime_type(typ._type)
+        if not typ._args:
+            return cls
+
+        if not isinstance(cls, type):
+            raise ReflectionTypeError(f'Runtime object is not subscriptable for type info: {typ._type._fullname}')
+
+        args = tuple(arg.accept(self) for arg in typ._args)
+        try:
+            return cls[*args]  # type: ignore[index]
+        except TypeError as e:
+            raise ReflectionTypeError(f'Runtime class is not subscriptable for type info: {typ._type._fullname}') from e
 
     def visit_callable_type(self, typ: CallableType) -> object:
-        return self._to_callable_annotation(typ)
+        ret = typ._ret_type.accept(self)
+        if typ._is_ellipsis_args:
+            return cabc.Callable[..., ret]
+
+        if (param_spec := self._get_callable_param_spec_annotation(typ)) is not None:
+            return cabc.Callable[param_spec, ret]
+
+        if (
+                typ._arg_kinds != tuple(ArgKind.POS for _ in typ._arg_types) or
+                typ._arg_names != tuple(None for _ in typ._arg_types)
+        ):
+            raise ReflectionTypeError(f'Runtime Callable annotation cannot represent callable parameter shape: {typ!r}')
+
+        return cabc.Callable[
+            [arg.accept(self) for arg in typ._arg_types],
+            ret,
+        ]
 
     def visit_tuple_type(self, typ: TupleType) -> object:
-        return self._to_tuple_annotation(typ)
+        return tuple[*tuple(  # type: ignore[misc]
+            item.accept(self)
+            for item in typ._items
+        )]
+
+    def _to_literal_annotation_value(self, typ: LiteralType) -> object:
+        cls = self._universe.get_runtime_type(typ._fallback._type)
+        if (
+                isinstance(cls, type) and
+                issubclass(cls, enum.Enum) and
+                isinstance(typ._value, str)
+        ):
+            try:
+                return cls[typ._value]
+            except KeyError as e:
+                raise ReflectionTypeError(f'Runtime enum member is unavailable for literal type: {typ!r}') from e
+
+        return typ._value
 
     def visit_literal_type(self, typ: LiteralType) -> object:
         return ta.Literal[self._to_literal_annotation_value(typ)]  # noqa
 
     def visit_union_type(self, typ: UnionType) -> object:
-        return self._to_union_annotation(typ)
+        literal_values: list[object] = []
+        for item in typ._items:
+            if not isinstance(item, LiteralType):
+                break
+            literal_values.append(self._to_literal_annotation_value(item))
+        else:
+            return ta.Literal[*tuple(literal_values)]  # noqa
+
+        return ta.Union[*tuple(  # noqa
+            item.accept(self)
+            for item in typ._items
+        )]
 
     def visit_type_type(self, typ: TypeType) -> T:
         return type[typ._item.accept(self)]
