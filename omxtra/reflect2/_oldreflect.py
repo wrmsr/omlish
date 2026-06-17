@@ -48,8 +48,8 @@ from .core.types import is_literal_value
 from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import UnreflectableTypeError
-from .universe import default_universe
 from .universe import TypeUniverse
+from .universe import default_universe
 
 
 if ta.TYPE_CHECKING:
@@ -136,7 +136,6 @@ def _contains_any_type_alias(
         seen: set[TypeAlias],
 ) -> bool:
     return typ.accept(_ContainsAnyTypeAlias(aliases, seen))
-
 
 
 class TypeReflector:

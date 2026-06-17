@@ -43,10 +43,8 @@ from .types import UnpackType
 
 try:
     from mypy_extensions import mypyc_attr
-    from mypy_extensions import trait
 except ImportError:
     from ._mypycshim import mypyc_attr
-    from ._mypycshim import trait
 
 
 T = ta.TypeVar('T')
@@ -55,7 +53,6 @@ T = ta.TypeVar('T')
 ##
 
 
-@trait
 @mypyc_attr(allow_interpreted_subclasses=True)
 class TypeVisitor(ta.Generic[T]):
     @abc.abstractmethod
@@ -182,7 +179,6 @@ class TypeVisitor(ta.Generic[T]):
 #
 
 
-@trait
 @mypyc_attr(allow_interpreted_subclasses=True)
 class DefaultTypeVisitor(TypeVisitor[T]):
     @abc.abstractmethod

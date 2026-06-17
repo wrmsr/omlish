@@ -2,7 +2,6 @@
 import annotationlib
 import collections.abc as cabc
 import enum
-import threading
 import types as pytypes
 import typing as ta
 
@@ -40,10 +39,10 @@ from .core.types import is_literal_value
 from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import UnreflectableTypeError
-from .universe import DynamicTypeNameSuffix
-from .universe import TypeUniverse
 from .locking import HasLock
+from .universe import DynamicTypeNameSuffix
 from .universe import HasUniverse
+from .universe import TypeUniverse
 
 
 ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]

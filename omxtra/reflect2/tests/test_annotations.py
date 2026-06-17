@@ -5,13 +5,13 @@ import typing as ta
 
 import pytest
 
+from ..annotations import TypeAnnotations
 from ..annotations import to_runtime_annotation
 from ..core import symbols
 from ..core import types
 from ..errors import ReflectionError
 from ..reflector import TypeReflector
 from ..universe import TypeUniverse
-from ..annotations import TypeAnnotations
 
 
 def _make_annotations() -> TypeAnnotations:

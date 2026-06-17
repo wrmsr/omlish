@@ -24,14 +24,14 @@ from .core.types import TypeVarLikeType
 from .core.types import TypeVarTupleType
 from .core.types import UnionType
 from .core.types import UnpackType
+from .core.typevisitor import DefaultTypeVisitor
 from .core.typevisitor import T
 from .errors import ReflectionTypeError
 from .errors import ReflectionValueError
 from .locking import HasLock
 from .reflector import HasReflector
-from .universe import TypeUniverse
 from .universe import HasUniverse
-from .core.typevisitor import DefaultTypeVisitor
+from .universe import TypeUniverse
 
 
 TypeVarResolver: ta.TypeAlias = ta.Callable[[TypeVarLikeType], object | None]
@@ -201,7 +201,9 @@ class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
         for arg, alias_tvar in zip(typ._args, typ._alias._alias_tvars):
             if isinstance(alias_tvar, TypeVarTupleType):
                 if not isinstance(arg, TupleType):
-                    raise ReflectionTypeError(f'Runtime annotation is unavailable for type alias: {typ._alias._fullname}')
+                    raise ReflectionTypeError(
+                        f'Runtime annotation is unavailable for type alias: {typ._alias._fullname}',
+                    )
 
                 args.extend(
                     item.accept(self)

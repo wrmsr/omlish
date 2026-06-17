@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 from ..inspections import InspectionCache
 
 

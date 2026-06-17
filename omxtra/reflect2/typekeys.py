@@ -1,7 +1,6 @@
 # ruff: noqa: SLF001
 import typing as ta
 
-from .locking import HasLock
 from .core.typekeys import ALPHA_STRUCTURAL_TYPE_KEY
 from .core.typekeys import ALPHA_TYPE_KEY
 from .core.typekeys import STRUCTURAL_TYPE_KEY
@@ -11,6 +10,7 @@ from .core.typekeys import TypeKeyPolicy
 from .core.typekeys import make_type_key_not_implemented_exception
 from .core.typekeys import type_key_or_none
 from .core.types import Type
+from .locking import HasLock
 
 
 ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]

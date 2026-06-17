@@ -10,6 +10,7 @@ from ...errors import ReflectionError
 from ...errors import UnreflectableTypeError
 from ...reflect import TypeReflector
 from ...reflect import reflect_type
+from ...universe import TypeUniverse
 from ..ops import reflect_base_args
 from ..ops import reflect_base_args_or_none
 from ..ops import reflect_base_instance
@@ -38,7 +39,6 @@ from ..ops import reflect_substitute_type
 from ..ops import reflect_substitute_types
 from ..ops import reflect_type_str
 from ..ops import reflect_type_strs
-from ...universe import TypeUniverse
 
 
 def test_default_reflection_entrypoint_handles_simple_runtime_forms() -> None:

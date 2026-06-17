@@ -1,29 +1,12 @@
 # ruff: noqa: F821 PLC0132 SLF001
 # ruff: noqa: PYI059
-import annotationlib
-import collections.abc as cabc
 import typing as ta
 
-import pytest
-
-from ..core import symbols
 from ..core import types
-from ..core.strconv import type_str
-from ..core.substitute import substitute_type
-from ..core.subtypes import get_mro_instances
-from ..core.subtypes import is_alpha_equivalent
-from ..core.subtypes import is_equivalent
-from ..core.subtypes import is_same_type
-from ..core.subtypes import is_subtype
 from ..core.typekeys import TYPE_KEY
-from ..core.typekeys import tuple_type_key
-from ..core.typekeys import type_key
-from ..core.typeops import get_proper_type
-from ..errors import UnreflectableTypeError
 from ..reflector import TypeReflector
-from ..reflector import reflect_type
-from ..universe import TypeUniverse
 from ..typekeys import TypeKeys
+from ..universe import TypeUniverse
 
 
 def test_new_type_literal_reflection_and_key_are_cache_friendly() -> None:
