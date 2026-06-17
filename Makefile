@@ -282,7 +282,7 @@ build-reflect2: venv
 # FIXME: ... ... also also pyproject lol
 .PHONY: clean-reflect2
 clean-reflect2:
-	rm omxtra/reflect2/core/*.so
+	rm omxtra/reflect2/core/*.so || true
 
 
 ## pre-commit

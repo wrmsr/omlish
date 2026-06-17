@@ -79,6 +79,23 @@ ALPHA_STRUCTURAL_TYPE_KEY_POLICY: ta.Final = dc.replace(
 )
 
 
+#
+
+
+_DEFAULT_TYPE_KEY_POLICY_DISPLAY: ta.Final = 'Specified type key'
+
+_TYPE_KEY_POLICY_DISPLAY: ta.Final[ta.Mapping[TypeKeyPolicy, str]] = {
+    TYPE_KEY_POLICY: 'Type key',
+    ALPHA_TYPE_KEY_POLICY: 'Alpha type key',
+    STRUCTURAL_TYPE_KEY_POLICY: 'Structural type key',
+    ALPHA_STRUCTURAL_TYPE_KEY_POLICY: 'Alpha structural type key',
+}
+
+
+def _type_key_policy_display(policy: TypeKeyPolicy) -> str:
+    return _TYPE_KEY_POLICY_DISPLAY.get(policy, _DEFAULT_TYPE_KEY_POLICY_DISPLAY)
+
+
 ##
 
 
@@ -89,8 +106,11 @@ def type_key_with_policy_or_none(typ: Type, policy: TypeKeyPolicy) -> TypeKey | 
 def type_key_with_policy(typ: Type, policy: TypeKeyPolicy) -> TypeKey:
     key = type_key_with_policy_or_none(typ, policy)
     if key is None:
-        raise ReflectionTypeError(f'Type key is not implemented for type: {typ!r}')
+        raise ReflectionTypeError(f'{_type_key_policy_display(policy)} is not implemented for type: {typ!r}')
     return key
+
+
+#
 
 
 def type_key_or_none(typ: Type) -> TypeKey | None:
@@ -98,13 +118,7 @@ def type_key_or_none(typ: Type) -> TypeKey | None:
 
 
 def type_key(typ: Type) -> TypeKey:
-    key = type_key_or_none(typ)
-    if key is None:
-        raise ReflectionTypeError(f'Type key is not implemented for type: {typ!r}')
-    return key
-
-
-#
+    return type_key_with_policy(typ, TYPE_KEY_POLICY)
 
 
 def alpha_type_key_or_none(typ: Type) -> TypeKey | None:
@@ -112,10 +126,7 @@ def alpha_type_key_or_none(typ: Type) -> TypeKey | None:
 
 
 def alpha_type_key(typ: Type) -> TypeKey:
-    key = alpha_type_key_or_none(typ)
-    if key is None:
-        raise ReflectionTypeError(f'Alpha type key is not implemented for type: {typ!r}')
-    return key
+    return type_key_with_policy(typ, ALPHA_TYPE_KEY_POLICY)
 
 
 def structural_type_key_or_none(typ: Type) -> TypeKey | None:
@@ -123,10 +134,7 @@ def structural_type_key_or_none(typ: Type) -> TypeKey | None:
 
 
 def structural_type_key(typ: Type) -> TypeKey:
-    key = structural_type_key_or_none(typ)
-    if key is None:
-        raise ReflectionTypeError(f'Structural type key is not implemented for type: {typ!r}')
-    return key
+    return type_key_with_policy(typ, STRUCTURAL_TYPE_KEY_POLICY)
 
 
 def alpha_structural_type_key_or_none(typ: Type) -> TypeKey | None:
@@ -134,10 +142,7 @@ def alpha_structural_type_key_or_none(typ: Type) -> TypeKey | None:
 
 
 def alpha_structural_type_key(typ: Type) -> TypeKey:
-    key = alpha_structural_type_key_or_none(typ)
-    if key is None:
-        raise ReflectionTypeError(f'Alpha structural type key is not implemented for type: {typ!r}')
-    return key
+    return type_key_with_policy(typ, ALPHA_STRUCTURAL_TYPE_KEY_POLICY)
 
 
 #
