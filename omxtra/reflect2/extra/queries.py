@@ -17,8 +17,8 @@ from ..core.types import Type
 from ..core.types import TypeAliasType
 from ..core.types import UnionType
 from ..errors import ReflectionTypeError
-from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import TypeReflector
+from ..reflector import DEFAULT_REFLECTOR
+from ..reflector import TypeReflector
 from ..universe import default_universe
 from ..universe import TypeUniverse
 

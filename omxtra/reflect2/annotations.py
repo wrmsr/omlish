@@ -301,7 +301,7 @@ class TypeAnnotations(
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
 
-        self._annotation_cache: dict[tuple[Type, str], object] = {}
+        self._annotation_cache: dict[tuple[Type, TypeAliasAnnotationPolicy], object] = {}
 
     #
 
@@ -309,11 +309,11 @@ class TypeAnnotations(
             self,
             typ: Type,
             *,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',  # FIXME: pollutes cache - 2 level?
+            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
     ) -> object:
-        key = (typ, type_alias_policy)
+        cache_key = (typ, type_alias_policy)
         try:
-            return self._annotation_cache[key]
+            return self._annotation_cache[cache_key]
         except KeyError:
             pass
 
@@ -323,7 +323,7 @@ class TypeAnnotations(
             type_var_resolver=self._reflector.get_runtime_type_param,
             type_alias_policy=type_alias_policy,
         )
-        self._annotation_cache[key] = annotation
+        self._annotation_cache[cache_key] = annotation
         return annotation
 
     def to_runtime_annotation(
@@ -332,9 +332,9 @@ class TypeAnnotations(
             *,
             type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
     ) -> object:
-        key = (typ, type_alias_policy)
+        cache_key = (typ, type_alias_policy)
         try:
-            return self._annotation_cache[key]
+            return self._annotation_cache[cache_key]
         except KeyError:
             pass
 
