@@ -16,8 +16,8 @@ from ..core.types import Type
 from ..core.types import TypeOfAny
 from ..errors import ReflectionTypeError
 from ..errors import UnreflectableTypeError
-from ..reflector import or_default_reflector
 from ..reflector import TypeReflector
+from ..reflector import or_default_reflector
 from .ops import reflect_mro_entries
 from .queries import get_runtime_unaliased_type_key
 

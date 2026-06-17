@@ -5,7 +5,11 @@ import typing as ta
 from ..core import symbols
 from ..core import types
 from ..universe import TypeUniverse
-from ..universe import get_type_info
+from ..universe import global_universe
+
+
+def get_type_info(obj: type | str) -> symbols.TypeInfo:
+    return global_universe().get_type_info(obj)
 
 
 class LocalThing:

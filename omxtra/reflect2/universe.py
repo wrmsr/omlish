@@ -263,19 +263,15 @@ class TypeUniverse:
 ##
 
 
-_DEFAULT_UNIVERSE: ta.Final = TypeUniverse()
+_GLOBAL_UNIVERSE: ta.Final = TypeUniverse()
 
 
-def default_universe() -> TypeUniverse:
-    return _DEFAULT_UNIVERSE
+def global_universe() -> TypeUniverse:
+    return _GLOBAL_UNIVERSE
 
 
-def or_default_universe(universe: TypeUniverse | None) -> TypeUniverse:
-    return _DEFAULT_UNIVERSE if universe is None else universe
-
-
-def get_type_info(obj: type | str) -> TypeInfo:
-    return _DEFAULT_UNIVERSE.get_type_info(obj)
+def or_global_universe(universe: TypeUniverse | None) -> TypeUniverse:
+    return _GLOBAL_UNIVERSE if universe is None else universe
 
 
 ##

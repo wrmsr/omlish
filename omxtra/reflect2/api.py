@@ -2,11 +2,11 @@ import threading
 import typing as ta
 
 from .annotations import TypeAnnotations
-from .typekeys import TypeKeys
-from .reflector import TypeReflector
-from .universe import TypeUniverse
-from .universe import or_default_universe
 from .reflector import ForwardRefResolver
+from .reflector import TypeReflector
+from .typekeys import TypeKeys
+from .universe import TypeUniverse
+from .universe import or_global_universe
 
 
 ##
@@ -22,7 +22,7 @@ class Api:
     ) -> None:
         super().__init__()
 
-        self._universe: ta.Final = or_default_universe(universe)
+        self._universe: ta.Final = or_global_universe(universe)
 
         self._lock: ta.Final = threading.RLock()
 
@@ -58,12 +58,15 @@ class Api:
         return self._annotations
 
 
-_DEFAULT_API: ta.Final = Api()
+##
 
 
-def default_api() -> Api:
-    return _DEFAULT_API
+_GLOBAL_API: ta.Final = Api()
 
 
-def or_default_api(api: Api | None) -> Api:
-    return _DEFAULT_API if api is None else api
+def global_api() -> Api:
+    return _GLOBAL_API
+
+
+def or_global_api(api: Api | None) -> Api:
+    return _GLOBAL_API if api is None else api

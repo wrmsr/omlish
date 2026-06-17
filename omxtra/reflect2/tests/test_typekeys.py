@@ -1,5 +1,6 @@
 # ruff: noqa: F821 PLC0132 SLF001
 # ruff: noqa: PYI059
+import threading
 import typing as ta
 
 from ..core import types
@@ -10,8 +11,8 @@ from ..universe import TypeUniverse
 
 
 def test_new_type_literal_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(universe=TypeUniverse())
-    type_keys = TypeKeys()
+    reflector = TypeReflector(universe=TypeUniverse(), lock=(lock := threading.RLock()))
+    type_keys = TypeKeys(lock=lock)
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
     typ = reflector.reflect_type(mode)
@@ -24,8 +25,8 @@ def test_new_type_literal_reflection_and_key_are_cache_friendly() -> None:
 
 
 def test_type_alias_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(universe=TypeUniverse())
-    type_keys = TypeKeys()
+    reflector = TypeReflector(universe=TypeUniverse(), lock=(lock := threading.RLock()))
+    type_keys = TypeKeys(lock=lock)
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
 
@@ -39,8 +40,8 @@ def test_type_alias_reflection_and_key_are_cache_friendly() -> None:
 
 
 def test_subscripted_type_alias_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(universe=TypeUniverse())
-    type_keys = TypeKeys()
+    reflector = TypeReflector(universe=TypeUniverse(), lock=(lock := threading.RLock()))
+    type_keys = TypeKeys(lock=lock)
     t_var = ta.TypeVar('T')  # type: ignore
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     alias = ta.TypeAliasType('Alias', dict[str, t_var], type_params=(t_var,))  # type: ignore
@@ -56,8 +57,8 @@ def test_subscripted_type_alias_reflection_and_key_are_cache_friendly() -> None:
 
 
 def test_subscripted_variadic_type_alias_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(universe=TypeUniverse())
-    type_keys = TypeKeys()
+    reflector = TypeReflector(universe=TypeUniverse(), lock=(lock := threading.RLock()))
+    type_keys = TypeKeys(lock=lock)
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
     form = alias[int, str]

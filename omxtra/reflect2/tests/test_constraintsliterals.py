@@ -1,4 +1,5 @@
 # ruff: noqa: SLF001
+import threading
 import typing as ta
 
 from ..core.constraints import ConstraintOp
@@ -17,7 +18,7 @@ from ..universe import TypeUniverse
 
 
 def _make_reflector() -> TypeReflector:
-    return TypeReflector(universe=TypeUniverse())
+    return TypeReflector(universe=TypeUniverse(), lock=threading.RLock())
 
 
 def test_runtime_constraints_preserve_reflected_new_type_identity() -> None:

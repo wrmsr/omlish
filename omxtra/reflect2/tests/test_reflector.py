@@ -6,6 +6,7 @@ import typing as ta
 
 import pytest
 
+from ..api import global_api
 from ..core import symbols
 from ..core import types
 from ..core.strconv import type_str
@@ -18,10 +19,14 @@ from ..core.subtypes import is_subtype
 from ..core.typekeys import tuple_type_key
 from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
+from ..core.types import Type
 from ..errors import UnreflectableTypeError
 from ..reflector import TypeReflector
-from ..reflector import reflect_type
 from ..universe import TypeUniverse
+
+
+def reflect_type(obj: object) -> Type:
+    return global_api().reflector.reflect_type(obj)
 
 
 def test_reflects_bare_runtime_class_as_instance() -> None:

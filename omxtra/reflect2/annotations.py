@@ -260,7 +260,7 @@ class _AnnotationMaker(DefaultTypeVisitor[object], HasUniverse):
             for item in typ._items
         )]
 
-    def visit_type_type(self, typ: TypeType) -> T:
+    def visit_type_type(self, typ: TypeType) -> object:
         return type[typ._item.accept(self)]
 
 

@@ -41,8 +41,8 @@ from ..core.types import TypeVarId
 from ..core.types import TypeVarLikeType
 from ..errors import ReflectionTypeError
 from ..errors import UnsupportedTypeOperationError
-from ..reflector import or_default_reflector
 from ..reflector import TypeReflector
+from ..reflector import or_default_reflector
 
 
 RuntimeSubstitutionMap: ta.TypeAlias = ta.Mapping[object, object]
