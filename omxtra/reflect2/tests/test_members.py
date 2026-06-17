@@ -3,14 +3,14 @@ import inspect
 import threading
 import typing as ta
 
-from ...core import types
-from ...core.strconv import type_str
-from ...errors import ReflectionError
-from ...reflector import TypeReflector
-from ...typekeys import TypeKeys
-from ...universe import TypeUniverse
+from ..core import types
+from ..core.strconv import type_str
+from ..errors import ReflectionError
 from ..members import MemberKind
 from ..members import MembersReflector
+from ..reflector import TypeReflector
+from ..typekeys import TypeKeys
+from ..universe import TypeUniverse
 
 
 def make_members_reflector() -> MembersReflector:

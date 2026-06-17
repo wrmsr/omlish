@@ -16,6 +16,10 @@ from .universe import TypeUniverse
 from .universe import or_global_universe
 
 
+if ta.TYPE_CHECKING:
+    from .members import MembersReflector
+
+
 ##
 
 
@@ -102,6 +106,41 @@ class Api:
             typ,
             type_alias_policy=type_alias_policy,
         )
+
+    #
+
+    _members: MembersReflector
+
+    def _members_(self) -> MembersReflector:
+        with self._lock:
+            try:
+                return self._members
+            except AttributeError:
+                pass
+
+        from .members import MembersReflector
+
+        with self._lock:
+            try:
+                return self._members
+            except AttributeError:
+                pass
+
+            self._members = MembersReflector(
+                keys=self._keys,
+                reflector=self._reflector,
+                lock=self._lock,
+            )
+
+            return self._members
+
+    @property
+    def members(self) -> MembersReflector:
+        try:
+            return self._members
+        except AttributeError:
+            pass
+        return self._members_()
 
 
 ##

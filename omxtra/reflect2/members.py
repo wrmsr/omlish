@@ -5,20 +5,20 @@ import inspect
 import types as pytypes
 import typing as ta
 
-from ..core.substitute import SubstitutionMap
-from ..core.substitute import substitute_type
-from ..core.subtypes import MroEntry
-from ..core.subtypes import get_mro_entries
-from ..core.types import _ANY_TYPES
-from ..core.types import AnyType
-from ..core.types import Instance
-from ..core.types import Type
-from ..core.types import TypeOfAny
-from ..errors import ReflectionTypeError
-from ..errors import UnreflectableTypeError
-from ..locking import HasLock
-from ..reflector import HasReflector
-from ..typekeys import HasKeys
+from .core.substitute import SubstitutionMap
+from .core.substitute import substitute_type
+from .core.subtypes import MroEntry
+from .core.subtypes import get_mro_entries
+from .core.types import _ANY_TYPES
+from .core.types import AnyType
+from .core.types import Instance
+from .core.types import Type
+from .core.types import TypeOfAny
+from .errors import ReflectionTypeError
+from .errors import UnreflectableTypeError
+from .locking import HasLock
+from .reflector import HasReflector
+from .typekeys import HasKeys
 
 
 ##
