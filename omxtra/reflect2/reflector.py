@@ -163,6 +163,9 @@ class TypeReflector(
     def forward_ref_resolver(self) -> ForwardRefResolver | None:
         return self._forward_ref_resolver
 
+    def get_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
+        return self._runtime_type_params_by_type.get(typ)
+
     #
 
     def _reflect_type(self, obj: object) -> Type:

@@ -303,8 +303,7 @@ class TypeAnnotations(
 
         self._annotation_cache: dict[tuple[Type, str], object] = {}
 
-    def get_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
-        return self._reflector.get_runtime_type_params_by_type(typ)
+    #
 
     def _to_runtime_annotation(
             self,
@@ -321,7 +320,7 @@ class TypeAnnotations(
         annotation = to_runtime_annotation(
             typ,
             self._reflector._universe,
-            type_var_resolver=self.get_runtime_type_param,
+            type_var_resolver=self._reflector.get_runtime_type_param,
             type_alias_policy=type_alias_policy,
         )
         self._annotation_cache[key] = annotation

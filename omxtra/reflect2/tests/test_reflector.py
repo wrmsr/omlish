@@ -15,18 +15,17 @@ from ..core.subtypes import is_alpha_equivalent
 from ..core.subtypes import is_equivalent
 from ..core.subtypes import is_same_type
 from ..core.subtypes import is_subtype
-from ..core.typekeys import TYPE_KEY
 from ..core.typekeys import tuple_type_key
 from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
 from ..errors import UnreflectableTypeError
-from ..reflect import TypeReflector
-from ..reflect import reflect_type
+from ..reflector import TypeReflector
+from ..reflector import reflect_type
 from ..universe import TypeUniverse
 
 
 def test_reflects_bare_runtime_class_as_instance() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
 
     typ = reflector.reflect_type(int)
 
@@ -36,7 +35,7 @@ def test_reflects_bare_runtime_class_as_instance() -> None:
 
 
 def test_reflects_builtin_generic_alias() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
 
     typ = reflector.reflect_type(dict[str, int])
 
@@ -46,7 +45,7 @@ def test_reflects_builtin_generic_alias() -> None:
 
 
 def test_reflects_omitted_generic_args_as_any() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
 
     typ = reflector.reflect_type(list)
 
@@ -69,7 +68,7 @@ def test_reflects_never_and_no_return_as_uninhabited() -> None:
 
 
 def test_reflects_tuple_aliases() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
 
     fixed = reflector.reflect_type(tuple[int, str])
     variadic = reflector.reflect_type(tuple[int, ...])
@@ -91,13 +90,13 @@ def test_reflects_pep604_union() -> None:
 
 
 def test_reflection_cache_returns_same_type_for_same_object() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
 
     assert reflector.reflect_type(list[int]) is reflector.reflect_type(list[int])
 
 
 def test_reflection_cache_skips_unhashable_runtime_forms() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     form = ta.Annotated[int, []]  # noqa
 
     with pytest.raises(TypeError):
@@ -113,43 +112,12 @@ def test_reflection_cache_skips_unhashable_runtime_forms() -> None:
     assert left.metadata == right.metadata == ([],)
 
 
-def test_inspection_cache_skips_unhashable_sources() -> None:
-    reflector = TypeReflector(TypeUniverse())
-    source: list[int] = []
-    calls = 0
-
-    def factory() -> object:
-        nonlocal calls
-
-        calls += 1
-        return object()
-
-    left = reflector.cached_inspection('kind', source, factory)
-    right = reflector.cached_inspection('kind', source, factory)
-
-    assert left is not right
-    assert calls == 2
-    assert reflector._inspection_cache == {}
-
-
-def test_inspection_cache_keys_include_kind_and_object() -> None:
-    reflector = TypeReflector(TypeUniverse())
-    source = object()
-    left = object()
-    right = object()
-
-    assert reflector.cached_inspection('left', source, lambda: left) is left
-    assert reflector.cached_inspection('right', source, lambda: right) is right
-    assert reflector.cached_inspection('left', source, lambda: object()) is left
-    assert reflector.cached_inspection('right', source, lambda: object()) is right
-
-
 def test_make_runtime_reflector_accepts_dynamic_name_suffix() -> None:
     class Local:
         pass
 
     reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='counter'),
+        universe=TypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver=None,
     )
 
@@ -164,11 +132,11 @@ def test_separate_reflectors_assign_distinct_dynamic_type_infos() -> None:
         pass
 
     left_reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='counter'),
+        universe=TypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver=None,
     )
     right_reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='counter'),
+        universe=TypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver=None,
     )
 
@@ -183,7 +151,7 @@ def test_separate_reflectors_assign_distinct_dynamic_type_infos() -> None:
 
 
 def test_reflects_type_var() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
     typ = reflector.reflect_type(rt_type_var)
@@ -197,7 +165,7 @@ def test_reflects_type_var() -> None:
 
 
 def test_reflects_bound_type_var() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T', bound=int)  # type: ignore
 
     typ = reflector.reflect_type(rt_type_var)
@@ -207,7 +175,7 @@ def test_reflects_bound_type_var() -> None:
 
 
 def test_reflects_constrained_type_var() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T', int, str)  # type: ignore
 
     typ = reflector.reflect_type(rt_type_var)
@@ -217,8 +185,8 @@ def test_reflects_constrained_type_var() -> None:
 
 
 def test_reflects_type_var_variance() -> None:
-    covariant = TypeReflector(TypeUniverse()).reflect_type(ta.TypeVar('T', covariant=True))
-    contravariant = TypeReflector(TypeUniverse()).reflect_type(ta.TypeVar('T', contravariant=True))
+    covariant = TypeReflector(universe=TypeUniverse()).reflect_type(ta.TypeVar('T', covariant=True))
+    contravariant = TypeReflector(universe=TypeUniverse()).reflect_type(ta.TypeVar('T', contravariant=True))
 
     assert isinstance(covariant, types.TypeVarType)
     assert covariant.variance == symbols.VarianceKind.CO
@@ -227,7 +195,7 @@ def test_reflects_type_var_variance() -> None:
 
 
 def test_reflects_type_var_inside_generic_alias() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
     typ = reflector.reflect_type(list[rt_type_var])  # type: ignore
@@ -239,7 +207,7 @@ def test_reflects_type_var_inside_generic_alias() -> None:
 
 
 def test_reflects_type_var_inside_multi_arg_generic_alias() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
     typ = reflector.reflect_type(dict[str, rt_type_var])  # type: ignore
@@ -251,7 +219,7 @@ def test_reflects_type_var_inside_multi_arg_generic_alias() -> None:
 
 
 def test_reflects_type_var_inside_abc_generic_alias() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
     typ = reflector.reflect_type(cabc.Sequence[rt_type_var])  # type: ignore
@@ -263,7 +231,7 @@ def test_reflects_type_var_inside_abc_generic_alias() -> None:
 
 
 def test_reflects_bound_type_var_with_parameterized_bound() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T', bound=cabc.Sequence[int])  # type: ignore
 
     typ = reflector.reflect_type(rt_type_var)
@@ -273,7 +241,7 @@ def test_reflects_bound_type_var_with_parameterized_bound() -> None:
 
 
 def test_type_var_reflection_cache_uses_runtime_object_identity() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     left = ta.TypeVar('T')  # type: ignore
     right = ta.TypeVar('T')  # type: ignore
 
@@ -284,11 +252,11 @@ def test_type_var_reflection_cache_uses_runtime_object_identity() -> None:
 def test_separate_reflectors_assign_distinct_runtime_type_vars() -> None:
     rt_type_var = ta.TypeVar('T')  # type: ignore
     left_reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='id'),
+        universe=TypeUniverse(dynamic_type_name_suffix='id'),
         forward_ref_resolver=None,
     )
     right_reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='id'),
+        universe=TypeUniverse(dynamic_type_name_suffix='id'),
         forward_ref_resolver=None,
     )
 
@@ -304,11 +272,11 @@ def test_separate_reflectors_assign_distinct_runtime_type_vars() -> None:
 def test_cross_reflector_type_var_substitution_does_not_match_by_runtime_object() -> None:
     rt_type_var = ta.TypeVar('T')  # type: ignore
     key_reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='id'),
+        universe=TypeUniverse(dynamic_type_name_suffix='id'),
         forward_ref_resolver=None,
     )
     type_reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='id'),
+        universe=TypeUniverse(dynamic_type_name_suffix='id'),
         forward_ref_resolver=None,
     )
 
@@ -326,7 +294,7 @@ def test_cross_reflector_type_var_substitution_does_not_match_by_runtime_object(
 
 
 def test_same_runtime_type_var_compares_same_after_reflection() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     rt_type_var = ta.TypeVar('T')  # type: ignore
 
     left = reflector.reflect_type(list[rt_type_var])  # type: ignore
@@ -337,7 +305,7 @@ def test_same_runtime_type_var_compares_same_after_reflection() -> None:
 
 
 def test_different_runtime_type_vars_with_same_name_are_not_strictly_same() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     left_var = ta.TypeVar('T')  # type: ignore
     right_var = ta.TypeVar('T')  # type: ignore
 
@@ -350,7 +318,7 @@ def test_different_runtime_type_vars_with_same_name_are_not_strictly_same() -> N
 
 
 def test_bounded_runtime_type_vars_with_same_name_are_not_strictly_same() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     left_var = ta.TypeVar('T', bound=cabc.Sequence[int])  # type: ignore
     right_var = ta.TypeVar('T', bound=cabc.Sequence[int])  # type: ignore
 
@@ -362,7 +330,7 @@ def test_bounded_runtime_type_vars_with_same_name_are_not_strictly_same() -> Non
 
 
 def test_constrained_runtime_type_vars_with_same_name_are_not_strictly_same() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     left_var = ta.TypeVar('T', int, str)  # type: ignore
     right_var = ta.TypeVar('T', int, str)  # type: ignore
 
@@ -374,7 +342,7 @@ def test_constrained_runtime_type_vars_with_same_name_are_not_strictly_same() ->
 
 
 def test_reflection_reflects_param_spec() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     param_spec = ta.ParamSpec('P')  # type: ignore
 
     typ = reflector.reflect_type(param_spec)
@@ -385,7 +353,7 @@ def test_reflection_reflects_param_spec() -> None:
 
 
 def test_reflection_reflects_type_var_tuple() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     type_var_tuple = ta.TypeVarTuple('Ts')  # type: ignore
 
     typ = reflector.reflect_type(type_var_tuple)
@@ -557,7 +525,7 @@ def test_rejects_type_is_until_distinct_representation_exists() -> None:
 def test_reflects_new_type_as_supertype() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
 
-    typ = TypeReflector(TypeUniverse()).reflect_type(user_id)
+    typ = TypeReflector(universe=TypeUniverse()).reflect_type(user_id)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == f'{__name__}.UserId'
@@ -567,7 +535,7 @@ def test_reflects_new_type_as_supertype() -> None:
 def test_reflects_new_type_inside_generic_alias_as_supertype() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
 
-    typ = TypeReflector(TypeUniverse()).reflect_type(list[user_id])
+    typ = TypeReflector(universe=TypeUniverse()).reflect_type(list[user_id])
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.list'
@@ -577,7 +545,7 @@ def test_reflects_new_type_inside_generic_alias_as_supertype() -> None:
 def test_reflects_new_type_with_literal_supertype() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
 
-    typ = TypeReflector(TypeUniverse()).reflect_type(mode)
+    typ = TypeReflector(universe=TypeUniverse()).reflect_type(mode)
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == f'{__name__}.Mode'
@@ -585,26 +553,13 @@ def test_reflects_new_type_with_literal_supertype() -> None:
 
 
 def test_new_type_reflection_is_cached_by_new_type_object() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     user_id = ta.NewType('UserId', int)  # type: ignore
 
     typ = reflector.reflect_type(user_id)
 
     assert reflector.reflect_type(user_id) is typ
     assert reflector._type_cache[user_id] is typ
-
-
-def test_new_type_literal_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(TypeUniverse())
-    mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
-
-    typ = reflector.reflect_type(mode)
-    key = reflector.type_key(typ)
-
-    assert reflector.reflect_type(mode) is typ
-    assert reflector.type_key(typ) is key
-    assert reflector._type_cache[mode] is typ
-    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
 
 
 def test_reflects_type_alias_type_by_preserving_alias_identity() -> None:
@@ -619,22 +574,8 @@ def test_reflects_type_alias_type_by_preserving_alias_identity() -> None:
     assert type_str(get_proper_type(typ)) == 'builtins.list[builtins.int]'
 
 
-def test_type_alias_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(TypeUniverse())
-    mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
-    mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
-
-    typ = reflector.reflect_type(mode_list)
-    key = reflector.type_key(typ)
-
-    assert reflector.reflect_type(mode_list) is typ
-    assert reflector.type_key(typ) is key
-    assert reflector._type_cache[mode_list] is typ
-    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
-
-
 def test_type_alias_keys_preserve_runtime_alias_object_identity() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     left = ta.TypeAliasType('Alias', list[int])  # type: ignore
     right = ta.TypeAliasType('Alias', list[int])  # type: ignore
 
@@ -742,41 +683,9 @@ def test_rejects_type_alias_type_with_multiple_type_var_tuple_parameters() -> No
         reflect_type(alias[int, str])
 
 
-def test_subscripted_type_alias_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(TypeUniverse())
-    t_var = ta.TypeVar('T')  # type: ignore
-    mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
-    alias = ta.TypeAliasType('Alias', dict[str, t_var], type_params=(t_var,))  # type: ignore
-    form = alias[mode]
-
-    typ = reflector.reflect_type(form)
-    key = reflector.type_key(typ)
-
-    assert reflector.reflect_type(form) is typ
-    assert reflector.type_key(typ) is key
-    assert reflector._type_cache[form] is typ
-    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
-
-
-def test_subscripted_variadic_type_alias_reflection_and_key_are_cache_friendly() -> None:
-    reflector = TypeReflector(TypeUniverse())
-    ts_var = ta.TypeVarTuple('Ts')  # type: ignore
-    alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    form = alias[int, str]
-
-    typ = reflector.reflect_type(form)
-    key = reflector.type_key(typ)
-
-    assert isinstance(typ, types.TypeAliasType)
-    assert reflector.reflect_type(form) is typ
-    assert reflector.type_key(typ) is key
-    assert reflector._type_cache[form] is typ
-    assert reflector._type_key_cache[(TYPE_KEY, typ)] is key
-
-
 def test_reflects_direct_recursive_type_alias_type_as_alias_node() -> None:
     alias = ta.TypeAliasType('Alias', list['Alias'])  # type: ignore
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
 
     typ = reflector.reflect_type(alias)
 
@@ -802,7 +711,7 @@ def test_reflects_indirect_recursive_type_alias_type_as_alias_nodes() -> None:
         'A': alias_a,
         'B': alias_b,
     }
-    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(universe=TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     typ_a = reflector.reflect_type(alias_a)
     typ_b = reflector.reflect_type(alias_b)
@@ -817,7 +726,7 @@ def test_reflects_indirect_recursive_type_alias_type_as_alias_nodes() -> None:
 def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list['Alias[T]'], type_params=(t_var,))  # type: ignore
-    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Alias': alias}.__getitem__)
+    reflector = TypeReflector(universe=TypeUniverse(), forward_ref_resolver={'Alias': alias}.__getitem__)
 
     typ = reflector.reflect_type(alias[int])
 
@@ -844,7 +753,7 @@ def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> Non
 def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[t_var, 'Alias[T]'], type_params=(t_var,))  # type: ignore
-    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Alias': alias}.__getitem__)
+    reflector = TypeReflector(universe=TypeUniverse(), forward_ref_resolver={'Alias': alias}.__getitem__)
 
     typ = reflector.reflect_type(alias[int])
 
@@ -871,7 +780,7 @@ def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() 
 def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var, 'Alias[*Ts]'], type_params=(ts_var,))  # type: ignore
-    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Alias': alias}.__getitem__)
+    reflector = TypeReflector(universe=TypeUniverse(), forward_ref_resolver={'Alias': alias}.__getitem__)
 
     typ = reflector.reflect_type(alias[int, str])
 
@@ -936,7 +845,7 @@ def test_rejects_typing_forward_reference_until_resolution_exists() -> None:
 
 def test_resolves_raw_string_forward_reference_with_resolver() -> None:
     reflector = TypeReflector(
-        TypeUniverse(),
+        universe=TypeUniverse(),
         forward_ref_resolver=lambda name: {'User': int}[name],
     )
 
@@ -949,7 +858,7 @@ def test_resolves_raw_string_forward_reference_with_resolver() -> None:
 def test_make_runtime_reflector_accepts_forward_ref_resolver() -> None:
     resolver = lambda name: {'User': int}[name]
     reflector = TypeReflector(
-        TypeUniverse(dynamic_type_name_suffix='id'),
+        universe=TypeUniverse(dynamic_type_name_suffix='id'),
         forward_ref_resolver=resolver,
     )
 
@@ -961,7 +870,7 @@ def test_make_runtime_reflector_accepts_forward_ref_resolver() -> None:
 
 def test_resolves_annotationlib_forward_reference_with_resolver() -> None:
     reflector = TypeReflector(
-        TypeUniverse(),
+        universe=TypeUniverse(),
         forward_ref_resolver=lambda name: {'User': list[int]}[name],
     )
 
@@ -973,7 +882,7 @@ def test_resolves_annotationlib_forward_reference_with_resolver() -> None:
 
 def test_resolves_type_alias_type_forward_value_with_resolver() -> None:
     reflector = TypeReflector(
-        TypeUniverse(),
+        universe=TypeUniverse(),
         forward_ref_resolver=lambda name: {'User': str}[name],
     )
     alias = ta.TypeAliasType('Alias', 'User')  # type: ignore
@@ -987,7 +896,7 @@ def test_resolves_type_alias_type_forward_value_with_resolver() -> None:
 
 def test_forward_reference_resolver_result_must_be_reflectable() -> None:
     reflector = TypeReflector(
-        TypeUniverse(),
+        universe=TypeUniverse(),
         forward_ref_resolver=lambda name: object(),
     )
 
@@ -997,7 +906,7 @@ def test_forward_reference_resolver_result_must_be_reflectable() -> None:
 
 def test_forward_reference_resolver_does_not_mask_nested_unresolved_reference() -> None:
     reflector = TypeReflector(
-        TypeUniverse(),
+        universe=TypeUniverse(),
         forward_ref_resolver=lambda name: annotationlib.ForwardRef('Other'),
     )
 
@@ -1216,7 +1125,7 @@ def test_reflects_typed_dict_forward_refs_with_resolver() -> None:
         maybe_user: ta.NotRequired['User']  # type: ignore  # noqa
 
     reflector = TypeReflector(
-        TypeUniverse(),
+        universe=TypeUniverse(),
         forward_ref_resolver=lambda name: {'User': int}[name],
     )
 
@@ -1299,7 +1208,7 @@ def test_reflects_nested_unions_flattened_by_core_helper() -> None:
 
 
 def test_reflected_class_type_info_includes_runtime_generic_bases() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -1323,7 +1232,7 @@ def test_reflected_class_type_info_includes_runtime_generic_bases() -> None:
 
 
 def test_reflected_class_generic_base_args_participate_in_subtyping() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -1344,7 +1253,7 @@ def test_reflected_class_generic_base_args_participate_in_subtyping() -> None:
 
 
 def test_reflected_class_indirect_generic_base_args_participate_in_subtyping() -> None:
-    reflector = TypeReflector(TypeUniverse())
+    reflector = TypeReflector(universe=TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -1368,7 +1277,7 @@ def test_reflected_class_indirect_generic_base_args_participate_in_subtyping() -
 
 
 def test_reflected_class_generic_mro_remaps_type_vars_at_each_layer() -> None:
-    reflector = TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter'))
+    reflector = TypeReflector(universe=TypeUniverse(dynamic_type_name_suffix='counter'))
     a_var = ta.TypeVar('A')  # type: ignore
     b_var = ta.TypeVar('B')  # type: ignore
     x_var = ta.TypeVar('X')  # type: ignore

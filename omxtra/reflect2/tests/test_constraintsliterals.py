@@ -12,12 +12,12 @@ from ..core.types import Type
 from ..core.types import TypeAliasType
 from ..core.types import TypeVarLikeType
 from ..core.types import UnionType
-from ..reflect import TypeReflector
+from ..reflector import TypeReflector
 from ..universe import TypeUniverse
 
 
 def _make_reflector() -> TypeReflector:
-    return TypeReflector(TypeUniverse())
+    return TypeReflector(universe=TypeUniverse())
 
 
 def test_runtime_constraints_preserve_reflected_new_type_identity() -> None:
