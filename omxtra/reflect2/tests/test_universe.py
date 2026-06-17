@@ -38,8 +38,8 @@ def test_runtime_universe_adds_generic_type_vars() -> None:
 
     assert [tv.name for tv in list_info.type_vars] == ['T0']
     assert [tv.name for tv in dict_info.type_vars] == ['T0', 'T1']
-    assert dict_info.variances == [symbols.VarianceKind.IN, symbols.VarianceKind.IN]
-    assert sequence_info.variances == [symbols.VarianceKind.CO]
+    assert dict_info.variances == (symbols.VarianceKind.IN, symbols.VarianceKind.IN)
+    assert sequence_info.variances == (symbols.VarianceKind.CO,)
     assert sequence_info.type_vars[0].upper_bound.type is universe.get_type_info(object)  # type: ignore
 
 
@@ -87,7 +87,7 @@ def test_runtime_universe_adds_known_collection_abc_bases() -> None:
     list_base = list_info.bases[0]
     assert isinstance(list_base, types.Instance)
     assert list_base.type is mutable_sequence_info
-    assert list_base.args == [list_info.type_vars[0]]
+    assert list_base.args == (list_info.type_vars[0],)
 
     sequence_base = sequence_info.bases[0]
     assert isinstance(sequence_base, types.Instance)
@@ -96,7 +96,7 @@ def test_runtime_universe_adds_known_collection_abc_bases() -> None:
     tuple_base = tuple_info.bases[0]
     assert isinstance(tuple_base, types.Instance)
     assert tuple_base.type is sequence_info
-    assert tuple_base.args == [tuple_info.type_vars[0]]
+    assert tuple_base.args == (tuple_info.type_vars[0],)
 
     dict_base = dict_info.bases[0]
     assert isinstance(dict_base, types.Instance)
@@ -106,17 +106,17 @@ def test_runtime_universe_adds_known_collection_abc_bases() -> None:
     mapping_base = mapping_info.bases[0]
     assert isinstance(mapping_base, types.Instance)
     assert mapping_base.type is iterable_info
-    assert mapping_base.args == [mapping_info.type_vars[0]]
+    assert mapping_base.args == (mapping_info.type_vars[0],)
 
     set_base = set_info.bases[0]
     assert isinstance(set_base, types.Instance)
     assert set_base.type is mutable_set_info
-    assert set_base.args == [set_info.type_vars[0]]
+    assert set_base.args == (set_info.type_vars[0],)
 
     frozenset_base = frozenset_info.bases[0]
     assert isinstance(frozenset_base, types.Instance)
     assert frozenset_base.type is set_abc_info
-    assert frozenset_base.args == [frozenset_info.type_vars[0]]
+    assert frozenset_base.args == (frozenset_info.type_vars[0],)
 
 
 def test_runtime_universe_assigns_id_qualified_fullname_for_dynamic_classes() -> None:

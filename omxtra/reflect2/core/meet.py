@@ -105,7 +105,7 @@ def _meet_types(
     return _UNINHABITED_TYPE
 
 
-def meet_type_list(items: list[Type]) -> Type:
+def meet_type_list(items: ta.Sequence[Type]) -> Type:
     if not items:
         return _ANY_TYPES[TypeOfAny.SPECIAL_FORM]
 
@@ -115,7 +115,7 @@ def meet_type_list(items: list[Type]) -> Type:
     return met
 
 
-def structural_meet_type_list(items: list[Type]) -> Type:
+def structural_meet_type_list(items: ta.Sequence[Type]) -> Type:
     if not items:
         return _ANY_TYPES[TypeOfAny.SPECIAL_FORM]
 
@@ -154,7 +154,7 @@ def _is_uninhabited_meet_result(typ: Type) -> bool:
     )
 
 
-def _make_simplified_union(typs: list[Type], subtype_fn: SubtypeFn, same_fn: SameFn) -> Type:
+def _make_simplified_union(typs: ta.Sequence[Type], subtype_fn: SubtypeFn, same_fn: SameFn) -> Type:
     if subtype_fn is is_subtype and same_fn is is_same_type:
         return make_simplified_union(typs)
 

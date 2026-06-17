@@ -136,11 +136,11 @@ def test_expand_type_rewrites_newer_composite_nodes() -> None:
     assert str(expanded.items[0].arg_types[0]) == 'Unpack[A]'
     assert isinstance(expanded.items[0].ret_type, types.TypedDictType)
     assert str(expanded.items[0].ret_type.items['x']) == 'A'
-    assert expanded.items[0].variables == [t_var]
+    assert expanded.items[0].variables == (t_var,)
     assert isinstance(expanded.items[1].arg_types[0], types.Parameters)
     assert str(expanded.items[1].arg_types[0].arg_types[0]) == 'A'
-    assert expanded.items[1].arg_types[0].arg_kinds == [symbols.ArgKind.NAMED_OPT]
-    assert expanded.items[1].arg_types[0].arg_names == ['value']
+    assert expanded.items[1].arg_types[0].arg_kinds == (symbols.ArgKind.NAMED_OPT,)
+    assert expanded.items[1].arg_types[0].arg_names == ('value',)
     assert str(expanded.items[1].ret_type) == '<placeholder Later[A]>'
 
 

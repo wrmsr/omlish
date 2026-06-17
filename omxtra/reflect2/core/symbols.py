@@ -65,26 +65,26 @@ class TypeInfo(SymbolNode):
             name: str,
             fullname: str | None = None,
             *,
-            bases: list[Type] | None = None,
-            mro: list[TypeInfo] | None = None,
-            type_vars: list[TypeVarLikeType] | None = None,
-            variances: list[VarianceKind] | None = None,
+            bases: ta.Sequence[Type] | None = None,
+            mro: ta.Sequence[TypeInfo] | None = None,
+            type_vars: ta.Sequence[TypeVarLikeType] | None = None,
+            variances: ta.Sequence[VarianceKind] | None = None,
             is_protocol: bool = False,
             is_enum: bool = False,
-            enum_members: list[str] | None = None,
+            enum_members: ta.Sequence[str] | None = None,
             new_type_supertype: Type | None = None,
     ) -> None:
         super().__init__()
 
         self._name = name
         self._fullname = name if fullname is None else fullname
-        self._bases = [] if bases is None else bases
-        self._mro = [self] if mro is None else mro
-        self._type_vars = [] if type_vars is None else type_vars
-        self._variances = [] if variances is None else variances
+        self._bases = () if bases is None else tuple(bases)
+        self._mro = (self,) if mro is None else tuple(mro)
+        self._type_vars = () if type_vars is None else tuple(type_vars)
+        self._variances = () if variances is None else tuple(variances)
         self._is_protocol = is_protocol
         self._is_enum = is_enum
-        self._enum_members = [] if enum_members is None else enum_members
+        self._enum_members = () if enum_members is None else tuple(enum_members)
         self._new_type_supertype = new_type_supertype
 
     @property
@@ -96,19 +96,19 @@ class TypeInfo(SymbolNode):
         return self._fullname
 
     @property
-    def bases(self) -> ta.Sequence[Type]:
+    def bases(self) -> tuple[Type, ...]:
         return self._bases
 
     @property
-    def mro(self) -> ta.Sequence[TypeInfo]:
+    def mro(self) -> tuple[TypeInfo, ...]:
         return self._mro
 
     @property
-    def type_vars(self) -> ta.Sequence[TypeVarLikeType]:
+    def type_vars(self) -> tuple[TypeVarLikeType, ...]:
         return self._type_vars
 
     @property
-    def variances(self) -> ta.Sequence[VarianceKind]:
+    def variances(self) -> tuple[VarianceKind, ...]:
         return self._variances
 
     @property
@@ -120,7 +120,7 @@ class TypeInfo(SymbolNode):
         return self._is_enum
 
     @property
-    def enum_members(self) -> ta.Sequence[str]:
+    def enum_members(self) -> tuple[str, ...]:
         return self._enum_members
 
     @property
@@ -145,7 +145,7 @@ class TypeAlias(SymbolNode):
             target: Type,
             *,
             fullname: str | None = None,
-            alias_tvars: list[TypeVarLikeType] | None = None,
+            alias_tvars: ta.Sequence[TypeVarLikeType] | None = None,
             runtime_object: object | None = None,
     ) -> None:
         super().__init__()
@@ -153,7 +153,7 @@ class TypeAlias(SymbolNode):
         self._name = name
         self._fullname = name if fullname is None else fullname
         self._target = target
-        self._alias_tvars = [] if alias_tvars is None else alias_tvars
+        self._alias_tvars = () if alias_tvars is None else tuple(alias_tvars)
         self._runtime_object = runtime_object
         self._is_recursive: bool | None = None
 
@@ -170,7 +170,7 @@ class TypeAlias(SymbolNode):
         return self._target
 
     @property
-    def alias_tvars(self) -> ta.Sequence[TypeVarLikeType]:
+    def alias_tvars(self) -> tuple[TypeVarLikeType, ...]:
         return self._alias_tvars
 
     @property

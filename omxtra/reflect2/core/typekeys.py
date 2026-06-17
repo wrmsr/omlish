@@ -223,16 +223,16 @@ class _TypeKeyWriter:
     def parameters_key(
             self,
             arg_keys: tuple[object, ...],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
     ) -> object:
         raise NotImplementedError
 
     def callable_key(
             self,
             arg_keys: tuple[object, ...],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
             ret_key: object,
             fallback_key: object,
             variable_keys: tuple[object, ...],
@@ -249,8 +249,8 @@ class _TypeKeyWriter:
     def typed_dict_key(
             self,
             item_keys: tuple[tuple[str, object], ...],
-            required_keys: set[str],
-            readonly_keys: set[str],
+            required_keys: ta.AbstractSet[str],
+            readonly_keys: ta.AbstractSet[str],
             fallback_key: object,
     ) -> object:
         raise NotImplementedError
@@ -509,8 +509,8 @@ class _StringTypeKeyWriter(_TypeKeyWriter):
     def parameters_key(
             self,
             arg_keys: tuple[object, ...],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
     ) -> _TypeKeyFragment:
         w = _StringFragmentWriter()
         w.begin('P')
@@ -530,8 +530,8 @@ class _StringTypeKeyWriter(_TypeKeyWriter):
     def callable_key(
             self,
             arg_keys: tuple[object, ...],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
             ret_key: object,
             fallback_key: object,
             variable_keys: tuple[object, ...],
@@ -585,8 +585,8 @@ class _StringTypeKeyWriter(_TypeKeyWriter):
     def typed_dict_key(
             self,
             item_keys: tuple[tuple[str, object], ...],
-            required_keys: set[str],
-            readonly_keys: set[str],
+            required_keys: ta.AbstractSet[str],
+            readonly_keys: ta.AbstractSet[str],
             fallback_key: object,
     ) -> _TypeKeyFragment:
         w = _StringFragmentWriter()
@@ -770,16 +770,16 @@ class _TupleTypeKeyWriter(_TypeKeyWriter):
     def parameters_key(
             self,
             arg_keys: tuple[object, ...],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
     ) -> TupleTypeKey:
         return ('parameters', arg_keys, tuple(arg_kinds), tuple(arg_names))
 
     def callable_key(
             self,
             arg_keys: tuple[object, ...],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
             ret_key: object,
             fallback_key: object,
             variable_keys: tuple[object, ...],
@@ -805,8 +805,8 @@ class _TupleTypeKeyWriter(_TypeKeyWriter):
     def typed_dict_key(
             self,
             item_keys: tuple[tuple[str, object], ...],
-            required_keys: set[str],
-            readonly_keys: set[str],
+            required_keys: ta.AbstractSet[str],
+            readonly_keys: ta.AbstractSet[str],
             fallback_key: object,
     ) -> TupleTypeKey:
         return ('typed_dict', item_keys, frozenset(required_keys), frozenset(readonly_keys), fallback_key)
@@ -1297,7 +1297,7 @@ class _TypeKeyBuilder(DefaultTypeVisitor[object | None]):
 
         return None
 
-    def collect_recursive_alias_types(self, typ: Type) -> list[TypeAliasType]:
+    def collect_recursive_alias_types(self, typ: Type) -> ta.Sequence[TypeAliasType]:
         visitor = _CollectRecursiveAliasTypesVisitor()
         visitor.collect(typ)
         return visitor.collected

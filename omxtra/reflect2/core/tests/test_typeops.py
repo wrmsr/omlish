@@ -161,7 +161,7 @@ def test_union_type_constructor_flattens_direct_nested_unions() -> None:
 
     union = types.UnionType([left, types.UnionType([middle, right])])
 
-    assert union.items == [left, middle, right]
+    assert union.items == (left, middle, right)
 
 
 def test_union_type_constructor_preserves_alias_items() -> None:
@@ -171,7 +171,7 @@ def test_union_type_constructor_preserves_alias_items() -> None:
 
     union = types.UnionType([alias_type])
 
-    assert union.items == [alias_type]
+    assert union.items == (alias_type,)
 
 
 def test_make_union_with_no_items_returns_uninhabited() -> None:
@@ -219,7 +219,7 @@ def test_make_union_does_not_contract_bool_literals() -> None:
     typ = typeops.make_union([true_type, false_type])
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [true_type, false_type]
+    assert typ.items == (true_type, false_type)
 
 
 def test_try_contracting_literals_in_union_contracts_bool_literals() -> None:
@@ -260,7 +260,7 @@ def test_make_simplified_union_can_skip_literal_contraction() -> None:
     typ = typeops.make_simplified_union([true_type, false_type], contract_literals=False)
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [true_type, false_type]
+    assert typ.items == (true_type, false_type)
 
 
 def test_make_simplified_union_flattens_and_collapses_single_item() -> None:
@@ -279,7 +279,7 @@ def test_make_simplified_union_removes_structural_duplicates() -> None:
     typ = typeops.make_simplified_union([left, other, duplicate])
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [left, other]
+    assert typ.items == (left, other)
 
 
 def test_make_union_keeps_structural_duplicates() -> None:
@@ -290,7 +290,7 @@ def test_make_union_keeps_structural_duplicates() -> None:
     typ = typeops.make_union([left, duplicate])
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [left, duplicate]
+    assert typ.items == (left, duplicate)
 
 
 def test_make_simplified_union_keeps_non_subtype_redundant_items_for_now() -> None:
@@ -300,13 +300,13 @@ def test_make_simplified_union_keeps_non_subtype_redundant_items_for_now() -> No
     typ = typeops.make_simplified_union([int_type, object_type])
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [int_type, object_type]
+    assert typ.items == (int_type, object_type)
 
 
 def test_make_simplified_union_removes_nominal_subtype_before_supertype() -> None:
     object_info = symbols.TypeInfo('builtins.object')
     int_info = symbols.TypeInfo('builtins.int')
-    int_info._mro = [int_info, object_info]
+    int_info._mro = (int_info, object_info)
     int_type = types.Instance(int_info, [])
     object_type = types.Instance(object_info, [])
 
@@ -318,7 +318,7 @@ def test_make_simplified_union_removes_nominal_subtype_before_supertype() -> Non
 def test_make_simplified_union_removes_nominal_subtype_after_supertype() -> None:
     object_info = symbols.TypeInfo('builtins.object')
     int_info = symbols.TypeInfo('builtins.int')
-    int_info._mro = [int_info, object_info]
+    int_info._mro = (int_info, object_info)
     int_type = types.Instance(int_info, [])
     object_type = types.Instance(object_info, [])
 
@@ -331,8 +331,8 @@ def test_make_simplified_union_removes_union_subtype_redundancy() -> None:
     object_info = symbols.TypeInfo('builtins.object')
     int_info = symbols.TypeInfo('builtins.int')
     str_info = symbols.TypeInfo('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     int_type = types.Instance(int_info, [])
     str_type = types.Instance(str_info, [])
     object_type = types.Instance(object_info, [])
@@ -358,7 +358,7 @@ def test_make_simplified_union_keeps_any_with_other_items() -> None:
     typ = typeops.make_simplified_union([int_type, any_type])
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [int_type, any_type]
+    assert typ.items == (int_type, any_type)
 
 
 def test_make_simplified_union_removes_reflected_generic_subclass_before_base() -> None:
@@ -413,4 +413,4 @@ def test_make_simplified_union_keeps_reflected_generic_subclass_with_different_b
     typ = typeops.make_simplified_union([child, str_box])
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [child, str_box]
+    assert typ.items == (child, str_box)

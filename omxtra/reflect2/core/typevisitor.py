@@ -324,7 +324,7 @@ class DefaultTypeVisitor(TypeVisitor[T]):
 
 @mypyc_attr(allow_interpreted_subclasses=True)
 class TypeTranslator(TypeVisitor[Type]):
-    def translate_types(self, typs: list[Type]) -> list[Type]:
+    def translate_types(self, typs: ta.Sequence[Type]) -> list[Type]:
         return [typ.accept(self) for typ in typs]
 
     def visit_type_alias_type(self, typ: TypeAliasType) -> Type:
@@ -395,8 +395,8 @@ class TypeTranslator(TypeVisitor[Type]):
     def visit_parameters(self, typ: Parameters) -> Type:
         return Parameters(
             self.translate_types(typ._arg_types),
-            typ._arg_kinds.copy(),
-            typ._arg_names.copy(),
+            typ._arg_kinds,
+            typ._arg_names,
         )
 
     def visit_callable_type(self, typ: CallableType) -> Type:
@@ -405,11 +405,11 @@ class TypeTranslator(TypeVisitor[Type]):
             raise ReflectionTypeError(fallback)
         return CallableType(
             self.translate_types(typ._arg_types),
-            typ._arg_kinds.copy(),
-            typ._arg_names.copy(),
+            typ._arg_kinds,
+            typ._arg_names,
             typ._ret_type.accept(self),
             fallback,
-            variables=typ._variables.copy(),
+            variables=typ._variables,
             is_ellipsis_args=typ._is_ellipsis_args,
         )
 
@@ -434,8 +434,8 @@ class TypeTranslator(TypeVisitor[Type]):
             raise ReflectionTypeError(fallback)
         return TypedDictType(
             {name: item.accept(self) for name, item in typ._items.items()},
-            typ._required_keys.copy(),
-            typ._readonly_keys.copy(),
+            typ._required_keys,
+            typ._readonly_keys,
             fallback,
         )
 
@@ -481,7 +481,7 @@ class TypeQuery(TypeVisitor[T]):
         self.seen_aliases: set[TypeAliasType] | None = None
         self.skip_alias_target = False
 
-    def strategy(self, items: list[T]) -> T:
+    def strategy(self, items: ta.Sequence[T]) -> T:
         raise NotImplementedError
 
     def query_types(self, typs: ta.Iterable[Type]) -> T:
@@ -621,7 +621,7 @@ class BoolTypeQuery(TypeQuery[bool]):
     def reset(self) -> None:
         self.seen_aliases = None
 
-    def strategy(self, items: list[bool]) -> bool:
+    def strategy(self, items: ta.Sequence[bool]) -> bool:
         if not items:
             return self.default
         if self.mode is BoolTypeQueryMode.ANY:

@@ -521,8 +521,8 @@ def test_structural_subtype_compares_fixed_tuple_items() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     fallback = make_instance(make_info('builtins.tuple'), [make_any()])
 
     left = types.TupleType([make_instance(int_info), make_instance(str_info)], fallback)
@@ -617,7 +617,7 @@ def test_structural_subtype_recursive_alias_containing_type_type_matches_one_unr
 
 def test_structural_subtype_recursive_union_is_directional() -> None:
     list_info = make_info('builtins.list')
-    list_info._variances = [symbols.VarianceKind.CO]
+    list_info._variances = (symbols.VarianceKind.CO,)
     int_type = make_instance(make_info('builtins.int'))
     str_type = make_instance(make_info('builtins.str'))
 
@@ -648,7 +648,7 @@ def test_structural_subtype_recursive_alias_fails_closed_for_unsupported_callabl
 def test_structural_subtype_recursive_alias_fails_closed_for_unmapped_generic_base() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     int_type = make_instance(make_info('builtins.int'))
     alias = symbols.TypeAlias('ChildAlias', make_any())
     alias_type = types.TypeAliasType(alias, [])
@@ -661,9 +661,9 @@ def test_structural_subtype_recursive_alias_fails_closed_for_unmapped_generic_ba
 def test_structural_subtype_respects_covariant_recursive_container_args() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
-    int_info._mro = [int_info, object_info]
+    int_info._mro = (int_info, object_info)
     list_info = make_info('builtins.list')
-    list_info._variances = [symbols.VarianceKind.CO]
+    list_info._variances = (symbols.VarianceKind.CO,)
     int_type = make_instance(int_info)
     object_type = make_instance(object_info)
 
@@ -690,7 +690,7 @@ def test_callable_ellipsis_participates_in_same_type() -> None:
 def test_nominal_instance_subtype_uses_mro() -> None:
     object_info = make_info('object')
     int_info = make_info('int')
-    int_info._mro = [int_info, object_info]
+    int_info._mro = (int_info, object_info)
 
     assert is_subtype(make_instance(int_info), make_instance(object_info))
     assert not is_subtype(make_instance(object_info), make_instance(int_info))
@@ -888,7 +888,7 @@ def test_uninhabited_is_subtype_of_every_supported_type() -> None:
 def test_nominal_instance_subtype_does_not_map_generic_base_args_yet() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
 
     child = make_instance(child_info)
     generic_base = make_instance(base_info, [make_any()])
@@ -900,7 +900,7 @@ def test_nominal_instance_subtype_does_not_map_generic_base_args_yet() -> None:
 def make_nominal_subtype_pair() -> tuple[types.Instance, types.Instance]:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     return make_instance(child_info), make_instance(base_info)
 
 
@@ -1143,7 +1143,7 @@ def test_nominal_instance_subtype_maps_direct_generic_base_args() -> None:
         bases=[types.Instance(base_info, [t_var])],
         type_vars=[t_var],
     )
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     int_type = make_instance(make_info('int'))
     str_type = make_instance(make_info('str'))
 
@@ -1156,7 +1156,7 @@ def test_nominal_instance_subtype_maps_direct_concrete_base_args() -> None:
     int_type = make_instance(make_info('int'))
     str_type = make_instance(make_info('str'))
     child_info = symbols.TypeInfo('Child', 'Child', bases=[types.Instance(base_info, [int_type])])
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
 
     assert is_subtype(make_instance(child_info), make_instance(base_info, [int_type]))
     assert not is_subtype(make_instance(child_info), make_instance(base_info, [str_type]))
@@ -1178,7 +1178,7 @@ def test_nominal_instance_subtype_maps_indirect_generic_base_args() -> None:
         bases=[types.Instance(middle_info, [child_t])],
         type_vars=[child_t],
     )
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._mro = (child_info, middle_info, base_info)
     int_type = make_instance(make_info('int'))
     str_type = make_instance(make_info('str'))
 
@@ -1192,7 +1192,7 @@ def test_nominal_instance_subtype_maps_indirect_concrete_base_args() -> None:
     str_type = make_instance(make_info('str'))
     middle_info = symbols.TypeInfo('Middle', 'Middle', bases=[types.Instance(base_info, [int_type])])
     child_info = symbols.TypeInfo('Child', 'Child', bases=[types.Instance(middle_info, [])])
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._mro = (child_info, middle_info, base_info)
 
     assert is_subtype(make_instance(child_info), make_instance(base_info, [int_type]))
     assert not is_subtype(make_instance(child_info), make_instance(base_info, [str_type]))
@@ -1202,8 +1202,8 @@ def test_nominal_instance_subtype_still_raises_for_unmapped_generic_base() -> No
     base_info = make_info('Base')
     middle_info = make_info('Middle')
     child_info = make_info('Child')
-    child_info._bases = [types.Instance(middle_info, [])]
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._bases = (types.Instance(middle_info, []),)
+    child_info._mro = (child_info, middle_info, base_info)
 
     with pytest.raises(UnsupportedTypeOperationError):
         is_subtype(make_instance(child_info), make_instance(base_info, [make_any()]))
@@ -1232,14 +1232,14 @@ def test_get_base_instance_maps_direct_generic_base_args() -> None:
         bases=[types.Instance(base_info, [t_var])],
         type_vars=[t_var],
     )
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     int_type = make_instance(make_info('int'))
 
     mapped = get_base_instance(make_instance(child_info, [int_type]), base_info)
 
     assert isinstance(mapped, types.Instance)
     assert mapped.type is base_info
-    assert mapped.args == [int_type]
+    assert mapped.args == (int_type,)
 
 
 def test_get_base_instance_maps_indirect_generic_base_args() -> None:
@@ -1258,14 +1258,14 @@ def test_get_base_instance_maps_indirect_generic_base_args() -> None:
         bases=[types.Instance(middle_info, [child_t])],
         type_vars=[child_t],
     )
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._mro = (child_info, middle_info, base_info)
     int_type = make_instance(make_info('int'))
 
     mapped = get_base_instance(make_instance(child_info, [int_type]), base_info)
 
     assert isinstance(mapped, types.Instance)
     assert mapped.type is base_info
-    assert mapped.args == [int_type]
+    assert mapped.args == (int_type,)
 
 
 def test_get_mro_instances_maps_each_generic_layer() -> None:
@@ -1284,7 +1284,7 @@ def test_get_mro_instances_maps_each_generic_layer() -> None:
         bases=[types.Instance(middle_info, [child_t])],
         type_vars=[child_t],
     )
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._mro = (child_info, middle_info, base_info)
     int_type = make_instance(make_info('int'))
 
     instances = get_mro_instances(make_instance(child_info, [int_type]))
@@ -1298,7 +1298,7 @@ def test_get_mro_instances_maps_each_generic_layer() -> None:
 def test_get_mro_instances_or_none_returns_mapped_instances() -> None:
     base_info = symbols.TypeInfo('Base', 'Base')
     child_info = symbols.TypeInfo('Child', 'Child', bases=[types.Instance(base_info, [])])
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
 
     instances = get_mro_instances_or_none(make_instance(child_info))
 
@@ -1311,8 +1311,8 @@ def test_get_mro_instances_or_none_suppresses_unsupported_mapping() -> None:
     base_info = symbols.TypeInfo('Base', 'Base', type_vars=[base_t])
     middle_info = make_info('Middle')
     child_info = make_info('Child')
-    child_info._bases = [types.Instance(middle_info, [])]
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._bases = (types.Instance(middle_info, []),)
+    child_info._mro = (child_info, middle_info, base_info)
 
     assert get_mro_instances_or_none(make_instance(child_info)) is None
 
@@ -1326,7 +1326,7 @@ def test_get_mro_entries_exposes_info_instance_and_args() -> None:
         bases=[types.Instance(base_info, [t_var])],
         type_vars=[t_var],
     )
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     int_type = make_instance(make_info('int'))
 
     entries = get_mro_entries(make_instance(child_info, [int_type]))
@@ -1340,7 +1340,7 @@ def test_get_mro_entries_or_none_suppresses_unsupported_mapping() -> None:
     base_t = make_type_var('T', 1)
     base_info = symbols.TypeInfo('Base', 'Base', type_vars=[base_t])
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
 
     assert get_mro_entries_or_none(make_instance(child_info)) is None
 
@@ -1348,13 +1348,13 @@ def test_get_mro_entries_or_none_suppresses_unsupported_mapping() -> None:
 def test_get_base_instance_synthesizes_unparameterized_nominal_base() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
 
     mapped = get_base_instance(make_instance(child_info), base_info)
 
     assert isinstance(mapped, types.Instance)
     assert mapped.type is base_info
-    assert mapped.args == []
+    assert mapped.args == ()
 
 
 def test_get_base_instance_raises_for_unmapped_generic_base() -> None:
@@ -1362,8 +1362,8 @@ def test_get_base_instance_raises_for_unmapped_generic_base() -> None:
     base_info = symbols.TypeInfo('Base', 'Base', type_vars=[base_t])
     middle_info = make_info('Middle')
     child_info = make_info('Child')
-    child_info._bases = [types.Instance(middle_info, [])]
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._bases = (types.Instance(middle_info, []),)
+    child_info._mro = (child_info, middle_info, base_info)
 
     with pytest.raises(UnsupportedTypeOperationError):
         get_base_instance(make_instance(child_info), base_info)
@@ -1378,14 +1378,14 @@ def test_get_base_instance_or_none_returns_mapped_base() -> None:
         bases=[types.Instance(base_info, [t_var])],
         type_vars=[t_var],
     )
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     int_type = make_instance(make_info('int'))
 
     mapped = get_base_instance_or_none(make_instance(child_info, [int_type]), base_info)
 
     assert isinstance(mapped, types.Instance)
     assert mapped.type is base_info
-    assert mapped.args == [int_type]
+    assert mapped.args == (int_type,)
 
 
 def test_get_base_instance_or_none_returns_none_for_missing_base() -> None:
@@ -1400,8 +1400,8 @@ def test_get_base_instance_or_none_suppresses_unsupported_mapping() -> None:
     base_info = symbols.TypeInfo('Base', 'Base', type_vars=[base_t])
     middle_info = make_info('Middle')
     child_info = make_info('Child')
-    child_info._bases = [types.Instance(middle_info, [])]
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._bases = (types.Instance(middle_info, []),)
+    child_info._mro = (child_info, middle_info, base_info)
 
     assert get_base_instance_or_none(make_instance(child_info), base_info) is None
 
@@ -1415,12 +1415,12 @@ def test_get_base_args_returns_mapped_direct_generic_base_args() -> None:
         bases=[types.Instance(base_info, [t_var])],
         type_vars=[t_var],
     )
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     int_type = make_instance(make_info('int'))
 
     args = get_base_args(make_instance(child_info, [int_type]), base_info)
 
-    assert args == [int_type]
+    assert args == (int_type,)
 
 
 def test_get_base_args_returns_none_for_missing_base() -> None:
@@ -1436,7 +1436,7 @@ def test_get_base_args_returns_same_instance_args_for_same_type() -> None:
 
     args = get_base_args(make_instance(info, [int_type]), info)
 
-    assert args == [int_type]
+    assert args == (int_type,)
 
 
 def test_get_base_args_or_none_returns_args_when_mappable() -> None:
@@ -1448,12 +1448,12 @@ def test_get_base_args_or_none_returns_args_when_mappable() -> None:
         bases=[types.Instance(base_info, [t_var])],
         type_vars=[t_var],
     )
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     int_type = make_instance(make_info('int'))
 
     args = get_base_args_or_none(make_instance(child_info, [int_type]), base_info)
 
-    assert args == [int_type]
+    assert args == (int_type,)
 
 
 def test_get_base_args_or_none_returns_none_for_missing_base() -> None:
@@ -1468,7 +1468,7 @@ def test_get_base_args_or_none_suppresses_unsupported_mapping() -> None:
     base_info = symbols.TypeInfo('Base', 'Base', type_vars=[base_t])
     middle_info = make_info('Middle')
     child_info = make_info('Child')
-    child_info._bases = [types.Instance(middle_info, [])]
-    child_info._mro = [child_info, middle_info, base_info]
+    child_info._bases = (types.Instance(middle_info, []),)
+    child_info._mro = (child_info, middle_info, base_info)
 
     assert get_base_args_or_none(make_instance(child_info), base_info) is None

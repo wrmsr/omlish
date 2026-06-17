@@ -121,7 +121,7 @@ def test_runtime_constraints_use_reflected_covariant_type_var() -> None:
     actual = reflector.reflect_type(Box[int])  # type: ignore
 
     assert isinstance(template, types.Instance)
-    assert template.type.variances == [symbols.VarianceKind.CO]
+    assert template.type.variances == (symbols.VarianceKind.CO,)
 
     constraints = infer_constraints(template, actual, ConstraintOp.SUPERTYPE_OF)
     solution = solve_constraints([template.type.type_vars[0]], constraints)
@@ -141,7 +141,7 @@ def test_runtime_constraints_use_reflected_contravariant_type_var() -> None:
     actual = reflector.reflect_type(Sink[int])  # type: ignore
 
     assert isinstance(template, types.Instance)
-    assert template.type.variances == [symbols.VarianceKind.CONTRA]
+    assert template.type.variances == (symbols.VarianceKind.CONTRA,)
 
     constraints = infer_constraints(template, actual, ConstraintOp.SUPERTYPE_OF)
     solution = solve_constraints([template.type.type_vars[0]], constraints)
@@ -630,8 +630,8 @@ def test_runtime_constraints_solve_reflected_callable_param_spec_template() -> N
     assert type_str(ta.cast(types.Type, solution[0])) == 'builtins.bool'
     assert isinstance(solution[1], types.Parameters)
     assert [type_str(arg) for arg in solution[1].arg_types] == ['builtins.int', 'builtins.str']
-    assert solution[1].arg_kinds == [symbols.ArgKind.POS, symbols.ArgKind.POS]
-    assert solution[1].arg_names == [None, None]
+    assert solution[1].arg_kinds == (symbols.ArgKind.POS, symbols.ArgKind.POS)
+    assert solution[1].arg_names == (None, None)
 
 
 def test_runtime_constraints_solve_repeated_reflected_callable_param_spec_template() -> None:
@@ -2595,7 +2595,7 @@ def test_reflect_base_args_or_none_suppresses_unsupported_base_mapping() -> None
     assert isinstance(child_type, types.Instance)
     assert isinstance(base_type, types.Instance)
     assert isinstance(middle_type, types.Instance)
-    child_type.type._mro = [child_type.type, middle_type.type, base_type.type]
+    child_type.type._mro = (child_type.type, middle_type.type, base_type.type)
 
     assert reflect_base_args_or_none(Child, Base, reflector) is None
 
@@ -2652,7 +2652,7 @@ def test_reflect_base_instance_or_none_suppresses_unsupported_base_mapping() -> 
     assert isinstance(child_type, types.Instance)
     assert isinstance(base_type, types.Instance)
     assert isinstance(middle_type, types.Instance)
-    child_type.type._mro = [child_type.type, middle_type.type, base_type.type]
+    child_type.type._mro = (child_type.type, middle_type.type, base_type.type)
 
     with pytest.raises(UnsupportedTypeOperationError):
         reflect_base_instance(Child, Base, reflector)
@@ -2743,7 +2743,7 @@ def test_reflect_mro_instances_or_none_suppresses_unsupported_mapping() -> None:
     assert isinstance(child_type, types.Instance)
     assert isinstance(base_type, types.Instance)
     assert isinstance(middle_type, types.Instance)
-    child_type.type._mro = [child_type.type, middle_type.type, base_type.type]
+    child_type.type._mro = (child_type.type, middle_type.type, base_type.type)
 
     assert reflect_mro_instances_or_none(Child, reflector) is None
 
@@ -2838,7 +2838,7 @@ def test_reflect_mro_entries_or_none_suppresses_unsupported_mapping() -> None:
     base_type = reflector.reflect_type(Base)
     assert isinstance(child_type, types.Instance)
     assert isinstance(base_type, types.Instance)
-    child_type.type._mro = [child_type.type, base_type.type]
+    child_type.type._mro = (child_type.type, base_type.type)
 
     assert reflect_mro_entries_or_none(Child, reflector) is None
 

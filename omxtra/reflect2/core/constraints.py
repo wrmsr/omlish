@@ -598,9 +598,9 @@ def _get_param_spec_arg_template(typ: CallableType) -> tuple[ParamSpecType, int]
             return None
         if not _is_same_type_var_id(arg_type._id, var._id):
             return None
-    if typ._arg_kinds[prefix_len:] != [ArgKind.STAR, ArgKind.STAR2]:
+    if typ._arg_kinds[prefix_len:] != (ArgKind.STAR, ArgKind.STAR2):
         return None
-    if typ._arg_names[prefix_len:] != [None, None]:
+    if typ._arg_names[prefix_len:] != (None, None):
         return None
     if any(kind in (ArgKind.STAR, ArgKind.STAR2) for kind in typ._arg_kinds[:prefix_len]):
         return None

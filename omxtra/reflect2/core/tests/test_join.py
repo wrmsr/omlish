@@ -43,7 +43,7 @@ def test_join_any_returns_any() -> None:
 def test_join_nominal_subtype_returns_supertype() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
 
@@ -84,7 +84,7 @@ def test_join_reflected_generic_subclass_with_different_base_arg_returns_union()
     typ = join_types(child, str_box)
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [child, str_box]
+    assert typ.items == (child, str_box)
 
 
 def test_join_unrelated_supported_instances_returns_union() -> None:
@@ -94,14 +94,14 @@ def test_join_unrelated_supported_instances_returns_union() -> None:
     typ = join_types(left, right)
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [left, right]
+    assert typ.items == (left, right)
 
 
 def test_join_union_flattens_and_simplifies_items() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
     other_info = make_info('Other')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
     other = make_instance(other_info)
@@ -109,7 +109,7 @@ def test_join_union_flattens_and_simplifies_items() -> None:
     typ = join_types(types.UnionType([child, other]), base)
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [other, base]
+    assert typ.items == (other, base)
 
 
 def test_join_union_with_union_flattens_and_simplifies_items() -> None:
@@ -117,7 +117,7 @@ def test_join_union_with_union_flattens_and_simplifies_items() -> None:
     child_info = make_info('Child')
     left_info = make_info('Left')
     right_info = make_info('Right')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
     left = make_instance(left_info)
@@ -126,7 +126,7 @@ def test_join_union_with_union_flattens_and_simplifies_items() -> None:
     typ = join_types(types.UnionType([left, child]), types.UnionType([base, right]))
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [left, base, right]
+    assert typ.items == (left, base, right)
 
 
 def test_join_typed_dict_subtype_returns_wider_type() -> None:
@@ -161,7 +161,7 @@ def test_join_typed_dicts_drops_incompatible_mutable_keys() -> None:
 def test_join_typed_dicts_joins_readonly_key_covariantly() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     left = make_typed_dict({'x': make_instance(child_info)}, {'x'}, {'x'})
     right = make_typed_dict({'x': make_instance(base_info)}, {'x'}, {'x'})
 
@@ -182,7 +182,7 @@ def test_join_raises_for_unsupported_subtype_relation() -> None:
 def test_join_strips_type_guarded_and_annotated_wrappers() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
 
@@ -208,7 +208,7 @@ def test_join_required_readonly_unpack_and_type_type_fail_closed_for_now() -> No
 def test_join_type_type_returns_wider_class_object_type() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child_type = types.TypeType(make_instance(child_info))
     base_type = types.TypeType(make_instance(base_info))
 
@@ -238,7 +238,7 @@ def test_join_union_of_type_types_simplifies_redundant_subtype_item() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
     other_info = make_info('Other')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child_type = types.TypeType(make_instance(child_info))
     base_type = types.TypeType(make_instance(base_info))
     other_type = types.TypeType(make_instance(other_info))
@@ -253,8 +253,8 @@ def test_join_fixed_tuples_synthesizes_itemwise_join() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     fallback = make_instance(make_info('builtins.tuple'), [make_any()])
 
     left = types.TupleType([make_instance(int_info), make_instance(object_info)], fallback)
@@ -275,7 +275,7 @@ def test_join_fixed_tuples_with_different_lengths_returns_union() -> None:
     typ = join_types(left, right)
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [left, right]
+    assert typ.items == (left, right)
 
 
 def test_structural_join_expands_variadic_alias_to_fixed_tuple() -> None:
@@ -312,7 +312,7 @@ def test_join_fails_closed_for_variadic_tuple_shapes() -> None:
 def test_join_simple_callables_returns_more_general_callable() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     fallback = make_instance(make_info('function'))
@@ -327,7 +327,7 @@ def test_join_simple_callables_returns_more_general_callable() -> None:
 def test_join_same_shape_callables_synthesizes_contravariant_args_and_covariant_return() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     fallback = make_instance(make_info('function'))
@@ -344,7 +344,7 @@ def test_join_same_shape_callables_synthesizes_contravariant_args_and_covariant_
 def test_join_same_shape_callables_preserves_keyword_only_shape() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     fallback = make_instance(make_info('function'))
@@ -355,8 +355,8 @@ def test_join_same_shape_callables_preserves_keyword_only_shape() -> None:
     typ = join_types(left, right)
 
     assert isinstance(typ, types.CallableType)
-    assert typ.arg_kinds == [symbols.ArgKind.NAMED_OPT]
-    assert typ.arg_names == ['value']
+    assert typ.arg_kinds == (symbols.ArgKind.NAMED_OPT,)
+    assert typ.arg_names == ('value',)
     assert type_str(typ) == 'def (Child) -> Base'
 
 
@@ -371,13 +371,13 @@ def test_join_callables_with_incompatible_shape_returns_union() -> None:
     joined = join_types(left, right)
 
     assert isinstance(joined, types.UnionType)
-    assert joined.items == [left, right]
+    assert joined.items == (left, right)
 
 
 def test_join_same_shape_callables_with_different_fallbacks_fails_closed() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     left = types.CallableType(
@@ -468,7 +468,7 @@ def test_join_type_list_folds_multiple_items() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
     other_info = make_info('Other')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
     other = make_instance(other_info)
@@ -476,7 +476,7 @@ def test_join_type_list_folds_multiple_items() -> None:
     typ = join_type_list([child, other, base])
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [other, base]
+    assert typ.items == (other, base)
 
 
 def test_structural_join_literal_alias_with_fallback_returns_fallback() -> None:
@@ -507,7 +507,7 @@ def test_structural_join_preserves_newtype_identity_through_aliases() -> None:
     typ = structural_join_types(user_alias_type, account_alias_type)
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [user_alias_type, account_alias_type]
+    assert typ.items == (user_alias_type, account_alias_type)
 
 
 def test_structural_join_recursive_alias_matches_one_unrolling() -> None:
@@ -526,8 +526,8 @@ def test_structural_join_recursive_alias_with_object_bound_returns_object() -> N
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     list_info = make_info('builtins.list')
-    int_info._mro = [int_info, object_info]
-    list_info._mro = [list_info, object_info]
+    int_info._mro = (int_info, object_info)
+    list_info._mro = (list_info, object_info)
     object_type = make_instance(object_info)
     alias = symbols.TypeAlias('Node', make_any())
     alias_type = types.TypeAliasType(alias, [])
@@ -589,7 +589,7 @@ def test_structural_join_incompatible_recursive_aliases_returns_union() -> None:
     typ = structural_join_types(left_alias_type, right_alias_type)
 
     assert isinstance(typ, types.UnionType)
-    assert typ.items == [left_alias_type, right_alias_type]
+    assert typ.items == (left_alias_type, right_alias_type)
 
 
 def test_structural_join_recursive_alias_with_unsupported_callable_target_fails_closed() -> None:

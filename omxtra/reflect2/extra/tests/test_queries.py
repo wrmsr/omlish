@@ -895,7 +895,7 @@ def test_enum_literal_reflects_mypy_style_name_with_enum_fallback() -> None:
     assert isinstance(typ, types.LiteralType)
     assert typ.value == 'RED'
     assert typ.fallback.type.is_enum
-    assert typ.fallback.type.enum_members == ['RED', 'BLUE']
+    assert typ.fallback.type.enum_members == ('RED', 'BLUE')
     assert '.Color@' in type_str(typ)
     assert type_str(typ).endswith('.RED]')
     assert type_key(typ) != type_key(reflector.reflect_type(ta.Literal['RED']))

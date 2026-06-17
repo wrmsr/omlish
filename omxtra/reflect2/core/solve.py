@@ -110,14 +110,14 @@ def solve_one(
     return None
 
 
-def _join_solution_types(items: list[Type]) -> Type:
+def _join_solution_types(items: ta.Sequence[Type]) -> Type:
     try:
         return join_type_list(items)
     except ReflectionTypeError:
         return structural_join_type_list(items)
 
 
-def _meet_solution_types(items: list[Type]) -> Type:
+def _meet_solution_types(items: ta.Sequence[Type]) -> Type:
     try:
         return meet_type_list(items)
     except ReflectionTypeError:

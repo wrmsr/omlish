@@ -10,7 +10,7 @@ from .helpers import make_instance
 def test_literal_type_is_subtype_of_fallback_and_object() -> None:
     object_info = make_info('builtins.object')
     str_info = make_info('builtins.str')
-    str_info._mro = [str_info, object_info]
+    str_info._mro = (str_info, object_info)
     literal = LiteralType('x', Instance(str_info, []))
 
     assert is_subtype(literal, Instance(str_info, []))

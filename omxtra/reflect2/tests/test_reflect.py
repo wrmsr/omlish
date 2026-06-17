@@ -32,7 +32,7 @@ def test_reflects_bare_runtime_class_as_instance() -> None:
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.int'
-    assert typ.args == []
+    assert typ.args == ()
 
 
 def test_reflects_builtin_generic_alias() -> None:
@@ -182,7 +182,7 @@ def test_reflects_type_var() -> None:
     assert isinstance(typ, types.TypeVarType)
     assert typ.name == 'T'
     assert typ.fullname == 'T'
-    assert typ.values == []
+    assert typ.values == ()
     assert typ.upper_bound.type.fullname == 'builtins.object'  # type: ignore
     assert isinstance(typ.default, types.AnyType)
 
@@ -986,8 +986,8 @@ def test_reflects_typing_callable_with_explicit_args() -> None:
     assert isinstance(typ, types.CallableType)
     assert not typ.is_ellipsis_args
     assert [type_str(arg) for arg in typ.arg_types] == ['builtins.int', 'builtins.str']
-    assert typ.arg_kinds == [symbols.ArgKind.POS, symbols.ArgKind.POS]
-    assert typ.arg_names == [None, None]
+    assert typ.arg_kinds == (symbols.ArgKind.POS, symbols.ArgKind.POS)
+    assert typ.arg_names == (None, None)
     assert type_str(typ.ret_type) == 'builtins.bool'
     assert typ.fallback.type.fullname == 'collections.abc.Callable'
 
@@ -1008,9 +1008,9 @@ def test_reflects_callable_with_ellipsis_args() -> None:
 
     assert isinstance(typ, types.CallableType)
     assert typ.is_ellipsis_args
-    assert typ.arg_types == []
-    assert typ.arg_kinds == []
-    assert typ.arg_names == []
+    assert typ.arg_types == ()
+    assert typ.arg_kinds == ()
+    assert typ.arg_names == ()
     assert type_str(typ.ret_type) == 'builtins.int'
     assert type_str(typ) == 'def (...) -> builtins.int'
 
@@ -1021,8 +1021,8 @@ def test_reflects_callable_with_param_spec_args() -> None:
 
     assert isinstance(typ, types.CallableType)
     assert [type(arg).__name__ for arg in typ.arg_types] == ['ParamSpecType', 'ParamSpecType']
-    assert typ.arg_kinds == [symbols.ArgKind.STAR, symbols.ArgKind.STAR2]
-    assert typ.arg_names == [None, None]
+    assert typ.arg_kinds == (symbols.ArgKind.STAR, symbols.ArgKind.STAR2)
+    assert typ.arg_names == (None, None)
     assert [var.name for var in typ.variables] == ['P']
 
 
@@ -1032,7 +1032,7 @@ def test_reflects_callable_with_concatenate_args() -> None:
 
     assert isinstance(typ, types.CallableType)
     assert [type_str(arg) for arg in typ.arg_types] == ['builtins.int', 'builtins.str', 'P', 'P']
-    assert typ.arg_kinds == [symbols.ArgKind.POS, symbols.ArgKind.POS, symbols.ArgKind.STAR, symbols.ArgKind.STAR2]
+    assert typ.arg_kinds == (symbols.ArgKind.POS, symbols.ArgKind.POS, symbols.ArgKind.STAR, symbols.ArgKind.STAR2)
     assert [var.name for var in typ.variables] == ['P']
 
 
@@ -1291,10 +1291,10 @@ def test_reflected_class_type_info_includes_runtime_generic_bases() -> None:
     assert isinstance(base, types.Instance)
     assert base.type is reflector.universe.get_type_info(Box)
     assert [type_str(arg) for arg in base.args] == ['builtins.int']
-    assert typ.type.mro[:2] == [
+    assert typ.type.mro[:2] == (
         reflector.universe.get_type_info(IntBox),
         reflector.universe.get_type_info(Box),
-    ]
+    )
 
 
 def test_reflected_class_generic_base_args_participate_in_subtyping() -> None:

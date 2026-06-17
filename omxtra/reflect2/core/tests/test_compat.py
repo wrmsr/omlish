@@ -23,7 +23,7 @@ def make_instance(info: symbols.TypeInfo, args: list[types.Type] | None = None) 
 def test_is_assignable_uses_subtype_direction() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
 
     assert is_assignable(make_instance(child_info), make_instance(base_info))
     assert not is_assignable(make_instance(base_info), make_instance(child_info))

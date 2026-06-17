@@ -42,7 +42,7 @@ def test_meet_any_returns_other_type() -> None:
 def test_meet_nominal_subtype_returns_subtype() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
 
@@ -98,7 +98,7 @@ def test_meet_union_distributes_and_drops_uninhabited_items() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
     other_info = make_info('Other')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
     other = make_instance(other_info)
@@ -113,7 +113,7 @@ def test_meet_union_with_union_distributes_pairwise() -> None:
     child_info = make_info('Child')
     left_info = make_info('Left')
     right_info = make_info('Right')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
     left = make_instance(left_info)
@@ -161,7 +161,7 @@ def test_meet_typed_dicts_combines_compatible_keys() -> None:
 def test_meet_typed_dicts_meets_readonly_key_covariantly() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     left = make_typed_dict({'x': make_instance(child_info)}, {'x'}, {'x'})
     right = make_typed_dict({'x': make_instance(base_info)}, {'x'}, {'x'})
 
@@ -198,7 +198,7 @@ def test_meet_raises_for_unsupported_subtype_relation() -> None:
 def test_meet_strips_type_guarded_and_annotated_wrappers() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
 
@@ -224,7 +224,7 @@ def test_meet_required_readonly_unpack_and_type_type_fail_closed_for_now() -> No
 def test_meet_type_type_returns_narrower_class_object_type() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child_type = types.TypeType(make_instance(child_info))
     base_type = types.TypeType(make_instance(base_info))
 
@@ -255,7 +255,7 @@ def test_meet_union_of_type_types_with_type_type_drops_uninhabited_items() -> No
     base_info = make_info('Base')
     child_info = make_info('Child')
     other_info = make_info('Other')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child_type = types.TypeType(make_instance(child_info))
     base_type = types.TypeType(make_instance(base_info))
     other_type = types.TypeType(make_instance(other_info))
@@ -269,8 +269,8 @@ def test_meet_fixed_tuples_synthesizes_itemwise_meet() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     fallback = make_instance(make_info('builtins.tuple'), [make_any()])
 
     left = types.TupleType([make_instance(int_info), make_instance(object_info)], fallback)
@@ -326,7 +326,7 @@ def test_meet_fails_closed_for_variadic_tuple_shapes() -> None:
 def test_meet_simple_callables_returns_more_specific_callable() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     fallback = make_instance(make_info('function'))
@@ -341,7 +341,7 @@ def test_meet_simple_callables_returns_more_specific_callable() -> None:
 def test_meet_same_shape_callables_synthesizes_contravariant_args_and_covariant_return() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     fallback = make_instance(make_info('function'))
@@ -358,7 +358,7 @@ def test_meet_same_shape_callables_synthesizes_contravariant_args_and_covariant_
 def test_meet_same_shape_callables_preserves_keyword_only_shape() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     fallback = make_instance(make_info('function'))
@@ -369,8 +369,8 @@ def test_meet_same_shape_callables_preserves_keyword_only_shape() -> None:
     typ = meet_types(left, right)
 
     assert isinstance(typ, types.CallableType)
-    assert typ.arg_kinds == [symbols.ArgKind.NAMED_OPT]
-    assert typ.arg_names == ['value']
+    assert typ.arg_kinds == (symbols.ArgKind.NAMED_OPT,)
+    assert typ.arg_names == ('value',)
     assert type_str(typ) == 'def (Base) -> Child'
 
 
@@ -388,7 +388,7 @@ def test_meet_callables_with_incompatible_shape_returns_uninhabited() -> None:
 def test_meet_same_shape_callables_with_different_fallbacks_fails_closed() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     base = make_instance(base_info)
     child = make_instance(child_info)
     left = types.CallableType(
@@ -480,7 +480,7 @@ def test_meet_type_list_folds_multiple_items() -> None:
     base_info = make_info('Base')
     child_info = make_info('Child')
     other_info = make_info('Other')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     child = make_instance(child_info)
     base = make_instance(base_info)
     other = make_instance(other_info)
@@ -536,8 +536,8 @@ def test_structural_meet_recursive_alias_with_object_bound_returns_alias() -> No
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     list_info = make_info('builtins.list')
-    int_info._mro = [int_info, object_info]
-    list_info._mro = [list_info, object_info]
+    int_info._mro = (int_info, object_info)
+    list_info._mro = (list_info, object_info)
     object_type = make_instance(object_info)
     alias = symbols.TypeAlias('Node', make_any())
     alias_type = types.TypeAliasType(alias, [])

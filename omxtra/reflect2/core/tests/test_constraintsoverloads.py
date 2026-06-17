@@ -330,8 +330,8 @@ def test_infer_callable_constraints_against_overloaded_actual_uses_argument_cont
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     object_type = make_instance(object_info)
     int_type = make_instance(int_info)
     str_type = make_instance(str_info)
@@ -396,8 +396,8 @@ def test_infer_overloaded_constraints_against_overloaded_actual_uses_argument_co
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     object_type = make_instance(object_info)
     int_type = make_instance(int_info)
     str_type = make_instance(str_info)

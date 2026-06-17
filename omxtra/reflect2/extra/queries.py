@@ -302,7 +302,7 @@ def get_instance_base_args(
         typ: Type,
         base: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Type] | None:
+) -> ta.Sequence[Type] | None:
     if not isinstance(typ, Instance):
         return None
 
@@ -352,7 +352,7 @@ def get_effective_instance_base_args(
         typ: Type,
         base: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Type] | None:
+) -> ta.Sequence[Type] | None:
     rt_reflector = _get_reflector(reflector)
     return get_instance_base_args(get_runtime_type_shape(typ, rt_reflector).effective, base, rt_reflector)
 
@@ -602,7 +602,7 @@ def reflect_effective_instance_base_args(
         obj: object,
         base: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Type] | None:
+) -> ta.Sequence[Type] | None:
     rt_reflector = _get_reflector(reflector)
     return get_effective_instance_base_args(rt_reflector.reflect_type(obj), base, rt_reflector)
 

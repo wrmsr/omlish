@@ -178,7 +178,7 @@ def _get_callable_param_spec_annotation(
 ) -> object | None:
     if len(typ._arg_types) < 2:
         return None
-    if typ._arg_kinds[-2:] != [ArgKind.STAR, ArgKind.STAR2]:
+    if typ._arg_kinds[-2:] != (ArgKind.STAR, ArgKind.STAR2):
         return None
 
     arg_type = typ._arg_types[-2]
@@ -197,7 +197,10 @@ def _get_callable_param_spec_annotation(
     if not prefix_types:
         return param_spec
 
-    if prefix_kinds != [ArgKind.POS for _ in prefix_types] or prefix_names != [None for _ in prefix_types]:
+    if (
+            prefix_kinds != tuple(ArgKind.POS for _ in prefix_types) or
+            prefix_names != tuple(None for _ in prefix_types)
+    ):
         raise ReflectionTypeError(f'Runtime Callable annotation cannot represent callable parameter shape: {typ!r}')
 
     return ta.Concatenate[
@@ -234,7 +237,10 @@ def _to_callable_annotation(
     )) is not None:
         return cabc.Callable[param_spec, ret]
 
-    if typ._arg_kinds != [ArgKind.POS for _ in typ._arg_types] or typ._arg_names != [None for _ in typ._arg_types]:
+    if (
+            typ._arg_kinds != tuple(ArgKind.POS for _ in typ._arg_types) or
+            typ._arg_names != tuple(None for _ in typ._arg_types)
+    ):
         raise ReflectionTypeError(f'Runtime Callable annotation cannot represent callable parameter shape: {typ!r}')
 
     return cabc.Callable[

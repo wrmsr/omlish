@@ -132,7 +132,7 @@ class RuntimeTypeUniverse:
             variances=variances,
         )
 
-    def _make_known_bases(self, info: TypeInfo) -> list[Type]:
+    def _make_known_bases(self, info: TypeInfo) -> ta.Sequence[Type]:
         specs = _KNOWN_BASE_SPECS.get(info._fullname, ())
         bases: list[Type] = []
         for target_fullname, arg_specs in specs:
@@ -150,7 +150,7 @@ class RuntimeTypeUniverse:
             return info.type_vars[arg_spec]
         return Instance(self._get_type_info(arg_spec), [])
 
-    def _make_known_mro(self, info: TypeInfo) -> list[TypeInfo] | None:
+    def _make_known_mro(self, info: TypeInfo) -> ta.Sequence[TypeInfo] | None:
         tail = _KNOWN_MRO_TAILS.get(info._fullname)
         if tail is None:
             return None
@@ -159,9 +159,9 @@ class RuntimeTypeUniverse:
     #
 
     def _configure_known_type_info(self, info: TypeInfo) -> None:
-        info._bases = self._make_known_bases(info)
+        info._bases = tuple(self._make_known_bases(info))
         if (mro := self._make_known_mro(info)) is not None:
-            info._mro = mro
+            info._mro = tuple(mro)
 
     def _get_type_info(self, obj: type | str) -> TypeInfo:
         if isinstance(obj, str):
@@ -186,10 +186,10 @@ class RuntimeTypeUniverse:
         self._configure_known_type_info(info)
         if runtime_type is not None and issubclass(runtime_type, enum.Enum):
             info._is_enum = True
-            info._enum_members = [
+            info._enum_members = tuple(
                 member.name
                 for member in runtime_type
-            ]
+            )
         return info
 
     def get_type_info(self, obj: type | str) -> TypeInfo:
@@ -240,8 +240,8 @@ class RuntimeTypeUniverse:
             info._new_type_supertype = Instance(base_type, [])
         else:
             base_type = self._get_type_info('builtins.object')
-        info._bases = [Instance(base_type, [])]
-        info._mro = [info, *base_type._mro]
+        info._bases = (Instance(base_type, []),)
+        info._mro = (info, *base_type._mro)
 
         return info
 

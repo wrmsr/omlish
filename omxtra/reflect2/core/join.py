@@ -116,7 +116,7 @@ def _join_types(
     return _make_simplified_union([left, right], subtype_fn, same_fn)
 
 
-def join_type_list(items: list[Type]) -> Type:
+def join_type_list(items: ta.Sequence[Type]) -> Type:
     if not items:
         return _UNINHABITED_TYPE
 
@@ -126,7 +126,7 @@ def join_type_list(items: list[Type]) -> Type:
     return joined
 
 
-def structural_join_type_list(items: list[Type]) -> Type:
+def structural_join_type_list(items: ta.Sequence[Type]) -> Type:
     if not items:
         return _UNINHABITED_TYPE
 
@@ -261,11 +261,11 @@ def _join_typed_dicts(
     return TypedDictType(items, required_keys, readonly_keys, left._fallback)
 
 
-def _make_simplified_union(typs: list[Type], subtype_fn: SubtypeFn, same_fn: SameFn) -> Type:
+def _make_simplified_union(typs: ta.Sequence[Type], subtype_fn: SubtypeFn, same_fn: SameFn) -> Type:
     if subtype_fn is is_subtype and same_fn is is_same_type:
         return make_simplified_union(typs)
 
-    flat = []
+    flat: list[Type] = []
     for typ in typs:
         if isinstance(typ, UnionType):
             flat.extend(typ._items)

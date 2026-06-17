@@ -483,8 +483,8 @@ def test_reflect_dataclass_fields_fails_closed_for_unmappable_owner() -> None:
     base_type = reflector.reflect_type(Base)
     assert isinstance(child_type, types.Instance)
     assert isinstance(base_type, types.Instance)
-    child_type.type._mro = [child_type.type, base_type.type]
-    child_type.type._bases = []
+    child_type.type._mro = (child_type.type, base_type.type)
+    child_type.type._bases = ()
 
     with pytest.raises(UnsupportedTypeOperationError):
         reflect_dataclass_fields(Child, reflector)

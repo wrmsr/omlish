@@ -19,7 +19,7 @@ def substitute_type(typ: Type, replacements: SubstitutionInputMap) -> Type:
     return expand_type(typ, _validate_replacements(replacements))
 
 
-def substitute_types(typs: list[Type], replacements: SubstitutionInputMap) -> list[Type]:
+def substitute_types(typs: ta.Sequence[Type], replacements: SubstitutionInputMap) -> list[Type]:
     env = _validate_replacements(replacements)
     return [expand_type(typ, env) for typ in typs]
 

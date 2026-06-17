@@ -104,8 +104,8 @@ def test_infer_generic_base_instance_constraints() -> None:
     int_type = make_instance(make_info('builtins.int'))
     box_info = symbols.TypeInfo('Box', 'Box', type_vars=[t_var], variances=[symbols.VarianceKind.CO])
     child_info = make_info('IntBox')
-    child_info._bases = [make_instance(box_info, [int_type])]
-    child_info._mro = [child_info, box_info]
+    child_info._bases = (make_instance(box_info, [int_type]),)
+    child_info._mro = (child_info, box_info)
 
     constraints = infer_constraints(
         make_instance(box_info, [t_var]),
@@ -535,7 +535,7 @@ def test_infer_tuple_constraints_ignores_subtype_compatible_concrete_items() -> 
     t_var = make_type_var('T', 1)
     object_info = make_info('builtins.object')
     str_info = make_info('builtins.str')
-    str_info._mro = [str_info, object_info]
+    str_info._mro = (str_info, object_info)
     int_type = make_instance(make_info('builtins.int'))
     object_type = make_instance(object_info)
     str_type = make_instance(str_info)
@@ -556,8 +556,8 @@ def test_infer_tuple_constraints_from_join_derived_fixed_tuple_shape() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     object_type = make_instance(object_info)
     fallback = make_instance(make_info('builtins.tuple'), [make_any()])
     joined = join_types(
@@ -584,8 +584,8 @@ def test_infer_tuple_constraints_from_meet_derived_fixed_tuple_shape() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     object_type = make_instance(object_info)
     int_type = make_instance(int_info)
     str_type = make_instance(str_info)
@@ -1005,8 +1005,8 @@ def test_solve_one_uses_joined_lowers_and_met_uppers() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     object_type = make_instance(object_info)
     int_type = make_instance(int_info)
     str_type = make_instance(str_info)
@@ -1059,7 +1059,7 @@ def test_solve_constraints_uses_strict_default_for_unconstrained_vars() -> None:
 def test_solve_constraints_validates_upper_bound() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
-    int_info._mro = [int_info, object_info]
+    int_info._mro = (int_info, object_info)
     int_type = make_instance(int_info)
     str_type = make_instance(make_info('builtins.str'))
     any_type = make_any()

@@ -226,7 +226,7 @@ def reflect_type_str(
 def reflect_type_strs(
         objs: list[object],
         reflector: RuntimeTypeReflector | None = None,
-) -> list[str]:
+) -> ta.Sequence[str]:
     rt_reflector = _get_reflector(reflector)
     return [
         type_str(rt_reflector.reflect_type(obj))
@@ -301,7 +301,7 @@ def reflect_alpha_structural_type_key_or_none(
 def reflect_literal_values(
         obj: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[LiteralValue]:
+) -> ta.Sequence[LiteralValue]:
     rt_reflector = _get_reflector(reflector)
     return get_literal_values(rt_reflector.reflect_type(obj))
 
@@ -309,7 +309,7 @@ def reflect_literal_values(
 def reflect_literal_values_or_none(
         obj: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[LiteralValue] | None:
+) -> ta.Sequence[LiteralValue] | None:
     rt_reflector = _get_reflector(reflector)
     return get_literal_values_or_none(rt_reflector.reflect_type(obj))
 
@@ -317,7 +317,7 @@ def reflect_literal_values_or_none(
 def reflect_typed_dict_literal_values(
         obj: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> dict[str, list[LiteralValue] | None]:
+) -> ta.Mapping[str, list[LiteralValue] | None]:
     typ = _get_reflector(reflector).reflect_type(obj)
     if not isinstance(typ, TypedDictType):
         raise ReflectionTypeError(f'Unsupported TypedDict type: {typ!r}')
@@ -347,7 +347,7 @@ def reflect_instance_info(
 def reflect_instance_args(
         obj: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Type]:
+) -> ta.Sequence[Type]:
     return reflect_instance(obj, reflector)._args
 
 
@@ -355,7 +355,7 @@ def reflect_base_args(
         source: object,
         target: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Type] | None:
+) -> ta.Sequence[Type] | None:
     rt_reflector = _get_reflector(reflector)
     return _reflect_base_args(source, target, rt_reflector)
 
@@ -364,7 +364,7 @@ def reflect_base_args_or_none(
         source: object,
         target: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Type] | None:
+) -> ta.Sequence[Type] | None:
     rt_reflector = _get_reflector(reflector)
     return _reflect_base_args(source, target, rt_reflector, strict=False)
 
@@ -392,7 +392,7 @@ def reflect_base_instance_or_none(
 def reflect_mro_instances(
         source: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Instance]:
+) -> ta.Sequence[Instance]:
     rt_reflector = _get_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
@@ -403,7 +403,7 @@ def reflect_mro_instances(
 def reflect_mro_instances_or_none(
         source: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Instance] | None:
+) -> ta.Sequence[Instance] | None:
     rt_reflector = _get_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
@@ -414,7 +414,7 @@ def reflect_mro_instances_or_none(
 def reflect_mro_entries(
         source: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[MroEntry]:
+) -> ta.Sequence[MroEntry]:
     rt_reflector = _get_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
@@ -425,7 +425,7 @@ def reflect_mro_entries(
 def reflect_mro_entries_or_none(
         source: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[MroEntry] | None:
+) -> ta.Sequence[MroEntry] | None:
     rt_reflector = _get_reflector(reflector)
     source_type = rt_reflector.reflect_type(source)
     if not isinstance(source_type, Instance):
@@ -436,7 +436,7 @@ def reflect_mro_entries_or_none(
 def reflect_mro_type_strs(
         source: object,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[str]:
+) -> ta.Sequence[str]:
     return [
         type_str(instance)
         for instance in reflect_mro_instances(source, reflector)
@@ -449,7 +449,7 @@ def _reflect_base_args(
         rt_reflector: RuntimeTypeReflector,
         *,
         strict: bool = True,
-) -> list[Type] | None:
+) -> ta.Sequence[Type] | None:
     source_type, target_type = _reflect_base_instance_inputs(source, target, rt_reflector)
 
     if strict:
@@ -487,7 +487,7 @@ def reflect_substitute_types(
         typs: list[object],
         replacements: RuntimeSubstitutionMap,
         reflector: RuntimeTypeReflector | None = None,
-) -> list[Type]:
+) -> ta.Sequence[Type]:
     rt_reflector = _get_reflector(reflector)
     reflected_replacements = _reflect_replacements(replacements, rt_reflector)
     return substitute_types(
@@ -505,7 +505,7 @@ def _get_reflector(reflector: RuntimeTypeReflector | None) -> RuntimeTypeReflect
 def _reflect_replacements(
         replacements: RuntimeSubstitutionMap,
         reflector: RuntimeTypeReflector,
-) -> dict[SubstitutionKey, Type]:
+) -> ta.Mapping[SubstitutionKey, Type]:
     reflected: dict[SubstitutionKey, Type] = {}
 
     for key, value in replacements.items():

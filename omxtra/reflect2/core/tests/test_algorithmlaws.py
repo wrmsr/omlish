@@ -39,7 +39,7 @@ from .helpers import make_typed_dict
 def make_nominal_subtype_pair() -> tuple[Instance, Instance]:
     base_info = make_info('Base')
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info]
+    child_info._mro = (child_info, base_info)
     return make_instance(child_info), make_instance(base_info)
 
 
@@ -197,7 +197,7 @@ def test_structural_recursive_alias_lattice_laws_ignore_alias_identity() -> None
 
 def test_structural_directional_recursive_subtype_lattice_law() -> None:
     list_info = make_info('builtins.list')
-    list_info._variances = [VarianceKind.CO]
+    list_info._variances = (VarianceKind.CO,)
     int_type = make_instance(make_info('builtins.int'))
     str_type = make_instance(make_info('builtins.str'))
 
@@ -218,8 +218,8 @@ def test_solve_solution_satisfies_nominal_bounds() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     object_type = make_instance(object_info)
     int_type = make_instance(int_info)
     str_type = make_instance(str_info)

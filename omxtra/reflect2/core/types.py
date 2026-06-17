@@ -28,15 +28,21 @@ LiteralValue: ta.TypeAlias = ta.Union[
     None,
 ]
 
+_LITERAL_VALUE_TYPES: ta.Final[tuple[type[LiteralValue], ...]] = (
+    bool,
+    int,
+    str,
+    float,
+    bytes,
+    type(None),
+)
+
 
 ##
 
 
 def is_literal_value(value: object) -> bool:
-    return (
-        value is None
-        or type(value) in (bool, int, str, float, bytes)
-    )
+    return value is None or type(value) in _LITERAL_VALUE_TYPES
 
 
 ##
@@ -69,19 +75,19 @@ class TypeAliasType(Type):
     def __init__(
             self,
             alias: TypeAlias | None,
-            args: list[Type],
+            args: ta.Sequence[Type],
     ) -> None:
         super().__init__()
 
         self._alias = alias
-        self._args = args
+        self._args = tuple(args)
 
     @property
     def alias(self) -> TypeAlias | None:
         return self._alias
 
     @property
-    def args(self) -> ta.Sequence[Type]:
+    def args(self) -> tuple[Type, ...]:
         return self._args
 
     @property
@@ -293,7 +299,7 @@ class TypeVarType(TypeVarLikeType):
             name: str,
             fullname: str,
             id: TypeVarId,
-            values: list[Type],
+            values: ta.Sequence[Type],
             upper_bound: Type,
             default: Type,
             variance: VarianceKind = VarianceKind.IN,
@@ -306,11 +312,11 @@ class TypeVarType(TypeVarLikeType):
             default,
         )
 
-        self._values = values
+        self._values = tuple(values)
         self._variance = variance
 
     @property
-    def values(self) -> ta.Sequence[Type]:
+    def values(self) -> tuple[Type, ...]:
         return self._values
 
     @property
@@ -397,19 +403,19 @@ class UnboundType(ProperType):
     def __init__(
             self,
             name: str,
-            args: list[Type] | None = None,
+            args: ta.Sequence[Type] | None = None,
     ) -> None:
         super().__init__()
 
         self._name = name
-        self._args = [] if args is None else args
+        self._args = () if args is None else tuple(args)
 
     @property
     def name(self) -> str:
         return self._name
 
     @property
-    def args(self) -> ta.Sequence[Type]:
+    def args(self) -> tuple[Type, ...]:
         return self._args
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
@@ -458,13 +464,13 @@ class TypeList(ProperType):
         '_items',
     )
 
-    def __init__(self, items: list[Type]) -> None:
+    def __init__(self, items: ta.Sequence[Type]) -> None:
         super().__init__()
 
-        self._items = items
+        self._items = tuple(items)
 
     @property
-    def items(self) -> ta.Sequence[Type]:
+    def items(self) -> tuple[Type, ...]:
         return self._items
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
@@ -600,7 +606,7 @@ class ExtraAttrs:
         '_attrs',
     )
 
-    def __init__(self, attrs: dict[str, Type]) -> None:
+    def __init__(self, attrs: ta.Mapping[str, Type]) -> None:
         super().__init__()
 
         self._attrs = attrs
@@ -622,7 +628,7 @@ class Instance(ProperType):
     def __init__(
             self,
             typ: TypeInfo,
-            args: list[Type],
+            args: ta.Sequence[Type],
             *,
             last_known_value: LiteralType | None = None,
             extra_attrs: ExtraAttrs | None = None,
@@ -630,7 +636,7 @@ class Instance(ProperType):
         super().__init__()
 
         self._type = typ
-        self._args = args
+        self._args = tuple(args)
         self._last_known_value = last_known_value
         self._extra_attrs = extra_attrs
 
@@ -639,7 +645,7 @@ class Instance(ProperType):
         return self._type
 
     @property
-    def args(self) -> ta.Sequence[Type]:
+    def args(self) -> tuple[Type, ...]:
         return self._args
 
     @property
@@ -718,26 +724,26 @@ class Parameters(ProperType):
 
     def __init__(
             self,
-            arg_types: list[Type],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_types: ta.Sequence[Type],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
     ) -> None:
         super().__init__()
 
-        self._arg_types = arg_types
-        self._arg_kinds = arg_kinds
-        self._arg_names = arg_names
+        self._arg_types = tuple(arg_types)
+        self._arg_kinds = tuple(arg_kinds)
+        self._arg_names = tuple(arg_names)
 
     @property
-    def arg_types(self) -> ta.Sequence[Type]:
+    def arg_types(self) -> tuple[Type, ...]:
         return self._arg_types
 
     @property
-    def arg_kinds(self) -> ta.Sequence[ArgKind]:
+    def arg_kinds(self) -> tuple[ArgKind, ...]:
         return self._arg_kinds
 
     @property
-    def arg_names(self) -> ta.Sequence[str | None]:
+    def arg_names(self) -> tuple[str | None, ...]:
         return self._arg_names
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
@@ -757,34 +763,34 @@ class CallableType(FunctionLike):
 
     def __init__(
             self,
-            arg_types: list[Type],
-            arg_kinds: list[ArgKind],
-            arg_names: list[str | None],
+            arg_types: ta.Sequence[Type],
+            arg_kinds: ta.Sequence[ArgKind],
+            arg_names: ta.Sequence[str | None],
             ret_type: Type,
             fallback: Instance,
             *,
-            variables: list[TypeVarLikeType] | None = None,
+            variables: ta.Sequence[TypeVarLikeType] | None = None,
             is_ellipsis_args: bool = False,
     ) -> None:
         super().__init__(fallback)
 
-        self._arg_types = arg_types
-        self._arg_kinds = arg_kinds
-        self._arg_names = arg_names
+        self._arg_types = tuple(arg_types)
+        self._arg_kinds = tuple(arg_kinds)
+        self._arg_names = tuple(arg_names)
         self._ret_type = ret_type
-        self._variables = [] if variables is None else variables
+        self._variables = () if variables is None else tuple(variables)
         self._is_ellipsis_args = is_ellipsis_args
 
     @property
-    def arg_types(self) -> ta.Sequence[Type]:
+    def arg_types(self) -> tuple[Type, ...]:
         return self._arg_types
 
     @property
-    def arg_kinds(self) -> ta.Sequence[ArgKind]:
+    def arg_kinds(self) -> tuple[ArgKind, ...]:
         return self._arg_kinds
 
     @property
-    def arg_names(self) -> ta.Sequence[str | None]:
+    def arg_names(self) -> tuple[str | None, ...]:
         return self._arg_names
 
     @property
@@ -792,7 +798,7 @@ class CallableType(FunctionLike):
         return self._ret_type
 
     @property
-    def variables(self) -> ta.Sequence[TypeVarLikeType]:
+    def variables(self) -> tuple[TypeVarLikeType, ...]:
         return self._variables
 
     @property
@@ -809,16 +815,16 @@ class Overloaded(FunctionLike):
         '_items',
     )
 
-    def __init__(self, items: list[CallableType]) -> None:
+    def __init__(self, items: ta.Sequence[CallableType]) -> None:
         if not items:
             raise ReflectionValueError('Overloaded requires at least one item')
 
         super().__init__(items[0].fallback)
 
-        self._items = items
+        self._items = tuple(items)
 
     @property
-    def items(self) -> ta.Sequence[CallableType]:
+    def items(self) -> tuple[CallableType, ...]:
         return self._items
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
@@ -834,16 +840,16 @@ class TupleType(ProperType):
 
     def __init__(
             self,
-            items: list[Type],
+            items: ta.Sequence[Type],
             partial_fallback: Instance,
     ) -> None:
         super().__init__()
 
-        self._items = items
+        self._items = tuple(items)
         self._partial_fallback = partial_fallback
 
     @property
-    def items(self) -> ta.Sequence[Type]:
+    def items(self) -> tuple[Type, ...]:
         return self._items
 
     @property
@@ -865,16 +871,16 @@ class TypedDictType(ProperType):
 
     def __init__(
             self,
-            items: dict[str, Type],
-            required_keys: set[str],
-            readonly_keys: set[str],
+            items: ta.Mapping[str, Type],
+            required_keys: ta.AbstractSet[str],
+            readonly_keys: ta.AbstractSet[str],
             fallback: Instance,
     ) -> None:
         super().__init__()
 
         self._items = items
-        self._required_keys = required_keys
-        self._readonly_keys = readonly_keys
+        self._required_keys = frozenset(required_keys)
+        self._readonly_keys = frozenset(readonly_keys)
         self._fallback = fallback
 
     @property
@@ -882,11 +888,11 @@ class TypedDictType(ProperType):
         return self._items
 
     @property
-    def required_keys(self) -> ta.AbstractSet[str]:
+    def required_keys(self) -> frozenset[str]:
         return self._required_keys
 
     @property
-    def readonly_keys(self) -> ta.AbstractSet[str]:
+    def readonly_keys(self) -> frozenset[str]:
         return self._readonly_keys
 
     @property
@@ -961,15 +967,15 @@ class UnionType(ProperType):
         '_items',
     )
 
-    def __init__(self, items: list[Type]) -> None:
+    def __init__(self, items: ta.Sequence[Type]) -> None:
         super().__init__()
 
         from .typeops import flatten_nested_unions
 
-        self._items = flatten_nested_unions(items, handle_type_alias_type=False)
+        self._items = tuple(flatten_nested_unions(items, handle_type_alias_type=False))
 
     @property
-    def items(self) -> ta.Sequence[Type]:
+    def items(self) -> tuple[Type, ...]:
         return self._items
 
     def accept(self, visitor: TypeVisitor[T]) -> T:
@@ -1056,19 +1062,19 @@ class PlaceholderType(ProperType):
     def __init__(
             self,
             fullname: str,
-            args: list[Type] | None = None,
+            args: ta.Sequence[Type] | None = None,
     ) -> None:
         super().__init__()
 
         self._fullname = fullname
-        self._args = [] if args is None else args
+        self._args = () if args is None else tuple(args)
 
     @property
     def fullname(self) -> str:
         return self._fullname
 
     @property
-    def args(self) -> ta.Sequence[Type]:
+    def args(self) -> tuple[Type, ...]:
         return self._args
 
     def accept(self, visitor: TypeVisitor[T]) -> T:

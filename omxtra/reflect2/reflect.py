@@ -876,31 +876,31 @@ class RuntimeTypeReflector:
 
         parameters = getattr(origin, '__parameters__', ())
         if parameters and not info._type_vars:
-            info._type_vars = [
+            info._type_vars = tuple(
                 self._reflect_type_var_like_parameter(parameter)
                 for parameter in parameters
-            ]
-            info._variances = [
+            )
+            info._variances = tuple(
                 type_var._variance if isinstance(type_var, TypeVarType) else VarianceKind.IN
                 for type_var in info.type_vars
-            ]
+            )
 
         mro = getattr(origin, '__mro__', None)
-        if mro is not None and info._mro == [info]:
-            info._mro = [
+        if mro is not None and info._mro == (info,):
+            info._mro = tuple(
                 self._universe.get_type_info(cls)
                 for cls in mro
                 if isinstance(cls, type)
-            ]
+            )
 
         if info._bases:
             return
 
         runtime_bases = self._get_runtime_bases(origin)
-        info._bases = [
+        info._bases = tuple(
             self._reflect_runtime_base(base)
             for base in runtime_bases
-        ]
+        )
 
     def _reflect_type_var_parameter(self, obj: object) -> TypeVarType:
         type_var = self._reflect_type(obj)

@@ -948,14 +948,14 @@ def get_mro_entries_or_none(left: Instance) -> list[MroEntry] | None:
     ]
 
 
-def get_base_args(left: Instance, right_info: TypeInfo) -> list[Type] | None:
+def get_base_args(left: Instance, right_info: TypeInfo) -> ta.Sequence[Type] | None:
     base = get_base_instance(left, right_info)
     if base is None:
         return None
     return base._args
 
 
-def get_base_args_or_none(left: Instance, right_info: TypeInfo) -> list[Type] | None:
+def get_base_args_or_none(left: Instance, right_info: TypeInfo) -> ta.Sequence[Type] | None:
     base = get_base_instance_or_none(left, right_info)
     if base is None:
         return None

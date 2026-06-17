@@ -43,9 +43,9 @@ def test_same_overload_is_subtype_via_exact_type_match() -> None:
 def test_pairwise_overload_subtyping_uses_callable_subtyping_in_order() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
-    int_info._mro = [int_info, object_info]
+    int_info._mro = (int_info, object_info)
     str_info = make_info('builtins.str')
-    str_info._mro = [str_info, object_info]
+    str_info._mro = (str_info, object_info)
     fallback = make_instance(make_info('function'))
     object_type = make_instance(object_info)
     int_type = make_instance(int_info)
@@ -109,8 +109,8 @@ def test_callable_subtype_of_overload_must_satisfy_all_items() -> None:
     object_info = make_info('builtins.object')
     int_info = make_info('builtins.int')
     str_info = make_info('builtins.str')
-    int_info._mro = [int_info, object_info]
-    str_info._mro = [str_info, object_info]
+    int_info._mro = (int_info, object_info)
+    str_info._mro = (str_info, object_info)
     fallback = make_instance(make_info('function'))
     object_type = make_instance(object_info)
     int_type = make_instance(int_info)
@@ -155,9 +155,9 @@ def test_same_overload_meet_and_join_return_left() -> None:
 def test_pairwise_overload_meet_and_join_synthesize_items_in_order() -> None:
     object_info = make_info('builtins.object')
     base_info = make_info('Base')
-    base_info._mro = [base_info, object_info]
+    base_info._mro = (base_info, object_info)
     child_info = make_info('Child')
-    child_info._mro = [child_info, base_info, object_info]
+    child_info._mro = (child_info, base_info, object_info)
     fallback = make_instance(make_info('function'))
     base = make_instance(base_info)
     child = make_instance(child_info)

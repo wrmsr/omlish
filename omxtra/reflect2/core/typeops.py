@@ -93,17 +93,17 @@ def get_type_alias_target(typ: TypeAliasType) -> Type:
 
 
 @ta.overload
-def get_proper_types(typs: list[Type] | tuple[Type, ...]) -> list[ProperType]:
+def get_proper_types(typs: ta.Sequence[Type]) -> list[ProperType]:
     ...
 
 
 @ta.overload
-def get_proper_types(typs: list[Type | None] | tuple[Type | None, ...]) -> list[ProperType | None]:
+def get_proper_types(typs: ta.Sequence[Type | None]) -> list[ProperType | None]:
     ...
 
 
 def get_proper_types(
-        typs: list[Type] | list[Type | None] | tuple[Type | None, ...],
+        typs: ta.Sequence[Type] | ta.Sequence[Type | None],
 ) -> list[ProperType] | list[ProperType | None]:
     return [get_proper_type(typ) for typ in typs]
 
