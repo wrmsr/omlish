@@ -4,6 +4,7 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from ..api import global_api
 from ..core.subtypes import get_base_args
 from ..core.typekeys import TypeKey
 from ..core.typeops import get_type_alias_target
@@ -17,7 +18,6 @@ from ..core.types import Type
 from ..core.types import TypeAliasType
 from ..core.types import UnionType
 from ..errors import ReflectionTypeError
-from ..api import global_api
 from ..reflector import TypeReflector
 from ..universe import TypeUniverse
 from ..universe import global_universe

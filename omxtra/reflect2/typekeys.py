@@ -1,18 +1,15 @@
 # ruff: noqa: SLF001
 import typing as ta
 
-from .core.typekeys import ALPHA_STRUCTURAL_TYPE_KEY
-from .core.typekeys import ALPHA_TYPE_KEY
-from .core.typekeys import STRUCTURAL_TYPE_KEY
 from .core.typekeys import TYPE_KEY
+from .core.typekeys import StandardTypeKeyPolicy
 from .core.typekeys import TypeKey
 from .core.typekeys import TypeKeyPolicy
+from .core.typekeys import get_type_key_policy
 from .core.typekeys import make_type_key_not_implemented_exception
 from .core.typekeys import type_key_or_none
 from .core.types import Type
 from .locking import HasLock
-from .core.typekeys import StandardTypeKeyPolicy
-from .core.typekeys import get_type_key_policy
 
 
 ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
@@ -70,23 +67,3 @@ class TypeKeys(HasLock):
         if key is None:
             raise make_type_key_not_implemented_exception(typ, policy)
         return key
-
-    #
-
-    def alpha_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        return self.type_key_or_none(typ, ALPHA_TYPE_KEY)
-
-    def alpha_type_key(self, typ: Type) -> TypeKey:
-        return self.type_key(typ, ALPHA_TYPE_KEY)
-
-    def structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        return self.type_key_or_none(typ, STRUCTURAL_TYPE_KEY)
-
-    def structural_type_key(self, typ: Type) -> TypeKey:
-        return self.type_key(typ, STRUCTURAL_TYPE_KEY)
-
-    def alpha_structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        return self.type_key_or_none(typ, ALPHA_STRUCTURAL_TYPE_KEY)
-
-    def alpha_structural_type_key(self, typ: Type) -> TypeKey:
-        return self.type_key(typ, ALPHA_STRUCTURAL_TYPE_KEY)

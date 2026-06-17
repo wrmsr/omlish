@@ -12,22 +12,45 @@ from .. import symbols
 from .. import types
 from ..subtypes import is_alpha_structurally_equivalent
 from ..subtypes import is_structurally_equivalent
+from ..typekeys import ALPHA_STRUCTURAL_TYPE_KEY
+from ..typekeys import ALPHA_TYPE_KEY
+from ..typekeys import STRUCTURAL_TYPE_KEY
+from ..typekeys import TypeKey
 from ..typekeys import TypeKeyPolicy
-from ..typekeys import alpha_structural_type_key
-from ..typekeys import alpha_structural_type_key_or_none
-from ..typekeys import alpha_type_key
-from ..typekeys import alpha_type_key_or_none
-from ..typekeys import structural_type_key
-from ..typekeys import structural_type_key_or_none
 from ..typekeys import tuple_type_key
 from ..typekeys import tuple_type_key_or_none
 from ..typekeys import type_key
 from ..typekeys import type_key_or_none
+from ..types import Type
 from .helpers import make_any
 from .helpers import make_info
 from .helpers import make_instance
 from .helpers import make_recursive_variadic_tuple_alias_case
 from .helpers import make_type_var
+
+
+def alpha_type_key_or_none(typ: Type) -> TypeKey | None:
+    return type_key_or_none(typ, ALPHA_TYPE_KEY)
+
+
+def alpha_type_key(typ: Type) -> TypeKey:
+    return type_key(typ, ALPHA_TYPE_KEY)
+
+
+def structural_type_key_or_none(typ: Type) -> TypeKey | None:
+    return type_key_or_none(typ, STRUCTURAL_TYPE_KEY)
+
+
+def structural_type_key(typ: Type) -> TypeKey:
+    return type_key(typ, STRUCTURAL_TYPE_KEY)
+
+
+def alpha_structural_type_key_or_none(typ: Type) -> TypeKey | None:
+    return type_key_or_none(typ, ALPHA_STRUCTURAL_TYPE_KEY)
+
+
+def alpha_structural_type_key(typ: Type) -> TypeKey:
+    return type_key(typ, ALPHA_STRUCTURAL_TYPE_KEY)
 
 
 def test_string_type_key_simple_supported_nodes_are_explicit() -> None:
@@ -1527,15 +1550,15 @@ def test_alpha_type_key_recursive_alias_canonicalizes_type_vars() -> None:
 
 def test_type_key_returns_none_for_unsupported_nodes() -> None:
     assert type_key_or_none(types.PartialType(None, None)) is None
-    assert alpha_type_key_or_none(types.PartialType(None, None)) is None
-    assert structural_type_key_or_none(types.PartialType(None, None)) is None
-    assert alpha_structural_type_key_or_none(types.PartialType(None, None)) is None
+    assert type_key_or_none(types.PartialType(None, None), ALPHA_TYPE_KEY) is None
+    assert type_key_or_none(types.PartialType(None, None), STRUCTURAL_TYPE_KEY) is None
+    assert type_key_or_none(types.PartialType(None, None), ALPHA_STRUCTURAL_TYPE_KEY) is None
     with pytest.raises(ReflectionError, match='not implemented'):
         type_key(types.PartialType(None, None))
     with pytest.raises(ReflectionError, match='not implemented'):
-        structural_type_key(types.PartialType(None, None))
+        type_key(types.PartialType(None, None), STRUCTURAL_TYPE_KEY)
     with pytest.raises(ReflectionError, match='not implemented'):
-        alpha_structural_type_key(types.PartialType(None, None))
+        type_key(types.PartialType(None, None), ALPHA_STRUCTURAL_TYPE_KEY)
 
 
 def test_structural_type_key_recursive_alias_with_unsupported_target_fails_closed() -> None:

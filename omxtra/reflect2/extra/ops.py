@@ -1,6 +1,7 @@
 # ruff: noqa: SLF001
 import typing as ta
 
+from ..api import global_api
 from ..core.compat import is_assignable
 from ..core.compat import is_assignable_or_false
 from ..core.join import join_type_list
@@ -42,7 +43,6 @@ from ..core.types import TypeVarLikeType
 from ..errors import ReflectionTypeError
 from ..errors import UnsupportedTypeOperationError
 from ..reflector import TypeReflector
-from ..api import global_api
 
 
 RuntimeSubstitutionMap: ta.TypeAlias = ta.Mapping[object, object]

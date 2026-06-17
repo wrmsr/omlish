@@ -155,38 +155,17 @@ def type_key(
 #
 
 
-def alpha_type_key_or_none(typ: Type) -> TypeKey | None:
-    return type_key_or_none(typ, ALPHA_TYPE_KEY)
+def tuple_type_key_or_none(
+        typ: Type,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+) -> TupleTypeKey | None:
+    return _TypeKeyBuilder(_TupleTypeKeyWriter(), get_type_key_policy(policy)).key(typ)
 
 
-def alpha_type_key(typ: Type) -> TypeKey:
-    return type_key(typ, ALPHA_TYPE_KEY)
-
-
-def structural_type_key_or_none(typ: Type) -> TypeKey | None:
-    return type_key_or_none(typ, STRUCTURAL_TYPE_KEY)
-
-
-def structural_type_key(typ: Type) -> TypeKey:
-    return type_key(typ, STRUCTURAL_TYPE_KEY)
-
-
-def alpha_structural_type_key_or_none(typ: Type) -> TypeKey | None:
-    return type_key_or_none(typ, ALPHA_STRUCTURAL_TYPE_KEY)
-
-
-def alpha_structural_type_key(typ: Type) -> TypeKey:
-    return type_key(typ, ALPHA_STRUCTURAL_TYPE_KEY)
-
-
-#
-
-
-def tuple_type_key_or_none(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TupleTypeKey | None:
-    return _TypeKeyBuilder(_TupleTypeKeyWriter(), policy).key(typ)
-
-
-def tuple_type_key(typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TupleTypeKey:
+def tuple_type_key(
+        typ: Type,
+        policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+) -> TupleTypeKey:
     key = tuple_type_key_or_none(typ, policy)
     if key is None:
         raise make_type_key_not_implemented_exception(typ, policy)

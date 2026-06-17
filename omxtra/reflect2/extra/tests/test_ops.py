@@ -5,6 +5,7 @@ import typing as ta
 
 import pytest
 
+from ...api import Api
 from ...core import symbols
 from ...core import types
 from ...core.constraints import ConstraintOp
@@ -20,6 +21,7 @@ from ...errors import ReflectionError
 from ...errors import UnreflectableTypeError
 from ...errors import UnsupportedTypeOperationError
 from ...universe import TypeUniverse
+from ...universe import or_global_universe
 from ..ops import reflect_alpha_structural_type_key
 from ..ops import reflect_alpha_structural_type_key_or_none
 from ..ops import reflect_alpha_type_key
@@ -65,9 +67,7 @@ from ..ops import reflect_type_key_or_none
 from ..ops import reflect_type_str
 from ..ops import reflect_type_strs
 from ..ops import reflect_typed_dict_literal_values
-from ...universe import or_global_universe
 from ..queries import reflect_runtime_effective_type_key
-from ...api import Api
 
 
 def make_type_reflector(
@@ -536,7 +536,7 @@ def test_runtime_constraints_solve_reflected_repeated_recursive_alias_type_var_p
     assert [type_str(ta.cast(types.Type, item)) for item in solution] == ['builtins.int']
     assert solution[0] is not None
     substituted = substitute_type(template, {template.alias.alias_tvars[0]: solution[0]})
-    assert reflector.structural_type_key(substituted) == reflector.structural_type_key(actual)
+    assert reflector.type_key(substituted, 'structural') == reflector.type_key(actual, 'structural')
 
 
 def test_runtime_constraints_solve_reflected_repeated_recursive_alias_bounds_structurally() -> None:
@@ -553,7 +553,7 @@ def test_runtime_constraints_solve_reflected_repeated_recursive_alias_bounds_str
     solution = solve_constraints([reflected_t_var], constraints)
 
     assert solution[0] is not None
-    assert reflector.structural_type_key(solution[0]) == reflect_structural_type_key(alias, reflector)
+    assert reflector.type_key(solution[0], 'structural') == reflect_structural_type_key(alias, reflector)
 
 
 def test_runtime_constraints_solve_reflected_variadic_recursive_alias_template() -> None:
