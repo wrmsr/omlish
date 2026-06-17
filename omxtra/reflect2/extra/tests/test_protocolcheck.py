@@ -4,14 +4,14 @@ import typing as ta
 
 import pytest
 
-from ..core import types
-from ..errors import UnreflectableTypeError
+from ...core import types
+from ...errors import UnreflectableTypeError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..protocols import ProtocolImplementationIssueReason
 from ..protocols import check_protocol_implementation
 from ..protocols import is_protocol_implemented_by
 from ..protocols import is_protocol_implemented_by_or_false
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:

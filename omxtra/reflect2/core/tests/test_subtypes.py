@@ -13,12 +13,14 @@ from ..subtypes import get_mro_entries
 from ..subtypes import get_mro_entries_or_none
 from ..subtypes import get_mro_instances
 from ..subtypes import get_mro_instances_or_none
+from ..subtypes import is_alpha_equivalent
 from ..subtypes import is_alpha_structurally_equivalent
 from ..subtypes import is_equivalent
 from ..subtypes import is_same_type
 from ..subtypes import is_structural_subtype
 from ..subtypes import is_structurally_equivalent
 from ..subtypes import is_subtype
+from ..subtypes import is_subtype_or_false
 from .helpers import make_any
 from .helpers import make_info
 from .helpers import make_instance
@@ -96,8 +98,6 @@ def test_same_type_wrappers_literals_and_typed_dicts() -> None:
 
 
 def test_alpha_equivalent_allows_different_type_var_ids_in_same_positions() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     box_info = make_info('Box')
     left = make_instance(box_info, [make_type_var('T', 1)])
     right = make_instance(box_info, [make_type_var('U', 2)])
@@ -107,8 +107,6 @@ def test_alpha_equivalent_allows_different_type_var_ids_in_same_positions() -> N
 
 
 def test_alpha_equivalent_requires_consistent_repeated_type_vars() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     pair_info = make_info('Pair')
     left_t = make_type_var('T', 1)
     right_t = make_type_var('T', 1)
@@ -123,8 +121,6 @@ def test_alpha_equivalent_requires_consistent_repeated_type_vars() -> None:
 
 
 def test_alpha_equivalent_callable_argument_and_return_vars() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     fallback = make_instance(make_info('function'))
     left_t = make_type_var('T', 1)
     right_u = make_type_var('U', 2)
@@ -195,8 +191,6 @@ def test_same_type_overloads_preserve_item_order() -> None:
 
 
 def test_alpha_equivalent_overloads_canonicalize_type_vars_by_position() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     fallback = make_instance(make_info('function'))
     left_t = make_type_var('T', 1)
     left_u = make_type_var('U', 2)
@@ -221,8 +215,6 @@ def test_alpha_equivalent_overloads_canonicalize_type_vars_by_position() -> None
 
 
 def test_alpha_equivalent_still_checks_concrete_structure() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     t_var = make_type_var('T', 1)
 
     assert not is_alpha_equivalent(
@@ -239,16 +231,12 @@ def make_recursive_alias(name: str, base: types.Type) -> types.TypeAliasType:
 
 
 def test_alpha_equivalent_recursive_alias_is_equivalent_to_itself() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     alias_type = make_recursive_alias('A', types.NoneType())
 
     assert is_alpha_equivalent(alias_type, alias_type)
 
 
 def test_alpha_equivalent_recursive_aliases_with_different_names() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     left = make_recursive_alias('A', types.NoneType())
     right = make_recursive_alias('B', types.NoneType())
 
@@ -256,8 +244,6 @@ def test_alpha_equivalent_recursive_aliases_with_different_names() -> None:
 
 
 def test_alpha_equivalent_recursive_aliases_still_compare_targets() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     left = make_recursive_alias('A', types.NoneType())
     right = make_recursive_alias('B', make_any())
 
@@ -265,8 +251,6 @@ def test_alpha_equivalent_recursive_aliases_still_compare_targets() -> None:
 
 
 def test_alpha_equivalent_recursive_alias_backrefs_still_compare_args() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     list_info = make_info('builtins.list')
     int_type = make_instance(make_info('builtins.int'))
     str_type = make_instance(make_info('builtins.str'))
@@ -283,8 +267,6 @@ def test_alpha_equivalent_recursive_alias_backrefs_still_compare_args() -> None:
 
 
 def test_alpha_equivalent_parameterized_mutual_recursive_aliases() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     list_info = make_info('builtins.list')
     dict_info = make_info('builtins.dict')
 
@@ -313,8 +295,6 @@ def test_alpha_equivalent_parameterized_mutual_recursive_aliases() -> None:
 
 
 def test_alpha_equivalent_parameterized_mutual_recursive_aliases_reject_mismatched_backref_args() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     list_info = make_info('builtins.list')
     dict_info = make_info('builtins.dict')
 
@@ -1126,8 +1106,6 @@ def test_same_type_unknown_type_subclass_raises() -> None:
 
 
 def test_alpha_equivalent_unknown_type_subclass_raises() -> None:
-    from ..subtypes import is_alpha_equivalent
-
     with pytest.raises(ReflectionError):
         is_alpha_equivalent(types._TestingUnknownType(), types._TestingUnknownType())
 
@@ -1136,8 +1114,6 @@ def test_alpha_equivalent_unknown_type_subclass_raises() -> None:
 
 
 def test_is_subtype_or_false_returns_false_for_unsupported_relations() -> None:
-    from ..subtypes import is_subtype_or_false
-
     fallback = make_instance(make_info('function'))
     callable_type = types.CallableType([], [], [], make_any(), fallback)
 
@@ -1145,8 +1121,6 @@ def test_is_subtype_or_false_returns_false_for_unsupported_relations() -> None:
 
 
 def test_is_subtype_or_false_returns_strict_result_when_supported() -> None:
-    from ..subtypes import is_subtype_or_false
-
     child, base = make_nominal_subtype_pair()
 
     assert is_subtype_or_false(child, base)

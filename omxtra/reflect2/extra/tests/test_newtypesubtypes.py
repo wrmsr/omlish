@@ -1,10 +1,10 @@
 import typing as ta
 
-from ..core.typekeys import type_key
+from ...core.typekeys import type_key
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..ops import reflect_is_assignable
 from ..ops import reflect_is_same_type
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:

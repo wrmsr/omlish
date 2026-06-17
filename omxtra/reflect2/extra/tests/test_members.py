@@ -5,12 +5,14 @@ import typing as ta
 
 import pytest
 
-from ..core import types
-from ..core.strconv import type_str
-from ..core.subtypes import is_structurally_equivalent
-from ..core.typekeys import structural_type_key
-from ..core.typekeys import type_key
-from ..errors import ReflectionError
+from ...core import types
+from ...core.strconv import type_str
+from ...core.subtypes import is_structurally_equivalent
+from ...core.typekeys import structural_type_key
+from ...core.typekeys import type_key
+from ...errors import ReflectionError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..members import RuntimeMemberKind
 from ..members import RuntimeMemberParameter
 from ..members import RuntimeMemberSignature
@@ -26,8 +28,6 @@ from ..members import member_signature_key
 from ..queries import get_runtime_collection_shape
 from ..queries import get_runtime_type_shape
 from ..records import inspect_record
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def test_inspect_runtime_members_classifies_descriptor_kinds() -> None:

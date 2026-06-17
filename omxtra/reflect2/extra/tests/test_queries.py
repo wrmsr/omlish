@@ -5,10 +5,12 @@ import typing as ta
 
 import pytest
 
-from ..core import types
-from ..core.strconv import type_str
-from ..core.typekeys import type_key
-from ..errors import ReflectionError
+from ...core import types
+from ...core.strconv import type_str
+from ...core.typekeys import type_key
+from ...errors import ReflectionError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..ops import reflect_type_key
 from ..queries import destructure_literal_union
 from ..queries import destructure_primitive_union
@@ -59,8 +61,6 @@ from ..queries import reflect_strip_annotated
 from ..queries import require_runtime_class
 from ..queries import require_runtime_new_type_info
 from ..queries import strip_annotated
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:

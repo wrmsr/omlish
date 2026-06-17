@@ -5,17 +5,19 @@ import typing as ta
 
 import pytest
 
-from ..core import symbols
-from ..core import types
-from ..core.constraints import ConstraintOp
-from ..core.constraints import infer_constraints
-from ..core.solve import solve_constraints
-from ..core.strconv import type_str
-from ..core.substitute import substitute_type
-from ..core.typeops import get_proper_type
-from ..errors import ReflectionError
-from ..errors import UnreflectableTypeError
-from ..errors import UnsupportedTypeOperationError
+from ...core import symbols
+from ...core import types
+from ...core.constraints import ConstraintOp
+from ...core.constraints import infer_constraints
+from ...core.solve import solve_constraints
+from ...core.strconv import type_str
+from ...core.substitute import substitute_type
+from ...core.typeops import get_proper_type
+from ...errors import ReflectionError
+from ...errors import UnreflectableTypeError
+from ...errors import UnsupportedTypeOperationError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..ops import reflect_alpha_structural_type_key
 from ..ops import reflect_alpha_structural_type_key_or_none
 from ..ops import reflect_alpha_type_key
@@ -62,8 +64,6 @@ from ..ops import reflect_type_str
 from ..ops import reflect_type_strs
 from ..ops import reflect_typed_dict_literal_values
 from ..queries import reflect_runtime_effective_type_key
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def test_reflect_join_returns_matching_runtime_generic_base() -> None:

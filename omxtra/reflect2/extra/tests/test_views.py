@@ -1,8 +1,10 @@
 # ruff: noqa: F821 PLC0132 SLF001
 import typing as ta
 
-from ..core import types
-from ..core.strconv import type_str
+from ...core import types
+from ...core.strconv import type_str
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..ops import reflect_structural_join
 from ..ops import reflect_structural_meet
 from ..queries import get_runtime_collection_shape
@@ -10,8 +12,6 @@ from ..queries import get_runtime_dispatch
 from ..queries import get_runtime_mapping_shape
 from ..queries import get_runtime_type_keys
 from ..queries import get_runtime_type_shape
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 from ..views import get_runtime_type_view
 from ..views import reflect_runtime_type_view
 

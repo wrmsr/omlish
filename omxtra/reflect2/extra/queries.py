@@ -4,23 +4,23 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from .core.subtypes import get_base_args
-from .core.typekeys import TypeKey
-from .core.typeops import get_type_alias_target
-from .core.types import AnnotatedType
-from .core.types import AnyType
-from .core.types import Instance
-from .core.types import LiteralType
-from .core.types import LiteralValue
-from .core.types import NoneType
-from .core.types import Type
-from .core.types import TypeAliasType
-from .core.types import UnionType
-from .errors import ReflectionTypeError
-from .reflect import DEFAULT_REFLECTOR
-from .reflect import RuntimeTypeReflector
-from .universe import DEFAULT_UNIVERSE
-from .universe import RuntimeTypeUniverse
+from ..core.subtypes import get_base_args
+from ..core.typekeys import TypeKey
+from ..core.typeops import get_type_alias_target
+from ..core.types import AnnotatedType
+from ..core.types import AnyType
+from ..core.types import Instance
+from ..core.types import LiteralType
+from ..core.types import LiteralValue
+from ..core.types import NoneType
+from ..core.types import Type
+from ..core.types import TypeAliasType
+from ..core.types import UnionType
+from ..errors import ReflectionTypeError
+from ..reflect import DEFAULT_REFLECTOR
+from ..reflect import RuntimeTypeReflector
+from ..universe import DEFAULT_UNIVERSE
+from ..universe import RuntimeTypeUniverse
 
 
 ##

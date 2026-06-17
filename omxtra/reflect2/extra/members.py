@@ -5,21 +5,21 @@ import inspect
 import types as pytypes
 import typing as ta
 
-from .core.substitute import SubstitutionMap
-from .core.substitute import substitute_type
-from .core.subtypes import MroEntry
-from .core.typekeys import TypeKey
-from .core.typekeys import type_key
-from .core.types import _ANY_TYPES
-from .core.types import AnyType
-from .core.types import Type
-from .core.types import TypeOfAny
-from .errors import ReflectionTypeError
-from .errors import UnreflectableTypeError
+from ..core.substitute import SubstitutionMap
+from ..core.substitute import substitute_type
+from ..core.subtypes import MroEntry
+from ..core.typekeys import TypeKey
+from ..core.typekeys import type_key
+from ..core.types import _ANY_TYPES
+from ..core.types import AnyType
+from ..core.types import Type
+from ..core.types import TypeOfAny
+from ..errors import ReflectionTypeError
+from ..errors import UnreflectableTypeError
+from ..reflect import DEFAULT_REFLECTOR
+from ..reflect import RuntimeTypeReflector
 from .ops import reflect_mro_entries
 from .queries import get_runtime_unaliased_type_key
-from .reflect import DEFAULT_REFLECTOR
-from .reflect import RuntimeTypeReflector
 
 
 ##

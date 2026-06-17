@@ -2,8 +2,10 @@
 import dataclasses as dc
 import typing as ta
 
-from ..annotations import to_runtime_annotation
-from ..core.strconv import type_str
+from ...annotations import to_runtime_annotation
+from ...core.strconv import type_str
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..dataclasses import inspect_dataclass
 from ..dataclasses import reflect_dataclass_field_type_keys
 from ..members import get_member_call_signature
@@ -23,8 +25,6 @@ from ..queries import reflect_optional_item
 from ..records import RUNTIME_RECORD_KIND_DATACLASS
 from ..records import RUNTIME_RECORD_KIND_NAMEDTUPLE
 from ..records import inspect_record
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:

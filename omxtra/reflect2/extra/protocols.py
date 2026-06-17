@@ -4,14 +4,16 @@ import enum
 import inspect
 import typing as ta
 
-from .core.substitute import SubstitutionMap
-from .core.substitute import substitute_type
-from .core.subtypes import MroEntry
-from .core.subtypes import is_subtype
-from .core.typekeys import TypeKey
-from .core.types import Type
-from .errors import ProtocolReflectionError
-from .errors import ReflectionError
+from ..core.substitute import SubstitutionMap
+from ..core.substitute import substitute_type
+from ..core.subtypes import MroEntry
+from ..core.subtypes import is_subtype
+from ..core.typekeys import TypeKey
+from ..core.types import Type
+from ..errors import ProtocolReflectionError
+from ..errors import ReflectionError
+from ..reflect import DEFAULT_REFLECTOR
+from ..reflect import RuntimeTypeReflector
 from .members import RuntimeMember
 from .members import RuntimeMemberKind
 from .members import RuntimeMembersInspection
@@ -24,8 +26,6 @@ from .members import inspect_runtime_members
 from .ops import reflect_mro_entries
 from .queries import get_runtime_unaliased_type_key
 from .records import inspect_record_or_none
-from .reflect import DEFAULT_REFLECTOR
-from .reflect import RuntimeTypeReflector
 
 
 ##

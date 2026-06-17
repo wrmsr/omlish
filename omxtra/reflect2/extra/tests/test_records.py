@@ -5,18 +5,18 @@ import typing as ta
 
 import pytest
 
-from ..core import types
-from ..core.strconv import type_str
-from ..core.typekeys import structural_type_key
-from ..core.typekeys import type_key
-from ..errors import ReflectionError
+from ...core import types
+from ...core.strconv import type_str
+from ...core.typekeys import structural_type_key
+from ...core.typekeys import type_key
+from ...errors import ReflectionError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..queries import get_runtime_type_shape
 from ..records import RUNTIME_RECORD_KIND_DATACLASS
 from ..records import RUNTIME_RECORD_KIND_NAMEDTUPLE
 from ..records import inspect_record
 from ..records import inspect_record_or_none
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:

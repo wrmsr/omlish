@@ -2,16 +2,16 @@
 import collections.abc as cabc
 import typing as ta
 
-from ..core.subtypes import is_same_type
-from ..core.subtypes import is_structurally_equivalent
+from ...core.subtypes import is_same_type
+from ...core.subtypes import is_structurally_equivalent
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..ops import reflect_is_assignable
 from ..ops import reflect_is_structural_subtype
 from ..ops import reflect_join
 from ..ops import reflect_meet
 from ..ops import reflect_structural_join
 from ..ops import reflect_structural_meet
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 ##
@@ -59,7 +59,7 @@ def test_reflected_nominal_subtype_lattice_laws_cover_classes_generics_and_tuple
     class Child(Base):
         pass
 
-    class Box(ta.Generic[T_co]):
+    class Box(ta.Generic[T_co]):  # noqa
         pass
 
     reflector = RuntimeTypeReflector(RuntimeTypeUniverse())

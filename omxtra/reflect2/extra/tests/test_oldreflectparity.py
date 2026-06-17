@@ -3,7 +3,9 @@ import collections.abc as cabc
 import dataclasses as dc
 import typing as ta
 
-from ..core.strconv import type_str
+from ...core.strconv import type_str
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..dataclasses import inspect_dataclass
 from ..ops import reflect_literal_values
 from ..ops import reflect_type_key
@@ -20,8 +22,6 @@ from ..queries import reflect_runtime_type_shape
 from ..queries import reflect_runtime_unaliased_type_key
 from ..records import RUNTIME_RECORD_KIND_DATACLASS
 from ..records import inspect_record
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 from ..views import get_runtime_type_view
 from ..views import reflect_runtime_type_view
 

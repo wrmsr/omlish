@@ -1,17 +1,17 @@
 import dataclasses as dc
 import typing as ta
 
-from .core.typekeys import TypeKey
-from .core.types import Type
+from ..core.typekeys import TypeKey
+from ..core.types import Type
+from ..errors import ReflectionError
+from ..errors import ReflectionTypeError
+from ..reflect import DEFAULT_REFLECTOR
+from ..reflect import RuntimeTypeReflector
 from .dataclasses import RuntimeDataclassInspection
 from .dataclasses import inspect_dataclass
-from .errors import ReflectionError
-from .errors import ReflectionTypeError
 from .namedtuples import RuntimeNamedTupleInspection
 from .namedtuples import inspect_namedtuple
 from .namedtuples import is_namedtuple
-from .reflect import DEFAULT_REFLECTOR
-from .reflect import RuntimeTypeReflector
 
 
 RuntimeRecordKind: ta.TypeAlias = str

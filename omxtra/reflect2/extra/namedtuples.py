@@ -2,16 +2,16 @@
 import dataclasses as dc
 import typing as ta
 
-from .core.substitute import substitute_type
-from .core.typekeys import TypeKey
-from .core.typekeys import type_key
-from .core.types import Instance
-from .core.types import Type
-from .core.types import TypeVarLikeType
-from .errors import ReflectionTypeError
-from .errors import UnsupportedTypeOperationError
-from .reflect import DEFAULT_REFLECTOR
-from .reflect import RuntimeTypeReflector
+from ..core.substitute import substitute_type
+from ..core.typekeys import TypeKey
+from ..core.typekeys import type_key
+from ..core.types import Instance
+from ..core.types import Type
+from ..core.types import TypeVarLikeType
+from ..errors import ReflectionTypeError
+from ..errors import UnsupportedTypeOperationError
+from ..reflect import DEFAULT_REFLECTOR
+from ..reflect import RuntimeTypeReflector
 
 
 ##

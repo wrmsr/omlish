@@ -3,11 +3,13 @@ import typing as ta
 
 import pytest
 
-from ..core import types
-from ..core.strconv import type_str
-from ..core.typekeys import structural_type_key
-from ..core.typekeys import type_key
-from ..errors import ReflectionError
+from ...core import types
+from ...core.strconv import type_str
+from ...core.typekeys import structural_type_key
+from ...core.typekeys import type_key
+from ...errors import ReflectionError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..namedtuples import inspect_namedtuple
 from ..namedtuples import is_namedtuple
 from ..namedtuples import reflect_namedtuple_field_annotations
@@ -16,8 +18,6 @@ from ..namedtuples import reflect_namedtuple_field_type_keys
 from ..namedtuples import reflect_namedtuple_field_types
 from ..namedtuples import reflect_namedtuple_fields
 from ..queries import get_runtime_type_shape
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:

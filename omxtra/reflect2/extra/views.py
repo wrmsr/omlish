@@ -1,6 +1,8 @@
 import dataclasses as dc
 
-from .core.types import Type
+from ..core.types import Type
+from ..reflect import DEFAULT_REFLECTOR
+from ..reflect import RuntimeTypeReflector
 from .queries import RuntimeCollectionShape
 from .queries import RuntimeDispatch
 from .queries import RuntimeMappingShape
@@ -11,8 +13,6 @@ from .queries import get_runtime_dispatch
 from .queries import get_runtime_mapping_shape
 from .queries import get_runtime_type_keys
 from .queries import get_runtime_type_shape
-from .reflect import DEFAULT_REFLECTOR
-from .reflect import RuntimeTypeReflector
 
 
 ##

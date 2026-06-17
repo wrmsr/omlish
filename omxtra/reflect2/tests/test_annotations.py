@@ -1,6 +1,5 @@
 # ruff: noqa: F821 PLC0132 SLF001
 import collections.abc as cabc
-import dataclasses as dc
 import typing as ta
 
 import pytest
@@ -8,7 +7,6 @@ import pytest
 from ..annotations import to_runtime_annotation
 from ..core import symbols
 from ..core import types
-from ..dataclasses import reflect_dataclass_field_annotations
 from ..errors import ReflectionError
 from ..reflect import RuntimeTypeReflector
 from ..universe import RuntimeTypeUniverse
@@ -401,22 +399,6 @@ def test_to_runtime_annotation_fails_closed_for_malformed_preserved_variadic_ali
 
     with pytest.raises(ReflectionError, match='type alias'):
         reflector.to_runtime_annotation(malformed, type_alias_policy='preserve')
-
-
-def test_reflect_dataclass_field_annotations_emit_replaced_runtime_annotations() -> None:
-    t_var = ta.TypeVar('T')  # type: ignore
-
-    @dc.dataclass
-    class Box(ta.Generic[t_var]):  # type: ignore
-        value: list[t_var]  # type: ignore
-
-    @dc.dataclass
-    class IntBox(Box[int]):  # type: ignore
-        pass
-
-    annotations = reflect_dataclass_field_annotations(IntBox, _make_reflector())
-
-    assert annotations == {'value': list[int]}
 
 
 def test_to_runtime_annotation_fails_closed_for_type_var() -> None:

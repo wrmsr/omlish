@@ -2,16 +2,16 @@
 import dataclasses as dc
 import typing as ta
 
-from .core.substitute import substitute_type
-from .core.subtypes import MroEntry
-from .core.typekeys import TypeKey
-from .core.typekeys import type_key
-from .core.types import Type
-from .errors import ReflectionTypeError
-from .errors import UnsupportedTypeOperationError
+from ..core.substitute import substitute_type
+from ..core.subtypes import MroEntry
+from ..core.typekeys import TypeKey
+from ..core.typekeys import type_key
+from ..core.types import Type
+from ..errors import ReflectionTypeError
+from ..errors import UnsupportedTypeOperationError
+from ..reflect import DEFAULT_REFLECTOR
+from ..reflect import RuntimeTypeReflector
 from .ops import reflect_mro_entries
-from .reflect import DEFAULT_REFLECTOR
-from .reflect import RuntimeTypeReflector
 
 
 ##

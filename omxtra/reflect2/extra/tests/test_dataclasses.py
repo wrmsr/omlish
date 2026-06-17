@@ -5,26 +5,26 @@ import typing as ta
 
 import pytest
 
-from ..core import types
-from ..core.strconv import type_str
-from ..core.subtypes import is_structural_subtype
-from ..core.subtypes import is_structurally_equivalent
-from ..core.typekeys import structural_type_key
-from ..core.typekeys import type_key
+from ...core import types
+from ...core.strconv import type_str
+from ...core.subtypes import is_structural_subtype
+from ...core.subtypes import is_structurally_equivalent
+from ...core.typekeys import structural_type_key
+from ...core.typekeys import type_key
+from ...errors import ReflectionError
+from ...errors import UnreflectableTypeError
+from ...errors import UnsupportedTypeOperationError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..dataclasses import inspect_dataclass
 from ..dataclasses import reflect_dataclass_field_annotations
 from ..dataclasses import reflect_dataclass_field_structural_type_keys
 from ..dataclasses import reflect_dataclass_field_type_keys
 from ..dataclasses import reflect_dataclass_field_types
 from ..dataclasses import reflect_dataclass_fields
-from ..errors import ReflectionError
-from ..errors import UnreflectableTypeError
-from ..errors import UnsupportedTypeOperationError
 from ..ops import reflect_mro_entries
 from ..queries import get_runtime_collection_shape
 from ..queries import get_runtime_type_shape
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def _make_reflector() -> RuntimeTypeReflector:
@@ -503,3 +503,19 @@ def test_inspect_dataclass_fails_closed_for_unreflectable_alias_annotation() -> 
         inspect_dataclass(Config, reflector)
 
     assert ('dataclass', Config) not in reflector._inspection_cache
+
+
+def test_reflect_dataclass_field_annotations_emit_replaced_runtime_annotations() -> None:
+    t_var = ta.TypeVar('T')  # type: ignore
+
+    @dc.dataclass
+    class Box(ta.Generic[t_var]):  # type: ignore
+        value: list[t_var]  # type: ignore
+
+    @dc.dataclass
+    class IntBox(Box[int]):  # type: ignore
+        pass
+
+    annotations = reflect_dataclass_field_annotations(IntBox, _make_reflector())
+
+    assert annotations == {'value': list[int]}

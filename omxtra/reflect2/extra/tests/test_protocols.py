@@ -5,9 +5,11 @@ import typing as ta
 
 import pytest
 
-from ..core import types
-from ..core.strconv import type_str
-from ..errors import ReflectionError
+from ...core import types
+from ...core.strconv import type_str
+from ...errors import ReflectionError
+from ...reflect import RuntimeTypeReflector
+from ...universe import RuntimeTypeUniverse
 from ..members import RuntimeMember
 from ..members import RuntimeMemberKind
 from ..members import get_member_call_signature
@@ -23,8 +25,6 @@ from ..protocols import is_protocol
 from ..queries import get_runtime_collection_shape
 from ..queries import get_runtime_type_shape
 from ..records import inspect_record
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
 
 
 def test_is_protocol_detects_typing_protocol_classes() -> None:
