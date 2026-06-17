@@ -8,15 +8,14 @@ import typing as ta
 from .core.substitute import SubstitutionMap
 from .core.substitute import substitute_type
 from .core.subtypes import MroEntry
-from .core.subtypes import get_mro_entries
 from .core.types import _ANY_TYPES
 from .core.types import AnyType
-from .core.types import Instance
 from .core.types import Type
 from .core.types import TypeOfAny
 from .errors import ReflectionTypeError
 from .errors import UnreflectableTypeError
 from .locking import HasLock
+from .ops import reflect_mro_entries
 from .reflector import HasReflector
 from .typekeys import HasKeys
 
@@ -295,12 +294,9 @@ class MembersReflector(
         )
 
     def _get_mro_entries_by_info(self, obj: object) -> dict[object, MroEntry]:
-        source_type = self._reflector.reflect_type(obj)
-        if not isinstance(source_type, Instance):
-            raise ReflectionTypeError(f'Unsupported MRO source: {source_type!r}')
         return {
             entry._info: entry
-            for entry in get_mro_entries(source_type)
+            for entry in reflect_mro_entries(obj, reflector=self._reflector)
         }
 
     def _get_owner_replacements(
