@@ -153,7 +153,7 @@ def _drop_first_parameter(signature: MemberSignature) -> MemberSignature:
 
 
 @ta.final
-class MembersReflector(
+class MembersInspector(
     HasKeys,
     HasReflector,
     HasLock,

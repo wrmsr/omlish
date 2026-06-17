@@ -18,7 +18,7 @@ from .universe import or_global_universe
 
 if ta.TYPE_CHECKING:
     from .members import MembersInspection
-    from .members import MembersReflector
+    from .members import MembersInspector
 
 
 ##
@@ -110,16 +110,16 @@ class Api:
 
     #
 
-    _members: MembersReflector
+    _members: MembersInspector
 
-    def _members_(self) -> MembersReflector:
+    def _members_(self) -> MembersInspector:
         with self._lock:
             try:
                 return self._members
             except AttributeError:
                 pass
 
-        from .members import MembersReflector
+        from .members import MembersInspector
 
         with self._lock:
             try:
@@ -127,7 +127,7 @@ class Api:
             except AttributeError:
                 pass
 
-            self._members = MembersReflector(
+            self._members = MembersInspector(
                 keys=self._keys,
                 reflector=self._reflector,
                 lock=self._lock,
@@ -136,7 +136,7 @@ class Api:
             return self._members
 
     @property
-    def members(self) -> MembersReflector:
+    def members(self) -> MembersInspector:
         try:
             return self._members
         except AttributeError:
