@@ -9,14 +9,10 @@ from ..core.substitute import SubstitutionMap
 from ..core.substitute import substitute_type
 from ..core.subtypes import MroEntry
 from ..core.subtypes import get_mro_entries
-from ..core.typekeys import TypeKey
-from ..core.typeops import get_type_alias_target
 from ..core.types import _ANY_TYPES
-from ..core.types import AnnotatedType
 from ..core.types import AnyType
 from ..core.types import Instance
 from ..core.types import Type
-from ..core.types import TypeAliasType
 from ..core.types import TypeOfAny
 from ..errors import ReflectionTypeError
 from ..errors import UnreflectableTypeError
@@ -36,6 +32,7 @@ class RuntimeMemberKind(enum.Enum):
     DATA = 'data'
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class RuntimeMemberParameter:
     name: str
@@ -44,12 +41,14 @@ class RuntimeMemberParameter:
     has_default: bool
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class RuntimeMemberSignature:
     parameters: tuple[RuntimeMemberParameter, ...]
     return_type: Type
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class RuntimeMember:
     name: str
@@ -62,7 +61,52 @@ class RuntimeMember:
     value_type: Type | None = None
     unkeyable: bool = False
 
+    #
 
+    def get_call_signature(self) -> RuntimeMemberSignature | None:
+        signature = self.reflected_signature
+        if signature is None:
+            return None
+
+        if self.kind in (RuntimeMemberKind.FUNCTION, RuntimeMemberKind.CLASSMETHOD):
+            return _drop_first_parameter(signature)
+
+        if self.kind == RuntimeMemberKind.STATICMETHOD:
+            return signature
+
+        return None
+
+    def get_call_signatures(self) -> tuple[RuntimeMemberSignature, ...]:
+        if self.reflected_overload_signatures:
+            signatures = self.reflected_overload_signatures
+        elif (signature := self.reflected_signature) is not None:
+            signatures = (signature,)
+        else:
+            return ()
+
+        if self.kind in (RuntimeMemberKind.FUNCTION, RuntimeMemberKind.CLASSMETHOD):
+            return tuple(_drop_first_parameter(signature) for signature in signatures)
+
+        if self.kind == RuntimeMemberKind.STATICMETHOD:
+            return signatures
+
+        return ()
+
+    def get_value_type(self) -> Type | None:
+        if self.value_type is not None:
+            return self.value_type
+
+        signature = self.reflected_signature
+        if signature is None:
+            return None
+
+        if self.kind == RuntimeMemberKind.PROPERTY:
+            return signature.return_type
+
+        return None
+
+
+@ta.final
 @dc.dataclass(frozen=True)
 class RuntimeMembersInspection:
     origin: type
@@ -182,6 +226,9 @@ class MembersReflector(
             signature: inspect.Signature | None,
             replacements: SubstitutionMap,
     ) -> RuntimeMember:
+        reflected_signature: RuntimeMemberSignature | None
+        reflected_overload_signatures: tuple[RuntimeMemberSignature, ...]
+
         try:
             reflected_signature = self._reflect_signature(
                 signature,
@@ -194,15 +241,8 @@ class MembersReflector(
             )
 
         except UnreflectableTypeError:
-            return RuntimeMember(
-                name,
-                kind,
-                owner,
-                obj,
-                signature,
-                None,
-                unkeyable=True,
-            )
+            reflected_signature = None
+            reflected_overload_signatures = ()
 
         return RuntimeMember(
             name,
@@ -222,54 +262,35 @@ class MembersReflector(
     ) -> RuntimeMember:
         obj = inspect.getattr_static(owner, name)
 
+        kind: RuntimeMemberKind
+        signature: inspect.Signature | None
+
         if isinstance(obj, staticmethod):
-            fn = obj.__func__
-            return self._make_member(
-                name,
-                RuntimeMemberKind.STATICMETHOD,
-                owner,
-                obj,
-                _signature_or_none(fn),
-                replacements,
-            )
+            kind = RuntimeMemberKind.STATICMETHOD
+            signature = _signature_or_none(obj.__func__)
 
-        if isinstance(obj, classmethod):
-            fn = obj.__func__
-            return self._make_member(
-                name,
-                RuntimeMemberKind.CLASSMETHOD,
-                owner,
-                obj,
-                _signature_or_none(fn),
-                replacements,
-            )
+        elif isinstance(obj, classmethod):
+            kind = RuntimeMemberKind.CLASSMETHOD
+            signature = _signature_or_none(obj.__func__)
 
-        if isinstance(obj, property):
-            return self._make_member(
-                name,
-                RuntimeMemberKind.PROPERTY,
-                owner,
-                obj,
-                _signature_or_none(obj.fget),
-                replacements,
-            )
+        elif isinstance(obj, property):
+            kind = RuntimeMemberKind.PROPERTY
+            signature = _signature_or_none(obj.fget)
 
-        if isinstance(obj, pytypes.FunctionType):
-            return self._make_member(
-                name,
-                RuntimeMemberKind.FUNCTION,
-                owner,
-                obj,
-                _signature_or_none(obj),
-                replacements,
-            )
+        elif isinstance(obj, pytypes.FunctionType):
+            kind = RuntimeMemberKind.FUNCTION
+            signature = _signature_or_none(obj)
+
+        else:
+            kind = RuntimeMemberKind.DATA
+            signature = _signature_or_none(obj)
 
         return self._make_member(
             name,
-            RuntimeMemberKind.DATA,
+            kind,
             owner,
             obj,
-            _signature_or_none(obj),
+            signature,
             replacements,
         )
 
@@ -297,17 +318,6 @@ class MembersReflector(
             )
         return dict(zip(entry._info._type_vars, entry._args))
 
-    def inspect_runtime_members(self, obj: object) -> RuntimeMembersInspection:
-        try:
-            return self._inspection_cache[obj]
-        except KeyError:
-            pass
-
-        # FIXME: lol lock discipline
-        ret = self._inspect_runtime_members_uncached(obj)
-        self._inspection_cache[obj] = ret
-        return ret
-
     def _inspect_runtime_members_uncached(
             self,
             obj: object,
@@ -325,136 +335,84 @@ class MembersReflector(
 
         return RuntimeMembersInspection(origin, tuple(members_by_name.values()), members_by_name)
 
-    def get_member_call_signature(self, member: RuntimeMember) -> RuntimeMemberSignature | None:
-        signature = member.reflected_signature
-        if signature is None:
-            return None
-
-        if member.kind in (RuntimeMemberKind.FUNCTION, RuntimeMemberKind.CLASSMETHOD):
-            return _drop_first_parameter(signature)
-
-        if member.kind == RuntimeMemberKind.STATICMETHOD:
-            return signature
-
-        return None
-
-    def get_member_call_signatures(self, member: RuntimeMember) -> tuple[RuntimeMemberSignature, ...]:
-        if member.reflected_overload_signatures:
-            signatures = member.reflected_overload_signatures
-        elif (signature := member.reflected_signature) is not None:
-            signatures = (signature,)
-        else:
-            return ()
-
-        if member.kind in (RuntimeMemberKind.FUNCTION, RuntimeMemberKind.CLASSMETHOD):
-            return tuple(_drop_first_parameter(signature) for signature in signatures)
-
-        if member.kind == RuntimeMemberKind.STATICMETHOD:
-            return signatures
-
-        return ()
-
-    def get_member_value_type(self, member: RuntimeMember) -> Type | None:
-        if member.value_type is not None:
-            return member.value_type
-
-        signature = member.reflected_signature
-        if signature is None:
-            return None
-
-        if member.kind == RuntimeMemberKind.PROPERTY:
-            return signature.return_type
-
-        return None
-
-    def member_signature_key(
+    def _inspect_runtime_members(
             self,
-            signature: RuntimeMemberSignature,
-    ) -> TypeKey:
-        return TypeKey((
-            'member_signature',
-            tuple(
-                (
-                    parameter.name,
-                    parameter.kind,
-                    self._member_type_key(parameter.typ),
-                    parameter.has_default,
-                )
-                for parameter in signature.parameters
-            ),
-            self._member_type_key(signature.return_type),
-        ))
+            obj: object,
+    ) -> RuntimeMembersInspection:
+        try:
+            return self._inspection_cache[obj]
+        except KeyError:
+            pass
 
-    def member_structural_signature_key(
-            self,
-            signature: RuntimeMemberSignature,
-    ) -> TypeKey:
-        return TypeKey((
-            'member_signature',
-            tuple(
-                (
-                    parameter.name,
-                    parameter.kind,
-                    self._keys.type_key(parameter.typ, 'structural'),
-                    parameter.has_default,
-                )
-                for parameter in signature.parameters
-            ),
-            self._keys.type_key(signature.return_type, 'structural'),
-        ))
+        ret = self._inspect_runtime_members_uncached(obj)
+        self._inspection_cache[obj] = ret
+        return ret
 
-    def _member_type_key(self, typ: Type) -> TypeKey:
-        cur = typ
-        if isinstance(cur, AnnotatedType):
-            cur = cur.item
-        if isinstance(cur, TypeAliasType):
-            cur = get_type_alias_target(cur)
-        return self._keys.type_key(cur)
+    def inspect_runtime_members(self, obj: object) -> RuntimeMembersInspection:
+        try:
+            return self._inspection_cache[obj]
+        except KeyError:
+            pass
 
-    def get_member_call_signature_key(
-            self,
-            member: RuntimeMember,
-    ) -> TypeKey | None:
-        if member.unkeyable:
-            raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
+        with self._lock:
+            return self._inspect_runtime_members(obj)
 
-        signature = self.get_member_call_signature(member)
-        if signature is None:
-            return None
-        return self.member_signature_key(signature)
+    #
 
-    def get_member_call_structural_signature_key(
-            self,
-            member: RuntimeMember,
-    ) -> TypeKey | None:
-        if member.unkeyable:
-            raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
+    # def _member_type_key(
+    #         self,
+    #         typ: Type,
+    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+    # ) -> TypeKey:
+    #     cur = typ
+    #     if isinstance(cur, AnnotatedType):
+    #         cur = cur.item
+    #     if isinstance(cur, TypeAliasType):
+    #         cur = get_type_alias_target(cur)
+    #     return self._keys.type_key(cur, policy)
 
-        signature = self.get_member_call_signature(member)
-        if signature is None:
-            return None
-        return self.member_structural_signature_key(signature)
+    # # FIXME: uhh no dude you can't just invent a new type key..
+    # def member_signature_key(
+    #         self,
+    #         signature: RuntimeMemberSignature,
+    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+    # ) -> TypeKey:
+    #     return TypeKey((
+    #         'member_signature',
+    #         tuple(
+    #             (
+    #                 parameter.name,
+    #                 parameter.kind,
+    #                 self._member_type_key(parameter.typ, policy),
+    #                 parameter.has_default,
+    #             )
+    #             for parameter in signature.parameters
+    #         ),
+    #         self._member_type_key(signature.return_type, policy),
+    #     ))
 
-    def get_member_value_type_key(
-            self,
-            member: RuntimeMember,
-    ) -> TypeKey | None:
-        if member.unkeyable:
-            raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
+    # def get_member_call_signature_key(
+    #         self,
+    #         member: RuntimeMember,
+    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+    # ) -> TypeKey | None:
+    #     if member.unkeyable:
+    #         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
+    #
+    #     signature = self.get_member_call_signature(member)
+    #     if signature is None:
+    #         return None
+    #     return self.member_signature_key(signature, policy)
 
-        typ = self.get_member_value_type(member)
-        if typ is None:
-            return None
-        return self._member_type_key(typ)
-
-    def get_member_value_structural_type_key(
-            self,
-            member: RuntimeMember,
-    ) -> TypeKey | None:
-        if member.unkeyable:
-            raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
-
-        typ = self.get_member_value_type(member)
-        if typ is None:
-            return None
-        return self._keys.type_key(typ, 'structural')
+    # def get_member_value_type_key(
+    #         self,
+    #         member: RuntimeMember,
+    #         policy: TypeKeyPolicy | StandardTypeKeyPolicy = TYPE_KEY,
+    # ) -> TypeKey | None:
+    #     if member.unkeyable:
+    #         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
+    #
+    #     typ = self.get_member_value_type(member)
+    #     if typ is None:
+    #         return None
+    #     return self._member_type_key(typ, policy)
