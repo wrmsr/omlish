@@ -9,8 +9,8 @@ from ...core import types
 from ...core.strconv import type_str
 from ...core.typekeys import type_key
 from ...errors import ReflectionError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..ops import reflect_type_key
 from ..queries import destructure_literal_union
 from ..queries import destructure_primitive_union
@@ -63,8 +63,8 @@ from ..queries import require_runtime_new_type_info
 from ..queries import strip_annotated
 
 
-def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse())
+def _make_reflector() -> TypeReflector:
+    return TypeReflector(TypeUniverse())
 
 
 def test_runtime_class_queries_recover_instance_class() -> None:
@@ -353,8 +353,8 @@ def test_runtime_type_keys_strip_annotated_for_structural_and_effective_keys() -
 
 def test_runtime_type_keys_recursive_alias_structural_key_matches_unrolling() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
 
@@ -370,8 +370,8 @@ def test_runtime_type_keys_recursive_alias_structural_key_matches_unrolling() ->
 def test_runtime_type_keys_recursive_alias_inside_container_alias_matches_expanded_container() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     node_list = ta.TypeAliasType('NodeList', list[alias])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
 
@@ -523,8 +523,8 @@ def test_runtime_collection_shape_summarizes_common_collection_views() -> None:
 def test_runtime_collection_shape_exposes_recursive_alias_sequence_item_and_structural_key() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     node_list = ta.TypeAliasType('NodeList', list[alias])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
 
@@ -546,8 +546,8 @@ def test_runtime_collection_shape_exposes_recursive_alias_sequence_item_and_stru
 def test_runtime_collection_shape_exposes_recursive_alias_mapping_value_and_structural_key() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     node_map = ta.TypeAliasType('NodeMap', ta.Mapping[str, alias])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
 

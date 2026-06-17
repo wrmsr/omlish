@@ -4,8 +4,8 @@ import typing as ta
 import pytest
 
 from ...errors import ReflectionError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from .. import symbols
 from .. import typeops
 from .. import types
@@ -362,7 +362,7 @@ def test_make_simplified_union_keeps_any_with_other_items() -> None:
 
 
 def test_make_simplified_union_removes_reflected_generic_subclass_before_base() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -380,7 +380,7 @@ def test_make_simplified_union_removes_reflected_generic_subclass_before_base() 
 
 
 def test_make_simplified_union_removes_reflected_generic_subclass_after_base() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore
@@ -398,7 +398,7 @@ def test_make_simplified_union_removes_reflected_generic_subclass_after_base() -
 
 
 def test_make_simplified_union_keeps_reflected_generic_subclass_with_different_base_arg() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     class Box(ta.Generic[t_var]):  # type: ignore

@@ -34,7 +34,7 @@ _DYNAMIC_TYPE_NAME_SEPARATOR: ta.Final = '@'
 
 
 @ta.final
-class RuntimeTypeUniverse:
+class TypeUniverse:
     def __init__(
             self,
             *,
@@ -263,8 +263,38 @@ class RuntimeTypeUniverse:
         return self._types_by_fullname.get(info._fullname)
 
 
-DEFAULT_UNIVERSE = RuntimeTypeUniverse()
+##
+
+
+_DEFAULT_UNIVERSE: ta.Final = TypeUniverse()
+
+
+def default_universe() -> TypeUniverse:
+    return _DEFAULT_UNIVERSE
+
+
+def or_default_universe(universe: TypeUniverse | None) -> TypeUniverse:
+    return _DEFAULT_UNIVERSE if universe is None else universe
 
 
 def get_type_info(obj: type | str) -> TypeInfo:
-    return DEFAULT_UNIVERSE.get_type_info(obj)
+    return _DEFAULT_UNIVERSE.get_type_info(obj)
+
+
+##
+
+
+class HasUniverse:
+    def __init__(
+            self,
+            *,
+            universe: TypeUniverse | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._universe = or_default_universe(universe)
+
+    @property
+    def universe(self) -> TypeUniverse:
+        return self._universe

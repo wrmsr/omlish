@@ -1,14 +1,14 @@
 # ruff: noqa: PLC0132 SLF001
 import typing as ta
 
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..ops import reflect_type_key
 from ..ops import reflect_type_key_or_none
 
 
 def test_reflected_string_type_key_common_combinations_are_explicit() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_key(list[int], reflector) == "I['builtins.list',I['builtins.int']]"
     assert reflect_type_key(dict[str, int], reflector) == (
@@ -28,20 +28,20 @@ def test_reflected_string_type_key_common_combinations_are_explicit() -> None:
 
 
 def test_reflect_type_key_reuses_equivalent_runtime_forms() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_key(list[int], reflector) == reflect_type_key(list[int], reflector)
     assert reflect_type_key(int | str, reflector) == reflect_type_key(str | int, reflector)
 
 
 def test_reflect_type_key_keeps_distinct_parameterizations_apart() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_key(list[int], reflector) != reflect_type_key(list[str], reflector)
 
 
 def test_reflect_type_key_or_none_suppresses_unsupported_reflected_node() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_key_or_none(t_var, reflector) is not None

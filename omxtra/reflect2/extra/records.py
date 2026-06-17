@@ -6,7 +6,7 @@ from ..core.types import Type
 from ..errors import ReflectionError
 from ..errors import ReflectionTypeError
 from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import RuntimeTypeReflector
+from ..reflect import TypeReflector
 from .dataclasses import RuntimeDataclassInspection
 from .dataclasses import inspect_dataclass
 from .namedtuples import RuntimeNamedTupleInspection
@@ -44,7 +44,7 @@ class RuntimeRecordInspection:
 ##
 
 
-def _get_reflector(reflector: RuntimeTypeReflector | None) -> RuntimeTypeReflector:
+def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
     return DEFAULT_REFLECTOR if reflector is None else reflector
 
 
@@ -95,7 +95,7 @@ def _from_namedtuple(inspection: RuntimeNamedTupleInspection) -> RuntimeRecordIn
 
 def inspect_record(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeRecordInspection:
     rt_reflector = _get_reflector(reflector)
     return ta.cast(RuntimeRecordInspection, rt_reflector.cached_inspection(
@@ -107,7 +107,7 @@ def inspect_record(
 
 def _inspect_record_uncached(
         obj: object,
-        rt_reflector: RuntimeTypeReflector,
+        rt_reflector: TypeReflector,
 ) -> RuntimeRecordInspection:
     origin = _get_origin(obj)
 
@@ -122,7 +122,7 @@ def _inspect_record_uncached(
 
 def inspect_record_or_none(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeRecordInspection | None:
     try:
         return inspect_record(obj, reflector)

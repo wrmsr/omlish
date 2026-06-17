@@ -8,12 +8,12 @@ from ..annotations import to_runtime_annotation
 from ..core import symbols
 from ..core import types
 from ..errors import ReflectionError
-from ..reflect import RuntimeTypeReflector
-from ..universe import RuntimeTypeUniverse
+from ..reflect import TypeReflector
+from ..universe import TypeUniverse
 
 
-def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
+def _make_reflector() -> TypeReflector:
+    return TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def _to_annotation(obj: object) -> object:
@@ -212,8 +212,8 @@ def test_reflector_runtime_annotation_cache_reuses_recursive_variadic_alias_anno
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     form = alias[int, str]  # noqa
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
     )
     typ = reflector.reflect_type(form)
@@ -350,8 +350,8 @@ def test_to_runtime_annotation_can_preserve_subscripted_variadic_alias_with_fixe
 
 def test_to_runtime_annotation_preserves_recursive_alias_when_expand_policy_is_requested() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     typ = reflector.reflect_type(alias)
@@ -364,8 +364,8 @@ def test_to_runtime_annotation_preserves_variadic_recursive_alias_when_expand_po
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     form = alias[int, str]  # noqa
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
     )
     typ = reflector.reflect_type(form)
@@ -378,8 +378,8 @@ def test_to_runtime_annotation_preserves_generic_variadic_recursive_alias_with_t
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     form = alias[ts_var]
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'TupleNode': alias}.__getitem__,
     )
     typ = reflector.reflect_type(form)
@@ -413,7 +413,7 @@ def test_to_runtime_annotation_fails_closed_for_unknown_type_info() -> None:
     typ = types.Instance(types.TypeInfo('Missing', 'example.Missing'), [])
 
     with pytest.raises(ReflectionError, match='Runtime class is unavailable'):
-        to_runtime_annotation(typ, RuntimeTypeUniverse())
+        to_runtime_annotation(typ, TypeUniverse())
 
 
 def test_to_runtime_annotation_fails_closed_for_unsupported_ir_nodes() -> None:

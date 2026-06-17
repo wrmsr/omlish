@@ -8,8 +8,8 @@ import pytest
 from ...core import types
 from ...core.strconv import type_str
 from ...errors import ReflectionError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..members import RuntimeMember
 from ..members import RuntimeMemberKind
 from ..members import get_member_call_signature
@@ -58,8 +58,8 @@ def test_inspect_protocol_members_cache_is_per_reflector() -> None:
         def read(self) -> bytes:
             ...
 
-    left_reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
-    right_reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    left_reflector = TypeReflector(TypeUniverse())
+    right_reflector = TypeReflector(TypeUniverse())
 
     left = inspect_protocol_members(Reader, left_reflector)
 
@@ -77,7 +77,7 @@ def test_protocol_method_key_matches_equivalent_concrete_method_key() -> None:
             return b''
 
     protocol_member = inspect_protocol_members(Reader).members_by_name['read']
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     concrete_member = inspect_runtime_members(Concrete, reflector).members_by_name['read']
 
     assert get_protocol_member_key(protocol_member) == get_member_call_signature_key(concrete_member)
@@ -95,7 +95,7 @@ def test_protocol_method_structural_key_matches_alias_expanded_concrete_method_k
         def set_modes(self, modes: list[mode]) -> list[mode]:  # noqa
             return modes
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     protocol_member = inspect_protocol_members(HasModes, reflector).members_by_name['set_modes']
     concrete_member = inspect_runtime_members(Concrete, reflector).members_by_name['set_modes']
 
@@ -126,7 +126,7 @@ def test_inspect_protocol_members_collects_annotated_data_member() -> None:
 
 def test_inspect_protocol_members_preserves_literal_new_type_method_signature() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     class HasMode(ta.Protocol):
         def set_mode(self, mode: mode) -> mode:
@@ -152,7 +152,7 @@ def test_inspect_protocol_members_preserves_literal_new_type_method_signature() 
 
 def test_inspect_protocol_members_preserves_literal_new_type_data_member() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     class HasMode(ta.Protocol):
         mode: ta.Any
@@ -174,7 +174,7 @@ def test_inspect_protocol_members_preserves_literal_new_type_data_member() -> No
 def test_inspect_protocol_members_expands_alias_new_type_literal_method_signature() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     class HasModes(ta.Protocol):
         def set_modes(self, modes: mode_list) -> mode_list:  # type: ignore
@@ -198,7 +198,7 @@ def test_inspect_protocol_members_expands_alias_new_type_literal_method_signatur
 def test_inspect_protocol_members_expands_alias_new_type_literal_data_member() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     class HasModes(ta.Protocol):
         modes: ta.Any
@@ -227,7 +227,7 @@ def test_protocol_data_member_key_matches_concrete_record_field_key() -> None:
     class Concrete:
         name: str
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     protocol_inspection = inspect_protocol_members(HasName, reflector)
     record_inspection = inspect_record(Concrete, reflector)
 
@@ -244,8 +244,8 @@ def test_protocol_data_member_structural_key_matches_recursive_alias_unrolled_re
     class Concrete:
         node: int | list[alias]  # type: ignore
 
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     protocol_inspection = inspect_protocol_members(HasNode, reflector)
@@ -277,7 +277,7 @@ def test_protocol_data_member_structural_key_preserves_new_type_identity() -> No
 
     Concrete.__annotations__['mode'] = other_mode
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     protocol_member = inspect_protocol_members(HasMode, reflector).members_by_name['mode']
     concrete_member = inspect_record(Concrete, reflector).fields_by_name['mode']
 
@@ -337,7 +337,7 @@ def test_inspect_protocol_members_rejects_non_protocol() -> None:
         pass
 
     with pytest.raises(ReflectionError, match='protocol source'):
-        inspect_protocol_members(Concrete, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        inspect_protocol_members(Concrete, TypeReflector(TypeUniverse()))
 
 
 def test_protocol_member_key_fails_closed_for_unkeyable_member() -> None:

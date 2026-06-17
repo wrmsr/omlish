@@ -4,8 +4,8 @@ import typing as ta
 
 from ...core.subtypes import is_same_type
 from ...core.subtypes import is_structurally_equivalent
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..ops import reflect_is_assignable
 from ..ops import reflect_is_structural_subtype
 from ..ops import reflect_join
@@ -20,7 +20,7 @@ from ..ops import reflect_structural_meet
 def assert_reflected_nominal_subtype_lattice_law(
         subtype: object,
         supertype: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> None:
     subtype_type = reflector.reflect_type(subtype)
     supertype_type = reflector.reflect_type(supertype)
@@ -35,7 +35,7 @@ def assert_reflected_nominal_subtype_lattice_law(
 def assert_reflected_structural_subtype_lattice_law(
         subtype: object,
         supertype: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> None:
     subtype_type = reflector.reflect_type(subtype)
     supertype_type = reflector.reflect_type(supertype)
@@ -62,7 +62,7 @@ def test_reflected_nominal_subtype_lattice_laws_cover_classes_generics_and_tuple
     class Box(ta.Generic[T_co]):  # noqa
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert_reflected_nominal_subtype_lattice_law(Child, Base, reflector)
     assert_reflected_nominal_subtype_lattice_law(Box[Child], Box[Base], reflector)
@@ -76,7 +76,7 @@ def test_reflected_nominal_subtype_lattice_laws_cover_callables() -> None:
     class Child(Base):
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert_reflected_nominal_subtype_lattice_law(
         cabc.Callable[[Base], Child],
@@ -88,7 +88,7 @@ def test_reflected_nominal_subtype_lattice_laws_cover_callables() -> None:
 def test_reflected_structural_recursive_alias_lattice_laws_cover_unrolling() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     unrolled = int | list[alias]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert_reflected_structural_subtype_lattice_law(alias, unrolled, reflector)
     assert_reflected_structural_subtype_lattice_law(unrolled, alias, reflector)
@@ -97,7 +97,7 @@ def test_reflected_structural_recursive_alias_lattice_laws_cover_unrolling() -> 
 def test_reflected_structural_recursive_alias_lattice_laws_ignore_alias_identity() -> None:
     left = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right = ta.TypeAliasType('Right', int | list['Right'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert_reflected_structural_subtype_lattice_law(left, right, reflector)
     assert_reflected_structural_subtype_lattice_law(right, left, reflector)

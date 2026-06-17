@@ -6,16 +6,16 @@ import pytest
 
 from ...core import types
 from ...errors import UnreflectableTypeError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..protocols import ProtocolImplementationIssueReason
 from ..protocols import check_protocol_implementation
 from ..protocols import is_protocol_implemented_by
 from ..protocols import is_protocol_implemented_by_or_false
 
 
-def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse())
+def _make_reflector() -> TypeReflector:
+    return TypeReflector(TypeUniverse())
 
 
 def test_protocol_check_accepts_matching_method() -> None:
@@ -123,7 +123,7 @@ def test_protocol_check_reports_concrete_unkeyable_member() -> None:
         def value(self) -> 'Missing':  # type: ignore  # noqa
             return 1
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=lambda name: types.UnboundType(name))
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=lambda name: types.UnboundType(name))
 
     issues = check_protocol_implementation(Concrete, HasValue, reflector)
 
@@ -343,7 +343,7 @@ def test_protocol_check_raises_for_unkeyable_protocol_member() -> None:
         is_protocol_implemented_by(
             Concrete,
             HasMissing,
-            RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=lambda name: types.UnboundType(name)),
+            TypeReflector(TypeUniverse(), forward_ref_resolver=lambda name: types.UnboundType(name)),
         )
 
 
@@ -355,7 +355,7 @@ def test_protocol_check_or_false_handles_unkeyable_protocol_member() -> None:
     class Concrete:
         value: int
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=lambda name: types.UnboundType(name))
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=lambda name: types.UnboundType(name))
 
     assert not is_protocol_implemented_by_or_false(Concrete, HasMissing, reflector)
     issues = check_protocol_implementation(Concrete, HasMissing, reflector)

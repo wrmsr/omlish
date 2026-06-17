@@ -5,8 +5,8 @@ import typing as ta
 import pytest
 
 from ...errors import ReflectionError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from .. import symbols
 from .. import types
 from ..subtypes import is_alpha_structurally_equivalent
@@ -404,7 +404,7 @@ def test_type_key_policy_preserves_newtype_identity_by_default() -> None:
 def test_reflected_type_key_policy_can_erase_newtype_identity() -> None:
     user_id = ta.NewType('UserId', int)  # type: ignore
     account_id = ta.NewType('AccountId', int)  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     user_type = reflector.reflect_type(user_id)
     account_type = reflector.reflect_type(account_id)
     int_type = reflector.reflect_type(int)
@@ -420,7 +420,7 @@ def test_reflected_type_key_policy_can_erase_newtype_identity() -> None:
 def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -> None:
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     other_mode = ta.NewType('OtherMode', ta.Literal['a', 'b'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     mode_type = reflector.reflect_type(mode)
     other_mode_type = reflector.reflect_type(other_mode)
     literal_type = reflector.reflect_type(ta.Literal['a', 'b'])
@@ -1500,7 +1500,7 @@ def test_type_key_unhashable_opaque_ref_fails_closed() -> None:
 
 
 def test_runtime_reflection_rejects_opaque_literal_values_before_literal_type_construction() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     with pytest.raises(ReflectionError, match='Unsupported literal value'):
         reflector.reflect_type(ta.Literal[frozenset({1})])

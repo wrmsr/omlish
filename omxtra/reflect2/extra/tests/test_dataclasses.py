@@ -14,8 +14,8 @@ from ...core.typekeys import type_key
 from ...errors import ReflectionError
 from ...errors import UnreflectableTypeError
 from ...errors import UnsupportedTypeOperationError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..dataclasses import inspect_dataclass
 from ..dataclasses import reflect_dataclass_field_annotations
 from ..dataclasses import reflect_dataclass_field_structural_type_keys
@@ -27,8 +27,8 @@ from ..queries import get_runtime_collection_shape
 from ..queries import get_runtime_type_shape
 
 
-def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
+def _make_reflector() -> TypeReflector:
+    return TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def test_reflect_dataclass_fields_replaces_inherited_type_var() -> None:
@@ -370,8 +370,8 @@ def test_dataclass_recursive_alias_field_structural_key_matches_unrolled_field_t
     class Config:
         node: alias  # type: ignore
 
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     field = inspect_dataclass(Config, reflector).fields_by_name['node']
@@ -397,8 +397,8 @@ def test_generic_dataclass_recursive_alias_field_structural_key_survives_substit
     class NodeBox(Box[alias]):  # type: ignore
         pass
 
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(dynamic_type_name_suffix='counter'),
+    reflector = TypeReflector(
+        TypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     inspection = inspect_dataclass(NodeBox, reflector)

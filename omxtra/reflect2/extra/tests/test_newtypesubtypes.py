@@ -1,14 +1,14 @@
 import typing as ta
 
 from ...core.typekeys import type_key
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..ops import reflect_is_assignable
 from ..ops import reflect_is_same_type
 
 
-def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse())
+def _make_reflector() -> TypeReflector:
+    return TypeReflector(TypeUniverse())
 
 
 def test_runtime_new_type_is_assignable_to_supertype_and_object() -> None:

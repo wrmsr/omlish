@@ -19,8 +19,8 @@ from ...core.typeops import get_proper_type
 from ...errors import ReflectionError
 from ...errors import UnreflectableTypeError
 from ...errors import UnsupportedTypeOperationError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..ops import reflect_alpha_structural_type_key
 from ..ops import reflect_alpha_structural_type_key_or_none
 from ..ops import reflect_alpha_type_key
@@ -81,7 +81,7 @@ def test_reflect_join_returns_matching_runtime_generic_base() -> None:
     typ = reflect_join(
         IntBox,
         Box[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert isinstance(typ, types.Instance)
@@ -98,7 +98,7 @@ def test_runtime_constraints_solve_generic_base_type_var() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(Box[t_var])  # type: ignore
     actual = reflector.reflect_type(IntBox)
 
@@ -119,7 +119,7 @@ def test_runtime_constraints_use_reflected_covariant_type_var() -> None:
     class Box(ta.Generic[t_co]):  # type: ignore
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(Box[t_co])  # type: ignore
     actual = reflector.reflect_type(Box[int])  # type: ignore
 
@@ -139,7 +139,7 @@ def test_runtime_constraints_use_reflected_contravariant_type_var() -> None:
     class Sink(ta.Generic[t_contra]):  # type: ignore
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(Sink[t_contra])  # type: ignore
     actual = reflector.reflect_type(Sink[int])  # type: ignore
 
@@ -155,7 +155,7 @@ def test_runtime_constraints_use_reflected_contravariant_type_var() -> None:
 
 def test_runtime_constraints_solve_type_type_wrapped_generic() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = types.TypeType(reflector.reflect_type(list[t_var]))  # type: ignore
     actual = types.TypeType(reflector.reflect_type(list[int]))
 
@@ -171,7 +171,7 @@ def test_runtime_constraints_solve_type_type_wrapped_generic() -> None:
 def test_runtime_constraints_solve_reflected_generic_alias_template() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list[t_var], type_params=(t_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(alias[t_var])
     actual = reflector.reflect_type(list[int])
 
@@ -187,7 +187,7 @@ def test_runtime_constraints_solve_reflected_generic_alias_template() -> None:
 
 def test_runtime_constraints_solve_reflected_optional_type_var() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(ta.Optional[t_var])  # noqa
     actual = reflector.reflect_type(ta.Optional[int])  # noqa
 
@@ -204,7 +204,7 @@ def test_runtime_constraints_solve_reflected_optional_type_var() -> None:
 def test_runtime_constraints_solve_reflected_optional_collection_alias_template() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('MaybeList', list[t_var] | None, type_params=(t_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(alias[t_var])
     actual = reflector.reflect_type(list[int] | None)
 
@@ -220,7 +220,7 @@ def test_runtime_constraints_solve_reflected_optional_collection_alias_template(
 
 def test_runtime_constraints_solve_reflected_fixed_tuple_template() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(tuple[t_var, str])  # type: ignore
     actual = reflector.reflect_type(tuple[int, str])
 
@@ -236,7 +236,7 @@ def test_runtime_constraints_solve_reflected_fixed_tuple_template() -> None:
 
 def test_runtime_constraints_solve_reflected_fixed_tuple_with_subtype_compatible_concrete_item() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(tuple[t_var, object])  # type: ignore
     actual = reflector.reflect_type(tuple[int, str])
 
@@ -252,7 +252,7 @@ def test_runtime_constraints_solve_reflected_fixed_tuple_with_subtype_compatible
 
 def test_runtime_constraints_solve_reflected_join_derived_fixed_tuple_shape() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     joined = reflect_join(tuple[int, object], tuple[object, str], reflector)
     template = reflector.reflect_type(tuple[t_var, object])  # type: ignore
 
@@ -270,7 +270,7 @@ def test_runtime_constraints_solve_reflected_join_derived_fixed_tuple_shape() ->
 
 def test_runtime_constraints_solve_reflected_meet_derived_fixed_tuple_shape() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     met = reflect_meet(tuple[int, object], tuple[object, str], reflector)
     template = reflector.reflect_type(tuple[t_var, str])  # type: ignore
 
@@ -288,7 +288,7 @@ def test_runtime_constraints_solve_reflected_meet_derived_fixed_tuple_shape() ->
 
 def test_runtime_constraints_solve_reflected_tuple_type_var_tuple_template() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(tuple[ta.Unpack[ts_var]])  # type: ignore  # noqa
     actual = reflector.reflect_type(tuple[int, str])
 
@@ -305,7 +305,7 @@ def test_runtime_constraints_solve_reflected_tuple_type_var_tuple_template() -> 
 
 def test_runtime_constraints_solve_reflected_tuple_type_var_tuple_between_prefix_and_suffix() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(tuple[int, ta.Unpack[ts_var], bytes])  # type: ignore  # noqa
     actual = reflector.reflect_type(tuple[int, str, bool, bytes])
 
@@ -323,7 +323,7 @@ def test_runtime_constraints_solve_reflected_tuple_type_var_tuple_between_prefix
 def test_runtime_constraints_solve_reflected_tuple_type_var_tuple_alias_template() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Packed', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(alias)
     actual = reflector.reflect_type(tuple[int, str])
 
@@ -342,7 +342,7 @@ def test_runtime_constraints_solve_reflected_tuple_type_var_tuple_alias_template
 def test_runtime_constraints_accept_reflected_subscripted_tuple_type_var_tuple_alias() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Packed', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(alias[int, str])
     actual = reflector.reflect_type(tuple[int, str])
 
@@ -360,7 +360,7 @@ def test_runtime_constraints_accept_reflected_subscripted_mixed_type_var_tuple_a
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     u_var = ta.TypeVar('U')  # type: ignore
     alias = ta.TypeAliasType('Mixed', tuple[t_var, *ts_var, u_var], type_params=(t_var, ts_var, u_var))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(alias[int, str, bool, bytes])
     actual = reflector.reflect_type(tuple[int, str, bool, bytes])
 
@@ -380,7 +380,7 @@ def test_runtime_constraints_solve_reflected_variadic_alias_with_packed_template
     t_var = ta.TypeVar('T')  # type: ignore
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('PackedTail', tuple[t_var, *ts_var], type_params=(t_var, ts_var))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(alias[t_var, str, bool])
     actual = reflector.reflect_type(tuple[int, str, bool])
 
@@ -400,7 +400,7 @@ def test_runtime_constraints_solve_reflected_variadic_alias_with_packed_template
 def test_runtime_constraints_solve_reflected_variadic_alias_with_packed_actual_arg() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Packed', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(tuple[*ts_var])  # type: ignore
     actual = reflector.reflect_type(alias[int, str])
 
@@ -422,7 +422,7 @@ def test_runtime_constraints_solve_reflected_variadic_alias_with_packed_actual_a
 def test_runtime_constraints_solve_reflected_optional_tuple_alias_template() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('MaybePair', tuple[t_var, str] | None, type_params=(t_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(alias[t_var])
     actual = reflector.reflect_type(tuple[int, str] | None)
 
@@ -439,7 +439,7 @@ def test_runtime_constraints_solve_reflected_optional_tuple_alias_template() -> 
 def test_runtime_constraints_fail_closed_for_ambiguous_reflected_union_template() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     u_var = ta.TypeVar('U')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     with pytest.raises(UnsupportedTypeOperationError, match='ambiguous Union'):
         infer_constraints(
@@ -451,7 +451,7 @@ def test_runtime_constraints_fail_closed_for_ambiguous_reflected_union_template(
 
 def test_runtime_constraints_unroll_reflected_recursive_alias_template() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     constraints = infer_constraints(
         reflector.reflect_type(alias),
@@ -467,7 +467,7 @@ def test_runtime_constraints_unroll_reflected_json_like_recursive_alias_template
         'Jsonish',
         type(None) | bool | int | str | list['Jsonish'] | dict[str, 'Jsonish'],  # type: ignore[name-defined]
     )
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'Jsonish': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Jsonish': alias}.__getitem__)
     unrolled = type(None) | bool | int | str | list[alias] | dict[str, alias]  # type: ignore
 
     assert infer_constraints(
@@ -488,7 +488,7 @@ def test_runtime_constraints_unroll_reflected_recursive_alias_with_literal_and_n
         'TaggedNode',
         ta.Literal['user'] | user_id | list['TaggedNode'],  # type: ignore[name-defined]
     )
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TaggedNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TaggedNode': alias}.__getitem__)
     unrolled = ta.Literal['user'] | user_id | list[alias]  # type: ignore
 
     assert infer_constraints(
@@ -510,7 +510,7 @@ def test_runtime_constraints_solve_reflected_repeated_recursive_alias_type_var_p
         tuple[t_var, t_var, 'PairNode[T]'],  # type: ignore[name-defined, valid-type]
         type_params=(t_var,),
     )
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'PairNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'PairNode': alias}.__getitem__)
     template = reflector.reflect_type(alias[t_var])
     actual = reflector.reflect_type(tuple[int, int, alias[int]])  # type: ignore
 
@@ -531,7 +531,7 @@ def test_runtime_constraints_solve_reflected_repeated_recursive_alias_type_var_p
 def test_runtime_constraints_solve_reflected_repeated_recursive_alias_bounds_structurally() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'Node': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Node': alias}.__getitem__)
     template = reflector.reflect_type(tuple[t_var, t_var])  # type: ignore
     actual = reflector.reflect_type(tuple[alias, int | list[alias]])  # type: ignore
     reflected_t_var = reflector.reflect_type(t_var)
@@ -548,7 +548,7 @@ def test_runtime_constraints_solve_reflected_repeated_recursive_alias_bounds_str
 def test_runtime_constraints_solve_reflected_variadic_recursive_alias_template() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
     template = reflector.reflect_type(alias[ts_var])
     actual = reflector.reflect_type(tuple[int, str, alias[int, str]])  # type: ignore
 
@@ -571,7 +571,7 @@ def test_runtime_constraints_solve_reflected_mixed_recursive_alias_template() ->
         tuple[t_var, *ts_var, 'MixedNode[T, *Ts]'],  # type: ignore[name-defined, valid-type]
         type_params=(t_var, ts_var),
     )
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'MixedNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'MixedNode': alias}.__getitem__)
     template = reflector.reflect_type(alias[t_var, *ts_var])
     actual = reflector.reflect_type(tuple[str, int, bool, alias[str, int, bool]])  # type: ignore
 
@@ -601,7 +601,7 @@ def test_runtime_constraints_solve_reflected_mixed_recursive_alias_template() ->
 
 def test_runtime_constraints_solve_reflected_callable_template() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(cabc.Callable[[t_var], t_var])
     actual = reflector.reflect_type(cabc.Callable[[int], int])
 
@@ -618,7 +618,7 @@ def test_runtime_constraints_solve_reflected_callable_template() -> None:
 def test_runtime_constraints_solve_reflected_callable_param_spec_template() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
     ret_var = ta.TypeVar('R')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(cabc.Callable[param_spec, ret_var])
     actual = reflector.reflect_type(cabc.Callable[[int, str], bool])
 
@@ -639,7 +639,7 @@ def test_runtime_constraints_solve_reflected_callable_param_spec_template() -> N
 
 def test_runtime_constraints_solve_repeated_reflected_callable_param_spec_template() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     left_template = reflector.reflect_type(cabc.Callable[param_spec, int])
     right_template = reflector.reflect_type(cabc.Callable[param_spec, str])
     left_actual = reflector.reflect_type(cabc.Callable[[int], int])
@@ -662,7 +662,7 @@ def test_runtime_constraints_solve_repeated_reflected_callable_param_spec_templa
 def test_runtime_constraints_solve_reflected_callable_concatenate_template() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
     ret_var = ta.TypeVar('R')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(cabc.Callable[ta.Concatenate[int, param_spec], ret_var])
     actual = reflector.reflect_type(cabc.Callable[[int, str], bool])
 
@@ -682,7 +682,7 @@ def test_runtime_constraints_solve_reflected_callable_concatenate_template() -> 
 def test_runtime_constraints_solve_reflected_overloaded_callable_param_spec_template() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
     ret_var = ta.TypeVar('R')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = types.Overloaded([
         ta.cast(types.CallableType, reflector.reflect_type(cabc.Callable[[str], ret_var])),
         ta.cast(types.CallableType, reflector.reflect_type(cabc.Callable[param_spec, ret_var])),
@@ -705,7 +705,7 @@ def test_runtime_constraints_solve_reflected_overloaded_callable_param_spec_temp
 def test_runtime_constraints_solve_reflected_overloaded_callable_concatenate_template() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
     ret_var = ta.TypeVar('R')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = types.Overloaded([
         ta.cast(types.CallableType, reflector.reflect_type(cabc.Callable[ta.Concatenate[str, param_spec], ret_var])),
         ta.cast(types.CallableType, reflector.reflect_type(cabc.Callable[ta.Concatenate[int, param_spec], ret_var])),
@@ -729,7 +729,7 @@ def test_runtime_constraints_fail_closed_for_ambiguous_reflected_overloaded_para
     left_param_spec = ta.ParamSpec('P')  # type: ignore
     right_param_spec = ta.ParamSpec('Q')  # type: ignore
     ret_var = ta.TypeVar('R')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = types.Overloaded([
         ta.cast(types.CallableType, reflector.reflect_type(cabc.Callable[left_param_spec, ret_var])),
         ta.cast(types.CallableType, reflector.reflect_type(cabc.Callable[right_param_spec, ret_var])),
@@ -743,7 +743,7 @@ def test_runtime_constraints_fail_closed_for_ambiguous_reflected_overloaded_para
 def test_runtime_constraints_fail_closed_for_reflected_callable_concatenate_prefix_mismatch() -> None:
     param_spec = ta.ParamSpec('P')  # type: ignore
     ret_var = ta.TypeVar('R')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(cabc.Callable[ta.Concatenate[int, param_spec], ret_var])
     actual = reflector.reflect_type(cabc.Callable[[str], bool])
 
@@ -752,7 +752,7 @@ def test_runtime_constraints_fail_closed_for_reflected_callable_concatenate_pref
 
 
 def test_runtime_constraints_fail_closed_for_reflected_callable_ellipsis_template() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     template = reflector.reflect_type(cabc.Callable[..., int])
     actual = reflector.reflect_type(cabc.Callable[..., int])
 
@@ -763,7 +763,7 @@ def test_runtime_constraints_fail_closed_for_reflected_callable_ellipsis_templat
 def test_reflect_alpha_type_key_canonicalizes_runtime_type_vars() -> None:
     left_t = ta.TypeVar('T')  # type: ignore
     right_u = ta.TypeVar('U')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     left_key = reflect_alpha_type_key(list[left_t], reflector)  # type: ignore
     right_key = reflect_alpha_type_key(list[right_u], reflector)  # type: ignore
@@ -773,7 +773,7 @@ def test_reflect_alpha_type_key_canonicalizes_runtime_type_vars() -> None:
 
 
 def test_reflector_type_key_cache_reuses_key_objects() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     typ = reflector.reflect_type(list[int])
 
     assert reflector.type_key(typ) is reflector.type_key(typ)
@@ -784,7 +784,7 @@ def test_reflector_type_key_cache_reuses_key_objects() -> None:
 
 def test_reflector_alpha_type_key_cache_reuses_key_objects() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     typ = reflector.reflect_type(list[t_var])  # type: ignore
 
     assert reflector.alpha_type_key(typ) is reflector.alpha_type_key(typ)
@@ -795,7 +795,7 @@ def test_reflector_alpha_type_key_cache_reuses_key_objects() -> None:
 
 def test_reflector_structural_type_key_cache_reuses_key_objects() -> None:
     alias = ta.TypeAliasType('Alias', list[int])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     typ = reflector.reflect_type(alias)
 
     assert reflector.structural_type_key(typ) is reflector.structural_type_key(typ)
@@ -807,7 +807,7 @@ def test_reflector_structural_type_key_cache_reuses_key_objects() -> None:
 def test_reflector_alpha_structural_type_key_cache_reuses_key_objects() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list[t_var], type_params=(t_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     typ = reflector.reflect_type(alias[t_var])
 
     assert reflector.alpha_structural_type_key(typ) is reflector.alpha_structural_type_key(typ)
@@ -826,7 +826,7 @@ def test_reflector_recursive_variadic_alias_structural_key_caches_are_hot_path_f
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     form = alias[int, str]
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
     typ = reflector.reflect_type(form)
     key = reflect_structural_type_key(form, reflector)
     alpha_key = reflect_alpha_structural_type_key(form, reflector)
@@ -843,7 +843,7 @@ def test_reflector_recursive_variadic_alias_structural_key_caches_are_hot_path_f
 
 
 def test_reflector_type_key_or_none_cache_reuses_none_for_unsupported_type() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     typ = types.PartialType(None, None)
 
     assert reflector.type_key_or_none(typ) is None
@@ -857,7 +857,7 @@ def test_reflector_type_key_or_none_cache_reuses_none_for_unsupported_type() -> 
 
 
 def test_reflector_structural_type_key_or_none_cache_reuses_none_for_unsupported_recursive_alias() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     alias_node = symbols.TypeAlias('Bad', types.AnyType(types.TypeOfAny.EXPLICIT))
     typ = types.TypeAliasType(alias_node, [])
     alias_node._target = types.UnionType([typ, types.PartialType(None, None)])
@@ -878,7 +878,7 @@ def test_reflector_structural_type_key_or_none_cache_reuses_none_for_unsupported
 
 
 def test_reflector_structural_type_key_or_none_cache_reuses_none_for_bad_recursive_alias_args() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     list_info = symbols.TypeInfo('builtins.list')
     int_type = types.Instance(symbols.TypeInfo('builtins.int'), [])
     str_type = types.Instance(symbols.TypeInfo('builtins.str'), [])
@@ -921,9 +921,9 @@ def test_reflect_alpha_type_key_canonicalizes_parameterized_recursive_alias_type
     left_alias = ta.TypeAliasType('Left', list['Left[T]'], type_params=(left_t,))  # type: ignore
     right_alias = ta.TypeAliasType('Right', list['Right[U]'], type_params=(right_u,))  # type: ignore
 
-    left_reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'Left': left_alias}.__getitem__)
-    right_reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    left_reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Left': left_alias}.__getitem__)
+    right_reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Right': right_alias}.__getitem__,
     )
 
@@ -946,7 +946,7 @@ def test_reflect_is_alpha_equivalent_handles_parameterized_recursive_alias_type(
         'Left': left_alias,
         'Right': right_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     assert reflect_is_alpha_equivalent(left_alias[left_t], right_alias[right_u], reflector)
     assert not reflect_is_same_type(left_alias[left_t], right_alias[right_u], reflector)
@@ -954,7 +954,7 @@ def test_reflect_is_alpha_equivalent_handles_parameterized_recursive_alias_type(
 
 def test_reflect_is_structurally_equivalent_expands_nonrecursive_alias() -> None:
     alias = ta.TypeAliasType('Alias', list[int])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert not reflect_is_same_type(alias, list[int], reflector)
     assert reflect_is_structurally_equivalent(alias, list[int], reflector)
@@ -964,7 +964,7 @@ def test_reflect_is_structurally_equivalent_expands_nonrecursive_alias() -> None
 
 def test_reflect_is_structural_subtype_expands_nonrecursive_alias() -> None:
     alias = ta.TypeAliasType('Alias', list[int])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_structural_subtype(alias, list[int], reflector)
     assert reflect_is_structural_subtype(list[int], alias, reflector)
@@ -974,7 +974,7 @@ def test_reflect_structural_comparison_handles_annotated_new_type_alias_mix() ->
     mode = ta.NewType('Mode', ta.Literal['a', 'b'])  # type: ignore
     mode_list = ta.TypeAliasType('ModeList', list[mode])  # type: ignore
     other_mode = ta.NewType('OtherMode', ta.Literal['a', 'b'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_structurally_equivalent(
         ta.Annotated[mode_list, 'left'],  # noqa
@@ -1001,7 +1001,7 @@ def test_reflect_structural_or_false_helpers_suppress_unsupported_relations() ->
     class Concrete:
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert not reflect_is_structural_subtype_or_false(ta.Callable[[t_var], t_var], object, reflector)  # noqa
     assert not reflect_is_structurally_equivalent_or_false(Concrete, object, reflector)
@@ -1011,8 +1011,8 @@ def test_reflect_structural_or_false_helpers_suppress_unsupported_relations() ->
 
 def test_reflect_is_structurally_equivalent_handles_recursive_alias_unrolling() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
 
@@ -1036,7 +1036,7 @@ def test_reflect_structural_type_key_matches_equivalent_concrete_recursive_alias
         'Left': left_alias,
         'Right': right_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     left_int = left_alias[int]
     right_int = right_alias[int]
@@ -1065,7 +1065,7 @@ def test_reflect_structural_type_key_matches_mutual_recursive_one_unrolling() ->
         'RightA': right_a,
         'RightB': right_b,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     assert reflect_is_structurally_equivalent(left_a, right_a, reflector)
     assert reflect_is_structurally_equivalent(left_a, list[left_b], reflector)  # type: ignore
@@ -1084,8 +1084,8 @@ def test_reflect_structural_type_key_matches_mutual_recursive_one_unrolling() ->
 def test_reflect_structural_type_key_differs_when_recursive_alias_equivalence_differs() -> None:
     left_alias = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right_alias = ta.TypeAliasType('Right', str | list['Right'])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Left': left_alias, 'Right': right_alias}.__getitem__,
     )
 
@@ -1100,7 +1100,7 @@ def test_reflect_structural_type_key_handles_recursive_callable_aliases() -> Non
         'ReturnFn': return_alias,
         'ArgFn': arg_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     return_unrolled = ta.Callable[[int], return_alias]  # type: ignore
     arg_unrolled = ta.Callable[[arg_alias], int]  # type: ignore
@@ -1125,7 +1125,7 @@ def test_reflect_structural_type_key_handles_recursive_callable_param_specs() ->
         ta.Callable[ta.Concatenate[int, param_spec], 'Fn[P]'],  # noqa
         type_params=(param_spec,),
     )
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'Fn': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Fn': alias}.__getitem__)
     unrolled = ta.Callable[ta.Concatenate[int, param_spec], alias[param_spec]]  # type: ignore
 
     assert reflect_is_structurally_equivalent(alias[param_spec], unrolled, reflector)
@@ -1141,7 +1141,7 @@ def test_reflect_structural_type_key_handles_recursive_callable_param_specs() ->
 
 def test_reflect_structural_type_key_handles_recursive_tuple_alias() -> None:
     alias = ta.TypeAliasType('NodeTuple', tuple[int, 'NodeTuple'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'NodeTuple': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'NodeTuple': alias}.__getitem__)
     unrolled = tuple[int, alias]  # type: ignore
     double_unrolled = tuple[int, tuple[int, alias]]  # type: ignore
 
@@ -1162,7 +1162,7 @@ def test_reflect_alpha_structural_type_key_handles_parameterized_recursive_tuple
         'LeftTuple': left_alias,
         'RightTuple': right_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
     left_unrolled = tuple[left_t, left_alias[left_t]]  # type: ignore
     right_unrolled = tuple[right_u, right_alias[right_u]]  # type: ignore
 
@@ -1184,7 +1184,7 @@ def test_reflect_alpha_structural_type_key_handles_parameterized_recursive_tuple
 
 def test_reflect_structural_type_key_handles_recursive_mapping_alias() -> None:
     alias = ta.TypeAliasType('NodeMap', ta.Mapping[str, list['NodeMap']])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'NodeMap': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'NodeMap': alias}.__getitem__)
     unrolled = ta.Mapping[str, list[alias]]  # type: ignore
     double_unrolled = ta.Mapping[str, list[ta.Mapping[str, list[alias]]]]  # type: ignore
 
@@ -1201,7 +1201,7 @@ def test_reflect_structural_type_key_ignores_annotated_recursive_alias_metadata(
         'TargetNode': target_alias,
         'RefNode': ref_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     target_unrolled = int | list[target_alias]  # type: ignore
     ref_unrolled = int | list[ref_alias]  # type: ignore
@@ -1225,7 +1225,7 @@ def test_reflect_structural_type_key_preserves_newtype_identity_in_recursive_ali
         'LeftNode': left_alias,
         'RightNode': right_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     assert not reflect_is_structurally_equivalent(left_alias, right_alias, reflector)
     assert not reflect_is_alpha_structurally_equivalent(left_alias, right_alias, reflector)
@@ -1238,7 +1238,7 @@ def test_reflect_structural_type_key_preserves_newtype_identity_in_recursive_ali
 
 def test_reflect_structural_type_key_cache_reuses_recursive_alias_keys() -> None:
     alias = ta.TypeAliasType('NodeTuple', tuple[int, 'NodeTuple'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'NodeTuple': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'NodeTuple': alias}.__getitem__)
     typ = reflector.reflect_type(alias)
     key = reflect_structural_type_key(alias, reflector)
     alpha_key = reflect_alpha_structural_type_key(alias, reflector)
@@ -1256,7 +1256,7 @@ def test_reflect_structural_type_key_cache_reuses_recursive_alias_keys() -> None
 def test_reflect_structural_type_key_handles_variadic_recursive_tuple_alias() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
     typ = reflector.reflect_type(alias[int, str])
     unrolled = tuple[int, str, alias[int, str]]  # type: ignore
 
@@ -1271,8 +1271,8 @@ def test_reflect_structural_type_key_handles_variadic_recursive_tuple_alias() ->
 
 def test_reflect_is_structural_subtype_handles_recursive_alias_unrolling() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
 
@@ -1291,7 +1291,7 @@ def test_reflect_is_alpha_structurally_equivalent_handles_generic_recursive_alia
         'Left': left_alias,
         'Right': right_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     assert not reflect_is_structurally_equivalent(left_alias[left_t], right_alias[right_u], reflector)
     assert reflect_is_alpha_structurally_equivalent(left_alias[left_t], right_alias[right_u], reflector)
@@ -1317,7 +1317,7 @@ def test_reflect_structural_type_key_json_like_recursive_alias_is_cache_grade() 
         'Jsonish': left_alias,
         'OtherJsonish': right_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
     left_unrolled = type(None) | bool | int | str | list[left_alias] | dict[str, left_alias]  # type: ignore
     right_unrolled = dict[str, right_alias] | list[right_alias] | str | int | bool | type(None)  # type: ignore
     left_type = reflector.reflect_type(left_alias)
@@ -1359,7 +1359,7 @@ def test_reflect_alpha_structural_type_key_recursive_alias_tracks_repeated_varia
         'RightPair': right_alias,
         'WrongPair': wrong_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
 
     assert not reflect_is_structurally_equivalent(left_alias[left_t], right_alias[right_u], reflector)
     assert reflect_is_alpha_structurally_equivalent(left_alias[left_t], right_alias[right_u], reflector)
@@ -1387,7 +1387,7 @@ def test_reflect_structural_type_key_recursive_alias_with_float_literals_is_orde
         'LeftFloatNode': left_alias,
         'RightFloatNode': right_alias,
     }
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver=aliases.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver=aliases.__getitem__)
     unrolled = list[left_alias] | ta.Literal[2.5, 1.5]  # type: ignore
 
     assert reflect_is_structurally_equivalent(left_alias, right_alias, reflector)
@@ -1397,7 +1397,7 @@ def test_reflect_structural_type_key_recursive_alias_with_float_literals_is_orde
 
 
 def test_reflect_type_key_hot_path_reuses_reflection_and_key_caches() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     forms = [
         int,
         list[int],
@@ -1419,7 +1419,7 @@ def test_reflect_type_key_hot_path_reuses_reflection_and_key_caches() -> None:
 
 
 def test_reflect_type_key_normalizes_none_type_but_keeps_none_literal_distinct() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     none_key = reflect_type_key(None, reflector)
     none_type_key = reflect_type_key(type(None), reflector)
@@ -1432,7 +1432,7 @@ def test_reflect_type_key_normalizes_none_type_but_keeps_none_literal_distinct()
 
 
 def test_reflect_type_key_normalizes_optional_forms() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     key = reflect_type_key(int | None, reflector)
 
     assert reflect_type_key(ta.Optional[int], reflector) == key  # noqa
@@ -1441,7 +1441,7 @@ def test_reflect_type_key_normalizes_optional_forms() -> None:
 
 
 def test_reflect_type_key_normalizes_literal_union_forms() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     key = reflect_type_key(ta.Literal['x', 'y', None], reflector)
 
     assert reflect_type_key(ta.Literal['x'] | ta.Literal['y'] | ta.Literal[None], reflector) == key  # noqa
@@ -1449,7 +1449,7 @@ def test_reflect_type_key_normalizes_literal_union_forms() -> None:
 
 
 def test_reflect_type_key_literal_unions_are_order_insensitive_for_scalar_and_opaque_values() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     left = ta.Literal[b'a', None, 1.5] | ta.Literal[2.5]  # type: ignore  # noqa
     right = ta.Literal[2.5] | ta.Literal[1.5, None, b'a']  # type: ignore  # noqa
 
@@ -1468,7 +1468,7 @@ def test_reflect_join_with_different_runtime_generic_base_arg_returns_union() ->
     typ = reflect_join(
         IntBox,
         Box[str],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert isinstance(typ, types.UnionType)
@@ -1490,7 +1490,7 @@ def test_reflect_meet_returns_runtime_generic_subclass() -> None:
     typ = reflect_meet(
         IntBox,
         Box[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert isinstance(typ, types.Instance)
@@ -1506,20 +1506,20 @@ def test_reflect_meet_with_different_runtime_generic_base_arg_returns_uninhabite
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    typ = reflect_meet(IntBox, Box[str], RuntimeTypeReflector(RuntimeTypeUniverse()))  # type: ignore
+    typ = reflect_meet(IntBox, Box[str], TypeReflector(TypeUniverse()))  # type: ignore
 
     assert isinstance(typ, types.UninhabitedType)
 
 
 def test_reflect_join_flattens_runtime_union() -> None:
-    typ = reflect_join(int | str, int, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_join(int | str, int, TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.UnionType)
     assert [type_str(item) for item in typ.items] == ['builtins.int', 'builtins.str']
 
 
 def test_reflect_join_keeps_invariant_runtime_generic_aliases() -> None:
-    typ = reflect_join(list[int], list[str], RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_join(list[int], list[str], TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.UnionType)
     assert [type_str(item) for item in typ.items] == [
@@ -1532,7 +1532,7 @@ def test_reflect_join_synthesizes_fixed_tuple_itemwise_join() -> None:
     typ = reflect_join(
         tuple[int, object],
         tuple[object, str],
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert isinstance(typ, types.TupleType)
@@ -1543,7 +1543,7 @@ def test_reflect_meet_synthesizes_fixed_tuple_itemwise_meet() -> None:
     typ = reflect_meet(
         tuple[int, object],
         tuple[object, str],
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert isinstance(typ, types.TupleType)
@@ -1553,7 +1553,7 @@ def test_reflect_meet_synthesizes_fixed_tuple_itemwise_meet() -> None:
 def test_reflect_structural_join_expands_variadic_alias_to_fixed_tuple() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     alias_type = reflector.reflect_type(alias[int, str])
 
     typ = reflect_structural_join(alias[int, str], tuple[int, str], reflector)
@@ -1564,7 +1564,7 @@ def test_reflect_structural_join_expands_variadic_alias_to_fixed_tuple() -> None
 def test_reflect_structural_meet_expands_variadic_alias_to_fixed_tuple() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('Alias', tuple[*ts_var], type_params=(ts_var,))  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     alias_type = reflector.reflect_type(alias[int, str])
 
     typ = reflect_structural_meet(alias[int, str], tuple[int, str], reflector)
@@ -1575,7 +1575,7 @@ def test_reflect_structural_meet_expands_variadic_alias_to_fixed_tuple() -> None
 def test_reflect_join_and_meet_fail_closed_for_variadic_tuple_shapes() -> None:
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     variadic = tuple[*ts_var]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     with pytest.raises(UnsupportedTypeOperationError, match='variadic Tuple join'):
         reflect_join(variadic, tuple[int], reflector)
@@ -1585,14 +1585,14 @@ def test_reflect_join_and_meet_fail_closed_for_variadic_tuple_shapes() -> None:
 
 
 def test_reflect_meet_distributes_runtime_union_to_matching_item() -> None:
-    typ = reflect_meet(int | str, int, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_meet(int | str, int, TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.int'
 
 
 def test_reflect_meet_distributes_runtime_union_to_uninhabited() -> None:
-    typ = reflect_meet(int | str, float, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_meet(int | str, float, TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.UninhabitedType)
 
@@ -1606,7 +1606,7 @@ def test_reflect_join_builds_structural_typed_dict_join() -> None:
         x: int
         right: str
 
-    typ = reflect_join(Left, Right, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_join(Left, Right, TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.TypedDictType)
     assert type_str(typ) == "TypedDict({'x': builtins.int})"
@@ -1621,7 +1621,7 @@ def test_reflect_meet_builds_structural_typed_dict_meet() -> None:
         x: int
         right: str
 
-    typ = reflect_meet(Left, Right, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_meet(Left, Right, TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.TypedDictType)
     assert typ.required_keys == {'x', 'left', 'right'}
@@ -1640,13 +1640,13 @@ def test_reflect_meet_rejects_incompatible_mutable_typed_dict_item() -> None:
         x: str
 
     with pytest.raises(UnsupportedTypeOperationError):
-        reflect_meet(Left, Right, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_meet(Left, Right, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_structural_join_recursive_alias_matches_one_unrolling() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     unrolled = int | list[alias]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     alias_type = reflector.reflect_type(alias)
 
     typ = reflect_structural_join(alias, unrolled, reflector)
@@ -1657,7 +1657,7 @@ def test_reflect_structural_join_recursive_alias_matches_one_unrolling() -> None
 def test_reflect_structural_meet_recursive_alias_matches_one_unrolling() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     unrolled = int | list[alias]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     alias_type = reflector.reflect_type(alias)
 
     typ = reflect_structural_meet(alias, unrolled, reflector)
@@ -1669,7 +1669,7 @@ def test_reflect_structural_equivalence_variadic_recursive_alias_matches_one_unr
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     unrolled = tuple[int, str, alias[int, str]]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
 
     assert reflect_is_structurally_equivalent(alias[int, str], unrolled, reflector)
     assert reflect_is_structurally_equivalent_or_false(alias[int, str], unrolled, reflector)
@@ -1679,7 +1679,7 @@ def test_reflect_structural_join_variadic_recursive_alias_matches_one_unrolling(
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     unrolled = tuple[int, str, alias[int, str]]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
     alias_type = reflector.reflect_type(alias[int, str])
 
     typ = reflect_structural_join(alias[int, str], unrolled, reflector)
@@ -1691,7 +1691,7 @@ def test_reflect_structural_meet_variadic_recursive_alias_matches_one_unrolling(
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     unrolled = tuple[int, str, alias[int, str]]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
     alias_type = reflector.reflect_type(alias[int, str])
 
     typ = reflect_structural_meet(alias[int, str], unrolled, reflector)
@@ -1702,7 +1702,7 @@ def test_reflect_structural_meet_variadic_recursive_alias_matches_one_unrolling(
 def test_reflect_structural_join_recursive_aliases_with_same_structure() -> None:
     left = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right = ta.TypeAliasType('Right', int | list['Right'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     left_type = reflector.reflect_type(left)
 
     typ = reflect_structural_join(left, right, reflector)
@@ -1713,7 +1713,7 @@ def test_reflect_structural_join_recursive_aliases_with_same_structure() -> None
 def test_reflect_structural_meet_recursive_aliases_with_same_structure() -> None:
     left = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right = ta.TypeAliasType('Right', int | list['Right'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     left_type = reflector.reflect_type(left)
 
     typ = reflect_structural_meet(left, right, reflector)
@@ -1723,7 +1723,7 @@ def test_reflect_structural_meet_recursive_aliases_with_same_structure() -> None
 
 def test_reflect_structural_join_and_meet_recursive_alias_with_object_bound() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'Node': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'Node': alias}.__getitem__)
     alias_type = reflector.reflect_type(alias)
 
     joined = reflect_structural_join(alias, object, reflector)
@@ -1737,7 +1737,7 @@ def test_reflect_structural_join_incompatible_recursive_aliases_returns_union() 
     left = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right = ta.TypeAliasType('Right', str | list['Right'])  # type: ignore
 
-    typ = reflect_structural_join(left, right, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_structural_join(left, right, TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.UnionType)
     assert [type_str(item).rsplit('.', 1)[-1] for item in typ.items] == ['Left', 'Right']
@@ -1747,7 +1747,7 @@ def test_reflect_structural_meet_incompatible_recursive_aliases_returns_uninhabi
     left = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right = ta.TypeAliasType('Right', str | list['Right'])  # type: ignore
 
-    typ = reflect_structural_meet(left, right, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_structural_meet(left, right, TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.UninhabitedType)
 
@@ -1755,7 +1755,7 @@ def test_reflect_structural_meet_incompatible_recursive_aliases_returns_uninhabi
 def test_reflect_structural_join_list_folds_recursive_aliases() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     unrolled = int | list[alias]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     alias_type = reflector.reflect_type(alias)
 
     typ = reflect_structural_join_list([alias, unrolled], reflector)
@@ -1766,7 +1766,7 @@ def test_reflect_structural_join_list_folds_recursive_aliases() -> None:
 def test_reflect_structural_meet_list_folds_recursive_aliases() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     unrolled = int | list[alias]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     alias_type = reflector.reflect_type(alias)
 
     typ = reflect_structural_meet_list([alias, unrolled], reflector)
@@ -1778,7 +1778,7 @@ def test_reflect_structural_join_list_folds_variadic_recursive_aliases() -> None
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     unrolled = tuple[int, str, alias[int, str]]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
     alias_type = reflector.reflect_type(alias[int, str])
 
     typ = reflect_structural_join_list([alias[int, str], unrolled], reflector)
@@ -1790,7 +1790,7 @@ def test_reflect_structural_meet_list_folds_variadic_recursive_aliases() -> None
     ts_var = ta.TypeVarTuple('Ts')  # type: ignore
     alias = ta.TypeAliasType('TupleNode', tuple[*ts_var, 'TupleNode[*Ts]'], type_params=(ts_var,))  # type: ignore
     unrolled = tuple[int, str, alias[int, str]]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
+    reflector = TypeReflector(TypeUniverse(), forward_ref_resolver={'TupleNode': alias}.__getitem__)
     alias_type = reflector.reflect_type(alias[int, str])
 
     typ = reflect_structural_meet_list([alias[int, str], unrolled], reflector)
@@ -1803,41 +1803,41 @@ def test_reflect_structural_ops_fail_closed_for_recursive_param_spec_callable_al
     alias = ta.TypeAliasType('Fn', ta.Callable[param_spec, 'Fn'])  # type: ignore
 
     with pytest.raises(UnsupportedTypeOperationError):
-        reflect_structural_join(alias, ta.Callable[[int], int], RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_structural_join(alias, ta.Callable[[int], int], TypeReflector(TypeUniverse()))
 
     with pytest.raises(UnsupportedTypeOperationError):
-        reflect_structural_meet(alias, ta.Callable[[int], int], RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_structural_meet(alias, ta.Callable[[int], int], TypeReflector(TypeUniverse()))
 
 
 def test_reflect_join_propagates_unsupported_core_operation() -> None:
     with pytest.raises(UnsupportedTypeOperationError):
-        reflect_join(ta.Callable[..., int], object, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_join(ta.Callable[..., int], object, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_meet_propagates_unsupported_core_operation() -> None:
     with pytest.raises(UnsupportedTypeOperationError):
-        reflect_meet(ta.Callable[..., int], object, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_meet(ta.Callable[..., int], object, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_join_propagates_unreflectable_runtime_input() -> None:
     with pytest.raises(UnreflectableTypeError):
-        reflect_join(object(), int, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_join(object(), int, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_meet_propagates_unreflectable_runtime_input() -> None:
     with pytest.raises(UnreflectableTypeError):
-        reflect_meet(object(), int, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_meet(object(), int, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_join_list_folds_runtime_type_objects() -> None:
-    typ = reflect_join_list([int, str, int], RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_join_list([int, str, int], TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.UnionType)
     assert [type_str(item) for item in typ.items] == ['builtins.int', 'builtins.str']
 
 
 def test_reflect_meet_list_folds_runtime_type_objects() -> None:
-    typ = reflect_meet_list([int, object], RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_meet_list([int, object], TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.int'
@@ -1850,7 +1850,7 @@ def test_reflect_is_assignable_uses_runtime_nominal_subtyping() -> None:
     class Child(Base):
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(Child, Base, reflector)
     assert not reflect_is_assignable(Base, Child, reflector)
@@ -1865,14 +1865,14 @@ def test_reflect_is_assignable_uses_runtime_generic_base_mapping() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(IntBox, Box[int], reflector)  # type: ignore
     assert not reflect_is_assignable(IntBox, Box[str], reflector)  # type: ignore
 
 
 def test_reflect_is_assignable_uses_known_collection_abc_base_mapping() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(list[int], cabc.Sequence[int], reflector)
     assert reflect_is_assignable(list[int], cabc.Iterable[int], reflector)
@@ -1887,7 +1887,7 @@ def test_reflect_is_assignable_uses_known_collection_abc_base_mapping() -> None:
 
 
 def test_reflect_is_assignable_handles_runtime_unions() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(int, int | str, reflector)
     assert not reflect_is_assignable(int | str, int, reflector)
@@ -1905,7 +1905,7 @@ def test_reflect_is_assignable_uses_typed_dict_structural_keys() -> None:
         x: int
         maybe: ta.NotRequired[str]
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(Source, Target, reflector)
     assert reflect_is_assignable(Source, TargetWithOptional, reflector)
@@ -1919,7 +1919,7 @@ def test_reflect_is_assignable_requires_typed_dict_required_target_keys() -> Non
     class Target(ta.TypedDict):
         x: int
 
-    assert not reflect_is_assignable(Source, Target, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    assert not reflect_is_assignable(Source, Target, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_is_assignable_uses_typed_dict_readonly_covariance() -> None:
@@ -1938,7 +1938,7 @@ def test_reflect_is_assignable_uses_typed_dict_readonly_covariance() -> None:
     class MutableTarget(ta.TypedDict):
         x: Base
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(Source, ReadOnlyTarget, reflector)
     assert not reflect_is_assignable(Source, MutableTarget, reflector)
@@ -1951,34 +1951,34 @@ def test_reflect_is_assignable_rejects_readonly_typed_dict_source_for_mutable_ta
     class Target(ta.TypedDict):
         x: int
 
-    assert not reflect_is_assignable(Source, Target, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    assert not reflect_is_assignable(Source, Target, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_is_same_type_matches_typing_union_and_pep604_union() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_same_type(ta.Union[int, str], int | str, reflector)  # noqa
 
 
 def test_reflect_is_same_type_matches_typing_optional_and_pep604_optional() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_same_type(ta.Optional[int], int | None, reflector)  # noqa
 
 
 def test_reflect_is_same_type_matches_never_and_no_return() -> None:
-    assert reflect_is_same_type(ta.Never, ta.NoReturn, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    assert reflect_is_same_type(ta.Never, ta.NoReturn, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_is_assignable_keeps_any_compatibility() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(ta.Any, int, reflector)
     assert reflect_is_assignable(int, ta.Any, reflector)
 
 
 def test_reflect_is_assignable_treats_never_as_bottom() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(ta.Never, int, reflector)
     assert not reflect_is_assignable(int, ta.Never, reflector)
@@ -1991,7 +1991,7 @@ def test_reflect_is_assignable_supports_simple_callable_variance() -> None:
     class Child(Base):
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(
         cabc.Callable[[Base], Child],
@@ -2012,7 +2012,7 @@ def test_reflect_is_assignable_supports_callable_ellipsis_return_covariance() ->
     class Child(Base):
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_assignable(cabc.Callable[..., Child], cabc.Callable[..., Base], reflector)
     assert not reflect_is_assignable(cabc.Callable[..., Base], cabc.Callable[..., Child], reflector)
@@ -2024,20 +2024,20 @@ def test_reflect_is_assignable_or_false_suppresses_generic_callable_subtyping() 
     assert not reflect_is_assignable_or_false(
         cabc.Callable[param_spec, int],
         cabc.Callable[param_spec, object],
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
 
 def test_reflect_is_assignable_raises_for_unsupported_core_operation() -> None:
     with pytest.raises(UnsupportedTypeOperationError):
-        reflect_is_assignable(ta.Callable[..., int], object, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_is_assignable(ta.Callable[..., int], object, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_is_assignable_or_false_is_conservative() -> None:
     assert not reflect_is_assignable_or_false(
         ta.Callable[..., int],
         object,
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
 
@@ -2047,7 +2047,7 @@ def test_reflect_is_same_type_matches_same_runtime_type_var() -> None:
     assert reflect_is_same_type(
         list[t_var],  # type: ignore
         list[t_var],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
 
@@ -2058,7 +2058,7 @@ def test_reflect_is_same_type_keeps_same_name_type_vars_distinct() -> None:
     assert not reflect_is_same_type(
         list[left],  # type: ignore
         list[right],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
 
@@ -2069,7 +2069,7 @@ def test_reflect_is_alpha_equivalent_allows_same_shape_type_vars() -> None:
     assert reflect_is_alpha_equivalent(
         dict[str, left],  # type: ignore
         dict[str, right],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
 
@@ -2080,12 +2080,12 @@ def test_reflect_is_alpha_equivalent_rejects_different_type_shape() -> None:
     assert not reflect_is_alpha_equivalent(
         dict[str, left],  # type: ignore
         list[right],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
 
 def test_reflect_comparison_propagates_unreflectable_runtime_input() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     with pytest.raises(UnreflectableTypeError):
         reflect_is_same_type(object(), int, reflector)
@@ -2096,28 +2096,28 @@ def test_reflect_comparison_propagates_unreflectable_runtime_input() -> None:
 
 def test_reflect_comparison_rejects_self_without_class_context() -> None:
     with pytest.raises(UnreflectableTypeError):
-        reflect_is_same_type(ta.Self, ta.Self, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_is_same_type(ta.Self, ta.Self, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_type_str_formats_runtime_generic_alias() -> None:
-    assert reflect_type_str(list[int], RuntimeTypeReflector(RuntimeTypeUniverse())) == 'builtins.list[builtins.int]'
+    assert reflect_type_str(list[int], TypeReflector(TypeUniverse())) == 'builtins.list[builtins.int]'
 
 
 def test_reflect_type_str_formats_runtime_union() -> None:
-    assert reflect_type_str(int | None, RuntimeTypeReflector(RuntimeTypeUniverse())) == 'Union[builtins.int, None]'
+    assert reflect_type_str(int | None, TypeReflector(TypeUniverse())) == 'Union[builtins.int, None]'
 
 
 def test_reflect_type_str_formats_never() -> None:
-    assert reflect_type_str(ta.Never, RuntimeTypeReflector(RuntimeTypeUniverse())) == 'Never'
-    assert reflect_type_str(ta.NoReturn, RuntimeTypeReflector(RuntimeTypeUniverse())) == 'Never'
+    assert reflect_type_str(ta.Never, TypeReflector(TypeUniverse())) == 'Never'
+    assert reflect_type_str(ta.NoReturn, TypeReflector(TypeUniverse())) == 'Never'
 
 
 def test_reflect_type_str_formats_type_guard_as_guarded_type() -> None:
-    assert reflect_type_str(ta.TypeGuard[int], RuntimeTypeReflector(RuntimeTypeUniverse())) == 'builtins.int'
+    assert reflect_type_str(ta.TypeGuard[int], TypeReflector(TypeUniverse())) == 'builtins.int'
 
 
 def test_reflect_type_str_formats_typed_dict_wrappers() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_str(ta.Required[int], reflector) == 'Required[builtins.int]'
     assert reflect_type_str(ta.NotRequired[str], reflector) == 'NotRequired[builtins.str]'
@@ -2127,7 +2127,7 @@ def test_reflect_type_str_formats_typed_dict_wrappers() -> None:
 def test_reflect_type_str_formats_unpack() -> None:
     assert reflect_type_str(
         ta.Unpack[tuple[int, str]],
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     ) == 'Unpack[tuple[builtins.int, builtins.str]]'
 
 
@@ -2136,7 +2136,7 @@ def test_reflect_type_str_formats_unpack_of_type_var_tuple() -> None:
 
     assert reflect_type_str(
         ta.Unpack[ts_var],
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     ) == 'Unpack[Ts]'
 
 
@@ -2146,17 +2146,17 @@ def test_reflect_type_str_formats_typed_dict_class() -> None:
         year: int
         tag: ta.ReadOnly[ta.NotRequired[str]]
 
-    assert reflect_type_str(Movie, RuntimeTypeReflector(RuntimeTypeUniverse())) == (
+    assert reflect_type_str(Movie, TypeReflector(TypeUniverse())) == (
         "TypedDict({'title': builtins.str, 'year'?: builtins.int, 'tag'?=: builtins.str})"
     )
 
 
 def test_reflect_is_same_type_unwraps_type_guarded_type() -> None:
-    assert reflect_is_same_type(ta.TypeGuard[int], int, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    assert reflect_is_same_type(ta.TypeGuard[int], int, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_is_same_type_distinguishes_required_from_not_required() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_same_type(ta.Required[int], ta.Required[int], reflector)
     assert reflect_is_same_type(ta.NotRequired[int], ta.NotRequired[int], reflector)
@@ -2164,7 +2164,7 @@ def test_reflect_is_same_type_distinguishes_required_from_not_required() -> None
 
 
 def test_reflect_is_same_type_compares_unpack() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_same_type(ta.Unpack[tuple[int, str]], ta.Unpack[tuple[int, str]], reflector)
     assert not reflect_is_same_type(ta.Unpack[tuple[int]], ta.Unpack[tuple[str]], reflector)
@@ -2180,7 +2180,7 @@ def test_reflect_is_same_type_compares_typed_dict_classes() -> None:
     class OptionalRight(ta.TypedDict, total=False):
         x: int
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_is_same_type(Left, Right, reflector)
     assert not reflect_is_same_type(Left, OptionalRight, reflector)
@@ -2188,21 +2188,21 @@ def test_reflect_is_same_type_compares_typed_dict_classes() -> None:
 
 def test_reflect_type_str_rejects_type_is_until_distinct_representation_exists() -> None:
     with pytest.raises(UnreflectableTypeError, match='TypeIs'):
-        reflect_type_str(ta.TypeIs[int], RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_type_str(ta.TypeIs[int], TypeReflector(TypeUniverse()))
 
 
 def test_reflect_type_str_formats_type_alias_type_value() -> None:
     alias = ta.TypeAliasType('Alias', list[int])  # type: ignore
 
-    assert reflect_type_str(alias, RuntimeTypeReflector(RuntimeTypeUniverse())) == f'{__name__}.Alias'
-    assert type_str(get_proper_type(RuntimeTypeReflector(RuntimeTypeUniverse()).reflect_type(alias))) == (
+    assert reflect_type_str(alias, TypeReflector(TypeUniverse())) == f'{__name__}.Alias'
+    assert type_str(get_proper_type(TypeReflector(TypeUniverse()).reflect_type(alias))) == (
         'builtins.list[builtins.int]'
     )
 
 
 def test_reflect_is_same_type_matches_type_alias_type_value() -> None:
     alias = ta.TypeAliasType('Alias', list[int])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert not reflect_is_same_type(alias, list[int], reflector)
     assert reflect_runtime_effective_type_key(alias, reflector) == reflect_runtime_effective_type_key(
@@ -2215,32 +2215,32 @@ def test_reflect_type_str_formats_subscripted_type_alias_type_value() -> None:
     t_var = ta.TypeVar('T')  # type: ignore
     alias = ta.TypeAliasType('Alias', list[t_var], type_params=(t_var,))  # type: ignore
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_str(alias[str], reflector) == f'{__name__}.Alias[builtins.str]'
     assert type_str(get_proper_type(reflector.reflect_type(alias[str]))) == 'builtins.list[builtins.str]'
 
 
 def test_reflect_type_str_formats_typing_optional_like_pep604_optional() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_str(ta.Optional[int], reflector) == reflect_type_str(int | None, reflector)  # noqa
 
 
 def test_reflect_type_str_formats_typing_union_like_pep604_union() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_str(ta.Union[int, str], reflector) == reflect_type_str(int | str, reflector)  # noqa
 
 
 def test_reflect_type_str_rejects_self_without_class_context() -> None:
     with pytest.raises(UnreflectableTypeError):
-        reflect_type_str(ta.Self, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_type_str(ta.Self, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_type_str_uses_explicit_forward_ref_resolver() -> None:
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver=lambda name: {'User': int}[name],
     )
 
@@ -2249,12 +2249,12 @@ def test_reflect_type_str_uses_explicit_forward_ref_resolver() -> None:
 
 def test_reflect_type_str_without_forward_ref_resolver_still_rejects_forward_ref() -> None:
     with pytest.raises(UnreflectableTypeError, match='forward reference'):
-        reflect_type_str('User', RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_type_str('User', TypeReflector(TypeUniverse()))
 
 
 def test_reflect_is_same_type_uses_explicit_forward_ref_resolver() -> None:
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver=lambda name: {'User': int}[name],
     )
 
@@ -2262,20 +2262,20 @@ def test_reflect_is_same_type_uses_explicit_forward_ref_resolver() -> None:
 
 
 def test_reflect_type_strs_formats_runtime_types() -> None:
-    assert reflect_type_strs([int, str], RuntimeTypeReflector(RuntimeTypeUniverse())) == [
+    assert reflect_type_strs([int, str], TypeReflector(TypeUniverse())) == [
         'builtins.int',
         'builtins.str',
     ]
 
 
 def test_reflect_literal_values_returns_single_runtime_literal_value() -> None:
-    assert reflect_literal_values(ta.Literal['x'], RuntimeTypeReflector(RuntimeTypeUniverse())) == ['x']
+    assert reflect_literal_values(ta.Literal['x'], TypeReflector(TypeUniverse())) == ['x']
 
 
 def test_reflect_literal_values_returns_multi_literal_values_in_order() -> None:
     assert reflect_literal_values(
         ta.Literal['x', 1, False, b'y', 1.5, None],
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     ) == [
         'x',
         1,
@@ -2289,7 +2289,7 @@ def test_reflect_literal_values_returns_multi_literal_values_in_order() -> None:
 def test_reflect_literal_values_returns_bytes_literal_values() -> None:
     assert reflect_literal_values(
         ta.Literal[b'x', b'y'],
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     ) == [
         b'x',
         b'y',
@@ -2299,7 +2299,7 @@ def test_reflect_literal_values_returns_bytes_literal_values() -> None:
 def test_reflect_literal_values_returns_union_literal_values_in_order() -> None:
     assert reflect_literal_values(
         ta.Literal['x'] | ta.Literal[1],  # noqa
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     ) == [
         'x',
         1,
@@ -2307,19 +2307,19 @@ def test_reflect_literal_values_returns_union_literal_values_in_order() -> None:
 
 
 def test_reflect_literal_values_or_none_returns_none_for_non_literal_type() -> None:
-    assert reflect_literal_values_or_none(str, RuntimeTypeReflector(RuntimeTypeUniverse())) is None
+    assert reflect_literal_values_or_none(str, TypeReflector(TypeUniverse())) is None
 
 
 def test_reflect_literal_values_or_none_returns_none_for_mixed_union() -> None:
     assert reflect_literal_values_or_none(
         ta.Literal['x'] | str,  # noqa
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     ) is None
 
 
 def test_reflect_literal_values_raises_for_non_finite_literal_set() -> None:
     with pytest.raises(ReflectionError, match='finite literal'):
-        reflect_literal_values(str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_literal_values(str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_typed_dict_literal_values_returns_per_item_literal_values() -> None:
@@ -2327,7 +2327,7 @@ def test_reflect_typed_dict_literal_values_returns_per_item_literal_values() -> 
         kind: ta.Literal['create', 'delete']
         id: int
 
-    assert reflect_typed_dict_literal_values(Message, RuntimeTypeReflector(RuntimeTypeUniverse())) == {
+    assert reflect_typed_dict_literal_values(Message, TypeReflector(TypeUniverse())) == {
         'kind': ['create', 'delete'],
         'id': None,
     }
@@ -2339,7 +2339,7 @@ def test_reflect_typed_dict_literal_values_keeps_optional_and_readonly_items() -
         mode: ta.ReadOnly[ta.NotRequired[ta.Literal['dry-run', 'commit']]]
         id: int
 
-    assert reflect_typed_dict_literal_values(Message, RuntimeTypeReflector(RuntimeTypeUniverse())) == {
+    assert reflect_typed_dict_literal_values(Message, TypeReflector(TypeUniverse())) == {
         'kind': ['create'],
         'mode': ['dry-run', 'commit'],
         'id': None,
@@ -2350,7 +2350,7 @@ def test_reflect_typed_dict_literal_values_returns_none_for_mixed_literal_item()
     class Message(ta.TypedDict):
         kind: ta.Literal['create'] | str  # noqa
 
-    assert reflect_typed_dict_literal_values(Message, RuntimeTypeReflector(RuntimeTypeUniverse())) == {
+    assert reflect_typed_dict_literal_values(Message, TypeReflector(TypeUniverse())) == {
         'kind': None,
     }
 
@@ -2359,8 +2359,8 @@ def test_reflect_typed_dict_literal_values_uses_explicit_forward_ref_resolver() 
     class Message(ta.TypedDict):
         value: 'Value'  # type: ignore  # noqa
 
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver=lambda name: {'Value': ta.Literal['x', 'y']}[name],
     )
 
@@ -2371,17 +2371,17 @@ def test_reflect_typed_dict_literal_values_uses_explicit_forward_ref_resolver() 
 
 def test_reflect_typed_dict_literal_values_rejects_non_typed_dict_type() -> None:
     with pytest.raises(ReflectionError, match='TypedDict'):
-        reflect_typed_dict_literal_values(str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_typed_dict_literal_values(str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_type_str_reuses_explicit_reflector() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_type_str(list[int], reflector) == type_str(reflector.reflect_type(list[int]))
 
 
 def test_reflect_instance_returns_runtime_instance_type() -> None:
-    typ = reflect_instance(list[int], RuntimeTypeReflector(RuntimeTypeUniverse()))
+    typ = reflect_instance(list[int], TypeReflector(TypeUniverse()))
 
     assert isinstance(typ, types.Instance)
     assert typ.type.fullname == 'builtins.list'
@@ -2389,14 +2389,14 @@ def test_reflect_instance_returns_runtime_instance_type() -> None:
 
 
 def test_reflect_instance_info_returns_type_info() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     assert reflect_instance_info(dict[str, int], reflector) is reflect_instance(dict[str, int], reflector).type
     assert reflect_instance_info(dict[str, int], reflector).fullname == 'builtins.dict'
 
 
 def test_reflect_instance_args_returns_instance_args() -> None:
-    args = reflect_instance_args(dict[str, int], RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_instance_args(dict[str, int], TypeReflector(TypeUniverse()))
 
     assert [type_str(arg) for arg in args] == ['builtins.str', 'builtins.int']
 
@@ -2407,7 +2407,7 @@ def test_reflect_instance_uses_explicit_dynamic_name_mode() -> None:
 
     typ = reflect_instance(
         Local,
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert typ.type.fullname.endswith('.Local@1')
@@ -2415,10 +2415,10 @@ def test_reflect_instance_uses_explicit_dynamic_name_mode() -> None:
 
 def test_reflect_instance_rejects_non_instance_runtime_type() -> None:
     with pytest.raises(ReflectionError, match='instance type'):
-        reflect_instance(int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_instance(int | str, TypeReflector(TypeUniverse()))
 
     with pytest.raises(ReflectionError, match='instance type'):
-        reflect_instance(ta.Callable[..., int], RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_instance(ta.Callable[..., int], TypeReflector(TypeUniverse()))
 
 
 def test_reflect_base_args_returns_args_for_bare_runtime_generic_base() -> None:
@@ -2430,63 +2430,63 @@ def test_reflect_base_args_returns_args_for_bare_runtime_generic_base() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    args = reflect_base_args(IntBox, Box, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(IntBox, Box, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
 
 
 def test_reflect_base_args_returns_args_for_known_collection_abc_base() -> None:
-    args = reflect_base_args(list[int], cabc.Sequence, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(list[int], cabc.Sequence, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
 
 
 def test_reflect_base_args_returns_args_for_str_sequence_base() -> None:
-    args = reflect_base_args(str, cabc.Sequence, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(str, cabc.Sequence, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.str']
 
 
 def test_reflect_base_args_returns_args_for_bytes_sequence_base() -> None:
-    args = reflect_base_args(bytes, cabc.Sequence, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(bytes, cabc.Sequence, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
 
 
 def test_reflect_base_args_returns_args_for_indirect_known_collection_abc_base() -> None:
-    args = reflect_base_args(list[int], cabc.Iterable, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(list[int], cabc.Iterable, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
 
 
 def test_reflect_base_args_returns_args_for_tuple_sequence_base() -> None:
-    args = reflect_base_args(tuple[int, ...], cabc.Sequence, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(tuple[int, ...], cabc.Sequence, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
 
 
 def test_reflect_base_args_returns_args_for_dict_mapping_base() -> None:
-    args = reflect_base_args(dict[str, int], cabc.Mapping, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(dict[str, int], cabc.Mapping, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.str', 'builtins.int']
 
 
 def test_reflect_base_args_returns_args_for_set_base() -> None:
-    args = reflect_base_args(set[int], cabc.Set, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(set[int], cabc.Set, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
 
 
 def test_reflect_base_args_returns_args_for_frozenset_base() -> None:
-    args = reflect_base_args(frozenset[int], cabc.Set, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(frozenset[int], cabc.Set, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
@@ -2501,7 +2501,7 @@ def test_reflect_base_args_returns_args_for_parameterized_runtime_generic_base()
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    args = reflect_base_args(IntBox, Box[str], RuntimeTypeReflector(RuntimeTypeUniverse()))  # type: ignore
+    args = reflect_base_args(IntBox, Box[str], TypeReflector(TypeUniverse()))  # type: ignore
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
@@ -2519,7 +2519,7 @@ def test_reflect_base_args_returns_args_through_indirect_runtime_generic_base() 
     class Child(Middle[int]):  # type: ignore
         pass
 
-    args = reflect_base_args(Child, Box, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args(Child, Box, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
@@ -2534,12 +2534,12 @@ def test_reflect_base_args_returns_none_for_missing_runtime_base() -> None:
     class Other:
         pass
 
-    assert reflect_base_args(Other, Box, RuntimeTypeReflector(RuntimeTypeUniverse())) is None
+    assert reflect_base_args(Other, Box, TypeReflector(TypeUniverse())) is None
 
 
 def test_reflect_base_args_rejects_non_instance_runtime_target() -> None:
     with pytest.raises(ReflectionError, match='base target'):
-        reflect_base_args(list[int], int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_base_args(list[int], int | str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_base_args_or_none_returns_args_when_mappable() -> None:
@@ -2551,7 +2551,7 @@ def test_reflect_base_args_or_none_returns_args_when_mappable() -> None:
     class IntBox(Box[int]):  # type: ignore
         pass
 
-    args = reflect_base_args_or_none(IntBox, Box, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    args = reflect_base_args_or_none(IntBox, Box, TypeReflector(TypeUniverse()))
 
     assert args is not None
     assert [type_str(arg) for arg in args] == ['builtins.int']
@@ -2566,7 +2566,7 @@ def test_reflect_base_args_or_none_returns_none_for_missing_runtime_base() -> No
     class Other:
         pass
 
-    assert reflect_base_args_or_none(Other, Box, RuntimeTypeReflector(RuntimeTypeUniverse())) is None
+    assert reflect_base_args_or_none(Other, Box, TypeReflector(TypeUniverse())) is None
 
 
 def test_reflect_base_args_or_none_suppresses_unsupported_base_mapping() -> None:
@@ -2581,7 +2581,7 @@ def test_reflect_base_args_or_none_suppresses_unsupported_base_mapping() -> None
     class Child(Middle):
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     child_type = reflector.reflect_type(Child)
     base_type = reflector.reflect_type(Base)
     middle_type = reflector.reflect_type(Middle)
@@ -2595,11 +2595,11 @@ def test_reflect_base_args_or_none_suppresses_unsupported_base_mapping() -> None
 
 def test_reflect_base_args_or_none_still_rejects_non_instance_runtime_target() -> None:
     with pytest.raises(ReflectionError, match='base target'):
-        reflect_base_args_or_none(list[int], int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_base_args_or_none(list[int], int | str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_base_instance_returns_known_collection_abc_base() -> None:
-    base = reflect_base_instance(list[int], cabc.Sequence, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    base = reflect_base_instance(list[int], cabc.Sequence, TypeReflector(TypeUniverse()))
 
     assert isinstance(base, types.Instance)
     assert base.type.fullname == 'collections.abc.Sequence'
@@ -2607,7 +2607,7 @@ def test_reflect_base_instance_returns_known_collection_abc_base() -> None:
 
 
 def test_reflect_base_instance_returns_mapping_base() -> None:
-    base = reflect_base_instance(dict[str, int], cabc.Mapping, RuntimeTypeReflector(RuntimeTypeUniverse()))
+    base = reflect_base_instance(dict[str, int], cabc.Mapping, TypeReflector(TypeUniverse()))
 
     assert isinstance(base, types.Instance)
     assert base.type.fullname == 'collections.abc.Mapping'
@@ -2623,7 +2623,7 @@ def test_reflect_base_instance_returns_none_for_missing_runtime_base() -> None:
     class Other:
         pass
 
-    assert reflect_base_instance(Other, Box, RuntimeTypeReflector(RuntimeTypeUniverse())) is None
+    assert reflect_base_instance(Other, Box, TypeReflector(TypeUniverse())) is None
 
 
 def test_reflect_base_instance_or_none_suppresses_unsupported_base_mapping() -> None:
@@ -2638,7 +2638,7 @@ def test_reflect_base_instance_or_none_suppresses_unsupported_base_mapping() -> 
     class Child(Middle):
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     child_type = reflector.reflect_type(Child)
     base_type = reflector.reflect_type(Base)
     middle_type = reflector.reflect_type(Middle)
@@ -2654,7 +2654,7 @@ def test_reflect_base_instance_or_none_suppresses_unsupported_base_mapping() -> 
 
 def test_reflect_base_instance_or_none_still_rejects_non_instance_runtime_target() -> None:
     with pytest.raises(ReflectionError, match='base target'):
-        reflect_base_instance_or_none(list[int], int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_base_instance_or_none(list[int], int | str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_mro_instances_remaps_type_vars_at_each_layer() -> None:
@@ -2674,7 +2674,7 @@ def test_reflect_mro_instances_remaps_type_vars_at_each_layer() -> None:
 
     mro = reflect_mro_instances(
         Child[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert [type_str(item) for item in mro] == [
@@ -2691,7 +2691,7 @@ def test_reflect_mro_instances_remaps_type_vars_at_each_layer() -> None:
 
 def test_reflect_mro_instances_rejects_non_instance_runtime_source() -> None:
     with pytest.raises(ReflectionError, match='MRO source'):
-        reflect_mro_instances(int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_mro_instances(int | str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_mro_instances_or_none_returns_mapped_instances() -> None:
@@ -2705,7 +2705,7 @@ def test_reflect_mro_instances_or_none_returns_mapped_instances() -> None:
 
     mro = reflect_mro_instances_or_none(
         IntBox,
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert mro is not None
@@ -2729,7 +2729,7 @@ def test_reflect_mro_instances_or_none_suppresses_unsupported_mapping() -> None:
     class Child(Middle):
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     child_type = reflector.reflect_type(Child)
     base_type = reflector.reflect_type(Base)
     middle_type = reflector.reflect_type(Middle)
@@ -2743,7 +2743,7 @@ def test_reflect_mro_instances_or_none_suppresses_unsupported_mapping() -> None:
 
 def test_reflect_mro_instances_or_none_still_rejects_non_instance_runtime_source() -> None:
     with pytest.raises(ReflectionError, match='MRO source'):
-        reflect_mro_instances_or_none(int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_mro_instances_or_none(int | str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_mro_entries_exposes_info_instance_and_args() -> None:
@@ -2757,7 +2757,7 @@ def test_reflect_mro_entries_exposes_info_instance_and_args() -> None:
 
     entries = reflect_mro_entries(
         IntBox,
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     )
 
     assert [entry.info.fullname for entry in entries] == [
@@ -2793,8 +2793,8 @@ def test_reflect_mro_entries_structural_keys_handle_recursive_alias_remapping() 
     class Child(Middle[alias]):  # type: ignore
         pass
 
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(dynamic_type_name_suffix='counter'),
+    reflector = TypeReflector(
+        TypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     entries = reflect_mro_entries(Child, reflector)
@@ -2826,7 +2826,7 @@ def test_reflect_mro_entries_or_none_suppresses_unsupported_mapping() -> None:
     class Child:
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     child_type = reflector.reflect_type(Child)
     base_type = reflector.reflect_type(Base)
     assert isinstance(child_type, types.Instance)
@@ -2838,7 +2838,7 @@ def test_reflect_mro_entries_or_none_suppresses_unsupported_mapping() -> None:
 
 def test_reflect_mro_entries_still_rejects_non_instance_runtime_source() -> None:
     with pytest.raises(ReflectionError, match='MRO source'):
-        reflect_mro_entries(int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_mro_entries(int | str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_mro_type_strs_formats_mapped_mro_instances() -> None:
@@ -2858,7 +2858,7 @@ def test_reflect_mro_type_strs_formats_mapped_mro_instances() -> None:
 
     assert reflect_mro_type_strs(
         Child[int],  # type: ignore
-        RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter')),
+        TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter')),
     ) == [
         f'{Child.__module__}.{Child.__qualname__}@1[builtins.int]',
         f'{Middle.__module__}.{Middle.__qualname__}@2[builtins.dict[builtins.str, builtins.int]]',
@@ -2873,11 +2873,11 @@ def test_reflect_mro_type_strs_formats_mapped_mro_instances() -> None:
 
 def test_reflect_mro_type_strs_rejects_non_instance_runtime_source() -> None:
     with pytest.raises(ReflectionError, match='MRO source'):
-        reflect_mro_type_strs(int | str, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_mro_type_strs(int | str, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_ops_reuse_explicit_reflector() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     left = reflect_join(list[int], list[int], reflector)
     right = reflector.reflect_type(list[int])
@@ -2891,15 +2891,15 @@ def test_reflect_substitute_type_uses_runtime_type_var_keys() -> None:
     typ = reflect_substitute_type(
         list[t_var],  # type: ignore
         {t_var: int},
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert type_str(typ) == 'builtins.list[builtins.int]'
 
 
 def test_reflect_substitute_type_uses_explicit_forward_ref_resolver() -> None:
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver=lambda name: {'User': int}[name],
     )
 
@@ -2910,7 +2910,7 @@ def test_reflect_substitute_type_uses_explicit_forward_ref_resolver() -> None:
 
 def test_reflect_substitute_type_rejects_non_type_var_runtime_key() -> None:
     with pytest.raises(ReflectionError, match='substitution key'):
-        reflect_substitute_type(list[int], {int: str}, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_substitute_type(list[int], {int: str}, TypeReflector(TypeUniverse()))
 
 
 def test_reflect_substitute_types_uses_shared_runtime_type_var_key() -> None:
@@ -2919,7 +2919,7 @@ def test_reflect_substitute_types_uses_shared_runtime_type_var_key() -> None:
     typs = reflect_substitute_types(
         [list[t_var], dict[str, t_var]],  # type: ignore
         {t_var: int},
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert [type_str(typ) for typ in typs] == [
@@ -2934,7 +2934,7 @@ def test_reflect_substitute_type_handles_runtime_abc_alias() -> None:
     typ = reflect_substitute_type(
         cabc.Sequence[t_var],  # type: ignore
         {t_var: str},
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert type_str(typ) == 'collections.abc.Sequence[builtins.str]'
@@ -2947,7 +2947,7 @@ def test_reflect_substitute_type_uses_runtime_type_var_identity() -> None:
     typ = reflect_substitute_type(
         dict[left, right],  # type: ignore
         {left: int},
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert type_str(typ) == 'builtins.dict[builtins.int, T]'
@@ -2962,7 +2962,7 @@ def test_reflect_substitute_type_uses_identity_for_bounded_type_var() -> None:
     typ = reflect_substitute_type(
         tuple[left, right],  # type: ignore
         {left: str},
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert type_str(typ) == 'tuple[builtins.str, T]'
@@ -2977,7 +2977,7 @@ def test_reflect_substitute_type_uses_identity_for_constrained_type_var() -> Non
     typ = reflect_substitute_type(
         tuple[left, right],  # type: ignore
         {left: float},
-        RuntimeTypeReflector(RuntimeTypeUniverse()),
+        TypeReflector(TypeUniverse()),
     )
 
     assert type_str(typ) == 'tuple[builtins.float, T]'
@@ -2986,7 +2986,7 @@ def test_reflect_substitute_type_uses_identity_for_constrained_type_var() -> Non
 
 
 def test_reflect_substitute_types_reuses_explicit_reflector_cache() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     t_var = ta.TypeVar('T')  # type: ignore
 
     substituted = reflect_substitute_types([list[t_var]], {t_var: int}, reflector)  # type: ignore
@@ -2998,4 +2998,4 @@ def test_reflect_substitute_types_reuses_explicit_reflector_cache() -> None:
 
 def test_reflect_substitute_types_rejects_non_type_var_runtime_key() -> None:
     with pytest.raises(ReflectionError, match='substitution key'):
-        reflect_substitute_types([list[int]], {int: str}, RuntimeTypeReflector(RuntimeTypeUniverse()))
+        reflect_substitute_types([list[int]], {int: str}, TypeReflector(TypeUniverse()))

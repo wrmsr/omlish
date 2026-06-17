@@ -18,9 +18,9 @@ from ..core.types import TypeAliasType
 from ..core.types import UnionType
 from ..errors import ReflectionTypeError
 from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import RuntimeTypeReflector
-from ..universe import DEFAULT_UNIVERSE
-from ..universe import RuntimeTypeUniverse
+from ..reflect import TypeReflector
+from ..universe import default_universe
+from ..universe import TypeUniverse
 
 
 ##
@@ -122,17 +122,17 @@ class RuntimeDispatch:
 ##
 
 
-def _get_reflector(reflector: RuntimeTypeReflector | None) -> RuntimeTypeReflector:
+def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
     return DEFAULT_REFLECTOR if reflector is None else reflector
 
 
-def _get_universe(universe: RuntimeTypeUniverse | None) -> RuntimeTypeUniverse:
-    return DEFAULT_UNIVERSE if universe is None else universe
+def _get_universe(universe: TypeUniverse | None) -> TypeUniverse:
+    return default_universe() if universe is None else universe
 
 
 def get_runtime_class(
         typ: Type,
-        universe: RuntimeTypeUniverse | None = None,
+        universe: TypeUniverse | None = None,
 ) -> type | None:
     if not isinstance(typ, Instance):
         return None
@@ -141,7 +141,7 @@ def get_runtime_class(
 
 def require_runtime_class(
         typ: Type,
-        universe: RuntimeTypeUniverse | None = None,
+        universe: TypeUniverse | None = None,
 ) -> type:
     cls = get_runtime_class(typ, universe)
     if cls is None:
@@ -155,7 +155,7 @@ def _is_new_type(obj: object) -> bool:
 
 def get_runtime_new_type(
         typ: Type,
-        universe: RuntimeTypeUniverse | None = None,
+        universe: TypeUniverse | None = None,
 ) -> object | None:
     if not isinstance(typ, Instance):
         return None
@@ -168,7 +168,7 @@ def get_runtime_new_type(
 
 def get_runtime_new_type_info(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeNewType | None:
     rt_reflector = _get_reflector(reflector)
     obj = get_runtime_new_type(typ, rt_reflector.universe)
@@ -185,7 +185,7 @@ def get_runtime_new_type_info(
 
 def require_runtime_new_type_info(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeNewType:
     info = get_runtime_new_type_info(typ, reflector)
     if info is None:
@@ -195,7 +195,7 @@ def require_runtime_new_type_info(
 
 def get_runtime_new_type_supertype(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type | None:
     info = get_runtime_new_type_info(typ, reflector)
     if info is None:
@@ -244,7 +244,7 @@ def strip_runtime_type_alias(typ: Type) -> Type:
 
 def get_runtime_type_shape(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeTypeShape:
     rt_reflector = _get_reflector(reflector)
     annotated = get_annotated(typ)
@@ -270,7 +270,7 @@ def get_runtime_type_shape(
 
 def get_runtime_unaliased_type_key(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey:
     rt_reflector = _get_reflector(reflector)
     return rt_reflector.type_key(get_runtime_type_shape(typ, rt_reflector).unaliased)
@@ -278,7 +278,7 @@ def get_runtime_unaliased_type_key(
 
 def get_runtime_effective_type_key(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey:
     # Historical compatibility name. This intentionally keys the unaliased view, preserving NewType identity.
     return get_runtime_unaliased_type_key(typ, reflector)
@@ -286,7 +286,7 @@ def get_runtime_effective_type_key(
 
 def get_runtime_type_keys(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeTypeKeys:
     rt_reflector = _get_reflector(reflector)
     shape = get_runtime_type_shape(typ, rt_reflector)
@@ -301,7 +301,7 @@ def get_runtime_type_keys(
 def get_instance_base_args(
         typ: Type,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Type] | None:
     if not isinstance(typ, Instance):
         return None
@@ -317,7 +317,7 @@ def get_instance_base_args(
 def is_instance_of_runtime_base(
         typ: Type,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> bool:
     return get_instance_base_args(typ, base, reflector) is not None
 
@@ -325,7 +325,7 @@ def is_instance_of_runtime_base(
 def get_single_base_arg(
         typ: Type,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type | None:
     args = get_instance_base_args(typ, base, reflector)
     if args is None:
@@ -338,7 +338,7 @@ def get_single_base_arg(
 def get_mapping_base_args(
         typ: Type,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> tuple[Type, Type] | None:
     args = get_instance_base_args(typ, base, reflector)
     if args is None:
@@ -351,7 +351,7 @@ def get_mapping_base_args(
 def get_effective_instance_base_args(
         typ: Type,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Type] | None:
     rt_reflector = _get_reflector(reflector)
     return get_instance_base_args(get_runtime_type_shape(typ, rt_reflector).effective, base, rt_reflector)
@@ -360,7 +360,7 @@ def get_effective_instance_base_args(
 def get_effective_single_base_arg(
         typ: Type,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type | None:
     rt_reflector = _get_reflector(reflector)
     return get_single_base_arg(get_runtime_type_shape(typ, rt_reflector).effective, base, rt_reflector)
@@ -369,7 +369,7 @@ def get_effective_single_base_arg(
 def get_effective_mapping_base_args(
         typ: Type,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> tuple[Type, Type] | None:
     rt_reflector = _get_reflector(reflector)
     return get_mapping_base_args(get_runtime_type_shape(typ, rt_reflector).effective, base, rt_reflector)
@@ -377,7 +377,7 @@ def get_effective_mapping_base_args(
 
 def get_runtime_collection_shape(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeCollectionShape:
     rt_reflector = _get_reflector(reflector)
     type_shape = get_runtime_type_shape(typ, rt_reflector)
@@ -393,7 +393,7 @@ def get_runtime_collection_shape(
 
 def get_runtime_mapping_shape(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeMappingShape | None:
     rt_reflector = _get_reflector(reflector)
     collection_shape = get_runtime_collection_shape(typ, rt_reflector)
@@ -409,7 +409,7 @@ def get_runtime_mapping_shape(
 
 def get_runtime_dispatch(
         typ: Type,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeDispatch:
     rt_reflector = _get_reflector(reflector)
     collection_shape = get_runtime_collection_shape(typ, rt_reflector)
@@ -466,7 +466,7 @@ def get_literal_value_type(typ: Type) -> LiteralValueType | None:
     return LiteralValueType(next(iter(value_types)), tuple(values))
 
 
-def _get_runtime_literal_value(typ: LiteralType, universe: RuntimeTypeUniverse) -> object | None:
+def _get_runtime_literal_value(typ: LiteralType, universe: TypeUniverse) -> object | None:
     cls = universe.get_runtime_type(typ._fallback._type)
     if (
             isinstance(cls, type)
@@ -483,7 +483,7 @@ def _get_runtime_literal_value(typ: LiteralType, universe: RuntimeTypeUniverse) 
 
 def get_runtime_literal_value_type(
         typ: Type,
-        universe: RuntimeTypeUniverse | None = None,
+        universe: TypeUniverse | None = None,
 ) -> RuntimeLiteralValueType | None:
     rt_universe = _get_universe(universe)
     values: list[object] = []
@@ -542,7 +542,7 @@ def destructure_literal_union(typ: Type) -> LiteralUnion | None:
 def destructure_primitive_union(
         typ: Type,
         primitives: ta.Container[type] = (float, int, str, bool),
-        universe: RuntimeTypeUniverse | None = None,
+        universe: TypeUniverse | None = None,
 ) -> PrimitiveUnion | None:
     if not isinstance(typ, UnionType):
         return None
@@ -565,7 +565,7 @@ def destructure_primitive_union(
 
 def reflect_optional_item(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type | None:
     rt_reflector = _get_reflector(reflector)
     return get_optional_item(rt_reflector.reflect_type(obj))
@@ -574,7 +574,7 @@ def reflect_optional_item(
 def reflect_is_instance_of_runtime_base(
         obj: object,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> bool:
     rt_reflector = _get_reflector(reflector)
     return is_instance_of_runtime_base(rt_reflector.reflect_type(obj), base, rt_reflector)
@@ -583,7 +583,7 @@ def reflect_is_instance_of_runtime_base(
 def reflect_single_base_arg(
         obj: object,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type | None:
     rt_reflector = _get_reflector(reflector)
     return get_single_base_arg(rt_reflector.reflect_type(obj), base, rt_reflector)
@@ -592,7 +592,7 @@ def reflect_single_base_arg(
 def reflect_mapping_base_args(
         obj: object,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> tuple[Type, Type] | None:
     rt_reflector = _get_reflector(reflector)
     return get_mapping_base_args(rt_reflector.reflect_type(obj), base, rt_reflector)
@@ -601,7 +601,7 @@ def reflect_mapping_base_args(
 def reflect_effective_instance_base_args(
         obj: object,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> ta.Sequence[Type] | None:
     rt_reflector = _get_reflector(reflector)
     return get_effective_instance_base_args(rt_reflector.reflect_type(obj), base, rt_reflector)
@@ -610,7 +610,7 @@ def reflect_effective_instance_base_args(
 def reflect_effective_single_base_arg(
         obj: object,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type | None:
     rt_reflector = _get_reflector(reflector)
     return get_effective_single_base_arg(rt_reflector.reflect_type(obj), base, rt_reflector)
@@ -619,7 +619,7 @@ def reflect_effective_single_base_arg(
 def reflect_effective_mapping_base_args(
         obj: object,
         base: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> tuple[Type, Type] | None:
     rt_reflector = _get_reflector(reflector)
     return get_effective_mapping_base_args(rt_reflector.reflect_type(obj), base, rt_reflector)
@@ -627,7 +627,7 @@ def reflect_effective_mapping_base_args(
 
 def reflect_runtime_new_type_info(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeNewType | None:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_new_type_info(rt_reflector.reflect_type(obj), rt_reflector)
@@ -635,7 +635,7 @@ def reflect_runtime_new_type_info(
 
 def reflect_runtime_new_type_supertype(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type | None:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_new_type_supertype(rt_reflector.reflect_type(obj), rt_reflector)
@@ -643,7 +643,7 @@ def reflect_runtime_new_type_supertype(
 
 def reflect_annotated(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeAnnotated | None:
     rt_reflector = _get_reflector(reflector)
     return get_annotated(rt_reflector.reflect_type(obj))
@@ -651,7 +651,7 @@ def reflect_annotated(
 
 def reflect_strip_annotated(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type:
     rt_reflector = _get_reflector(reflector)
     return strip_annotated(rt_reflector.reflect_type(obj))
@@ -659,7 +659,7 @@ def reflect_strip_annotated(
 
 def reflect_runtime_type_alias(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeTypeAlias | None:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_type_alias(rt_reflector.reflect_type(obj))
@@ -667,7 +667,7 @@ def reflect_runtime_type_alias(
 
 def reflect_strip_runtime_type_alias(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> Type:
     rt_reflector = _get_reflector(reflector)
     return strip_runtime_type_alias(rt_reflector.reflect_type(obj))
@@ -675,7 +675,7 @@ def reflect_strip_runtime_type_alias(
 
 def reflect_runtime_unaliased_type_key(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_unaliased_type_key(rt_reflector.reflect_type(obj), rt_reflector)
@@ -683,7 +683,7 @@ def reflect_runtime_unaliased_type_key(
 
 def reflect_runtime_effective_type_key(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey:
     # Historical compatibility name. This intentionally keys the unaliased view, preserving NewType identity.
     return reflect_runtime_unaliased_type_key(obj, reflector)
@@ -691,7 +691,7 @@ def reflect_runtime_effective_type_key(
 
 def reflect_runtime_type_keys(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeTypeKeys:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_type_keys(rt_reflector.reflect_type(obj), rt_reflector)
@@ -699,7 +699,7 @@ def reflect_runtime_type_keys(
 
 def reflect_runtime_type_shape(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeTypeShape:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_type_shape(rt_reflector.reflect_type(obj), rt_reflector)
@@ -707,7 +707,7 @@ def reflect_runtime_type_shape(
 
 def reflect_runtime_collection_shape(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeCollectionShape:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_collection_shape(rt_reflector.reflect_type(obj), rt_reflector)
@@ -715,7 +715,7 @@ def reflect_runtime_collection_shape(
 
 def reflect_runtime_mapping_shape(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeMappingShape | None:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_mapping_shape(rt_reflector.reflect_type(obj), rt_reflector)
@@ -723,7 +723,7 @@ def reflect_runtime_mapping_shape(
 
 def reflect_runtime_dispatch(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeDispatch:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_dispatch(rt_reflector.reflect_type(obj), rt_reflector)
@@ -731,7 +731,7 @@ def reflect_runtime_dispatch(
 
 def reflect_literal_value_type(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> LiteralValueType | None:
     rt_reflector = _get_reflector(reflector)
     return get_literal_value_type(rt_reflector.reflect_type(obj))
@@ -739,7 +739,7 @@ def reflect_literal_value_type(
 
 def reflect_runtime_literal_value_type(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeLiteralValueType | None:
     rt_reflector = _get_reflector(reflector)
     return get_runtime_literal_value_type(rt_reflector.reflect_type(obj), rt_reflector.universe)
@@ -747,7 +747,7 @@ def reflect_runtime_literal_value_type(
 
 def reflect_literal_union(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> LiteralUnion | None:
     rt_reflector = _get_reflector(reflector)
     return destructure_literal_union(rt_reflector.reflect_type(obj))
@@ -756,7 +756,7 @@ def reflect_literal_union(
 def reflect_primitive_union(
         obj: object,
         primitives: ta.Container[type] = (float, int, str, bool),
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> PrimitiveUnion | None:
     rt_reflector = _get_reflector(reflector)
     return destructure_primitive_union(rt_reflector.reflect_type(obj), primitives, rt_reflector.universe)

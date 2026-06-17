@@ -4,8 +4,8 @@ import dataclasses as dc
 import typing as ta
 
 from ...core.strconv import type_str
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..dataclasses import inspect_dataclass
 from ..ops import reflect_literal_values
 from ..ops import reflect_type_key
@@ -29,9 +29,9 @@ from ..views import reflect_runtime_type_view
 def _make_reflector(
         *,
         aliases: ta.Mapping[str, object] | None = None,
-) -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(
-        RuntimeTypeUniverse(dynamic_type_name_suffix='counter'),
+) -> TypeReflector:
+    return TypeReflector(
+        TypeUniverse(dynamic_type_name_suffix='counter'),
         forward_ref_resolver=None if aliases is None else aliases.__getitem__,
     )
 

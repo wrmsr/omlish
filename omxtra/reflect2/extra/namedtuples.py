@@ -11,7 +11,7 @@ from ..core.types import TypeVarLikeType
 from ..errors import ReflectionTypeError
 from ..errors import UnsupportedTypeOperationError
 from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import RuntimeTypeReflector
+from ..reflect import TypeReflector
 
 
 ##
@@ -38,7 +38,7 @@ class RuntimeNamedTupleInspection:
 ##
 
 
-def _get_reflector(reflector: RuntimeTypeReflector | None) -> RuntimeTypeReflector:
+def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
     return DEFAULT_REFLECTOR if reflector is None else reflector
 
 
@@ -72,7 +72,7 @@ def _get_namedtuple_annotations(origin: type) -> dict[str, object]:
 def _get_replacements(
         obj: object,
         origin: type,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> dict[TypeVarLikeType, Type]:
     instance = reflector.reflect_type(obj)
     if not isinstance(instance, Instance):
@@ -93,7 +93,7 @@ def _get_replacements(
 
 def inspect_namedtuple(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeNamedTupleInspection:
     rt_reflector = _get_reflector(reflector)
     return ta.cast(RuntimeNamedTupleInspection, rt_reflector.cached_inspection(
@@ -105,7 +105,7 @@ def inspect_namedtuple(
 
 def _inspect_namedtuple_uncached(
         obj: object,
-        rt_reflector: RuntimeTypeReflector,
+        rt_reflector: TypeReflector,
 ) -> RuntimeNamedTupleInspection:
     origin = _get_origin_namedtuple(obj)
     annotations = _get_namedtuple_annotations(origin)
@@ -159,34 +159,34 @@ def _inspect_namedtuple_uncached(
 
 def reflect_namedtuple_fields(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> list[RuntimeNamedTupleField]:
     return list(inspect_namedtuple(obj, reflector).fields)
 
 
 def reflect_namedtuple_field_types(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, Type]:
     return dict(inspect_namedtuple(obj, reflector).field_types)
 
 
 def reflect_namedtuple_field_type_keys(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, TypeKey]:
     return dict(inspect_namedtuple(obj, reflector).field_type_keys)
 
 
 def reflect_namedtuple_field_structural_type_keys(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, TypeKey]:
     return dict(inspect_namedtuple(obj, reflector).field_structural_type_keys)
 
 
 def reflect_namedtuple_field_annotations(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, object]:
     return dict(inspect_namedtuple(obj, reflector).field_annotations)

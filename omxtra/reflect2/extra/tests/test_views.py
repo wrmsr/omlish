@@ -3,8 +3,8 @@ import typing as ta
 
 from ...core import types
 from ...core.strconv import type_str
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..ops import reflect_structural_join
 from ..ops import reflect_structural_meet
 from ..queries import get_runtime_collection_shape
@@ -17,7 +17,7 @@ from ..views import reflect_runtime_type_view
 
 
 def test_runtime_type_view_bundles_existing_query_surfaces() -> None:
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     typ = reflector.reflect_type(dict[str, int])
 
     view = get_runtime_type_view(typ, reflector)
@@ -36,8 +36,8 @@ def test_runtime_type_view_bundles_existing_query_surfaces() -> None:
 def test_reflect_runtime_type_view_handles_recursive_alias_container() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     node_list = ta.TypeAliasType('NodeList', list[alias])  # type: ignore
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
 
@@ -52,7 +52,7 @@ def test_reflect_runtime_type_view_handles_recursive_alias_container() -> None:
 def test_runtime_type_view_composes_with_structural_join_for_recursive_alias() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     unrolled = int | list[alias]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     joined = reflect_structural_join(alias, unrolled, reflector)
     view = get_runtime_type_view(joined, reflector)
@@ -66,7 +66,7 @@ def test_runtime_type_view_composes_with_structural_join_for_recursive_alias() -
 def test_runtime_type_view_composes_with_structural_meet_for_recursive_alias() -> None:
     alias = ta.TypeAliasType('Node', int | list['Node'])  # type: ignore
     unrolled = int | list[alias]  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     met = reflect_structural_meet(alias, unrolled, reflector)
     view = get_runtime_type_view(met, reflector)
@@ -80,7 +80,7 @@ def test_runtime_type_view_composes_with_structural_meet_for_recursive_alias() -
 def test_runtime_type_view_composes_with_structural_join_for_incompatible_recursive_aliases() -> None:
     left = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right = ta.TypeAliasType('Right', str | list['Right'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     joined = reflect_structural_join(left, right, reflector)
     view = get_runtime_type_view(joined, reflector)
@@ -95,7 +95,7 @@ def test_runtime_type_view_composes_with_structural_join_for_incompatible_recurs
 def test_runtime_type_view_composes_with_structural_meet_for_incompatible_recursive_aliases() -> None:
     left = ta.TypeAliasType('Left', int | list['Left'])  # type: ignore
     right = ta.TypeAliasType('Right', str | list['Right'])  # type: ignore
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
 
     met = reflect_structural_meet(left, right, reflector)
     view = get_runtime_type_view(met, reflector)

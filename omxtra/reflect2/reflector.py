@@ -11,14 +11,6 @@ from .core.symbols import ArgKind
 from .core.symbols import TypeAlias
 from .core.symbols import TypeInfo
 from .core.symbols import VarianceKind
-from .core.typekeys import ALPHA_STRUCTURAL_TYPE_KEY
-from .core.typekeys import ALPHA_TYPE_KEY
-from .core.typekeys import STRUCTURAL_TYPE_KEY
-from .core.typekeys import TYPE_KEY
-from .core.typekeys import TypeKey
-from .core.typekeys import TypeKeyPolicy
-from .core.typekeys import make_type_key_not_implemented_exception
-from .core.typekeys import type_key_or_none
 from .core.typeops import make_union
 from .core.types import _ANY_TYPES
 from .core.types import _NONE_TYPE
@@ -48,12 +40,10 @@ from .core.types import is_literal_value
 from .core.typevisitor import BoolTypeQuery
 from .core.typevisitor import BoolTypeQueryMode
 from .errors import UnreflectableTypeError
-from .universe import default_universe
+from .universe import DynamicTypeNameSuffix
 from .universe import TypeUniverse
-
-
-if ta.TYPE_CHECKING:
-    from .annotations import TypeAliasAnnotationPolicy
+from .locking import HasLock
+from .universe import HasUniverse
 
 
 ForwardRefResolver: ta.TypeAlias = ta.Callable[[str], object]
@@ -138,25 +128,21 @@ def _contains_any_type_alias(
     return typ.accept(_ContainsAnyTypeAlias(aliases, seen))
 
 
-
-class TypeReflector:
+class TypeReflector(
+    HasUniverse,
+    HasLock,
+):
     def __init__(
             self,
-            universe: TypeUniverse | None = None,
             *,
             forward_ref_resolver: ForwardRefResolver | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
 
-        self._universe = default_universe() if universe is None else universe
         self._forward_ref_resolver = forward_ref_resolver
 
-        self._lock = threading.RLock()
-
         self._type_cache: dict[object, Type] = {}
-        self._annotation_cache: dict[tuple[Type, str], object] = {}
-        self._type_key_cache: dict[tuple[TypeKeyPolicy, Type], TypeKey | None] = {}
-        self._inspection_cache: dict[tuple[str, object], object] = {}
 
         self._runtime_type_params_by_type: dict[TypeVarLikeType, object] = {}
         self._runtime_aliases: dict[ta.TypeAliasType, TypeAlias] = {}
@@ -206,139 +192,6 @@ class TypeReflector:
 
         with self._lock:
             return self._reflect_type(obj)
-
-    #
-
-    def _cached_inspection(
-            self,
-            kind: str,
-            obj: object,
-            factory: ta.Callable[[], object],
-    ) -> object:
-        key = (kind, obj)
-        try:
-            return self._inspection_cache[key]
-        except KeyError:
-            pass
-        except TypeError:
-            return factory()
-
-        ret = factory()
-        try:
-            self._inspection_cache[key] = ret
-        except TypeError:
-            pass
-        return ret
-
-    def cached_inspection(
-            self,
-            kind: str,
-            obj: object,
-            factory: ta.Callable[[], object],
-    ) -> object:
-        key = (kind, obj)
-        try:
-            return self._inspection_cache[key]
-        except KeyError:
-            pass
-        except TypeError:
-            return factory()
-
-        with self._lock:
-            return self._cached_inspection(kind, obj, factory)
-
-    #
-
-    def get_runtime_type_param(self, typ: TypeVarLikeType) -> object | None:
-        return self._runtime_type_params_by_type.get(typ)
-
-    def _to_runtime_annotation(
-            self,
-            typ: Type,
-            *,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',  # FIXME: pollutes cache - 2 level?
-    ) -> object:
-        key = (typ, type_alias_policy)
-        try:
-            return self._annotation_cache[key]
-        except KeyError:
-            pass
-
-        from .annotations import to_runtime_annotation
-
-        annotation = to_runtime_annotation(
-            typ,
-            self._universe,
-            type_var_resolver=self.get_runtime_type_param,
-            type_alias_policy=type_alias_policy,
-        )
-        self._annotation_cache[key] = annotation
-        return annotation
-
-    def to_runtime_annotation(
-            self,
-            typ: Type,
-            *,
-            type_alias_policy: TypeAliasAnnotationPolicy = 'expand',
-    ) -> object:
-        key = (typ, type_alias_policy)
-        try:
-            return self._annotation_cache[key]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._to_runtime_annotation(
-                typ,
-                type_alias_policy=type_alias_policy,
-            )
-
-    #
-
-    def _type_key_or_none(self, typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey | None:
-        cache_key = (policy, typ)
-        try:
-            return self._type_key_cache[cache_key]
-        except KeyError:
-            pass
-
-        key = type_key_or_none(typ, policy)
-        self._type_key_cache[cache_key] = key
-        return key
-
-    def type_key_or_none(self, typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey | None:
-        cache_key = (policy, typ)
-        try:
-            return self._type_key_cache[cache_key]
-        except KeyError:
-            pass
-
-        with self._lock:
-            return self._type_key_or_none(typ, policy)
-
-    def type_key(self, typ: Type, policy: TypeKeyPolicy = TYPE_KEY) -> TypeKey:
-        key = self.type_key_or_none(typ, policy)
-        if key is None:
-            raise make_type_key_not_implemented_exception(typ, policy)
-        return key
-
-    def alpha_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        return self.type_key_or_none(typ, ALPHA_TYPE_KEY)
-
-    def alpha_type_key(self, typ: Type) -> TypeKey:
-        return self.type_key(typ, ALPHA_TYPE_KEY)
-
-    def structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        return self.type_key_or_none(typ, STRUCTURAL_TYPE_KEY)
-
-    def structural_type_key(self, typ: Type) -> TypeKey:
-        return self.type_key(typ, STRUCTURAL_TYPE_KEY)
-
-    def alpha_structural_type_key_or_none(self, typ: Type) -> TypeKey | None:
-        return self.type_key_or_none(typ, ALPHA_STRUCTURAL_TYPE_KEY)
-
-    def alpha_structural_type_key(self, typ: Type) -> TypeKey:
-        return self.type_key(typ, ALPHA_STRUCTURAL_TYPE_KEY)
 
     #
 
@@ -992,8 +845,49 @@ class TypeReflector:
         return type_var_tuple
 
 
-DEFAULT_REFLECTOR = TypeReflector()
+##
+
+
+_DEFAULT_REFLECTOR: ta.Final = TypeReflector()
+
+
+def default_reflector() -> TypeReflector:
+    return _DEFAULT_REFLECTOR
+
+
+def or_default_reflector(reflector: TypeReflector | None) -> TypeReflector:
+    return _DEFAULT_REFLECTOR if reflector is None else reflector
+
+
+def make_reflector(
+        *,
+        dynamic_type_name_suffix: DynamicTypeNameSuffix = 'id',
+        forward_ref_resolver: ForwardRefResolver | None = None,
+) -> TypeReflector:
+    return TypeReflector(
+        TypeUniverse(dynamic_type_name_suffix=dynamic_type_name_suffix),
+        forward_ref_resolver=forward_ref_resolver,
+    )
 
 
 def reflect_type(obj: object) -> Type:
-    return DEFAULT_REFLECTOR.reflect_type(obj)
+    return _DEFAULT_REFLECTOR.reflect_type(obj)
+
+
+##
+
+
+class HasReflector:
+    def __init__(
+            self,
+            *,
+            reflector: TypeReflector | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._reflector = or_default_reflector(reflector)
+
+    @property
+    def reflector(self) -> TypeReflector:
+        return self._reflector

@@ -13,7 +13,7 @@ from ..core.types import Type
 from ..errors import ProtocolReflectionError
 from ..errors import ReflectionError
 from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import RuntimeTypeReflector
+from ..reflect import TypeReflector
 from .members import RuntimeMember
 from .members import RuntimeMemberKind
 from .members import RuntimeMembersInspection
@@ -55,7 +55,7 @@ class ProtocolImplementationIssue:
 ##
 
 
-def _get_reflector(reflector: RuntimeTypeReflector | None) -> RuntimeTypeReflector:
+def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
     return DEFAULT_REFLECTOR if reflector is None else reflector
 
 
@@ -76,7 +76,7 @@ def is_protocol(obj: object) -> bool:
 
 def _get_mro_entries_by_info(
         obj: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> dict[object, MroEntry]:
     return {
         entry._info: entry
@@ -87,7 +87,7 @@ def _get_mro_entries_by_info(
 def _get_owner_replacements(
         owner: type,
         entries_by_info: dict[object, MroEntry],
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> SubstitutionMap:
     owner_info = reflector.universe.get_type_info(owner)
     entry = entries_by_info.get(owner_info)
@@ -103,7 +103,7 @@ def _get_owner_replacements(
 def _reflect_annotation(
         annotation: object,
         replacements: SubstitutionMap,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> Type:
     typ = reflector.reflect_type(annotation)
     if replacements:
@@ -129,7 +129,7 @@ def _make_annotation_member(
         owner: type,
         annotation: object,
         entries_by_info: dict[object, MroEntry],
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> RuntimeMember:
     return RuntimeMember(
         name,
@@ -156,7 +156,7 @@ def _filter_runtime_members(inspection: RuntimeMembersInspection) -> dict[str, R
 
 def inspect_protocol_members(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeProtocolInspection:
     rt_reflector = _get_reflector(reflector)
     return ta.cast(RuntimeProtocolInspection, rt_reflector.cached_inspection(
@@ -168,7 +168,7 @@ def inspect_protocol_members(
 
 def _inspect_protocol_members_uncached(
         obj: object,
-        rt_reflector: RuntimeTypeReflector,
+        rt_reflector: TypeReflector,
 ) -> RuntimeProtocolInspection:
     origin = _get_origin_protocol(obj)
     entries_by_info = _get_mro_entries_by_info(obj, rt_reflector)
@@ -189,7 +189,7 @@ def _inspect_protocol_members_uncached(
 
 def get_protocol_member_key(
         member: RuntimeMember,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey:
     key = get_member_call_signature_key(member, reflector)
     if key is not None:
@@ -204,7 +204,7 @@ def get_protocol_member_key(
 
 def get_protocol_member_keys(
         members_by_name: dict[str, RuntimeMember],
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, TypeKey]:
     return {
         name: get_protocol_member_key(member, reflector)
@@ -214,7 +214,7 @@ def get_protocol_member_keys(
 
 def get_protocol_member_structural_key(
         member: RuntimeMember,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> TypeKey:
     key = get_member_call_structural_signature_key(member, reflector)
     if key is not None:
@@ -229,7 +229,7 @@ def get_protocol_member_structural_key(
 
 def get_protocol_member_structural_keys(
         members_by_name: dict[str, RuntimeMember],
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> dict[str, TypeKey]:
     return {
         name: get_protocol_member_structural_key(member, reflector)
@@ -239,7 +239,7 @@ def get_protocol_member_structural_keys(
 
 def _get_concrete_member_keys(
         obj: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> dict[str, TypeKey]:
     keys: dict[str, TypeKey] = {}
 
@@ -262,14 +262,14 @@ def _get_concrete_member_keys(
 
 def _get_concrete_runtime_members(
         obj: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> dict[str, RuntimeMember]:
     return inspect_runtime_members(obj, reflector).members_by_name
 
 
 def _get_concrete_member_keys_or_issues(
         obj: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> tuple[dict[str, TypeKey], list[ProtocolImplementationIssue]]:
     issues: list[ProtocolImplementationIssue] = []
     keys: dict[str, TypeKey] = {}
@@ -313,7 +313,7 @@ def _property_members_match(protocol_member: RuntimeMember, concrete_member: Run
 def is_protocol_implemented_by(
         concrete: object,
         protocol: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> bool:
     rt_reflector = _get_reflector(reflector)
     protocol_inspection = inspect_protocol_members(protocol, rt_reflector)
@@ -339,7 +339,7 @@ def is_protocol_implemented_by(
 def check_protocol_implementation(
         concrete: object,
         protocol: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> list[ProtocolImplementationIssue]:
     rt_reflector = _get_reflector(reflector)
     try:
@@ -378,6 +378,6 @@ def check_protocol_implementation(
 def is_protocol_implemented_by_or_false(
         concrete: object,
         protocol: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> bool:
     return not check_protocol_implementation(concrete, protocol, reflector)

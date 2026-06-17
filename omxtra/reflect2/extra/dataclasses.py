@@ -10,7 +10,7 @@ from ..core.types import Type
 from ..errors import ReflectionTypeError
 from ..errors import UnsupportedTypeOperationError
 from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import RuntimeTypeReflector
+from ..reflect import TypeReflector
 from .ops import reflect_mro_entries
 
 
@@ -40,7 +40,7 @@ class RuntimeDataclassInspection:
 ##
 
 
-def _get_reflector(reflector: RuntimeTypeReflector | None) -> RuntimeTypeReflector:
+def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
     return DEFAULT_REFLECTOR if reflector is None else reflector
 
 
@@ -80,7 +80,7 @@ def _get_dataclass_field_owners(origin: type) -> dict[str, type]:
 
 def _get_mro_entries_by_info(
         obj: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> dict[object, MroEntry]:
     return {
         entry._info: entry
@@ -113,7 +113,7 @@ def _replace_field_type(
 
 def inspect_dataclass(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeDataclassInspection:
     rt_reflector = _get_reflector(reflector)
     return ta.cast(RuntimeDataclassInspection, rt_reflector.cached_inspection(
@@ -125,7 +125,7 @@ def inspect_dataclass(
 
 def _inspect_dataclass_uncached(
         obj: object,
-        rt_reflector: RuntimeTypeReflector,
+        rt_reflector: TypeReflector,
 ) -> RuntimeDataclassInspection:
     origin = _get_origin_dataclass(obj)
     owners = _get_dataclass_field_owners(origin)
@@ -189,34 +189,34 @@ def _inspect_dataclass_uncached(
 
 def reflect_dataclass_fields(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> list[RuntimeDataclassField]:
     return list(inspect_dataclass(obj, reflector).fields)
 
 
 def reflect_dataclass_field_types(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, Type]:
     return dict(inspect_dataclass(obj, reflector).field_types)
 
 
 def reflect_dataclass_field_type_keys(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, TypeKey]:
     return dict(inspect_dataclass(obj, reflector).field_type_keys)
 
 
 def reflect_dataclass_field_structural_type_keys(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, TypeKey]:
     return dict(inspect_dataclass(obj, reflector).field_structural_type_keys)
 
 
 def reflect_dataclass_field_annotations(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> dict[str, object]:
     return dict(inspect_dataclass(obj, reflector).field_annotations)

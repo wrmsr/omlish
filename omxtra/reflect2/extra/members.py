@@ -17,7 +17,7 @@ from ..core.types import TypeOfAny
 from ..errors import ReflectionTypeError
 from ..errors import UnreflectableTypeError
 from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import RuntimeTypeReflector
+from ..reflect import TypeReflector
 from .ops import reflect_mro_entries
 from .queries import get_runtime_unaliased_type_key
 
@@ -81,7 +81,7 @@ def _get_origin_type(obj: object) -> type:
     return origin
 
 
-def _get_reflector(reflector: RuntimeTypeReflector | None) -> RuntimeTypeReflector:
+def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
     return DEFAULT_REFLECTOR if reflector is None else reflector
 
 
@@ -106,7 +106,7 @@ def _make_any() -> AnyType:
 
 def _reflect_annotation(
         annotation: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
         replacements: SubstitutionMap,
 ) -> Type:
     if annotation is inspect.Signature.empty:
@@ -119,7 +119,7 @@ def _reflect_annotation(
 
 def _reflect_signature(
         signature: inspect.Signature | None,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
         replacements: SubstitutionMap,
 ) -> RuntimeMemberSignature | None:
     if signature is None:
@@ -142,7 +142,7 @@ def _reflect_signature(
 
 def _reflect_overload_signatures(
         obj: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
         replacements: SubstitutionMap,
 ) -> tuple[RuntimeMemberSignature, ...]:
     ret: list[RuntimeMemberSignature] = []
@@ -170,7 +170,7 @@ def _make_member(
         owner: type,
         obj: object,
         signature: inspect.Signature | None,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
         replacements: SubstitutionMap,
 ) -> RuntimeMember:
     try:
@@ -201,7 +201,7 @@ def _make_member(
 def _classify_member(
         name: str,
         owner: type,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
         replacements: SubstitutionMap,
 ) -> RuntimeMember:
     obj = inspect.getattr_static(owner, name)
@@ -265,7 +265,7 @@ def _classify_member(
 
 def _get_mro_entries_by_info(
         obj: object,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> dict[object, MroEntry]:
     return {
         entry._info: entry
@@ -276,7 +276,7 @@ def _get_mro_entries_by_info(
 def _get_owner_replacements(
         owner: type,
         entries_by_info: dict[object, MroEntry],
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> SubstitutionMap:
     owner_info = reflector.universe.get_type_info(owner)
     entry = entries_by_info.get(owner_info)
@@ -291,7 +291,7 @@ def _get_owner_replacements(
 
 def inspect_runtime_members(
         obj: object,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> RuntimeMembersInspection:
     rt_reflector = _get_reflector(reflector)
     return ta.cast(RuntimeMembersInspection, rt_reflector.cached_inspection(
@@ -303,7 +303,7 @@ def inspect_runtime_members(
 
 def _inspect_runtime_members_uncached(
         obj: object,
-        rt_reflector: RuntimeTypeReflector,
+        rt_reflector: TypeReflector,
 ) -> RuntimeMembersInspection:
     origin = _get_origin_type(obj)
     entries_by_info = _get_mro_entries_by_info(obj, rt_reflector)
@@ -367,7 +367,7 @@ def get_member_value_type(member: RuntimeMember) -> Type | None:
 
 def member_signature_key(
         signature: RuntimeMemberSignature,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey:
     return TypeKey((
         'member_signature',
@@ -386,7 +386,7 @@ def member_signature_key(
 
 def member_structural_signature_key(
         signature: RuntimeMemberSignature,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> TypeKey:
     return TypeKey((
         'member_signature',
@@ -403,7 +403,7 @@ def member_structural_signature_key(
     ))
 
 
-def _member_type_key(typ: Type, reflector: RuntimeTypeReflector | None) -> TypeKey:
+def _member_type_key(typ: Type, reflector: TypeReflector | None) -> TypeKey:
     if reflector is None:
         return type_key(typ)
     return get_runtime_unaliased_type_key(typ, reflector)
@@ -411,7 +411,7 @@ def _member_type_key(typ: Type, reflector: RuntimeTypeReflector | None) -> TypeK
 
 def get_member_call_signature_key(
         member: RuntimeMember,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey | None:
     if member.unkeyable:
         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
@@ -424,7 +424,7 @@ def get_member_call_signature_key(
 
 def get_member_call_structural_signature_key(
         member: RuntimeMember,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> TypeKey | None:
     if member.unkeyable:
         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
@@ -437,7 +437,7 @@ def get_member_call_structural_signature_key(
 
 def get_member_value_type_key(
         member: RuntimeMember,
-        reflector: RuntimeTypeReflector | None = None,
+        reflector: TypeReflector | None = None,
 ) -> TypeKey | None:
     if member.unkeyable:
         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')
@@ -450,7 +450,7 @@ def get_member_value_type_key(
 
 def get_member_value_structural_type_key(
         member: RuntimeMember,
-        reflector: RuntimeTypeReflector,
+        reflector: TypeReflector,
 ) -> TypeKey | None:
     if member.unkeyable:
         raise ReflectionTypeError(f'Member is not keyable: {member.name!r}')

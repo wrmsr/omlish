@@ -11,8 +11,8 @@ from ...core.subtypes import is_structurally_equivalent
 from ...core.typekeys import structural_type_key
 from ...core.typekeys import type_key
 from ...errors import ReflectionError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..members import RuntimeMemberKind
 from ..members import RuntimeMemberParameter
 from ..members import RuntimeMemberSignature
@@ -63,8 +63,8 @@ def test_inspect_runtime_members_cache_is_per_reflector() -> None:
     class Example:
         value: int
 
-    left_reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
-    right_reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    left_reflector = TypeReflector(TypeUniverse())
+    right_reflector = TypeReflector(TypeUniverse())
 
     left = inspect_runtime_members(Example, left_reflector)
 
@@ -134,7 +134,7 @@ def test_inspect_runtime_members_preserves_literal_new_type_method_signature_sha
         def set_mode(self, mode: mode) -> mode:
             return mode
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     member = inspect_runtime_members(Example, reflector).members_by_name['set_mode']
     signature = member.reflected_signature
     call_signature = get_member_call_signature(member)
@@ -353,7 +353,7 @@ def test_member_value_type_key_matches_property_type_key() -> None:
 
     member = inspect_runtime_members(Example).members_by_name['value']
 
-    assert get_member_value_type_key(member) == type_key(types.Instance(RuntimeTypeUniverse().get_type_info(int), []))
+    assert get_member_value_type_key(member) == type_key(types.Instance(TypeUniverse().get_type_info(int), []))
 
 
 def test_member_signature_key_fails_closed_for_unkeyable_type() -> None:
@@ -366,7 +366,7 @@ def test_member_signature_key_fails_closed_for_unkeyable_type() -> None:
                 False,
             ),
         ),
-        types.Instance(RuntimeTypeUniverse().get_type_info(int), []),
+        types.Instance(TypeUniverse().get_type_info(int), []),
     )
 
     try:
@@ -418,7 +418,7 @@ def test_dataclass_instance_field_is_record_field_not_class_member() -> None:
         def method(self) -> int:
             return self.value
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     record = inspect_record(Example, reflector)
     members = inspect_runtime_members(Example)
 
@@ -432,7 +432,7 @@ def test_dataclass_field_with_default_is_class_data_member_and_record_field() ->
     class Example:
         value: int = 1
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     record = inspect_record(Example, reflector)
     members = inspect_runtime_members(Example)
 
@@ -518,7 +518,7 @@ def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_
     class ModeBox(Box[mode]):  # noqa
         pass
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     members = inspect_runtime_members(ModeBox, reflector).members_by_name
     get_signature = get_member_call_signature(members['get'])
     put_signature = get_member_call_signature(members['put'])
@@ -548,7 +548,7 @@ def test_inspect_runtime_members_expands_new_type_literal_alias_collection_signa
         def set_modes(self, modes: mode_list) -> mode_list:  # type: ignore
             return modes
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     member = inspect_runtime_members(Service, reflector).members_by_name['set_modes']
     signature = get_member_call_signature(member)
 
@@ -584,7 +584,7 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
         def set_modes(self, modes: list[mode]) -> list[mode]:  # noqa
             return modes
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     left_member = inspect_runtime_members(Left, reflector).members_by_name['set_modes']
     right_member = inspect_runtime_members(Right, reflector).members_by_name['set_modes']
     left_signature = get_member_call_signature(left_member)
@@ -620,7 +620,7 @@ def test_member_structural_signature_key_preserves_new_type_identity() -> None:
         def set_mode(self, mode: other_mode) -> other_mode:
             return mode
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     left_member = inspect_runtime_members(Left, reflector).members_by_name['set_mode']
     right_member = inspect_runtime_members(Right, reflector).members_by_name['set_mode']
 
@@ -637,8 +637,8 @@ def test_member_recursive_alias_signature_structural_key_matches_unrolled_type()
         def visit(self, node: alias) -> tuple[alias]:  # type: ignore
             raise NotImplementedError
 
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     member = inspect_runtime_members(Service, reflector).members_by_name['visit']
@@ -680,7 +680,7 @@ def test_member_value_structural_type_key_matches_alias_expanded_property() -> N
         def modes(self) -> list[mode]:  # noqa
             raise NotImplementedError
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     left_member = inspect_runtime_members(Left, reflector).members_by_name['modes']
     right_member = inspect_runtime_members(Right, reflector).members_by_name['modes']
 
@@ -701,7 +701,7 @@ def test_inspect_runtime_members_expands_generic_new_type_literal_alias_collecti
         def set_modes(self, modes: box_alias[mode]) -> box_alias[mode]:  # type: ignore
             return modes
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     member = inspect_runtime_members(Service, reflector).members_by_name['set_modes']
     signature = get_member_call_signature(member)
 
@@ -728,7 +728,7 @@ def test_inspect_runtime_members_marks_unreflectable_alias_signature_unkeyable()
         def check(self, value: bad_alias) -> bool:  # type: ignore
             return bool(value)
 
-    reflector = RuntimeTypeReflector(RuntimeTypeUniverse())
+    reflector = TypeReflector(TypeUniverse())
     member = inspect_runtime_members(Service, reflector).members_by_name['check']
 
     assert member.unkeyable

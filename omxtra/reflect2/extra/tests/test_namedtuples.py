@@ -8,8 +8,8 @@ from ...core.strconv import type_str
 from ...core.typekeys import structural_type_key
 from ...core.typekeys import type_key
 from ...errors import ReflectionError
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..namedtuples import inspect_namedtuple
 from ..namedtuples import is_namedtuple
 from ..namedtuples import reflect_namedtuple_field_annotations
@@ -20,8 +20,8 @@ from ..namedtuples import reflect_namedtuple_fields
 from ..queries import get_runtime_type_shape
 
 
-def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
+def _make_reflector() -> TypeReflector:
+    return TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def test_is_namedtuple_accepts_typing_namedtuple_class() -> None:
@@ -219,8 +219,8 @@ def test_namedtuple_recursive_alias_field_structural_type_key_matches_unrolled_t
     class Config(ta.NamedTuple):
         node: alias  # type: ignore
 
-    reflector = RuntimeTypeReflector(
-        RuntimeTypeUniverse(),
+    reflector = TypeReflector(
+        TypeUniverse(),
         forward_ref_resolver={'Node': alias}.__getitem__,
     )
     inspection = inspect_namedtuple(Config, reflector)

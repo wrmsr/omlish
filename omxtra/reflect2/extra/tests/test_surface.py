@@ -4,8 +4,8 @@ import typing as ta
 
 from ...annotations import to_runtime_annotation
 from ...core.strconv import type_str
-from ...reflect import RuntimeTypeReflector
-from ...universe import RuntimeTypeUniverse
+from ...reflect import TypeReflector
+from ...universe import TypeUniverse
 from ..dataclasses import inspect_dataclass
 from ..dataclasses import reflect_dataclass_field_type_keys
 from ..members import get_member_call_signature
@@ -27,8 +27,8 @@ from ..records import RUNTIME_RECORD_KIND_NAMEDTUPLE
 from ..records import inspect_record
 
 
-def _make_reflector() -> RuntimeTypeReflector:
-    return RuntimeTypeReflector(RuntimeTypeUniverse(dynamic_type_name_suffix='counter'))
+def _make_reflector() -> TypeReflector:
+    return TypeReflector(TypeUniverse(dynamic_type_name_suffix='counter'))
 
 
 def test_runtime_surface_uses_shared_reflector_across_entrypoints() -> None:
