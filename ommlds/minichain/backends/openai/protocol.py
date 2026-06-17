@@ -134,11 +134,21 @@ def build_mc_ai_choice(oai_choice: pt.ChatCompletionResponseChoice) -> ChatGener
         cur,
 
         tv.collect(
-            *([StopReasonOutput(sr)] if (
-                (sr := build_mc_stop_reason(oai_choice.finish_reason)) is not None
-            ) else []),
+            *build_mc_stop_reason_output_(oai_choice.finish_reason),
         ),
     )
+
+
+def build_mc_token_usage(tu: pt.CompletionUsage) -> TokenUsage:
+    return TokenUsage(
+        input=tu.prompt_tokens,
+        output=tu.completion_tokens,
+        total=tu.total_tokens,
+    )
+
+
+def build_mc_token_usage_output_(tu: pt.CompletionUsage | None) -> ta.Sequence[TokenUsageOutput]:
+    return [TokenUsageOutput(build_mc_token_usage(tu))] if tu is not None else []
 
 
 def build_mc_ai_choices(oai_resp: pt.ChatCompletionResponse) -> ChatChoices:
@@ -149,20 +159,14 @@ def build_mc_ai_choices(oai_resp: pt.ChatCompletionResponse) -> ChatChoices:
         ],
 
         tv.collect(
-            *([TokenUsageOutput(TokenUsage(
-                input=tu.prompt_tokens,
-                output=tu.completion_tokens,
-                total=tu.total_tokens,
-            ))] if (tu := oai_resp.usage) is not None else []),
+            *build_mc_token_usage_output_(oai_resp.usage),
         ),
     )
 
 
-def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:
+def build_mc_stop_reason(finish_reason: str) -> StopReason:
     # openai-compat chat-completions finish reasons.
-    if finish_reason is None:
-        return None
-    elif finish_reason == 'stop':
+    if finish_reason == 'stop':
         return EndTurnStopReason()
     elif finish_reason == 'length':
         return MaxTokensStopReason()
@@ -172,6 +176,10 @@ def build_mc_stop_reason(finish_reason: str | None) -> StopReason | None:
         return ContentFilterStopReason()
     else:
         return OtherStopReason(finish_reason)
+
+
+def build_mc_stop_reason_output_(finish_reason: str | None) -> ta.Sequence[StopReasonOutput]:
+    return [StopReasonOutput(build_mc_stop_reason(finish_reason))] if finish_reason is not None else []
 
 
 def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoicesResponse:

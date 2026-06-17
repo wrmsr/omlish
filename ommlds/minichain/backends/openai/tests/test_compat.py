@@ -174,7 +174,6 @@ def test_vendor_knobs(svc_cls, url_part, env):
 
 
 def test_stop_reason_mapping():
-    assert build_mc_stop_reason(None) is None
     assert isinstance(build_mc_stop_reason('stop'), EndTurnStopReason)
     assert isinstance(build_mc_stop_reason('length'), MaxTokensStopReason)
     assert isinstance(build_mc_stop_reason('tool_calls'), ToolUseStopReason)
