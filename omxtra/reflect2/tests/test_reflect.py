@@ -15,7 +15,7 @@ from ..core.subtypes import is_alpha_equivalent
 from ..core.subtypes import is_equivalent
 from ..core.subtypes import is_same_type
 from ..core.subtypes import is_subtype
-from ..core.typekeys import _tuple_type_key
+from ..core.typekeys import tuple_type_key
 from ..core.typekeys import type_key
 from ..core.typeops import get_proper_type
 from ..errors import UnreflectableTypeError
@@ -762,7 +762,7 @@ def test_reflects_direct_recursive_type_alias_type_as_alias_node() -> None:
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
     assert type_key(typ) == "RA[I['builtins.list',AR[0]]]"
-    assert _tuple_type_key(typ) == (
+    assert tuple_type_key(typ) == (
         'recursive_type_alias',
         (),
         (
@@ -802,7 +802,7 @@ def test_reflects_parameterized_recursive_type_alias_type_as_alias_node() -> Non
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
-    assert _tuple_type_key(typ) == (
+    assert tuple_type_key(typ) == (
         'recursive_type_alias',
         (('instance', 'builtins.int', (), ()),),
         (
@@ -829,7 +829,7 @@ def test_reflects_parameterized_recursive_tuple_type_alias_type_as_alias_node() 
 
     assert isinstance(typ, types.TypeAliasType)
     assert typ.is_recursive
-    assert _tuple_type_key(typ) == (
+    assert tuple_type_key(typ) == (
         'recursive_type_alias',
         (('instance', 'builtins.int', (), ()),),
         (
@@ -870,7 +870,7 @@ def test_reflects_variadic_recursive_type_alias_forward_ref_spread_as_packed_arg
         ),
         ('instance', 'builtins.tuple', (('any', types.TypeOfAny.FROM_OMITTED_GENERICS),), ()),
     )
-    assert _tuple_type_key(typ) == (
+    assert tuple_type_key(typ) == (
         'recursive_type_alias',
         (packed_arg_key,),
         (

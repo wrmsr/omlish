@@ -12,20 +12,16 @@ from .. import types
 from ..subtypes import is_alpha_structurally_equivalent
 from ..subtypes import is_structurally_equivalent
 from ..typekeys import TypeKeyPolicy
-from ..typekeys import _tuple_type_key
-from ..typekeys import _tuple_type_key_or_none
 from ..typekeys import alpha_structural_type_key
 from ..typekeys import alpha_structural_type_key_or_none
 from ..typekeys import alpha_type_key
 from ..typekeys import alpha_type_key_or_none
 from ..typekeys import structural_type_key
 from ..typekeys import structural_type_key_or_none
-from ..typekeys import tuple_type_key_with_policy
-from ..typekeys import tuple_type_key_with_policy_or_none
+from ..typekeys import tuple_type_key
+from ..typekeys import tuple_type_key_or_none
 from ..typekeys import type_key
 from ..typekeys import type_key_or_none
-from ..typekeys import type_key_with_policy
-from ..typekeys import type_key_with_policy_or_none
 from .helpers import make_any
 from .helpers import make_info
 from .helpers import make_instance
@@ -274,8 +270,8 @@ def test_type_key_policy_supports_dc_replace() -> None:
 def test_type_key_with_policy_matches_existing_presets() -> None:
     typ = types.AnnotatedType(make_instance(make_info('builtins.int')), ('cfg',))
 
-    assert type_key_with_policy(typ, TypeKeyPolicy()) == type_key(typ)
-    assert type_key_with_policy_or_none(typ, TypeKeyPolicy(structural=True, include_annotated_metadata=False)) == (
+    assert type_key(typ, TypeKeyPolicy()) == type_key(typ)
+    assert type_key_or_none(typ, TypeKeyPolicy(structural=True, include_annotated_metadata=False)) == (
         structural_type_key(typ)
     )
 
@@ -283,8 +279,8 @@ def test_type_key_with_policy_matches_existing_presets() -> None:
 def test_tuple_type_key_with_policy_matches_existing_tuple_preset() -> None:
     typ = types.AnnotatedType(make_instance(make_info('builtins.int')), ('cfg',))
 
-    assert tuple_type_key_with_policy(typ, TypeKeyPolicy()) == _tuple_type_key(typ)
-    assert tuple_type_key_with_policy(typ, TypeKeyPolicy(include_annotated_metadata=False)) == (
+    assert tuple_type_key(typ, TypeKeyPolicy()) == tuple_type_key(typ)
+    assert tuple_type_key(typ, TypeKeyPolicy(include_annotated_metadata=False)) == (
         'instance',
         'builtins.int',
         (),
@@ -302,12 +298,12 @@ def test_type_key_with_policy_fails_closed_for_unsupported_nodes() -> None:
         preserve_newtype_identity=False,
     )
 
-    assert type_key_with_policy_or_none(typ, policy) is None
-    assert tuple_type_key_with_policy_or_none(typ, policy) is None
+    assert type_key_or_none(typ, policy) is None
+    assert tuple_type_key_or_none(typ, policy) is None
     with pytest.raises(ReflectionError, match='not implemented'):
-        type_key_with_policy(typ, policy)
+        type_key(typ, policy)
     with pytest.raises(ReflectionError, match='not implemented'):
-        tuple_type_key_with_policy(typ, policy)
+        tuple_type_key(typ, policy)
 
 
 def test_type_key_policy_can_ignore_annotated_metadata_without_structural_keying() -> None:
@@ -315,7 +311,7 @@ def test_type_key_policy_can_ignore_annotated_metadata_without_structural_keying
     typ = types.AnnotatedType(item, ([],))
 
     assert type_key_or_none(typ) is None
-    assert type_key_with_policy_or_none(typ, TypeKeyPolicy(include_annotated_metadata=False)) == type_key(item)
+    assert type_key_or_none(typ, TypeKeyPolicy(include_annotated_metadata=False)) == type_key(item)
 
 
 def test_type_key_policy_can_preserve_annotated_metadata_with_structural_keying() -> None:
@@ -327,8 +323,8 @@ def test_type_key_policy_can_preserve_annotated_metadata_with_structural_keying(
         preserve_alias_identity=False,
     )
 
-    assert type_key_with_policy_or_none(typ, policy) == type_key(typ)
-    assert type_key_with_policy_or_none(typ, policy) != structural_type_key(item)
+    assert type_key_or_none(typ, policy) == type_key(typ)
+    assert type_key_or_none(typ, policy) != structural_type_key(item)
 
 
 def test_type_key_policy_can_erase_alias_identity_without_structural_keying() -> None:
@@ -338,9 +334,9 @@ def test_type_key_policy_can_erase_alias_identity_without_structural_keying() ->
     policy = TypeKeyPolicy(preserve_alias_identity=False)
 
     assert type_key(types.TypeAliasType(left_alias, [])) != type_key(types.TypeAliasType(right_alias, []))
-    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) == type_key(target)
-    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) == (
-        type_key_with_policy_or_none(types.TypeAliasType(right_alias, []), policy)
+    assert type_key_or_none(types.TypeAliasType(left_alias, []), policy) == type_key(target)
+    assert type_key_or_none(types.TypeAliasType(left_alias, []), policy) == (
+        type_key_or_none(types.TypeAliasType(right_alias, []), policy)
     )
 
 
@@ -354,9 +350,9 @@ def test_type_key_policy_can_preserve_alias_identity_with_structural_keying() ->
         preserve_alias_identity=True,
     )
 
-    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) != structural_type_key(target)
-    assert type_key_with_policy_or_none(types.TypeAliasType(left_alias, []), policy) != (
-        type_key_with_policy_or_none(types.TypeAliasType(right_alias, []), policy)
+    assert type_key_or_none(types.TypeAliasType(left_alias, []), policy) != structural_type_key(target)
+    assert type_key_or_none(types.TypeAliasType(left_alias, []), policy) != (
+        type_key_or_none(types.TypeAliasType(right_alias, []), policy)
     )
 
 
@@ -374,8 +370,8 @@ def test_type_key_policy_structural_recursive_alias_canonicalization_is_alias_po
     )
 
     assert structural_type_key(alias_type) == structural_type_key(one_unrolling)
-    assert type_key_with_policy_or_none(alias_type, structural_preserving_alias) != (
-        type_key_with_policy_or_none(one_unrolling, structural_preserving_alias)
+    assert type_key_or_none(alias_type, structural_preserving_alias) != (
+        type_key_or_none(one_unrolling, structural_preserving_alias)
     )
 
 
@@ -391,8 +387,8 @@ def test_type_key_policy_can_erase_core_newtype_identity_when_supertype_is_recor
 
     assert type_key(user_id) != type_key(account_id)
     assert type_key(user_id) != type_key(int_type)
-    assert type_key_with_policy_or_none(user_id, policy) == type_key(int_type)
-    assert type_key_with_policy_or_none(account_id, policy) == type_key(int_type)
+    assert type_key_or_none(user_id, policy) == type_key(int_type)
+    assert type_key_or_none(account_id, policy) == type_key(int_type)
 
 
 def test_type_key_policy_preserves_newtype_identity_by_default() -> None:
@@ -401,7 +397,7 @@ def test_type_key_policy_preserves_newtype_identity_by_default() -> None:
     user_info._new_type_supertype = int_type
     user_id = make_instance(user_info)
 
-    assert type_key(user_id) == type_key_with_policy_or_none(user_id, TypeKeyPolicy())
+    assert type_key(user_id) == type_key_or_none(user_id, TypeKeyPolicy())
     assert type_key(user_id) != type_key(int_type)
 
 
@@ -417,8 +413,8 @@ def test_reflected_type_key_policy_can_erase_newtype_identity() -> None:
     assert isinstance(user_type, types.Instance)
     assert user_type.type.new_type_supertype == int_type
     assert type_key(user_type) != type_key(account_type)
-    assert type_key_with_policy_or_none(user_type, policy) == type_key(int_type)
-    assert type_key_with_policy_or_none(account_type, policy) == type_key(int_type)
+    assert type_key_or_none(user_type, policy) == type_key(int_type)
+    assert type_key_or_none(account_type, policy) == type_key(int_type)
 
 
 def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -> None:
@@ -434,8 +430,8 @@ def test_reflected_type_key_policy_can_erase_literal_backed_newtype_identity() -
     assert mode_type.type.new_type_supertype == literal_type
     assert type_key(mode_type) != type_key(other_mode_type)
     assert type_key(mode_type) != type_key(literal_type)
-    assert type_key_with_policy_or_none(mode_type, policy) == type_key(literal_type)
-    assert type_key_with_policy_or_none(other_mode_type, policy) == type_key(literal_type)
+    assert type_key_or_none(mode_type, policy) == type_key(literal_type)
+    assert type_key_or_none(other_mode_type, policy) == type_key(literal_type)
 
 
 def test_type_key_policy_composes_annotation_alias_and_newtype_knobs() -> None:
@@ -451,19 +447,19 @@ def test_type_key_policy_composes_annotation_alias_and_newtype_knobs() -> None:
         preserve_newtype_identity=False,
     )
 
-    assert type_key_with_policy(typ, policy) == (
+    assert type_key(typ, policy) == (
         "Ann[I['builtins.int'],$0]",
         ('cfg',),
     )
-    assert type_key_with_policy(typ, policy) != type_key_with_policy(
+    assert type_key(typ, policy) != type_key(
         typ,
         dc.replace(policy, include_annotated_metadata=False),
     )
-    assert type_key_with_policy(typ, policy) != type_key_with_policy(
+    assert type_key(typ, policy) != type_key(
         typ,
         dc.replace(policy, preserve_alias_identity=True),
     )
-    assert type_key_with_policy(typ, policy) != type_key_with_policy(
+    assert type_key(typ, policy) != type_key(
         typ,
         dc.replace(policy, preserve_newtype_identity=True),
     )
@@ -512,7 +508,7 @@ def test_type_key_parameterized_variadic_alias_includes_packed_tuple_arg() -> No
         "Tuple[I['builtins.int'],I['builtins.str'],I['builtins.tuple']]]",
         alias.runtime_object,
     )
-    assert _tuple_type_key(alias_type) == (
+    assert tuple_type_key(alias_type) == (
         'type_alias',
         'Alias',
         alias.runtime_object,
@@ -628,7 +624,7 @@ def test_type_key_overloaded_callables_preserve_item_order() -> None:
         "C[I['builtins.str'],k[POS],n[None],r[I['builtins.str']],"
         "f[I['collections.abc.Callable']]]]"
     )
-    assert _tuple_type_key(left)[0] == 'overloaded'
+    assert tuple_type_key(left)[0] == 'overloaded'
 
 
 def test_type_key_aliases_support_direct_recursive_alias() -> None:
@@ -637,7 +633,7 @@ def test_type_key_aliases_support_direct_recursive_alias() -> None:
     alias._target = alias_type
 
     assert type_key_or_none(alias_type) == 'RA[AR[0]]'
-    assert _tuple_type_key_or_none(alias_type) == (
+    assert tuple_type_key_or_none(alias_type) == (
         'recursive_type_alias',
         (),
         ('type_alias_ref', 0, ()),
@@ -667,7 +663,7 @@ def test_type_key_indirect_recursive_aliases_use_stable_backrefs() -> None:
     alias_a._target = make_instance(list_info, [alias_b_type])
     alias_b._target = make_instance(dict_info, [str_type, alias_a_type])
 
-    assert _tuple_type_key(alias_a_type) == (
+    assert tuple_type_key(alias_a_type) == (
         'recursive_type_alias',
         (),
         (
@@ -778,7 +774,7 @@ def test_type_key_parameterized_recursive_alias_substitutes_backref_args() -> No
     int_alias = types.TypeAliasType(alias, [int_type])
     str_alias = types.TypeAliasType(alias, [str_type])
 
-    assert _tuple_type_key(int_alias) == (
+    assert tuple_type_key(int_alias) == (
         'recursive_type_alias',
         (('instance', 'builtins.int', (), ()),),
         (
@@ -1143,8 +1139,8 @@ def test_structural_type_key_policy_knobs_for_recursive_metadata_are_independent
     )
 
     assert structural_type_key(alias_type) == structural_type_key(reordered)
-    assert type_key_with_policy_or_none(alias_type, policy) == type_key_with_policy_or_none(reordered, policy)
-    assert type_key_with_policy_or_none(alias_type, policy) != structural_type_key(alias_type)
+    assert type_key_or_none(alias_type, policy) == type_key_or_none(reordered, policy)
+    assert type_key_or_none(alias_type, policy) != structural_type_key(alias_type)
 
 
 def test_structural_type_key_recursive_metadata_policy_fails_closed_for_unhashable_values() -> None:
@@ -1159,9 +1155,9 @@ def test_structural_type_key_recursive_metadata_policy_fails_closed_for_unhashab
     )
 
     assert structural_type_key_or_none(alias_type) is not None
-    assert type_key_with_policy_or_none(alias_type, policy) is None
+    assert type_key_or_none(alias_type, policy) is None
     with pytest.raises(ReflectionError, match='not implemented'):
-        type_key_with_policy(alias_type, policy)
+        type_key(alias_type, policy)
 
 
 def test_structural_type_key_recursive_alias_with_opaque_literals_is_union_order_insensitive() -> None:
