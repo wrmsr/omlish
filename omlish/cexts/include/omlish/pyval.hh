@@ -1,6 +1,7 @@
 /*
 FIXME:
- - unify interface with pyref lol
+ - oh just drop the stupid magic vals lol
+ - unify interface with pyref
 */
 #pragma once
 

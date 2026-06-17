@@ -16,8 +16,8 @@ from ..core.types import Type
 from ..core.types import TypeOfAny
 from ..errors import ReflectionTypeError
 from ..errors import UnreflectableTypeError
-from ..reflect import DEFAULT_REFLECTOR
-from ..reflect import TypeReflector
+from ..reflector import or_default_reflector
+from ..reflector import TypeReflector
 from .ops import reflect_mro_entries
 from .queries import get_runtime_unaliased_type_key
 
@@ -79,10 +79,6 @@ def _get_origin_type(obj: object) -> type:
         raise ReflectionTypeError(f'Unsupported member source: {obj!r}')
 
     return origin
-
-
-def _get_reflector(reflector: TypeReflector | None) -> TypeReflector:
-    return DEFAULT_REFLECTOR if reflector is None else reflector
 
 
 def _iter_mro_members(origin: type) -> ta.Iterator[tuple[str, type, object]]:
@@ -293,7 +289,7 @@ def inspect_runtime_members(
         obj: object,
         reflector: TypeReflector | None = None,
 ) -> RuntimeMembersInspection:
-    rt_reflector = _get_reflector(reflector)
+    rt_reflector = or_default_reflector(reflector)
     return ta.cast(RuntimeMembersInspection, rt_reflector.cached_inspection(
         'members',
         obj,
