@@ -532,10 +532,10 @@ def test_inspect_runtime_members_replaces_inherited_generic_method_with_literal_
     class ModeBox(Box[mode]):  # noqa
         pass
 
-    reflector = TypeReflector(TypeUniverse())
-    members = inspect_runtime_members(ModeBox, reflector).members_by_name
-    get_signature = get_member_call_signature(members['get'])
-    put_signature = get_member_call_signature(members['put'])
+    mr = make_members_reflector()
+    members = mr.inspect_runtime_members(ModeBox).members_by_name
+    get_signature = mr.get_member_call_signature(members['get'])
+    put_signature = mr.get_member_call_signature(members['put'])
 
     assert get_signature is not None
     assert put_signature is not None
@@ -562,19 +562,19 @@ def test_inspect_runtime_members_expands_new_type_literal_alias_collection_signa
         def set_modes(self, modes: mode_list) -> mode_list:  # type: ignore
             return modes
 
-    reflector = TypeReflector(TypeUniverse())
-    member = inspect_runtime_members(Service, reflector).members_by_name['set_modes']
-    signature = get_member_call_signature(member)
+    mr = make_members_reflector()
+    member = mr.inspect_runtime_members(Service).members_by_name['set_modes']
+    signature = mr.get_member_call_signature(member)
 
     assert signature is not None
     assert reflector.to_runtime_annotation(signature.parameters[0].typ) == list[mode]  # noqa
     assert reflector.to_runtime_annotation(signature.return_type) == list[mode]  # noqa
-    parameter_shape = get_runtime_collection_shape(signature.parameters[0].typ, reflector)
-    return_shape = get_runtime_collection_shape(signature.return_type, reflector)
+    parameter_shape = get_runtime_collection_shape(signature.parameters[0].typ)
+    return_shape = get_runtime_collection_shape(signature.return_type)
     assert parameter_shape.sequence_item is not None
     assert return_shape.sequence_item is not None
-    parameter_item = get_runtime_type_shape(parameter_shape.sequence_item, reflector)
-    return_item = get_runtime_type_shape(return_shape.sequence_item, reflector)
+    parameter_item = get_runtime_type_shape(parameter_shape.sequence_item)
+    return_item = get_runtime_type_shape(return_shape.sequence_item)
     assert parameter_item.new_type is not None
     assert parameter_item.new_type.obj is mode
     assert parameter_item.literal_value_type is not None
@@ -583,7 +583,7 @@ def test_inspect_runtime_members_expands_new_type_literal_alias_collection_signa
     assert return_item.new_type.obj is mode
     assert return_item.literal_value_type is not None
     assert return_item.literal_value_type.values == ('a', 'b')
-    assert type_key(signature.return_type) != type_key(reflector.reflect_type(list[ta.Literal['a', 'b']]))
+    assert type_key(signature.return_type) != type_key(mr._reflector.reflect_type(list[ta.Literal['a', 'b']]))
 
 
 def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() -> None:
@@ -598,11 +598,11 @@ def test_member_alias_signature_keeps_nominal_key_but_matches_effective_key() ->
         def set_modes(self, modes: list[mode]) -> list[mode]:  # noqa
             return modes
 
-    reflector = TypeReflector(TypeUniverse())
-    left_member = inspect_runtime_members(Left, reflector).members_by_name['set_modes']
-    right_member = inspect_runtime_members(Right, reflector).members_by_name['set_modes']
-    left_signature = get_member_call_signature(left_member)
-    right_signature = get_member_call_signature(right_member)
+    mr = make_members_reflector()
+    left_member = mr.inspect_runtime_members(Left).members_by_name['set_modes']
+    right_member = mr.inspect_runtime_members(Right).members_by_name['set_modes']
+    left_signature = mr.get_member_call_signature(left_member)
+    right_signature = mr.get_member_call_signature(right_member)
 
     assert left_signature is not None
     assert right_signature is not None
